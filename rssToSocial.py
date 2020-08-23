@@ -99,7 +99,6 @@ def test():
                                   lastPost['published_parsed'])))
         lastLink = checkLastLink(self.url, config.get(section, "rss"))
         print(lastLink)
-        sys.exit()
         lenCmp = min(len(lastLink),len(lastPost['link']))
 
         recentPosts[section] = {}
@@ -320,7 +319,6 @@ def main():
 
                     if simmulate:
                         print(listPosts)
-                        sys.exit()
 
 
                     if (blog.getBufferapp() 
