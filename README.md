@@ -9,5 +9,5 @@ And two modules to manage:
 * Caching (local storage)
 * Buffering (using the Buffer API)
 
-The previous home of this code was [https://github.com/fernand0/](https://github.com/fernand0/) and it has been moved here follogin [Splitting a subfolder out into a new repository
+The previous home of this code was [https://github.com/fernand0/scripts](https://github.com/fernand0/) and it has been moved here follogin [Splitting a subfolder out into a new repository
 ](https://docs.github.com/en/github/using-git/splitting-a-subfolder-out-into-a-new-repository)
