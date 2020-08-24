@@ -162,6 +162,17 @@ class moduleImgur(Content,Queue):
             else:
                 description = ""
                 tags = []
+            if img.name:
+                try:
+                    from dateutil.parser import parse
+                    myDate = str(parse(img.name.split('_')[1])).split(' ')[0]
+                    tags.append(myDate)
+                    if description:
+                        description = '{} ({})'.format(description, myDate)
+                    else:
+                        description = '({})'.format(myDate)
+                except:
+                    logging.warning("Name in different format {}".format(img.name))
             res.append((urlImg,title, description, tags))
         return res
 
@@ -240,6 +251,7 @@ def main():
             print("title",iimg.title)
             print("descr",iimg.description)
             print("name",iimg.name)
+        print(img.extractImages(img.getPosts()[-1]))
         sys.exit()
         #print(img.getImages(0))
 
