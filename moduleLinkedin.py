@@ -3,15 +3,14 @@
 import configparser
 import logging
 import os
+import oauth2 as oauth
 import pickle
 import requests
 import sys
+import urllib.parse
 
 from html.parser import HTMLParser
 from linkedin_v2 import linkedin
-
-import oauth2 as oauth
-
 
 
 from configMod import *
@@ -46,7 +45,7 @@ class moduleLinkedin(Content):
             logging.warning("Account not configured")
 
     def authorize(self):
-        if True:
+        try:
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssLinkedin')
             self.CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY") 
@@ -59,7 +58,6 @@ class moduleLinkedin(Content):
                     'redirect_uri': 'http://localhost:8080/code',
                     'state':'33313134',
                     'scope': 'r_liteprofile r_emailaddress w_member_social' }
-            import urllib.parse
             print('https://www.linkedin.com/oauth/v2/authorization?'
                     + urllib.parse.urlencode(payload))
 
@@ -74,6 +72,8 @@ class moduleLinkedin(Content):
             res = requests.post(url, data=payload)
             print(res.text)
             sys.exit()
+        except:
+            print("Some problem")
  
 
     def getClient(self):
@@ -83,13 +83,20 @@ class moduleLinkedin(Content):
         logging.info("  Setting posts")
         urn = self.URN
         author = f"urn:li:person:{urn}"        
-        url = 'https://api.linkedin.com/v2/originalArticles'#.format('{8822}')        
+        print(author,type(author))
+        author = urllib.parse.quote(author)
+        #url = 'https://api.linkedin.com/v2/originalArticles'#.format('{8822}')  
+        #print(author)
+        url = 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List({})&sortBy=LAST_MODIFIED'.format(author)
+
         print(url)
+        print(author)
         access_token = self.ln.authentication.token.access_token
         headers = {'X-Restli-Protocol-Version': '2.0.0',
            'Content-Type': 'application/json',
            'Authorization': f'Bearer {access_token}'}
 
+        # b'{"serviceErrorCode":100,"message":"Not enough permissions to access: GET-authors /ugcPosts","status":403}'
         res = requests.get(url,headers=headers,data={'q':author})
         self.posts = res
 
@@ -182,21 +189,55 @@ class moduleLinkedin(Content):
 
 def main():
 
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
     import moduleLinkedin
 
     ln = moduleLinkedin.moduleLinkedin()
 
     ln.setClient('fernand0')
+    if False: 
+        ln.authorize()
+
 
     print(ln.ln.get_profile())
 
-    print("Testing posts")
-    ln.setPosts()
-    for post in ln.getPosts():
-        print(post)
+    #print("Testing posts")
+    #ln.setPosts()
+    #for post in ln.getPosts():
+    #    print(post)
 
-    #print(ln.publishPost("Probando á é í ó ú — ",'',''))
+    import moduleSlack
+    slack = moduleSlack.moduleSlack()
+
+    config = configparser.ConfigParser()
+    config.read(CONFIGDIR + '/.rssBlogs')
+
+    site = moduleSlack.moduleSlack()
+    section = "Blog7"
+
+    url = config.get(section, "url")
+    site.setUrl(url)
+
+    SLACKCREDENTIALS = os.path.expanduser(CONFIGDIR + '/.rssSlack')
+    site.setSlackClient(SLACKCREDENTIALS)
+
+    CHANNEL = 'links' 
+    theChannel = site.getChanId(CHANNEL)  
+    print("the Channel %s" % theChannel)
+    site.setPosts()
+    post = site.getNumPostsData(1,len(site.getPosts()))[0]
+    title = post[0]
+    link = post[1]
+    print(title, link)
+    ln.publishPost(title, link,'')
+
+
+
+
     sys.exit()
+    print(ln.publishPost("Probando á é í ó ú — ",'',''))
 
     import time
     time.sleep(10)
