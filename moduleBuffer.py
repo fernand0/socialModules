@@ -215,7 +215,7 @@ class moduleBuffer(Content,Queue):
         linkAdded = ''
         link=''
         logging.info("    Adding posts to %s" % self.service)
-        for post in listPosts: 
+        for i, post in enumerate(listPosts): 
             title = self.getPostTitle(post)
             link = self.getPostLink(post)
             if self.service == 'instagram':
@@ -223,6 +223,7 @@ class moduleBuffer(Content,Queue):
                 #Crop the image and leave it on some server
                 imgN = resizeImage(img)
                 img = imgN
+                print(img)
             else:
                 img = ''
             textPost = title + " " + link
@@ -244,7 +245,7 @@ class moduleBuffer(Content,Queue):
                 continue
             linkAdded = link
                 
-            time.sleep(1)
+            time.sleep(2)
         logging.info("    Added posts to LinkedIn")
 
         return(linkAdded)

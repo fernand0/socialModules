@@ -93,6 +93,7 @@ def resizeImage(imgUrl):
        box = (dif/2, 0 , dif/2 + size[1], size[1])
     region = im.crop(box)
     fileNameOutput = WWWDIR + NAMEIMG
+    print("f",fileNameOutput)
     try: 
         region.save(fileNameOutput)
     except: 
