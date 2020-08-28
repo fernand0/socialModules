@@ -70,7 +70,10 @@ class moduleSlack(Content,Queue):
         logging.info(" Setting posts")
         self.posts = []
         theChannel = self.getChanId(channel)
-        history = self.sc.api_call( "channels.history", count=1000, channel=theChannel)
+        #history = self.sc.api_call( "channels.history", count=1000, channel=theChannel)
+        #print(history)
+        # Updating to the conversations API
+        history = self.sc.api_call( "conversations.history", count=1000, channel=theChannel)
         if 'messages' in history:
             self.posts = history['messages']
         else:
@@ -205,7 +208,11 @@ class moduleSlack(Content,Queue):
         logging.debug("getChanId %s"% self.service)
 
         self.sc.token = self.user_slack_token        
-        chanList = self.sc.api_call("channels.list")['channels']
+        #chanList = self.sc.api_call("channels.list")['channels']
+        #print(chanList)
+        # Upgrading to the new conversations API
+        chanList = self.sc.api_call("conversations.list")['channels']
+        #print(chanList)
         self.sc.token = self.slack_token        
         for channel in chanList:
             if channel['name_normalized'] == name:
