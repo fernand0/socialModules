@@ -111,8 +111,8 @@ class Content:
             else:
                 listPosts.append(post)
             print("      Scheduling...")
-            print("       Post %s" % post[0])
-            print("       Link %s" % post[1])
+            print("       - Post: %s" % post[0])
+            print("       - Link: %s" % post[1])
             logging.info("    Scheduling post %s" % post[0])
         return(listPosts)
 
@@ -203,7 +203,7 @@ class Content:
         return(self.program)
  
     def setProgram(self, program):
-        if (len(program)>3) or program.find('\n')>0:
+        if (len(program)>4) or program.find('\n')>0:
             program = program.split('\n')
         self.program = program
         self.setCache()

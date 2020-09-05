@@ -357,7 +357,7 @@ class moduleGmail(Content,Queue):
         theContent = None
         #date = int(self.getHeader(message, 'internalDate'))/1000
         #firstLink = '{}'.format(datetime.datetime.fromtimestamp(date)) # Bad!
-        firstlink = None
+        firstLink = None
         theImage = None
         theSummary = snippet
 

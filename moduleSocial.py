@@ -197,20 +197,25 @@ def publishDelay(blog, socialNetwork, numPosts, timeSlots):
             time.asctime()))
 
         result = None
-        if profile in ['twitter', 'facebook', 'mastodon', 'imgur', 'wordpress']: 
+        if profile in ['twitter', 'facebook', 'mastodon', 
+                'imgur', 'wordpress','linkedin']: 
             # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
-            import importlib
-            mod = importlib.import_module('module'+profile.capitalize()) 
-            cls = getattr(mod, 'module'+profile.capitalize())
-            api = cls()
-            api.setClient(nick)
-            if profile in ['wordpress']: 
-                result = api.publishPost(title, link, comment, tags=links)
-            else: 
-                logger.info("tt {} {}".format(title, link))
-                result = api.publishPost(title, link, comment)
+            try:
+                import importlib
+                mod = importlib.import_module('module'+profile.capitalize()) 
+                cls = getattr(mod, 'module'+profile.capitalize())
+                api = cls()
+                api.setClient(nick)
+                if profile in ['wordpress']: 
+                    result = api.publishPost(title, link, comment, tags=links)
+                else: 
+                    logger.info("tt {} {}".format(title, link))
+                    result = api.publishPost(title, link, comment)
 
-            logger.info("    Publishing in: {}".format(result))
+                    logger.info("    Publishing in: {}".format(result))
+            except:
+                logging.warning("Some problem in {}".format(socialNetwork[0].capitalize())) 
+                logging.warning("Unexpected error:", sys.exc_info()[0]) 
 
             if isinstance(result, str):
                 if result[:4]=='Fail':

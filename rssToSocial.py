@@ -318,40 +318,39 @@ def main():
                         listPosts = blog.getNumPostsData(num, i)
 
                     if simmulate:
-                        print(listPosts)
+                        print("Simmulation {}".format(str(listPosts))) 
+                    else: 
+                        if (blog.getBufferapp() 
+                                and (profile[0] in blog.getBufferapp())): 
+                            print("   Buffered")
+                            link = blog.buffer[socialNetwork].addPosts(listPosts)
+
+                        if ((blog.getProgram() 
+                                and isinstance(blog.getProgram(), list)
+                                and profile in blog.getProgram()) or 
+                            (blog.getProgram() 
+                                and isinstance(blog.getProgram(), str) 
+                                and (profile[0] in blog.getProgram()))):
+                            print("   Delayed")
+                            link = blog.cache[socialNetwork].addPosts(listPosts)
+
+                            time.sleep(1)
+                            print(link)
+                            delayedBlogs.append((blog, socialNetwork, 1, timeSlots))
 
 
-                    if (blog.getBufferapp() 
-                            and (profile[0] in blog.getBufferapp())): 
-                        print("   Buffered")
-                        link = blog.buffer[socialNetwork].addPosts(listPosts)
+                        if not (blog.getBufferapp() or blog.getProgram()):
+                            link = moduleSocial.publishDirect(blog, 
+                                    socialNetwork, i) 
+                            logging.info("  Link reply %s"%str(link)) 
 
-                    if ((blog.getProgram() 
-                            and isinstance(blog.getProgram(), list)
-                            and profile in blog.getProgram()) or 
-                        (blog.getProgram() 
-                            and isinstance(blog.getProgram(), str) 
-                            and (profile[0] in blog.getProgram()))):
-                        print("   Delayed")
-                        link = blog.cache[socialNetwork].addPosts(listPosts)
-
-                        time.sleep(1)
-                        print(link)
-                        delayedBlogs.append((blog, socialNetwork, 1, timeSlots))
-
-
-                    if not (blog.getBufferapp() or blog.getProgram()):
-                        link = moduleSocial.publishDirect(blog, 
-                                socialNetwork, i) 
-                        logging.info("  Link reply %s"%str(link)) 
-
-                    if link:
-                         logging.info("    Updating link %s %s" % 
-                                 (profile, link))
-                         if isinstance(lastLink, list):
-                             link = link + '\n' + '\n'.join(lastLink)
-                         updateLastLink(blog.url, link, socialNetwork) 
-                         logging.debug("listPosts: %s"% listPosts)
+                        if link:
+                             logging.info("    Updating link %s %s" % 
+                                     (profile, link))
+                             if isinstance(lastLink, list):
+                                 link = link + '\n' + '\n'.join(lastLink)
+                             updateLastLink(blog.url, link, socialNetwork) 
+                             logging.debug("listPosts: %s"% listPosts)
 
             time.sleep(2)
         else:

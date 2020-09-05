@@ -128,6 +128,7 @@ class moduleCache(Content,Queue):
         self.crontab.write()
 
     def addPosts(self, listPosts):
+        print("Adding posts")
         link = ''
         if listPosts:
             self.posts = self.posts + listPosts
@@ -255,7 +256,8 @@ class moduleCache(Content,Queue):
             logging.debug("Updating %s" % self.posts)
             self.updatePostsCache()
             logging.info("Update ... %s" % str(update))
-            if 'text' in update:
+            if ((isinstance(update, str) and ('text' in update))
+                    or (isinstance(update, bytes) and (b'text' in update))):
                 update = update['text']
             if type(update) == tuple:
                 update = update[1]['id']
