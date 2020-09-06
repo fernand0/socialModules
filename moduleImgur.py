@@ -233,17 +233,17 @@ def main():
         img.setUrl(url)
         if 'posts' in config.options(acc):
             img.setPostsType(config.get(acc, 'posts'))
-        print(img.getPostsType())
+        print("Type",img.getPostsType())
         img.setPosts()
-        print(img.getPosts())
+        #print(img.getPosts())
         #import inspect 
         #print(inspect.getmembers('img'))
         #img.publishPost(img.getPosts()[0],img.getPostLink(img.getPosts()[0]))
-        print(dir(img.getPosts()[0]))
-        for method in img.getPosts()[0].__dir__():
-            print(method)
-            #print(img.method())
-        print(img.getPosts()[0].datetime)
+        #print(dir(img.getPosts()[0]))
+        #for method in img.getPosts()[0].__dir__():
+        #    print(method)
+        #    #print(img.method())
+        #print("datetime",img.getPosts()[0].datetime)
         imgs = img.getClient().get_album_images(img.getPosts()[-1].id)
         print("imgs",imgs)
         for iimg in imgs:
@@ -251,7 +251,8 @@ def main():
             print("title",iimg.title)
             print("descr",iimg.description)
             print("name",iimg.name)
-        print(img.extractImages(img.getPosts()[-1]))
+        print(img.extractImages(img.getPosts()[-2]))
+        print(img.getImagesCode(-1))
         sys.exit()
         #print(img.getImages(0))
 
