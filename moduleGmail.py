@@ -4,6 +4,13 @@
 # This module tries to replicate moduleCache and moduleBuffer but with mails
 # stored as Drafts in a Gmail account
 
+# From: https://github.com/gsuitedevs/python-samples/blob/master/gmail/quickstart/quickstart.py
+from __future__ import print_function
+from googleapiclient.discovery import build
+from httplib2 import Http
+from oauth2client import file, client, tools
+
+
 import configparser, os
 import datetime
 import importlib
@@ -96,22 +103,35 @@ class moduleGmail(Content,Queue):
         fileCredStore = self.confName((self.server, self.nick)) 
         fileTokenStore = self.confTokenName((self.server, self.nick)) 
         creds = None
+
         if os.path.exists(fileTokenStore): 
             with open(fileTokenStore, 'rb') as token: 
+                logging.info("Opening {}".format(fileTokenStore))
                 creds = pickle.load(token)
+
+        logging.info("creds {}".format(str(creds)))
+
         if not creds or not creds.valid: 
             if creds and creds.expired and creds.refresh_token: 
                 logging.info("Needs to refresh token GMail")
                 creds.refresh(Request()) 
             else: 
                 logging.info("Needs to re-authorize token GMail")
-                flow = InstalledAppFlow.from_client_secrets_file( 
+
+                try:
+                    flow = InstalledAppFlow.from_client_secrets_file( 
                         fileCredStore, SCOPES, 
                         redirect_uri='urn:ietf:wg:oauth:2.0:oob')
-                creds = flow.run_console(authorization_prompt_message='Please visit this URL: {url}', 
-                        success_message='The auth flow is complete; you may close this window.')
-                # Save the credentials for the next run
+                    creds = flow.run_console(
+                            authorization_prompt_message='Please visit this URL: {url}', 
+                            success_message='The auth flow is complete; you may close this window.')
+                    # Save the credentials for the next run
+                except FileNotFoundError:
+                    print("no")
+                    print(fileCredStore)
+                    sys.exit()
 
+        logging.info("Storing creds")
         with open(fileTokenStore, 'wb') as token:
             pickle.dump(creds, token)
 
@@ -131,7 +151,7 @@ class moduleGmail(Content,Queue):
     def updateLabel(self, label_id, labelName):
         api = self.getClient()
         label_object = {'messageListVisibility': 'show', 
-                'name': labelName, 'labelListVisibility': 'labelShow'}
+                'name': labelName, 'labelListVisibility': 'labelShowIfUnread'}
         return(api.users().labels().update(userId='me', id=label_id,
                 body=label_object).execute())
 
@@ -188,7 +208,7 @@ class moduleGmail(Content,Queue):
             if typePosts == 'drafts':
                 posts = api.users().drafts().list(userId='me').execute() 
             else:
-                posts = api.users().messages().list(userId='me',labelIds=label).execute()
+                posts = api.users().messages().list(userId='me').execute()
         #except client.HttpAccessTokenRefreshError: 
         #    return "Fail"
         except: 
