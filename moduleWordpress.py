@@ -156,6 +156,10 @@ class moduleWordpress(Content,Queue):
                 return("{} - \n https://{}/{}".format(title,
                     self.my_site,
                     resJ['generated_slug']))
+        except KeyError:
+            logging.info("Fail!")
+            logging.info(self.report('KeyError Wordpress', post, link, sys.exc_info()))
+            return(self.report('Wordpress', post, link, sys.exc_info()))
         except:        
             logging.info("Fail!")
             logging.info(self.report('Wordpress', post, link, sys.exc_info()))

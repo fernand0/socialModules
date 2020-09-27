@@ -24,11 +24,13 @@ class moduleLinkedin(Content):
         self.ln = None
 
     def setClient(self, linkedinAC=""):
-        logging.info("    Connecting Linkedin")
-        if True:
+        logging.info("    Connecting Linkedin {}".format(str(linkedinAC)))
+        try:
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssLinkedin')
 
+            if isinstance(linkedinAC, tuple): 
+                linkedinAC = linkedinAC[1][1]
             self.user = linkedinAC    
 
             self.CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY") 
@@ -41,7 +43,7 @@ class moduleLinkedin(Content):
             #self.ACCESS_TOKEN = config.get("Linkedin", "ACCESS_TOKEN")
             self.URN = config.get("Linkedin", "URN")
 
-        else:
+        except:
             logging.warning("Account not configured")
 
     def authorize(self):

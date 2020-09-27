@@ -112,8 +112,8 @@ class Content:
             else:
                 listPosts.append(post)
             print("      Scheduling...")
-            print("       Post %s" % post[0])
-            print("       Link %s" % post[1])
+            print("       - Post: %s" % post[0])
+            print("       - Link: %s" % post[1])
             logging.info("    Scheduling post %s" % post[0])
         return(listPosts)
 
@@ -204,7 +204,7 @@ class Content:
         return(self.program)
  
     def setProgram(self, program):
-        if (len(program)>3) or program.find('\n')>0:
+        if (len(program)>4) or program.find('\n')>0:
             program = program.split('\n')
         self.program = program
         self.setCache()
@@ -380,9 +380,20 @@ class Content:
             else:
                 description = ""
             if description: 
-                text = '{}\n<p><h4>{}</h4></p><p><a href="{}"><img class="alignnone size-full wp-image-3306" src="{}" alt="{} {}" width="776" height="1035" /></a></p>'.format(text,description,url, iimg[0],iimg[1], description)
+                import string
+                if iimg[1].endswith(' ') or iimg[1].endswith('\xa0'): 
+                    # \xa0 is actually non-breaking space in Latin1 (ISO
+                    # 8859-1), also chr(160). 
+                    # https://stackoverflow.com/questions/10993612/how-to-remove-xa0-from-string-in-python
+                    title = iimg[1][:-1]
+                else:
+                    title = iimg[1]
+                if title[-1] in string.punctuation: 
+                    text = '{}\n<p><h4>{}</h4></p><p><a href="{}"><img class="alignnone size-full wp-image-3306" src="{}" alt="{} {}" width="776" height="1035" /></a></p>'.format(text,description,url, iimg[0],title, description)
+                else:
+                    text = '{}\n<p><h4>{}</h4></p><p><a href="{}"><img class="alignnone size-full wp-image-3306" src="{}" alt="{}. {}" width="776" height="1035" /></a></p>'.format(text,description,url, iimg[0],title, description)
             else: 
-                text = '{}\n<p><a href="{}"><img class="alignnone size-full wp-image-3306" src="{}" alt="{} {}" width="776" height="1035" /></a></p>'.format(text,url, iimg[0],iimg[1], description)
+                text = '{}\n<p><a href="{}"><img class="alignnone size-full wp-image-3306" src="{}" alt="{} {}" width="776" height="1035" /></a></p>'.format(text,url, iimg[0],title, description)
         return(text)
 
 

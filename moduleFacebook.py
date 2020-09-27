@@ -29,7 +29,7 @@ class moduleFacebook(Content,Queue):
         self.service = None
 
     def setClient(self, facebookAC='me'):
-        logging.info("     Connecting Facebook %s"%str(facebookAC))
+        logging.info("     Connecting Facebook {}".format(str(facebookAC)))
         self.service = 'Facebook'
         try:
             config = configparser.ConfigParser()
@@ -71,7 +71,6 @@ class moduleFacebook(Content,Queue):
                 else: 
                     # Publishing as me 
                     self.page = facebookAC 
-                    logging.info("Page: {}".format(self.page))
 
     def getClient(self):
         return self.fc
