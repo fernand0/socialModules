@@ -96,6 +96,7 @@ class moduleImgur(Content,Queue):
         # This method publishes (as public post) some gallery that is in draft
         # mode
         logging.info("     Publishing in Imgur...")
+        logging.info("     Publishing in Imgur...{}".format(str(post)))
         api = self.getClient() 
         if True: 
             res = api.share_on_imgur(idPost, post, terms=0)            

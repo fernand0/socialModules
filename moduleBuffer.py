@@ -238,6 +238,7 @@ class moduleBuffer(Content,Queue):
                     entry = title
                     self.getProfile().updates.new(entry, media=myMedia)
             except: 
+                print("Buffer posting failed!") 
                 logging.warning("Buffer posting failed!") 
                 logging.warning("Unexpected error: %s"% sys.exc_info()[0]) 
                 logging.warning("Unexpected error: %s"% sys.exc_info()[1]) 

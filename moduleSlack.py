@@ -88,9 +88,9 @@ class moduleSlack(Content,Queue):
         return(self.getPostLink(post))
 
     def getPostTitle(self, post):
-        if 'attachments' in post:
+        if ('attachments' in post) and ('title' in post['attachments'][0]):
             return(post['attachments'][0]['title'])
-        else:
+        elif 'text' in post:
             text = post['text']
             if text.startswith('<'): 
                 title = text.split('|')[1]
@@ -102,7 +102,9 @@ class moduleSlack(Content,Queue):
             else:
                 pos = text.find('<')
                 title=text[:pos]
-            return(title)                
+            return(title)
+        else:
+            return("No title")
 
     def getPostLink(self, post):
         if 'attachments' in post:
