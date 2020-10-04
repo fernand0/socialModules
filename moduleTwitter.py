@@ -66,6 +66,7 @@ class moduleTwitter(Content,Queue):
             except:
                 logging.warning("Twitter authentication failed!")
                 logging.warning("Unexpected error:", sys.exc_info()[0])
+                return("Fail")
         except:
             logging.warning("Account not configured")
             logging.warning("Unexpected error:", sys.exc_info()[0])
