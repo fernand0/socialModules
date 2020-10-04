@@ -87,7 +87,7 @@ class moduleGmail(Content,Queue):
 
         try:
             creds = self.authorize()
-            service = build('gmail', 'v1', credentials=creds)
+            service = build('gmail', 'v1', credentials=creds, cache_discovery=False)
             self.client = service
         except:
             logging.warning("Problem with authorization")
@@ -106,10 +106,9 @@ class moduleGmail(Content,Queue):
 
         if os.path.exists(fileTokenStore): 
             with open(fileTokenStore, 'rb') as token: 
-                logging.info("Opening {}".format(fileTokenStore))
+                logging.debug("Opening {}".format(fileTokenStore))
                 creds = pickle.load(token)
 
-        logging.info("creds {}".format(str(creds)))
 
         if not creds or not creds.valid: 
             if creds and creds.expired and creds.refresh_token: 
@@ -191,7 +190,7 @@ class moduleGmail(Content,Queue):
                                                 body=list_labels).execute()
         return(message)
         
-    def setPosts(self, label=None, mode=''):
+    def setPosts(self, label=None, mode=''): 
         logging.info("  Setting posts")
         api = self.getClient()
 
@@ -237,7 +236,11 @@ class moduleGmail(Content,Queue):
                    self.drafts.insert(0, message) 
                else: 
                    self.posts.insert(0, message) 
-        logging.info("drafts {}".format(str(self.drafts)))
+
+        if typePosts == 'drafts': 
+           logging.debug("drafts {}".format(str(self.drafts))) 
+        else:
+           logging.debug("posts {}".format(str(self.posts)))
         return "OK"
 
     def confName(self, acc):
@@ -588,7 +591,12 @@ def main():
     config = configparser.ConfigParser() 
     config.read(CONFIGDIR + '/.rssBlogs')
 
-    accounts = ['Blog13','Blog14','Blog15']
+    accounts = ['Blog13','Blog14','Blog15','Blog24']
+    # [Blog15]
+    # url:test@gmail.com
+    # Gmail:test@gmail.com
+    # posts:drafts
+
     for acc in accounts:
         print("Account: {}".format(acc))
         url = config.get(acc, 'url')
