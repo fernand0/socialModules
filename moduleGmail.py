@@ -92,6 +92,7 @@ class moduleGmail(Content,Queue):
         except:
             logging.warning("Problem with authorization")
             logging.warning("Unexpected error:", sys.exc_info()[0])
+            return("Fail")
 
     def authorize(self):
         # based on Code from
@@ -613,7 +614,8 @@ def main():
         print("Test setPosts (posts)")
         res = api.setPosts()
         print("Test getPosts")
-        print(api.getPosts())
+        for post in api.getPosts():
+            print(post)
 
     sys.exit()
     print(api.getPosts())
@@ -641,7 +643,7 @@ def main():
     api.editPost(pp, api.getPosts(), "M17", 'Prueba.')
 
     logging.basicConfig(#filename='example.log',
-                            level=logging.DEBUG,format='%(asctime)s %(message)s')
+            level=logging.DEBUG,format='%(asctime)s %(message)s')
 
     print("profiles")
     print(api.profile)
