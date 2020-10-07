@@ -98,12 +98,12 @@ class moduleImgur(Content,Queue):
         logging.info("     Publishing in Imgur...")
         logging.info("     Publishing in Imgur...{}".format(str(post)))
         api = self.getClient() 
-        if True: 
+        try: 
             res = api.share_on_imgur(idPost, post, terms=0)            
             logging.info("      Res: %s" % res) 
             if res: 
                 return(OK) 
-        else: 
+        except: 
             logging.info(self.report('Imgur', post, idPost, sys.exc_info()))
             return(self.report('Imgur', post, idPost, sys.exc_info()))
 
@@ -112,9 +112,10 @@ class moduleImgur(Content,Queue):
     def publish(self, j):
         logging.info("Publishing %d"% j)                
         logging.info("servicename %s" %self.service)
-        idPost = self.posts[j].id
-        title = self.getPostTitle(self.posts[j])
-        idPost = self.getPostId(self.posts[j])
+        (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content, links, comment) = self.obtainPostData(j)
+        logging.info("Publishing {} {}".format(title, link))
+        idPost = link
+        logging.info("Publishing {} {}".format(title, idPost))
         
         api = self.getClient()
         try:
@@ -122,6 +123,9 @@ class moduleImgur(Content,Queue):
             logging.info("Res: %s" % res)
             return(res)
         except:
+            post = title
+            link = idPost
+            logging.info(self.report('Imgur', post, link, sys.exc_info()))
             return(FAIL)
 
         return("%s"% title)
@@ -225,21 +229,38 @@ def main():
     config.read(CONFIGDIR + '/.rssBlogs')
 
     accounts = ["Blog20", "Blog21"]
+    #accounts = ["Blog21"]
     for acc in accounts:
         print("Account: {}".format(acc))
         img = moduleImgur.moduleImgur()
         url = config.get(acc, 'url')
         name = config.get(acc, 'imgur')
+        cache = config.get(acc, 'cache')
+        if cache:
+            user = config.get(acc, cache)
+        print(cache, user)
         img.setClient(name)
         img.setUrl(url)
         if 'posts' in config.options(acc):
             img.setPostsType(config.get(acc, 'posts'))
         print("Type",img.getPostsType())
         img.setPosts()
-        #print(img.getPosts())
-        #import inspect 
-        #print(inspect.getmembers('img'))
-        #img.publishPost(img.getPosts()[0],img.getPostLink(img.getPosts()[0]))
+        print(img.getPosts())
+        if cache == 'wordpress': 
+            import moduleWordpress 
+            wp = moduleWordpress.moduleWordpress() 
+            wp.setClient(user)
+            listPosts = img.getNumPostsData(1,3)
+            print(listPosts[0])
+            (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content, links, comment) = listPosts[0]
+            print("title {}".format(title))
+            print("link {}".format(link))
+            print("comment {}".format(comment))
+            print("tags {}".format(links))
+            continue
+            wp.publishPost(title, link, comment, tags=links)
+
+        #img.publishPost(img.getPosts()[5],img.getPostLink(img.getPosts()[0]))
         #print(dir(img.getPosts()[0]))
         #for method in img.getPosts()[0].__dir__():
         #    print(method)
@@ -254,7 +275,8 @@ def main():
             print("name",iimg.name)
         print(img.extractImages(img.getPosts()[-2]))
         print(img.getImagesCode(-1))
-        sys.exit()
+        continue 
+
         #print(img.getImages(0))
 
 

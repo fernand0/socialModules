@@ -119,27 +119,28 @@ class moduleForum(Content,Queue):
         
                 time.sleep(1)
         
-        self.posts = []
-        self.lastId = listId[-1]
-        listId.sort()
-        for i in listId[-self.max:]:
-            self.posts.append(posts[i])
+        if listId:
+            self.posts = []
+            self.lastId = listId[-1]
+            listId.sort()
+            for i in listId[-self.max:]:
+                self.posts.append(posts[i])
 
-        lastLink, lastTime = checkLastLink(self.url)
-        #for i, post in enumerate(self.posts):
-        #    print("{}) {}".format(i, post))
-        #print(lastLink)
-        pos = self.getLinkPosition(lastLink)
-        #print(self.posts[pos][1])
-        #print('>>>',pos, len(self.posts))
-        if (pos  == len(self.posts)):# and (str(lastLink) != self.posts[pos][1]):
-            print('si')
-            pos = 0
-        if pos < len(self.posts) - 1:
-            for i, post in enumerate(self.posts[pos:]):
-                self.posts[pos+i][0] = '> {}\n{}'.format(self.posts[pos+i][0],
-                        self.posts[pos+i][1])
-            self.posts = self.posts[pos:]
+            lastLink, lastTime = checkLastLink(self.url)
+            #for i, post in enumerate(self.posts):
+            #    print("{}) {}".format(i, post))
+            #print(lastLink)
+            pos = self.getLinkPosition(lastLink)
+            #print(self.posts[pos][1])
+            #print('>>>',pos, len(self.posts))
+            if (pos  == len(self.posts)):# and (str(lastLink) != self.posts[pos][1]):
+                print('si')
+                pos = 0
+            if pos < len(self.posts) - 1:
+                for i, post in enumerate(self.posts[pos:]):
+                    self.posts[pos+i][0] = '> {}\n{}'.format(self.posts[pos+i][0],
+                            self.posts[pos+i][1])
+                self.posts = self.posts[pos:]
         
     def getPosts(self):
         return self.posts
