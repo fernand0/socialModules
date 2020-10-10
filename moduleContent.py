@@ -72,7 +72,7 @@ class Content:
 
     def getPosts(self):
         if hasattr(self, 'getPostsType'): 
-            logging.info("  Posts type {}".format(self.getPostsType()))
+            logging.debug("  Posts type {}".format(self.getPostsType()))
             if self.getPostsType() == 'drafts':
                 posts = self.getDrafts()
             else:
