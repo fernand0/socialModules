@@ -232,15 +232,6 @@ class moduleImgur(Content,Queue):
                 if not (post[1] in lastLink): 
                     # Only posts that have not been posted previously. We
                     # check by link (post[1]) We don't use this code here.
-                    #
-                    # We were using it for publishing several images in
-                    # Instagram, one each time.
-                    #if isinstance(post[3], list):
-                    #    for imgL in post[3]:
-                    #        myPost = list(post)
-                    #        myPost[3] = imgL
-                    #        listPosts.append(tuple(myPost))
-                    #else:
                     listPosts.append(post)
  
                     print("      Scheduling...")
@@ -250,14 +241,11 @@ class moduleImgur(Content,Queue):
 
                     j = j + 1
                     if j == num:
-                        print("fin")
                         break
         else: 
-            socialNetwork = ('imgur', self.getSocialNetworks()['imgur'])
-            #lastLink, lastTime = checkLastLink(url, socialNetwork)
+            # Here we can use the general method, starting at the first
+            # post
             i = 1 
-
-            # Here we can use the general method
             listPosts = Content.getNumPostsData(self, num, i)
 
         return(listPosts)
