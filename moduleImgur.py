@@ -220,11 +220,10 @@ class moduleImgur(Content,Queue):
     def getNumPostsData(self, num, i): 
         listPosts = []
         posts = self.getPosts()
-
-        url = self.getUrl()
         if 'wordpress' in self.getSocialNetworks(): 
             # Are you sure?
             socialNetwork = ('wordpress', self.getSocialNetworks()['wordpress'])
+            url = self.getUrl()
             lastLink, lastTime = checkLastLink(url, socialNetwork)
             j = 0
             for i in range(len(posts)):
@@ -238,12 +237,11 @@ class moduleImgur(Content,Queue):
                     print("       - Post: %s" % post[0])
                     print("       - Link: %s" % post[1])
                     logging.info("    Scheduling post %s" % post[0])
-
                     j = j + 1
                     if j == num:
                         break
         else: 
-            # Here we can use the general method, starting at the first
+            # here we can use the general method, starting at the first
             # post
             i = 1 
             listPosts = Content.getNumPostsData(self, num, i)
@@ -268,7 +266,6 @@ def main():
         img = moduleImgur.moduleImgur()
         section = acc
         img.setSocialNetworks(config, section)
-        print(img.getSocialNetworks())
         url = config.get(acc, 'url')
         img.setUrl(url)
         name = config.get(acc, 'imgur')
@@ -297,6 +294,13 @@ def main():
             wp.setClient(user)
             continue
             wp.publishPost(title, link, comment, tags=links)
+            continue
+        else:
+            socialNetwork = ('imgur', img.getSocialNetworks()['imgur'])
+            lastLink, lastTime = checkLastLink(url, socialNetwork)
+            i = 1
+            listPosts = img.getNumPostsData(1,i)
+            print(listPosts)
             continue
 
 
