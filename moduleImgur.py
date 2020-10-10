@@ -254,8 +254,10 @@ class moduleImgur(Content,Queue):
                         break
         else: 
             socialNetwork = ('imgur', self.getSocialNetworks()['imgur'])
-            lastLink, lastTime = checkLastLink(url, socialNetwork)
+            #lastLink, lastTime = checkLastLink(url, socialNetwork)
             i = 1 
+
+            # Here we can use the general method
             listPosts = Content.getNumPostsData(self, num, i)
 
         return(listPosts)
