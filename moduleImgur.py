@@ -220,7 +220,8 @@ class moduleImgur(Content,Queue):
     def getNumPostsData(self, num, i): 
         listPosts = []
         posts = self.getPosts()
-        if 'wordpress' in self.getSocialNetworks(): 
+        #if 'wordpress' in self.getSocialNetworks(): 
+        if self.getPostsType() == 'posts':
             # Are you sure?
             socialNetwork = ('wordpress', self.getSocialNetworks()['wordpress'])
             url = self.getUrl()
@@ -285,7 +286,7 @@ def main():
         img.setPosts()
         i = 1
         listPosts = img.getNumPostsData(1,i)
-        print("listposts")
+        print("listPosts:")
         print(listPosts)
         continue
         if cache == 'wordpress': 
