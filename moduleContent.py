@@ -72,7 +72,7 @@ class Content:
 
     def getPosts(self):
         if hasattr(self, 'getPostsType'): 
-            logging.info("  Posts type {}".format(self.getPostsType()))
+            logging.debug("  Posts type {}".format(self.getPostsType()))
             if self.getPostsType() == 'drafts':
                 posts = self.getDrafts()
             else:
@@ -95,6 +95,15 @@ class Content:
     def getLink(self, i):
         post = self.getPost(i)
         return(self.getPostLink(post))
+
+    def splitPost(self, post): 
+        splitListPosts = []
+        for imgL in post[3]: 
+            myPost = list(post) 
+            myPost[3] = imgL 
+            splitListPosts.append(tuple(myPost))
+
+        return (splitListPosts)
 
     def getNumPostsData(self, num, i): 
         listPosts = []

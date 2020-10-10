@@ -77,7 +77,7 @@ class moduleImgur(Content,Queue):
         posts = self.getPosts()
         if i < len(posts):
             post = posts[i]
-            logging.info("Post: %s"% post)
+            logging.debug("Post: %s"% post)
             theTitle = self.getPostTitle(post)
             theLink = self.getPostLink(post)
             theId = self.getPostId(post)
@@ -217,6 +217,50 @@ class moduleImgur(Content,Queue):
             res.append((urlImg,title, description, tags))
         return res
 
+    def getNumPostsData(self, num, i): 
+        listPosts = []
+        posts = self.getPosts()
+
+        url = self.getUrl()
+        if 'wordpress' in self.getSocialNetworks(): 
+            # Are you sure?
+            socialNetwork = ('wordpress', self.getSocialNetworks()['wordpress'])
+            lastLink, lastTime = checkLastLink(url, socialNetwork)
+            j = 0
+            for i in range(len(posts)):
+                post = self.obtainPostData(i) 
+                if not (post[1] in lastLink): 
+                    # Only posts that have not been posted previously. We
+                    # check by link (post[1]) We don't use this code here.
+                    #
+                    # We were using it for publishing several images in
+                    # Instagram, one each time.
+                    #if isinstance(post[3], list):
+                    #    for imgL in post[3]:
+                    #        myPost = list(post)
+                    #        myPost[3] = imgL
+                    #        listPosts.append(tuple(myPost))
+                    #else:
+                    listPosts.append(post)
+ 
+                    print("      Scheduling...")
+                    print("       - Post: %s" % post[0])
+                    print("       - Link: %s" % post[1])
+                    logging.info("    Scheduling post %s" % post[0])
+
+                    j = j + 1
+                    if j == num:
+                        print("fin")
+                        break
+        else: 
+            socialNetwork = ('imgur', self.getSocialNetworks()['imgur'])
+            lastLink, lastTime = checkLastLink(url, socialNetwork)
+            i = 1 
+            listPosts = Content.getNumPostsData(self, num, i)
+
+        return(listPosts)
+
+
 def main(): 
 
     logging.basicConfig(stream=sys.stdout, 
@@ -229,15 +273,22 @@ def main():
     config.read(CONFIGDIR + '/.rssBlogs')
 
     accounts = ["Blog20", "Blog21"]
-    #accounts = ["Blog21"]
     for acc in accounts:
         print("Account: {}".format(acc))
         img = moduleImgur.moduleImgur()
+        section = acc
+        img.setSocialNetworks(config, section)
+        print(img.getSocialNetworks())
         url = config.get(acc, 'url')
+        img.setUrl(url)
         name = config.get(acc, 'imgur')
-        cache = config.get(acc, 'cache')
-        if cache:
+
+        if ('cache' in config.options(section)): 
+            img.setProgram(config.get(section, "cache"))
+            cache = config.get(acc, 'cache')
             user = config.get(acc, cache)
+        img.setCache()
+        print(img.getCache())
         print(cache, user)
         img.setClient(name)
         img.setUrl(url)
@@ -245,21 +296,21 @@ def main():
             img.setPostsType(config.get(acc, 'posts'))
         print("Type",img.getPostsType())
         img.setPosts()
-        print(img.getPosts())
+        i = 1
+        listPosts = img.getNumPostsData(1,i)
+        print("listposts")
+        print(listPosts)
+        continue
         if cache == 'wordpress': 
             import moduleWordpress 
             wp = moduleWordpress.moduleWordpress() 
             wp.setClient(user)
-            listPosts = img.getNumPostsData(1,3)
-            print(listPosts[0])
-            (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content, links, comment) = listPosts[0]
-            print("title {}".format(title))
-            print("link {}".format(link))
-            print("comment {}".format(comment))
-            print("tags {}".format(links))
             continue
             wp.publishPost(title, link, comment, tags=links)
+            continue
 
+
+        sys.exit()
         #img.publishPost(img.getPosts()[5],img.getPostLink(img.getPosts()[0]))
         #print(dir(img.getPosts()[0]))
         #for method in img.getPosts()[0].__dir__():
