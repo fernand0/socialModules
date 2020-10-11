@@ -231,10 +231,6 @@ class moduleImgur(Content,Queue):
                     post = self.obtainPostData(i) 
                     listPosts.append(post)
  
-                    print("      Scheduling...")
-                    print("       - Post: %s" % post[0])
-                    print("       - Link: %s" % post[1])
-                    logging.info("    Scheduling post %s" % post[0])
                     j = j + 1
                     if j == num:
                         break

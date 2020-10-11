@@ -120,10 +120,6 @@ class Content:
                     listPosts.append(tuple(myPost))
             else:
                 listPosts.append(post)
-            print("      Scheduling...")
-            print("       - Post: %s" % post[0])
-            print("       - Link: %s" % post[1])
-            logging.info("    Scheduling post %s" % post[0])
         return(listPosts)
 
     def getDrafts(self):

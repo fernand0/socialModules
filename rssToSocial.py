@@ -315,8 +315,14 @@ def main():
 
                         logging.debug("   Profile %s"% profile)
                         link = ""
-                        listPosts = blog.getNumPostsData(num, i, lastLink)
+                        listPosts = blog.getNumPostsData(num, i, lastLink) 
 
+                        print("      Scheduling...") 
+                        print("       - Posts: {}".format(post))
+                        [ print("       - Posts: {}".format(post[0]))
+                                for post in listPosts ]
+                        [ logging.info("    Scheduling posts {}".format(post))
+                                for post in listPosts ]
                     if simmulate:
                         print("Simmulation {}".format(str(listPosts))) 
                     else: 
