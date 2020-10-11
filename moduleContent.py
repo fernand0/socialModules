@@ -105,7 +105,7 @@ class Content:
 
         return (splitListPosts)
 
-    def getNumPostsData(self, num, i): 
+    def getNumPostsData(self, num, i, lastLink=None): 
         listPosts = []
         for j in range(num, 0, -1): 
             logging.debug("j, i %d - %d"% (j,i))

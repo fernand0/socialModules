@@ -217,21 +217,18 @@ class moduleImgur(Content,Queue):
             res.append((urlImg,title, description, tags))
         return res
 
-    def getNumPostsData(self, num, i): 
+    def getNumPostsData(self, num, i, lastLink): 
         listPosts = []
         posts = self.getPosts()
-        #if 'wordpress' in self.getSocialNetworks(): 
         if self.getPostsType() == 'posts':
-            # Are you sure?
-            socialNetwork = ('wordpress', self.getSocialNetworks()['wordpress'])
-            url = self.getUrl()
-            lastLink, lastTime = checkLastLink(url, socialNetwork)
             j = 0
-            for i in range(len(posts)):
-                post = self.obtainPostData(i) 
-                if not (post[1] in lastLink): 
+            posts = self.getPosts()
+            for i in range(min(20,len(posts))):
+                link = self.getPostLink(posts[i])
+                if not (link in lastLink): 
                     # Only posts that have not been posted previously. We
                     # check by link (post[1]) We don't use this code here.
+                    post = self.obtainPostData(i) 
                     listPosts.append(post)
  
                     print("      Scheduling...")
@@ -245,7 +242,7 @@ class moduleImgur(Content,Queue):
             # here we can use the general method, starting at the first
             # post
             i = 1 
-            listPosts = Content.getNumPostsData(self, num, i)
+            listPosts = Content.getNumPostsData(self, num, i, lastLink)
 
         return(listPosts)
 
@@ -284,8 +281,12 @@ def main():
             img.setPostsType(config.get(acc, 'posts'))
         print("Type",img.getPostsType())
         img.setPosts()
+        lastLink = None
+        if 'wordpress' in img.getSocialNetworks():
+            socialNetwork = ('wordpress', img.getSocialNetworks()['wordpress'])
+            lastLink, lastTime = checkLastLink(url, socialNetwork)
         i = 1
-        listPosts = img.getNumPostsData(1,i)
+        listPosts = img.getNumPostsData(1,i, lastLink)
         print("listPosts:")
         print(listPosts)
         continue

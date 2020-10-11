@@ -315,7 +315,7 @@ def main():
 
                         logging.debug("   Profile %s"% profile)
                         link = ""
-                        listPosts = blog.getNumPostsData(num, i)
+                        listPosts = blog.getNumPostsData(num, i, lastLink)
 
                     if simmulate:
                         print("Simmulation {}".format(str(listPosts))) 
