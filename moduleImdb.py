@@ -157,6 +157,12 @@ class moduleImdb(Content,Queue):
             average = mySearch.results[0]['vote_average'] 
             overview = mySearch.results[0]['overview'] 
             movie = tmdb.Movies(mySearch.results[0]['id']) 
+            director = None
+            if 'crew' in movie.credits():
+                for cred in movie.credits()['crew']:
+                    if cred['department'] == 'Directing':
+                        director = cred['name']
+                        break
             genreList=[] 
             for genre in movie.info()['genres']: 
                 genreList.append(genre['name']) 
@@ -172,8 +178,13 @@ class moduleImdb(Content,Queue):
             logging.debug("Release: {}".format(release))
             logging.debug("Vote: {}".format(movie.info()['vote_average']))
             logging.debug('Cast: {}'.format(', '.join(cast)))
-            postMore = (average, ', '.join(genreList), 
-                    overview, release, ', '.join(cast)) 
+            if director:
+                logging.debug('Director: {}'.format(director))
+                postMore = (average, ', '.join(genreList), 
+                    overview, release,'[{}] '.format(director)+ ', '.join(cast)) 
+            else:
+                postMore = (average, ', '.join(genreList), 
+                    overview, release,', '.join(cast)) 
 
         return(postMore)
 
@@ -213,16 +224,16 @@ class moduleImdb(Content,Queue):
 def main():
 
     logging.basicConfig(stream=sys.stdout, 
-            level=logging.INFO, 
+            level=logging.DEBUG, 
             format='%(asctime)s %(message)s')
 
     config = configparser.ConfigParser()
     config.read(CONFIGDIR+'/.rssBlogs')
 
     url = config.get('Blog23', 'url')
-    import testModuleImdb
+    import moduleImdb
 
-    site = testModuleImdb.moduleImdb()
+    site = moduleImdb.moduleImdb()
     site.setClient((url, None))
     print("Testing set posts")
     site.setPosts()
@@ -230,6 +241,8 @@ def main():
     print(site.getPosts())
     for i,post in enumerate(site.getPosts()):
         print(site.obtainPostData(i))
+
+    print("post",site.setPostMoreData(site.getPosts()[0]))
 
     #print(site.getPosts()[2])
     #print(site.setPostMoreData(2))
