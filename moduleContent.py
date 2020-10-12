@@ -113,13 +113,7 @@ class Content:
             if (i < 0):
                 break
             post = self.obtainPostData(i, False)
-            if isinstance(post[3], list):
-                for imgL in post[3]:
-                    myPost = list(post)
-                    myPost[3] = imgL
-                    listPosts.append(tuple(myPost))
-            else:
-                listPosts.append(post)
+            listPosts.append(post)
         return(listPosts)
 
     def getDrafts(self):
