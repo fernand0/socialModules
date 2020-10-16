@@ -117,7 +117,10 @@ class Content:
         return(listPosts)
 
     def getDrafts(self):
-        return self.drafts
+        if hasattr(self, 'drafts'): 
+            return self.drafts
+        else:
+            return None
 
     def setPostsType(self, postsType):
         self.postsType = postsType

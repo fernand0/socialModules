@@ -273,6 +273,7 @@ def main():
                 logging.debug("  Service %s Lenmax %d" % (profile, lenMax))
 
                 num = bufferMax - lenMax
+                
 
                 lastLink, lastTime = checkLastLink(url, socialNetwork)
                 if hasattr(blog, 'getPostsType'): 

@@ -131,19 +131,20 @@ def publishDirect(blog, socialNetwork, i):
             api.setClient(nick) 
             if profile in ['facebook']: 
                 pos1= comment.find('http://fernand0.blogalia')
-                pos2 = comment.find(' ',pos1+1)
-                pos3 = comment.find('\n',pos1+1)
-                pos2 = min(pos2, pos3)
-                logging.info(comment)
-                comment = "{}(Enlace censurado por Facebook){}".format(
-                        comment[:pos1-1],
-                        comment[pos2:])
+                if pos1>=0:
+                    pos2 = comment.find(' ',pos1+1)
+                    pos3 = comment.find('\n',pos1+1)
+                    pos2 = min(pos2, pos3)
+                    logging.info(comment)
+                    comment = "{}(Enlace censurado por Facebook){}".format(
+                            comment[:pos1-1],
+                            comment[pos2:])
 
-                logging.info(comment)
-                #url = link
-                #apiurl = "http://tinyurl.com/api-create.php?url=" 
-                #tinyurl = urllib.request.urlopen(apiurl + url).read() 
-                #link = tinyurl.decode("utf-8")
+                    logging.info(comment)
+                    #url = link
+                    #apiurl = "http://tinyurl.com/api-create.php?url=" 
+                    #tinyurl = urllib.request.urlopen(apiurl + url).read() 
+                    #link = tinyurl.decode("utf-8")
             #print(link)
             result = api.publishPost(title, link, comment) 
             logging.debug(result) 

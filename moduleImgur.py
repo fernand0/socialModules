@@ -220,12 +220,14 @@ class moduleImgur(Content,Queue):
     def getNumPostsData(self, num, i, lastLink): 
         listPosts = []
         posts = self.getPosts()
+        print("len",len(posts))
         if self.getPostsType() == 'posts':
             j = 0
             posts = self.getPosts()
             for i in range(min(20,len(posts))):
-                link = self.getPostLink(posts[i])
-                if not (link in lastLink): 
+                idPost = self.getPostId(posts[i])
+                title = self.getPostTitle(posts[i])
+                if not (idPost in lastLink): 
                     # Only posts that have not been posted previously. We
                     # check by link (post[1]) We don't use this code here.
                     post = self.obtainPostData(i) 
@@ -281,6 +283,8 @@ def main():
         if 'wordpress' in img.getSocialNetworks():
             socialNetwork = ('wordpress', img.getSocialNetworks()['wordpress'])
             lastLink, lastTime = checkLastLink(url, socialNetwork)
+
+            
         i = 1
         listPosts = img.getNumPostsData(1,i, lastLink)
         print("listPosts:")

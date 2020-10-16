@@ -73,10 +73,13 @@ class moduleSlack(Content,Queue):
         #history = self.sc.api_call( "channels.history", count=1000, channel=theChannel)
         #print(history)
         # Updating to the conversations API
-        history = self.sc.api_call( "conversations.history", count=1000, channel=theChannel)
-        if 'messages' in history:
-            self.posts = history['messages']
-        else:
+        try:
+            history = self.sc.api_call( "conversations.history", count=1000, channel=theChannel)
+            if 'messages' in history:
+                self.posts = history['messages']
+            else:
+                self.posts = []
+        except:
             self.posts = []
 
     def getTitle(self, i):
