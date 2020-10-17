@@ -354,9 +354,14 @@ def main():
                              logging.info("    Updating link %s %s" % 
                                      (profile, link))
                              if isinstance(lastLink, list):
+                                 print(lastLink)
+                                 link = '\n'.join([ "{}".format (post[1]) for post in listPosts])
                                  link = link + '\n' + '\n'.join(lastLink)
+                             print(link)
+
                              updateLastLink(blog.url, link, socialNetwork) 
                              logging.debug("listPosts: %s"% listPosts)
+                             sys.exit()
 
             time.sleep(2)
         else:
