@@ -361,7 +361,6 @@ def main():
 
                              updateLastLink(blog.url, link, socialNetwork) 
                              logging.debug("listPosts: %s"% listPosts)
-                             sys.exit()
 
             time.sleep(2)
         else:
