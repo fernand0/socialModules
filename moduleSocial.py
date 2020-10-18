@@ -158,7 +158,7 @@ def publishDirect(blog, socialNetwork, i):
                         logging.info("Posting failed") 
                 elif result.find('Bad Request')>=0: 
                     link='' 
-                        logging.info("Posting failed") 
+                    logging.info("Posting failed") 
     return link
 
 def publishDelay(blog, socialNetwork, numPosts, timeSlots): 

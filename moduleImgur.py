@@ -224,7 +224,7 @@ class moduleImgur(Content,Queue):
             j = 0
             posts = self.getPosts()
             for i in range(min(20,len(posts))):
-                link = self.getPostLink(posts[i])
+                link = self.getPostId(posts[i])
                 if not (link in lastLink): 
                     # Only posts that have not been posted previously. We
                     # check by link (post[1]) We don't use this code here.
@@ -255,6 +255,7 @@ def main():
     config.read(CONFIGDIR + '/.rssBlogs')
 
     accounts = ["Blog20", "Blog21"]
+    accounts = ["Blog21"]
     for acc in accounts:
         print("Account: {}".format(acc))
         img = moduleImgur.moduleImgur()
@@ -281,8 +282,9 @@ def main():
         if 'wordpress' in img.getSocialNetworks():
             socialNetwork = ('wordpress', img.getSocialNetworks()['wordpress'])
             lastLink, lastTime = checkLastLink(url, socialNetwork)
+        print(lastLink)
         i = 1
-        listPosts = img.getNumPostsData(1,i, lastLink)
+        listPosts = img.getNumPostsData(5,i, lastLink)
         print("listPosts:")
         print(listPosts)
         continue
