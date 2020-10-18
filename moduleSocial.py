@@ -157,7 +157,7 @@ def publishDirect(blog, socialNetwork, i):
                         link='' 
                         logging.info("Posting failed") 
                 elif result.find('Bad Request')>=0: 
-                        link='' 
+                    link='' 
                         logging.info("Posting failed") 
     return link
 
@@ -220,6 +220,9 @@ def publishDelay(blog, socialNetwork, numPosts, timeSlots):
             if isinstance(result, str):
                 if result[:4]=='Fail':
                     link=''
+                elif result[:21] == 'Wordpress API expired':
+                    print(" [d] Not published: %s - %s" % (result, 'Fail'))
+                    result = 'Fail!'
                 else: 
                     print(" [d] Published: %s - %s" % (result, 'OK'))
                     result = 'OK'
