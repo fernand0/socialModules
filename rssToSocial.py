@@ -299,8 +299,7 @@ def main():
                         (bufferMax, lenMax, num)) 
 
                 if ((not nowait) and 
-                        (hours and 
-                            (((time.time() - lastTime) 
+                        (hours and (((time.time() - lastTime) 
                                 - round(float(hours)*60*60)) < 0))): 
                     logging.info("  Not publishing because time restriction") 
                     print("     Not publishing because time restriction (Last time: %s)"% time.ctime(lastTime)) 
@@ -341,7 +340,6 @@ def main():
                             link = blog.cache[socialNetwork].addPosts(listPosts)
 
                             time.sleep(1)
-                            print(link)
                             delayedBlogs.append((blog, socialNetwork, 1, timeSlots))
 
 
@@ -357,7 +355,6 @@ def main():
                                  print(lastLink)
                                  link = '\n'.join([ "{}".format (post[1]) for post in listPosts])
                                  link = link + '\n' + '\n'.join(lastLink)
-                             print(link)
 
                              updateLastLink(blog.url, link, socialNetwork) 
                              logging.debug("listPosts: %s"% listPosts)
