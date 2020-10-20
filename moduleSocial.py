@@ -209,10 +209,8 @@ def publishDelay(blog, socialNetwork, numPosts, timeSlots):
                 if profile in ['wordpress']: 
                     result = api.publishPost(title, link, comment, tags=links)
                 else: 
-                    logger.info("tt {} {}".format(title, link))
                     result = api.publishPost(title, link, comment)
-
-                    logger.info("    Publishing in: {}".format(result))
+                logger.info("      Res: {}".format(result))
             except:
                 logging.warning("Some problem in {}".format(socialNetwork[0].capitalize())) 
                 logging.warning("Unexpected error:", sys.exc_info()[0]) 
@@ -237,9 +235,9 @@ def publishDelay(blog, socialNetwork, numPosts, timeSlots):
         if j+1 < numPosts:
             logger.info("Time: %s Waiting ... %.2f minutes to schedule next post in %s" % (time.asctime(), tSleep2/60, socialNetwork[0]))
             time.sleep(tSleep2) 
-        logger.info("    %s -> %s: Finished" % 
-                (urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0],
-                    socialNetwork[0].capitalize()))
+        logger.info("    Finished: {} -> {}".format(
+            (urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0], 
+                socialNetwork[0].capitalize()))
         #logger.info("    %s: Finished" % (blog.getUrl()))
         print(" [d] Finished in: %s at %s" % (socialNetwork[0].capitalize(), 
             time.asctime()))

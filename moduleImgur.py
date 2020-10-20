@@ -16,6 +16,9 @@ class moduleImgur(Content,Queue):
         super().__init__()
 
     def setClient(self, idName):
+        logging.info("     Connecting Imgur {}".format(str(facebookAC)))
+        self.service = 'Imgur'
+
         if isinstance(idName, str): 
             self.name = idName
         else:
@@ -40,7 +43,6 @@ class moduleImgur(Content,Queue):
             logging.warning("User not configured!")
             logging.warning("Unexpected error:", sys.exc_info()[0])
 
-        self.service = 'Imgur'
 
     def getClient(self):
         return self.client
