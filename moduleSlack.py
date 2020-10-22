@@ -13,6 +13,7 @@ except:
 import sys
 import time
 import click
+import logging
 import requests
 from bs4 import BeautifulSoup
 from bs4 import Tag
@@ -47,6 +48,7 @@ class moduleSlack(Content,Queue):
         try: 
             self.sc = SlackClient(self.slack_token)
         except:
+            logging.info(self.report('Slack', text, sys.exc_info()))
             self.sc = slack.WebClient(token=self.slack_token)
 
         config = configparser.ConfigParser()
@@ -357,6 +359,7 @@ class moduleSlack(Content,Queue):
                 channel = theChan, text = msg)
             self.sc.token = self.slack_token        
         except:
+            logging.info(self.report('Slack', text, sys.exc_info()))
             result = self.sc.chat_postMessage(channel=theChan, 
                     text=msg)
         logging.info(result['ok'])
@@ -393,7 +396,7 @@ class moduleSlack(Content,Queue):
             res = self.sc.api_call("search.messages",channel=theChannel, query=text)
 
             if res: 
-                logging.debug("Res: %s" % res)
+                logging.info(self.report('Slack', text, sys.exc_info()))
                 return(res)
         except:        
             return(self.report('Slack', text, sys.exc_info()))

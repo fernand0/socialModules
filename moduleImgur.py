@@ -16,7 +16,7 @@ class moduleImgur(Content,Queue):
         super().__init__()
 
     def setClient(self, idName):
-        logging.info("     Connecting Imgur {}".format(str(facebookAC)))
+        logging.info("     Connecting Imgur {}".format(str(idName)))
         self.service = 'Imgur'
 
         if isinstance(idName, str): 
