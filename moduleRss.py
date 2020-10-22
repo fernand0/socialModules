@@ -186,7 +186,7 @@ def main():
 
     print("Configured blogs:")
 
-    accounts = ["Blog1", "Blog2", "Blog9"]
+    accounts = ["Blog26", "Blog1", "Blog2", "Blog9"]
     for acc in accounts:
         print("Account: {}".format(acc))
         blog = moduleRss.moduleRss()
@@ -195,10 +195,12 @@ def main():
         blog.setRssFeed(rssFeed)
         blog.setUrl(url)
         blog.setPosts()
+        print(len(blog.getPosts()))
         for i, post in enumerate(blog.getPosts()):
-            #print(blog.getPosts()[i])
+            print(blog.getPosts()[i])
             (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content , links, comment) = (blog.obtainPostData(i, False))
             print(title, link, comment)
+        sys.exit()
 
     sys.exit()
     blogs = []
