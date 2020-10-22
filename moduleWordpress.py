@@ -92,6 +92,8 @@ class moduleWordpress(Content,Queue):
                     headers = self.headers).json()['posts']
                 self.post.append(posts2)
         except KeyError:
+            logging.warning("KeyError probably API Key expired")
+            logging.warning("Unexpected error:", sys.exc_info()[0])
             return(self.report('Wordpress API expired', '' , '', sys.exc_info()))
         except:
             return(self.report('Wordpress API', '' , '', sys.exc_info()))

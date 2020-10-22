@@ -131,7 +131,7 @@ def publishDirect(blog, socialNetwork, i):
             api.setClient(nick) 
             if profile in ['facebook']: 
                 pos1= comment.find('http://fernand0.blogalia')
-                if pos1>=0:
+                if pos1 >=0:
                     pos2 = comment.find(' ',pos1+1)
                     pos3 = comment.find('\n',pos1+1)
                     pos2 = min(pos2, pos3)
@@ -141,10 +141,12 @@ def publishDirect(blog, socialNetwork, i):
                             comment[pos2:])
 
                     logging.info(comment)
-                    #url = link
-                    #apiurl = "http://tinyurl.com/api-create.php?url=" 
-                    #tinyurl = urllib.request.urlopen(apiurl + url).read() 
-                    #link = tinyurl.decode("utf-8")
+                else:
+                    comment = None
+                #url = link
+                #apiurl = "http://tinyurl.com/api-create.php?url=" 
+                #tinyurl = urllib.request.urlopen(apiurl + url).read() 
+                #link = tinyurl.decode("utf-8")
             #print(link)
             result = api.publishPost(title, link, comment) 
             logging.debug(result) 
@@ -158,8 +160,8 @@ def publishDirect(blog, socialNetwork, i):
                         link='' 
                         logging.info("Posting failed") 
                 elif result.find('Bad Request')>=0: 
-                        link='' 
-                        logging.info("Posting failed") 
+                    link='' 
+                    logging.info("Posting failed") 
     return link
 
 def publishDelay(blog, socialNetwork, numPosts, timeSlots): 
@@ -210,10 +212,8 @@ def publishDelay(blog, socialNetwork, numPosts, timeSlots):
                 if profile in ['wordpress']: 
                     result = api.publishPost(title, link, comment, tags=links)
                 else: 
-                    logger.info("tt {} {}".format(title, link))
                     result = api.publishPost(title, link, comment)
-
-                    logger.info("    Publishing in: {}".format(result))
+                logger.info("      Res: {}".format(result))
             except:
                 logging.warning("Some problem in {}".format(socialNetwork[0].capitalize())) 
                 logging.warning("Unexpected error:", sys.exc_info()[0]) 
@@ -221,12 +221,18 @@ def publishDelay(blog, socialNetwork, numPosts, timeSlots):
             if isinstance(result, str):
                 if result[:4]=='Fail':
                     link=''
+                elif result[:21] == 'Wordpress API expired':
+                    print(" [d] Not published: %s - %s" % (result, 'Fail'))
+                    result = 'Fail!'
                 else: 
                     print(" [d] Published: %s - %s" % (result, 'OK'))
                     result = 'OK'
         else: 
-            publishMethod = globals()['publish'+ profile.capitalize()]#()(self, ))
-            publishMethod(nick, title, link, summary, summaryHtml, summaryLinks, image, content, links)
+            try: 
+                publishMethod = globals()['publish'+ profile.capitalize()]#()(self, )) 
+                result = publishMethod(nick, title, link, summary, summaryHtml, summaryLinks, image, content, links)
+            except:
+                logging.info(self.report('Social', text, sys.exc_info()))
 
         if result == 'OK':
             blog.cache[socialNetwork].posts = listP
@@ -235,9 +241,11 @@ def publishDelay(blog, socialNetwork, numPosts, timeSlots):
         if j+1 < numPosts:
             logger.info("Time: %s Waiting ... %.2f minutes to schedule next post in %s" % (time.asctime(), tSleep2/60, socialNetwork[0]))
             time.sleep(tSleep2) 
-        logger.info("    %s -> %s: Finished" % 
-                (urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0],
-                    socialNetwork[0].capitalize()))
+        logger.info("    Finished: {}".format(str(socialNetwork)))
+        logger.info("    Finished: {}".format(str(urllib.parse.urlparse(blog.getUrl()).netloc.split('.'))))
+        logger.info("    Finished: {}".format(str(socialNetwork[0].capitalize())))
+        logger.info("    Finished: {}".format(str(urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0])))
+        logger.info("    Finished: {} -> {}".format(urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0], socialNetwork[0].capitalize()))
         #logger.info("    %s: Finished" % (blog.getUrl()))
         print(" [d] Finished in: %s at %s" % (socialNetwork[0].capitalize(), 
             time.asctime()))

@@ -16,6 +16,9 @@ class moduleImgur(Content,Queue):
         super().__init__()
 
     def setClient(self, idName):
+        logging.info("     Connecting Imgur {}".format(str(idName)))
+        self.service = 'Imgur'
+
         if isinstance(idName, str): 
             self.name = idName
         else:
@@ -40,7 +43,6 @@ class moduleImgur(Content,Queue):
             logging.warning("User not configured!")
             logging.warning("Unexpected error:", sys.exc_info()[0])
 
-        self.service = 'Imgur'
 
     def getClient(self):
         return self.client
@@ -95,8 +97,8 @@ class moduleImgur(Content,Queue):
     def publishPost(self, post, idPost, comment=''):
         # This method publishes (as public post) some gallery that is in draft
         # mode
-        logging.info("     Publishing in Imgur...")
-        logging.info("     Publishing in Imgur...{}".format(str(post)))
+        logging.info("     Publishing in: {}".format(self.service))
+        logging.info("      {}".format(str(post)))
         api = self.getClient() 
         try: 
             res = api.share_on_imgur(idPost, post, terms=0)            
@@ -110,9 +112,11 @@ class moduleImgur(Content,Queue):
         return(FAIL)
 
     def publish(self, j):
+        # Deprecated ?
         logging.info("Publishing %d"% j)                
         logging.info("servicename %s" %self.service)
-        (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content, links, comment) = self.obtainPostData(j)
+        (title, link, firstLink, image, summary, summaryHtml, 
+                summaryLinks, content, links, comment) = self.obtainPostData(j)
         logging.info("Publishing {} {}".format(title, link))
         idPost = link
         logging.info("Publishing {} {}".format(title, idPost))
@@ -154,8 +158,6 @@ class moduleImgur(Content,Queue):
         for img in data:
             urlImg = 'https://i.imgur.com/{}.jpg'.format(img.id)
             titleImg = img.description
-            #print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(img.datetime)))
-            #print("n",img.name)
             if titleImg:
                 description = titleImg.split('#')
                 description, tags = description[0], description[1:]
@@ -271,25 +273,24 @@ def main():
             cache = config.get(acc, 'cache')
             user = config.get(acc, cache)
         img.setCache()
-        print(img.getCache())
-        print(cache, user)
         img.setClient(name)
         img.setUrl(url)
         if 'posts' in config.options(acc):
             img.setPostsType(config.get(acc, 'posts'))
-        print("Type",img.getPostsType())
         img.setPosts()
         lastLink = None
         if 'wordpress' in img.getSocialNetworks():
             socialNetwork = ('wordpress', img.getSocialNetworks()['wordpress'])
             lastLink, lastTime = checkLastLink(url, socialNetwork)
-
-            
         i = 1
-        listPosts = img.getNumPostsData(1,i, lastLink)
+        num = 5
+        listPosts = img.getNumPostsData(num, i, lastLink)
         print("listPosts:")
         print(listPosts)
         continue
+        # Code from this point is not expected to work, but in some cases can
+        # serve as an example.
+
         if cache == 'wordpress': 
             import moduleWordpress 
             wp = moduleWordpress.moduleWordpress() 

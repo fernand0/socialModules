@@ -186,18 +186,21 @@ def main():
 
     print("Configured blogs:")
 
-    blog = moduleRss.moduleRss()
-    url = 'http://avecesunafoto.wordpress.com/'
-    print("Url: %s"% url)
-    blog.setUrl(url)
-    rssFeed = 'feed/'
-    blog.setRssFeed(rssFeed)
-    blog.setPosts()
-    for i, post in enumerate(blog.getPosts()):
-        #print(blog.getPosts()[i])
-        (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content , links, comment) = (blog.obtainPostData(i, False))
-        print(title, link, comment)
+    accounts = ["Blog1", "Blog2", "Blog9"]
+    for acc in accounts:
+        print("Account: {}".format(acc))
+        blog = moduleRss.moduleRss()
+        rssFeed = config.get(acc, 'rss')
+        url = config.get(acc, 'url')
+        blog.setRssFeed(rssFeed)
+        blog.setUrl(url)
+        blog.setPosts()
+        for i, post in enumerate(blog.getPosts()):
+            #print(blog.getPosts()[i])
+            (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content , links, comment) = (blog.obtainPostData(i, False))
+            print(title, link, comment)
 
+    sys.exit()
     blogs = []
 
     for section in config.sections():
