@@ -241,12 +241,7 @@ def publishDelay(blog, socialNetwork, numPosts, timeSlots):
         if j+1 < numPosts:
             logger.info("Time: %s Waiting ... %.2f minutes to schedule next post in %s" % (time.asctime(), tSleep2/60, socialNetwork[0]))
             time.sleep(tSleep2) 
-        logger.info("    Finished: {}".format(str(socialNetwork)))
-        logger.info("    Finished: {}".format(str(urllib.parse.urlparse(blog.getUrl()).netloc.split('.'))))
-        logger.info("    Finished: {}".format(str(socialNetwork[0].capitalize())))
-        logger.info("    Finished: {}".format(str(urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0])))
         logger.info("    Finished: {} -> {}".format(urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0], socialNetwork[0].capitalize()))
-        #logger.info("    %s: Finished" % (blog.getUrl()))
         print(" [d] Finished in: %s at %s" % (socialNetwork[0].capitalize(), 
             time.asctime()))
 
