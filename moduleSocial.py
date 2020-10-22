@@ -135,11 +135,14 @@ def publishDirect(blog, socialNetwork, i):
                 pos3 = comment.find('\n',pos1+1)
                 pos2 = min(pos2, pos3)
                 logging.info(comment)
-                comment = "{}(Enlace censurado por Facebook){}".format(
-                        comment[:pos1-1],
-                        comment[pos2:])
+                if pos1 >=0:
+                    comment = "{}(Enlace censurado por Facebook){}".format(
+                            comment[:pos1-1],
+                            comment[pos2:])
 
-                logging.info(comment)
+                    logging.info(comment)
+                else:
+                    comment = None
                 #url = link
                 #apiurl = "http://tinyurl.com/api-create.php?url=" 
                 #tinyurl = urllib.request.urlopen(apiurl + url).read() 
@@ -229,7 +232,7 @@ def publishDelay(blog, socialNetwork, numPosts, timeSlots):
                 publishMethod = globals()['publish'+ profile.capitalize()]#()(self, )) 
                 result = publishMethod(nick, title, link, summary, summaryHtml, summaryLinks, image, content, links)
             except:
-                logging.info("Exception 4")
+                logging.info(self.report('Social', text, sys.exc_info()))
 
         if result == 'OK':
             blog.cache[socialNetwork].posts = listP
