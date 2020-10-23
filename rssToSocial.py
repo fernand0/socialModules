@@ -268,8 +268,8 @@ def main():
                     lenMax = blog.len(profile)
 
 
-                logging.info("  Service %s" % profile)
-                print("  Service %s" % profile)
+                logging.info("  Service {} Nick {}".format(profile, nick))
+                print("  Service {} Nick {}".format(profile, nick))
                 logging.debug("  Service %s Lenmax %d" % (profile, lenMax))
 
                 num = bufferMax - lenMax
@@ -283,8 +283,16 @@ def main():
                         i = blog.getLinkPosition(lastLink)
  
                 if (i == 0):
-                    logging.info("    No new posts")
-                    print("    No new posts")
+                    myMsg = "No new posts."
+                else:
+                    myMsg = "New posts."
+
+                myMsg = "    {} Last time: {}".format(myMsg, 
+                        time.ctime(lastTime))
+
+                logging.info(myMsg) 
+                print(myMsg)
+
                 hours = blog.getTime() 
                 if lastLink and isinstance(lastLink, list):
                     myLastLink = lastLink[0]
@@ -304,7 +312,6 @@ def main():
                     logging.info("  Not publishing because time restriction") 
                     print("     Not publishing because time restriction (Last time: %s)"% time.ctime(lastTime)) 
                 else:
-                    print("     Publishing. Last time: {}".format(time.ctime(lastTime))) 
                     listPosts = []
                     if 'max' in blog.__dir__():
                         num = int(blog.getMax())
@@ -328,7 +335,7 @@ def main():
                     else: 
                         if (blog.getBufferapp() 
                                 and (profile[0] in blog.getBufferapp())): 
-                            print("   Buffered")
+                            print("      Buffered")
                             link = blog.buffer[socialNetwork].addPosts(listPosts)
 
                         if ((blog.getProgram() 
@@ -337,7 +344,7 @@ def main():
                             (blog.getProgram() 
                                 and isinstance(blog.getProgram(), str) 
                                 and (profile[0] in blog.getProgram()))):
-                            print("   Delayed")
+                            print("      Delayed")
                             link = blog.cache[socialNetwork].addPosts(listPosts)
 
                             time.sleep(1)
