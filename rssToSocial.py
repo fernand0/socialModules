@@ -293,9 +293,8 @@ def main():
                 logging.info("    %s Last link %s"% 
                         (time.strftime('%Y-%m-%d %H:%M:%S', 
                             time.localtime(lastTime)), myLastLink))
-                print("     %s Last link %s" %
-                        (time.strftime('%Y-%m-%d %H:%M:%S', 
-                            time.localtime(lastTime)), myLastLink))
+                #print("     {}".format(time.strftime('%Y-%m-%d %H:%M:%S',
+                #    time.localtime(lastTime))))
                 logging.debug("bufferMax - lenMax = num %d %d %d"%
                         (bufferMax, lenMax, num)) 
 
@@ -305,6 +304,7 @@ def main():
                     logging.info("  Not publishing because time restriction") 
                     print("     Not publishing because time restriction (Last time: %s)"% time.ctime(lastTime)) 
                 else:
+                    print("     Publishing. Last time: {}".format(time.ctime(lastTime))) 
                     listPosts = []
                     if 'max' in blog.__dir__():
                         num = int(blog.getMax())
