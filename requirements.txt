@@ -12,4 +12,6 @@ sievelib
 gitpython
 keyring
 click
-
+feedparser
+pdfrw
+python-crontab

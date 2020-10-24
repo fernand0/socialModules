@@ -6,14 +6,7 @@ import os
 import time
 import urllib
 import requests
-import feedparser
-import pickle
 import logging
-from bs4 import BeautifulSoup
-from bs4 import Tag
-from pdfrw import PdfReader
-import moduleCache
-# https://github.com/fernand0/scripts/blob/master/moduleCache.py
 
 from configMod import *
 
@@ -264,7 +257,6 @@ if __name__ == "__main__":
             print(blog.selectPost())
 
     for blog in blogs:
-        import urllib
         urlFile = open(DATADIR + '/' 
               + urllib.parse.urlparse(blog.getUrl()+blog.getRssFeed()).netloc
               + ".last", "r")
