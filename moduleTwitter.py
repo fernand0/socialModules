@@ -1,16 +1,11 @@
 #!/usr/bin/env python
 
-import click
 import configparser
 import logging
 import os
 import pickle
-import requests
 import sys
 import urllib
-
-from bs4 import BeautifulSoup
-from bs4 import Tag
 
 import twitter
 from twitter import *
@@ -70,7 +65,8 @@ class moduleTwitter(Content,Queue):
         except:
             logging.warning("Account not configured")
             logging.warning("Unexpected error:", sys.exc_info()[0])
-            t = None
+            print("Please, configure a Twitter Account")
+            sys.exit()
 
         self.tc = t
  
@@ -166,9 +162,12 @@ def main():
             format='%(asctime)s %(message)s')
 
     import moduleTwitter
+
     tw = moduleTwitter.moduleTwitter()
 
-    tw.setClient('fernand0')
+    tw.setClient('makingfernand0')
+
+    tw.publishPost("Testing posting tweets", "", '')
 
     print("Testing posts")
     tw.setPosts()

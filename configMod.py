@@ -4,7 +4,6 @@ import os
 import requests
 import shutil
 import urllib
-from PIL import Image
 
 HOME = os.path.expanduser("~")
 LOGDIR = HOME + "/usr/var/log"
