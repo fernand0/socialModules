@@ -64,9 +64,10 @@ class moduleTwitter(Content,Queue):
                 return("Fail")
         except:
             logging.warning("Account not configured")
-            logging.warning("Unexpected error:", sys.exc_info()[0])
+            if sys.exc_info()[0]: 
+                logging.warning("Unexpected error:", sys.exc_info()[0])
             print("Please, configure a {} Account".format(self.service))
-            sys.exit()
+            sys.exit(-1)
 
         self.tc = t
  

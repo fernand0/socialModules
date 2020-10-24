@@ -87,7 +87,8 @@ class moduleGmail(Content,Queue):
 
         try:
             creds = self.authorize()
-            service = build('gmail', 'v1', credentials=creds, cache_discovery=False)
+            service = build('gmail', 'v1', 
+                    credentials=creds, cache_discovery=False)
             self.client = service
         except:
             logging.warning("Problem with authorization")

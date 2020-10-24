@@ -10,13 +10,13 @@ import datetime
 import dateparser
 import logging
 import importlib
+import pickle
 import sys
 
 import googleapiclient
 from googleapiclient.discovery import build
-from googleapiclient import http
-from httplib2 import Http
-from oauth2client import file, client, tools
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 
 from configMod import *
 from moduleContent import *
@@ -34,38 +34,104 @@ class moduleGcalendar(Content):
                 + acc[0]+ '_' 
                 + acc[1]+ '.json')
         return(theName)
+
+    def confTokenName(self, acc): 
+        theName = os.path.expanduser(CONFIGDIR + '/' + '.' 
+                + acc[0]+ '_' 
+                + acc[1]+ '.pickle')
+        return(theName)
  
     def setClient(self, Acc):
+        self.service = 'gcalendar'
+        logging.info("     Connecting {}".format(self.service))
         # based on get_credentials from 
         # Code from
         # https://developers.google.com/gmail/api/v1/reference/users/messages/list
         # and
         # http://stackoverflow.com/questions/30742943/create-a-desktop-application-using-gmail-api
     
-        SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
-        self.url = SCOPES
+        self.scopes = 'https://www.googleapis.com/auth/calendar.readonly'
+        self.url = self.scopes
         api = {}
     
-        config = configparser.ConfigParser() 
-        config.read(CONFIGDIR + '/.calendar.cfg')
-        
-        self.service = 'gcalendar'
-        self.nick = config.get(Acc,'user')+'@'+config.get(Acc,'server')
-        fileStore = self.confName((config.get(Acc,'server'), 
-            config.get(Acc,'user'))) 
-    
-        logging.debug("Filestore %s"% fileStore)
-        store = file.Storage(fileStore)
-        credentials = store.get()
-        
-        service = build('calendar', 'v3', http=credentials.authorize(Http()))
-    
-        self.client = service
-        self.name = 'GCalendar' + Acc[3:]
-        self.active = 'primary'
+        try:
+            config = configparser.ConfigParser() 
+            config.read(CONFIGDIR + '/.calendar.cfg')
+            self.server=config.get(Acc,'server')
+            self.nick = config.get(Acc,'user')+'@'+self.server
+            self.name = 'Gcalendar_{}'.format(Acc[0]) 
+            
+            try: 
+                creds = self.authorize()
+                
+                service = build('calendar', 'v3', 
+                        credentials=creds, cache_discovery=False)
+                self.client = service 
+                self.active = 'primary'
+            except: 
+                logging.warning("Account not configured") 
+                if sys.exc_info()[0]: 
+                    logging.warning("Unexpected error: {}".format(sys.exc_info()[0])) 
+                print("Please, configure a {} Account".format(self.service)) 
+                raise
+        except: 
+            logging.warning("Account not configured") 
+            if sys.exc_info()[0]: 
+                logging.warning("Unexpected error: {}".format(sys.exc_info()[0])) 
+            print("Please, configure a {} Account".format(self.service)) 
+            sys.exit(-1)
 
     def getClient(self):
         return(self.client)
+
+    def authorize(self):
+        # based on Code from
+        # https://github.com/gsuitedevs/python-samples/blob/aacc00657392a7119808b989167130b664be5c27/gmail/quickstart/quickstart.py
+
+        SCOPES = self.scopes
+
+        logging.info("Authorizing {}".format(self.name))
+        fileCredStore = self.confName((self.server, self.nick)) 
+        fileTokenStore = self.confTokenName((self.server, self.nick)) 
+        creds = None
+
+        if os.path.exists(fileTokenStore): 
+            with open(fileTokenStore, 'rb') as token: 
+                logging.debug("Opening {}".format(fileTokenStore))
+                creds = pickle.load(token)
+
+        if not creds or not creds.valid: 
+            if creds and creds.expired and creds.refresh_token: 
+                logging.info("Needs to refresh token {}".format(self.service))
+                creds.refresh(Request()) 
+            else: 
+                logging.info("Needs to re-authorize token {}".format(self.service))
+
+
+                try:
+                    flow = InstalledAppFlow.from_client_secrets_file( 
+                        fileCredStore, SCOPES, 
+                        redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+                    creds = flow.run_console(
+                            authorization_prompt_message='Please visit this URL: {url}', 
+                            success_message='The auth flow is complete; you may close this window.')
+                    # Save the credentials for the next run
+                    print("creds {}".format(str(creds)))
+                except FileNotFoundError:
+                    print("no")
+                    print(fileCredStore)
+                    sys.exit()
+                except: 
+                    if sys.exc_info()[0]: 
+                        logging.warning("Unexpected error:", sys.exc_info()[0])
+
+        logging.info("Storing creds")
+        with open(fileTokenStore, 'wb') as token:
+            pickle.dump(creds, token)
+
+        return(creds)
+
+
 
     def setActive(self, idCal):
         self.active = idCal
@@ -146,7 +212,13 @@ class moduleGcalendar(Content):
 
 def main():
 
-    calendar = moduleGcalendar()
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
+
+    import moduleGcalendar
+
+    calendar = moduleGcalendar.moduleGcalendar()
     calendar.setClient('ACC0')
     calendar.setCalendarList()
     print(calendar.getCalendarList())
