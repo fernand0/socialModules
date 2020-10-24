@@ -106,8 +106,6 @@ class moduleGcalendar(Content):
                 creds.refresh(Request()) 
             else: 
                 logging.info("Needs to re-authorize token {}".format(self.service))
-
-
                 try:
                     flow = InstalledAppFlow.from_client_secrets_file( 
                         fileCredStore, SCOPES, 

@@ -52,12 +52,12 @@ class moduleGmail(Content,Queue):
         self.setClient(Acc)
 
     def setClient(self, Acc):
-        logging.info("     Connecting GMail %s"%str(Acc))
+        self.service = 'gmail'
+        logging.info("     Connecting {} {}".format(self.service, str(Acc)))
    
         SCOPES = self.scopes
         api = {}
     
-        self.service = 'gmail'
         if type(Acc) == str: 
             self.url = Acc
             pos = Acc.rfind('@') 
@@ -83,7 +83,7 @@ class moduleGmail(Content,Queue):
             self.name = 'GMail_{}'.format(Acc[0]) 
 
         self.id = '{} {}@{}'.format(self.name[-1], self.nick, self.server)
-        logging.debug("Id %s" % self.id)
+        logging.info("Id %s" % self.id)
 
         try:
             creds = self.authorize()
@@ -119,13 +119,17 @@ class moduleGmail(Content,Queue):
             else: 
                 logging.info("Needs to re-authorize token GMail")
 
-                try:
-                    flow = InstalledAppFlow.from_client_secrets_file( 
-                        fileCredStore, SCOPES, 
-                        redirect_uri='urn:ietf:wg:oauth:2.0:oob')
-                    creds = flow.run_console(
-                            authorization_prompt_message='Please visit this URL: {url}', 
-                            success_message='The auth flow is complete; you may close this window.')
+                try: 
+                    if os.path.exists(fileCredStore): 
+                        flow = InstalledAppFlow.from_client_secrets_file(
+                                fileCredStore, SCOPES, 
+                                redirect_uri='urn:ietf:wg:oauth:2.0:oob') 
+                        creds = flow.run_console( 
+                                authorization_prompt_message='Please visit this URL: {url}', 
+                                success_message='The auth flow is complete; you may close this window.')
+                    else:
+                        print("Goto {} and copy the file to {}".format("https://console.developers.google.com/apis/api/gmail/", fileCredStore))
+                        sys.exit(-1)
                     # Save the credentials for the next run
                 except FileNotFoundError:
                     print("no")
@@ -582,6 +586,7 @@ class moduleGmail(Content,Queue):
     
 
 def main():
+
     logging.basicConfig(stream=sys.stdout, 
             level=logging.INFO, 
             format='%(asctime)s %(message)s')
@@ -590,33 +595,35 @@ def main():
 
     # instantiate the api object 
 
-    config = configparser.ConfigParser() 
-    config.read(CONFIGDIR + '/.rssBlogs')
-
     accounts = ['Blog13','Blog14','Blog15','Blog24']
     # [Blog15]
     # url:test@gmail.com
     # Gmail:test@gmail.com
     # posts:drafts
+    url='fernand0@elmundoesimperfecto.com'
+    # Gmail:fernand0@elmundoesimperfecto.com 
+    # posts:drafts
 
-    for acc in accounts:
-        print("Account: {}".format(acc))
-        url = config.get(acc, 'url')
-        api = moduleGmail.moduleGmail()
-        api.setClient(url)
-        print(api.name)
-        #if 'posts' in config.options(Acc):
-        #    self.setPostType(config.get(Acc, 'posts'))
-        print("Test setPosts")
-        res = api.setPosts()
-        print("Test getPosts")
-        print(api.getPosts())
-        api.setPostsType('messages')
-        print("Test setPosts (posts)")
-        res = api.setPosts()
-        print("Test getPosts")
-        for post in api.getPosts():
-            print(post)
+
+
+
+    print("Account: {}".format(url))
+    #url = config.get(acc, 'url')
+    api = moduleGmail.moduleGmail()
+    api.setClient(url)
+    print(api.name)
+    #if 'posts' in config.options(Acc):
+    #    self.setPostType(config.get(Acc, 'posts'))
+    print("Test setPosts")
+    res = api.setPosts()
+    print("Test getPosts")
+    print(api.getPosts())
+    api.setPostsType('messages')
+    print("Test setPosts (posts)")
+    res = api.setPosts()
+    print("Test getPosts")
+    for post in api.getPosts():
+        print(post)
 
     sys.exit()
     print(api.getPosts())
