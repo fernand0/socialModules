@@ -1,8 +1,7 @@
-
-from bs4 import BeautifulSoup
 import configparser
 import logging
 import requests
+import sys
 import time
 
 from moduleContent import *
@@ -21,6 +20,8 @@ class moduleForum(Content,Queue):
         self.max = 15
 
     def setClient(self, forumData):
+        self.service = 'Forum'
+        logging.info("     Connecting {}".format(self.service))
         """
         [http://foro.infojardin.com/]
         forums:Identificar cactus
@@ -41,17 +42,24 @@ class moduleForum(Content,Queue):
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssForums') 
             
-            if isinstance(forumData, str):
-                self.url = forumData 
+            if config.sections():
+                if isinstance(forumData, str):
+                    self.url = forumData 
+                else:
+                    self.url = forumData[0]
+                self.selected = config.get(self.url,'forums').split('\n') 
+                self.selector = config.get(self.url,'selector').split('\n')
+                self.idSeparator = config.get(self.url,'idSeparator')
             else:
-                self.url = forumData[0]
-            self.selected = config.get(self.url,'forums').split('\n') 
-            self.selector = config.get(self.url,'selector').split('\n')
-            self.idSeparator = config.get(self.url,'idSeparator')
+                logging.warning("{} config file does not exist or empty".format(self.service))
+                if sys.exc_info()[0]:
+                    logging.warning("Unexpected error:", sys.exc_info()[0])
+                raise
         except:
-            logging.warning("Forum not configured!")
-            logging.warning("Unexpected error:", sys.exc_info()[0])
-        self.service = 'Forum'
+            logging.warning("{} not configured!".format(self.service))
+            if sys.exc_info()[0]: 
+                logging.warning("Unexpected error: {}".format(str(sys.exc_info()[0])))
+            sys.exit(-1)
 
     def getLinks(self, url, idSelector): 
         headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
@@ -152,9 +160,16 @@ class moduleForum(Content,Queue):
         return post[1]
 
 def main(): 
+
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
+
+    import moduleForum
+
     forums = ['https://www.cactuseros.com/foro/index.php', 'http://foro.infojardin.com/', 'https://cactiguide.com/forum/']
     for forumData in forums: 
-        forum = moduleForum() 
+        forum = moduleForum.moduleForum() 
         forum.setClient(forumData) 
         forum.setPosts()
         lastLink, lastTime = checkLastLink(forum.url)

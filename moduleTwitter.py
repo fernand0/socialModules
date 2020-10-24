@@ -28,8 +28,8 @@ class moduleTwitter(Content,Queue):
         self.service = None
 
     def setClient(self, twitterAC):
-        logging.info("     Connecting Twitter")
         self.service = 'Twitter'
+        logging.info("     Connecting {}".format(self.service))
         try:
             logging.info("     Twitter Acc %s"%str(twitterAC))
             config = configparser.ConfigParser()

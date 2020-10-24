@@ -1,2 +1,5 @@
 twitter
 facebook-sdk
+requests
+bs4
+lxml
