@@ -39,7 +39,7 @@ class moduleTwitter(Content,Queue):
                 self.user = twitterAC
             else:
                 self.user = twitterAC[1][1]
-            logging.info("     Twitter User %s"%str(self.user))
+            logging.info("     {} User {}".format(self.service, str(self.user)))
             try: 
                 CONSUMER_KEY = config.get(self.user, "CONSUMER_KEY")
             except: 
@@ -59,13 +59,13 @@ class moduleTwitter(Content,Queue):
                             CONSUMER_SECRET)
                 t = Twitter(auth=authentication)
             except:
-                logging.warning("Twitter authentication failed!")
+                logging.warning("{} authentication failed!".format(self.service))
                 logging.warning("Unexpected error:", sys.exc_info()[0])
                 return("Fail")
         except:
             logging.warning("Account not configured")
             logging.warning("Unexpected error:", sys.exc_info()[0])
-            print("Please, configure a Twitter Account")
+            print("Please, configure a {} Account".format(self.service))
             sys.exit()
 
         self.tc = t
@@ -100,7 +100,7 @@ class moduleTwitter(Content,Queue):
         #self.postsFormatted = outputData
 
     def publishPost(self, post, link='', comment=''):
-        logging.info("     Publishing in Twitter...")
+        logging.info("     Publishing in {}...".format(self.service))
         if comment != None: 
             post = comment + " " + post
         h = HTMLParser()
@@ -120,10 +120,10 @@ class moduleTwitter(Content,Queue):
         except twitter.api.TwitterHTTPError as twittererror:        
             for error in twittererror.response_data.get("errors", []): 
                 logging.info("      Error code: %s" % error.get("code", None))
-            return(self.report('Twitter', post, link, sys.exc_info()))
+            return(self.report(self.service, post, link, sys.exc_info()))
         except:        
             logging.info("Fail!")
-            return(self.report('Twitter', post, link, sys.exc_info()))
+            return(self.report(self.service, post, link, sys.exc_info()))
 
     def getPostTitle(self, post):
         if 'text' in post:
@@ -145,7 +145,7 @@ class moduleTwitter(Content,Queue):
             return ''
 
     def search(self, text):
-        logging.debug("     Searching in Twitter...")
+        logging.debug("     Searching in {}...".format(self.service))
         try:
             res = self.tc.search.tweets(q=text)
 
@@ -153,7 +153,7 @@ class moduleTwitter(Content,Queue):
                 logging.debug("Res: %s" % res)
                 return(res)
         except:        
-            return(self.report('Twitter', text, sys.exc_info()))
+            return(self.report(self.service, text, sys.exc_info()))
 
 def main():
 

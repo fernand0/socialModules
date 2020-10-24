@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import click
 import configparser
 import logging
 import os
@@ -29,30 +28,39 @@ class moduleFacebook(Content,Queue):
         self.service = None
 
     def setClient(self, facebookAC='me'):
-        logging.info("     Connecting Facebook {}".format(str(facebookAC)))
         self.service = 'Facebook'
+        logging.info("     Connecting {}: {}".format(self.service, 
+            str(facebookAC)))
         try:
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssFacebook')
 
-            if isinstance(facebookAC, tuple): 
-                facebookAC = facebookAC[1][1]
-            self.user = facebookAC
-            logging.debug("     Connecting Facebook %s"%str(self.user))
-            try:
-                oauth_access_token = config.get("Facebook", "oauth_access_token")
-                graph = facebook.GraphAPI(oauth_access_token, version='3.0') 
-                self.fc = graph
-                self.setPage(facebookAC)
+            if config.sections():
+                if isinstance(facebookAC, tuple): 
+                    facebookAC = facebookAC[1][1]
+                self.user = facebookAC
+                logging.debug("     Connecting {} {}".format(self.service,
+                    str(self.user)))
+                try:
+                    oauth_access_token = config.get(self.service, "oauth_access_token")
+                    graph = facebook.GraphAPI(oauth_access_token, version='3.0') 
+                    self.fc = graph
+                    self.setPage(facebookAC)
 
-            except: 
-                logging.warning("Facebook authentication failed!") 
-                logging.warning("Unexpected error:", sys.exc_info()[0]) 
-                print("Fail!")
+                except: 
+                    logging.warning("{} authentication failed!".format(self.service)) 
+                    logging.warning("Unexpected error:", sys.exc_info()[0]) 
+                    print("Fail!")
+            else:
+                logging.warning("Account not configured")
+                logging.warning("Unexpected error:", sys.exc_info()[0])
+                print("Please, configure a {} Account".format(self.service))
+                sys.exit()
         except:
-            logging.warning("Facebook authentication failed!")
+            logging.warning("Account not configured")
             logging.warning("Unexpected error:", sys.exc_info()[0])
-            print("Fail!")
+            print("Please, configure a {} Account".format(self.service))
+            sys.exit()
 
     def setPage(self, facebookAC='me'):
         perms = ['publish_actions','manage_pages','publish_pages'] 
@@ -92,7 +100,7 @@ class moduleFacebook(Content,Queue):
                 self.posts.append(post)
 
         outputData = {}
-        serviceName = 'Facebook'
+        serviceName = self.service
         outputData[serviceName] = {'sent': [], 'pending': []}
         for post in self.getPosts():
             (page, idPost) = post['id'].split('_')
@@ -103,7 +111,7 @@ class moduleFacebook(Content,Queue):
         self.postsFormatted = outputData
 
     def publishPost(self, post, link='', comment=''):
-        logging.debug("    Publishing in Facebook...")
+        logging.debug("    Publishing in {}...".format(self.service))
         if comment == None:
             comment = ''
         post = comment + " " + post
@@ -126,7 +134,7 @@ class moduleFacebook(Content,Queue):
             else:
                 return("Fail")
         except:        
-            return(self.report('Facebook', post, link, sys.exc_info()))
+            return(self.report(self.service, post, link, sys.exc_info()))
 
     def getPostTitle(self, post):
         if 'message' in post:
@@ -158,6 +166,10 @@ class moduleFacebook(Content,Queue):
 
 
 def main():
+
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
 
     import moduleFacebook
 
