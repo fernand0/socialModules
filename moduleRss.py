@@ -1,6 +1,4 @@
-# This module provides infrastructure for publishing and updating blog posts
-
-# using several generic APIs  (XML-RPC, blogger API, Metaweblog API, ...)
+# This module provides infrastructure for reading RSS
 
 import configparser
 import os
@@ -186,7 +184,7 @@ def main():
 
     print("Configured blogs:")
 
-    accounts = ["Blog26", "Blog1", "Blog2", "Blog9"]
+    accounts = ["Blog1", "Blog2", "Blog9"]
     for acc in accounts:
         print("Account: {}".format(acc))
         blog = moduleRss.moduleRss()
