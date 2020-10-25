@@ -26,14 +26,22 @@ class moduleMastodon(Content,Queue):
         logging.info("     Connecting Mastodon")
         self.service = 'Mastodon'
         try:
-            maCli = mastodon.Mastodon( 
-               access_token = CONFIGDIR + '/.rssMastodon', 
-               api_base_url = 'https://mastodon.social'
-            )
+            if os.path.exists(CONFIGDIR + '/.rssMastodon'): 
+                maCli = mastodon.Mastodon( 
+                   access_token = CONFIGDIR + '/.rssMastodon', 
+                   api_base_url = 'https://mastodon.social'
+                )
+            else: 
+                logging.warning("Account not configured")
+                sys.exit(-1)
 
         except: 
             logging.warning("Mastodon authentication failed!") 
-            logging.warning("Unexpected error:", sys.exc_info()[0])
+            if sys.exc_info()[0]: 
+                logging.warning("Unexpected error: {}".format(
+                    sys.exc_info()[0]))
+            print("Please, configure a {} Account".format(self.service))
+            sys.exit(-1)
 
         self.ma = maCli
         self.user = user

@@ -18,3 +18,4 @@ pdfrw
 python-crontab
 tmdbsimple
 imgurpython
+Mastodon.py
