@@ -36,12 +36,18 @@ class moduleImgur(Content,Queue):
 
                 self.client = ImgurClient(self.client_id, self.client_secret, 
                         self.access_token, self.refresh_token)
-            else:
-                logging.warning("Some problem with configuration file!")
-                self.client = None
+            else: 
+                logging.warning("Account not configured") 
+                if sys.exc_info()[0]: 
+                    logging.warning("Unexpected error: {}".format( 
+                        sys.exc_info()[0]))
+                sys.exit(1)
         except:
-            logging.warning("User not configured!")
-            logging.warning("Unexpected error:", sys.exc_info()[0])
+            logging.warning("Account not configured") 
+            if sys.exc_info()[0]: 
+                logging.warning("Unexpected error: {}".format(
+                    sys.exc_info()[0]))
+            sys.exit(1)
 
 
     def getClient(self):

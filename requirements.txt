@@ -16,3 +16,4 @@ feedparser
 pdfrw
 python-crontab
 tmdbsimple
+imgurpython
