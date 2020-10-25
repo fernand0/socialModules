@@ -20,31 +20,35 @@ class moduleLinkedin(Content):
 
     def __init__(self):
         super().__init__()
+        self.service = 'Linkedin'
         self.user = None
         self.ln = None
 
     def setClient(self, linkedinAC=""):
-        logging.info("    Connecting Linkedin {}".format(str(linkedinAC)))
+        logging.info("    Connecting {} {}".format(self.service, 
+            str(linkedinAC)))
         try:
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssLinkedin')
+            if config.sections():
+                if isinstance(linkedinAC, tuple): 
+                    linkedinAC = linkedinAC[1][1]
+                self.user = linkedinAC    
 
-            if isinstance(linkedinAC, tuple): 
-                linkedinAC = linkedinAC[1][1]
-            self.user = linkedinAC    
-
-            self.CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY") 
-            self.CONSUMER_SECRET = config.get("Linkedin", "CONSUMER_SECRET") 
-            self.ACCESS_TOKEN = config.get("Linkedin", "ACCESS_TOKEN") 
-            self.ln = linkedin.LinkedInApplication(token=self.ACCESS_TOKEN)
-            #self.USER_TOKEN = config.get("Linkedin", "USER_TOKEN") 
-            #self.USER_SECRET = config.get("Linkedin", "USER_SECRET") 
-            #self.RETURN_URL = config.get("Linkedin", "RETURN_URL")
-            #self.ACCESS_TOKEN = config.get("Linkedin", "ACCESS_TOKEN")
-            self.URN = config.get("Linkedin", "URN")
-
+                self.CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY") 
+                self.CONSUMER_SECRET = config.get("Linkedin", "CONSUMER_SECRET")
+                self.ACCESS_TOKEN = config.get("Linkedin", "ACCESS_TOKEN") 
+                self.ln = linkedin.LinkedInApplication(token=self.ACCESS_TOKEN)
+                self.URN = config.get("Linkedin", "URN")
+            else:
+                logging.warning("Account not configured") 
+                if sys.exc_info()[0]: 
+                    logging.warning("Unexpected error: {}".format( 
+                        sys.exc_info()[0]))
+                sys.exit(1)
         except:
             logging.warning("Account not configured")
+            sys.exit(1)
 
     def authorize(self):
         try:
@@ -63,7 +67,14 @@ class moduleLinkedin(Content):
             print('https://www.linkedin.com/oauth/v2/authorization?'
                     + urllib.parse.urlencode(payload))
 
-            access_token = input("Copy and paste the url in a browser and write here the access token ")
+            access_token = input("Copy and paste the url in a browser and write here the reply url ")
+            pos=access_token.find('code=')
+            pos2=access_token.find('&',pos+10)
+            print(pos, pos2)
+            print(access_token[pos+5:pos2])
+            access_token=access_token[pos+5:pos2] 
+
+
 
             url = 'https://www.linkedin.com/oauth/v2/accessToken'
             payload = {'grant_type':'authorization_code',
@@ -104,10 +115,19 @@ class moduleLinkedin(Content):
 
     def publishPost(self, post, link, comment):
 
-        res = self.ln.submit_share(comment=comment, title=post,description=None,
-                submitted_url=link, submitted_image_url=None, 
-                urn=self.URN, visibility_code='anyone')
-        logging.info("    Reply %s"%str(res))
+        try: 
+            # Function submit_share added on my own repo:
+            # https://github.com/fernand0/python-linkedin-v2
+            # Do not install with pip, install with 
+            # > python setup.py install
+            res = self.ln.submit_share(comment=comment, title=post,
+                    description=None, submitted_url=link, 
+                    submitted_image_url=None, urn=self.URN, 
+                    visibility_code='anyone')
+            logging.info("    Reply %s"%str(res))
+        except:
+            logging.info("Error publishing!")
+            logging.warning(self.report(self.service, post, link, sys.exc_info()))
 
         return res
 
@@ -194,6 +214,7 @@ def main():
     logging.basicConfig(stream=sys.stdout, 
             level=logging.INFO, 
             format='%(asctime)s %(message)s')
+
     import moduleLinkedin
 
     ln = moduleLinkedin.moduleLinkedin()
@@ -205,11 +226,9 @@ def main():
 
     print(ln.ln.get_profile())
 
-    #print("Testing posts")
-    #ln.setPosts()
-    #for post in ln.getPosts():
-    #    print(post)
+    ln.publishPost("Testing", 'https://github.com/fernand0/socialModules/blob/master/moduleLinkedin.py','')
 
+    sys.exit(1)
     import moduleSlack
     slack = moduleSlack.moduleSlack()
 
