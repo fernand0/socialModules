@@ -21,6 +21,6 @@ imgurpython
 Mastodon.py
 medium
 pocket-api
-slack
 slackclient
 python-tumblpy
+telepot

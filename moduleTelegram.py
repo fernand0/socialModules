@@ -12,24 +12,37 @@ class moduleTelegram(Content):
 
     def __init__(self):
         super().__init__()
+        self.service = 'Telegram'
 
     def setClient(self, channel):
-        logging.info("     Connecting Telegram")
+        logging.info("     Connecting {}".format(self.service))
         try:
             config = configparser.ConfigParser() 
             config.read(CONFIGDIR + '/.rssTelegram') 
             
-            TOKEN = config.get("Telegram", "TOKEN") 
-            
-            try: 
-                bot = telepot.Bot(TOKEN) 
-                meMySelf = bot.getMe() 
-            except: 
-                logging.warning("Telegram authentication failed!") 
-                logging.warning("Unexpected error:", sys.exc_info()[0])
+            if config.sections():
+                TOKEN = config.get("Telegram", "TOKEN") 
+                
+                try: 
+                    bot = telepot.Bot(TOKEN) 
+                    meMySelf = bot.getMe() 
+                except: 
+                    logging.warning("Telegram authentication failed!") 
+                    logging.warning("Unexpected error:", sys.exc_info()[0])
+            else:
+                logging.warning("Account not configured") 
+                if sys.exc_info()[0]: 
+                    logging.warning("Unexpected error: {}".format( 
+                        sys.exc_info()[0])) 
+                print("Please, configure a {} Account".format(self.service))
+                sys.exit(-1)
         except: 
             logging.warning("Account not configured") 
-            bot = None
+            if sys.exc_info()[0]: 
+                logging.warning("Unexpected error: {}".format( 
+                    sys.exc_info()[0])) 
+            print("Please, configure a {} Account".format(self.service))
+            sys.exit(-1)
 
         self.tc = bot
         self.user = meMySelf
@@ -92,6 +105,11 @@ class moduleTelegram(Content):
 
 
 def main():
+
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
+
     import moduleTelegram
 
     tel = moduleTelegram.moduleTelegram()
@@ -103,6 +121,9 @@ def main():
     for post in tel.getPosts():
         print(post)
 
+    tel.publishPost("Prueba", '', '')
+    
+    sys.exit()
     print("Testing title and link")
 
     for post in tel.getPosts():
