@@ -20,3 +20,4 @@ tmdbsimple
 imgurpython
 Mastodon.py
 medium
+pocket-api

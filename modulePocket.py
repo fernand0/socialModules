@@ -3,6 +3,8 @@
 import configparser
 import pickle
 import os
+import sys
+
 from pocket import Pocket, PocketException
 
 from configMod import *
@@ -14,27 +16,41 @@ class modulePocket(Content):
         super().__init__()
         self.user = None
         self.client = None
+        self.service = 'Pocket'
 
     def setClient(self, pocket=''):
-        logging.info("    Connecting Pocket")
+        logging.info("     Connecting {}".format(self.service))
         try:
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssPocket')
 
             self.user = pocket
+            if config.sections():
 
-            consumer_key = config.get("appKeys", "consumer_key")
-            access_token = config.get("appKeys", "access_token")
+                consumer_key = config.get("appKeys", "consumer_key")
+                access_token = config.get("appKeys", "access_token")
 
-            try:
-                client = Pocket(consumer_key=consumer_key, access_token=access_token)
-            except:
-                logging.warning("Pocket authentication failed!")
-                logging.warning("Unexpected error:", sys.exc_info()[0])
-                client = None
-        except:
+                try:
+                    client = Pocket(consumer_key=consumer_key, 
+                            access_token=access_token)
+                except:
+                    logging.warning("Pocket authentication failed!")
+                    logging.warning("Unexpected error:", sys.exc_info()[0])
+                    client = None
+            else: 
+                logging.warning("Account not configured") 
+                if sys.exc_info()[0]: 
+                    logging.warning("Unexpected error: {}".format( 
+                        sys.exc_info()[0])) 
+                print("Please, configure a {} Account".format(self.service))
+                sys.exit(-1)
+        except: 
             logging.warning("Account not configured")
-            client = None
+            if sys.exc_info()[0]: 
+                logging.warning("Unexpected error: {}".format( 
+                    sys.exc_info()[0])) 
+            print("Please, configure a {} Account".format(self.service))
+            sys.exit(-1)
 
         self.client = client
  
@@ -58,6 +74,10 @@ class modulePocket(Content):
             return(self.report('Pocket', post, link, sys.exc_info()))
  
 def main(): 
+
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
 
     import modulePocket
     
