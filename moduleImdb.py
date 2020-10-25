@@ -31,20 +31,27 @@ class moduleImdb(Content,Queue):
     def setClient(self, init=()):
         logging.info("Setting client")
         try:
-            try:
-                config = configparser.ConfigParser()
-                config.read(CONFIGDIR+'/.rssTMDb')
-            except:
-                logging.info("Some problem with configuration file")
-
-            tmdb.API_KEY = config.get('TMDb', 'api_key')
-            self.tmdb = tmdb
-            self.channels = config.get('TMDb', 'channels').split(',')
-            if init:
-                date = time.strftime('%Y-%m-%d')
-                self.url = init[0] .format(date)
+            config = configparser.ConfigParser()
+            config.read(CONFIGDIR+'/.rssTMDb')
+            if config.sections():
+                tmdb.API_KEY = config.get('TMDb', 'api_key')
+                self.tmdb = tmdb
+                self.channels = config.get('TMDb', 'channels').split(',')
+                if init:
+                    date = time.strftime('%Y-%m-%d')
+                    self.url = init[0] .format(date) 
+            else: 
+                logging.warning("Account not configured") 
+                if sys.exc_info()[0]: 
+                    logging.warning("Unexpected error: {}".format(
+                        sys.exc_info()[0]))
+                print("Please, configure a {} Account".format(self.service)) 
+                sys.exit(-1)
         except:
-            logging.info("Fail")
+                logging.info("Some problem with configuration file")
+                logging.warning("Unexpected error: {}".format(sys.exc_info()[0]))
+                sys.exit(-1)
+
 
     def getClient(self):
         return self.tmdb
@@ -231,6 +238,7 @@ def main():
     config.read(CONFIGDIR+'/.rssBlogs')
 
     url = config.get('Blog23', 'url')
+
     import moduleImdb
 
     site = moduleImdb.moduleImdb()
