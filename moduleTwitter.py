@@ -25,10 +25,9 @@ class moduleTwitter(Content,Queue):
         super().__init__()
         self.user = None
         self.tc = None
-        self.service = None
+        self.service = 'Twitter'
 
     def setClient(self, twitterAC):
-        self.service = 'Twitter'
         logging.info("     Connecting {}".format(self.service))
         try:
             logging.info("     Twitter Acc %s"%str(twitterAC))

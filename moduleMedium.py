@@ -14,33 +14,43 @@ class moduleMedium(Content,Queue):
 
     def __init__(self):
         super().__init__()
-        self.service = None
+        self.service = 'Medium'
 
     def setClient(self, channel):
-        logging.info("     Connecting Medium")
-        self.service = 'Medium'
+        logging.info("     Connecting {}".format(channel))
+
         try:
             config = configparser.ConfigParser() 
             config.read(CONFIGDIR + '/.rssMedium') 
-            
-            application_id = config.get("appKeys","ClientID")
-            application_secret = config.get("appKeys","ClientSecret")
+
+            if config.sections(): 
+                application_id = config.get("appKeys","ClientID") 
+                application_secret = config.get("appKeys","ClientSecret")
 
             
-            try: 
-                client = Client(application_id = application_id, 
-                        application_secret = application_secret)
-                client.access_token = config.get("appKeys","access_token") 
-                # Get profile details of the user identified by the access
-                # token.  
-                user = client.get_current_user()
-            except: 
-                logging.warning("Medium authentication failed!") 
-                logging.warning("Unexpected error:", sys.exc_info()[0])
+                try: 
+                    client = Client(application_id = application_id, 
+                            application_secret = application_secret)
+                    client.access_token = config.get("appKeys","access_token") 
+                    # Get profile details of the user identified by the access
+                    # token.  
+                    user = client.get_current_user()
+                except: 
+                    logging.warning("Medium authentication failed!") 
+                    logging.warning("Unexpected error:", sys.exc_info()[0])
+            else:
+                logging.warning("Account not configured")
+                if sys.exc_info()[0]: 
+                    logging.warning("Unexpected error: {}".format(
+                        sys.exc_info()[0]))
+                print("Please, configure a {} Account".format(self.service))
+                sys.exit(-1)
         except: 
             logging.warning("Account not configured") 
-            client = None
-            user = None
+            if sys.exc_info()[0]: 
+                logging.warning("Unexpected error: {}".format(
+                    sys.exc_info()[0]))
+            sys.exit(-1)
 
         self.tc = client
         self.user = user
@@ -96,32 +106,23 @@ class moduleMedium(Content,Queue):
         return(post['link'])
 
 def main():
+
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
+
     import moduleMedium
-
-    config = configparser.ConfigParser()
-    config.read(CONFIGDIR + '/.rssBlogs')
-
-    section = 'Blog2'
-    url = config.get(section, "url")
-    rssFeed = config.get(section, "rssFeed")
-    logging.info(" Blog RSS: %s"% rssFeed)
-    import moduleRss
-    blog = moduleRss.moduleRss()
-    # It does not preserve case
-    blog.setRssFeed(rssFeed)
-    blog.setUrl(url)
-    blog.setPosts()
-    post = blog.obtainPostData(1)
 
     tel = moduleMedium.moduleMedium()
 
     tel.setClient('fernand0')
 
     tel.setPosts()
-    title = post[0]
-    link = post[1]
-    content = post[7]
-    links = post[8]
+    title = tel.getPostTitle(tel.getPosts()[0])
+    link = tel.getPostLink(tel.getPosts()[0])
+    print(title)
+    print(link)
+    sys.exit()
     tel.publishPost(title,link,content)
 
 
