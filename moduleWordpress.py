@@ -3,7 +3,6 @@ import logging
 import requests
 import json
 import sys
-from bs4 import BeautifulSoup
 import urllib
 
 from configMod import *
@@ -28,23 +27,34 @@ class moduleWordpress(Content,Queue):
         self.api_posts='sites/{}/posts'
         self.api_tags='sites/{}/tags'
         self.api_posts_search='?search={}'
+        self.service = 'Wordpress'
 
     def setClient(self, user):
-        logging.info("     Connecting Wordpress")
-        self.service = 'Wordpress'
+        logging.info("    Connecting {}".format(self.service))
+        self.user = user
+        self.url = 'https://{}.wordpress.com/'.format(self.user)
         try:
             config = configparser.RawConfigParser()
             config.read(CONFIGDIR + '/.rssWordpress')
-
-            self.user = user
-            try: 
-                self.access_token =  config.get(user, "access_token")
-            except:
-                logging.warning("Access key does not exist!")
-                logging.warning("Unexpected error:", sys.exc_info()[0])
+            if config.sections():
+                try: 
+                    self.access_token =  config.get(user, "access_token")
+                except:
+                    logging.warning("Access key does not exist!")
+                    logging.warning("Unexpected error:", sys.exc_info()[0])
+            else:
+                logging.warning("Account not configured") 
+                if sys.exc_info()[0]: 
+                    logging.warning("Unexpected error: {}".format( 
+                        sys.exc_info()[0])) 
+                print("Please, configure a {} Account".format(self.service))
+                sys.exit(-1)
         except:
-                logging.warning("Config file does not exists")
-                logging.warning("Unexpected error:", sys.exc_info()[0])
+            logging.warning("Account not configured")
+            if sys.exc_info()[0]: 
+                logging.warning("Unexpected error: {}".format( 
+                    sys.exc_info()[0])) 
+            sys.exit(-1)
 
         self.headers = {'Authorization':'Bearer '+self.access_token}
         self.my_site="{}.wordpress.com".format(user)
@@ -52,31 +62,42 @@ class moduleWordpress(Content,Queue):
     def authorize(self): 
         # Firstly the data of the blog 
         config = configparser.ConfigParser()
-        config.read(CONFIGDIR + '/.rssBlogs')
-        url = config.get('Blog8','url')
-        name = urllib.parse.urlparse(url).netloc.split('.')[0] 
+        url = self.url
+        name = self.user 
         # Second the authentication data of the blog
         config = configparser.ConfigParser(interpolation=None) 
         configWordpress = CONFIGDIR + '/.rssWordpress'
-        config.read(configWordpress)
-        redirect_uri= config.get(name,'redirect_uri')
-        client_id = config.get(name,'Client_ID')
+        if config.sections():
+            try:
+                config.read(configWordpress)
+                redirect_uri= config.get(name,'redirect_uri')
+                client_id = config.get(name,'Client_ID')
 
-        param=self.api_auth.format(client_id, 
-                urllib.parse.quote(redirect_uri), url)
-        print("Paste this URL in your browser and allow the application: {}{}".format(self.oauth_base,
-            param)) 
+                param=self.api_auth.format(client_id, 
+                        urllib.parse.quote(redirect_uri), url)
+                print("Paste this URL in your browser and allow the application: {}{}".format(self.oauth_base,
+                    param)) 
 
-        resUrl =  input('Paste the resulting URL: ') 
-        splitUrl = urllib.parse.urlsplit(resUrl) 
-        result = urllib.parse.parse_qsl(splitUrl.fragment)
-        token = result[0][1]
-        config.set(name, 'access_token', token)
-        # Make a backup
-        shutil.copyfile(configWordpress, '{}.bak'.format(configWordpress))
-        with open(configWordpress, 'w') as configfile:
-            config.write(configfile)
-
+                resUrl =  input('Paste the resulting URL: ') 
+                splitUrl = urllib.parse.urlsplit(resUrl) 
+                result = urllib.parse.parse_qsl(splitUrl.fragment)
+                token = result[0][1]
+                config.set(name, 'access_token', token)
+                # Make a backup
+                shutil.copyfile(configWordpress, '{}.bak'.format(configWordpress))
+                with open(configWordpress, 'w') as configfile:
+                    config.write(configfile)
+            except: 
+                logging.warning("There is some problem with the configuration file") 
+                sys.exit(-1)
+        else:
+            logging.warning("Account not configured") 
+            if sys.exc_info()[0]: 
+                logging.warning("Unexpected error: {}".format( 
+                    sys.exc_info()[0])) 
+            print("Please, configure a {} Account".format(self.service))
+            sys.exit(-1)
+ 
     def setPosts(self, morePosts=None): 
         logging.info("  Setting posts")
         self.posts = []
@@ -281,7 +302,6 @@ def main():
     res = wp.setPosts()
     if res[:4] == 'Fail':
        wp.authorize()
-    sys.exit()
 
     print("Testing tags")
     wp.setTags()
