@@ -24,29 +24,44 @@ class moduleTumblr(Content):
         super().__init__()
         self.user = None
         self.tc = None
+        self.service = 'Tumblr'
 
     def setClient(self, tumblr):
-        logging.info("    Connecting Twitter")
+        logging.info("    Connecting {}".format(self.service))
         try:
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssTumblr')
 
             self.user = tumblr
 
-            consumer_key = config.get("Buffer1", "consumer_key")
-            consumer_secret = config.get("Buffer1", "consumer_secret")
-            oauth_token = config.get("Buffer1", "oauth_token")
-            oauth_secret = config.get("Buffer1", "oauth_secret")
+            if config.sections():
+                consumer_key = config.get("Buffer1", "consumer_key")
+                consumer_secret = config.get("Buffer1", "consumer_secret")
+                oauth_token = config.get("Buffer1", "oauth_token")
+                oauth_secret = config.get("Buffer1", "oauth_secret")
 
-            try:
-                client = Tumblpy(consumer_key, consumer_secret, 
-                                       oauth_token, oauth_secret)
-            except:
-                logging.warning("Tumblr authentication failed!")
-                logging.warning("Unexpected error:", sys.exc_info()[0])
-                client = None
+                try:
+                    client = Tumblpy(consumer_key, consumer_secret, 
+                                           oauth_token, oauth_secret)
+                except:
+                    logging.warning("Tumblr authentication failed!")
+                    logging.warning("Unexpected error:", sys.exc_info()[0])
+                    client = None
+            else:
+                logging.warning("Account not configured") 
+                if sys.exc_info()[0]: 
+                    logging.warning("Unexpected error: {}".format( 
+                        sys.exc_info()[0])) 
+                print("Please, configure a {} Account".format(self.service))
+                sys.exit(-1)
         except:
             logging.warning("Account not configured")
+            if sys.exc_info()[0]: 
+                logging.warning("Unexpected error: {}".format( 
+                    sys.exc_info()[0])) 
+            print("Please, configure a {} Account".format(self.service))
+            sys.exit(-1)
+
             client = None
 
         self.tc = client
@@ -56,7 +71,9 @@ class moduleTumblr(Content):
  
     def setPosts(self):
         logging.info("  Setting posts")
-        self.posts = []
+        posts = self.tc.posts('https://fernand0.tumblr.com/')
+        if 'posts' in posts:
+            self.posts = posts['posts']
 
     def publishPost(self, post, link, comment):
     
@@ -64,13 +81,20 @@ class moduleTumblr(Content):
             logging.info("    Publishing in Tumblr: %s" % post)
             client = self.tc 
             blog_url = client.post('user/info')['user']['blogs'][0]['url'] 
-            res = client.post('post', blog_url, params={'type':'link',
+            if comment: 
+                if link:
+                    comment = '<a href="{}">{}</a><br /> <br />{}'.format(
+                            link, post, comment)
+                params={'type':'text',
                 'state':'queue', 
                 'title': post, 
-                'thumbnail': None, 
-                'url': link, 
-                #'excerpt': summaryHtml, 
-                'publisher': ''}) 
+                'body' : comment} 
+            else:
+                params={'type':'link', 
+                        'state':'queue', 'title': post, 
+                        'url': link, 
+                        'publisher': ''}
+            res = client.post('post', blog_url, params=params) 
 
             logging.info("Res: %s" % res)
             return(res)
@@ -78,6 +102,10 @@ class moduleTumblr(Content):
             return(self.report('Tumblr', post, link, sys.exc_info()))
 
 def main():
+
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
 
     import moduleTumblr
 
@@ -87,25 +115,14 @@ def main():
 
     t.setPosts()
 
+    print(t.getPosts())
+
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs')
 
-    section = 'Blog2'
-    url = config.get(section, "url")
-    rssFeed = config.get(section, "rssFeed")
-    logging.info(" Blog RSS: %s"% rssFeed)
-    import moduleRss
-    blog = moduleRss.moduleRss()
-    # It does not preserve case
-    blog.setRssFeed(rssFeed)
-    blog.setUrl(url)
-    blog.setPosts()
-    post = blog.obtainPostData(1)
-
-    title = post[0]
-    link = post[1]
-    content = post[7]
-    links = post[8]
+    title = "Test" 
+    link = "https://elmundoesimperfecto.com/"
+    content = "" #"Testing publishing in Tumblr"
     t.publishPost(title,link,content)
 
 

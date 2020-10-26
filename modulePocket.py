@@ -64,7 +64,7 @@ class modulePocket(Content):
     def publishPost(self, post, link, comment):
     
         try:
-            logging.info("    Publishing in Pocket: %s" % post)
+            logging.info("    Publishing in {}: {}".format(self.service, post))
             client = self.client 
             res = client.add(link)
             logging.info("Res: %s" % res)
