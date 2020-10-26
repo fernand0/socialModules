@@ -7,13 +7,11 @@ import os
 import time
 import urllib
 import requests
-import pickle
 import logging
-from bs4 import BeautifulSoup
-from bs4 import Tag
 from pdfrw import PdfReader
 import moduleCache
-# https://github.com/fernand0/scripts/blob/master/moduleCache.py
+# https://github.com/fernand0/socialModules/blob/master/moduleCache.py
+import sys
 
 from configMod import *
 
@@ -33,6 +31,7 @@ class moduleXmlrpc():
          self.program = None
          self.lastLinkPublished = {}
          self.keys = []
+         self.service = "XmlRPC"
          #self.logger = logging.getLogger(__name__)
  
     def setClient(self, nick): 
@@ -392,6 +391,11 @@ class moduleXmlrpc():
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
 def main():
+
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
+
     import moduleXmlrpc
     
     config = configparser.ConfigParser()
@@ -408,7 +412,7 @@ def main():
         xmlrpc = config.get(b, "xmlrpc")
         blog.setXmlRpc()
         blog.setPostsXmlRpc()
-        print(blog.getPostsXmlRpc()[9])
+        print(blog.getPostsXmlRpc())
         print(blog.obtainPostData(9))
     sys.exit()
 
