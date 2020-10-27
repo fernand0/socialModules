@@ -1,8 +1,6 @@
 # This module provides infrastructure for managing content in different 
 # queues: local cache, buffer, Gmail, ... 
 
-import configparser
-import os
 import logging
 import re
 
