@@ -150,6 +150,7 @@ class moduleWordpress(Content,Queue):
                     + self.api_posts.format(self.my_site), 
                     headers = self.headers,
                     data = payload)
+            print(res)
             if res.ok: 
                 logging.info("Res: %s" % res)
                 resJ = json.loads(res.text)
@@ -281,7 +282,6 @@ def main():
     res = wp.setPosts()
     if res[:4] == 'Fail':
        wp.authorize()
-    sys.exit()
 
     print("Testing tags")
     wp.setTags()
@@ -295,13 +295,15 @@ def main():
             wp.getPostLink(post)))
         print(wp.obtainPostData(i))
 
-
     sel = input('Select one ')
     pos =  int(sel)
     post = wp.getPosts()[pos]
     print("{}) {} {}".format(pos, wp.getPostTitle(post), 
             wp.getPostLink(post)))
+    wp.publishPost("prueba", '', "lala")
     sys.exit()
+
+    wp.publishPost(post, '', title)
 
 
     #pos = wp.getLinkPosition('https://avecesunafoto.wordpress.com/2020/03/10/gamoncillo/')
@@ -318,7 +320,6 @@ def main():
     print(title, post)
 
     sys.exit()
-    wp.publishPost(post, '', title)
 
 
     sys.exit()

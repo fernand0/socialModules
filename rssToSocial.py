@@ -23,8 +23,6 @@ import moduleSocial
 # https://github.com/fernand0/scripts/blob/master/moduleSocial.py
 import moduleCache
 # https://github.com/fernand0/scripts/blob/master/moduleCache.py
-import moduleBuffer
-# https://github.com/fernand0/scripts/blob/master/moduleBuffer.py
 import moduleSlack
 # https://github.com/fernand0/scripts/blob/master/moduleSlack.py
 import moduleForum
@@ -222,6 +220,9 @@ def main():
             blog.setSocialNetworks(config, section)
 
             if ('buffer' in config.options(section)): 
+                # Unmaintained
+                import moduleBuffer 
+                # https://github.com/fernand0/scripts/blob/master/moduleBuffer.py
                 blog.setBufferapp(config.get(section, "buffer")) 
 
             if('max' in config.options(section)):
