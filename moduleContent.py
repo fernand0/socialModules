@@ -2,12 +2,7 @@
 # It stores in a convenient and consistent way the content in order to be used
 # in other programs
 
-import configparser
-import os
 import logging
-from bs4 import Tag
-from urllib.request import urlopen
-from bs4 import BeautifulSoup
 
 from configMod import *
 

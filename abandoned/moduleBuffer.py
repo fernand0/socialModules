@@ -57,7 +57,6 @@ from buffpy.models import Update
 from buffpy.managers.profiles import Profiles
 from buffpy.managers.updates import Updates
 
-
 # We can put as many items as the service with most items allow
 # The limit is ten.
 # Get all pending updates of a social network profile
