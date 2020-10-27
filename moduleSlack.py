@@ -93,8 +93,8 @@ class moduleSlack(Content,Queue):
         url = config.get(section, "url")
         self.setUrl(url)
         self.setSocialNetworks(config, section)
-        if ('buffer' in config.options(section)): 
-            self.setBufferapp(config.get(section, "buffer"))
+        #if ('buffer' in config.options(section)): 
+        #    self.setBufferapp(config.get(section, "buffer"))
 
         if ('cache' in config.options(section)): 
             self.setProgram(config.get(section, "cache"))
