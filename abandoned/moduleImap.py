@@ -20,7 +20,6 @@ import re
 from email.header import Header
 from email.header import decode_header
 from bs4 import BeautifulSoup
-import moduleSieve
 import click
 
 import ssl
@@ -245,6 +244,7 @@ def showMessagesList(M, folder, messages, startMsg):
     return(msg_data, msg_numbers)
  
 def selectMessageAndFolder(M):
+    import moduleSieve
     msg_number =""
     startMsg = 0
     folder = "INBOX"

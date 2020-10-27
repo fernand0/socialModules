@@ -20,7 +20,7 @@ import pickle
 import sys
 
 import moduleSocial
-import moduleImap
+from email.header import decode_header
 
 import googleapiclient
 from googleapiclient.discovery import build
@@ -331,6 +331,21 @@ class moduleGmail(Content,Queue):
         if 'list' in message:
             message = message['meta']
         return(message['id'])
+
+    def headerToString(header): 
+        if not (header is None):
+            headRes = ""
+            for (headDec, enc) in decode_header(header):
+                # It is a list of coded and not coded strings
+                if (enc is None) or (enc == 'unknown-8bit'): 
+                    enc = 'iso-8859-1'
+                if (not isinstance(headDec, str)):
+                    headDec = headDec.decode(enc)
+                headRes = headRes + headDec
+        else:
+            headRes = ""
+
+        return headRes
 
     def getHeaderEmail(self, message, header = 'Subject'):
         if header in message:
