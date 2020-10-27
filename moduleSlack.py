@@ -240,12 +240,10 @@ class moduleSlack(Content,Queue):
     def deletePost(self, idPost, theChannel): 
         #theChannel or the name of the channel?
         logging.info("Deleting id %s from %s" % (idPost, theChannel))
-        theChan = self.getChanId(theChannel)
-        logging.info("Deleting id %s from %s" % (idPost, theChan)) 
         
         try:
             self.sc.token = self.user_slack_token        
-            data = {'channel': theChan, 'ts': idPost}
+            data = {'channel': theChannel, 'ts': idPost}
             result = self.sc.api_call("chat.delete", data=data) #, channel=theChannel, ts=idPost)
         except:
             logging.info(self.report('Slack', "Error deleting", "", sys.exc_info()))
@@ -481,7 +479,8 @@ def main():
     print(site.getPostLink(post))
     rep = site.publishPost('tavern-of-the-bots', 'hello')
     wait = input('Delete %s?' % rep)
-    rep = site.deletePost(rep['ts'], 'tavern-of-the-bots')
+    theChan = site.getChanId('tavern-of-the-bots')
+    rep = site.deletePost(rep['ts'], theChan)
 
     sys.exit()
 
@@ -492,7 +491,7 @@ def main():
     print(site.sc.api_call('channels.list'))
     sys.exit()
     rep = site.publishPost('tavern-of-the-bots', 'hello')
-    site.deletePost(rep['ts'], theChannel)
+    site.deletePost(rep['ts'], theChan)
     sys.exit()
 
     site.setSocialNetworks(config, section)
