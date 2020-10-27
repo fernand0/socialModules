@@ -15,10 +15,6 @@ from email.utils import formatdate
 from email import encoders
 import smtplib
 
-#import getpass
-#import keyring
-#import keyrings
-
 class moduleSmtp(Content):
 
     def __init__(self):
@@ -57,6 +53,10 @@ class moduleSmtp(Content):
             return('Fail')
 
 def main():
+
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
 
     import moduleSmtp
 

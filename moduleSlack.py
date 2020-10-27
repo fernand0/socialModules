@@ -480,7 +480,7 @@ def main():
     print(site.getPostTitle(post))
     print(site.getPostLink(post))
     rep = site.publishPost('tavern-of-the-bots', 'hello')
-    print(rep)
+    wait = input('Delete %s?' % rep)
     rep = site.deletePost(rep['ts'], 'tavern-of-the-bots')
 
     sys.exit()
@@ -492,7 +492,6 @@ def main():
     print(site.sc.api_call('channels.list'))
     sys.exit()
     rep = site.publishPost('tavern-of-the-bots', 'hello')
-    wait = input('Delete %s?' % rep)
     site.deletePost(rep['ts'], theChannel)
     sys.exit()
 

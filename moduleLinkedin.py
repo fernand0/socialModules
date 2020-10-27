@@ -220,7 +220,7 @@ def main():
     ln = moduleLinkedin.moduleLinkedin()
 
     ln.setClient('fernand0')
-    if False: 
+    if True: 
         ln.authorize()
 
 
