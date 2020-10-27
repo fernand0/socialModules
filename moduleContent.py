@@ -147,27 +147,27 @@ class Content:
     def setTime(self, time):
         self.time = time
 
-    def getBuffer(self):
-        return(self.buffer)
+    #def getBuffer(self):
+    #    return(self.buffer)
 
-    def setBuffer(self): 
-        import moduleBuffer 
-        # https://github.com/fernand0/scripts/blob/master/moduleBuffer.py
-        self.buffer = {}
-        for service in self.getSocialNetworks():
-            if service[0] in self.getBufferapp():
-                nick = self.getSocialNetworks()[service]
-                buf = moduleBuffer.moduleBuffer() 
-                buf.setClient(self.url, (service, nick))
-                buf.setPosts()
-                self.buffer[(service, nick)] = buf
+    #def setBuffer(self): 
+    #    import moduleBuffer 
+    #    # https://github.com/fernand0/scripts/blob/master/moduleBuffer.py
+    #    self.buffer = {}
+    #    for service in self.getSocialNetworks():
+    #        if service[0] in self.getBufferapp():
+    #            nick = self.getSocialNetworks()[service]
+    #            buf = moduleBuffer.moduleBuffer() 
+    #            buf.setClient(self.url, (service, nick))
+    #            buf.setPosts()
+    #            self.buffer[(service, nick)] = buf
 
-    def getBufferapp(self):
-        return(self.bufferapp)
+    #def getBufferapp(self):
+    #    return(self.bufferapp)
  
-    def setBufferapp(self, bufferapp):
-        self.bufferapp = bufferapp
-        self.setBuffer()
+    #def setBufferapp(self, bufferapp):
+    #    self.bufferapp = bufferapp
+    #    self.setBuffer()
     
     def setMax(self, maxVal):
         self.max = maxVal
