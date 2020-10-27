@@ -83,7 +83,7 @@ class moduleSlack(Content,Queue):
         try: 
             self.sc = SlackClient(self.slack_token)
         except:
-            logging.info(self.report('Slack', text, sys.exc_info()))
+            logging.info(self.report('Slack', "","", sys.exc_info()))
             self.sc = slack.WebClient(token=self.slack_token)
 
         config = configparser.ConfigParser()
