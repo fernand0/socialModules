@@ -219,11 +219,11 @@ def main():
 
             blog.setSocialNetworks(config, section)
 
-            if ('buffer' in config.options(section)): 
-                # Unmaintained
-                import moduleBuffer 
-                # https://github.com/fernand0/scripts/blob/master/moduleBuffer.py
-                blog.setBufferapp(config.get(section, "buffer")) 
+            #if ('buffer' in config.options(section)): 
+            #    # Unmaintained
+            #    import moduleBuffer 
+            #    # https://github.com/fernand0/scripts/blob/master/moduleBuffer.py
+            #    blog.setBufferapp(config.get(section, "buffer")) 
 
             if('max' in config.options(section)):
                 blog.setMax(config.get(section, "max")) 
@@ -246,12 +246,13 @@ def main():
 
             socialNetworks = blog.getSocialNetworks()
             if socialNetworks:
-                logging.info(" Looking for pending posts") 
-                print("   Looking for pending posts ... " )
-                blog.setPosts()
+                msgLog = "  Looking for pending posts"
             else:
-                logging.info(" No social networks configured") 
-                print("   No social networks configured ... " )
+                msgLog = "  No social networks configured"
+            logging.info(msgLog) 
+            print(msgLog)
+            if socialNetworks:
+                blog.setPosts()
 
             for profile in socialNetworks:
                 lenMax = 0
@@ -262,15 +263,16 @@ def main():
                 socialNetwork = (profile, nick)
                 nameProfile = profile + '_' + nick
 
-                if ((blog.getBufferapp() 
-                        and (profile[0] in blog.getBufferapp())) 
-                        or (blog.getProgram() 
-                            and (profile[0] in blog.getProgram()))): 
+                #if ((blog.getBufferapp() 
+                #        and (profile[0] in blog.getBufferapp())) 
+                if (blog.getProgram() 
+                            and (profile[0] in blog.getProgram())): 
                     lenMax = blog.len(profile)
 
 
-                logging.info("  Service {} Nick {}".format(profile, nick))
-                print("  Service {} Nick {}".format(profile, nick))
+                msgLog = "  Service: {} Nick: {}"
+                logging.info(msgLog.format(profile, nick))
+                print(msgLog.format(profile, nick))
                 logging.debug("  Service %s Lenmax %d" % (profile, lenMax))
 
                 num = bufferMax - lenMax
@@ -318,8 +320,10 @@ def main():
                         num = int(blog.getMax())
 
 
-                    if ((num > 0) and (blog.getBufferapp() or blog.getProgram())
-                            or not (blog.getBufferapp() or blog.getProgram())):
+                    #if ((num > 0) and (blog.getBufferapp() or blog.getProgram())
+                    #        or not (blog.getBufferapp() or blog.getProgram())):
+                    if ((num > 0) and blog.getProgram():
+                            #or not (blog.getBufferapp() or blog.getProgram())):
 
                         logging.debug("   Profile %s"% profile)
                         link = ""
@@ -334,10 +338,10 @@ def main():
                     if simmulate:
                         print("Simmulation {}".format(str(listPosts))) 
                     else: 
-                        if (blog.getBufferapp() 
-                                and (profile[0] in blog.getBufferapp())): 
-                            print("      Buffered")
-                            link = blog.buffer[socialNetwork].addPosts(listPosts)
+                        #if (blog.getBufferapp() 
+                        #        and (profile[0] in blog.getBufferapp())): 
+                        #    print("      Buffered")
+                        #    link = blog.buffer[socialNetwork].addPosts(listPosts)
 
                         if ((blog.getProgram() 
                                 and isinstance(blog.getProgram(), list)
@@ -345,17 +349,23 @@ def main():
                             (blog.getProgram() 
                                 and isinstance(blog.getProgram(), str) 
                                 and (profile[0] in blog.getProgram()))):
-                            print("      Delayed")
+                            msgLog = "      Delayed"
+                            print(msgLog) 
+                            logging.info(msgLog)
+                            msgLog = "      Adding posts" 
+                            print(msgLog) 
+                            logging.info(msgLog)
                             link = blog.cache[socialNetwork].addPosts(listPosts)
 
                             time.sleep(1)
-                            delayedBlogs.append((blog, socialNetwork, 1, timeSlots))
+                            delayedBlogs.append((blog, 
+                                socialNetwork, 1, timeSlots))
 
 
-                        if not (blog.getBufferapp() or blog.getProgram()):
-                            link = moduleSocial.publishDirect(blog, 
-                                    socialNetwork, i) 
-                            logging.info("  Link reply %s"%str(link)) 
+                        #if not (blog.getBufferapp() or blog.getProgram()):
+                        #    link = moduleSocial.publishDirect(blog, 
+                        #            socialNetwork, i) 
+                        #    logging.info("  Link reply %s"%str(link)) 
 
                         if link:
                              logging.info("    Updating link %s %s" % 

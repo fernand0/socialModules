@@ -128,7 +128,6 @@ class moduleCache(Content,Queue):
         self.crontab.write()
 
     def addPosts(self, listPosts):
-        print("      Adding posts")
         link = ''
         if listPosts:
             self.posts = self.posts + listPosts
