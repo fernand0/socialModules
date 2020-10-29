@@ -117,6 +117,256 @@ def test():
 
     return recentPosts
 
+
+def readConfig(checkBlog):
+    config = configparser.ConfigParser()
+    config.read(CONFIGDIR + '/.rssBlogs')
+
+    blogs = []
+
+    logging.info("Configured blogs:")
+
+    for section in config.sections(): 
+        blog = None
+        logging.info("Section: %s"% section)
+        url = config.get(section, "url")
+        print("Section: %s %s"% (section, url))
+        if (not checkBlog) or (checkBlog.upper() == section.upper()):
+            if ("rss" in config.options(section)):
+                rssFeed = config.get(section, "rss")
+                logging.info(" Blog RSS: {}".format(rssFeed))
+                blog = moduleRss.moduleRss()
+                # It does not preserve case
+                blog.setRssFeed(rssFeed)
+            elif url.find('slack')>0:
+                logging.info(" Blog Slack: {}".format(url))
+                blog = moduleSlack.moduleSlack()
+                blog.setSlackClient(os.path.expanduser(CONFIGDIR+'/.rssSlack'))
+            elif url.find('imgur')>0:
+                logging.info(" Blog ImgUr: {}".format(url))
+                blog = moduleImgur.moduleImgur()
+                if 'imgur' in config.options(section): 
+                    imgur = config.get(section,'imgur') 
+                else: 
+                    imgur = url.split('/')[-1]
+                logging.info(" ImgUr: {}".format(imgur))
+                blog.setClient(imgur)
+            elif 'forum' in config.options(section):
+                forum = config.get(section,'forum')
+                logging.info(" Forum: {}".format(forum))
+                blog = moduleForum.moduleForum()
+                blog.setClient(forum)
+            elif 'gmail' in config.options(section):
+                mail = config.get(section,'gmail')
+                logging.info(" Gmail: {}".format(mail))
+                blog = moduleGmail.moduleGmail()
+                blog.setClient(('gmail',mail))
+            elif 'wordpress' in config.options(section):
+                wordpress = config.get(section,'wordpress')
+                logging.info(" Wordpress: {}".format(wordpress))
+                blog = moduleWordpress.moduleWordpress()
+                blog.setClient(wordpress)
+            elif 'imdb' in config.options(section):
+                imdb = config.get(section,'imdb')
+                logging.info(" Imdb: {}".format(imdb))
+                blog = moduleImdb.moduleImdb()
+                #blog.setClient((url,config.get(section,'channels').split(',')))
+
+                # If checkBlog is empty it will add all of them
+
+            blog.setUrl(url)
+
+            if ("linksToAvoid" in config.options(section)):
+                blog.setLinksToAvoid(config.get(section, "linksToAvoid"))
+            if ("time" in config.options(section)):
+                blog.setTime(config.get(section, "time"))
+
+            blog.setSocialNetworks(config, section)
+
+            if('max' in config.options(section)):
+                blog.setMax(config.get(section, "max")) 
+            elif ('buffermax' in config.options(section)): 
+                blog.setBufMax(config.get(section, "buffermax"))
+            else:
+                blog.setBufMax(9)
+
+            if ('cache' in config.options(section)): 
+                blog.setProgram(config.get(section, "cache"))
+            if ('posts' in config.options(section)): 
+                blog.setPostsType(config.get(section, "posts"))
+            else:
+                blog.setPostsType("posts")
+
+            blogs.append(blog)
+
+    return(blogs)
+
+def updateCaches(blogs, simmulate):
+    for blog in blogs:
+        bufferMax = int(blog.getBufMax())
+        socialNetworks = blog.getSocialNetworks() 
+        if socialNetworks:
+                msgLog = "  Looking for pending posts"
+        else:
+            msgLog = "  No social networks configured"
+        logging.info(msgLog) 
+        print(msgLog)
+        if socialNetworks:
+            blog.setPosts()
+
+        for profile in socialNetworks: 
+            lenMax = 0
+            i = 0
+            link= ""
+
+            nick = blog.getSocialNetworks()[profile]
+            socialNetwork = (profile, nick)
+            nameProfile = profile + '_' + nick
+
+            #if ((blog.getBufferapp() 
+            #        and (profile[0] in blog.getBufferapp())) 
+            if (blog.getProgram() 
+                        and (profile[0] in blog.getProgram())): 
+                lenMax = blog.len(profile)
+
+
+            msgLog = "  Service: {} Nick: {}"
+            logging.info(msgLog.format(profile, nick))
+            print(msgLog.format(profile, nick))
+            logging.debug("  Service %s Lenmax %d" % (profile, lenMax))
+
+            num = bufferMax - lenMax
+
+            lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
+            if hasattr(blog, 'getPostsType'): 
+                if blog.getPostsType() == 'drafts': 
+                    i = 1
+                else: 
+                    i = blog.getLinkPosition(lastLink)
+ 
+            if (i == 0):
+                myMsg = "No new posts."
+            else:
+                myMsg = "New posts."
+
+            myMsg = "    {} Last time: {}".format(myMsg, 
+                    time.ctime(lastTime))
+
+            logging.info(myMsg) 
+            print(myMsg)
+
+            hours = blog.getTime() 
+            if lastLink and isinstance(lastLink, list):
+                myLastLink = lastLink[0]
+            else:
+                myLastLink = lastLink
+
+            logging.info("    %s Last link %s"% 
+                    (time.strftime('%Y-%m-%d %H:%M:%S', 
+                        time.localtime(lastTime)), myLastLink))
+            #print("     {}".format(time.strftime('%Y-%m-%d %H:%M:%S',
+            #    time.localtime(lastTime))))
+            logging.debug("bufferMax - lenMax = num %d %d %d"%
+                    (bufferMax, lenMax, num)) 
+
+
+            #if ((not nowait) and 
+            #        (hours and (((time.time() - lastTime) 
+            #                - round(float(hours)*60*60)) < 0))): 
+            #    logging.info("  Not publishing because time restriction") 
+            #    print("     Not publishing because time restriction (Last time: %s)"% time.ctime(lastTime)) 
+            #else:
+            if blog.getProgram():
+                listPosts = []
+                if 'max' in blog.__dir__():
+                    num = int(blog.getMax())
+
+
+                if (num > 0):
+
+                    logging.debug("   Profile %s"% profile)
+                    link = ""
+                    listPosts = blog.getNumPostsData(num, i, lastLink) 
+
+                    if listPosts: 
+                        print("      Scheduling...") 
+                        [ print("       - Posts: {}".format(post[0])) 
+                                for post in listPosts ] 
+                        [ logging.info("    Scheduling posts {}".format(post[0])) 
+                                for post in listPosts ]
+
+                if simmulate:
+                    print("Simmulation {}".format(str(listPosts))) 
+                else: 
+                    if ((blog.getProgram() 
+                            and isinstance(blog.getProgram(), list)
+                            and profile in blog.getProgram()) or 
+                        (blog.getProgram() 
+                            and isinstance(blog.getProgram(), str) 
+                            and (profile[0] in blog.getProgram()))):
+                        msgLog = "      Delayed"
+                        print(msgLog) 
+                        logging.info(msgLog)
+                        msgLog = "      Adding posts" 
+                        print(msgLog) 
+                        logging.info(msgLog)
+                        link = blog.cache[socialNetwork].addPosts(listPosts)
+
+                        if link:
+                             logging.info("    Updating link %s %s" % 
+                                     (profile, link))
+                             if isinstance(lastLink, list):
+                                 #print(lastLink)
+                                 link = '\n'.join([ "{}".format (post[1]) for post in listPosts])
+                                 link = link + '\n' + '\n'.join(lastLink)
+
+                             updateLastLink(blog.getUrl(), link, socialNetwork) 
+                             logging.debug("listPosts: %s"% listPosts)
+
+def publishUpdates(blogs, simmulate):
+    delayedBlogs = []
+    delayedPosts = []
+
+    for blog in blogs:
+        if simmulate:
+            print("Simmulation {}".format(str(listPosts))) 
+        else: 
+            if ((blog.getProgram() 
+                    and isinstance(blog.getProgram(), list) 
+                    and profile in blog.getProgram()) or 
+                (blog.getProgram() 
+                    and isinstance(blog.getProgram(), str) 
+                    and (profile[0] in blog.getProgram()))): 
+
+                    delayedBlogs.append((blog, 
+                        socialNetwork, 1, timeSlots))
+ 
+    if not simmulate and delayedBlogs:
+
+        print("======================================")
+        print("Starting delayed at %s" % time.asctime())
+        print("======================================")
+
+        import concurrent.futures 
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(delayedBlogs)) as executor:
+            delayedPosts = {executor.submit(moduleSocial.publishDelay, *args): args for args in delayedBlogs}
+            time.sleep(5)
+            print("")
+            for future in concurrent.futures.as_completed(delayedPosts):
+                dataBlog = delayedPosts[future]
+                try:
+                    res = future.result()
+                    print("Res: %s"% str(res))
+                except Exception as exc:
+                    print('%r generated an exception: %s' % (str(dataBlog), exc))
+    
+
+        print("======================================")
+        print("Finished delayed at %s" % time.asctime())
+        print("======================================")
+
+
+
 def main():
 
     print("====================================")
@@ -164,6 +414,10 @@ def main():
     delayedPosts = []
     delayedBlogs = []
 
+    blogs = readConfig(checkBlog)
+    updateCaches(blogs, simmulate)
+            
+    sys.exit()
     for section in config.sections():
         blog = None
         logging.info("Section: %s"% section)
@@ -322,7 +576,7 @@ def main():
 
                     #if ((num > 0) and (blog.getBufferapp() or blog.getProgram())
                     #        or not (blog.getBufferapp() or blog.getProgram())):
-                    if ((num > 0) and blog.getProgram():
+                    if (num > 0) and blog.getProgram():
                             #or not (blog.getBufferapp() or blog.getProgram())):
 
                         logging.debug("   Profile %s"% profile)
