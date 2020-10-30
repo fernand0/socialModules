@@ -222,7 +222,6 @@ class moduleImgur(Content,Queue):
     def getNumPostsData(self, num, i, lastLink): 
         listPosts = []
         posts = self.getPosts()
-        print("len",len(posts))
         if self.getPostsType() == 'posts':
             j = 0
             posts = self.getPosts()
@@ -234,6 +233,7 @@ class moduleImgur(Content,Queue):
                     # check by link (post[1]) We don't use this code here.
                     post = self.obtainPostData(i) 
                     listPosts.append(post)
+                    print("post",post)
  
                     j = j + 1
                     if j == num:

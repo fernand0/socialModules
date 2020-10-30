@@ -96,7 +96,6 @@ def test():
                                   time.strftime('%Y-%m-%d %H:%M:%SZ',
                                   lastPost['published_parsed'])))
         lastLink = checkLastLink(self.url, config.get(section, "rss"))
-        print(lastLink)
         lenCmp = min(len(lastLink),len(lastPost['link']))
 
         recentPosts[section] = {}
@@ -239,6 +238,8 @@ def updateCaches(blogs, simmulate):
 
             num = bufferMax - lenMax
 
+
+            print(socialNetwork)
             lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
 
             if hasattr(blog, 'getPostsType'): 
@@ -280,6 +281,7 @@ def updateCaches(blogs, simmulate):
             if (num > 0):
                 logging.debug("   Profile %s"% profile)
                 link = ""
+                print(num, i)
                 listPosts = blog.getNumPostsData(num, i, lastLink) 
 
                 if listPosts: 
@@ -314,9 +316,12 @@ def updateCaches(blogs, simmulate):
                                  link = link + '\n' + '\n'.join(lastLink)
 
                              updateLastLink(blog.getUrl(), link, socialNetwork) 
-                             logging.debug("listPosts: %s"% listPosts)
+                             msgLog = "listPosts: {}".format(str(listPosts))
+                             logging.debug(msgLog)
+                             print(msgLog)
                 else:
                     print(socialNetwork)
+                    print(listPosts)
                     if listPosts:
                         link = blog.addNextPosts(listPosts, socialNetwork)
                         print(blog.getNextPosts(socialNetwork))
@@ -350,7 +355,7 @@ def publishUpdates(blogs, simmulate, nowait, timeSlots):
                             socialNetwork, 1, nowait, timeSlots))
                 else: 
                     link = moduleSocial.publishDelay(blog, socialNetwork, 1, nowait, 0)
-                    sys.exit()
+                    continue
                     link = moduleSocial.publishDirect(blog, 
                                 socialNetwork, i) 
                     logging.info("  Link reply %s"%str(link)) 
@@ -433,7 +438,6 @@ def main():
 
     blogs = readConfig(checkBlog)
     updateCaches(blogs, simmulate)
-    #sys.exit()
     publishUpdates(blogs, simmulate, nowait, timeSlots)
 
     #        

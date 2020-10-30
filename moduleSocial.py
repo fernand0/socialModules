@@ -88,9 +88,11 @@ from configMod import *
 logger = logging.getLogger(__name__)
 
 def nextPost(blog, socialNetwork):
+    listP = ""
     if blog.getProgram():
-        blog.cache[socialNetwork].setPosts()
-        listP = blog.cache[socialNetwork].getPosts()
+        if socialNetwork in blog.cache:
+            blog.cache[socialNetwork].setPosts()
+            listP = blog.cache[socialNetwork].getPosts()
     else:
 
         logging.info("si ")
