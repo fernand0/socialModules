@@ -58,6 +58,28 @@ def checkLastLink(url, socialNetwork=()):
     (linkLast, timeLast) = getLastLink(fileNameL)
     return(linkLast, timeLast)
 
+def newupdateLastLink(url, link, socialNetwork=()): 
+    logging.info("    Updating link {} {}".format(profile, link))
+
+    if isinstance(lastLink, list): 
+        link = '\n'.join([ "{}".format (post[1]) for post in listPosts]) 
+        link = link + '\n' + '\n'.join(lastLink)
+
+    if not socialNetwork: 
+        fileName = (DATADIR  + '/' 
+               + urllib.parse.urlparse(url).netloc + ".last")
+    else: 
+        fileName = fileNamePath(url, socialNetwork) + ".last"
+
+    with open(fileName, "w") as f: 
+        if isinstance(link, bytes): 
+            f.write(link.decode())
+        elif isinstance(link, str): 
+            f.write(link)
+        else:
+            f.write(link[0])
+
+
 def updateLastLink(url, link, socialNetwork=()):
     if not socialNetwork: 
         fileName = (DATADIR  + '/' 

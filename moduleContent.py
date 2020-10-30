@@ -21,7 +21,8 @@ class Content:
         self.linksToAvoid = ""
         self.posts = None
         self.postsFormatted = None
-        self.time = []
+        self.nextPosts = {}
+        self.time = 0
         self.bufferapp = None
         self.program = None
         self.buffer = None
@@ -133,6 +134,19 @@ class Content:
 
     def setPosts(self):
         pass 
+
+    def getNextPosts(self, socialNetwork):
+        if socialNetwork in self.nextPosts:
+            return self.nextPosts[socialNetwork]
+        else:
+            return None
+
+    def addNextPosts(self, listPosts, socialNetwork):
+        link = ''
+        if listPosts:
+            self.nextPosts[socialNetwork] =  listPosts
+            link = listPosts[len(listPosts) - 1][1]
+        return(link)
 
     def addLastLinkPublished(self, socialNetwork, lastLink, lastTime):
         self.lastLinkPublished[socialNetwork] = (lastLink, lastTime)

@@ -228,6 +228,8 @@ def updateCaches(blogs, simmulate):
             if (blog.getProgram() 
                         and (profile[0] in blog.getProgram())): 
                 lenMax = blog.len(profile)
+            else:
+                lenMax = bufferMax - 1
 
 
             msgLog = "  Service: {} Nick: {}"
@@ -238,6 +240,7 @@ def updateCaches(blogs, simmulate):
             num = bufferMax - lenMax
 
             lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
+
             if hasattr(blog, 'getPostsType'): 
                 if blog.getPostsType() == 'drafts': 
                     i = 1
@@ -270,35 +273,25 @@ def updateCaches(blogs, simmulate):
                     (bufferMax, lenMax, num)) 
 
 
-            #if ((not nowait) and 
-            #        (hours and (((time.time() - lastTime) 
-            #                - round(float(hours)*60*60)) < 0))): 
-            #    logging.info("  Not publishing because time restriction") 
-            #    print("     Not publishing because time restriction (Last time: %s)"% time.ctime(lastTime)) 
-            #else:
-            if blog.getProgram():
-                listPosts = []
-                if 'max' in blog.__dir__():
-                    num = int(blog.getMax())
+            listPosts = []
+            if 'max' in blog.__dir__():
+                num = int(blog.getMax())
 
+            if (num > 0):
+                logging.debug("   Profile %s"% profile)
+                link = ""
+                listPosts = blog.getNumPostsData(num, i, lastLink) 
 
-                if (num > 0):
-
-                    logging.debug("   Profile %s"% profile)
-                    link = ""
-                    listPosts = blog.getNumPostsData(num, i, lastLink) 
-
-                    if listPosts: 
-                        print("      Scheduling...") 
-                        [ print("       - Posts: {}".format(post[0])) 
-                                for post in listPosts ] 
-                        [ logging.info("    Scheduling posts {}".format(post[0])) 
-                                for post in listPosts ]
+                if listPosts: 
+                    print("      Scheduling...") 
+                    [ print("       - Posts: {}".format(post[0])) 
+                            for post in listPosts ] 
+                    [ logging.info("    Scheduling posts {}".format(post[0])) 
+                            for post in listPosts ]
 
                 if simmulate:
                     print("Simmulation {}".format(str(listPosts))) 
-                else: 
-                    if ((blog.getProgram() 
+                elif ((blog.getProgram() 
                             and isinstance(blog.getProgram(), list)
                             and profile in blog.getProgram()) or 
                         (blog.getProgram() 
@@ -322,25 +315,49 @@ def updateCaches(blogs, simmulate):
 
                              updateLastLink(blog.getUrl(), link, socialNetwork) 
                              logging.debug("listPosts: %s"% listPosts)
+                else:
+                    print(socialNetwork)
+                    if listPosts:
+                        link = blog.addNextPosts(listPosts, socialNetwork)
+                        print(blog.getNextPosts(socialNetwork))
 
-def publishUpdates(blogs, simmulate):
+def publishUpdates(blogs, simmulate, nowait, timeSlots):
     delayedBlogs = []
     delayedPosts = []
 
     for blog in blogs:
-        if simmulate:
-            print("Simmulation {}".format(str(listPosts))) 
-        else: 
-            if ((blog.getProgram() 
-                    and isinstance(blog.getProgram(), list) 
-                    and profile in blog.getProgram()) or 
-                (blog.getProgram() 
-                    and isinstance(blog.getProgram(), str) 
-                    and (profile[0] in blog.getProgram()))): 
+        socialNetworks = blog.getSocialNetworks() 
+        if socialNetworks:
+                msgLog = "  Looking for pending posts"
+        else:
+            msgLog = "  No social networks configured"
+        logging.info(msgLog) 
+        print(msgLog)
+        for profile in socialNetworks: 
+            nick = blog.getSocialNetworks()[profile]
+            socialNetwork = (profile, nick)
+            if simmulate:
+                print("Simmulation {}".format(str(listPosts))) 
+            else: 
+                if ((blog.getProgram() 
+                        and isinstance(blog.getProgram(), list) 
+                        and profile in blog.getProgram()) or 
+                    (blog.getProgram() 
+                        and isinstance(blog.getProgram(), str) 
+                        and (profile[0] in blog.getProgram()))): 
 
-                    delayedBlogs.append((blog, 
-                        socialNetwork, 1, timeSlots))
- 
+                        delayedBlogs.append((blog, 
+                            socialNetwork, 1, nowait, timeSlots))
+                else: 
+                    link = moduleSocial.publishDelay(blog, socialNetwork, 1, nowait, 0)
+                    sys.exit()
+                    link = moduleSocial.publishDirect(blog, 
+                                socialNetwork, i) 
+                    logging.info("  Link reply %s"%str(link)) 
+
+                    if link:
+                        newUpdateLastLink(blog.getUrl(), link, socialNetwork)
+
     if not simmulate and delayedBlogs:
 
         print("======================================")
@@ -416,7 +433,10 @@ def main():
 
     blogs = readConfig(checkBlog)
     updateCaches(blogs, simmulate)
-            
+    #sys.exit()
+    publishUpdates(blogs, simmulate, nowait, timeSlots)
+
+    #        
     sys.exit()
     for section in config.sections():
         blog = None
@@ -613,13 +633,14 @@ def main():
 
                             time.sleep(1)
                             delayedBlogs.append((blog, 
-                                socialNetwork, 1, timeSlots))
+                                socialNetwork, 1, noWait, timeSlots))
 
 
                         #if not (blog.getBufferapp() or blog.getProgram()):
-                        #    link = moduleSocial.publishDirect(blog, 
-                        #            socialNetwork, i) 
-                        #    logging.info("  Link reply %s"%str(link)) 
+                        if not blog.getProgram():
+                            link = moduleSocial.publishDirect(blog, 
+                                    socialNetwork, i) 
+                            logging.info("  Link reply %s"%str(link)) 
 
                         if link:
                              logging.info("    Updating link %s %s" % 

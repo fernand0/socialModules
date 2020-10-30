@@ -88,9 +88,14 @@ from configMod import *
 logger = logging.getLogger(__name__)
 
 def nextPost(blog, socialNetwork):
-    #cacheName = 'Cache_'+socialNetwork[0]+'_'+socialNetwork[1]
-    blog.cache[socialNetwork].setPosts()
-    listP = blog.cache[socialNetwork].getPosts()
+    if blog.getProgram():
+        blog.cache[socialNetwork].setPosts()
+        listP = blog.cache[socialNetwork].getPosts()
+    else:
+
+        logging.info("si ")
+        listP = blog.getNextPosts(socialNetwork)
+        logging.info("listP {}".format(listP))
 
     if listP: 
         element = listP[0]
@@ -99,8 +104,8 @@ def nextPost(blog, socialNetwork):
         element = listP
         listP = [] 
     else:
-        logger.warning("This shouldn't happen")
-        sys.exit()
+        element = None
+        logger.warning("Empty list")
 
     return(element,listP)
 
@@ -164,8 +169,11 @@ def publishDirect(blog, socialNetwork, i):
                     logging.info("Posting failed") 
     return link
 
-def publishDelay(blog, socialNetwork, numPosts, timeSlots): 
+def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots): 
     # We allow the rest of the Blogs to start
+
+    print("si", blog.getUrl(), numPosts)
+    logging.info("si {} {}".format(blog.getUrl(), numPosts))
 
     for j in  range(numPosts): 
         tSleep = random.random()*timeSlots
@@ -173,77 +181,92 @@ def publishDelay(blog, socialNetwork, numPosts, timeSlots):
 
         element, listP = nextPost(blog,socialNetwork)
 
-        logger.info("    %s -> %s: Waiting ... %.2f minutes" % 
-                (urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0],
-                    socialNetwork[0].capitalize(), 
-                    tSleep/60))
-        #logger.info("    %s: Waiting" % (blog.getUrl()))
-        logger.info("     I'll publish %s" % element[0])
-        print(" [d] Profile %s: waiting... %.2f minutes" 
-                % (socialNetwork[0], tSleep/60))
-        tNow = time.time()
-        with open(fileNamePath(blog.getUrl(), 
-            socialNetwork)+'.timeNext','wb') as f:
-            pickle.dump((tNow,tSleep), f)
-        time.sleep(tSleep) 
+        if listP:
+            logger.info("    %s -> %s: Waiting ... %.2f minutes" % 
+                    (urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0],
+                        socialNetwork[0].capitalize(), 
+                        tSleep/60))
+            #logger.info("    %s: Waiting" % (blog.getUrl()))
+            logger.info("     I'll publish %s" % element[0])
+            print(" [d] Profile %s: waiting... %.2f minutes" 
+                    % (socialNetwork[0], tSleep/60))
+            tNow = time.time()
+            fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext'
+            lastTime =  os.path.getmtime(fileNameNext)
+            hours = blog.getTime()
+            logger.info("     lastTime: {} hours: {} diff {}".format( 
+                    lastTime, hours, 
+                    (time.time() - lastTime) - round(float(hours)*60*60) < 0))
+            if (nowait or 
+                    (hours and 
+                    (((time.time() - lastTime) 
+                        - round(float(hours)*60*60)) < 0))):
+                logger.info("     lastTime: {} hours: {} diff {}".format( 
+                    lastTime, hours, 
+                    (time.time() - lastTime) - round(float(hours)*60*60)))
+                time.sleep(tSleep) 
 
-        # Things can have changed during the waiting
-        element, listP = nextPost(blog,socialNetwork)
+                # Things can have changed during the waiting
+                element, listP = nextPost(blog,socialNetwork)
 
-        (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content, links, comment) = element
+                (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content, links, comment) = element
 
-        profile = socialNetwork[0]
-        nick = socialNetwork[1]
+                profile = socialNetwork[0]
+                nick = socialNetwork[1]
 
-        logger.info("    Publishing in: %s" % socialNetwork[0].capitalize())
-        print(" [d] Publishing in: %s at %s" % (socialNetwork[0].capitalize(), 
-            time.asctime()))
+                logger.info("    Publishing in: %s" % socialNetwork[0].capitalize())
+                print(" [d] Publishing in: %s at %s" % (socialNetwork[0].capitalize(), 
+                    time.asctime()))
 
-        result = None
-        if profile in ['twitter', 'facebook', 'mastodon', 
-                'imgur', 'wordpress','linkedin']: 
-            # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
-            try:
-                import importlib
-                mod = importlib.import_module('module'+profile.capitalize()) 
-                cls = getattr(mod, 'module'+profile.capitalize())
-                api = cls()
-                api.setClient(nick)
-                if profile in ['wordpress']: 
-                    result = api.publishPost(title, link, comment, tags=links)
+                result = None
+                if profile in ['twitter', 'facebook', 'mastodon', 
+                        'imgur', 'wordpress','linkedin']: 
+                    # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
+                    try:
+                        import importlib
+                        mod = importlib.import_module('module'+profile.capitalize()) 
+                        cls = getattr(mod, 'module'+profile.capitalize())
+                        api = cls()
+                        api.setClient(nick)
+                        if profile in ['wordpress']: 
+                            result = api.publishPost(title, link, comment, tags=links)
+                        else: 
+                            result = api.publishPost(title, link, comment)
+                        logger.info("      Res: {}".format(result))
+                    except:
+                        logging.warning("Some problem in {}".format(socialNetwork[0].capitalize())) 
+                        logging.warning("Unexpected error:", sys.exc_info()[0]) 
+
+                    if isinstance(result, str):
+                        if result[:4]=='Fail':
+                            link=''
+                        elif result[:21] == 'Wordpress API expired':
+                            print(" [d] Not published: %s - %s" % (result, 'Fail'))
+                            result = 'Fail!'
+                        else: 
+                            print(" [d] Published: %s - %s" % (result, 'OK'))
+                            result = 'OK'
                 else: 
-                    result = api.publishPost(title, link, comment)
-                logger.info("      Res: {}".format(result))
-            except:
-                logging.warning("Some problem in {}".format(socialNetwork[0].capitalize())) 
-                logging.warning("Unexpected error:", sys.exc_info()[0]) 
+                    try: 
+                        publishMethod = globals()['publish'+ profile.capitalize()]#()(self, )) 
+                        result = publishMethod(nick, title, link, summary, summaryHtml, summaryLinks, image, content, links)
+                    except:
+                        logging.info(self.report('Social', text, sys.exc_info()))
 
-            if isinstance(result, str):
-                if result[:4]=='Fail':
-                    link=''
-                elif result[:21] == 'Wordpress API expired':
-                    print(" [d] Not published: %s - %s" % (result, 'Fail'))
-                    result = 'Fail!'
-                else: 
-                    print(" [d] Published: %s - %s" % (result, 'OK'))
-                    result = 'OK'
+                if result == 'OK':
+                    with open(fileNameNext,'wb') as f:
+                        pickle.dump((tNow,tSleep), f)
+                    blog.cache[socialNetwork].posts = listP
+                    blog.cache[socialNetwork].updatePostsCache()
+                   
+                if j+1 < numPosts:
+                    logger.info("Time: %s Waiting ... %.2f minutes to schedule next post in %s" % (time.asctime(), tSleep2/60, socialNetwork[0]))
+                    time.sleep(tSleep2) 
+                logger.info("    Finished: {} -> {}".format(urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0], socialNetwork[0].capitalize()))
+                print(" [d] Finished in: %s at %s" % (socialNetwork[0].capitalize(), 
+                    time.asctime()))
         else: 
-            try: 
-                publishMethod = globals()['publish'+ profile.capitalize()]#()(self, )) 
-                result = publishMethod(nick, title, link, summary, summaryHtml, summaryLinks, image, content, links)
-            except:
-                logging.info(self.report('Social', text, sys.exc_info()))
-
-        if result == 'OK':
-            blog.cache[socialNetwork].posts = listP
-            blog.cache[socialNetwork].updatePostsCache()
-           
-        if j+1 < numPosts:
-            logger.info("Time: %s Waiting ... %.2f minutes to schedule next post in %s" % (time.asctime(), tSleep2/60, socialNetwork[0]))
-            time.sleep(tSleep2) 
-        logger.info("    Finished: {} -> {}".format(urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0], socialNetwork[0].capitalize()))
-        print(" [d] Finished in: %s at %s" % (socialNetwork[0].capitalize(), 
-            time.asctime()))
+            logging.info("There are no new posts in {}".format(blog.getUrl()))
 
    
 def cleanTags(soup):
