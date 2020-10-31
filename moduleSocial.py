@@ -94,7 +94,6 @@ def nextPost(blog, socialNetwork):
             blog.cache[socialNetwork].setPosts()
             listP = blog.cache[socialNetwork].getPosts()
     else:
-
         logging.info("si ")
         listP = blog.getNextPosts(socialNetwork)
         logging.info("listP {}".format(listP))
@@ -181,31 +180,46 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
         tSleep = random.random()*timeSlots
         tSleep2 = timeSlots - tSleep
 
-        element, listP = nextPost(blog,socialNetwork)
+        
+        if hasattr(blog, 'nextPosts'): 
+            listP = nextPost(blog,socialNetwork)
+            element = listP[0]
+        else: 
+            element, listP = nextPost(blog,socialNetwork)
 
-        if listP:
-            logger.info("    %s -> %s: Waiting ... %.2f minutes" % 
-                    (urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0],
-                        socialNetwork[0].capitalize(), 
-                        tSleep/60))
-            #logger.info("    %s: Waiting" % (blog.getUrl()))
-            logger.info("     I'll publish %s" % element[0])
-            print(" [d] Profile %s: waiting... %.2f minutes" 
-                    % (socialNetwork[0], tSleep/60))
+        print(element)
+        print(listP)
+        sys.exit()
+
+        if element and listP:
             tNow = time.time()
             fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext'
-            lastTime =  os.path.getmtime(fileNameNext)
-            hours = blog.getTime()
+            lastTime = 0
+            if os.path.exists(fileNameNext):
+                # The first time the file does not exist
+                lastTime = os.path.getmtime(fileNameNext)
+
+            hours = float(blog.getTime())*60*60
+            diffTime = time.time() - lastTime #- round(float(hours)*60*60)
             logger.info("     lastTime: {} hours: {} diff {}".format( 
-                    lastTime, hours, 
-                    (time.time() - lastTime) - round(float(hours)*60*60) < 0))
-            if (nowait or 
-                    (hours and 
-                    (((time.time() - lastTime) 
-                        - round(float(hours)*60*60)) < 0))):
+                    lastTime, hours, diffTime > hours))
+            print("     lastTime: {} hours: {} diff {}".format( 
+                    lastTime, hours, diffTime > hours))
+            print("     lastTime: {} hours: {} diff {}".format( 
+                    lastTime, hours,  diffTime))
+            print(fileNameNext)
+            if (nowait or diffTime > hours):
                 logger.info("     lastTime: {} hours: {} diff {}".format( 
                     lastTime, hours, 
                     (time.time() - lastTime) - round(float(hours)*60*60)))
+                logger.info("    %s -> %s: Waiting ... %.2f minutes" % 
+                        (urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0],
+                            socialNetwork[0].capitalize(), 
+                            tSleep/60))
+                #logger.info("    %s: Waiting" % (blog.getUrl()))
+                logger.info("     I'll publish %s" % element[0])
+                print(" [d] Profile %s: waiting... %.2f minutes" 
+                        % (socialNetwork[0], tSleep/60))
                 time.sleep(tSleep) 
 
                 # Things can have changed during the waiting
@@ -253,7 +267,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                         publishMethod = globals()['publish'+ profile.capitalize()]#()(self, )) 
                         result = publishMethod(nick, title, link, summary, summaryHtml, summaryLinks, image, content, links)
                     except:
-                        logging.info(self.report('Social', text, sys.exc_info()))
+                        logging.info(self.report('Social', "", "", sys.exc_info()))
 
                 if result == 'OK':
                     with open(fileNameNext,'wb') as f:
@@ -269,6 +283,8 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                     time.asctime()))
         else: 
             logging.info("There are no new posts in {}".format(blog.getUrl()))
+
+        return ""
 
    
 def cleanTags(soup):

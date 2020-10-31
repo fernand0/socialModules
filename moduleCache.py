@@ -141,6 +141,8 @@ class moduleCache(Content,Queue):
         with open(fileNameQ, 'wb') as f:
             pickle.dump(self.posts, f)
         logging.debug("Writing in %s" % fileNameQ)
+        print("Writing in %s" % fileNameQ)
+        print(self.posts)
 
         return 'Ok'
 

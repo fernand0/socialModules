@@ -59,7 +59,8 @@ class moduleImgur(Content,Queue):
                 if album.in_gallery: 
                     self.posts.insert(0,album)
                 else:
-                    self.drafts.insert(0,album)
+                    #self.drafts.insert(0,album)
+                    self.drafts.append(album)
         else:
             logging.warning('No client configured!')
         self.drafts = self.drafts[-20:]
@@ -91,7 +92,7 @@ class moduleImgur(Content,Queue):
             thePost = None
             theTags = None
 
-        return (theTitle, theId, theLink, None, None, None, None, None, theTags, thePost)
+        return (theTitle,  theLink, theLink, theId, None, None, None, None, theTags, thePost)
 
        
     def publishPost(self, post, idPost, comment=''):
@@ -219,32 +220,32 @@ class moduleImgur(Content,Queue):
             res.append((urlImg,title, description, tags))
         return res
 
-    def getNumPostsData(self, num, i, lastLink): 
-        listPosts = []
-        posts = self.getPosts()
-        if self.getPostsType() == 'posts':
-            j = 0
-            posts = self.getPosts()
-            for i in range(min(20,len(posts))):
-                idPost = self.getPostId(posts[i])
-                title = self.getPostTitle(posts[i])
-                if not (idPost in lastLink): 
-                    # Only posts that have not been posted previously. We
-                    # check by link (post[1]) We don't use this code here.
-                    post = self.obtainPostData(i) 
-                    listPosts.append(post)
-                    print("post",post)
+    #def getNumPostsData(self, num, i, lastLink): 
+    #    listPosts = []
+    #    posts = self.getPosts()
+    #    if self.getPostsType() == 'posts':
+    #        j = 0
+    #        posts = self.getPosts()
+    #        for i in range(min(20,len(posts))):
+    #            idPost = self.getPostId(posts[i])
+    #            title = self.getPostTitle(posts[i])
+    #            if not (idPost in lastLink): 
+    #                # Only posts that have not been posted previously. We
+    #                # check by link (post[1]) We don't use this code here.
+    #                post = self.obtainPostData(i) 
+    #                listPosts.append(post)
+    #                print("post",post)
  
-                    j = j + 1
-                    if j == num:
-                        break
-        else: 
-            # here we can use the general method, starting at the first
-            # post
-            i = 1 
-            listPosts = Content.getNumPostsData(self, num, i, lastLink)
+    #                j = j + 1
+    #                if j == num:
+    #                    break
+    #    else: 
+    #        # here we can use the general method, starting at the first
+    #        # post
+    #        i = 1 
+    #        listPosts = Content.getNumPostsData(self, num, i, lastLink)
 
-        return(listPosts)
+    #    return(listPosts)
 
 
 def main(): 

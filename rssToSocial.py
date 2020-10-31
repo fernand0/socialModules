@@ -222,8 +222,6 @@ def updateCaches(blogs, simmulate):
             socialNetwork = (profile, nick)
             nameProfile = profile + '_' + nick
 
-            #if ((blog.getBufferapp() 
-            #        and (profile[0] in blog.getBufferapp())) 
             if (blog.getProgram() 
                         and (profile[0] in blog.getProgram())): 
                 lenMax = blog.len(profile)
@@ -238,7 +236,6 @@ def updateCaches(blogs, simmulate):
 
             num = bufferMax - lenMax
 
-
             print(socialNetwork)
             lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
 
@@ -247,14 +244,18 @@ def updateCaches(blogs, simmulate):
                     i = 1
                 else: 
                     i = blog.getLinkPosition(lastLink)
+            if isinstance(lastLink, list):
+                myLastLink = lastLink[0]
+            else:
+                myLastLink = lastLink
+            i = blog.getLinkPosition(myLastLink)
  
             if (i == 0):
                 myMsg = "No new posts."
             else:
                 myMsg = "New posts."
 
-            myMsg = "    {} Last time: {}".format(myMsg, 
-                    time.ctime(lastTime))
+            myMsg = "    {} Last time: {}".format(myMsg, time.ctime(lastTime))
 
             logging.info(myMsg) 
             print(myMsg)
@@ -268,8 +269,6 @@ def updateCaches(blogs, simmulate):
             logging.info("    %s Last link %s"% 
                     (time.strftime('%Y-%m-%d %H:%M:%S', 
                         time.localtime(lastTime)), myLastLink))
-            #print("     {}".format(time.strftime('%Y-%m-%d %H:%M:%S',
-            #    time.localtime(lastTime))))
             logging.debug("bufferMax - lenMax = num %d %d %d"%
                     (bufferMax, lenMax, num)) 
 
@@ -285,7 +284,7 @@ def updateCaches(blogs, simmulate):
                 listPosts = blog.getNumPostsData(num, i, lastLink) 
 
                 if listPosts: 
-                    print("      Scheduling...") 
+                    print("      Would schedule ...") 
                     [ print("       - Posts: {}".format(post[0])) 
                             for post in listPosts ] 
                     [ logging.info("    Scheduling posts {}".format(post[0])) 
@@ -315,16 +314,19 @@ def updateCaches(blogs, simmulate):
                                  link = '\n'.join([ "{}".format (post[1]) for post in listPosts])
                                  link = link + '\n' + '\n'.join(lastLink)
 
+
+
                              updateLastLink(blog.getUrl(), link, socialNetwork) 
                              msgLog = "listPosts: {}".format(str(listPosts))
                              logging.debug(msgLog)
                              print(msgLog)
                 else:
                     print(socialNetwork)
-                    print(listPosts)
+                    #print(listPosts)
                     if listPosts:
                         link = blog.addNextPosts(listPosts, socialNetwork)
-                        print(blog.getNextPosts(socialNetwork))
+                        #print(link)
+                        #print(blog.getNextPosts(socialNetwork))
 
 def publishUpdates(blogs, simmulate, nowait, timeSlots):
     delayedBlogs = []
@@ -354,6 +356,10 @@ def publishUpdates(blogs, simmulate, nowait, timeSlots):
                         delayedBlogs.append((blog, 
                             socialNetwork, 1, nowait, timeSlots))
                 else: 
+                    #for blog in blogs:
+                    socialNetworks = blog.getSocialNetworks() 
+                    nick = blog.getSocialNetworks()[profile]
+                    socialNetwork = (profile, nick)
                     link = moduleSocial.publishDelay(blog, socialNetwork, 1, nowait, 0)
                     continue
                     link = moduleSocial.publishDirect(blog, 
@@ -402,8 +408,8 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description='Improving command line call',
             allow_abbrev=True)
-    parser.add_argument('--timeSlots', '-t', default=55*60, # 55 minutes
-                    help='How many time slots we will have for publishing')
+    parser.add_argument('--timeSlots', '-t', default=55, # 55 minutes
+                    help='How many time slots we will have for publishing (in minutes)')
     parser.add_argument('checkBlog', default="",
             metavar='Blog', type=str, nargs='?',
                     help='you can select just a blog')
@@ -414,7 +420,7 @@ def main():
     args = parser.parse_args()
 
     checkBlog = args.checkBlog
-    timeSlots = int(args.timeSlots)
+    timeSlots = 60*int(args.timeSlots)
     simmulate = args.simmulate
     nowait = args.noWait
 
