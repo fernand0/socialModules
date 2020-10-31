@@ -290,6 +290,7 @@ def updateCaches(blogs, simmulate):
                     [ logging.info("    Scheduling posts {}".format(post[0])) 
                             for post in listPosts ]
 
+
                 if simmulate:
                     print("Simmulation {}".format(str(listPosts))) 
                 elif ((blog.getProgram() 

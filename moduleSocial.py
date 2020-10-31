@@ -189,7 +189,6 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
 
         print(element)
         print(listP)
-        sys.exit()
 
         if element and listP:
             tNow = time.time()
