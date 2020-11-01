@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import logging
 import os
+import pickle
 import requests
 import shutil
 import urllib
@@ -31,13 +32,11 @@ def fileNamePath(url, socialNetwork=()):
                     + socialNetwork[0] + '_' + socialNetwork[1])
     return(theName)
 
-def getNextTime(blog, socialNetwork):        
+def setNextTime(blog, socialNetwork, tNow, tSleep):        
     fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext' 
-    if os.path.exists(fileNameNext): 
-        # The first time the file does not exist 
-        lastTime = os.path.getmtime(fileNameNext)
-
-    return fileNameNext, lastTime
+    with open(fileNameNext,'wb') as f:
+        pickle.dump((tNow, tSleep), f)
+    return fileNameNext
 
 def getLastLink(fileName):        
     try: 
