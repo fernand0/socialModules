@@ -31,6 +31,14 @@ def fileNamePath(url, socialNetwork=()):
                     + socialNetwork[0] + '_' + socialNetwork[1])
     return(theName)
 
+def getNextTime(blog, socialNetwork):        
+    fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext' 
+    if os.path.exists(fileNameNext): 
+        # The first time the file does not exist 
+        lastTime = os.path.getmtime(fileNameNext)
+
+    return fileNameNext, lastTime
+
 def getLastLink(fileName):        
     try: 
         with open(fileName, "rb") as f: 
