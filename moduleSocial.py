@@ -173,6 +173,8 @@ def publishDirect(blog, socialNetwork, i):
 def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots): 
     # We allow the rest of the Blogs to start
 
+    result = ''
+
     print("si", blog.getUrl(), numPosts)
     logging.info("si {} {}".format(blog.getUrl(), numPosts))
 
@@ -229,9 +231,10 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                 profile = socialNetwork[0]
                 nick = socialNetwork[1]
 
-                logger.info("    Publishing in: %s" % socialNetwork[0].capitalize())
-                print(" [d] Publishing in: %s at %s" % (socialNetwork[0].capitalize(), 
-                    time.asctime()))
+                msgLog = " [d] Publishing in: %s at {}".format(
+                        socialNetwork[0].capitalize(), time.asctime())
+                logger.info(msgLog)                
+                print(msgLog) 
 
                 result = None
                 if profile in ['twitter', 'facebook', 'mastodon', 
@@ -265,14 +268,21 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                     try: 
                         publishMethod = globals()['publish'+ profile.capitalize()]#()(self, )) 
                         result = publishMethod(nick, title, link, summary, summaryHtml, summaryLinks, image, content, links)
+                        result = 'OK'
                     except:
                         logging.info(self.report('Social', "", "", sys.exc_info()))
 
                 if result == 'OK':
                     with open(fileNameNext,'wb') as f:
                         pickle.dump((tNow,tSleep), f)
-                    blog.cache[socialNetwork].posts = listP
-                    blog.cache[socialNetwork].updatePostsCache()
+                    if hasattr(blog, 'cache') and blog.cache:
+                        blog.cache[socialNetwork].posts = listP
+                        blog.cache[socialNetwork].updatePostsCache()
+                    elif hasattr(blog, 'nextPosts'): 
+                        blog.nextPosts[socialNetwork] = listP
+                        blog.updatePostsCache(socialNetwork)
+                    else:
+                        print("What happened?")
                    
                 if j+1 < numPosts:
                     logger.info("Time: %s Waiting ... %.2f minutes to schedule next post in %s" % (time.asctime(), tSleep2/60, socialNetwork[0]))
@@ -283,7 +293,10 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
         else: 
             logging.info("There are no new posts in {}".format(blog.getUrl()))
 
-        return ""
+        if result == 'OK':
+            return link
+        else:
+            return ''
 
    
 def cleanTags(soup):

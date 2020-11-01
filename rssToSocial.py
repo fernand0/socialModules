@@ -362,13 +362,14 @@ def publishUpdates(blogs, simmulate, nowait, timeSlots):
                     nick = blog.getSocialNetworks()[profile]
                     socialNetwork = (profile, nick)
                     link = moduleSocial.publishDelay(blog, socialNetwork, 1, nowait, 0)
-                    continue
-                    link = moduleSocial.publishDirect(blog, 
-                                socialNetwork, i) 
                     logging.info("  Link reply %s"%str(link)) 
 
                     if link:
-                        newUpdateLastLink(blog.getUrl(), link, socialNetwork)
+                        newUpdateLastLink(blog.getUrl(), link, '', socialNetwork)
+                    continue
+                    link = moduleSocial.publishDirect(blog, 
+                                socialNetwork, i) 
+
 
     if not simmulate and delayedBlogs:
 

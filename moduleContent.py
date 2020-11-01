@@ -4,6 +4,7 @@
 
 import configparser
 import os
+import pickle
 import logging
 from bs4 import Tag
 from urllib.request import urlopen
@@ -134,6 +135,20 @@ class Content:
 
     def setPosts(self):
         pass 
+
+    def updatePostsCache(self,socialNetwork):
+        service = socialNetwork[0]
+        nick = socialNetwork[1]
+        fileNameQ = fileNamePath(self.url, (service, nick)) + ".queue"
+
+        with open(fileNameQ, 'wb') as f:
+            pickle.dump(self.nextPosts, f)
+        logging.debug("Writing in %s" % fileNameQ)
+        print("Writing in %s" % fileNameQ)
+        print(self.nextPosts)
+
+        return 'Ok'
+
 
     def getNextPosts(self, socialNetwork):
         if socialNetwork in self.nextPosts:
