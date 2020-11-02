@@ -129,7 +129,7 @@ def readConfig(checkBlog):
         blog = None
         logging.info("Section: %s"% section)
         url = config.get(section, "url")
-        print("Section: {}".format(section)
+        print("Section: {}".format(section))
         print(" Url: {}".format(url))
         if (not checkBlog) or (checkBlog.upper() == section.upper()):
             if ("rss" in config.options(section)):
@@ -202,13 +202,19 @@ def readConfig(checkBlog):
     return(blogs)
 
 def updateCaches(blogs, simmulate):
-    print("\nUpdating Caches")
+    msgLog = "Updating Caches"
+    print("\n{}\n".format(msgLog))
+    logging.info(msgLog)
+
     for blog in blogs:
-        print("Url: {}".format(blog.getUrl())
+        msgLog = "Url: {}".format(blog.getUrl())
+        print(msgLog)
+        logging.info(msgLog)
+
         bufferMax = int(blog.getBufMax())
         socialNetworks = blog.getSocialNetworks() 
-        if socialNetworks:
-                msgLog = " Looking for pending posts in {}".format(
+        if socialNetworks: 
+            msgLog = " Looking for pending posts in {}".format(
                     str(socialNetworks))
         else:
             msgLog = " No social networks configured"
@@ -262,7 +268,6 @@ def updateCaches(blogs, simmulate):
                 myMsg = "New posts."
 
             myMsg = "   {} Last time: {}".format(myMsg, time.ctime(lastTime))
-
             logging.info(myMsg) 
             print(myMsg)
 
@@ -334,22 +339,34 @@ def updateCaches(blogs, simmulate):
                         #print(blog.getNextPosts(socialNetwork))
 
 def publishUpdates(blogs, simmulate, nowait, timeSlots):
+    msgLog = "Publishing Updates"
+    print("\n{}\n".format(msgLog))
+    logging.info(msgLog)
+
     delayedBlogs = []
     delayedPosts = []
 
     for blog in blogs:
+        msgLog = "Url: {}".format(blog.getUrl())
+        print(msgLog)
+        logging.info(msgLog)
+
         socialNetworks = blog.getSocialNetworks() 
-        if socialNetworks:
-                msgLog = "  Looking for pending posts"
+        if socialNetworks: 
+            msgLog = "  Looking for pending posts"
         else:
             msgLog = "  No social networks configured"
         logging.info(msgLog) 
         print(msgLog)
+
         for profile in socialNetworks: 
-            nick = blog.getSocialNetworks()[profile]
+            nick = socialNetworks[profile]
             socialNetwork = (profile, nick)
             if simmulate:
-                print("Simmulation {}".format(str(listPosts))) 
+                msgLog = "Simmulation"
+                print(msgLog) 
+                logging.info(msgLog) 
+
             else: 
                 if ((blog.getProgram() 
                         and isinstance(blog.getProgram(), list) 
@@ -362,18 +379,16 @@ def publishUpdates(blogs, simmulate, nowait, timeSlots):
                             socialNetwork, 1, nowait, timeSlots))
                 else: 
                     #for blog in blogs:
-                    socialNetworks = blog.getSocialNetworks() 
-                    nick = blog.getSocialNetworks()[profile]
-                    socialNetwork = (profile, nick)
-                    link = moduleSocial.publishDelay(blog, socialNetwork, 1, nowait, 0)
+                    #socialNetworks = blog.getSocialNetworks() 
+                    #nick = socialNetworks[profile]
+                    mySocialNetwork = (profile, nick)
+                    link = moduleSocial.publishDelay(blog, 
+                            mySocialNetwork, 1, nowait, 0)
                     logging.info("  Link reply %s"%str(link)) 
 
                     if link:
-                        newUpdateLastLink(blog.getUrl(), link, '', socialNetwork)
-                    continue
-                    link = moduleSocial.publishDirect(blog, 
-                                socialNetwork, i) 
-
+                        newUpdateLastLink(blog.getUrl(), link, '', 
+                                mySocialNetwork)
 
     if not simmulate and delayedBlogs:
 
@@ -382,15 +397,17 @@ def publishUpdates(blogs, simmulate, nowait, timeSlots):
         print("======================================")
 
         import concurrent.futures 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(delayedBlogs)) as executor:
-            delayedPosts = {executor.submit(moduleSocial.publishDelay, *args): args for args in delayedBlogs}
+        with concurrent.futures.ThreadPoolExecutor(
+                max_workers=len(delayedBlogs)) as executor:
+            delayedPosts = {executor.submit(moduleSocial.publishDelay, *args): 
+                    args for args in delayedBlogs}
             time.sleep(5)
-            print("")
             for future in concurrent.futures.as_completed(delayedPosts):
                 dataBlog = delayedPosts[future]
                 try:
                     res = future.result()
-                    print("Res: %s"% str(res))
+                    if res:
+                        print("Res: %s"% str(res))
                 except Exception as exc:
                     print('%r generated an exception: %s' % (str(dataBlog), exc))
     

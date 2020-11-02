@@ -45,12 +45,12 @@ class moduleRss(Content,Queue):
         msgLog = "  Setting posts"
         logging.info(msgLog)
         print(msgLog)
-        logging.debug("Rss: %s" % urlRss)
 
         if self.rssFeed.find('http')>=0: 
             urlRss = self.getRssFeed()
         else: 
             urlRss = urllib.parse.urljoin(self.url,self.getRssFeed())
+        logging.debug("Rss: %s" % urlRss)
         self.posts = feedparser.parse(urlRss).entries
  
     def getPostTitle(self, post):

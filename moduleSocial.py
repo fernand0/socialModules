@@ -199,6 +199,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                 fileNameNext = setNextTime(blog, socialNetwork, tNow, tSleep)
                 logger.info(msgLog)
                 print(msgLog)
+
                 logger.debug("     I'll publish %s" % element[0])
                 time.sleep(tSleep) 
 
