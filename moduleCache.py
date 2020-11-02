@@ -61,7 +61,11 @@ class moduleCache(Content,Queue):
         except:
             listP = []
 
-        self.posts = listP
+        if hasattr(self, 'getPostsType'): 
+            if self.getPostsType() == 'drafts': 
+                self.drafts = listP
+            else:
+                self.posts = listP
 
     def getHoursSchedules(self, command=None):
         return self.schedules[0].hour.render()
@@ -138,10 +142,17 @@ class moduleCache(Content,Queue):
     def updatePostsCache(self):
         fileNameQ = fileNamePath(self.url, (self.service, self.nick)) + ".queue"
 
-        with open(fileNameQ, 'wb') as f:
-            pickle.dump(self.posts, f)
+        with open(fileNameQ, 'wb') as f: 
+            if hasattr(self, 'getPostsType'): 
+                if self.getPostsType() == 'drafts': 
+                    pickle.dump(self.drafts, f)
+                else:
+                    pickle.dump(self.posts, f)
+            else:
+                pickle.dump(self.posts, f)
+
         logging.debug("Writing in %s" % fileNameQ)
-        loggin.debug("Posts: {}".format(str(self.posts)))
+        logging.debug("Posts: {}".format(str(self.posts)))
 
         return 'Ok'
 
@@ -269,7 +280,14 @@ class moduleCache(Content,Queue):
         logging.info("Deleting %d"% j)
         post = self.obtainPostData(j)
         logging.info("Deleting %s"% post[0])
-        self.posts = self.posts[:j] + self.posts[j+1:]
+        if hasattr(self, 'getPostsType'): 
+            if self.getPostsType() == 'drafts': 
+                self.drafts = self.drafts[:j] + self.drafts[j+1:]
+            else:
+                self.posts = self.posts[:j] + self.posts[j+1:] 
+        else: 
+            self.posts = self.posts[:j] + self.posts[j+1:] 
+
         self.updatePostsCache()
 
         logging.info("Deleted %s"% post[0])

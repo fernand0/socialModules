@@ -291,7 +291,6 @@ def updateCaches(blogs, simmulate):
             if (num > 0):
                 logging.debug("   Profile %s"% profile)
                 link = ""
-                print(num, i)
                 listPosts = blog.getNumPostsData(num, i, lastLink) 
 
                 if listPosts: 
@@ -330,7 +329,6 @@ def updateCaches(blogs, simmulate):
                              updateLastLink(blog.getUrl(), link, socialNetwork) 
                              msgLog = "listPosts: {}".format(str(listPosts))
                              logging.debug(msgLog)
-                             print(msgLog)
                 else:
                     #print(listPosts)
                     if listPosts:
@@ -366,7 +364,6 @@ def publishUpdates(blogs, simmulate, nowait, timeSlots):
                 msgLog = "Simmulation"
                 print(msgLog) 
                 logging.info(msgLog) 
-
             else: 
                 if ((blog.getProgram() 
                         and isinstance(blog.getProgram(), list) 

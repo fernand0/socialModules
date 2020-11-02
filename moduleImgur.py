@@ -102,6 +102,7 @@ class moduleImgur(Content,Queue):
         logging.info("     Publishing in: {}".format(self.service))
         logging.info("      {}".format(str(post)))
         api = self.getClient() 
+        idPost = idPost.split('/')[-1]
         try: 
             res = api.share_on_imgur(idPost, post, terms=0)            
             logging.info("      Res: %s" % res) 
