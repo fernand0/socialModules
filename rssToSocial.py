@@ -129,7 +129,8 @@ def readConfig(checkBlog):
         blog = None
         logging.info("Section: %s"% section)
         url = config.get(section, "url")
-        print("Section: %s %s"% (section, url))
+        print("Section: {}".format(section)
+        print(" Url: {}".format(url))
         if (not checkBlog) or (checkBlog.upper() == section.upper()):
             if ("rss" in config.options(section)):
                 rssFeed = config.get(section, "rss")
@@ -201,15 +202,19 @@ def readConfig(checkBlog):
     return(blogs)
 
 def updateCaches(blogs, simmulate):
+    print("\nUpdating Caches")
     for blog in blogs:
+        print("Url: {}".format(blog.getUrl())
         bufferMax = int(blog.getBufMax())
         socialNetworks = blog.getSocialNetworks() 
         if socialNetworks:
-                msgLog = "  Looking for pending posts"
+                msgLog = " Looking for pending posts in {}".format(
+                    str(socialNetworks))
         else:
-            msgLog = "  No social networks configured"
+            msgLog = " No social networks configured"
         logging.info(msgLog) 
         print(msgLog)
+
         if socialNetworks:
             blog.setPosts()
 
@@ -232,11 +237,11 @@ def updateCaches(blogs, simmulate):
             msgLog = "  Service: {} Nick: {}"
             logging.info(msgLog.format(profile, nick))
             print(msgLog.format(profile, nick))
+
             logging.debug("  Service %s Lenmax %d" % (profile, lenMax))
 
             num = bufferMax - lenMax
 
-            print(socialNetwork)
             lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
 
             if hasattr(blog, 'getPostsType'): 
@@ -244,6 +249,7 @@ def updateCaches(blogs, simmulate):
                     i = 1
                 else: 
                     i = blog.getLinkPosition(lastLink)
+
             if isinstance(lastLink, list):
                 myLastLink = lastLink[0]
             else:
@@ -255,7 +261,7 @@ def updateCaches(blogs, simmulate):
             else:
                 myMsg = "New posts."
 
-            myMsg = "    {} Last time: {}".format(myMsg, time.ctime(lastTime))
+            myMsg = "   {} Last time: {}".format(myMsg, time.ctime(lastTime))
 
             logging.info(myMsg) 
             print(myMsg)
@@ -316,13 +322,11 @@ def updateCaches(blogs, simmulate):
                                  link = link + '\n' + '\n'.join(lastLink)
 
 
-
                              updateLastLink(blog.getUrl(), link, socialNetwork) 
                              msgLog = "listPosts: {}".format(str(listPosts))
                              logging.debug(msgLog)
                              print(msgLog)
                 else:
-                    print(socialNetwork)
                     #print(listPosts)
                     if listPosts:
                         link = blog.addNextPosts(listPosts, socialNetwork)
@@ -646,7 +650,6 @@ def main():
                             time.sleep(1)
                             delayedBlogs.append((blog, 
                                 socialNetwork, 1, noWait, timeSlots))
-
 
                         #if not (blog.getBufferapp() or blog.getProgram()):
                         if not blog.getProgram():

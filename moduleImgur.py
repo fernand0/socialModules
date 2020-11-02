@@ -57,14 +57,15 @@ class moduleImgur(Content,Queue):
                     album.title))
                 text = ""
                 if album.in_gallery: 
-                    self.posts.insert(0,album)
+                    #self.posts.insert(0,album)
+                    self.posts.append(album)
                 else:
                     #self.drafts.insert(0,album)
                     self.drafts.append(album)
         else:
             logging.warning('No client configured!')
-        self.drafts = self.drafts[-20:]
-        self.posts = self.posts[-20:]
+        self.drafts = self.drafts[0:20]
+        self.posts = self.posts[0:20]
         # We set some limit
                     
     def getPostTitle(self, post):
@@ -267,7 +268,7 @@ def main():
         img.setSocialNetworks(config, section)
         url = config.get(acc, 'url')
         img.setUrl(url)
-        name = config.get(acc, 'imgur')
+        name = url.split('/')[-1]
 
         if ('cache' in config.options(section)): 
             img.setProgram(config.get(section, "cache"))
@@ -280,10 +281,16 @@ def main():
             img.setPostsType(config.get(acc, 'posts'))
         img.setPosts()
         lastLink = None
+        i = 1
         if 'wordpress' in img.getSocialNetworks():
             socialNetwork = ('wordpress', img.getSocialNetworks()['wordpress'])
             lastLink, lastTime = checkLastLink(url, socialNetwork)
-        i = 1
+
+            print("lastLink",lastLink)
+            print("lastLink",lastLink[0])
+            pos = img.getLinkPosition(lastLink[0])
+            print(pos)
+            i = pos
         num = 5
         listPosts = img.getNumPostsData(num, i, lastLink)
         print("listPosts:")

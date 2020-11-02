@@ -69,7 +69,9 @@ class moduleSlack(Content,Queue):
         return self.sc
  
     def setPosts(self, channel='links'):
-        logging.info(" Setting posts")
+        msgLog = "  Setting posts"
+        logging.info(msgLog)
+        print(msgLog)
         self.posts = []
         theChannel = self.getChanId(channel)
         #history = self.sc.api_call( "channels.history", count=1000, channel=theChannel)

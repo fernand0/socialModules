@@ -187,17 +187,16 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
         if element:
             tNow = time.time()
 
-            fileNameNext = setNextTime(blog, socialNetwork, tNow, tSleep)
             lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
 
             hours = float(blog.getTime())*60*60
-
             diffTime = time.time() - lastTime #- round(float(hours)*60*60)
 
             if (nowait or diffTime > hours):
                 msgLog = " [d] {} -> {} ({}): waiting... {:.2f} minutes".format(
                         urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0], 
                         profile, nick , tSleep/60) 
+                fileNameNext = setNextTime(blog, socialNetwork, tNow, tSleep)
                 logger.info(msgLog)
                 print(msgLog)
                 logger.debug("     I'll publish %s" % element[0])
