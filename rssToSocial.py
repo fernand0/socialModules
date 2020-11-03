@@ -203,13 +203,11 @@ def readConfig(checkBlog):
 
 def updateCaches(blogs, simmulate):
     msgLog = "Updating Caches"
-    print("\n{}\n".format(msgLog))
-    logging.info(msgLog)
+    logMsg(msgLog, 1, 2)
 
     for blog in blogs:
-        msgLog = "Url: {}".format(blog.getUrl())
-        print(msgLog)
-        logging.info(msgLog)
+        msgLog = "Url: {}".format(blog.getUrl()) 
+        logMsg(msgLog, 1, 1)
 
         bufferMax = int(blog.getBufMax())
         socialNetworks = blog.getSocialNetworks() 
@@ -218,8 +216,7 @@ def updateCaches(blogs, simmulate):
                     str(socialNetworks))
         else:
             msgLog = " No social networks configured"
-        logging.info(msgLog) 
-        print(msgLog)
+        logMsg(msgLog, 1, 1)
 
         if socialNetworks:
             blog.setPosts()
@@ -240,9 +237,8 @@ def updateCaches(blogs, simmulate):
                 lenMax = bufferMax - 1
 
 
-            msgLog = "  Service: {} Nick: {}"
-            logging.info(msgLog.format(profile, nick))
-            print(msgLog.format(profile, nick))
+            msgLog = "  Service: {} Nick: {}".format(profile, nick)
+            logMsg(msgLog, 1, 1)
 
             logging.debug("  Service %s Lenmax %d" % (profile, lenMax))
 
@@ -310,11 +306,9 @@ def updateCaches(blogs, simmulate):
                             and isinstance(blog.getProgram(), str) 
                             and (profile[0] in blog.getProgram()))):
                         msgLog = "      Delayed"
-                        print(msgLog) 
-                        logging.info(msgLog)
+                        logMsg(msgLog, 1, 1)
                         msgLog = "      Adding posts" 
-                        print(msgLog) 
-                        logging.info(msgLog)
+                        logMsg(msgLog, 1, 1)
                         link = blog.cache[socialNetwork].addPosts(listPosts)
 
                         if link:
@@ -328,7 +322,7 @@ def updateCaches(blogs, simmulate):
 
                              updateLastLink(blog.getUrl(), link, socialNetwork) 
                              msgLog = "listPosts: {}".format(str(listPosts))
-                             logging.debug(msgLog)
+                             logMsg(msgLog, 2, 0)
                 else:
                     #print(listPosts)
                     if listPosts:
@@ -338,32 +332,23 @@ def updateCaches(blogs, simmulate):
 
 def publishUpdates(blogs, simmulate, nowait, timeSlots):
     msgLog = "Publishing Updates"
-    print("\n{}\n".format(msgLog))
-    logging.info(msgLog)
-
+    logMsg(msgLog, 1, 2)
+ 
     delayedBlogs = []
     delayedPosts = []
 
     for blog in blogs:
         msgLog = "Url: {}".format(blog.getUrl())
-        print(msgLog)
-        logging.info(msgLog)
+        logMsg(msgLog, 1, 0)
 
         socialNetworks = blog.getSocialNetworks() 
-        if socialNetworks: 
-            msgLog = "  Looking for pending posts"
-        else:
-            msgLog = "  No social networks configured"
-        logging.info(msgLog) 
-        print(msgLog)
 
         for profile in socialNetworks: 
             nick = socialNetworks[profile]
             socialNetwork = (profile, nick)
             if simmulate:
                 msgLog = "Simmulation"
-                print(msgLog) 
-                logging.info(msgLog) 
+                logMsg(msgLog, 1, 1)
             else: 
                 if ((blog.getProgram() 
                         and isinstance(blog.getProgram(), list) 
@@ -375,9 +360,6 @@ def publishUpdates(blogs, simmulate, nowait, timeSlots):
                         delayedBlogs.append((blog, 
                             socialNetwork, 1, nowait, timeSlots))
                 else: 
-                    #for blog in blogs:
-                    #socialNetworks = blog.getSocialNetworks() 
-                    #nick = socialNetworks[profile]
                     mySocialNetwork = (profile, nick)
                     link = moduleSocial.publishDelay(blog, 
                             mySocialNetwork, 1, nowait, 0)
@@ -388,6 +370,8 @@ def publishUpdates(blogs, simmulate, nowait, timeSlots):
                                 mySocialNetwork)
 
     if not simmulate and delayedBlogs:
+
+        time.sleep(5)
 
         print("======================================")
         print("Starting delayed at %s" % time.asctime())
@@ -406,7 +390,8 @@ def publishUpdates(blogs, simmulate, nowait, timeSlots):
                     if res:
                         print("Res: %s"% str(res))
                 except Exception as exc:
-                    print('%r generated an exception: %s' % (str(dataBlog), exc))
+                    print('{} generated an exception: {}'.format(
+                        str(dataBlog), exc))
     
 
         print("======================================")
@@ -553,8 +538,7 @@ def main():
                 msgLog = "  Looking for pending posts"
             else:
                 msgLog = "  No social networks configured"
-            logging.info(msgLog) 
-            print(msgLog)
+            logMsg(msgLog, 1, 1)
             if socialNetworks:
                 blog.setPosts()
 
@@ -574,9 +558,9 @@ def main():
                     lenMax = blog.len(profile)
 
 
-                msgLog = "  Service: {} Nick: {}"
-                logging.info(msgLog.format(profile, nick))
-                print(msgLog.format(profile, nick))
+                msgLog = "  Service: {} Nick: {}".format(profile, nick)
+                logMsg(msgLog, 1, 1)
+
                 logging.debug("  Service %s Lenmax %d" % (profile, lenMax))
 
                 num = bufferMax - lenMax
@@ -654,11 +638,10 @@ def main():
                                 and isinstance(blog.getProgram(), str) 
                                 and (profile[0] in blog.getProgram()))):
                             msgLog = "      Delayed"
-                            print(msgLog) 
-                            logging.info(msgLog)
+                            logMsg(msgLog, 1, 1)
                             msgLog = "      Adding posts" 
-                            print(msgLog) 
-                            logging.info(msgLog)
+                            logMsg(msgLog, 1, 1)
+
                             link = blog.cache[socialNetwork].addPosts(listPosts)
 
                             time.sleep(1)

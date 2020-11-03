@@ -187,7 +187,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
         if element:
             tNow = time.time()
 
-            lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
+            lastLink, lastTime = checkLastLinkPublished(blog.getUrl(), socialNetwork)
 
             hours = float(blog.getTime())*60*60
             diffTime = time.time() - lastTime #- round(float(hours)*60*60)
@@ -313,6 +313,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                             blog.updatePostsCache(socialNetwork)
                         else:
                             print("What happened?")
+
                        
                     if j+1 < numPosts:
                         logger.info("Time: %s Waiting ... %.2f minutes to schedule next post in %s" % (time.asctime(), tSleep2/60, socialNetwork[0]))
