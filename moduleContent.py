@@ -144,8 +144,6 @@ class Content:
         with open(fileNameQ, 'wb') as f:
             pickle.dump(self.nextPosts, f)
         logging.debug("Writing in %s" % fileNameQ)
-        print("Writing in %s" % fileNameQ)
-        print(self.nextPosts)
 
         return 'Ok'
 
