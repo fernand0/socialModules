@@ -246,15 +246,59 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                                     result, 'OK'))
                                 result = 'OK'
                     else: 
+                        print(element)
                         try: 
-                            publishMethod = globals()['publish'
-                                    + profile.capitalize()]
-                            result = publishMethod(nick, title, link, 
-                                    summary, summaryHtml, summaryLinks, 
-                                    image, content, links)
-                            result = 'OK'
+                            if profile in ['telegram', 'facebook']: 
+                                comment = summaryLinks 
+                            elif profile == 'medium': 
+                                comment = summaryHtml 
+                            else: 
+                                comment = '' 
+                            if (profile in ['twitter', 'facebook', 'telegram', 
+                                'mastodon', 'linkedin', 'pocket', 'medium', 
+                                'instagram']): 
+                                # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically 
+                                import importlib 
+                                serviceName = profile.capitalize()
+                                mod = importlib.import_module('module'
+                                        + serviceName) 
+                                cls = getattr(mod, 'module'+serviceName) 
+                                api = cls() 
+                                api.setClient(nick) 
+                                if profile in ['facebook']: 
+                                    pos1= comment.find('http://fernand0.blogalia') 
+                                    if pos1 >=0: 
+                                        pos2 = comment.find(' ',pos1+1) 
+                                        pos3 = comment.find('\n',pos1+1) 
+                                        pos2 = min(pos2, pos3) 
+                                        logging.info(comment) 
+                                        comment = "{}(Enlace censurado por Facebook){}".format( comment[:pos1-1], comment[pos2:]) 
+
+                                        logging.info(comment) 
+                                    else: 
+                                        comment = None 
+                                result = api.publishPost(title, link, comment) 
+                                logging.debug(result) 
+                                if isinstance(result, str): 
+                                    logging.info("Result %s"%str(result)) 
+                                    if result[:4]=='Fail': 
+                                        logging.debug("Fail detected %s"%str(result)) 
+                                        if ((result.find('duplicate')>=0) or
+                                                (result.find('abusive')>=0)):
+                                            duplicate = True 
+                                            link='' 
+                                            logging.info("Posting failed") 
+                                        elif result.find('Bad Request')>=0: 
+                                            link='' 
+                                            logging.info("Posting failed") 
+                                else: 
+                                    print(" [d] Published: {} - {}".format( 
+                                        result, 'OK')) 
+                                    result = 'OK'
                         except:
-                            logging.info(self.report('Social', "", "", sys.exc_info()))
+                                logging.warning("Some problem in {}".format(
+                                    profile.capitalize())) 
+                                logging.warning("Unexpected error:", sys.exc_info()[0]) 
 
                     if result == 'OK':
                         with open(fileNameNext,'wb') as f:
