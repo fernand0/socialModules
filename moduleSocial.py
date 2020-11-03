@@ -221,8 +221,10 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                         # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
                         try:
                             import importlib
-                            mod = importlib.import_module('module'+profile.capitalize()) 
-                            cls = getattr(mod, 'module'+profile.capitalize())
+                            serviceName = profile.capitalize()
+                            mod = importlib.import_module('module' +
+                                    serviceName) 
+                            cls = getattr(mod, 'module' + serviceName)
                             api = cls()
                             api.setClient(nick)
                             if profile in ['wordpress']: 
