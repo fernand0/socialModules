@@ -187,7 +187,9 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
         if element:
             tNow = time.time()
 
-            lastLink, lastTime = checkLastLinkPublished(blog.getUrl(), socialNetwork)
+            #lastLink, lastTime = checkLastLinkPublished(blog.getUrl(), socialNetwork)
+            lastTime = getNextTime(blog, socialNetwork)
+            lastTime = float(lastTime[0])
 
             hours = float(blog.getTime())*60*60
             diffTime = time.time() - lastTime #- round(float(hours)*60*60)
@@ -197,8 +199,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                         urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0], 
                         profile, nick , tSleep/60) 
                 fileNameNext = setNextTime(blog, socialNetwork, tNow, tSleep)
-                logger.info(msgLog)
-                print(msgLog)
+                logMsg(msgLog, 1, 1)
 
                 logger.debug("     I'll publish %s" % element[0])
                 time.sleep(tSleep) 
@@ -212,8 +213,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
 
                     msgLog = " [d] Publishing in: {} ({}) at {}".format(
                             profile.capitalize(), nick, time.asctime())
-                    logger.info(msgLog)                
-                    print(msgLog) 
+                    logMsg(msgLog, 1, 1)
 
                     result = None
                     if profile in ['twitter', 'facebook', 'mastodon', 
@@ -227,6 +227,18 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                             cls = getattr(mod, 'module' + serviceName)
                             api = cls()
                             api.setClient(nick)
+                            if profile in ['telegram', 'facebook']: 
+                                comment = summaryLinks 
+                                pos1 = comment.find('http://fernand0.blogalia') 
+                                if pos1 >=0: 
+                                    pos2 = comment.find(' ',pos1+1) 
+                                    pos3 = comment.find('\n',pos1+1) 
+                                    pos2 = min(pos2, pos3) 
+                                    logging.info(comment) 
+                                    comment = "\n{}(Enlace censurado por Facebook){}".format( comment[:pos1-1], comment[pos2:]) 
+                                    logging.info(comment) 
+                            elif profile == 'medium': 
+                                comment = summaryHtml 
                             if profile in ['wordpress']: 
                                 result = api.publishPost(title, link, comment, tags=links)
                             else: 
@@ -320,8 +332,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                         time.sleep(tSleep2) 
                     msgLog = " [d] Finished in: {} at {}".format(
                             profile.capitalize(), time.asctime())
-                    logger.info(msgLog)
-                    print(msgLog)
+                    logMsg(msgLog, 1, 1)
                 else: 
                     result == ''
         else: 

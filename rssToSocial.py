@@ -213,7 +213,8 @@ def updateCaches(blogs, simmulate):
         socialNetworks = blog.getSocialNetworks() 
         if socialNetworks: 
             msgLog = " Looking for pending posts in {}".format(
-                    str(socialNetworks))
+                    ', '.join(mySN.capitalize() 
+                        for mySN in socialNetworks.keys()))
         else:
             msgLog = " No social networks configured"
         logMsg(msgLog, 1, 1)
@@ -236,12 +237,11 @@ def updateCaches(blogs, simmulate):
             else:
                 lenMax = bufferMax - 1
 
-
-            msgLog = "  Service: {} Nick: {}".format(profile, nick)
+            msgLog = "   Service: {} Nick: {}".format(profile.capitalize(), 
+                    nick)
             logMsg(msgLog, 1, 1)
 
             logging.debug("  Service %s Lenmax %d" % (profile, lenMax))
-
             num = bufferMax - lenMax
 
             lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
@@ -263,7 +263,7 @@ def updateCaches(blogs, simmulate):
             else:
                 myMsg = "New posts."
 
-            myMsg = "   {} Last time: {}".format(myMsg, time.ctime(lastTime))
+            myMsg = "    {} Last time: {}".format(myMsg, time.ctime(lastTime))
             logging.info(myMsg) 
             print(myMsg)
 
@@ -296,7 +296,6 @@ def updateCaches(blogs, simmulate):
                     [ logging.info("    Scheduling posts {}".format(post[0])) 
                             for post in listPosts ]
 
-
                 if simmulate:
                     print("Simmulation {}".format(str(listPosts))) 
                 elif ((blog.getProgram() 
@@ -324,11 +323,8 @@ def updateCaches(blogs, simmulate):
                              msgLog = "listPosts: {}".format(str(listPosts))
                              logMsg(msgLog, 2, 0)
                 else:
-                    #print(listPosts)
                     if listPosts:
                         link = blog.addNextPosts(listPosts, socialNetwork)
-                        #print(link)
-                        #print(blog.getNextPosts(socialNetwork))
 
 def publishUpdates(blogs, simmulate, nowait, timeSlots):
     msgLog = "Publishing Updates"
@@ -373,9 +369,8 @@ def publishUpdates(blogs, simmulate, nowait, timeSlots):
 
         time.sleep(5)
 
-        print("======================================")
-        print("Starting delayed at %s" % time.asctime())
-        print("======================================")
+        msgLog = "Starting delayed at %s" % time.asctime()
+        logMsg(msgLog, 1, 2)
 
         import concurrent.futures 
         with concurrent.futures.ThreadPoolExecutor(
@@ -388,23 +383,21 @@ def publishUpdates(blogs, simmulate, nowait, timeSlots):
                 try:
                     res = future.result()
                     if res:
-                        print("Res: %s"% str(res))
+                        print("  Published: %s"% str(res))
                 except Exception as exc:
                     print('{} generated an exception: {}'.format(
                         str(dataBlog), exc))
     
 
-        print("======================================")
-        print("Finished delayed at %s" % time.asctime())
-        print("======================================")
-
+        msgLog = "Finished delayed at %s" % time.asctime()
+        logMsg(msgLog, 1, 2)
 
 
 def main():
 
-    print("====================================")
+    print("===================================================================")
     print("Launched at %s" % time.asctime())
-    print("====================================")
+    print("===================================================================")
     print("")
         
     isDebug = False

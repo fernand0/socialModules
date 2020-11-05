@@ -52,21 +52,11 @@ def setNextTime(blog, socialNetwork, tNow, tSleep):
         pickle.dump((tNow, tSleep), f)
     return fileNameNext
 
-def getLastLinkPublished(fileName):        
-    try: 
-        with open(fileName, "rb") as f: 
-            linkLast = f.read().decode().split()  # Last published
-    except:
-        # File does not exist, we need to create it.
-        with open(fileName, "wb") as f:
-            logging.warning("File %s does not exist. Creating it."
-                    % fileName) 
-            linkLast = ''  
-            # None published, or non-existent file
-    if len(linkLast) == 1: 
-        return(linkLast[0], os.path.getmtime(fileName))
-    else:
-        return(linkLast, os.path.getmtime(fileName))
+def getNextTime(blog, socialNetwork):        
+    fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext' 
+    with open(fileNameNext,'rb') as f:
+        tNow, tSleep = pickle.load(f)
+    return tNow, tSleep
 
 def getLastLink(fileName):        
     try: 
@@ -84,17 +74,6 @@ def getLastLink(fileName):
     else:
         return(linkLast, os.path.getmtime(fileName))
 
-def checkLastLinkPublished(url, socialNetwork=()):
-    if not socialNetwork: 
-        fileNameL = (DATADIR  + '/' 
-               + urllib.parse.urlparse(url).netloc + ".lastPub")
-    else:
-        fileNameL = fileNamePath(url, socialNetwork)+".lastPub"
-    logging.debug("Checking last link: %s" % fileNameL)
-    (linkLast, timeLast) = getLastLinkPublished(fileNameL)
-    return(linkLast, timeLast)
-
-
 def checkLastLink(url, socialNetwork=()):
     # Redundant with moduleCache
     if not socialNetwork: 
@@ -105,21 +84,6 @@ def checkLastLink(url, socialNetwork=()):
     logging.debug("Checking last link: %s" % fileNameL)
     (linkLast, timeLast) = getLastLink(fileNameL)
     return(linkLast, timeLast)
-
-def updateLastLinkPub(url, link, lastLink, socialNetwork=()): 
-    if not socialNetwork: 
-        fileName = (DATADIR  + '/' 
-               + urllib.parse.urlparse(url).netloc + ".lastPub")
-    else: 
-        fileName = fileNamePath(url, socialNetwork) + ".lastPub"
-
-    with open(fileName, "w") as f: 
-        if isinstance(link, bytes): 
-            f.write(link.decode())
-        elif isinstance(link, str): 
-            f.write(link)
-        else:
-            f.write(link[0])
 
 
 
