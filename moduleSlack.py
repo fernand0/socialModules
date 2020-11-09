@@ -32,7 +32,7 @@ class moduleSlack(Content,Queue):
         self.keys = []
         self.service = 'Slack'
 
-    def setClient(self, slackCredentials):
+    def setClient(self):
         # https://api.slack.com/authentication/basics
         logging.info("     Connecting {}".format(self.service))
         try:
@@ -214,10 +214,12 @@ class moduleSlack(Content,Queue):
         logging.info("Update before return %s"% update)
         return(update)
  
+    def getPostId(self, post):
+        return(post['ts'])
 
     def getId(self, i):
         post = self.getPosts()[i]
-        return(post['ts'])
+        return(self.getPostId(post))
 
     def getKeys(self):
         return(self.keys)
