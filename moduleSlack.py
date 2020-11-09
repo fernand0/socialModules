@@ -47,7 +47,11 @@ class moduleSlack(Content,Queue):
                 #    self.sc = SlackClient(self.slack_token) 
                 #except: 
                 logging.info(self.report(self.service, "", "", sys.exc_info())) 
-                self.sc = slack.WebClient(token=self.slack_token)
+                try:
+                    self.sc = slack.WebClient(token=self.slack_token)
+                except: 
+                    from slackclient import SlackClient
+                    self.sc = SlackClient(self.slack_token)
             else:
                 logging.warning("Account not configured") 
                 if sys.exc_info()[0]: 
@@ -111,6 +115,10 @@ class moduleSlack(Content,Queue):
             self.sc.token = self.slack_token        
             data = {'count':1000, 'channel':theChannel}
             history = self.sc.api_call( "conversations.history", data= data) #, count=1000, channel=theChannel)
+            logging.info("histo: {}".format(history))
+            if not history['ok']: 
+                history = self.sc.api_call( "channels.history", count=1000, channel=theChannel)
+
             try:
                 self.posts = history['messages']
             except:
@@ -239,18 +247,24 @@ class moduleSlack(Content,Queue):
         logging.info(result)
         return(result['ok'])
 
-    def deletePost(self, idPost, theChannel): 
+    def deletePost(self, idPost, chan): 
         #theChannel or the name of the channel?
-        logging.info("Deleting id %s from %s" % (idPost, theChannel))
+        logging.info("Deleting id %s from %s" % (idPost, chan))
         
+        theChannel = self.getChanId(chan)
         try:
+            logging.info("Deleting id %s from %s" % (idPost, theChannel))
             self.sc.token = self.user_slack_token        
             data = {'channel': theChannel, 'ts': idPost}
             result = self.sc.api_call("chat.delete", data=data) #, channel=theChannel, ts=idPost)
+            if not result['ok']: 
+                # Old way
+                result = self.sc.api_call("chat.delete", 
+                            channel=theChannel, ts=idPost)
         except:
             logging.info(self.report('Slack', "Error deleting", "", sys.exc_info()))
     
-        logging.debug(result)
+        logging.debug("2 {}".format(result))
         return(result)
     
     def getChanId(self, name):
@@ -403,6 +417,10 @@ class moduleSlack(Content,Queue):
             data = {'channel': theChan, 'text': msg}
             result = self.sc.api_call("chat.postMessage", data= data) #, 
                 #channel = theChan, text = msg)
+            if not result['ok']: 
+                # Old style
+                result = self.sc.api_call("chat.postMessage", 
+                        channel = theChan, text = msg)
             self.sc.token = self.slack_token        
         except:
             logging.info(self.report('Slack', "", "", sys.exc_info()))
