@@ -6,9 +6,9 @@ import os
 import urllib
 import logging
 #try: 
-#    from slackclient import SlackClient
-#except: 
-import slack
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
+# https://slack.dev/python-slack-sdk/v3-migration/
 
 import sys
 import time
@@ -32,7 +32,7 @@ class moduleSlack(Content,Queue):
         self.keys = []
         self.service = 'Slack'
 
-    def setClient(self, slackCredentials):
+    def setClient(self):
         # https://api.slack.com/authentication/basics
         logging.info("     Connecting {}".format(self.service))
         try:
@@ -43,11 +43,9 @@ class moduleSlack(Content,Queue):
                 self.slack_token = config.get('Slack', 'oauth-token') 
                 self.user_slack_token = config.get('Slack', 'user-oauth-token') 
 
-                #try: 
-                #    self.sc = SlackClient(self.slack_token) 
-                #except: 
                 logging.info(self.report(self.service, "", "", sys.exc_info())) 
-                self.sc = slack.WebClient(token=self.slack_token)
+                logging.info("1") 
+                self.sc = WebClient(self.slack_token)
             else:
                 logging.warning("Account not configured") 
                 if sys.exc_info()[0]: 
@@ -56,7 +54,7 @@ class moduleSlack(Content,Queue):
                 print("Please, configure a {} Account".format(self.service))
                 sys.exit(-1)
         except:
-            logging.warning("Account not configured") 
+            logging.warning("Something failed. not configured") 
             if sys.exc_info()[0]: 
                 logging.warning("Unexpected error: {}".format( 
                     sys.exc_info()[0])) 
@@ -237,13 +235,14 @@ class moduleSlack(Content,Queue):
         logging.info(result)
         return(result['ok'])
 
-    def deletePost(self, idPost, theChannel): 
+    def deletePost(self, idPost, chan): 
         #theChannel or the name of the channel?
-        logging.info("Deleting id %s from %s" % (idPost, theChannel))
+        theChan = self.getChanId(chan)
+        logging.info("Deleting id %s from %s" % (idPost, theChan))
         
         try:
             self.sc.token = self.user_slack_token        
-            data = {'channel': theChannel, 'ts': idPost}
+            data = {'channel': theChan, 'ts': idPost}
             result = self.sc.api_call("chat.delete", data=data) #, channel=theChannel, ts=idPost)
         except:
             logging.info(self.report('Slack', "Error deleting", "", sys.exc_info()))
@@ -410,9 +409,9 @@ class moduleSlack(Content,Queue):
         logging.info("End publishing %s" % msg)
         return(result)
 
-    def getBots(self):
+    def getBots(self, channel='tavern-of-the-bots'):
         if not self.posts:
-            self.setPosts('tavern-of-the-bots')
+            self.setPosts(channel)
         msgs = {}
         for msg in self.getPosts():
             if msg['text'].find('Hello')>=0: 
@@ -464,16 +463,20 @@ def main():
     url = "http://fernand0-errbot.slack.com/" 
     site.setUrl(url)
 
-    SLACKCREDENTIALS = os.path.expanduser(CONFIGDIR + '/.rssSlack')
-    site.setClient(SLACKCREDENTIALS)
 
+    site.setClient()
+    site.setPosts()
+    print(site.getPosts())
     theChannel = site.getChanId(CHANNEL)  
     print("the Channel %s" % theChannel)
+    post = site.publishPost(CHANNEL, "test")
+    print(post)
+    input("Delete ?")
+    print(site.deletePost(post['ts'], CHANNEL))
     res=site.search('links', 'https://www.pine64.org/2020/01/24/setting-the-record-straight-pinephone-misconceptions/a')
     print("res",res)
     print("res",res['messages']['total'])
-    site.setPosts()
-    print(site.getPosts())
+    sys.exit()
     post = site.getPosts()[0]
     print(site.getPostTitle(post))
     print(site.getPostLink(post))

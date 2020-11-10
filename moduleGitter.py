@@ -56,7 +56,7 @@ class moduleGitter(Content,Queue):
             logging.info(self.report('Slack', text, sys.exc_info()))
             self.sc = slack.WebClient(token=self.slack_token)
 
-    def setPosts(self, channel='links'):
+    def setPosts(self, channel='fernand0errbot/tavern-of-the-bots'):
         logging.info(" Setting posts")
         self.posts = []
         #theChannel = self.getChanId(channel)
@@ -126,10 +126,12 @@ class moduleGitter(Content,Queue):
         api_meth = 'rooms/{}/chatMessages/{}'.format(room_id, idPost)
         result = self.sc.delete(api_meth)
         logging.info("Result: {}".format(str(result)))
+        print("->",result)
         return result
 
-    def deletePost(self, idPost, idChannel): 
+    def deletePost(self, idPost, chan): 
         #theChannel or the name of the channel?
+        idChannel = self.getChanId(chan)
         logging.info("Deleting id %s from %s" % (idPost, idChannel))
         
         try:
@@ -290,7 +292,7 @@ class moduleGitter(Content,Queue):
         logging.info("End publishing %s" % msg)
         return(result)
 
-    def getBots(self, channel='tavern-of-the-bots'):
+    def getBots(self, channel='fernand0errbot/tavern-of-the-bots'):
         if not self.posts:
             self.setPosts(channel)
         msgs = {}
@@ -337,7 +339,7 @@ def main():
     CHANNEL = 'fernand0errbot/links' 
     site.setPosts(CHANNEL)
     print(len(site.getPosts()))
-    post = site.getPosts()[3]
+    post = site.getPosts()[0]
     print(post)
     print("----------------")
     print("title {}".format(site.getPostTitle(post)))
@@ -346,9 +348,10 @@ def main():
     print(site.getLinkPosition(link))
 
     print(CHANNEL) 
-    site.deletePost(site.getPostId(post), site.getChanId(CHANNEL))
     rep = site.publishPost(CHANNEL, 'helloo')
     print(rep)
+    input("Delete?")
+    site.deletePost(rep['id'], CHANNEL)
 
     print(site.extractDataMessage(4))
 
