@@ -5,10 +5,15 @@ import pickle
 import os
 import urllib
 import logging
-try: 
-    from slackclient import SlackClient
-except: 
-    import slack
+#try: 
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
+#except:
+#    try:
+#        from slackclient import SlackClient 
+#    except: import slack
+
+# https://slack.dev/python-slack-sdk/v3-migration/
 
 import sys
 import time
@@ -30,10 +35,43 @@ class moduleSlack(Content,Queue):
         self.service = None
         self.sc = None
         self.keys = []
+        self.service = 'Slack'
 
-    def setClient(self, slackCredentials):
+    def setClient(self):
         # https://api.slack.com/authentication/basics
-        self.setSlackClient(slackCredentials)
+        logging.info("     Connecting {}".format(self.service))
+        try:
+            config = configparser.ConfigParser()
+            config.read(CONFIGDIR + '/.rssSlack')
+
+            if config.sections(): 
+                self.slack_token = config.get('Slack', 'oauth-token') 
+                self.user_slack_token = config.get('Slack', 'user-oauth-token') 
+
+                logging.info(self.report(self.service, "", "", sys.exc_info())) 
+                logging.info("1") 
+                self.sc = WebClient(self.slack_token)
+            else:
+                logging.warning("Account not configured") 
+                if sys.exc_info()[0]: 
+                    logging.warning("Unexpected error: {}".format( 
+                        sys.exc_info()[0])) 
+                print("Please, configure a {} Account".format(self.service))
+                sys.exit(-1)
+        except:
+            logging.warning("Something failed. not configured") 
+            if sys.exc_info()[0]: 
+                logging.warning("Unexpected error: {}".format( 
+                    sys.exc_info()[0])) 
+                logging.info(self.report(self.service, "", "", sys.exc_info()))
+            print("Please, configure a {} Account".format(self.service))
+            sys.exit(-1)
+            logging.info(self.report('Slack', text, sys.exc_info()))
+            self.sc = slack.WebClient(token=self.slack_token)
+
+
+        #self.setSlackClient(slackCredentials)
+        #config = configparser.ConfigParser()
 
     def setSlackClient(self, slackCredentials):
         self.service = 'slack'
@@ -46,9 +84,9 @@ class moduleSlack(Content,Queue):
         self.user_slack_token = config["Slack"].get('user-oauth-token')
         
         try: 
-            self.sc = SlackClient(self.slack_token)
+            self.sc = WebClient(self.slack_token)
         except:
-            logging.info(self.report('Slack', text, sys.exc_info()))
+            logging.info(self.report('Slack', "","", sys.exc_info()))
             self.sc = slack.WebClient(token=self.slack_token)
 
         config = configparser.ConfigParser()
@@ -58,8 +96,8 @@ class moduleSlack(Content,Queue):
         url = config.get(section, "url")
         self.setUrl(url)
         self.setSocialNetworks(config, section)
-        if ('buffer' in config.options(section)): 
-            self.setBufferapp(config.get(section, "buffer"))
+        #if ('buffer' in config.options(section)): 
+        #    self.setBufferapp(config.get(section, "buffer"))
 
         if ('cache' in config.options(section)): 
             self.setProgram(config.get(section, "cache"))
@@ -69,21 +107,19 @@ class moduleSlack(Content,Queue):
         return self.sc
  
     def setPosts(self, channel='links'):
-        msgLog = "  Setting posts"
-        logging.info(msgLog)
-        print(msgLog)
+        logging.info(" Setting posts")
         self.posts = []
         theChannel = self.getChanId(channel)
-        #history = self.sc.api_call( "channels.history", count=1000, channel=theChannel)
-        #print(history)
-        # Updating to the conversations API
         try:
-            history = self.sc.api_call( "conversations.history", count=1000, channel=theChannel)
-            if 'messages' in history:
+            self.sc.token = self.slack_token        
+            data = {'count':1000, 'channel':theChannel}
+            history = self.sc.api_call( "conversations.history", data= data) #, count=1000, channel=theChannel)
+            try:
                 self.posts = history['messages']
-            else:
+            except:
                 self.posts = []
         except:
+            logging.warning(self.report(self.service, "", "", sys.exc_info()))
             self.posts = []
 
     def getTitle(self, i):
@@ -204,11 +240,17 @@ class moduleSlack(Content,Queue):
         logging.info(result)
         return(result['ok'])
 
-    def deletePost(self, idPost, theChannel): 
+    def deletePost(self, idPost, chan): 
         #theChannel or the name of the channel?
-        logging.info("Deleting id %s from %s" % (idPost, theChannel))
-            
-        result = self.sc.api_call("chat.delete", channel=theChannel, ts=idPost)
+        theChan = self.getChanId(chan)
+        logging.info("Deleting id %s from %s" % (idPost, theChan))
+        
+        try:
+            self.sc.token = self.user_slack_token        
+            data = {'channel': theChan, 'ts': idPost}
+            result = self.sc.api_call("chat.delete", data=data) #, channel=theChannel, ts=idPost)
+        except:
+            logging.info(self.report('Slack', "Error deleting", "", sys.exc_info()))
     
         logging.debug(result)
         return(result)
@@ -360,20 +402,21 @@ class moduleSlack(Content,Queue):
         logging.info("Publishing %s" % msg)
         try:
             self.sc.token = self.user_slack_token        
-            result = self.sc.api_call("chat.postMessage", 
-                channel = theChan, text = msg)
+            data = {'channel': theChan, 'text': msg}
+            result = self.sc.api_call("chat.postMessage", data= data) #, 
+                #channel = theChan, text = msg)
             self.sc.token = self.slack_token        
         except:
-            logging.info(self.report('Slack', text, sys.exc_info()))
+            logging.info(self.report('Slack', "", "", sys.exc_info()))
             result = self.sc.chat_postMessage(channel=theChan, 
                     text=msg)
         logging.info(result['ok'])
         logging.info("End publishing %s" % msg)
         return(result)
 
-    def getBots(self):
+    def getBots(self, channel='tavern-of-the-bots'):
         if not self.posts:
-            self.setPosts('tavern-of-the-bots')
+            self.setPosts(channel)
         msgs = {}
         for msg in self.getPosts():
             if msg['text'].find('Hello')>=0: 
@@ -398,51 +441,55 @@ class moduleSlack(Content,Queue):
         logging.debug("     Searching in Slack...")
         try: 
             theChannel = self.getChanId(channel)
-            res = self.sc.api_call("search.messages",channel=theChannel, query=text)
+            self.sc.token = self.slack_token        
+            data = {'query':text}
+            res = self.sc.api_call("search.messages", data=data) #, query=text)
 
             if res: 
-                logging.info(self.report('Slack', text, sys.exc_info()))
+                logging.info(self.report(self.service, "", "", sys.exc_info()))
                 return(res)
         except:        
             return(self.report('Slack', text, sys.exc_info()))
 
 
-
 def main():
-    CHANNEL = 'tavern-of-the-bots' 
 
-    import moduleTumblr
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
+
+
     import moduleSlack
 
-    config = configparser.ConfigParser()
-    config.read(CONFIGDIR + '/.rssBlogs')
-
     site = moduleSlack.moduleSlack()
-    section = "Blog7"
 
-    url = config.get(section, "url")
+    CHANNEL = 'tavern-of-the-bots' 
+
+    url = "http://fernand0-errbot.slack.com/" 
     site.setUrl(url)
 
-    SLACKCREDENTIALS = os.path.expanduser(CONFIGDIR + '/.rssSlack')
-    site.setSlackClient(SLACKCREDENTIALS)
 
+    site.setClient()
+    site.setPosts()
+    print(site.getPosts())
     theChannel = site.getChanId(CHANNEL)  
     print("the Channel %s" % theChannel)
+    post = site.publishPost(CHANNEL, "test")
+    print(post)
+    input("Delete ?")
+    print(site.deletePost(post['ts'], CHANNEL))
     res=site.search('links', 'https://www.pine64.org/2020/01/24/setting-the-record-straight-pinephone-misconceptions/a')
     print("res",res)
     print("res",res['messages']['total'])
-    site.setSocialNetworks(config, section)
-    print(site.getSocialNetworks())
-    site.setPosts()
-    for service in site.getSocialNetworks():
-        socialNetwork = (service, site.getSocialNetworks()[service])
-        
-        linkLast, lastTime = checkLastLink(site.getUrl(), socialNetwork)
-        print("linkLast {} {}".format(socialNetwork, linkLast))
-        i = site.getLinkPosition(linkLast)
-        print(i)
-        print(site.getNumPostsData(1,i))
- 
+    sys.exit()
+    post = site.getPosts()[0]
+    print(site.getPostTitle(post))
+    print(site.getPostLink(post))
+    rep = site.publishPost('tavern-of-the-bots', 'hello')
+    wait = input('Delete %s?' % rep)
+    theChan = site.getChanId('tavern-of-the-bots')
+    rep = site.deletePost(rep['ts'], theChan)
+
     sys.exit()
 
     site.setPosts('links')
@@ -452,8 +499,7 @@ def main():
     print(site.sc.api_call('channels.list'))
     sys.exit()
     rep = site.publishPost('tavern-of-the-bots', 'hello')
-    wait = input('Delete %s?' % rep)
-    site.deletePost(rep['ts'], theChannel)
+    site.deletePost(rep['ts'], theChan)
     sys.exit()
 
     site.setSocialNetworks(config, section)
