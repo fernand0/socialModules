@@ -49,7 +49,6 @@ class moduleSlack(Content,Queue):
                 self.user_slack_token = config.get('Slack', 'user-oauth-token') 
 
                 logging.info(self.report(self.service, "", "", sys.exc_info())) 
-                logging.info("1") 
                 self.sc = WebClient(self.slack_token)
             else:
                 logging.warning("Account not configured") 

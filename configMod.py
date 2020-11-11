@@ -54,10 +54,18 @@ def setNextTime(blog, socialNetwork, tNow, tSleep):
 
 def getNextTime(blog, socialNetwork):        
     fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext' 
-    with open(fileNameNext,'rb') as f:
-        tNow, tSleep = pickle.load(f)
-    return tNow, tSleep
-
+    try:
+        with open(fileNameNext,'rb') as f:
+            tNow, tSleep = pickle.load(f)
+        return tNow, tSleep
+    except:
+        # File does not exist, we need to create it.
+        with open(fileNameNext, "wb") as f:
+            logging.warning("File %s does not exist. Creating it."
+                    % fileNameNext) 
+            # None published, or non-existent file
+            return 0, 0
+ 
 def getLastLink(fileName):        
     try: 
         with open(fileName, "rb") as f: 
