@@ -398,7 +398,7 @@ class moduleSlack(Content,Queue):
         try:
             self.sc.token = self.user_slack_token        
             data = {'channel': theChan, 'text': msg}
-            result = self.sc.api_call("chat.postMessage", data= data) #, 
+            result = self.sc.api_call("chat.postMessage", data = data ) #, 
                 #channel = theChan, text = msg)
             self.sc.token = self.slack_token        
         except:
