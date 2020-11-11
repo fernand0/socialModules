@@ -8,11 +8,6 @@ import logging
 #try: 
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
-#except:
-#    try:
-#        from slackclient import SlackClient 
-#    except: import slack
-
 # https://slack.dev/python-slack-sdk/v3-migration/
 
 import sys
@@ -39,6 +34,7 @@ class moduleSlack(Content,Queue):
 
     def setClient(self):
         # https://api.slack.com/authentication/basics
+        logging.info("     Setting Client")
         logging.info("     Connecting {}".format(self.service))
         try:
             config = configparser.ConfigParser()
@@ -48,7 +44,6 @@ class moduleSlack(Content,Queue):
                 self.slack_token = config.get('Slack', 'oauth-token') 
                 self.user_slack_token = config.get('Slack', 'user-oauth-token') 
 
-                logging.info(self.report(self.service, "", "", sys.exc_info())) 
                 self.sc = WebClient(self.slack_token)
             else:
                 logging.warning("Account not configured") 
@@ -68,9 +63,9 @@ class moduleSlack(Content,Queue):
             logging.info(self.report('Slack', text, sys.exc_info()))
             self.sc = slack.WebClient(token=self.slack_token)
 
+        logging.info("     Connected {}".format(self.service))
 
-        #self.setSlackClient(slackCredentials)
-        #config = configparser.ConfigParser()
+
 
     def setSlackClient(self, slackCredentials):
         self.service = 'slack'
@@ -120,6 +115,8 @@ class moduleSlack(Content,Queue):
         except:
             logging.warning(self.report(self.service, "", "", sys.exc_info()))
             self.posts = []
+
+        logging.info(" Set posts")
 
     def getTitle(self, i):
         post = self.getPosts()[i]
@@ -470,9 +467,11 @@ def main():
 
     site.setClient()
     site.setPosts()
-    print(site.getPosts())
+    print("Posts: {}".format(site.getPosts()))
     theChannel = site.getChanId(CHANNEL)  
-    print("the Channel %s" % theChannel)
+    print("the Channel {} has code {}".format(CHANNEL, theChannel))
+    site.setPosts(CHANNEL)
+    # post = site.getPosts()[0] # Delete de last post
     post = site.publishPost(CHANNEL, "test")
     print(post)
     input("Delete ?")
