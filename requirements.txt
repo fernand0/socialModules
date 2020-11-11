@@ -27,3 +27,4 @@ slackclient
 python-tumblpy
 telepot
 gitterpy
+slack_sdk
