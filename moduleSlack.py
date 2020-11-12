@@ -31,7 +31,7 @@ class moduleSlack(Content,Queue):
         self.keys = []
         self.service = 'Slack'
 
-    def setClient(self):
+    def setClient(self, user=None):
         # https://api.slack.com/authentication/basics
         logging.info("     Setting Client")
         logging.info("     Connecting {}".format(self.service))
