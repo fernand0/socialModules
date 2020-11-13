@@ -106,7 +106,7 @@ class moduleSlack(Content,Queue):
         try:
             self.sc.token = self.slack_token        
             data = {'count':1000, 'channel':theChannel}
-            history = self.sc.api_call( "conversations.history", data= data) #, count=1000, channel=theChannel)
+            history = self.sc.api_call( "conversations.history", data= data) 
             try:
                 self.posts = history['messages']
             except:
@@ -157,10 +157,6 @@ class moduleSlack(Content,Queue):
                 pos = text.rfind('<')
                 url=text[pos+1:-1]
             return(url) 
-
-    #def isForMe(self, args):
-    #    return ((self.service[0].capitalize() in args.split()[0])
-    #           or (args[0] == '*'))
 
     def publish(self, j):
         logging.info("Publishing %d"% j)
@@ -254,11 +250,7 @@ class moduleSlack(Content,Queue):
         logging.debug("getChanId %s"% self.service)
 
         self.sc.token = self.user_slack_token        
-        #chanList = self.sc.api_call("channels.list")['channels']
-        #print(chanList)
-        # Upgrading to the new conversations API
         chanList = self.sc.api_call("conversations.list")['channels']
-        #print(chanList)
         self.sc.token = self.slack_token        
         for channel in chanList:
             if channel['name_normalized'] == name:
@@ -267,7 +259,10 @@ class moduleSlack(Content,Queue):
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)
-        (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None) 
+        (theTitle, theLink, firstLink, theImage, theSummary, 
+                content, theSummaryLinks, theContent, theLinks, comment) = (
+                        None, None, None, None, None, 
+                        None, None, None, None, None) 
 
         if i < len(self.getPosts()):
             theTitle = self.getTitle[0]
@@ -399,7 +394,6 @@ class moduleSlack(Content,Queue):
             self.sc.token = self.user_slack_token        
             data = {'channel': theChan, 'text': msg}
             result = self.sc.api_call("chat.postMessage", data = data ) #, 
-                #channel = theChan, text = msg)
             self.sc.token = self.slack_token        
         except:
             logging.info(self.report('Slack', "", "", sys.exc_info()))
