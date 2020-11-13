@@ -6,6 +6,7 @@ import requests
 import shutil
 import urllib
 from PIL import Image
+import sys
 
 HOME = os.path.expanduser("~")
 LOGDIR = HOME + "/usr/var/log"
@@ -67,10 +68,12 @@ def getNextTime(blog, socialNetwork):
             return 0, 0
  
 def getLastLink(fileName):        
-    try: 
+    if not os.path.isdir(os.path.dirname(fileName)):
+        sys.exit("No directory {} exists".format(os.path.dirname(fileName)))
+    if os.path.isfile(fileName):
         with open(fileName, "rb") as f: 
             linkLast = f.read().decode().split()  # Last published
-    except:
+    else:
         # File does not exist, we need to create it.
         with open(fileName, "wb") as f:
             logging.warning("File %s does not exist. Creating it."

@@ -236,6 +236,8 @@ class moduleSlack(Content,Queue):
         theChan = self.getChanId(chan)
         logging.info("Deleting id %s from %s" % (idPost, theChan))
         
+        result = None
+
         try:
             self.sc.token = self.user_slack_token        
             data = {'channel': theChan, 'ts': idPost}
