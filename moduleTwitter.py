@@ -88,23 +88,9 @@ class moduleTwitter(Content,Queue):
 
         #outputData = {}
         serviceName = 'Twitter'
-        #outputData[serviceName] = {'sent': [], 'pending': []}
-        #for post in self.getPosts():
-        #    #print(post)
-        #    url = 'https://twitter.com/' + post['user']['screen_name'] + '/status/' + str(post['id'])
-        #    if 'urls' in post:
-        #        link = post['urls'][0]['expanded_url']
-        #    else:
-        #        link = ''
-
-        #    outputData[serviceName]['sent'].append((post['text'], url, 
-        #            post['user']['screen_name'],     
-        #            post['created_at'], link,'','','',''))
-
-        #self.postsFormatted = outputData
 
     def publishPost(self, post, link='', comment=''):
-        logging.info("     Publishing in Twitter...")
+        logging.info("     Publishing in {}...".format(self.service))
         if comment != None: 
             post = comment + " " + post
         h = HTMLParser()
@@ -169,6 +155,10 @@ def main():
     tw = moduleTwitter.moduleTwitter()
 
     tw.setClient('fernand0')
+
+    print("Testing followers")
+    tw.setFriends()
+    sys.exit()
 
     print("Testing posts")
     tw.setPosts()

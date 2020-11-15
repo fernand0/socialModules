@@ -205,7 +205,10 @@ class Content:
         self.max = maxVal
 
     def getMax(self):
-        return(self.max)
+        if hasattr(self, 'max'): 
+            return(int(self.max))
+        else:
+            return None
 
     def getCache(self):
         return(self.cache)
