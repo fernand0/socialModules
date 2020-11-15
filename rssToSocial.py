@@ -241,9 +241,9 @@ def updateCaches(blog, socialNetworks, simmulate):
         i = blog.getLinkPosition(myLastLink)
  
         if (i == 0):
-            msgLog = "No new posts. Last time: {}".format(time.ctime(lastTime))
+            msgLog = "  No new posts."
         else:
-            msgLog = "New posts."
+            msgLog = "  New posts."
 
         logMsg(msgLog, 1, 1)
 
@@ -257,9 +257,11 @@ def updateCaches(blog, socialNetworks, simmulate):
         msgLog = "   Profile {}".format(profile.capitalize())
         logMsg(msgLog, 2, 0)
 
-        msgLog = "    %s Last link %s"% (
-                time.strftime('%Y-%m-%d %H:%M:%S', 
-                    time.localtime(lastTime)), myLastLink)
+        msgLog = "    Last time: {}".format(time.strftime('%Y-%m-%d %H:%M:%S', 
+                    time.localtime(lastTime)))
+        logMsg(msgLog, 1, 1)
+
+        msgLog = "    Last link {}".format(myLastLink)
         logMsg(msgLog, 1, 1)
 
         msgLog = "bufferMax - lenMax = num %d %d %d"% (bufferMax, lenMax, num)
@@ -345,7 +347,7 @@ def publishUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
     if not simmulate and delayedBlogs:
         # This should be a different function?
 
-        time.sleep(5)
+        time.sleep(10)
 
         msgLog = "Starting delayed at %s" % time.asctime()
         logMsg(msgLog, 1, 2)
@@ -428,7 +430,7 @@ def main():
         socialNetworks = blog.getSocialNetworks() 
 
         if socialNetworks:
-            msgLog = " Looking for pending posts in {}".format(
+            msgLog = "Looking for pending posts in {}".format(
                     ', '.join(mySN.capitalize()
                         for mySN in socialNetworks.keys()))
             logMsg(msgLog, 1, 1)
