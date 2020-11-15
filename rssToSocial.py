@@ -261,7 +261,7 @@ def updateCaches(blog, socialNetworks, simmulate):
                     time.localtime(lastTime)))
         logMsg(msgLog, 1, 1)
 
-        msgLog = "    Last link {}".format(myLastLink)
+        msgLog = "    Last link: {}".format(myLastLink)
         logMsg(msgLog, 1, 1)
 
         msgLog = "bufferMax - lenMax = num %d %d %d"% (bufferMax, lenMax, num)
