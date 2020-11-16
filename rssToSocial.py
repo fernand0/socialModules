@@ -317,7 +317,6 @@ def publishUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
     msgLog = "Publishing Updates"
     logMsg(msgLog, 1, 1)
  
-    link = None
     delayedBlogs = []
     delayedPosts = []
 
@@ -341,8 +340,6 @@ def publishUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
                 delayedBlogs.append((blog, 
                         socialNetwork, 1, nowait, 0))
 
-                if link:
-                    newUpdateLastLink(blog.getUrl(), link, '', socialNetwork)
 
     if not simmulate and delayedBlogs:
         # This should be a different function?
