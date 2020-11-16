@@ -337,6 +337,7 @@ def publishUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
                     delayedBlogs.append((blog, 
                         socialNetwork, 1, nowait, timeSlots))
             else: 
+                time.sleep(30)
                 link = moduleSocial.publishDelay(blog, 
                         socialNetwork, 1, nowait, 0)
                 logging.info("  Link reply %s"%str(link)) 
@@ -347,7 +348,7 @@ def publishUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
     if not simmulate and delayedBlogs:
         # This should be a different function?
 
-        time.sleep(10)
+        time.sleep(30)
 
         msgLog = "Starting delayed at %s" % time.asctime()
         logMsg(msgLog, 1, 2)

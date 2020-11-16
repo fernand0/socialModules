@@ -94,9 +94,8 @@ def nextPost(blog, socialNetwork):
             blog.cache[socialNetwork].setPosts()
             listP = blog.cache[socialNetwork].getPosts()
     else:
-        logging.info("si ")
         listP = blog.getNextPosts(socialNetwork)
-        logging.info("listP {}".format(listP))
+        logging.debug("listP {}".format(listP))
 
     if listP: 
         element = listP[0]
