@@ -317,6 +317,7 @@ def publishUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
     msgLog = "Publishing Updates"
     logMsg(msgLog, 1, 1)
  
+    link = None
     delayedBlogs = []
     delayedPosts = []
 
@@ -337,10 +338,8 @@ def publishUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
                     delayedBlogs.append((blog, 
                         socialNetwork, 1, nowait, timeSlots))
             else: 
-                time.sleep(30)
-                link = moduleSocial.publishDelay(blog, 
-                        socialNetwork, 1, nowait, 0)
-                logging.info("  Link reply %s"%str(link)) 
+                delayedBlogs.append((blog, 
+                        socialNetwork, 1, nowait, 0))
 
                 if link:
                     newUpdateLastLink(blog.getUrl(), link, '', socialNetwork)
@@ -348,7 +347,7 @@ def publishUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
     if not simmulate and delayedBlogs:
         # This should be a different function?
 
-        time.sleep(30)
+        time.sleep(10)
 
         msgLog = "Starting delayed at %s" % time.asctime()
         logMsg(msgLog, 1, 2)
@@ -389,7 +388,7 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description='Improving command line call',
             allow_abbrev=True)
-    parser.add_argument('--timeSlots', '-t', default=55, # 55 minutes
+    parser.add_argument('--timeSlots', '-t', default=50, # 55 minutes
                     help='How many time slots we will have for publishing (in minutes)')
     parser.add_argument('checkBlog', default="",
             metavar='Blog', type=str, nargs='?',

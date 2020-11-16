@@ -297,11 +297,19 @@ class moduleCache(Content,Queue):
         k = int(dest)
         logging.info("Moving %d to %d"% (j, k))
         if j > k:
-            post = self.posts[j]
+            posts = self.getPosts()
+            post = posts[j]
             logging.info("Moving %s"% post[0])
             for i in range(j-1,k-1,-1):
-                self.posts[i+1] = self.posts[i]
-            self.posts[k] = post
+                posts[i+1] = posts[i]
+            posts[k] = post
+
+            if hasattr(self, 'getPostsType'): 
+                # Quicnk and dirty hack
+                if self.getPostsType() == 'drafts': 
+                    self.drafts = posts
+                else:
+                    self.posts = posts
 
             self.updatePostsCache()
             logging.info("Moved %s"% post[0])
