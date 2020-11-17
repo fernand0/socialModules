@@ -235,7 +235,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                                     pos2 = min(pos2, pos3) 
                                     logging.info(comment) 
                                     comment = "\n{}(Enlace censurado por Facebook){}".format( comment[:pos1-1], comment[pos2:]) 
-                                    logging.info(comment) 
+                                    logging.debug(comment) 
                             elif profile == 'medium': 
                                 comment = summaryHtml 
                             if profile in ['wordpress']: 

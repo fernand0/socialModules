@@ -361,6 +361,20 @@ def publishUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
                     res = future.result()
                     if res:
                         print("  Published: %s"% str(res))
+                        print("datablog {}".format(dataBlog))
+                        if not dataBlog[0].getProgram():
+                            print("no")
+                            posL = res.find('http')
+                            if posL>=0:
+                                link = res[posL:]
+                                if link: 
+                                    socialNetwork = dataBlog[1] 
+                                    updateLastLink(dataBlog[0].getUrl(), 
+                                            link, socialNetwork) 
+
+                        else:
+                            print("sí")
+
                 except Exception as exc:
                     print('{} generated an exception: {}'.format(
                         str(dataBlog), exc))
