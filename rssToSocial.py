@@ -202,7 +202,7 @@ def readConfig(checkBlog):
     return(blogs)
 
 def updateCaches(blog, socialNetworks, simmulate):
-    msgLog = "Updating Caches"
+    msgLog = " Updating Caches"
     logMsg(msgLog, 1, 1)
 
     blog.setPosts()
@@ -217,7 +217,7 @@ def updateCaches(blog, socialNetworks, simmulate):
         nick = socialNetworks[profile]
         socialNetwork = (profile, nick)
         nameProfile = profile + '_' + nick
-        msgLog = " Service: {} Nick: {}".format(profile, nick)) 
+        msgLog = "  Service: {} Nick: {}".format(profile, nick)) 
         logMsg(msgLog, 1, 1)
 
         if (blog.getProgram() and (profile[0] in blog.getProgram())): 
@@ -243,9 +243,9 @@ def updateCaches(blog, socialNetworks, simmulate):
         i = blog.getLinkPosition(myLastLink)
  
         if (i == 0):
-            msgLog = "  No new posts."
+            msgLog = "   No new posts."
         else:
-            msgLog = "  New posts."
+            msgLog = "   New posts."
         logMsg(msgLog, 1, 1)
 
         hours = blog.getTime() 
@@ -255,14 +255,14 @@ def updateCaches(blog, socialNetworks, simmulate):
         else:
             myLastLink = lastLink
 
-        msgLog = "   Profile {}".format(profile.capitalize())
+        msgLog = "    Profile {}".format(profile.capitalize())
         logMsg(msgLog, 2, 0)
 
-        msgLog = "    Last time: {}".format(time.strftime('%Y-%m-%d %H:%M:%S', 
+        msgLog = "     Last time: {}".format(time.strftime('%Y-%m-%d %H:%M:%S', 
                     time.localtime(lastTime)))
         logMsg(msgLog, 1, 1)
 
-        msgLog = "    Last link: {}".format(myLastLink)
+        msgLog = "     Last link: {}".format(myLastLink)
         logMsg(msgLog, 1, 1)
 
         msgLog = "bufferMax - lenMax = num %d %d %d"% (bufferMax, lenMax, num)
@@ -315,7 +315,7 @@ def updateCaches(blog, socialNetworks, simmulate):
 
 
 def prepareUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
-    msgLog = "Publishing Updates"
+    msgLog = " Publishing Updates"
     logMsg(msgLog, 1, 1)
  
     delayedBlogs = []
@@ -325,7 +325,7 @@ def prepareUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
         nick = socialNetworks[profile]
         socialNetwork = (profile, nick)
         if simmulate:
-            msgLog = "Simmulation"
+            msgLog = " Simmulation"
             logMsg(msgLog, 1, 1)
         else: 
             if ((blog.getProgram() 
@@ -344,7 +344,7 @@ def prepareUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
     return(delayedBlogs)
 
 def startPublishing(delayedBlogs)
-    msgLog = "Starting delayed at %s" % time.asctime()
+    msgLog = " Starting delayed at %s" % time.asctime()
     logMsg(msgLog, 1, 2)
 
     import concurrent.futures 
@@ -372,7 +372,7 @@ def startPublishing(delayedBlogs)
                 print('{} generated an exception: {}'.format(
                     str(dataBlog), exc))
     
-    msgLog = "Finished delayed at %s" % time.asctime()
+    msgLog = " Finished delayed at %s" % time.asctime()
     logMsg(msgLog, 1, 2)
 
 
