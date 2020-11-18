@@ -217,6 +217,8 @@ def updateCaches(blog, socialNetworks, simmulate):
         nick = socialNetworks[profile]
         socialNetwork = (profile, nick)
         nameProfile = profile + '_' + nick
+        msgLog = " Service: {} Nick: {}".format(profile, nick)) 
+        logMsg(msgLog, 1, 1)
 
         if (blog.getProgram() and (profile[0] in blog.getProgram())): 
             lenMax = blog.len(profile)
@@ -244,7 +246,6 @@ def updateCaches(blog, socialNetworks, simmulate):
             msgLog = "  No new posts."
         else:
             msgLog = "  New posts."
-
         logMsg(msgLog, 1, 1)
 
         hours = blog.getTime() 
@@ -313,7 +314,7 @@ def updateCaches(blog, socialNetworks, simmulate):
                     link = blog.addNextPosts(listPosts, socialNetwork)
 
 
-def publishUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
+def prepareUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
     msgLog = "Publishing Updates"
     logMsg(msgLog, 1, 1)
  
@@ -340,50 +341,39 @@ def publishUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
                 delayedBlogs.append((blog, 
                         socialNetwork, 1, nowait, 0))
 
+    return(delayedBlogs)
 
-    if not simmulate and delayedBlogs:
-        # This should be a different function?
+def startPublishing(delayedBlogs)
+    msgLog = "Starting delayed at %s" % time.asctime()
+    logMsg(msgLog, 1, 2)
 
-        time.sleep(10)
+    import concurrent.futures 
+    with concurrent.futures.ThreadPoolExecutor(
+            max_workers=len(delayedBlogs)) as executor:
+        delayedPosts = {executor.submit(moduleSocial.publishDelay, *args): 
+                args for args in delayedBlogs}
+        time.sleep(5)
+        for future in concurrent.futures.as_completed(delayedPosts):
+            dataBlog = delayedPosts[future]
+            try:
+                res = future.result()
+                if res:
+                    print("  Published: %s"% str(res))
+                    if not dataBlog[0].getProgram():
+                        posL = res.find('http')
+                        if posL>=0:
+                            link = res[posL:]
+                            if link: 
+                                socialNetwork = dataBlog[1] 
+                                updateLastLink(dataBlog[0].getUrl(), 
+                                        link, socialNetwork) 
 
-        msgLog = "Starting delayed at %s" % time.asctime()
-        logMsg(msgLog, 1, 2)
-
-        import concurrent.futures 
-        with concurrent.futures.ThreadPoolExecutor(
-                max_workers=len(delayedBlogs)) as executor:
-            delayedPosts = {executor.submit(moduleSocial.publishDelay, *args): 
-                    args for args in delayedBlogs}
-            time.sleep(5)
-            for future in concurrent.futures.as_completed(delayedPosts):
-                dataBlog = delayedPosts[future]
-                try:
-                    res = future.result()
-                    if res:
-                        print("  Published: %s"% str(res))
-                        print("datablog {}".format(dataBlog))
-                        if not dataBlog[0].getProgram():
-                            print("no")
-                            posL = res.find('http')
-                            if posL>=0:
-                                link = res[posL:]
-                                if link: 
-                                    socialNetwork = dataBlog[1] 
-                                    updateLastLink(dataBlog[0].getUrl(), 
-                                            link, socialNetwork) 
-
-                        else:
-                            print("sí")
-
-                except Exception as exc:
-                    print('{} generated an exception: {}'.format(
-                        str(dataBlog), exc))
+            except Exception as exc:
+                print('{} generated an exception: {}'.format(
+                    str(dataBlog), exc))
     
-
-        msgLog = "Finished delayed at %s" % time.asctime()
-        logMsg(msgLog, 1, 2)
-
-
+    msgLog = "Finished delayed at %s" % time.asctime()
+    logMsg(msgLog, 1, 2)
 
 
 def main():
@@ -447,8 +437,13 @@ def main():
             logMsg(msgLog, 1, 1)
 
             updateCaches(blog, socialNetworks, simmulate)
-            publishUpdates(blog, socialNetworks, simmulate, 
-                    nowait, timeSlots)
+            delayedBlogs = prepareUpdates(blog, socialNetworks, 
+                    simmulate, nowait, timeSlots)
+
+            time.sleep(30)
+            if not simmulate and delayedBlogs: 
+                startPublishing(delayedBlogs)
+
         else:
             msgLog = " No social networks configured"
             logMsg(msgLog, 1, 1)

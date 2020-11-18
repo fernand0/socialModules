@@ -65,7 +65,7 @@ class moduleMedium(Content,Queue):
             self.posts.append(post)
 
     def publishPost(self, post, link, comment):
-        logging.info("    Publishing in Medium...")
+        logging.info("    Publishing in {} ...".format(self.service))
         client = self.tc
         user = self.user
 
@@ -83,7 +83,7 @@ class moduleMedium(Content,Queue):
                 content="<h4>"+title+"</h4><br />"+textOrig+content,
                 canonical_url = link, content_format="html",
                 publish_status="public")#"public") #draft") 
-            logging.info("Res: %s" % res)
+            logging.debug("Res: %s" % res)
             return(res)
         except:
             return(self.report('Medium', post, link, sys.exc_info()))

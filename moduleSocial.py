@@ -291,7 +291,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                                     else: 
                                         comment = None 
                                 result = api.publishPost(title, link, comment) 
-                                logging.debug(result) 
+                                logging.info(result) 
                                 if isinstance(result, str): 
                                     logging.info("Result %s"%str(result)) 
                                     if result[:4]=='Fail': 
