@@ -44,7 +44,6 @@ class moduleRss(Content,Queue):
     def setPosts(self):
         msgLog = "  Setting posts"
         logging.info(msgLog)
-        print(msgLog)
 
         if self.rssFeed.find('http')>=0: 
             urlRss = self.getRssFeed()

@@ -284,7 +284,7 @@ class Content:
                 if isinstance(link, bytes):
                     linkS = linkS.decode()
                 url = self.getPostLink(entry)
-                logging.debug(url, linkS)
+                logging.debug("{} {}".format(url, linkS))
                 lenCmp = min(len(url), len(linkS))
                 if url[:lenCmp] == linkS[:lenCmp]:
                     # When there are duplicates (there shouldn't be) it returns
