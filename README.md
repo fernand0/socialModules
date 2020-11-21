@@ -1,13 +1,13 @@
 # socialModules
 Several modules to write and read in several social netwoks and content sites.
 
-We have two modules to manage content (from the original source or from queues. They are modules for reading and writing):
-* Content
-* Queing
+We have two modules to manage content:
+* Content (Reading/Writing content)
+* Queing (Storing and managing temporal storage of content).
 
 And two modules to manage the way queues are stored:
 * Caching (local storage)
-* Buffering (using the Buffer API, _abandoned_)
+* Buffering (using the Buffer API, **abandoned**).
 
 The previous home of this code was [https://github.com/fernand0/scripts](https://github.com/fernand0/) and it has been moved here follogin [Splitting a subfolder out into a new repository](https://docs.github.com/en/github/using-git/splitting-a-subfolder-out-into-a-new-repository)
 
