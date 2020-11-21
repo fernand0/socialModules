@@ -1,4 +1,3 @@
-
 from bs4 import BeautifulSoup
 import configparser
 import logging
@@ -8,6 +7,19 @@ import time
 from moduleContent import *
 from moduleQueue import *
 from configMod import *
+
+# This moule reads directly the HTML code
+#
+# Config file .rssForums
+#[Forum URL]
+#url=
+#forums: string 1 # Strings to identify the subforum, one in each line
+#       string 2
+#       string 3
+#selector: string 1 # Strings used to identify subforums links
+#         string 2
+#idSeparator: # character used for the identification of a post
+
 
 class moduleForum(Content,Queue):
 
