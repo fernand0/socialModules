@@ -358,6 +358,13 @@ def startPublishing(delayedBlogs):
 
 
 def main():
+
+    loggingLevel = logging.INFO
+    logging.basicConfig(filename = LOGDIR + "/rssSocial_.log", 
+            level=loggingLevel, 
+            format='%(asctime)s [%(filename).12s] %(message)s', 
+            datefmt='%Y-%m-%d %H:%M')
+
     msgLog = "Launched at %s" % time.asctime()
     logMsg(msgLog, 1, 2)
         
@@ -383,12 +390,6 @@ def main():
     simmulate = args.simmulate
     nowait = args.noWait
 
-
-    loggingLevel = logging.INFO
-    logging.basicConfig(filename = LOGDIR + "/rssSocial_.log", 
-            level=loggingLevel, 
-            format='%(asctime)s [%(filename).12s] %(message)s', 
-            datefmt='%Y-%m-%d %H:%M')
 
     logging.info("Launched at %s" % time.asctime())
     logging.debug("Parameters %s, %d" % (sys.argv, len(sys.argv)))
