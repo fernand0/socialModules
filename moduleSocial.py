@@ -94,9 +94,8 @@ def nextPost(blog, socialNetwork):
             blog.cache[socialNetwork].setPosts()
             listP = blog.cache[socialNetwork].getPosts()
     else:
-        logging.info("si ")
         listP = blog.getNextPosts(socialNetwork)
-        logging.info("listP {}".format(listP))
+        logging.debug("listP {}".format(listP))
 
     if listP: 
         element = listP[0]
@@ -106,7 +105,7 @@ def nextPost(blog, socialNetwork):
         listP = [] 
     else:
         element = None
-        logger.warning("Empty list")
+        logger.info("Empty list")
 
     return(element,listP)
 
@@ -236,7 +235,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                                     pos2 = min(pos2, pos3) 
                                     logging.info(comment) 
                                     comment = "\n{}(Enlace censurado por Facebook){}".format( comment[:pos1-1], comment[pos2:]) 
-                                    logging.info(comment) 
+                                    logging.debug(comment) 
                             elif profile == 'medium': 
                                 comment = summaryHtml 
                             if profile in ['wordpress']: 
@@ -292,7 +291,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                                     else: 
                                         comment = None 
                                 result = api.publishPost(title, link, comment) 
-                                logging.debug(result) 
+                                logging.info(result) 
                                 if isinstance(result, str): 
                                     logging.info("Result %s"%str(result)) 
                                     if result[:4]=='Fail': 

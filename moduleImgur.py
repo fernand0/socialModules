@@ -287,10 +287,10 @@ def main():
             socialNetwork = ('wordpress', img.getSocialNetworks()['wordpress'])
             lastLink, lastTime = checkLastLink(url, socialNetwork)
 
-            print("lastLink",lastLink)
+            #print("lastLink",lastLink)
             print("lastLink",lastLink[0])
             pos = img.getLinkPosition(lastLink[0])
-            print(pos)
+            print("pos {}".format(pos))
             i = pos
         num = 5
         listPosts = img.getNumPostsData(num, i, lastLink)
