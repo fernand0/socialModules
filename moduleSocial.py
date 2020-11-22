@@ -216,7 +216,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
 
                     result = None
                     if profile in ['twitter', 'facebook', 'mastodon', 
-                            'imgur', 'wordpress','linkedin']: 
+                            'imgur', 'wordpress','linkedin', 'tumblr']: 
                         # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
                         try:
                             import importlib
