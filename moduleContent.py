@@ -51,8 +51,9 @@ class Content:
         return(self.api)
 
     def setSocialNetworks(self, config, section):
-        socialNetworksOpt = ['twitter', 'facebook', 'telegram', 'wordpress', 
-                'medium', 'linkedin','pocket', 'mastodon','instagram', 'imgur'] 
+        socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
+                'wordpress', 'medium', 'linkedin','pocket', 
+                'mastodon','instagram', 'imgur', 'tumblr'] 
         for option in config.options(section):
             if (option in socialNetworksOpt):
                 nick = config.get(section, option)
@@ -212,7 +213,7 @@ class Content:
 
     def setCache(self): 
         import moduleCache 
-        # https://github.com/fernand0/scripts/blob/master/moduleCache.py
+        # https://github.com/fernand0/socialModules/blob/master/moduleCache.py
         self.cache = {}
         for service in self.getSocialNetworks():
             if ((self.getProgram() 

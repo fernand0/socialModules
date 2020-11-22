@@ -62,6 +62,9 @@ class moduleSlack(Content,Queue):
             logging.info(self.report('Slack', text, sys.exc_info()))
             self.sc = slack.WebClient(token=self.slack_token)
 
+        if ('cache' in config.options(section)): 
+            self.setProgram(config.get(section, "cache"))
+
         logging.info("     Connected {}".format(self.service))
 
 
@@ -459,7 +462,21 @@ def main():
     url = "http://fernand0-errbot.slack.com/" 
     site.setUrl(url)
 
+    config = configparser.ConfigParser()
+    config.read(CONFIGDIR + '/.rssBlogs')
+    section = "Blog7"
 
+    url = config.get(section, "url")
+    site.setUrl(url)
+    site.setSocialNetworks(config, section)
+    #if ('buffer' in config.options(section)): 
+    #    self.setBufferapp(config.get(section, "buffer"))
+
+    if ('cache' in config.options(section)): 
+        site.setProgram(config.get(section, "cache"))
+
+    print(site.getSocialNetworks())
+    print(site.getCache())
     site.setClient()
     site.setPosts()
     print("Posts: {}".format(site.getPosts()))
