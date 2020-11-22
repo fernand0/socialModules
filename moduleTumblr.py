@@ -18,15 +18,24 @@ from tumblpy import Tumblpy
 from configMod import *
 from moduleContent import *
 
+# Configuration
+# 
+# [Buffer1]
+# consumer_key:
+# consumer_secret:
+# oauth_token:
+# oauth_secret:
+
 class moduleTumblr(Content):
 
     def __init__(self):
         super().__init__()
         self.user = None
         self.tc = None
+        self.service = 'Tumblr'
 
     def setClient(self, tumblr):
-        logging.info("    Connecting Twitter")
+        logging.info("    Connecting {}".format(self.service))
         try:
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssTumblr')

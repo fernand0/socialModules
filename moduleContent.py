@@ -51,8 +51,9 @@ class Content:
         return(self.api)
 
     def setSocialNetworks(self, config, section):
-        socialNetworksOpt = ['twitter', 'facebook', 'telegram', 'wordpress', 
-                'medium', 'linkedin','pocket', 'mastodon','instagram', 'imgur'] 
+        socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
+                'wordpress', 'medium', 'linkedin','pocket', 
+                'mastodon','instagram', 'imgur', 'tumblr'] 
         for option in config.options(section):
             if (option in socialNetworksOpt):
                 nick = config.get(section, option)
