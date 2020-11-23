@@ -248,7 +248,8 @@ class moduleSlack(Content,Queue):
         idPost = self.getId(j)
         #self.sc.token = self.user_slack_token        
         logging.info("Deleting id %s" % idPost)
-        result = self.sc.api_call("chat.delete", channel=theChannel, ts=idPost)
+        data = {'channel': theChannel, 'ts': idPost}
+        result = self.sc.api_call("chat.delete", data = data)
         #self.sc.token = self.slack_token        
         logging.info(result)
         return(result['ok'])
