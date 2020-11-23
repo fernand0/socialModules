@@ -82,6 +82,9 @@ class moduleTumblr(Content):
                 'publisher': ''}) 
 
             logging.info("Res: %s" % res)
+            if 'id'  in res:
+                res = res['id']
+
             return(res)
         except:        
             return(self.report('Tumblr', post, link, sys.exc_info()))
