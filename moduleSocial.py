@@ -272,7 +272,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                                 comment = '' 
                             if (profile in ['twitter', 'facebook', 'telegram', 
                                 'mastodon', 'linkedin', 'pocket', 'medium', 
-                                'instagram']): 
+                                'instagram', 'slack']): 
                                 # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically 
                                 import importlib 
                                 serviceName = profile.capitalize()
@@ -293,6 +293,9 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                                         logging.info(comment) 
                                     else: 
                                         comment = None 
+                                elif profile in ['slack']: 
+                                    # Dirty ?
+                                    comment = 'links'
                                 result = api.publishPost(title, link, comment) 
                                 logging.info(result) 
                                 if isinstance(result, str): 

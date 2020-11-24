@@ -129,7 +129,8 @@ class moduleTwitter(Content,Queue):
 
     def getPostLink(self, post):
         if 'id_str' in post:
-            return('https://twitter.com/{}/status/{}'.format(self.user, post['id_str']))
+            return('https://twitter.com/{}/status/{}'.format(
+                self.user, post['id_str']))
         else:
             return ''
 
@@ -174,7 +175,6 @@ def main():
         #print("@%s: %s" %(tweet[2], tweet[0]))
 
 
-
     print("Testing title and link")
     
     for post in tw.getPosts():
@@ -183,12 +183,11 @@ def main():
         url = tw.getPostUrl(post)
         print("Title: {}\nLink: {}\nUrl:{}\n".format(title,link,url))
 
-    tw.publishPost("Tuit desde podman", "", '')
-    sys.exit()
+    #tw.publishPost("Tuit desde podman", "", '')
     res = tw.search('url:fernand0')
 
     for tt in res['statuses']: 
-        print(tt)
+        #print(tt)
         print('- @{0} {1} https://twitter.com/{0}/status/{2}'.format(tt['user']['name'], tt['text'], tt['id_str']))
     sys.exit()
 

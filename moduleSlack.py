@@ -213,13 +213,6 @@ class moduleSlack(Content,Queue):
                     update = update + self.cache[socialNetwork].updatePostsCache()
                     logging.info("Uppdate: {}".format(update))
                     update = update + '\n'
-        #t = moduleTumblr.moduleTumblr()
-        #t.setClient('fernand0')
-        # We need to publish it in the Tumblr blog since we won't publish it by
-        # usuarl means (it is deleted from queue).
-        #update = update + t.publishPost(title, url, '')['display_text']
-        # Res: {'id': 187879917068, 'state': 'queued', 'display_text': 'Added to queue.'}
-
 
         theChannel = "links" #self.getChanId("links")  
         res = self.deletePost(self.getId(j), theChannel)
@@ -412,18 +405,18 @@ class moduleSlack(Content,Queue):
 
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
-    def publishPost(self, chan, msg):
+    def publishPost(self, msg, link, chan):
         theChan = self.getChanId(chan)
-        logging.info("Publishing %s" % msg)
+        logging.info(f"Publishing {msg} in {chan}")
         try:
             self.sc.token = self.user_slack_token        
-            data = {'channel': theChan, 'text': msg}
+            data = {'channel': theChan, 'text': f"{msg} {link}"}
             result = self.sc.api_call("chat.postMessage", data = data ) #, 
             self.sc.token = self.slack_token        
         except:
             logging.info(self.report('Slack', "", "", sys.exc_info()))
             result = self.sc.chat_postMessage(channel=theChan, 
-                    text=msg)
+                    text=f"{msg} {link}")
         logging.info(result['ok'])
         logging.info("End publishing %s" % msg)
         return(result)

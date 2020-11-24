@@ -33,6 +33,7 @@ import moduleWordpress
 # https://github.com/fernand0/scripts/blob/master/moduleImgur.py
 import moduleImgur
 import moduleImdb
+import modulePocket
 
 import configparser
 import os
@@ -82,6 +83,10 @@ def readConfig(checkBlog):
         url = config.get(section, "url")
         print("Section: {}".format(section))
         print(" Url: {}".format(url))
+        if 'hold' in config.options(section):
+            msgLog = " In hold state"
+            logMsg(msgLog, 1, 1)
+            continue
         if (not checkBlog) or (checkBlog.upper() == section.upper()):
             if ("rss" in config.options(section)):
                 rssFeed = config.get(section, "rss")
@@ -122,6 +127,11 @@ def readConfig(checkBlog):
                 logging.info(" Imdb: {}".format(imdb))
                 blog = moduleImdb.moduleImdb()
                 #blog.setClient((url,config.get(section,'channels').split(',')))
+            elif url.find('pocket')>=0:
+                pocket = config.get(section,'url')
+                logging.info(" Pocket: {}".format(pocket))
+                blog = modulePocket.modulePocket()
+                blog.setClient(pocket)
 
                 # If checkBlog is empty it will add all of them
 
@@ -187,7 +197,10 @@ def updateCaches(blog, socialNetworks, simmulate):
         lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
 
         if isinstance(lastLink, list):
-            myLastLink = lastLink[0]
+            if len(lastLink)>0:
+                myLastLink = lastLink[0]
+            else:
+                myLastLink = ''
         else:
             myLastLink = lastLink
 
