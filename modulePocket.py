@@ -43,6 +43,8 @@ class modulePocket(Content):
     
     def setPosts(self):
         logging.info("  Setting posts")
+        print(self.client)
+        print(self.client.get())
         self.posts = []
 
     def publishPost(self, post, link, comment):
@@ -66,7 +68,10 @@ def main():
     p.setClient('fernand0')
 
     p.setPosts()
+
+    print(p.getPosts())
     
+    sys.exit()
     p.publishPost('El Mundo Es Imperfecto', 'https://elmundoesimperfecto.com/', '')
 
 if __name__ == '__main__':

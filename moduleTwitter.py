@@ -156,9 +156,9 @@ def main():
 
     tw.setClient('fernand0')
 
-    print("Testing followers")
-    tw.setFriends()
-    sys.exit()
+    #print("Testing followers")
+    #tw.setFriends()
+    #sys.exit()
 
     print("Testing posts")
     tw.setPosts()
