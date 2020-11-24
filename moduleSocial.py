@@ -105,7 +105,7 @@ def nextPost(blog, socialNetwork):
         listP = [] 
     else:
         element = None
-        logger.warning("Empty list")
+        logger.info("Empty list")
 
     return(element,listP)
 

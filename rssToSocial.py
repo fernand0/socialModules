@@ -67,55 +67,6 @@ from buffpy.managers.updates import Update
 
 from configMod import *
 
-def test():
-    config = configparser.ConfigParser()
-    config.read([os.path.expanduser('~/.rssBlogs')])
-
-    # We can publish the last entry of a blog in Medium as a draft
-    blog = moduleRss.moduleRss()
-    blog.setRssFeed('http://fernand0.blogalia.com/rss20.xml')
-    blog.getBlogPostsRss()
-    (title, link, firstLink, image, summary, summaryHtml, summaryLinks, comment) = (blog.obtainPostData(0))
-    publishMedium("", title, link, summary, summaryHtml, summaryLinks, image)
-
-
-    print("Configured blogs:")
-
-    feed = []
-    # We are caching the feeds in order to use them later
-
-    i = 1
-    recentPosts = {}
-
-    for section in config.sections():
-        rssFeed = config.get(section, "rss")
-        feed.append(feedparser.parse(rssFeed))
-        lastPost = feed[-1].entries[0]
-        print('%s) %s %s (%s)' % (str(i), section,
-                                  config.get(section, "rss"),
-                                  time.strftime('%Y-%m-%d %H:%M:%SZ',
-                                  lastPost['published_parsed'])))
-        lastLink = checkLastLink(self.url, config.get(section, "rss"))
-        lenCmp = min(len(lastLink),len(lastPost['link']))
-
-        recentPosts[section] = {}
-        recentPosts[section]['posts'] = feed[-1].entries[0]
-
-    for i in recentPosts.keys():
-         print("post",i,recentPosts[i]['posts']['title'])
-         print("post",i,recentPosts[i]['posts']['link'])
-         if 'content' in recentPosts[i]['posts']:
-             content = recentPosts[i]['posts']['content'][0]['value']
-         else:
-             content = recentPosts[i]['posts']['summary']
-         print("post content",i,content)
-         soup = BeautifulSoup(content)
-         theSummary = soup.get_text()
-         theSummaryLinks = blog.extractLinks(soup)
-         print("post links",i,theSummaryLinks)
-
-    return recentPosts
-
 
 def readConfig(checkBlog):
     config = configparser.ConfigParser()
@@ -217,7 +168,7 @@ def updateCaches(blog, socialNetworks, simmulate):
         nick = socialNetworks[profile]
         socialNetwork = (profile, nick)
         nameProfile = profile + '_' + nick
-        msgLog = "  Service: {} Nick: {}".format(profile, nick)) 
+        msgLog = "  Service: {} Nick: {}".format(profile, nick) 
         logMsg(msgLog, 1, 1)
 
         if (blog.getProgram() and (profile[0] in blog.getProgram())): 
@@ -258,11 +209,11 @@ def updateCaches(blog, socialNetworks, simmulate):
         msgLog = "    Profile {}".format(profile.capitalize())
         logMsg(msgLog, 2, 0)
 
-        msgLog = "     Last time: {}".format(time.strftime('%Y-%m-%d %H:%M:%S', 
+        msgLog = "    Last time: {}".format(time.strftime('%Y-%m-%d %H:%M:%S', 
                     time.localtime(lastTime)))
         logMsg(msgLog, 1, 1)
 
-        msgLog = "     Last link: {}".format(myLastLink)
+        msgLog = "    Last link: {}".format(myLastLink)
         logMsg(msgLog, 1, 1)
 
         msgLog = "bufferMax - lenMax = num %d %d %d"% (bufferMax, lenMax, num)
@@ -314,8 +265,38 @@ def updateCaches(blog, socialNetworks, simmulate):
                     link = blog.addNextPosts(listPosts, socialNetwork)
 
 
-def prepareUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
-    msgLog = " Publishing Updates"
+def prepareUpdates(blogs, simmulate, nowait, timeSlots):
+
+    msgLog = "Preparing updates"
+    logMsg(msgLog, 1, 2)
+
+    delayedBlogs = [] 
+
+    for blog in blogs:
+        msgLog = "Site: {}".format(blog.getUrl())
+        logMsg(msgLog, 1, 2)
+
+        socialNetworks = blog.getSocialNetworks() 
+
+        if socialNetworks:
+            msgLog = "Looking for pending posts in {}".format(
+                    ', '.join(mySN.capitalize()
+                        for mySN in socialNetworks.keys()))
+            logMsg(msgLog, 1, 1)
+
+            updateCaches(blog, socialNetworks, simmulate)
+            delayedBlogs = delayedBlogs + prepareUpdatesBlog(blog, 
+                    socialNetworks, simmulate, nowait, timeSlots)
+
+        else:
+            msgLog = " No social networks configured"
+            logMsg(msgLog, 1, 1)
+
+    return delayedBlogs
+
+
+def prepareUpdatesBlog(blog, socialNetworks, simmulate, nowait, timeSlots):
+    msgLog = " Preparing Updates"
     logMsg(msgLog, 1, 1)
  
     delayedBlogs = []
@@ -343,7 +324,7 @@ def prepareUpdates(blog, socialNetworks, simmulate, nowait, timeSlots):
 
     return(delayedBlogs)
 
-def startPublishing(delayedBlogs)
+def startPublishing(delayedBlogs):
     msgLog = " Starting delayed at %s" % time.asctime()
     logMsg(msgLog, 1, 2)
 
@@ -378,10 +359,14 @@ def startPublishing(delayedBlogs)
 
 def main():
 
-    print("===================================================================")
-    print("Launched at %s" % time.asctime())
-    print("===================================================================")
-    print("")
+    loggingLevel = logging.INFO
+    logging.basicConfig(filename = LOGDIR + "/rssSocial_.log", 
+            level=loggingLevel, 
+            format='%(asctime)s [%(filename).12s] %(message)s', 
+            datefmt='%Y-%m-%d %H:%M')
+
+    msgLog = "Launched at %s" % time.asctime()
+    logMsg(msgLog, 1, 2)
         
     isDebug = False
 
@@ -406,12 +391,6 @@ def main():
     nowait = args.noWait
 
 
-    loggingLevel = logging.INFO
-    logging.basicConfig(filename = LOGDIR + "/rssSocial_.log", 
-            level=loggingLevel, 
-            format='%(asctime)s [%(filename).12s] %(message)s', 
-            datefmt='%Y-%m-%d %H:%M')
-
     logging.info("Launched at %s" % time.asctime())
     logging.debug("Parameters %s, %d" % (sys.argv, len(sys.argv)))
     logging.info("Configured blogs:")
@@ -424,229 +403,12 @@ def main():
     delayedBlogs = []
 
     blogs = readConfig(checkBlog)
-    for blog in blogs:
-        msgLog = "Site: {}".format(blog.getUrl())
-        logMsg(msgLog, 1, 2)
+    delayedBlogs = prepareUpdates(blogs, simmulate, nowait, timeSlots)
+    if not simmulate and delayedBlogs: 
+        startPublishing(delayedBlogs)
 
-        socialNetworks = blog.getSocialNetworks() 
-
-        if socialNetworks:
-            msgLog = "Looking for pending posts in {}".format(
-                    ', '.join(mySN.capitalize()
-                        for mySN in socialNetworks.keys()))
-            logMsg(msgLog, 1, 1)
-
-            updateCaches(blog, socialNetworks, simmulate)
-            delayedBlogs = prepareUpdates(blog, socialNetworks, 
-                    simmulate, nowait, timeSlots)
-
-            time.sleep(30)
-            if not simmulate and delayedBlogs: 
-                startPublishing(delayedBlogs)
-
-        else:
-            msgLog = " No social networks configured"
-            logMsg(msgLog, 1, 1)
-
-
-    #updateCaches(blogs, simmulate)
-    #publishUpdates(blogs, simmulate, nowait, timeSlots)
-
-    #        
     msgLog = "Finished at %s" % time.asctime()
-    logMsg(msgLog, 1, 1)
+    logMsg(msgLog, 1, 2)
 
 if __name__ == '__main__':
     main()
-
-#def updateCachesOld(blogs, simmulate):
-#    msgLog = "Updating Caches"
-#    logMsg(msgLog, 1, 2)
-#
-#    for blog in blogs:
-#        msgLog = "Url: {}".format(blog.getUrl()) 
-#        logMsg(msgLog, 1, 1)
-#
-#        bufferMax = int(blog.getBufMax())
-#        socialNetworks = blog.getSocialNetworks() 
-#        if socialNetworks: 
-#            msgLog = " Looking for pending posts in {}".format(
-#                    ', '.join(mySN.capitalize() 
-#                        for mySN in socialNetworks.keys()))
-#        else:
-#            msgLog = " No social networks configured"
-#        logMsg(msgLog, 1, 1)
-#
-#        if socialNetworks:
-#            blog.setPosts()
-#
-#        for profile in socialNetworks: 
-#            lenMax = 0
-#            i = 0
-#            link= ""
-#
-#            nick = blog.getSocialNetworks()[profile]
-#            socialNetwork = (profile, nick)
-#            nameProfile = profile + '_' + nick
-#
-#            if (blog.getProgram() 
-#                        and (profile[0] in blog.getProgram())): 
-#                lenMax = blog.len(profile)
-#            else:
-#                lenMax = bufferMax - 1
-#
-#            msgLog = "   Service: {} Nick: {}".format(profile.capitalize(), 
-#                    nick)
-#            logMsg(msgLog, 1, 1)
-#
-#            logging.debug("  Service %s Lenmax %d" % (profile, lenMax))
-#            num = bufferMax - lenMax
-#
-#            lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
-#
-#            if hasattr(blog, 'getPostsType'): 
-#                if blog.getPostsType() == 'drafts': 
-#                    i = 1
-#                else: 
-#                    i = blog.getLinkPosition(lastLink)
-#
-#            if isinstance(lastLink, list):
-#                myLastLink = lastLink[0]
-#            else:
-#                myLastLink = lastLink
-#            i = blog.getLinkPosition(myLastLink)
-# 
-#            if (i == 0):
-#                myMsg = "No new posts."
-#            else:
-#                myMsg = "New posts."
-#
-#            myMsg = "    {} Last time: {}".format(myMsg, time.ctime(lastTime))
-#            logging.info(myMsg) 
-#            print(myMsg)
-#
-#            hours = blog.getTime() 
-#            if lastLink and isinstance(lastLink, list):
-#                myLastLink = lastLink[0]
-#            else:
-#                myLastLink = lastLink
-#
-#            logging.info("    %s Last link %s"% 
-#                    (time.strftime('%Y-%m-%d %H:%M:%S', 
-#                        time.localtime(lastTime)), myLastLink))
-#            logging.debug("bufferMax - lenMax = num %d %d %d"%
-#                    (bufferMax, lenMax, num)) 
-#
-#
-#            listPosts = []
-#            if 'max' in blog.__dir__():
-#                num = int(blog.getMax())
-#
-#            if (num > 0):
-#                logging.debug("   Profile %s"% profile)
-#                link = ""
-#                listPosts = blog.getNumPostsData(num, i, lastLink) 
-#
-#                if listPosts: 
-#                    print("      Would schedule ...") 
-#                    [ print("       - Posts: {}".format(post[0])) 
-#                            for post in listPosts ] 
-#                    [ logging.info("    Scheduling posts {}".format(post[0])) 
-#                            for post in listPosts ]
-#
-#                if simmulate:
-#                    print("Simmulation {}".format(str(listPosts))) 
-#                elif ((blog.getProgram() 
-#                            and isinstance(blog.getProgram(), list)
-#                            and profile in blog.getProgram()) or 
-#                        (blog.getProgram() 
-#                            and isinstance(blog.getProgram(), str) 
-#                            and (profile[0] in blog.getProgram()))):
-#                        msgLog = "      Delayed"
-#                        logMsg(msgLog, 1, 1)
-#                        msgLog = "      Adding posts" 
-#                        logMsg(msgLog, 1, 1)
-#                        link = blog.cache[socialNetwork].addPosts(listPosts)
-#
-#                        if link:
-#                             logging.info("    Updating link %s %s" % 
-#                                     (profile, link))
-#                             if isinstance(lastLink, list):
-#                                 #print(lastLink)
-#                                 link = '\n'.join([ "{}".format (post[1]) for post in listPosts])
-#                                 link = link + '\n' + '\n'.join(lastLink)
-#
-#
-#                             updateLastLink(blog.getUrl(), link, socialNetwork) 
-#                             msgLog = "listPosts: {}".format(str(listPosts))
-#                             logMsg(msgLog, 2, 0)
-#                else:
-#                    if listPosts:
-#                        link = blog.addNextPosts(listPosts, socialNetwork)
-#
-#def publishUpdatesOld(blogs, simmulate, nowait, timeSlots):
-#    msgLog = "Publishing Updates"
-#    logMsg(msgLog, 1, 2)
-# 
-#    delayedBlogs = []
-#    delayedPosts = []
-#
-#    for blog in blogs:
-#        msgLog = "Url: {}".format(blog.getUrl())
-#        logMsg(msgLog, 1, 0)
-#
-#        socialNetworks = blog.getSocialNetworks() 
-#
-#        for profile in socialNetworks: 
-#            nick = socialNetworks[profile]
-#            socialNetwork = (profile, nick)
-#            if simmulate:
-#                msgLog = "Simmulation"
-#                logMsg(msgLog, 1, 1)
-#            else: 
-#                if ((blog.getProgram() 
-#                        and isinstance(blog.getProgram(), list) 
-#                        and profile in blog.getProgram()) or 
-#                    (blog.getProgram() 
-#                        and isinstance(blog.getProgram(), str) 
-#                        and (profile[0] in blog.getProgram()))): 
-#
-#                        delayedBlogs.append((blog, 
-#                            socialNetwork, 1, nowait, timeSlots))
-#                else: 
-#                    mySocialNetwork = (profile, nick)
-#                    link = moduleSocial.publishDelay(blog, 
-#                            mySocialNetwork, 1, nowait, 0)
-#                    logging.info("  Link reply %s"%str(link)) 
-#
-#                    if link:
-#                        newUpdateLastLink(blog.getUrl(), link, '', 
-#                                mySocialNetwork)
-#
-#    if not simmulate and delayedBlogs:
-#
-#        time.sleep(5)
-#
-#        msgLog = "Starting delayed at %s" % time.asctime()
-#        logMsg(msgLog, 1, 2)
-#
-#        import concurrent.futures 
-#        with concurrent.futures.ThreadPoolExecutor(
-#                max_workers=len(delayedBlogs)) as executor:
-#            delayedPosts = {executor.submit(moduleSocial.publishDelay, *args): 
-#                    args for args in delayedBlogs}
-#            time.sleep(5)
-#            for future in concurrent.futures.as_completed(delayedPosts):
-#                dataBlog = delayedPosts[future]
-#                try:
-#                    res = future.result()
-#                    if res:
-#                        print("  Published: %s"% str(res))
-#                except Exception as exc:
-#                    print('{} generated an exception: {}'.format(
-#                        str(dataBlog), exc))
-#    
-#
-#        msgLog = "Finished delayed at %s" % time.asctime()
-#        logMsg(msgLog, 1, 2)
-#

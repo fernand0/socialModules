@@ -36,7 +36,8 @@ class moduleTwitter(Content,Queue):
         logging.info("     Connecting Twitter")
         self.service = 'Twitter'
         try:
-            logging.info("     Twitter Acc %s"%str(twitterAC))
+            logging.info("     Twitter Acc {}".format(str(twitterAC)))
+            logging.info("     Dir {}".format(str(CONFIGDIR + '/.rssTwitter')))
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssTwitter')
 
@@ -93,8 +94,13 @@ class moduleTwitter(Content,Queue):
         logging.info("     Publishing in {}...".format(self.service))
         if comment != None: 
             post = comment + " " + post
-        h = HTMLParser()
-        post = h.unescape(post)
+        try:
+            h = HTMLParser()
+            post = h.unescape(post)
+        except:
+            import html
+            post = html.unescape(post)
+
         res = None
         try:
             logging.info("     Publishing: %s" % post)
@@ -154,6 +160,7 @@ def main():
     import moduleTwitter
     tw = moduleTwitter.moduleTwitter()
 
+
     tw.setClient('fernand0')
 
     #print("Testing followers")
@@ -166,6 +173,8 @@ def main():
         print("{}) {}".format(i,tweet))
         #print("@%s: %s" %(tweet[2], tweet[0]))
 
+
+
     print("Testing title and link")
     
     for post in tw.getPosts():
@@ -174,6 +183,8 @@ def main():
         url = tw.getPostUrl(post)
         print("Title: {}\nLink: {}\nUrl:{}\n".format(title,link,url))
 
+    tw.publishPost("Tuit desde podman", "", '')
+    sys.exit()
     res = tw.search('url:fernand0')
 
     for tt in res['statuses']: 
