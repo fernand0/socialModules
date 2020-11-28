@@ -146,7 +146,6 @@ class moduleForum(Content,Queue):
             #print(self.posts[pos][1])
             #print('>>>',pos, len(self.posts))
             if (pos  == len(self.posts)):# and (str(lastLink) != self.posts[pos][1]):
-                print('si')
                 pos = 0
             if pos < len(self.posts) - 1:
                 for i, post in enumerate(self.posts[pos:]):

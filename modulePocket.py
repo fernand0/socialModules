@@ -58,6 +58,12 @@ class modulePocket(Content,Queue):
         else:
             return ''
 
+    def getPostId(self, post):
+        if 'item_id' in post:
+            return(post['item_id'])
+        else:
+            return ''
+
     def getPostLink(self, post):
         if 'resolved_url' in post:
             return(post['resolved_url'])
@@ -78,12 +84,12 @@ class modulePocket(Content,Queue):
 
     def publish(self, j): 
         logging.info("Publishing %d"% j)
-        post = self.obtainPostData(j)
-        logging.info("Publishing %s"% post[0])
-        update = ''
-        title = self.getTitle(j)
-        url = self.getLink(j)
+        #post = self.obtainPostData(j)
+        #logging.info("Publishing %s"% post[0])
+        update = '' 
+        title = self.getTitle(j) 
         logging.info("Title: %s" % str(title))
+        url = self.getLink(j)
         logging.info("Url: %s" % str(url))
         if self.getBuffer():            
             for profile in self.getSocialNetworks():
@@ -118,13 +124,13 @@ class modulePocket(Content,Queue):
 
         if not self.getBuffer() and not self.getProgram():
             logging.info("Not getBuffer, getProgram {}".format(self.getSocialNetworks()))
+            return ""
             delayedBlogs = []
             nowait = True
             for profile in self.getSocialNetworks():
                 nick = self.getSocialNetworks()[profile]
                 logging.info("Social: {} Nick: {}".format(profile, nick))
                 listPosts = [ post ]
-                print(listPosts)
                 socialNetwork = (profile, nick)
                 link = self.addNextPosts(listPosts, socialNetwork)
                 delayedBlogs.append((self, socialNetwork, 1, nowait, 0)) 
@@ -158,8 +164,22 @@ class modulePocket(Content,Queue):
                             print('{} generated an exception: {}'.format( 
                                 str(dataBlog), exc))
  
-
-
+    def archive(self, j):
+        logging.info("Archiving %d"% j)
+        client = self.client
+        post = self.getPost(j)
+        title = self.getPostTitle(post)
+        logging.info("Post {}".format(str(post)))
+        logging.info("Title {}".format(title))
+        res = client.archive(int(self.getPostId(post)))
+        res = client.commit()
+        logging.info("Post id res {}".format(str(res)))
+        logging.info("Post id res {}".format(str(res["action_results"])))
+        if res['action_results']:
+            rep = f"Archived {title}"
+        else:
+            rep = "Fail!"
+        return rep
 
 
     def extractDataMessage(self, i):

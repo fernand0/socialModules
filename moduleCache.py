@@ -249,6 +249,7 @@ class moduleCache(Content,Queue):
         logging.info("Publishing %d"% j)
         post = self.obtainPostData(j)
         logging.info("Publishing %s"% post[0])
+        return ""
         import importlib
         serviceName = self.service.capitalize()
         mod = importlib.import_module('module' + serviceName) 
@@ -262,7 +263,8 @@ class moduleCache(Content,Queue):
         update = api.publishPost(title, link, comment)
         logging.info("Publishing title: %s" % title)
         logging.info("Social network: %s Nick: %s" % (self.service, self.nick))
-        if not isinstance(update, str) or (isinstance(update, str) and update[:4] != "Fail"):
+        if (not isinstance(update, str) 
+                or (isinstance(update, str) and update[:4] != "Fail")):
             self.posts = self.posts[:j] + self.posts[j+1:]
             logging.debug("Updating %s" % self.posts)
             self.updatePostsCache()

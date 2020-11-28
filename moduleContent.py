@@ -50,10 +50,24 @@ class Content:
     def getSocialNetworksAPI(self):
         return(self.api)
 
+    def newsetSocialNetworks(self, socialNetworksConfig):
+        socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
+                'wordpress', 'medium', 'linkedin','pocket', 'mastodon',
+                'instagram', 'imgur', 'tumblr', 'slack', 'refind'] 
+        for sN in socialNetworksConfig:
+            if (sN[0] in socialNetworksOpt):
+                if sN[1].find('\n'):
+                    sNs = sN[1].split('\n')
+                    for el in sNs: 
+                        self.addSocialNetwork((sN[0], el))
+                else: 
+                    self.addSocialNetwork(sN)
+
+
     def setSocialNetworks(self, config, section):
         socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
                 'wordpress', 'medium', 'linkedin','pocket', 'mastodon',
-                'instagram', 'imgur', 'tumblr', 'slack'] 
+                'instagram', 'imgur', 'tumblr', 'slack','refind'] 
         for option in config.options(section):
             if (option in socialNetworksOpt):
                 nick = config.get(section, option)
@@ -369,6 +383,7 @@ class Content:
 
 
     def getPostTitle(self, post):
+        logging.info("ppost {}".format(post))
         return str(post)
     
     def getPostDate(self, post):

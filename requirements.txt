@@ -27,3 +27,4 @@ telepot
 gitterpy
 slack_sdk
 Pillow
+readability-lxml

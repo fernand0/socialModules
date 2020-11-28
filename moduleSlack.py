@@ -405,7 +405,7 @@ class moduleSlack(Content,Queue):
 
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
-    def publishPost(self, msg, link, chan):
+    def publishPost(self, msg, link, chan='links'):
         theChan = self.getChanId(chan)
         logging.info(f"Publishing {msg} in {chan}")
         try:
