@@ -248,8 +248,7 @@ class moduleCache(Content,Queue):
     def publish(self, j):
         logging.info("Publishing %d"% j)
         post = self.obtainPostData(j)
-        logging.info("Publishing %s"% post[0])
-        return ""
+        logging.info("Publishing {post[0]} in {self.service} user {self.nick}")
         import importlib
         serviceName = self.service.capitalize()
         mod = importlib.import_module('module' + serviceName) 
@@ -327,7 +326,6 @@ class moduleCache(Content,Queue):
  
 def main():
     import moduleCache
-    import moduleSlack
 
     cache = moduleCache.moduleCache()
     cache.setClient(('http://fernand0-errbot.slack.com/', 

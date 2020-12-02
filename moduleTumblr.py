@@ -91,6 +91,10 @@ class moduleTumblr(Content):
 
 def main():
 
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
+
     import moduleTumblr
 
     t = moduleTumblr.moduleTumblr()
@@ -104,7 +108,7 @@ def main():
 
     section = 'Blog2'
     url = config.get(section, "url")
-    rssFeed = config.get(section, "rssFeed")
+    rssFeed = config.get(section, "rss")
     logging.info(" Blog RSS: %s"% rssFeed)
     import moduleRss
     blog = moduleRss.moduleRss()

@@ -181,7 +181,11 @@ def updateCaches(blog, socialNetworks, simmulate):
         msgLog = "  Service: {} Nick: {}".format(profile, nick) 
         logMsg(msgLog, 1, 1)
 
-        if (blog.getProgram() and (profile[0] in blog.getProgram())): 
+        print(blog.getProgram())
+        print(profile)
+
+        if (blog.getProgram() and ((profile[0] in blog.getProgram()))
+                or (blog.getProgram() and (profile in blog.getProgram()))): 
             lenMax = blog.len(profile)
         else:
             lenMax = bufferMax - 1

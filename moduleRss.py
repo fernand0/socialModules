@@ -191,7 +191,7 @@ def main():
 
    print("Configured blogs:")
 
-   accounts = ["Blog1", "Blog2", "Blog9"]
+   accounts = ["Blog22", "Blog1", "Blog2", "Blog9"]
    for acc in accounts:
        print("Account: {}".format(acc))
        blog = moduleRss.moduleRss()

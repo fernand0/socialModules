@@ -100,17 +100,21 @@ class moduleImdb(Content,Queue):
                 logging.debug("More data: {}".format(str(res)))
                 if res: 
                     post = post[:3] + (res[0], ) + post[4:] + res[1:]
-                if firstPost and self.posts and (self.posts[0][2] != post [2]): 
+                else:
+                    post = post[:3] + ('-', ) + post[4:] 
+                #if firstPost and self.posts and (self.posts[0][2] != post [2]): 
+                if firstPost: # and (self.posts and self.posts[0][2] != post [2]): 
                     # We have old data
                     self.posts = []
                     firstPost = False
                     useCache = False
                 if not useCache:
                     self.posts.append(post) 
-                    logging.debug("Post more {}".format(str(post)))
+                    logging.info("Post more {}".format(str(post)))
 
         if not useCache:
             self.posts.sort()
+
 
     def getPostTitle(self, post):
         logging.debug("getPostTitle {}".format(post))
@@ -149,7 +153,7 @@ class moduleImdb(Content,Queue):
             return("")
 
     def setPostMoreData(self, post):
-        postMore = None
+        postMore = None 
         mySearch = self.tmdb.Search() 
         title = self.getPostTitle(post)
         response = mySearch.movie(query=title) 
@@ -238,9 +242,11 @@ def main():
     print("Testing set posts")
     site.setPosts()
     print("Testing get posts")
-    print(site.getPosts())
-    for i,post in enumerate(site.getPosts()):
-        print(site.obtainPostData(i))
+    #print(site.getPosts())
+    for i,post in enumerate(site.getPosts()[-10:]):
+        print(post)
+
+    sys.exit()
 
     print("post",site.setPostMoreData(site.getPosts()[0]))
 
