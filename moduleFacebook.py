@@ -122,7 +122,7 @@ class moduleFacebook(Content,Queue):
         post = h.unescape(post)
         res = None
         try:
-            logging.info("     Publishing: %s" % post)
+            logging.info("     Publishing: %s" % post[:250])
             if (not isinstance(self.page, str)):
                 res = self.page.put_object('me', "feed", message=post, link=link)
                 #res = self.page.put_object(self.fc.get_object('me')['id'], "feed", message=post, link=link)
