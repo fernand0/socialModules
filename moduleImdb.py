@@ -30,6 +30,7 @@ class moduleImdb(Content,Queue):
         
     def setClient(self, init=()):
         logging.info("Setting client")
+        logging.info(f"Setting client {str(init)}")
         try:
             try:
                 config = configparser.ConfigParser()
@@ -42,7 +43,7 @@ class moduleImdb(Content,Queue):
             self.channels = config.get('TMDb', 'channels').split(',')
             if init:
                 date = time.strftime('%Y-%m-%d')
-                self.url = init[0] .format(date)
+                self.url = init[1][2].format(date)
         except:
             logging.info("Fail")
 
