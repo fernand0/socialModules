@@ -181,6 +181,23 @@ class modulePocket(Content,Queue):
             rep = "Fail!"
         return rep
 
+    def delete(self, j):
+        logging.info("Deleting %d"% j)
+        client = self.client
+        post = self.getPost(j)
+        title = self.getPostTitle(post)
+        logging.info("Post {}".format(str(post)))
+        logging.info("Title {}".format(title))
+        res = client.delete(int(self.getPostId(post)))
+        res = client.commit()
+        logging.info("Post id res {}".format(str(res)))
+        logging.info("Post id res {}".format(str(res["action_results"])))
+        if res['action_results']:
+            rep = f"Deleted {title}"
+        else:
+            rep = "Fail!"
+        return rep
+
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)
