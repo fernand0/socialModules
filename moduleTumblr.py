@@ -59,13 +59,46 @@ class moduleTumblr(Content):
             client = None
 
         self.tc = client
+        logging.info(f"Url: {tumblr}")
+        if isinstance(tumblr,str):
+            self.url = f"https://{tumblr}.tumblr.com/"
+        elif isinstance(tumblr,tuple): 
+            self.url = f"https://{tumblr[1][1]}.tumblr.com/"
+        logging.info(f"Url: {self.url}")
  
     def getClient(self):
         return self.tc
  
     def setPosts(self):
         logging.info("  Setting posts")
-        self.posts = []
+        logging.info(f"  Setting posts {self.getUrl()}")
+        posts = self.getClient().get('posts', blog_url=self.getUrl())
+        if 'posts' in posts:
+            self.posts = posts['posts']
+        else:
+            self.posts = []
+        drafts = self.getClient().get('posts/queue', blog_url=self.getUrl())
+        if 'posts' in drafts: 
+            self.drafts = drafts['posts']
+        else:
+            self.drafts = []
+
+    def getPostTitle(self, post):
+        logging.debug(f"getPostTitle {post}")       
+        title = ""
+        if post:
+            if 'summary' in post:
+                title = post['summary']
+        return title
+
+    def getPostUrl(self, post):
+        logging.debug(f"getPostUrl {post}")       
+        url = ""
+        if post:
+            if 'post_url' in post:
+                url = post['post_url']
+        return url
+
 
     def publishPost(self, post, link, comment):
     
@@ -100,8 +133,13 @@ def main():
     t = moduleTumblr.moduleTumblr()
 
     t.setClient('fernand0')
+    t.setPostsType('posts')
 
     t.setPosts()
+    print(t.getPosts())
+    print(t.getPostTitle(t.getPosts()[0]))
+    print(t.getPostUrl(t.getPosts()[0]))
+    sys.exit()
 
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs')

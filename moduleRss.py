@@ -45,7 +45,7 @@ class moduleRss(Content,Queue):
         msgLog = "  Setting posts"
         logging.info(msgLog)
 
-        logging.info(f"Feed {self.rssFeed}") 
+        logging.info(f"   Feed {self.rssFeed}") 
         if self.rssFeed.find('http')>=0: 
             urlRss = self.getRssFeed()
         else: 

@@ -265,16 +265,13 @@ class Content:
     def len(self, profile):
         service = profile
         nick = self.getSocialNetworks()[profile]
+        posts = []
         if self.cache and (service, nick) in self.cache:
-            if self.cache[(service, nick)].getPosts(): 
-                return(len(self.cache[(service, nick)].getPosts()))
-            else:
-                return(0)
+            posts = self.cache[(service, nick)].getPosts()
         elif self.buffer and (service, nick) in self.buffer:
-            if self.buffer[(service, nick)].getPosts(): 
-                return(len(self.buffer[(service, nick)].getPosts()))
-            else:
-                return(0)
+            posts = self.buffer[(service, nick)].getPosts()
+        
+        return (len(posts))
 
     def getPostByLink(self, link):
         pos = self.getLinkPosition(link)
