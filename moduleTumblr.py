@@ -9,11 +9,10 @@ import requests
 import sys
 import urllib
 
+import pytumblr
+
 from bs4 import BeautifulSoup
 from bs4 import Tag
-
-from tumblpy import Tumblpy
-# pip install python-tumblpy
 
 from configMod import *
 from moduleContent import *
@@ -48,7 +47,6 @@ class moduleTumblr(Content,Queue):
             oauth_token = config.get("Buffer1", "oauth_token")
             oauth_secret = config.get("Buffer1", "oauth_secret")
 
-            import pytumblr
             try:
                 client = pytumblr.TumblrRestClient(consumer_key, 
                         consumer_secret, oauth_token, oauth_secret)
@@ -83,7 +81,7 @@ class moduleTumblr(Content,Queue):
             self.posts = posts['posts']
         else:
             self.posts = []
-        drafts = self.getClient().drafts(self.getUrl().split('/')[2])
+        drafts = self.getClient().queue(self.getUrl().split('/')[2])
         if 'posts' in drafts: 
             self.drafts = drafts['posts']
         else:
@@ -112,14 +110,6 @@ class moduleTumblr(Content,Queue):
             res = client.create_link(self.getBlogName(), state='queue',
                     title=post, url=link, description="")
 
-            #res = client.post('post', blog_url, params={'type':'link',
-            #    'state':'queue', 
-            #    'title': post, 
-            #    'thumbnail': None, 
-            #    'url': link, 
-            #    #'excerpt': summaryHtml, 
-            #    'publisher': ''}) 
-
             logging.info("Res: %s" % res)
             if 'id'  in res:
                 res = res['id']
@@ -131,6 +121,7 @@ class moduleTumblr(Content,Queue):
     def edit(self, j, newTitle=''): 
         logging.info("New title %s", newTitle)
         post = self.getPosts()[j]
+        oldTitle = self.getPostTitle(post)
         url=self.getUrl()
         name = url.split('/')[2]
         idPost = post['id']
@@ -152,12 +143,13 @@ def main():
     t = moduleTumblr.moduleTumblr()
 
     t.setClient('fernand0')
-    t.setPostsType('posts')
+    t.setPostsType('drafts')
 
     t.setPosts()
     print(t.getPosts())
-    print(t.getPostTitle(t.getPosts()[18]))
-    print(t.getPostLink(t.getPosts()[18]))
+    print(t.getPostTitle(t.getPosts()[1]))
+    print(t.getPostLink(t.getPosts()[1]))
+    sys.exit()
 
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs')
