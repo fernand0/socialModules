@@ -29,7 +29,8 @@ class modulePocket(Content,Queue):
             access_token = config.get("appKeys", "access_token")
 
             try:
-                client = Pocket(consumer_key=consumer_key, access_token=access_token)
+                client = Pocket(consumer_key=consumer_key, 
+                        access_token=access_token)
             except:
                 logging.warning("Pocket authentication failed!")
                 logging.warning("Unexpected error:", sys.exc_info()[0])
@@ -171,14 +172,20 @@ class modulePocket(Content,Queue):
         title = self.getPostTitle(post)
         logging.info("Post {}".format(str(post)))
         logging.info("Title {}".format(title))
-        res = client.archive(int(self.getPostId(post)))
-        res = client.commit()
-        logging.info("Post id res {}".format(str(res)))
-        logging.info("Post id res {}".format(str(res["action_results"])))
-        if res['action_results']:
-            rep = f"Archived {title}"
-        else:
-            rep = "Fail!"
+        try:
+            res = client.archive(int(self.getPostId(post)))
+            res = client.commit()
+            logging.info("Post id res {}".format(str(res)))
+            logging.info("Post id res {}".format(str(res["action_results"])))
+            if res['action_results']:
+                rep = f"Archived {title}"
+                self.posts = self.posts[:j] + self.posts[j+1:]
+            else:
+                rep = "Fail!"
+        except:
+            logging.warning("Archiving failed!")
+            logging.warning("Unexpected error:", sys.exc_info()[0])
+            rep = "Fail"
         return rep
 
     def delete(self, j):

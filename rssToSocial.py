@@ -16,24 +16,18 @@
 #
 
 import moduleRss
-# https://github.com/fernand0/scripts/blob/master/moduleRss.py
 import moduleXmlrpc
-# https://github.com/fernand0/scripts/blob/master/moduleXmlrpc.py
 import moduleSocial
-# https://github.com/fernand0/scripts/blob/master/moduleSocial.py
 import moduleCache
-# https://github.com/fernand0/scripts/blob/master/moduleCache.py
 import moduleSlack
-# https://github.com/fernand0/scripts/blob/master/moduleSlack.py
 import moduleForum
-# https://github.com/fernand0/scripts/blob/master/moduleForum.py
 import moduleGmail
-# https://github.com/fernand0/scripts/blob/master/moduleGmail.py
 import moduleWordpress
-# https://github.com/fernand0/scripts/blob/master/moduleImgur.py
 import moduleImgur
 import moduleImdb
 import modulePocket
+import moduleMastodon
+import moduleTwitter
 
 import configparser
 import os
@@ -134,6 +128,16 @@ def readConfig(checkBlog):
                 blog.setClient(pocket)
 
                 # If checkBlog is empty it will add all of them
+            elif url.find('mastodon')>=0:
+                mastodon = config.get(section,'url')
+                logging.info(" Mastodon: {}".format(mastodon))
+                blog = moduleMastodon.moduleMastodon()
+                blog.setClient(mastodon.split('@')[-1])
+            elif url.find('twitter')>=0:
+                twitter = config.get(section,'url')
+                logging.info(" Twitter: {}".format(twitter))
+                blog = moduleTwitter.moduleTwitter()
+                blog.setClient(twitter.split('/')[-1])
 
             blog.setUrl(url)
 

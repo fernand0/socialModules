@@ -163,3 +163,13 @@ def resizeImage(imgUrl):
     return(address)
 
 
+def getApi(profile, nick):
+    # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
+    import importlib
+    serviceName = profile.capitalize()
+    mod = importlib.import_module('module' + serviceName) 
+    cls = getattr(mod, 'module' + serviceName)
+    api = cls()
+    api.setClient(nick)
+
+    return api

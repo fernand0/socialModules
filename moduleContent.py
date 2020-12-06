@@ -95,7 +95,7 @@ class Content:
             else:
                 posts = self.getPublished() 
         else:
-            posts = sefl.getPosts()
+            posts = self.posts
         return(posts)
 
     def getPost(self, i):
