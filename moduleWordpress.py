@@ -30,8 +30,10 @@ class moduleWordpress(Content,Queue):
         self.api_posts_search='?search={}'
 
     def setClient(self, user):
-        logging.info("     Connecting Wordpress")
+        logging.info(f"     Connecting Wordpress {user}")
         self.service = 'Wordpress'
+        if isinstance(user, tuple):
+            user = user[1][1]
         try:
             config = configparser.RawConfigParser()
             config.read(CONFIGDIR + '/.rssWordpress')

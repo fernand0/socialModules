@@ -103,6 +103,18 @@ class moduleTumblr(Content,Queue):
                 url = post['post_url']
         return url
 
+    def getId(self, j):
+        post = self.getPosts()[j]
+        return self.getPostId(post)
+
+    def getPostId(self, post):
+        logging.debug(f"getPostId {post}")       
+        idPost = ""
+        if post:
+            if 'id' in post:
+                idPost = post['id']
+        return idPost
+
     def publishPost(self, post, link, comment):
         logging.info("    Publishing in Tumblr: %s" % post)
         try:
@@ -131,6 +143,16 @@ class moduleTumblr(Content,Queue):
         update = "Changed "+oldTitle+" with "+newTitle
         return(update)
 
+    def delete(self, j): 
+        logging.info("Deleting id %s" % j)
+        idPost = self.getId(j)
+        #self.sc.token = self.user_slack_token        
+        logging.info("Deleting id %s" % idPost)
+        client = self.tc
+        result = client.delete_post(self.getBlogName(), idPost)
+        logging.info(result)
+        return(result['ok'])
+
 
 def main():
 
@@ -149,6 +171,8 @@ def main():
     print(t.getPosts())
     print(t.getPostTitle(t.getPosts()[1]))
     print(t.getPostLink(t.getPosts()[1]))
+    print(t.getPostId(t.getPosts()[1]))
+    print(t.delete(1))
     sys.exit()
 
     config = configparser.ConfigParser()
