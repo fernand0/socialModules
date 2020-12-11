@@ -232,7 +232,7 @@ class moduleCache(Content,Queue):
         update = "Changed "+oldTitle+" with "+newTitle
         return(update)
 
-    def insert(self, text):
+    def insert(self, j, text):
         logging.info("Inserting %s", text)
         print(text)
         # We do not use j, Maybe in the future.

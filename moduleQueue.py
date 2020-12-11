@@ -90,6 +90,7 @@ class Queue:
         else:
             j = -1
         cmd = getattr(self, command)
+        logging.info(f"Argscont {argsCont}")
         if (j>=0):
             logging.info("Command %s %d"% (command, j))
             if argsCont:
