@@ -242,13 +242,9 @@ def main():
     #tw.publishPost("Tuit desde podman", "", '')
 
     for i, post in enumerate(tw.favs):
-        print("i",i)
-        print("1",post)
-        print("2",tw.getPost(i))
         title = tw.getPostTitle(post)
         link = tw.getPostLink(post)
         print("Title: {}\nLink: {}\n".format(title,link))
-        print(tw.extractDataMessage(i))
 
     sys.exit()
 

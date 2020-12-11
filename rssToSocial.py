@@ -191,13 +191,18 @@ def updateCaches(blog, socialNetworks, simmulate):
         else:
             lenMax = bufferMax - 1
 
-        #msgLog = "   Service: {} Nick: {}".format(profile.capitalize(), nick)
-        #logMsg(msgLog, 1, 1)
 
         logging.debug("  Service %s Lenmax %d" % (profile, lenMax))
         num = blog.getMax()
+        print(num, bufferMax, lenMax)
         if not num: 
-            num = bufferMax - lenMax
+            num = bufferMax #- lenMax
+        if lenMax > num:
+            num = 0
+        else:
+            num = num - lenMax
+        msgLog = f"  num: {num} bufferMax: {bufferMax} lenMax: {lenMax}"
+        logMsg(msgLog, 1, 1)
 
         lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
 
@@ -210,12 +215,12 @@ def updateCaches(blog, socialNetworks, simmulate):
             myLastLink = lastLink
 
         i = blog.getLinkPosition(myLastLink)
+        print("i ",i)
  
         if (i == 0):
             msgLog = "   No new posts."
         else:
             msgLog = "   New posts."
-        logMsg(msgLog, 1, 1)
 
         hours = blog.getTime() 
 

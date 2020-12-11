@@ -222,32 +222,31 @@ class moduleImgur(Content,Queue):
             res.append((urlImg,title, description, tags))
         return res
 
-    #def getNumPostsData(self, num, i, lastLink): 
-    #    listPosts = []
-    #    posts = self.getPosts()
-    #    if self.getPostsType() == 'posts':
-    #        j = 0
-    #        posts = self.getPosts()
-    #        for i in range(min(20,len(posts))):
-    #            idPost = self.getPostId(posts[i])
-    #            title = self.getPostTitle(posts[i])
-    #            if not (idPost in lastLink): 
-    #                # Only posts that have not been posted previously. We
-    #                # check by link (post[1]) We don't use this code here.
-    #                post = self.obtainPostData(i) 
-    #                listPosts.append(post)
-    #                print("post",post)
- 
-    #                j = j + 1
-    #                if j == num:
-    #                    break
-    #    else: 
-    #        # here we can use the general method, starting at the first
-    #        # post
-    #        i = 1 
-    #        listPosts = Content.getNumPostsData(self, num, i, lastLink)
+    def getNumPostsData(self, num, i, lastLink): 
+        listPosts = []
+        posts = self.getPosts()
+        if self.getPostsType() == 'posts':
+            j = 0
+            posts = self.getPosts()
+            for ii in range(min(i,len(posts))):
+                idPost = self.getPostId(posts[ii])
+                title = self.getPostTitle(posts[ii])
+                if not (idPost in lastLink): 
+                    # Only posts that have not been posted previously. We
+                    # check by link (post[1]) We don't use this code here.
+                    post = self.obtainPostData(ii) 
+                    listPosts.append(post)
 
-    #    return(listPosts)
+                    j = j + 1
+                    if j == num:
+                        break
+        else: 
+            # here we can use the general method, starting at the first
+            # post
+            #i = 1 
+            listPosts = Content.getNumPostsData(self, num, i, lastLink)
+
+        return(listPosts)
 
 
 def main(): 
@@ -281,6 +280,8 @@ def main():
         if 'posts' in config.options(acc):
             img.setPostsType(config.get(acc, 'posts'))
         img.setPosts()
+        for i, im in enumerate(img.getPosts()):
+            print(i, img.getPostTitle(im))
         lastLink = None
         i = 1
         if 'wordpress' in img.getSocialNetworks():
