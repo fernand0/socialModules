@@ -235,9 +235,8 @@ class moduleCache(Content,Queue):
         update = "Changed "+oldTitle+" with "+newTitle
         return(update)
 
-    def insert(self, j, text):
+    def insert(self, text):
         logging.info("Inserting %s", text)
-        print(j)
         print(text)
         # We do not use j, Maybe in the future.
         textS = text.split(' http')
