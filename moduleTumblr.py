@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import click
 import configparser
 import logging

@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# encoding: utf-8
-
 # Queue [cache] files name is composed of a dot, followed by the path of the
 # URL, followed by the name of the social network and the name of the user for
 # posting there.
