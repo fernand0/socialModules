@@ -164,6 +164,7 @@ class Content:
 
 
     def getNextPosts(self, socialNetwork):
+        print("sn",socialNetwork)
         if socialNetwork in self.nextPosts:
             return self.nextPosts[socialNetwork]
         else:
@@ -221,9 +222,10 @@ class Content:
 
     def getMax(self):
         if hasattr(self, 'max'): 
-            return(int(self.max))
+            max = int(self.max)
         else:
-            return None
+            max = None
+        return max
 
     def getCache(self):
         return(self.cache)
@@ -297,6 +299,7 @@ class Content:
                     linkS = linkS.decode()
                 url = self.getPostLink(entry)
                 logging.debug("{} {}".format(url, linkS))
+                #print("{} {}".format(url, linkS))
                 lenCmp = min(len(url), len(linkS))
                 if url[:lenCmp] == linkS[:lenCmp]:
                     # When there are duplicates (there shouldn't be) it returns

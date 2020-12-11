@@ -118,6 +118,9 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
     profile = socialNetwork[0]
     nick = socialNetwork[1]
 
+
+    print(numPosts)
+
     for j in  range(numPosts): 
         llink = None
         tSleep = random.random()*timeSlots
@@ -175,8 +178,6 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                         elif profile == 'pocket': 
                             if firstLink: 
                                 link, llink = firstLink, link
-                        else:
-                            comment= ""
                     try: 
                         api = getApi(profile, nick) 
                         if profile in ['wordpress']: 

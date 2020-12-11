@@ -120,8 +120,9 @@ class moduleTumblr(Content,Queue):
             res = client.create_link(self.getBlogName(), state='queue',
                     title=post, url=link, description="")
 
-            logging.info("Res: %s" % res)
+            logging.debug("Res: %s" % res)
             if 'id'  in res:
+                logging.info("Res: %s" % res['id'])
                 res = res['id']
 
             return(res)
