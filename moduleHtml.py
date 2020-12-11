@@ -52,6 +52,108 @@ class moduleHtml():
     def setLinksToAvoid(self,linksToAvoid):
         self.linksToAvoid = linksToAvoid
  
+    def downloadUrl(self, theUrl):        
+        msgLog = f"Downloading: {theUrl}"
+        logMsg(msgLog, 1, 1)
+            
+        # Based on https://github.com/moshfiqur/html2mobi
+        retry = False
+        moreContent = ''
+        try:
+            response = requests.get(theUrl, verify=False)
+            pos = response.text.find('https://www.blogger.com/feeds/')
+            # Some blogspot blogs do not render ok because they use javascript
+            # to load content. We add the content from the RSS feed.  Dirty
+            # trick
+            if (pos >=0): 
+                pos2 = response.text.find('"',pos+1)
+                theUrl2 = response.text[pos:pos2]
+                import moduleRss
+                blog = moduleRss.moduleRss()
+                pos = theUrl2.find('/',9)
+                blog.setUrl(theUrl2[:pos+1])
+                rssFeed = theUrl2[pos+1:]
+                blog.setRssFeed(rssFeed)
+                blog.setPosts()
+                posPost = blog.getLinkPosition(theUrl)
+                data = blog.obtainPostData(posPost)
+                moreContent = data[5][0]['value']
+        except:
+            retry = True
+        if retry or response.status_code >= 401:
+            response = requests.get(theUrl, 
+                    headers={"User-Agent":"Mozilla/5.0"}, verify=False)
+
+        return response, moreContent
+
+    def cleanUrl(self, url):
+        cleaning=['source',
+                  'utm_',
+                  'gi',
+                  'from_action', #slideshare
+                  'source',
+                  'infoq_content', #infoq
+                  'hash', #Links Facebook
+                  'trk', #linkedin
+                  'imm_', #medium
+                  'gi', #uxdesign #codelikeagirl
+                  'fbclid', #Links from Facebook
+                  'fsrc', #Links from The Economist
+                  'mbid' #arstechnica
+                  ]
+    
+        for cleanTxt in cleaning:
+            logging.info(cleanTxt)
+            posUrl = url.find('?'+cleanTxt)
+            if posUrl>0:
+                url = url[:posUrl]
+                return(url)
+    
+        return(url)
+
+    def getPdfTitle(req):
+        nameFile = '/tmp/kkkkk.pdf'
+        with open(nameFile,'wb') as f:
+            f.write(req.content)
+        theTitle = PdfReader(nameFile).Info.Title
+        title = ''
+        if theTitle:
+            title = theTitle[1:-1]
+        else:
+            lines = textract.process("/tmp/kkkkk.pdf").decode().split('\n')
+            i = 0 
+            while len(title)<25: 
+                title = title +' '+ lines[i] 
+                i = i + 1
+    
+        return(title)
+
+    def cleanDocument(self, text, theUrl):
+        replaceChars = [ ('“','"'), ('”','"'), ('‘',"'"), ('’',"'"), ('`',"'"),
+                ('`',"'"), ('′',"'"), ('—',"-"), ('–',"-"), ('…',"..."), 
+                ('•','.'), ('«','"'), ('»','"'), ('„','"'), ('μ','micro'), 
+                ('™','(TM)'), ('≤','<='), ('≥','>='), ('∀','ForAll'), 
+                ('⇒','=>'), ('б','(6)'), ('š','s'), ('├','|-'), ('─','--'), 
+                ('|','| '), ('│','| '), ('└','-') ]
+ 
+        from readability import Document 
+        doc = Document(text) 
+        doc_title = doc.title()
+    
+        if not doc_title or (doc_title == '[no-title]'):
+            if theUrl.lower().endswith('pdf'):
+                title = getPdfTitle(response)
+                print(title)
+                doc_title = '[PDF] '+title
+    
+        theTitle = doc_title
+        
+        myText = doc.summary() 
+        for a,b in replaceChars: 
+            myText = myText.replace(a,b)
+
+        return(myText, theTitle)
+
     def extractImage(self, soup):
         pageImage = soup.findAll("img")
         #  Only the first one

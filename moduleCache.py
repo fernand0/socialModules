@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# encoding: utf-8
-
 # Queue [cache] files name is composed of a dot, followed by the path of the
 # URL, followed by the name of the social network and the name of the user for
 # posting there.
@@ -248,13 +245,14 @@ class moduleCache(Content,Queue):
     def publish(self, j):
         logging.info("Publishing %d"% j)
         post = self.obtainPostData(j)
-        logging.info("Publishing %s"% post[0])
-        import importlib
-        serviceName = self.service.capitalize()
-        mod = importlib.import_module('module' + serviceName) 
-        cls = getattr(mod, 'module' + serviceName)
-        api = cls()
-        api.setClient(self.nick)
+        logging.info("Publishing {post[0]} in {self.service} user {self.nick}")
+        api = getApi(self.service, self.nick)
+        #import importlib
+        #serviceName = self.service.capitalize()
+        #mod = importlib.import_module('module' + serviceName) 
+        #cls = getattr(mod, 'module' + serviceName)
+        #api = cls()
+        #api.setClient(self.nick)
         comment = ''
         title = post[0]
         link = post[1]
@@ -262,7 +260,8 @@ class moduleCache(Content,Queue):
         update = api.publishPost(title, link, comment)
         logging.info("Publishing title: %s" % title)
         logging.info("Social network: %s Nick: %s" % (self.service, self.nick))
-        if not isinstance(update, str) or (isinstance(update, str) and update[:4] != "Fail"):
+        if (not isinstance(update, str) 
+                or (isinstance(update, str) and update[:4] != "Fail")):
             self.posts = self.posts[:j] + self.posts[j+1:]
             logging.debug("Updating %s" % self.posts)
             self.updatePostsCache()
@@ -325,7 +324,6 @@ class moduleCache(Content,Queue):
  
 def main():
     import moduleCache
-    import moduleSlack
 
     cache = moduleCache.moduleCache()
     cache.setClient(('http://fernand0-errbot.slack.com/', 

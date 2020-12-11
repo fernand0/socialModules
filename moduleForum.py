@@ -1,4 +1,3 @@
-
 from bs4 import BeautifulSoup
 import configparser
 import logging
@@ -8,6 +7,19 @@ import time
 from moduleContent import *
 from moduleQueue import *
 from configMod import *
+
+# This moule reads directly the HTML code
+#
+# Config file .rssForums
+#[Forum URL]
+#url=
+#forums: string 1 # Strings to identify the subforum, one in each line
+#       string 2
+#       string 3
+#selector: string 1 # Strings used to identify subforums links
+#         string 2
+#idSeparator: # character used for the identification of a post
+
 
 class moduleForum(Content,Queue):
 
@@ -134,7 +146,6 @@ class moduleForum(Content,Queue):
             #print(self.posts[pos][1])
             #print('>>>',pos, len(self.posts))
             if (pos  == len(self.posts)):# and (str(lastLink) != self.posts[pos][1]):
-                print('si')
                 pos = 0
             if pos < len(self.posts) - 1:
                 for i, post in enumerate(self.posts[pos:]):

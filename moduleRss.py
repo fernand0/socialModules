@@ -36,7 +36,7 @@ class moduleRss(Content,Queue):
     def setClient(self, feed):
         logging.info("Feed %s" % str(feed))
         if isinstance(feed, tuple):
-            self.rssFeed = feed[0]+feed[1][1]
+            self.rssFeed = feed[0]#+feed[1][1]
         else:
             self.rssFeed = feed
         self.service = 'Rss'
@@ -45,6 +45,7 @@ class moduleRss(Content,Queue):
         msgLog = "  Setting posts"
         logging.info(msgLog)
 
+        logging.info(f"   Feed {self.rssFeed}") 
         if self.rssFeed.find('http')>=0: 
             urlRss = self.getRssFeed()
         else: 
@@ -183,7 +184,7 @@ def main():
 
    import moduleRss
     
-   if os.path.exists(CONFIGDIR + '/.rssBlogss'):
+   if os.path.exists(CONFIGDIR + '/.rssBlogs'):
        config = configparser.ConfigParser()
        config.read(CONFIGDIR + '/.rssBlogs') 
    else:
@@ -191,7 +192,7 @@ def main():
 
    print("Configured blogs:")
 
-   accounts = ["Blog1", "Blog2", "Blog9"]
+   accounts = ["Blog22", "Blog1", "Blog2", "Blog9"]
    for acc in accounts:
        print("Account: {}".format(acc))
        blog = moduleRss.moduleRss()

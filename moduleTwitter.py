@@ -86,9 +86,30 @@ class moduleTwitter(Content,Queue):
             self.posts = self.tc.statuses.user_timeline()
         except:
             self.posts = []
+        try:
+            self.favs = self.tc.favorites.list()
+        except:
+            self.favs = []
 
         #outputData = {}
         serviceName = 'Twitter'
+
+    def getFavs(self):
+         return self.favs
+
+    def getPosts(self):
+        if hasattr(self, 'getPostsType'): 
+            logging.debug("  Posts type {}".format(self.getPostsType()))
+            if self.getPostsType() == 'drafts':
+                posts = self.getDrafts()
+            if self.getPostsType() == 'favs':
+                posts = self.getFavs()
+            else:
+                posts = self.getPublished() 
+        else:
+            posts = self.posts
+        return(posts)
+
 
     def publishPost(self, post, link='', comment=''):
         logging.info("     Publishing in {}...".format(self.service))
@@ -129,7 +150,8 @@ class moduleTwitter(Content,Queue):
 
     def getPostLink(self, post):
         if 'id_str' in post:
-            return('https://twitter.com/{}/status/{}'.format(self.user, post['id_str']))
+            return('https://twitter.com/{}/status/{}'.format(
+                self.user, post['id_str']))
         else:
             return ''
 
@@ -139,6 +161,38 @@ class moduleTwitter(Content,Queue):
             return(post['entities']['urls'][0]['expanded_url'])
         else:
             return ''
+
+    def extractDataMessage(self, i):
+        logging.info("Service %s"% self.service)
+        (theTitle, theLink, firstLink, theImage, theSummary, 
+                content, theSummaryLinks, theContent, theLinks, comment) = (
+                        None, None, None, None, None, 
+                        None, None, None, None, None) 
+
+        if i < len(self.getPosts()):
+            post = self.getPost(i)
+            import pprint
+            pprint.pprint(post)
+            theTitle = self.getPostTitle(post)
+            theLink = self.getPostLink(post)
+
+            theLinks = None
+            content = None 
+            theContent = None
+            if 'text' in post and post['text']: 
+                theContent = post['text']
+            firstLink = theLink
+            pos = theContent.find('http')
+            if pos >= 0:
+                firstLink=theContent[pos:].split(' ')[0]
+            theImage = None
+            theSummary = None
+
+            theSummaryLinks = None
+            comment = None
+
+        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+
 
     def search(self, text):
         logging.debug("     Searching in Twitter...")
@@ -174,7 +228,6 @@ def main():
         #print("@%s: %s" %(tweet[2], tweet[0]))
 
 
-
     print("Testing title and link")
     
     for post in tw.getPosts():
@@ -183,12 +236,22 @@ def main():
         url = tw.getPostUrl(post)
         print("Title: {}\nLink: {}\nUrl:{}\n".format(title,link,url))
 
-    tw.publishPost("Tuit desde podman", "", '')
+    print("Favs")
+
+    tw.setPostsType("favs")
+    #tw.publishPost("Tuit desde podman", "", '')
+
+    for i, post in enumerate(tw.favs):
+        title = tw.getPostTitle(post)
+        link = tw.getPostLink(post)
+        print("Title: {}\nLink: {}\n".format(title,link))
+
     sys.exit()
+
     res = tw.search('url:fernand0')
 
     for tt in res['statuses']: 
-        print(tt)
+        #print(tt)
         print('- @{0} {1} https://twitter.com/{0}/status/{2}'.format(tt['user']['name'], tt['text'], tt['id_str']))
     sys.exit()
 

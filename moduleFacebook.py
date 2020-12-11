@@ -20,6 +20,17 @@ from configMod import *
 from moduleContent import *
 from moduleQueue import *
 
+# We are using facebook-sdk 
+# You can find the way to obtain tokens and so on at:
+# https://facebook-sdk.readthedocs.io/
+# 
+# Config file
+# [Facebook]
+# oauth_access_token: #<- We only need this one
+# client_token:
+# app_token:
+# app_id:
+
 class moduleFacebook(Content,Queue):
 
     def __init__(self):
@@ -111,7 +122,7 @@ class moduleFacebook(Content,Queue):
         post = h.unescape(post)
         res = None
         try:
-            logging.info("     Publishing: %s" % post)
+            logging.info("     Publishing: %s" % post[:250])
             if (not isinstance(self.page, str)):
                 res = self.page.put_object('me', "feed", message=post, link=link)
                 #res = self.page.put_object(self.fc.get_object('me')['id'], "feed", message=post, link=link)

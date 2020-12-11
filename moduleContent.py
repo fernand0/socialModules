@@ -50,9 +50,24 @@ class Content:
     def getSocialNetworksAPI(self):
         return(self.api)
 
+    def newsetSocialNetworks(self, socialNetworksConfig):
+        socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
+                'wordpress', 'medium', 'linkedin','pocket', 'mastodon',
+                'instagram', 'imgur', 'tumblr', 'slack', 'refind'] 
+        for sN in socialNetworksConfig:
+            if (sN[0] in socialNetworksOpt):
+                if sN[1].find('\n'):
+                    sNs = sN[1].split('\n')
+                    for el in sNs: 
+                        self.addSocialNetwork((sN[0], el))
+                else: 
+                    self.addSocialNetwork(sN)
+
+
     def setSocialNetworks(self, config, section):
-        socialNetworksOpt = ['twitter', 'facebook', 'telegram', 'wordpress', 
-                'medium', 'linkedin','pocket', 'mastodon','instagram', 'imgur'] 
+        socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
+                'wordpress', 'medium', 'linkedin','pocket', 'mastodon',
+                'instagram', 'imgur', 'tumblr', 'slack','refind'] 
         for option in config.options(section):
             if (option in socialNetworksOpt):
                 nick = config.get(section, option)
@@ -80,7 +95,7 @@ class Content:
             else:
                 posts = self.getPublished() 
         else:
-            posts = sefl.getPosts()
+            posts = self.posts
         return(posts)
 
     def getPost(self, i):
@@ -149,6 +164,7 @@ class Content:
 
 
     def getNextPosts(self, socialNetwork):
+        print("sn",socialNetwork)
         if socialNetwork in self.nextPosts:
             return self.nextPosts[socialNetwork]
         else:
@@ -206,9 +222,10 @@ class Content:
 
     def getMax(self):
         if hasattr(self, 'max'): 
-            return(int(self.max))
+            max = int(self.max)
         else:
-            return None
+            max = None
+        return max
 
     def getCache(self):
         return(self.cache)
@@ -250,16 +267,13 @@ class Content:
     def len(self, profile):
         service = profile
         nick = self.getSocialNetworks()[profile]
+        posts = []
         if self.cache and (service, nick) in self.cache:
-            if self.cache[(service, nick)].getPosts(): 
-                return(len(self.cache[(service, nick)].getPosts()))
-            else:
-                return(0)
+            posts = self.cache[(service, nick)].getPosts()
         elif self.buffer and (service, nick) in self.buffer:
-            if self.buffer[(service, nick)].getPosts(): 
-                return(len(self.buffer[(service, nick)].getPosts()))
-            else:
-                return(0)
+            posts = self.buffer[(service, nick)].getPosts()
+        
+        return (len(posts))
 
     def getPostByLink(self, link):
         pos = self.getLinkPosition(link)
@@ -285,6 +299,7 @@ class Content:
                     linkS = linkS.decode()
                 url = self.getPostLink(entry)
                 logging.debug("{} {}".format(url, linkS))
+                #print("{} {}".format(url, linkS))
                 lenCmp = min(len(url), len(linkS))
                 if url[:lenCmp] == linkS[:lenCmp]:
                     # When there are duplicates (there shouldn't be) it returns
@@ -368,6 +383,7 @@ class Content:
 
 
     def getPostTitle(self, post):
+        logging.info("ppost {}".format(post))
         return str(post)
     
     def getPostDate(self, post):

@@ -17,7 +17,6 @@ import requests
 from bs4 import BeautifulSoup
 from bs4 import Tag
 
-import moduleTumblr
 from moduleContent import *
 from moduleQueue import *
 
@@ -62,6 +61,21 @@ class moduleSlack(Content,Queue):
             logging.info(self.report('Slack', text, sys.exc_info()))
             self.sc = slack.WebClient(token=self.slack_token)
 
+        config = configparser.ConfigParser()
+        config.read(CONFIGDIR + '/.rssBlogs')
+        section = "Blog7"
+
+        url = config.get(section, "url")
+        self.setUrl(url)
+        self.setSocialNetworks(config, section)
+        #if ('buffer' in config.options(section)): 
+        #    self.setBufferapp(config.get(section, "buffer"))
+
+        if ('cache' in config.options(section)): 
+            self.setProgram(config.get(section, "cache"))
+            logging.info("getProgram {}".format(str(self.getProgram())))
+
+
         logging.info("     Connected {}".format(self.service))
 
 
@@ -94,6 +108,7 @@ class moduleSlack(Content,Queue):
 
         if ('cache' in config.options(section)): 
             self.setProgram(config.get(section, "cache"))
+            logging.info("getProgram {}".format(str(self.getProgram())))
 
 
     def getSlackClient(self):
@@ -179,10 +194,15 @@ class moduleSlack(Content,Queue):
                     update = update + '\n'
 
         if self.getProgram():
+            logging.info("getProgram")
             for profile in self.getSocialNetworks():
-                if profile[0] in self.getProgram():
+                nick = self.getSocialNetworks()[profile]
+                logging.info("Social: {} Nick: {}".format(profile, nick))
+                if ((profile[0] in self.getProgram()) or 
+                        (profile in self.getProgram())): 
+                    logging.info("Social: {} Nick: {}".format(profile, nick))
                     lenMax = self.len(profile)
-                    socialNetwork = (profile,self.getSocialNetworks()[profile])
+                    socialNetwork = (profile, nick)
 
                     listP = self.cache[socialNetwork].setPosts()
                     listP = self.cache[socialNetwork].getPosts()
@@ -190,16 +210,10 @@ class moduleSlack(Content,Queue):
                     listP = listP + [listPsts]
                     self.cache[socialNetwork].posts = listP
                     update = update + self.cache[socialNetwork].updatePostsCache()
+                    logging.info("Uppdate: {}".format(update))
                     update = update + '\n'
-        t = moduleTumblr.moduleTumblr()
-        t.setClient('fernand0')
-        # We need to publish it in the Tumblr blog since we won't publish it by
-        # usuarl means (it is deleted from queue).
-        update = update + t.publishPost(title, url, '')['display_text']
-        # Res: {'id': 187879917068, 'state': 'queued', 'display_text': 'Added to queue.'}
 
-
-        theChannel = self.getChanId("links")  
+        theChannel = "links" #self.getChanId("links")  
         res = self.deletePost(self.getId(j), theChannel)
         logging.info("Res: %s" % str(res))
         update = update + str(res['ok'])
@@ -226,7 +240,8 @@ class moduleSlack(Content,Queue):
         idPost = self.getId(j)
         #self.sc.token = self.user_slack_token        
         logging.info("Deleting id %s" % idPost)
-        result = self.sc.api_call("chat.delete", channel=theChannel, ts=idPost)
+        data = {'channel': theChannel, 'ts': idPost}
+        result = self.sc.api_call("chat.delete", data = data)
         #self.sc.token = self.slack_token        
         logging.info(result)
         return(result['ok'])
@@ -389,18 +404,18 @@ class moduleSlack(Content,Queue):
 
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
-    def publishPost(self, chan, msg):
+    def publishPost(self, msg, link, chan='links'):
         theChan = self.getChanId(chan)
-        logging.info("Publishing %s" % msg)
+        logging.info(f"Publishing {msg} in {chan}")
         try:
             self.sc.token = self.user_slack_token        
-            data = {'channel': theChan, 'text': msg}
+            data = {'channel': theChan, 'text': f"{msg} {link}"}
             result = self.sc.api_call("chat.postMessage", data = data ) #, 
             self.sc.token = self.slack_token        
         except:
             logging.info(self.report('Slack', "", "", sys.exc_info()))
             result = self.sc.chat_postMessage(channel=theChan, 
-                    text=msg)
+                    text=f"{msg} {link}")
         logging.info(result['ok'])
         logging.info("End publishing %s" % msg)
         return(result)
