@@ -10,13 +10,10 @@
 #  obtainPostData method.
 
 import configparser, os
-import pickle
-import logging
-import sys
-import importlib
-importlib.reload(sys)
-#sys.setdefaultencoding("UTF-8")
 from crontab import CronTab
+import logging
+import pickle
+import sys
 
 from configMod import *
 from moduleQueue import *
@@ -137,7 +134,8 @@ class moduleCache(Content,Queue):
         return(link)
 
     def updatePostsCache(self):
-        fileNameQ = fileNamePath(self.url, (self.service, self.nick)) + ".queue"
+        fileNameQ = fileNamePath(self.url, 
+                (self.service, self.nick)) + ".queue"
 
         with open(fileNameQ, 'wb') as f: 
             if hasattr(self, 'getPostsType'): 
@@ -155,7 +153,9 @@ class moduleCache(Content,Queue):
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)
-        (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None) 
+        (theTitle, theLink, firstLink, theImage, theSummary, content, 
+                theSummaryLinks, theContent, theLinks, comment) = (None, 
+                        None, None, None, None, None, None, None, None, None) 
 
         if i < len(self.getPosts()):
             messageRaw = self.getPosts()[i]
@@ -200,11 +200,6 @@ class moduleCache(Content,Queue):
             link = post[1]
             return (link)
         return(None)
-
-    #def isForMe(self, args):
-    #    logging.info("isForMe %s" % str(self.service))
-    #    return ((self.service[0].capitalize() in args.split()[0])
-    #           or (args[0] == '*'))
 
     def editl(self, j, newLink=''):
         logging.info("New link %s", newLink)

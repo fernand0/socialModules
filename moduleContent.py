@@ -88,14 +88,13 @@ class Content:
         return(self.posts)
 
     def getPosts(self):
-        if hasattr(self, 'getPostsType'): 
-            logging.debug("  Posts type {}".format(self.getPostsType()))
-            if self.getPostsType() == 'drafts':
-                posts = self.getDrafts()
-            else:
-                posts = self.getPublished() 
-        else:
-            posts = self.posts
+        if not hasattr(self, 'getPostsType'): 
+            theType = 'posts'
+        logging.debug("  Posts type {}".format(self.getPostsType()))
+        theType = self.getPostsType().capitalize()
+        cmd = getattr(self, f"get{theType}")
+        posts = cmd()
+
         return(posts)
 
     def getPost(self, i):
