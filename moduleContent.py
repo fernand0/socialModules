@@ -87,6 +87,18 @@ class Content:
     def getPublished(self):
         return(self.posts)
 
+    def setPosts(self):
+        pass 
+
+    def assignPosts(self, posts):
+        if hasattr(self, 'getPostsType'): 
+            if self.getPostsType() == 'drafts': 
+                self.drafts = posts
+            else:
+                self.posts = posts
+        else:
+            self.posts = posts
+
     def getPosts(self):
         if hasattr(self, 'getPostsType'): 
             logging.debug("  Posts type {}".format(self.getPostsType()))
@@ -147,9 +159,6 @@ class Content:
             return self.postsType 
         else:
             return 'posts' 
-
-    def setPosts(self):
-        pass 
 
     def updatePostsCache(self,socialNetwork):
         service = socialNetwork[0]

@@ -58,11 +58,7 @@ class moduleCache(Content,Queue):
         except:
             listP = []
 
-        if hasattr(self, 'getPostsType'): 
-            if self.getPostsType() == 'drafts': 
-                self.drafts = listP
-            else:
-                self.posts = listP
+        self.assignPosts(listP)
 
     def getHoursSchedules(self, command=None):
         return self.schedules[0].hour.render()
@@ -131,7 +127,8 @@ class moduleCache(Content,Queue):
     def addPosts(self, listPosts):
         link = ''
         if listPosts:
-            self.posts = self.posts + listPosts
+            posts = self.getPosts() + listPosts
+            self.assignPosts(posts)
             self.updatePostsCache()
             link = listPosts[len(listPosts) - 1][1]
         return(link)
@@ -140,16 +137,11 @@ class moduleCache(Content,Queue):
         fileNameQ = fileNamePath(self.url, (self.service, self.nick)) + ".queue"
 
         with open(fileNameQ, 'wb') as f: 
-            if hasattr(self, 'getPostsType'): 
-                if self.getPostsType() == 'drafts': 
-                    pickle.dump(self.drafts, f)
-                else:
-                    pickle.dump(self.posts, f)
-            else:
-                pickle.dump(self.posts, f)
+            posts = self.getPosts()
+            pickle.dump(self.drafts, f)
 
         logging.debug("Writing in %s" % fileNameQ)
-        logging.debug("Posts: {}".format(str(self.posts)))
+        logging.debug("Posts: {}".format(str(self.getPosts())))
 
         return 'Ok'
 
@@ -212,8 +204,10 @@ class moduleCache(Content,Queue):
         oldLink = thePost[1]
         thePost = thePost[:1] + ( newLink, ) + thePost[2:]
         print(thePost)
-        self.posts[j] = thePost
+        posts = self.getPosts()
+        posts[j] = thePost
         logging.info("Service Name %s" % self.name)
+        self.assignPosts(posts)
         self.updatePostsCache()
         update = "Changed "+oldLink+" with "+newLink
         return(update)
@@ -226,20 +220,24 @@ class moduleCache(Content,Queue):
             newTitle = self.reorderTitle(oldTitle)
         thePost = thePost[1:]
         thePost = (newTitle,) + thePost
-        self.posts[j] = thePost
+        posts = self.getPosts()
+        posts[j] = thePost
         logging.info("Service Name %s" % self.name)
+        self.assignPosts(posts)
         self.updatePostsCache()
         update = "Changed "+oldTitle+" with "+newTitle
         return(update)
 
     def insert(self, j, text):
         logging.info("Inserting %s", text)
-        print(text)
+        posts = self.getPosts()
         # We do not use j, Maybe in the future.
-        textS = text.split(' http')
-        post = (textS[0], 'http'+textS[1], '','','','','','','','')
-        self.posts.append(post)
-        self.updatePostsCache()
+        logging.info(f"posts {posts}")
+        if (j>=0) and (j<len(posts)):
+            textS = text.split(' http')
+            post = (textS[0], 'http'+textS[1], '','','','','','','','')
+            self.assignPosts(posts[:j] + [ post ] + posts[j:])
+            self.updatePostsCache()
 
     def publish(self, j):
         logging.info("Publishing %d"% j)
@@ -259,10 +257,11 @@ class moduleCache(Content,Queue):
         update = api.publishPost(title, link, comment)
         logging.info("Publishing title: %s" % title)
         logging.info("Social network: %s Nick: %s" % (self.service, self.nick))
+        posts = self.getPosts()
         if (not isinstance(update, str) 
                 or (isinstance(update, str) and update[:4] != "Fail")):
-            self.posts = self.posts[:j] + self.posts[j+1:]
-            logging.debug("Updating %s" % self.posts)
+            self.assignPosts(posts[:j] + posts[j+1:])
+            logging.debug("Updating %s" % posts)
             self.updatePostsCache()
             logging.info("Update ... %s" % str(update))
             if ((isinstance(update, str) and ('text' in update))
@@ -278,14 +277,9 @@ class moduleCache(Content,Queue):
         logging.info("Deleting %d"% j)
         post = self.obtainPostData(j)
         logging.info("Deleting %s"% post[0])
-        if hasattr(self, 'getPostsType'): 
-            if self.getPostsType() == 'drafts': 
-                self.drafts = self.drafts[:j] + self.drafts[j+1:]
-            else:
-                self.posts = self.posts[:j] + self.posts[j+1:] 
-        else: 
-            self.posts = self.posts[:j] + self.posts[j+1:] 
-
+        posts = self.getPosts()
+        posts = posts[:j] + posts[j+1:]
+        self.assignPosts(posts)
         self.updatePostsCache()
 
         logging.info("Deleted %s"% post[0])
@@ -294,31 +288,20 @@ class moduleCache(Content,Queue):
     def move(self, j, dest):
         k = int(dest)
         logging.info("Moving %d to %d"% (j, k))
+        posts = self.getPosts()
+        post = posts[j]
+        logging.info("Moving %s"% post[0])
         if j > k:
-            posts = self.getPosts()
-            post = posts[j]
-            logging.info("Moving %s"% post[0])
             for i in range(j-1,k-1,-1):
                 posts[i+1] = posts[i]
-            posts[k] = post
-
-            if hasattr(self, 'getPostsType'): 
-                # Quicnk and dirty hack
-                if self.getPostsType() == 'drafts': 
-                    self.drafts = posts
-                else:
-                    self.posts = posts
-
-            self.updatePostsCache()
-            logging.info("Moved %s"% post[0])
         elif j < k:
-            post = self.posts[j]
-            logging.info("Moving %s"% post[0])
             for i in range(j, k):
-                self.posts[i] = self.posts[i+1]
-            self.posts[k] = post
-            self.updatePostsCache()
-            logging.info("Moved %s"% post[0])
+                posts[i] = posts[i+1]
+
+        posts[k] = post
+        self.assignPosts(posts)
+        self.updatePostsCache()
+        logging.info("Moved %s"% post[0])
         return("%s"% post[0])
  
 def main():
