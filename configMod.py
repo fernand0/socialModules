@@ -96,8 +96,6 @@ def checkLastLink(url, socialNetwork=()):
     (linkLast, timeLast) = getLastLink(fileNameL)
     return(linkLast, timeLast)
 
-
-
 def newUpdateLastLink(url, link, lastLink, socialNetwork=()): 
     if isinstance(lastLink, list): 
         link = '\n'.join([ "{}".format (post[1]) for post in listPosts]) 

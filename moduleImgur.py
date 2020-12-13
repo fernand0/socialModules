@@ -47,7 +47,7 @@ class moduleImgur(Content,Queue):
     def getClient(self):
         return self.client
 
-    def setPosts(self): 
+    def setPosts(self, numPosts=25): 
         self.posts = []
         self.drafts = []
         client = self.getClient()
@@ -64,8 +64,8 @@ class moduleImgur(Content,Queue):
                     self.drafts.append(album)
         else:
             logging.warning('No client configured!')
-        self.drafts = self.drafts[0:20]
-        self.posts = self.posts[0:20]
+        self.drafts = self.drafts[0:numPosts]
+        self.posts = self.posts[0:numPosts]
         # We set some limit
                     
     def getPostTitle(self, post):
@@ -123,17 +123,39 @@ class moduleImgur(Content,Queue):
         logging.info("Publishing {} {}".format(title, link))
         idPost = link
         logging.info("Publishing {} {}".format(title, idPost))
+        logging.info("Publishing getP {}".format(self.getProgram()))
         
-        api = self.getClient()
-        try:
-            res = api.share_on_imgur(idPost, title, terms=0)            
-            logging.info("Res: %s" % res)
-            return(res)
-        except:
-            post = title
-            link = idPost
-            logging.info(self.report('Imgur', post, link, sys.exc_info()))
-            return(FAIL)
+        if self.getProgram():
+            logging.info("getProgram")
+            for profile in self.getSocialNetworks():
+                nick = self.getSocialNetworks()[profile]
+                logging.info("Social: {} Nick: {}".format(profile, nick))
+                if ((profile[0] in self.getProgram()) or 
+                        (profile in self.getProgram())): 
+                    logging.info("Social: {} Nick: {}".format(profile, nick))
+                    lenMax = self.len(profile)
+                    socialNetwork = (profile, nick)
+
+                    listP = self.cache[socialNetwork].setPosts()
+                    listP = self.cache[socialNetwork].getPosts()
+                    listPsts = self.obtainPostData(j)
+                    listP = listP + [listPsts]
+                    self.cache[socialNetwork].posts = listP
+                    update = update + self.cache[socialNetwork].updatePostsCache()
+                    logging.info("Uppdate: {}".format(update))
+                    update = update + '\n'
+            return update
+        else:
+            api = self.getClient()
+            try:
+                res = api.share_on_imgur(idPost, title, terms=0)            
+                logging.info("Res: %s" % res)
+                return(res)
+            except:
+                post = title
+                link = idPost
+                logging.info(self.report('Imgur', post, link, sys.exc_info()))
+                return(FAIL)
 
         return("%s"% title)
 

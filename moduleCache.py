@@ -138,7 +138,7 @@ class moduleCache(Content,Queue):
 
         with open(fileNameQ, 'wb') as f: 
             posts = self.getPosts()
-            pickle.dump(self.drafts, f)
+            pickle.dump(posts, f)
 
         logging.debug("Writing in %s" % fileNameQ)
         logging.debug("Posts: {}".format(str(self.getPosts())))
@@ -238,6 +238,13 @@ class moduleCache(Content,Queue):
             post = (textS[0], 'http'+textS[1], '','','','','','','','')
             self.assignPosts(posts[:j] + [ post ] + posts[j:])
             self.updatePostsCache()
+
+            #link = f"http{link}" 
+            #pos = self.getLinkPosition(link)
+            #logging.info(f"pos {pos}")
+            #newPost = self.getNumPostsData(1,pos)
+            #logging.info(f"newpost {newPost}")
+
 
     def publish(self, j):
         logging.info("Publishing %d"% j)
