@@ -66,10 +66,16 @@ class Queue:
         print("Selecting %s" % args)
         argsCont = ''
         pos = args.find(' ')
+        j = -1
         if pos > 0: 
             argsIni = args[:pos]
             argsCont = args[pos+1:]
-            logging.info("Args {} {}".format(argsIni, argsCont))
+            logging.info("Args {}-{}".format(argsIni, argsCont))
+            if (argsCont and len(argsCont)>1): 
+                if argsCont[0].isdigit() and (argsCont[1] == ' '): 
+                    j = int(argsCont[0])
+                    argsCont = argsCont[2:]
+
         else: 
             argsIni = args
             logging.info("Args {}".format(argsIni))
@@ -87,9 +93,8 @@ class Queue:
         logging.info("Service %s", self.service)
         if len(argsIni) > 2:
             j = int(argsIni[2:]) 
-        else:
-            j = -1
         cmd = getattr(self, command)
+        logging.info(f"Argscont {argsCont} j {j}")
         if (j>=0):
             logging.info("Command %s %d"% (command, j))
             if argsCont:

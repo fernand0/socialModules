@@ -54,6 +54,7 @@ class Content:
         socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
                 'wordpress', 'medium', 'linkedin','pocket', 'mastodon',
                 'instagram', 'imgur', 'tumblr', 'slack', 'refind'] 
+        logging.info("  sNC {}".format(socialNetworksConfig))
         for sN in socialNetworksConfig:
             if (sN[0] in socialNetworksOpt):
                 if sN[1].find('\n'):
@@ -62,6 +63,7 @@ class Content:
                         self.addSocialNetwork((sN[0], el))
                 else: 
                     self.addSocialNetwork(sN)
+        logging.info("  sNN {}".format(self.getSocialNetworks()))
 
 
     def setSocialNetworks(self, config, section):
@@ -86,6 +88,18 @@ class Content:
 
     def getPublished(self):
         return(self.posts)
+
+    def setPosts(self):
+        pass 
+
+    def assignPosts(self, posts):
+        if hasattr(self, 'getPostsType'): 
+            if self.getPostsType() == 'drafts': 
+                self.drafts = posts
+            else:
+                self.posts = posts
+        else:
+            self.posts = posts
 
     def getPosts(self):
         if not hasattr(self, 'getPostsType'): 
@@ -146,9 +160,6 @@ class Content:
             return self.postsType 
         else:
             return 'posts' 
-
-    def setPosts(self):
-        pass 
 
     def updatePostsCache(self,socialNetwork):
         service = socialNetwork[0]
@@ -282,11 +293,7 @@ class Content:
             return (None)
 
     def getLinkPosition(self, link):
-        if hasattr(self, 'getPostsType'):
-            if self.getPostsType() == 'drafts':
-                posts = self.getDrafts()
-            else:
-                posts = self.getPosts()
+        posts = self.getPosts()
         pos = len(posts) 
         if posts:
             if not link:
