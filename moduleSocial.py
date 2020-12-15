@@ -119,7 +119,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
     nick = socialNetwork[1]
 
 
-    print(numPosts)
+    #print(numPosts)
 
     for j in  range(numPosts): 
         llink = None

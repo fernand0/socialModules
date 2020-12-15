@@ -201,8 +201,8 @@ def updateCaches(blog, socialNetworks, simmulate):
             num = 0
         else:
             num = num - lenMax
-        msgLog = f"  num: {num} bufferMax: {bufferMax} lenMax: {lenMax}"
-        logMsg(msgLog, 1, 1)
+        #msgLog = f"  num: {num} bufferMax: {bufferMax} lenMax: {lenMax}"
+        #logMsg(msgLog, 1, 1)
 
         lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
 

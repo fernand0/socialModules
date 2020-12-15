@@ -175,7 +175,6 @@ class Content:
 
 
     def getNextPosts(self, socialNetwork):
-        print("sn",socialNetwork)
         if socialNetwork in self.nextPosts:
             return self.nextPosts[socialNetwork]
         else:
