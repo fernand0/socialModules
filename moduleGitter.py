@@ -377,7 +377,7 @@ def main():
     site.deletePost(rep['ts'], theChan)
     sys.exit()
 
-    site.setSocialNetworks(config, section)
+    site.setSocialNetworks(config)
 
     if ('buffer' in config.options(section)): 
         site.setBufferapp(config.get(section, "buffer"))

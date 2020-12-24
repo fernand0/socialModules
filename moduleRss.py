@@ -32,13 +32,18 @@ class moduleRss(Content,Queue):
 
     def setRssFeed(self, feed):
         self.rssFeed = feed
+        self.max = None
+        self.bufMax = None
 
     def setClient(self, feed):
         logging.info("Feed %s" % str(feed))
-        if isinstance(feed, tuple):
-            self.rssFeed = feed[0]#+feed[1][1]
+        if isinstance(feed, str):
+            self.rssFeed = feed
+        elif isinstance(feed, tuple):
+            self.rssFeed = feed[1]#+feed[1][1]
         else:
             self.rssFeed = feed
+        logging.info("The Feed %s" % str(self.rssFeed))
         self.service = 'Rss'
 
     def setPosts(self):
@@ -235,7 +240,7 @@ def main():
        if ("cache" in config.options(section)):
            blog.setProgram(config.get(section, "cache"))
 
-       blog.setSocialNetworks(config, section)
+       blog.setSocialNetworks(config)
 
        print(blog.getSocialNetworks())
        blog.setCache()

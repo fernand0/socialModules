@@ -60,6 +60,8 @@ class moduleTumblr(Content,Queue):
         logging.info(f"Url: {tumblr}")
         if isinstance(tumblr,str):
             self.url = f"https://{tumblr}.tumblr.com/"
+        elif isinstance(tumblr[1],str): 
+            self.url = f"https://{tumblr[1]}.tumblr.com/"
         elif isinstance(tumblr,tuple): 
             self.url = f"https://{tumblr[1][1]}.tumblr.com/"
         logging.info(f"Url: {self.url}")
@@ -80,6 +82,7 @@ class moduleTumblr(Content,Queue):
         else:
             self.posts = []
         drafts = self.getClient().queue(self.getUrl().split('/')[2])
+        #, offset="75")
         if 'posts' in drafts: 
             self.drafts = drafts['posts']
         else:
@@ -113,6 +116,13 @@ class moduleTumblr(Content,Queue):
                 idPost = post['id']
         return idPost
 
+    def processReply(self, reply): 
+        logging.debug("Res: %s" % reply) 
+        if 'id'  in reply: 
+            logging.info("Res: %s" % reply['id']) 
+            res = reply['id']
+        return res
+
     def publishPost(self, post, link, comment):
         logging.info("    Publishing in Tumblr: %s" % post)
         try:
@@ -120,14 +130,36 @@ class moduleTumblr(Content,Queue):
             res = client.create_link(self.getBlogName(), state='queue',
                     title=post, url=link, description="")
 
-            logging.debug("Res: %s" % res)
-            if 'id'  in res:
-                logging.info("Res: %s" % res['id'])
-                res = res['id']
-
+            res = self.processReply(res)
             return(res)
         except:        
             return(self.report('Tumblr', post, link, sys.exc_info()))
+
+    def publish(self, j):
+        logging.info("Publishing %d"% j)                
+        logging.info("servicename %s" %self.service)
+        (title, link, firstLink, image, summary, summaryHtml, 
+                summaryLinks, content, links, comment) = self.obtainPostData(j)
+        print(title, link)
+        logging.info("Publishing {} {}".format(title, link))
+        idPost = self.getId(j)
+        print(idPost)
+        logging.info("Publishing {} {}".format(title, idPost))
+        
+        client = self.getClient()
+        try:
+            res = client.edit_post(self.getBlogName(), id=int(idPost), 
+                    state='published')
+            res = self.processReply(res)
+        except:
+            post = title
+            link = idPost
+            logging.info(self.report(self.service, post, link, sys.exc_info()))
+            return(FAIL)
+
+        return(res)
+
+
 
     def edit(self, j, newTitle=''): 
         logging.info("New title %s", newTitle)
@@ -138,8 +170,8 @@ class moduleTumblr(Content,Queue):
         idPost = post['id']
         res = self.getClient().edit_post(name, id=idPost, 
                 type=post['type'], title = newTitle)
-        logging.info("Res: {}".format(res))
-        update = "Changed "+oldTitle+" with "+newTitle
+        res = self.processReply(res)
+        update = "Changed "+oldTitle+" with "+newTitle+" id " + res
         return(update)
 
     def delete(self, j): 
@@ -150,7 +182,8 @@ class moduleTumblr(Content,Queue):
         client = self.tc
         result = client.delete_post(self.getBlogName(), idPost)
         logging.info(result)
-        return(result['ok'])
+        res = self.processReply(res)
+        return(res)
 
 
 def main():
@@ -167,11 +200,14 @@ def main():
     t.setPostsType('drafts')
 
     t.setPosts()
+    i=0
     print(t.getPosts())
-    print(t.getPostTitle(t.getPosts()[1]))
-    print(t.getPostLink(t.getPosts()[1]))
-    print(t.getPostId(t.getPosts()[1]))
-    print(t.delete(1))
+    print(t.getPosts())
+    print(len(t.getPosts()))
+    print(t.getPostTitle(t.getPosts()[i]))
+    print(t.getPostLink(t.getPosts()[i]))
+    print(t.getPostId(t.getPosts()[i]))
+    print(t.publish(i))
     sys.exit()
 
     config = configparser.ConfigParser()

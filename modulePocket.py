@@ -251,8 +251,7 @@ def main():
     for i, post in enumerate(p.getPosts()):
         print(i, p.getPostTitle(post), p.getPostLink(post))
         
-
-    p.setSocialNetworks(config, "Blog25")
+    p.setSocialNetworks(config)
     print(p.getSocialNetworks())
     p.publish(99)
 

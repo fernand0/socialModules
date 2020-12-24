@@ -126,7 +126,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
         tSleep = random.random()*timeSlots
         tSleep2 = timeSlots - tSleep
         
-        element, listP = nextPost(blog,socialNetwork)
+        element, listP = nextPost(blog, socialNetwork)
 
         if element:
             tNow = time.time()
@@ -149,6 +149,12 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
 
                 # Things can have changed during the waiting
                 element, listP = nextPost(blog,socialNetwork)
+                #print(element)
+                #element = element[:-2] +(['austrocylindropuntiasubulata', 'cactus', 'cacti'], ) + element[-1:]
+                #element[-2] = ['austrocylindropuntiasubulata', 'cactus',
+                #        'cacti']
+                #print(element)
+
                
                 if element:
                     (title, link, firstLink, image, summary, summaryHtml, 
@@ -208,6 +214,8 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                         result = 'OK'
  
                     if result == 'OK':
+                        if blog.getPostAction(): 
+                            print(blog.deletePost(llink))
                         with open(fileNameNext,'wb') as f:
                             pickle.dump((tNow,tSleep), f)
                         if hasattr(blog, 'cache') and blog.cache:

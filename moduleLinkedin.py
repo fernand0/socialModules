@@ -29,9 +29,12 @@ class moduleLinkedin(Content):
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssLinkedin')
 
-            if isinstance(linkedinAC, tuple): 
-                linkedinAC = linkedinAC[1][1]
-            self.user = linkedinAC    
+            if isinstance(linkedinAC, str): 
+                self.user = linkedinAC
+            elif isinstance(linkedinAC[1], str): 
+                self.user = linkedinAC[1]
+            else: 
+                self.user = linkedinAC[1][1]
 
             self.CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY") 
             self.CONSUMER_SECRET = config.get("Linkedin", "CONSUMER_SECRET") 

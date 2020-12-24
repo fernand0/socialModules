@@ -43,6 +43,8 @@ class moduleTwitter(Content,Queue):
 
             if isinstance(twitterAC, str): 
                 self.user = twitterAC
+            elif isinstance(twitterAC[1],str):
+                self.user = twitterAC[1]
             else:
                 self.user = twitterAC[1][1]
             logging.info("     Twitter User %s"%str(self.user))
@@ -75,6 +77,10 @@ class moduleTwitter(Content,Queue):
 
         self.tc = t
  
+    def getId(self, i):
+        post = self.getPosts()[i]
+        return(post['id'])
+
     def getClient(self):
         return self.tc
  
@@ -86,9 +92,16 @@ class moduleTwitter(Content,Queue):
             self.posts = self.tc.statuses.user_timeline()
         except:
             self.posts = []
-        try:
-            self.favs = self.tc.favorites.list()
-        except:
+        if True:
+            self.favs = self.tc.favorites.list(count=100)
+            print(self.favs)
+            for post in self.favs: 
+                title = self.getPostTitle(post) 
+                link = self.getPostLink(post) 
+                url = self.getPostUrl(post) 
+                print("Created: {}\nTitle: {}\nLink: {}\nUrl:{}\n".format(
+                    post['created_at'], title,link,url))
+        else:
             self.favs = []
 
         #outputData = {}
@@ -142,6 +155,25 @@ class moduleTwitter(Content,Queue):
             logging.info("Fail!")
             return(self.report('Twitter', post, link, sys.exc_info()))
 
+    def deletePost(self, idPost): 
+        if idPost.find('http')>=0:
+            idPost = idPost.split('/')[-1]
+            print (idPost)
+        result = self.tc.favorites.destroy(_id=idPost)
+        logging.info(f"Res: {result}")
+        return(result['id'])
+
+    def delete(self, j): 
+        logging.info("Deleting id %s" % j)
+        idPost = self.getId(j)
+        logging.info("Deleting id %s" % idPost)
+        print("Deleting id %s" % idPost)
+
+        result = self.tc.favorites.destroy(_id=idPost)
+        logging.info(f"Res: {result}")
+        return(result['id'])
+
+
     def getPostTitle(self, post):
         if 'text' in post:
             return(post['text'])
@@ -157,8 +189,18 @@ class moduleTwitter(Content,Queue):
 
     def getPostUrl(self, post):
         logging.debug(post)
-        if (('urls' in post['entities']) and (post['entities']['urls'])):
-            return(post['entities']['urls'][0]['expanded_url'])
+        import pprint
+        pprint.pprint(post)
+        if ('urls' in post['entities']): 
+            if post['entities']['urls']:
+                if 'expanded_url' in post['entities']['urls'][0]:
+                    return(post['entities']['urls'][0]['expanded_url'])
+        elif ('url' in post['user']['entities']['url'] 
+                and (post['user']['entities']['url']['urls'])): 
+                return(post['user']['entities']['url']['urls'][0]['expanded_url'])
+        elif ('media' in post['entities']): 
+                if (post['entities']['media']): 
+                    return (post['entities']['media'][0]['expanded_url'])
         else:
             return ''
 
@@ -171,8 +213,8 @@ class moduleTwitter(Content,Queue):
 
         if i < len(self.getPosts()):
             post = self.getPost(i)
-            import pprint
-            pprint.pprint(post)
+            #import pprint
+            #pprint.pprint(post)
             theTitle = self.getPostTitle(post)
             theLink = self.getPostLink(post)
 
@@ -241,10 +283,19 @@ def main():
     tw.setPostsType("favs")
     #tw.publishPost("Tuit desde podman", "", '')
 
-    for i, post in enumerate(tw.favs):
+    for i, post in enumerate(tw.getPosts()):
         title = tw.getPostTitle(post)
         link = tw.getPostLink(post)
-        print("Title: {}\nLink: {}\n".format(title,link))
+        url = tw.getPostUrl(post)
+        print("Title: {}\nTuit: {}\nLink: {}\n".format(title,link,url))
+        input("Delete?")
+        print("Deleted https://twitter.com/i/status/{}".format(tw.delete(i)))
+        import time
+        time.sleep(5)
+
+
+
+
 
     sys.exit()
 

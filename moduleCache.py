@@ -32,11 +32,17 @@ class moduleCache(Content,Queue):
         #self.socialNetwork = (socialNetwork, nick)
 
     def setClient(self, param):
+        logging.info("setClient cache {}".format(param))
         url = param[0]
         socialNetwork = param[1]
+        if isinstance(socialNetwork, tuple): 
+            self.service = socialNetwork[0] 
+            self.nick = socialNetwork[1]
+        else:
+            self.service = param[1] 
+            self.nick = param[2]
+
         self.url = url
-        self.service = socialNetwork[0]
-        self.nick = socialNetwork[1]
 
     def getSocialNetwork(self):
         return (self.service, self.nick)
@@ -49,6 +55,7 @@ class moduleCache(Content,Queue):
         fileNameQ = fileNamePath(self.url, 
                 (self.service, self.nick)) + ".queue"
         logging.debug("File %s" % fileNameQ)
+        #print("File %s" % fileNameQ)
         try:
             with open(fileNameQ,'rb') as f: 
                 try: 
@@ -129,12 +136,16 @@ class moduleCache(Content,Queue):
         if listPosts:
             posts = self.getPosts() + listPosts
             self.assignPosts(posts)
+
+            for i,p in enumerate(posts):
+                print(i, self.getPostTitle(p), self.getPostLink(p))
             self.updatePostsCache()
             link = listPosts[len(listPosts) - 1][1]
         return(link)
 
     def updatePostsCache(self):
-        fileNameQ = fileNamePath(self.url, (self.service, self.nick)) + ".queue"
+        fileNameQ = fileNamePath(self.url, 
+                (self.service, self.nick)) + ".queue"
 
         with open(fileNameQ, 'wb') as f: 
             posts = self.getPosts()
@@ -312,25 +323,59 @@ class moduleCache(Content,Queue):
         return("%s"% post[0])
  
 def main():
+
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
+
     import moduleCache
 
-    cache = moduleCache.moduleCache()
-    cache.setClient(('http://fernand0-errbot.slack.com/', 
-            ('twitter', 'fernand0')))
-    cache.setPosts()
-    print(cache.getPostTitle(cache.getPosts()[0]))
-    print(cache.getPostLink(cache.getPosts()[0]))
-    print(cache.selectAndExecute('insert', 'A2 Do You Really Have a Right to be “Forgotten”? - Assorted Stuff https://www.assortedstuff.com/do-you-really-have-a-right-to-be-forgotten/'))
-    print(cache.getPostTitle(cache.getPosts()[9]))
-    print(cache.getPostLink(cache.getPosts()[9]))
-    cache.setPosts()
-    print(cache.getPostTitle(cache.getPosts()[9]))
-    sys.exit()
-    cache.setSchedules('rssToSocial')
-    print(cache.schedules)
-    cache.addSchedules(['9:00','20:15'])
-    print(cache.schedules)
-    cache.delSchedules(['9:00','20:15'])
+
+    try:
+        config = configparser.ConfigParser() 
+        config.read(CONFIGDIR + '/.rssBlogs')
+        
+        section = "Blog7"
+        url = config.get(section, 'url')
+        cache = config[section]['cache']
+        for sN in cache.split('\n'):
+            nick = config[section][sN]
+            print('- ', sN, nick)
+            site = moduleCache.moduleCache()
+            site.setClient((url, (sN, nick)))
+            site.setPosts()
+            print(len(site.getPosts()))
+            posts = site.getPosts()[:8]
+            for i, post in enumerate(posts):
+                print(i, site.getPostTitle(post))
+                link = site.getPostLink(post)
+                print(link)
+                #updateLastLink(url, link, (sN, nick))
+            site.posts = posts
+            #site.updatePostsCache()
+                
+            print(checkLastLink(url, (sN, nick)))
+        
+    except:
+        cache = moduleCache.moduleCache()
+        cache.setClient(('http://fernand0-errbot.slack.com/', 
+                ('twitter', 'fernand0')))
+        cache.setPosts()
+        print(len(cache.getPosts()))
+        sys.exit()
+        print(cache.getPostTitle(cache.getPosts()[0]))
+        print(cache.getPostLink(cache.getPosts()[0]))
+        print(cache.selectAndExecute('insert', 'A2 Do You Really Have a Right to be “Forgotten”? - Assorted Stuff https://www.assortedstuff.com/do-you-really-have-a-right-to-be-forgotten/'))
+        print(cache.getPostTitle(cache.getPosts()[9]))
+        print(cache.getPostLink(cache.getPosts()[9]))
+        cache.setPosts()
+        print(cache.getPostTitle(cache.getPosts()[9]))
+        sys.exit()
+        cache.setSchedules('rssToSocial')
+        print(cache.schedules)
+        cache.addSchedules(['9:00','20:15'])
+        print(cache.schedules)
+        cache.delSchedules(['9:00','20:15'])
     sys.exit()
 
     print(cache.getPosts())

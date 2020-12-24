@@ -46,15 +46,19 @@ class moduleFacebook(Content,Queue):
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssFacebook')
 
-            if isinstance(facebookAC, tuple): 
-                facebookAC = facebookAC[1][1]
-            self.user = facebookAC
+            if isinstance(facebookAC, str): 
+                self.user = facebookAC
+            elif isinstance(facebookAC[1], str):
+                self.user = facebookAC[1]
+            else: 
+                # Deprecated
+                self.user = facebookAC[1][1]
             logging.debug("     Connecting Facebook %s"%str(self.user))
             try:
                 oauth_access_token = config.get("Facebook", "oauth_access_token")
                 graph = facebook.GraphAPI(oauth_access_token, version='3.0') 
                 self.fc = graph
-                self.setPage(facebookAC)
+                self.setPage(self.user)
 
             except: 
                 logging.warning("Facebook authentication failed!") 

@@ -21,7 +21,10 @@ class moduleImgur(Content,Queue):
 
         if isinstance(idName, str): 
             self.name = idName
+        elif isinstance(idName[1], str):
+            self.name = idName[1]
         else:
+            # Deprecated
             self.name = idName[1][1]
 
         try:
@@ -47,23 +50,38 @@ class moduleImgur(Content,Queue):
     def getClient(self):
         return self.client
 
-    def setPosts(self, numPosts=25): 
+    def setPosts(self, numPosts=20): 
         self.posts = []
         self.drafts = []
-        client = self.getClient()
-        if client:
-            for album in client.get_account_albums(self.name):
-                logging.debug("{} {}".format(time.ctime(album.datetime),
-                    album.title))
-                text = ""
-                if album.in_gallery: 
-                    #self.posts.insert(0,album)
-                    self.posts.append(album)
-                else:
-                    #self.drafts.insert(0,album)
-                    self.drafts.append(album)
+        if self.getPostsType() == 'file':
+            # cache setPosts()
+            fileNameQ = fileNamePath(self.getUrl(), (self.service[0].lower() +
+                self.service[1:], self.name))+'.queue'
+            try:
+                with open(fileNameQ,'rb') as f: 
+                    try: 
+                        listP = pickle.load(f) 
+                    except: 
+                        listP = [] 
+            except:
+                listP = []
+            for post in listP:
+                self.posts = [ post ] + self.posts
         else:
-            logging.warning('No client configured!')
+            client = self.getClient()
+            if client:
+                for album in client.get_account_albums(self.name):
+                    logging.debug("{} {}".format(time.ctime(album.datetime),
+                        album.title))
+                    text = ""
+                    if album.in_gallery: 
+                        #self.posts.insert(0,album)
+                        self.posts.append(album)
+                    else:
+                        #self.drafts.insert(0,album)
+                        self.drafts.append(album)
+            else:
+                logging.warning('No client configured!')
         self.drafts = self.drafts[0:numPosts]
         self.posts = self.posts[0:numPosts]
         # We set some limit
@@ -72,7 +90,10 @@ class moduleImgur(Content,Queue):
         return post.title
 
     def getPostLink(self,post):
-        return post.link
+        if self.getPostsType() == 'file':
+            return post[1]
+        else: 
+            return post.link
 
     def getPostId(self,post):
         return post.id
@@ -81,19 +102,23 @@ class moduleImgur(Content,Queue):
         posts = self.getPosts()
         if i < len(posts):
             post = posts[i]
-            logging.debug("Post: %s"% post)
-            theTitle = self.getPostTitle(post)
-            theLink = self.getPostLink(post)
-            theId = self.getPostId(post)
-            thePost = self.getImagesCode(i)
-            theTags = self.getImagesTags(i)
+            if self.getPostsType() == 'file':
+                return post
+            else:
+                logging.debug("Post: %s"% post)
+                theTitle = self.getPostTitle(post)
+                theLink = self.getPostLink(post)
+                theId = self.getPostId(post)
+                thePost = self.getImagesCode(i)
+                theTags = self.getImagesTags(i)
         else:
             theTitle = None
             theLink = None
             thePost = None
             theTags = None
 
-        return (theTitle,  theLink, theLink, theId, None, None, None, None, theTags, thePost)
+        return (theTitle,  theLink, theLink, theId, 
+                None, None, None, None, theTags, thePost)
 
        
     def publishPost(self, post, idPost, comment=''):
@@ -115,7 +140,6 @@ class moduleImgur(Content,Queue):
         return(FAIL)
 
     def publish(self, j):
-        # Deprecated ?
         logging.info("Publishing %d"% j)                
         logging.info("servicename %s" %self.service)
         (title, link, firstLink, image, summary, summaryHtml, 
@@ -246,13 +270,17 @@ class moduleImgur(Content,Queue):
 
     def getNumPostsData(self, num, i, lastLink): 
         listPosts = []
-        posts = self.getPosts()
         if self.getPostsType() == 'posts':
             j = 0
             posts = self.getPosts()
-            for ii in range(min(i,len(posts))):
+            #for k,p in enumerate(posts):
+            #    print(k,self.getPostTitle(p), self.getPostLink(p))
+            for ii in range(min(i,len(posts)),0,-1):
+                ii = ii - 1
+                if (ii < 0): break
                 idPost = self.getPostId(posts[ii])
                 title = self.getPostTitle(posts[ii])
+                print(ii, idPost, title)
                 if not (idPost in lastLink): 
                     # Only posts that have not been posted previously. We
                     # check by link (post[1]) We don't use this code here.
@@ -390,7 +418,7 @@ def main():
     print(tags)
 
     # Testing Wordpress publishing
-    img.setSocialNetworks(config, section)
+    img.setSocialNetworks(config)
     print(img.getSocialNetworks())
     service='wordpress'
     socialNetwork = (service, img.getSocialNetworks()[service])

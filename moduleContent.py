@@ -2,7 +2,6 @@
 # It stores in a convenient and consistent way the content in order to be used
 # in other programs
 
-import configparser
 import os
 import pickle
 import logging
@@ -44,29 +43,30 @@ class Content:
     def setName(self, name):
         self.name = name
 
+    def setPostAction(self, action):
+        self.postaction = action
+
+    def getPostAction(self):
+        if hasattr(self, 'postaction'):
+            return(self.postaction)
+
     def getSocialNetworks(self):
         return(self.socialNetworks)
 
     def getSocialNetworksAPI(self):
         return(self.api)
 
-    def newsetSocialNetworks(self, socialNetworksConfig):
+    def setSocialNetworks(self, socialNetworksConfig):
         socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
                 'wordpress', 'medium', 'linkedin','pocket', 'mastodon',
-                'instagram', 'imgur', 'tumblr', 'slack', 'refind'] 
-        logging.info("  sNC {}".format(socialNetworksConfig))
+                'instagram', 'imgur', 'tumblr', 'slack', 'refind','file'] 
+        logging.debug("  sNC {}".format(socialNetworksConfig))
         for sN in socialNetworksConfig:
-            if (sN[0] in socialNetworksOpt):
-                if sN[1].find('\n'):
-                    sNs = sN[1].split('\n')
-                    for el in sNs: 
-                        self.addSocialNetwork((sN[0], el))
-                else: 
-                    self.addSocialNetwork(sN)
-        logging.info("  sNN {}".format(self.getSocialNetworks()))
+            if sN in socialNetworksOpt:
+                self.addSocialNetwork((sN, socialNetworksConfig[sN]))
+        logging.debug("  sNN {}".format(self.getSocialNetworks()))
 
-
-    def setSocialNetworks(self, config, section):
+    def oldsetSocialNetworks(self, config, section):
         socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
                 'wordpress', 'medium', 'linkedin','pocket', 'mastodon',
                 'instagram', 'imgur', 'tumblr', 'slack','refind'] 
@@ -173,7 +173,6 @@ class Content:
 
         return 'Ok'
 
-
     def getNextPosts(self, socialNetwork):
         if socialNetwork in self.nextPosts:
             return self.nextPosts[socialNetwork]
@@ -205,34 +204,34 @@ class Content:
     def setTime(self, time):
         self.time = time
 
-    def getBuffer(self):
-        return(self.buffer)
+    #def getBuffer(self):
+    #    return(self.buffer)
 
-    def setBuffer(self): 
-        import moduleBuffer 
-        # https://github.com/fernand0/scripts/blob/master/moduleBuffer.py
-        self.buffer = {}
-        for service in self.getSocialNetworks():
-            if service[0] in self.getBufferapp():
-                nick = self.getSocialNetworks()[service]
-                buf = moduleBuffer.moduleBuffer() 
-                buf.setClient(self.url, (service, nick))
-                buf.setPosts()
-                self.buffer[(service, nick)] = buf
+    #def setBuffer(self): 
+    #    import moduleBuffer 
+    #    # https://github.com/fernand0/scripts/blob/master/moduleBuffer.py
+    #    self.buffer = {}
+    #    for service in self.getSocialNetworks():
+    #        if service[0] in self.getBufferapp():
+    #            nick = self.getSocialNetworks()[service]
+    #            buf = moduleBuffer.moduleBuffer() 
+    #            buf.setClient(self.url, (service, nick))
+    #            buf.setPosts()
+    #            self.buffer[(service, nick)] = buf
 
-    def getBufferapp(self):
-        return(self.bufferapp)
+    #def getBufferapp(self):
+    #    return(self.bufferapp)
  
-    def setBufferapp(self, bufferapp):
-        self.bufferapp = bufferapp
-        self.setBuffer()
+    #def setBufferapp(self, bufferapp):
+    #    self.bufferapp = bufferapp
+    #    self.setBuffer()
     
     def setMax(self, maxVal):
         self.max = maxVal
 
     def getMax(self):
-        if hasattr(self, 'max'): 
-            max = int(self.max)
+        if hasattr(self, 'max') and self.max:
+                max = int(self.max)
         else:
             max = None
         return max
@@ -263,8 +262,7 @@ class Content:
         return(self.program)
  
     def setProgram(self, program):
-        if (len(program)>4) or program.find('\n')>0:
-            program = program.split('\n')
+        program = program.split('\n')
         self.program = program
         self.setCache()
 
@@ -272,7 +270,8 @@ class Content:
         self.bufMax = bufMax
 
     def getBufMax(self):
-        return(self.bufMax)
+        if hasattr(self, 'bufMax') and self.bufMax: 
+            return self.bufMax
 
     def len(self, profile):
         service = profile
@@ -450,4 +449,11 @@ class Content:
                 text = '{}\n<p><a href="{}"><img class="alignnone size-full wp-image-3306" src="{}" alt="{} {}" width="776" height="1035" /></a></p>'.format(text,url, iimg[0],title, description)
         return(text)
 
+def main():
 
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
+
+if __name__ == '__main__':
+    main()

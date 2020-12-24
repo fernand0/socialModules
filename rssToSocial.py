@@ -145,15 +145,19 @@ def readConfig(checkBlog):
                 blog.setLinksToAvoid(config.get(section, "linksToAvoid"))
             if ("time" in config.options(section)):
                 blog.setTime(config.get(section, "time"))
+            if ("postaction" in config.options(section)):
+                blog.setPostAction(config.get(section, "postaction"))
 
-            blog.setSocialNetworks(config, section)
+            print(config[section])
+            blog.setSocialNetworks(config[section])
+            print(blog.getSocialNetworks())
 
             if('max' in config.options(section)):
                 blog.setMax(config.get(section, "max")) 
             elif ('buffermax' in config.options(section)): 
                 blog.setBufMax(config.get(section, "buffermax"))
             else:
-                blog.setBufMax(9)
+                blog.setBufMax(1)
 
             if ('cache' in config.options(section)): 
                 blog.setProgram(config.get(section, "cache"))
@@ -172,7 +176,8 @@ def updateCaches(blog, socialNetworks, simmulate):
 
     blog.setPosts()
 
-    bufferMax = int(blog.getBufMax())
+    bufferMax = blog.getBufMax()
+    if bufferMax: bufferMax = int(bufferMax)
 
     for profile in socialNetworks: 
         lenMax = 0
@@ -185,24 +190,27 @@ def updateCaches(blog, socialNetworks, simmulate):
         msgLog = "  Service: {} Nick: {}".format(profile, nick) 
         logMsg(msgLog, 1, 1)
 
-        if (blog.getProgram() and ((profile[0] in blog.getProgram()))
-                or (blog.getProgram() and (profile in blog.getProgram()))): 
+        if (blog.getProgram() and (profile in blog.getProgram())): 
             lenMax = blog.len(profile)
+        elif bufferMax:
+            lenMax = bufferMax
         else:
-            lenMax = bufferMax - 1
+            lenMax = 1
 
-
+        msgLog = f"  bufferMax: {bufferMax} lenMax: {lenMax}"
+        logMsg(msgLog, 1, 1)
         logging.debug("  Service %s Lenmax %d" % (profile, lenMax))
         num = blog.getMax()
-        #print(num, bufferMax, lenMax)
         if not num: 
-            num = bufferMax #- lenMax
-        if lenMax > num:
-            num = 0
-        else:
-            num = num - lenMax
-        #msgLog = f"  num: {num} bufferMax: {bufferMax} lenMax: {lenMax}"
-        #logMsg(msgLog, 1, 1)
+            num = bufferMax - lenMax
+            if num < 0:
+                num = 0
+        #if lenMax <= num:
+        #    #num = lenMax
+        ##else:
+        #    num = lenMax
+        msgLog = f"  num: {num} bufferMax: {bufferMax} lenMax: {lenMax}"
+        logMsg(msgLog, 1, 1)
 
         lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
 
@@ -215,8 +223,6 @@ def updateCaches(blog, socialNetworks, simmulate):
             myLastLink = lastLink
 
         i = blog.getLinkPosition(myLastLink)
-        #print("i ",i)
- 
         if (i == 0):
             msgLog = "   No new posts."
         else:

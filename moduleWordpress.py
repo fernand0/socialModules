@@ -32,24 +32,31 @@ class moduleWordpress(Content,Queue):
     def setClient(self, user):
         logging.info(f"     Connecting Wordpress {user}")
         self.service = 'Wordpress'
-        if isinstance(user, tuple):
-            user = user[1][1]
+        if isinstance(user, str): 
+            self.user = user
+        elif isinstance(user[1], str):
+            self.user = user[1]
+        else:
+            self.user = user[1][1]
+
         try:
             config = configparser.RawConfigParser()
             config.read(CONFIGDIR + '/.rssWordpress')
 
-            self.user = user
             try: 
-                self.access_token =  config.get(user, "access_token")
+                self.access_token =  config.get(self.user, "access_token")
+                logging.info(f"     Connected {user}")
             except:
+                logging.info(f"     Not Connected {user}")
                 logging.warning("Access key does not exist!")
                 logging.warning("Unexpected error:", sys.exc_info()[0])
         except:
+                logging.info(f"     Not Not Connected {user}")
                 logging.warning("Config file does not exists")
                 logging.warning("Unexpected error:", sys.exc_info()[0])
 
         self.headers = {'Authorization':'Bearer '+self.access_token}
-        self.my_site="{}.wordpress.com".format(user)
+        self.my_site="{}.wordpress.com".format(self.user)
 
     def authorize(self): 
         # Firstly the data of the blog 
@@ -141,9 +148,12 @@ class moduleWordpress(Content,Queue):
         title = post
         res = None
         try:
-            logging.info("     Publishing: %s" % post)
+            logging.info("     Publishing: %s %s" % (post,str(tags)))
+            print("     Publishing: %s %s" % (post,str(tags)))
             # The tags must be checked/added previously
             idTags = self.checkTags(tags)
+            logging.info("     Publishing: %s %s" % (post,str(idTags)))
+            print("     Publishing: %s %s" % (post,str(idTags)))
             # They must be in a comma separated string
             idTags = ','.join(str(v) for v in idTags)
             print("co",comment)

@@ -31,6 +31,13 @@ class moduleImdb(Content,Queue):
     def setClient(self, init=()):
         logging.info("Setting client")
         logging.info(f"Setting client {str(init)}")
+        date = time.strftime('%Y-%m-%d')
+        if isinstance(init,str): 
+            self.url = init 
+        elif isinstance(init[2],str):
+            self.url = init[2].format(date)
+        else:
+            self.url = init[1][2].format(date)
         try:
             try:
                 config = configparser.ConfigParser()
@@ -41,9 +48,6 @@ class moduleImdb(Content,Queue):
             tmdb.API_KEY = config.get('TMDb', 'api_key')
             self.tmdb = tmdb
             self.channels = config.get('TMDb', 'channels').split(',')
-            if init:
-                date = time.strftime('%Y-%m-%d')
-                self.url = init[1][2].format(date)
         except:
             logging.info("Fail")
 
