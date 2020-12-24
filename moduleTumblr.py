@@ -139,10 +139,6 @@ class moduleTumblr(Content,Queue):
                 url = post['post_url']
         return url
 
-    def getId(self, j):
-        post = self.getPosts()[j]
-        return self.getPostId(post)
-
     def getPostId(self, post):
         logging.debug(f"getPostId {post}")       
         idPost = ""
@@ -158,17 +154,24 @@ class moduleTumblr(Content,Queue):
             res = reply['id']
         return res
 
-    def publishPost(self, post, link, comment):
-        logging.info("    Publishing in Tumblr: %s" % post)
-        try:
-            client = self.tc 
-            res = client.create_link(self.getBlogName(), state='queue',
-                    title=post, url=link, description="")
+    def publishApiPost(self, postData):
+        res = self.getClient().create_link(self.getBlogName(), state='queue',
+                title=postData[0], url=postData[1], description=postData[2])
 
-            res = self.processReply(res)
-            return(res)
-        except:        
-            return(self.report('Tumblr', post, link, sys.exc_info()))
+        res = self.processReply(res)
+        return(res)
+
+    #def publishPost(self, post, link, comment):
+    #    logging.info("    Publishing in Tumblr: %s" % post)
+    #    try:
+    #        client = self.tc 
+    #        res = client.create_link(self.getBlogName(), state='queue',
+    #                title=post, url=link, description="")
+
+    #        res = self.processReply(res)
+    #        return(res)
+    #    except:        
+    #        return(self.report('Tumblr', post, link, sys.exc_info()))
 
     def publish(self, j):
         logging.info("Publishing %d"% j)                
@@ -235,6 +238,8 @@ def main():
     t.setPostsType('posts')
     t.setPosts()
     print(t.getPosts())
+    t.publishPost("Test","http://unizar.es/",'')
+    sys.exit()
 
     t.setPostsType('drafts')
 

@@ -162,6 +162,10 @@ class Content:
         post = self.getPost(i)
         return(self.getPostLink(post))
 
+    def getId(self, j):
+        post = self.getPosts()[j]
+        return self.getPostId(post)
+
     def splitPost(self, post): 
         splitListPosts = []
         for imgL in post[3]: 
@@ -196,6 +200,14 @@ class Content:
             return self.postsType 
         else:
             return 'posts' 
+
+    def publishPost(self, post, link, comment):
+        logging.info("    Publishing in {self.service}: %s" % post)
+        try: 
+            return self.publishApiPost((post,link,comment))
+        except:        
+            return(self.report(self.service, post, link, sys.exc_info()))
+
 
     def updatePostsCache(self,socialNetwork):
         service = socialNetwork[0]
