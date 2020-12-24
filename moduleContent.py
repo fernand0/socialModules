@@ -32,7 +32,6 @@ class Content:
         self.api = {}
         self.lastLinkPublished = {}
 
-
     def setClient(self, account):
         logging.info("    Connecting {}: {}".format(self.service, account))
 
@@ -55,6 +54,16 @@ class Content:
         self.client = client
         print(self.client)
 
+    def setPosts(self):
+        logging.info(f"  Setting posts in {self.service}: {self.getUrl()}")
+        self.setApiPosts()
+        self.setApiDrafts()
+
+    def setApiPosts(self):
+        self.posts = []
+
+    def setApiDrafts(self):
+        self.drafts = []
  
     def getClient(self):
         return self.client
@@ -117,9 +126,6 @@ class Content:
 
     def getPublished(self):
         return(self.posts)
-
-    def setPosts(self):
-        pass 
 
     def assignPosts(self, posts):
         if hasattr(self, 'getPostsType'): 
