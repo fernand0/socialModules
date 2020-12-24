@@ -37,11 +37,11 @@ class moduleFacebook(Content,Queue):
         super().__init__()
         self.user = None
         self.fc = None
-        self.service = None
+        self.service = 'Facebook'
 
     def setClient(self, facebookAC='me'):
-        logging.info("     Connecting Facebook {}".format(str(facebookAC)))
-        self.service = 'Facebook'
+        logging.info("     Connecting {}: {}".format(self.service,
+            str(facebookAC)))
         try:
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssFacebook')
@@ -53,7 +53,7 @@ class moduleFacebook(Content,Queue):
             else: 
                 # Deprecated
                 self.user = facebookAC[1][1]
-            logging.debug("     Connecting Facebook %s"%str(self.user))
+
             try:
                 oauth_access_token = config.get("Facebook", "oauth_access_token")
                 graph = facebook.GraphAPI(oauth_access_token, version='3.0') 

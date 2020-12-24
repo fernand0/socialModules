@@ -32,8 +32,32 @@ class moduleTumblr(Content,Queue):
         self.tc = None
         self.service = 'Tumblr'
 
-    def setClient(self, tumblr):
-        logging.info("    Connecting {}".format(self.service))
+    def getKeys(self, config): 
+        consumer_key = config.get("Buffer1", "consumer_key") 
+        consumer_secret = config.get("Buffer1", "consumer_secret") 
+        oauth_token = config.get("Buffer1", "oauth_token")
+        oauth_secret = config.get("Buffer1", "oauth_secret")
+
+        return (consumer_key, consumer_secret, oauth_token, oauth_secret)
+
+
+    def initApi(self, keys):
+        client = pytumblr.TumblrRestClient(keys[0], keys[1], keys[2], keys[3])
+        tumblr = self.user
+        if isinstance(tumblr,str):
+            self.url = f"https://{tumblr}.tumblr.com/"
+        elif isinstance(tumblr[1],str): 
+            self.url = f"https://{tumblr[1]}.tumblr.com/"
+        elif isinstance(tumblr,tuple): 
+            self.url = f"https://{tumblr[1][1]}.tumblr.com/"
+        logging.info(f"Url: {self.url}")
+
+        return client
+ 
+
+
+    def setClientt(self, tumblr):
+        logging.info("    Connecting {}: {}".format(self.service, tumblr))
         try:
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssTumblr')
@@ -66,8 +90,6 @@ class moduleTumblr(Content,Queue):
             self.url = f"https://{tumblr[1][1]}.tumblr.com/"
         logging.info(f"Url: {self.url}")
  
-    def getClient(self):
-        return self.tc
  
     def getBlogName(self):
         name = self.getUrl().split('/')[2]

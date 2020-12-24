@@ -2,6 +2,7 @@
 # It stores in a convenient and consistent way the content in order to be used
 # in other programs
 
+import configparser
 import os
 import pickle
 import logging
@@ -30,9 +31,37 @@ class Content:
         self.xmlrpc = None
         self.api = {}
         self.lastLinkPublished = {}
+
+
+    def setClient(self, account):
+        logging.info("    Connecting {}: {}".format(self.service, account))
+
+        self.user = account
+        try:
+            config = configparser.ConfigParser()
+            config.read(f"{CONFIGDIR}/.rss{self.service}")
+            keys = self.getKeys(config)
+
+            try:
+                client = self.initApi(keys)
+            except:
+                logging.warning(f"{self.service} authentication failed!")
+                logging.warning("Unexpected error:", sys.exc_info()[0])
+                client = None
+        except:
+            logging.warning("Account not configured")
+            client = None
+
+        self.client = client
+        print(self.client)
+
  
+    def getClient(self):
+        return self.client
+
     def getUrl(self):
         return(self.url)
+
 
     def setUrl(self, url):
         self.url = url

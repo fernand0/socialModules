@@ -30,14 +30,11 @@ class moduleTwitter(Content,Queue):
         super().__init__()
         self.user = None
         self.tc = None
-        self.service = None
+        self.service = 'Twitter'
 
     def setClient(self, twitterAC):
-        logging.info("     Connecting Twitter")
-        self.service = 'Twitter'
+        logging.info("     Connecting {}: {}".format(self.service, twitterAC))
         try:
-            logging.info("     Twitter Acc {}".format(str(twitterAC)))
-            logging.info("     Dir {}".format(str(CONFIGDIR + '/.rssTwitter')))
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssTwitter')
 
@@ -47,7 +44,7 @@ class moduleTwitter(Content,Queue):
                 self.user = twitterAC[1]
             else:
                 self.user = twitterAC[1][1]
-            logging.info("     Twitter User %s"%str(self.user))
+
             try: 
                 CONSUMER_KEY = config.get(self.user, "CONSUMER_KEY")
             except: 
