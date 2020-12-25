@@ -147,6 +147,14 @@ class moduleTumblr(Content,Queue):
                 idPost = post['id']
         return idPost
 
+    def getPostState(self, post):
+        logging.debug(f"getPostState {post}")       
+        state = ""
+        if post:
+            if 'state' in post:
+                state = post['state']
+        return state
+
     def processReply(self, reply): 
         logging.debug("Res: %s" % reply) 
         if 'id'  in reply: 
@@ -174,42 +182,39 @@ class moduleTumblr(Content,Queue):
     #        return(self.report('Tumblr', post, link, sys.exc_info()))
 
     def publish(self, j):
+        # This is not publishing but changing state -> editing
         logging.info("Publishing %d"% j)                
-        logging.info("servicename %s" %self.service)
-        (title, link, firstLink, image, summary, summaryHtml, 
-                summaryLinks, content, links, comment) = self.obtainPostData(j)
-        print(title, link)
-        logging.info("Publishing {} {}".format(title, link))
-        idPost = self.getId(j)
-        print(idPost)
-        logging.info("Publishing {} {}".format(title, idPost))
-        
-        client = self.getClient()
-        try:
-            res = client.edit_post(self.getBlogName(), id=int(idPost), 
-                    state='published')
-            res = self.processReply(res)
-        except:
-            post = title
-            link = idPost
-            logging.info(self.report(self.service, post, link, sys.exc_info()))
-            return(FAIL)
+        logging.info("servicename %s" %self.service) 
+        if hasattr(self, 'getPostsType') and (self.getPostsType() == 'drafts'): 
+            logging.info("Changing draft state %d"% j)                
+            res = self.edit(j, newState='published') 
+        else:
+            # Not tested
+            (title, link, firstLink, image, summary, summaryHtml, summaryLinks,
+                    content, links, comment) = self.obtainPostData(j)
+            logging.info("Publishing {} {}".format(title, link))
+            res = self.publishPost(title, link, comment)
 
         return(res)
 
-
-
-    def edit(self, j, newTitle=''): 
-        logging.info("New title %s", newTitle)
+    def edit(self, j, newTitle='', newState=''): 
         post = self.getPosts()[j]
-        oldTitle = self.getPostTitle(post)
-        url=self.getUrl()
-        name = url.split('/')[2]
         idPost = post['id']
-        res = self.getClient().edit_post(name, id=idPost, 
-                type=post['type'], title = newTitle)
-        res = self.processReply(res)
-        update = "Changed "+oldTitle+" with "+newTitle+" id " + res
+        if newTitle:
+            logging.info("New title %s", newTitle)
+            oldTitle = self.getPostTitle(post)
+            res = self.getClient().edit_post(self.getBlogName(), id=idPost, 
+                    type=post['type'], title = newTitle)
+            res = self.processReply(res)
+            update = "Changed "+oldTitle+" with "+newTitle+" id " + str(res)
+        if newState:
+            logging.info("New state %s", newState)
+            oldState = self.getPostState(post)
+            res = self.getClient().edit_post(self.getBlogName(), id=idPost, 
+                    state=newState)
+            res = self.processReply(res)
+            update = "Changed "+oldState+" with "+newState+" id " + str(res)
+
         return(update)
 
     def delete(self, j): 

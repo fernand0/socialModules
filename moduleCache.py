@@ -262,12 +262,6 @@ class moduleCache(Content,Queue):
         post = self.obtainPostData(j)
         logging.info("Publishing {post[0]} in {self.service} user {self.nick}")
         api = getApi(self.service, self.nick)
-        #import importlib
-        #serviceName = self.service.capitalize()
-        #mod = importlib.import_module('module' + serviceName) 
-        #cls = getattr(mod, 'module' + serviceName)
-        #api = cls()
-        #api.setClient(self.nick)
         comment = ''
         title = post[0]
         link = post[1]
