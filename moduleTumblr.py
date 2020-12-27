@@ -53,42 +53,7 @@ class moduleTumblr(Content,Queue):
         logging.info(f"Url: {self.url}")
 
         return client
- 
 
-    #def setClient(self, tumblr):
-    #    logging.info("    Connecting {}: {}".format(self.service, tumblr))
-    #    try:
-    #        config = configparser.ConfigParser()
-    #        config.read(CONFIGDIR + '/.rssTumblr')
-
-    #        self.user = tumblr
-
-    #        consumer_key = config.get("Buffer1", "consumer_key")
-    #        consumer_secret = config.get("Buffer1", "consumer_secret")
-    #        oauth_token = config.get("Buffer1", "oauth_token")
-    #        oauth_secret = config.get("Buffer1", "oauth_secret")
-
-    #        try:
-    #            client = pytumblr.TumblrRestClient(consumer_key, 
-    #                    consumer_secret, oauth_token, oauth_secret)
-    #        except:
-    #            logging.warning("Tumblr authentication failed!")
-    #            logging.warning("Unexpected error:", sys.exc_info()[0])
-    #            client = None
-    #    except:
-    #        logging.warning("Account not configured")
-    #        client = None
-
-    #    self.tc = client
-    #    logging.info(f"Url: {tumblr}")
-    #    if isinstance(tumblr,str):
-    #        self.url = f"https://{tumblr}.tumblr.com/"
-    #    elif isinstance(tumblr[1],str): 
-    #        self.url = f"https://{tumblr[1]}.tumblr.com/"
-    #    elif isinstance(tumblr,tuple): 
-    #        self.url = f"https://{tumblr[1][1]}.tumblr.com/"
-    #    logging.info(f"Url: {self.url}")
- 
     def getBlogName(self):
         name = self.getUrl().split('/')[2]
         return name
@@ -99,9 +64,10 @@ class moduleTumblr(Content,Queue):
     def setApiPublished(self):
         posts = self.getClient().posts(self.getBlogName())
         if 'posts' in posts:
-            self.posts = posts['posts']
+            posts = posts['posts']
         else:
-            self.posts = []
+            posts = []
+        return(posts)
 
     def setApiDrafts(self):
         drafts = self.getClient().drafts(self.getUrl().split('/')[2])

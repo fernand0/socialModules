@@ -54,14 +54,32 @@ class Content:
         self.client = client
         print(self.client)
 
+    def getService(self):
+        if hasattr(self, 'service'):
+            return(self.service)
+        else:
+            return ''
+
+    def getNick(self):
+        if hasattr(self, 'nick'):
+            return(self.nick)
+        else:
+            return ''
+
     def setPosts(self):
-        logging.info(f"  Setting posts in {self.service}: {self.getUrl()}")
+        nick = self.getNick()
+        if nick:
+            identifier = nick
+        else:
+            identifier = self.getUrl()
+
+        logging.info(f"  Setting posts in {self.service} ({identifier})")
+
         if hasattr(self, 'getPostsType'):
             cmd = getattr(self, 'setApi'+self.getPostsType().capitalize())
         else:
             cmd = getattr(self, 'setApiPosts')
-        print(cmd)
-        cmd()
+        self.assignPosts(cmd())
 
     def setApiPosts(self):
         self.posts = []
@@ -152,13 +170,19 @@ class Content:
             return None
 
     def getTitle(self, i):        
-        post = self.getPost(i)
-        return(self.getPostTitle(post))
+        title = ''
+        if i < len(self.getPosts()): 
+            post = self.getPost(i)
+            title = self.getPostTitle(post)
+        return(title)
 
     def getLink(self, i):
-        post = self.getPost(i)
-        return(self.getPostLink(post))
-
+        link = ''
+        if i < len(self.getPosts()): 
+            post = self.getPosts()[i]
+            link = post[1]
+        return(link) 
+ 
     def getId(self, j):
         post = self.getPosts()[j]
         return self.getPostId(post)
@@ -205,6 +229,10 @@ class Content:
         except:        
             return(self.report(self.service, post, link, sys.exc_info())) 
 
+    def processReply(self, reply):
+        logging.debug("Res: %s" % reply) 
+        return reply
+
     def do_edit(self, j, **kwargs): 
         post = self.getPosts()[j]
         if ('newTitle' in kwargs) and kwargs['newTitle']:
@@ -221,13 +249,18 @@ class Content:
             res = self.editApiState(post, newState)
             res = self.processReply(res)
             update = "Changed "+oldState+" to "+newState+" id " + str(res)
+        if ('newLink' in kwargs) and kwargs['newLink']:
+            oldLink = self.getPostLink(post)
+            newLink = kwargs['newLink']
+            logging.info(f"New link {newLink}")
+            res = self.editApiLink(post, newLink)
+            res = self.processReply(res)
+            update = "Changed "+oldLink+" with "+newLink+" id " + str(res)
         return update
-
 
     def edit(self, j, newTitle): 
         update = self.do_edit(j, newTitle=newTitle)
         return update
-
 
     def delete(self, j): 
         logging.info("Deleting id %s" % j)
@@ -460,10 +493,8 @@ class Content:
         return("Fail! %s" % data[1])
         #print("----Unexpected error: %s"% data[2]) 
 
-
     def getPostTitle(self, post):
-        logging.info("ppost {}".format(post))
-        return str(post)
+        return None
     
     def getPostDate(self, post):
         return None
@@ -472,11 +503,7 @@ class Content:
         return ''
 
     def getImages(self, i):        
-        if hasattr(self, 'getPostsType'):
-            if self.getPostsType() == 'drafts':
-                posts = self.getDrafts()
-            else:
-                posts = self.getPosts()
+        posts = self.getPosts()
         theTitle = None
         theLink = None
         res = None
@@ -498,6 +525,7 @@ class Content:
 
     def getImagesCode(self, i):        
         res = self.getImages(i)
+        print(self.getPosts()[i])
         url = self.getPostLink(self.getPosts()[i]) 
         text = ""
         for iimg in res: 

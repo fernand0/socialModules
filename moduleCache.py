@@ -33,29 +33,28 @@ class moduleCache(Content,Queue):
 
     def setClient(self, param):
         logging.info(f"setClient {self.service} {param}")
-        url = param[0]
-        socialNetwork = param[1]
-        if isinstance(socialNetwork, tuple): 
-            self.service = socialNetwork[0] 
-            self.nick = socialNetwork[1]
-        else:
+        print(f"setClient {self.service} {param}")
+        self.url = param[0]
+        if isinstance(param, str):
+            self.url = param
+            self.user = param
+            logging.warning("This is not possible!")
+        elif isinstance(param[1], str):
             self.service = param[1] 
             self.nick = param[2]
-
-        self.url = url
+        else: 
+            self.service = param[1][0] 
+            self.nick = param[1][1]
 
     def getSocialNetwork(self):
         return (self.service, self.nick)
 
-    def getService(self):
-        return(self.service)
-
-    def setPosts(self):        
-        logging.debug("Service %s Nick %s" % (self.service, self.nick))
-        fileNameQ = fileNamePath(self.url, 
-                (self.service, self.nick)) + ".queue"
+    def setApiPosts(self):        
+        url = self.getUrl()
+        service = self.getService()
+        nick = self.getNick()
+        fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
         logging.debug("File %s" % fileNameQ)
-        #print("File %s" % fileNameQ)
         try:
             with open(fileNameQ,'rb') as f: 
                 try: 
@@ -65,7 +64,24 @@ class moduleCache(Content,Queue):
         except:
             listP = []
 
-        self.assignPosts(listP)
+        return(listP)
+
+    #def setPosts(self):        
+    #    logging.debug("Service %s Nick %s" % (self.service, self.nick))
+    #    fileNameQ = fileNamePath(self.url, 
+    #            (self.service, self.nick)) + ".queue"
+    #    logging.debug("File %s" % fileNameQ)
+    #    print("File %s" % fileNameQ)
+    #    try:
+    #        with open(fileNameQ,'rb') as f: 
+    #            try: 
+    #                listP = pickle.load(f) 
+    #            except: 
+    #                listP = [] 
+    #    except:
+    #        listP = []
+
+    #    return(listP)
 
     def getHoursSchedules(self, command=None):
         return self.schedules[0].hour.render()
@@ -178,25 +194,11 @@ class moduleCache(Content,Queue):
 
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
-    def getTitle(self, i):
-        if i < len(self.getPosts()): 
-            post = self.getPosts()[i]
-            title = post[0]
-            return (title)
-        return(None)
-
-    def getLink(self, i):
-        if i < len(self.getPosts()): 
-            post = self.getPosts()[i]
-            link = post[1]
-            return (link)
-        return(None) 
-    
     def getPostTitle(self, post):
+        title = ''
         if post:
             title = post[0]
-            return (title)
-        return(None)
+        return(title)
 
     def getPostLink(self, post):
         if post:
@@ -204,40 +206,44 @@ class moduleCache(Content,Queue):
             return (link)
         return(None)
 
-    #def isForMe(self, args):
-    #    logging.info("isForMe %s" % str(self.service))
-    #    return ((self.service[0].capitalize() in args.split()[0])
-    #           or (args[0] == '*'))
-
-    def editl(self, j, newLink=''):
-        logging.info("New link %s", newLink)
-        thePost = self.obtainPostData(j)
-        oldLink = thePost[1]
-        thePost = thePost[:1] + ( newLink, ) + thePost[2:]
-        print(thePost)
+    def editApiLink(self, post, newLink=''):
+        oldLink = self.getPostLink(post)
+        idPost = self.getLinkPosition(oldLink)
+        post = post[:1] + ( newLink, ) + post[2:]
         posts = self.getPosts()
-        posts[j] = thePost
-        logging.info("Service Name %s" % self.name)
+        posts[idPost] = post
         self.assignPosts(posts)
         self.updatePostsCache()
-        update = "Changed "+oldLink+" with "+newLink
-        return(update)
+        return(idPost)
 
-    def edit(self, j, newTitle=''):
-        logging.info("New title %s", newTitle)
-        thePost = self.obtainPostData(j)
-        oldTitle = thePost[0]
+    def editApiTitle(self, post, newTitle=''):
+        oldLink = self.getPostLink(post)
+        idPost = self.getLinkPosition(oldLink)
+        oldTitle = self.getPostTitle(post)
         if not newTitle:
             newTitle = self.reorderTitle(oldTitle)
-        thePost = thePost[1:]
-        thePost = (newTitle,) + thePost
+        post = (newTitle,) + post[1:]
         posts = self.getPosts()
-        posts[j] = thePost
-        logging.info("Service Name %s" % self.name)
+        posts[idPost] = post
         self.assignPosts(posts)
         self.updatePostsCache()
-        update = "Changed "+oldTitle+" with "+newTitle
-        return(update)
+        return(idPost)
+
+    #def edit(self, j, newTitle=''):
+    #    logging.info("New title %s", newTitle)
+    #    thePost = self.obtainPostData(j)
+    #    oldTitle = thePost[0]
+    #    if not newTitle:
+    #        newTitle = self.reorderTitle(oldTitle)
+    #    thePost = thePost[1:]
+    #    thePost = (newTitle,) + thePost
+    #    posts = self.getPosts()
+    #    posts[j] = thePost
+    #    logging.info("Service Name %s" % self.name)
+    #    self.assignPosts(posts)
+    #    self.updatePostsCache()
+    #    update = "Changed "+oldTitle+" with "+newTitle
+    #    return(update)
 
     def insert(self, j, text):
         logging.info("Inserting %s", text)
@@ -255,7 +261,6 @@ class moduleCache(Content,Queue):
             #logging.info(f"pos {pos}")
             #newPost = self.getNumPostsData(1,pos)
             #logging.info(f"newpost {newPost}")
-
 
     def publish(self, j):
         logging.info("Publishing %d"% j)
@@ -324,7 +329,6 @@ def main():
 
     import moduleCache
 
-
     try:
         config = configparser.ConfigParser() 
         config.read(CONFIGDIR + '/.rssBlogs')
@@ -345,6 +349,7 @@ def main():
                 link = site.getPostLink(post)
                 print(link)
                 #updateLastLink(url, link, (sN, nick))
+            return
             site.posts = posts
             #site.updatePostsCache()
                 
