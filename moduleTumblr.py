@@ -94,6 +94,9 @@ class moduleTumblr(Content,Queue):
         return name
 
     def setApiPosts(self):
+        setApiPublished()
+
+    def setApiPublished(self):
         posts = self.getClient().posts(self.getBlogName())
         if 'posts' in posts:
             self.posts = posts['posts']
@@ -101,12 +104,20 @@ class moduleTumblr(Content,Queue):
             self.posts = []
 
     def setApiDrafts(self):
-        drafts = self.getClient().queue(self.getUrl().split('/')[2])
+        drafts = self.getClient().drafts(self.getUrl().split('/')[2])
         #, offset="75")
         if 'posts' in drafts: 
-            self.drafts = drafts['posts']
+            self.posts = drafts['posts']
         else:
-            self.drafts = []
+            self.posts = []
+ 
+    def setApiQueue(self):
+        queue = self.getClient().queue(self.getUrl().split('/')[2])
+        #, offset="75")
+        if 'posts' in queue: 
+            self.posts = queue['posts']
+        else:
+            self.posts = []
 
     #def setPosts(self):
     #    logging.info("  Setting posts")
@@ -197,36 +208,74 @@ class moduleTumblr(Content,Queue):
 
         return(res)
 
-    def edit(self, j, newTitle='', newState=''): 
+    def do_edit(self, j, **kwargs): 
         post = self.getPosts()[j]
         idPost = post['id']
-        if newTitle:
-            logging.info("New title %s", newTitle)
+        typePost = post['type']
+        if ('newTitle' in kwargs) and kwargs['newTitle']:
             oldTitle = self.getPostTitle(post)
+            newTitle = kwargs['newTitle']
+            logging.info(f"New title {newTitle}")
             res = self.getClient().edit_post(self.getBlogName(), id=idPost, 
                     type=post['type'], title = newTitle)
-            res = self.processReply(res)
-            update = "Changed "+oldTitle+" with "+newTitle+" id " + str(res)
+        if ('newState' in kwargs) and kwargs['newState']:
+            newState = kwargs['newState']
+            logging.info("New state %s", newState)
+            res = self.getClient().edit_post(self.getBlogName(), id=idPost, 
+                    type=post['type'], title = oldTitle, state=newState)
+        return res
+
+    def edit(self, j, newTitle): 
+        update = self.do_edit(j, newTitle=newTitle)
+        return update
+
+    #def edit(self, j, newTitle='', newState=''): 
+    #    post = self.getPosts()[j]
+    #    idPost = post['id']
+    #    typePost = post['type']
+    #    oldTitle = self.getPostTitle(post)
+    #    oldState = self.getPostState(post)
+
+    #    #if ('newTitle' in kwargs) and kwargs['newTitle']:
+    #    #    newTitle = kwargs['newTitle']
+    #    if newTitle:
+    #        #if oldState == 'queued':
+    #        #    # Seriously Tumblr? You return queued but the parameter that
+    #        #    # must be passed is 'queue'?
+    #        #    oldState = 'queue'
+    #        logging.info(f"New title {newTitle} State {oldState}")
+    #        res = self.getClient().edit_post(self.getBlogName(), id=idPost, 
+    #                type=post['type'], 
+    #                title = newTitle)
+    #        res = self.processReply(res)
+    #        update = "Changed "+oldTitle+" with "+newTitle+" id " + str(res)
+    #    return update
+
+    def edits(self, j, newTitle='', newState=''): 
         if newState:
             logging.info("New state %s", newState)
-            oldState = self.getPostState(post)
             res = self.getClient().edit_post(self.getBlogName(), id=idPost, 
-                    state=newState)
+                    type=post['type'], title = oldTitle, state=newState)
             res = self.processReply(res)
             update = "Changed "+oldState+" with "+newState+" id " + str(res)
 
         return(update)
 
-    def delete(self, j): 
-        logging.info("Deleting id %s" % j)
-        idPost = self.getId(j)
-        #self.sc.token = self.user_slack_token        
+    def deleteApi(self, j): 
         logging.info("Deleting id %s" % idPost)
-        client = self.tc
-        result = client.delete_post(self.getBlogName(), idPost)
-        logging.info(result)
-        res = self.processReply(res)
-        return(res)
+        idPost = self.getId(j)
+        return self.getClient().delete_post(self.getBlogName(), idPost)
+
+    #def delete(self, j): 
+    #    logging.info("Deleting id %s" % j)
+    #    idPost = self.getId(j)
+    #    #self.sc.token = self.user_slack_token        
+    #    logging.info("Deleting id %s" % idPost)
+    #    client = self.tc
+    #    result = client.delete_post(self.getBlogName(), idPost)
+    #    logging.info(result)
+    #    res = self.processReply(res)
+    #    return(res)
 
 
 def main():
@@ -240,10 +289,10 @@ def main():
     t = moduleTumblr.moduleTumblr()
 
     t.setClient('fernand0')
-    t.setPostsType('posts')
+    t.setPostsType('queue')
     t.setPosts()
     print(t.getPosts())
-    t.publishPost("Test","http://unizar.es/",'')
+
     sys.exit()
 
     t.setPostsType('drafts')

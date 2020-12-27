@@ -56,8 +56,12 @@ class Content:
 
     def setPosts(self):
         logging.info(f"  Setting posts in {self.service}: {self.getUrl()}")
-        self.setApiPosts()
-        self.setApiDrafts()
+        if hasattr(self, 'getPostsType'):
+            cmd = getattr(self, 'setApi'+self.getPostsType().capitalize())
+        else:
+            cmd = getattr(self, 'setApiPosts')
+        print(cmd)
+        cmd()
 
     def setApiPosts(self):
         self.posts = []
@@ -137,14 +141,7 @@ class Content:
             self.posts = posts
 
     def getPosts(self):
-        if hasattr(self, 'getPostsType'): 
-            logging.debug("  Posts type {}".format(self.getPostsType()))
-            if self.getPostsType() == 'drafts':
-                posts = self.getDrafts()
-            else:
-                posts = self.getPublished() 
-        else:
-            posts = self.posts
+        posts = self.posts
         return(posts)
 
     def getPost(self, i):
@@ -206,8 +203,14 @@ class Content:
         try: 
             return self.publishApiPost((post,link,comment))
         except:        
-            return(self.report(self.service, post, link, sys.exc_info()))
+            return(self.report(self.service, post, link, sys.exc_info())) 
 
+    def delete(self, j): 
+        logging.info("Deleting id %s" % j)
+        result = self.deleteApi(j)
+        logging.info(result)
+        res = self.processReply(result)
+        return(res)
 
     def updatePostsCache(self,socialNetwork):
         service = socialNetwork[0]

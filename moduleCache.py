@@ -26,13 +26,13 @@ class moduleCache(Content,Queue):
     
     def __init__(self):
         super().__init__()
-        self.service = None
+        self.service = 'Cache'
         self.nick = None
         #self.url = url
         #self.socialNetwork = (socialNetwork, nick)
 
     def setClient(self, param):
-        logging.info("setClient cache {}".format(param))
+        logging.info(f"setClient {self.service} {param}")
         url = param[0]
         socialNetwork = param[1]
         if isinstance(socialNetwork, tuple): 

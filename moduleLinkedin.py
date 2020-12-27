@@ -55,13 +55,14 @@ class moduleLinkedin(Content):
             config.read(CONFIGDIR + '/.rssLinkedin')
             self.CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY") 
             self.CONSUMER_SECRET = config.get("Linkedin", "CONSUMER_SECRET") 
+            self.state = config.get("Linkedin", state) 
 
             import requests
             payload = {'response_type':'code',
                     'client_id': self.CONSUMER_KEY,
                     'client_secret': self.CONSUMER_SECRET,
                     'redirect_uri': 'http://localhost:8080/code',
-                    'state':'33313134',
+                    'state':self.state,
                     'scope': 'r_liteprofile r_emailaddress w_member_social' }
             print('https://www.linkedin.com/oauth/v2/authorization?'
                     + urllib.parse.urlencode(payload))
@@ -80,9 +81,8 @@ class moduleLinkedin(Content):
         except:
             print("Some problem")
  
-
     def getClient(self):
-        return None
+        return self.ln
  
     def setPosts(self):
         logging.info("  Setting posts")
@@ -202,11 +202,11 @@ def main():
     ln = moduleLinkedin.moduleLinkedin()
 
     ln.setClient('fernand0')
-    if False: 
+    try:
+        print(ln.getClient().get_profile())
+    except: 
         ln.authorize()
 
-
-    print(ln.ln.get_profile())
 
     #print("Testing posts")
     #ln.setPosts()
