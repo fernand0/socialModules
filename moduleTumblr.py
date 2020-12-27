@@ -196,9 +196,13 @@ class moduleTumblr(Content,Queue):
         # This is not publishing but changing state -> editing
         logging.info("Publishing %d"% j)                
         logging.info("servicename %s" %self.service) 
-        if hasattr(self, 'getPostsType') and (self.getPostsType() == 'drafts'): 
-            logging.info("Changing draft state %d"% j)                
-            res = self.edit(j, newState='published') 
+        print("Publishing %d"% j)                
+        print("servicename %s" %self.service) 
+        print("servicename %s" %self.getDirect()) 
+        sys.exit()
+        if hasattr(self, 'getPostsType') and (self.getPostsType() == 'queue'): 
+            logging.info("Publishing queued state %d"% j)                
+            res = self.do_edit(j, newState='published') 
         else:
             # Not tested
             (title, link, firstLink, image, summary, summaryHtml, summaryLinks,
@@ -208,58 +212,19 @@ class moduleTumblr(Content,Queue):
 
         return(res)
 
-    def do_edit(self, j, **kwargs): 
-        post = self.getPosts()[j]
+    def editApiTitle(self, post, newTitle): 
         idPost = post['id']
         typePost = post['type']
-        if ('newTitle' in kwargs) and kwargs['newTitle']:
-            oldTitle = self.getPostTitle(post)
-            newTitle = kwargs['newTitle']
-            logging.info(f"New title {newTitle}")
-            res = self.getClient().edit_post(self.getBlogName(), id=idPost, 
-                    type=post['type'], title = newTitle)
-        if ('newState' in kwargs) and kwargs['newState']:
-            newState = kwargs['newState']
-            logging.info("New state %s", newState)
-            res = self.getClient().edit_post(self.getBlogName(), id=idPost, 
-                    type=post['type'], title = oldTitle, state=newState)
+        res = self.getClient().edit_post(self.getBlogName(), id=idPost, 
+                type=typePost, title = newTitle)
         return res
 
-    def edit(self, j, newTitle): 
-        update = self.do_edit(j, newTitle=newTitle)
-        return update
-
-    #def edit(self, j, newTitle='', newState=''): 
-    #    post = self.getPosts()[j]
-    #    idPost = post['id']
-    #    typePost = post['type']
-    #    oldTitle = self.getPostTitle(post)
-    #    oldState = self.getPostState(post)
-
-    #    #if ('newTitle' in kwargs) and kwargs['newTitle']:
-    #    #    newTitle = kwargs['newTitle']
-    #    if newTitle:
-    #        #if oldState == 'queued':
-    #        #    # Seriously Tumblr? You return queued but the parameter that
-    #        #    # must be passed is 'queue'?
-    #        #    oldState = 'queue'
-    #        logging.info(f"New title {newTitle} State {oldState}")
-    #        res = self.getClient().edit_post(self.getBlogName(), id=idPost, 
-    #                type=post['type'], 
-    #                title = newTitle)
-    #        res = self.processReply(res)
-    #        update = "Changed "+oldTitle+" with "+newTitle+" id " + str(res)
-    #    return update
-
-    def edits(self, j, newTitle='', newState=''): 
-        if newState:
-            logging.info("New state %s", newState)
-            res = self.getClient().edit_post(self.getBlogName(), id=idPost, 
-                    type=post['type'], title = oldTitle, state=newState)
-            res = self.processReply(res)
-            update = "Changed "+oldState+" with "+newState+" id " + str(res)
-
-        return(update)
+    def editApiState(self, post, newState): 
+        idPost = post['id']
+        typePost = post['type']
+        res = self.getClient().edit_post(self.getBlogName(), id=idPost, 
+                type=typePost, state=newState)
+        return res
 
     def deleteApi(self, j): 
         logging.info("Deleting id %s" % idPost)
@@ -293,9 +258,8 @@ def main():
     t.setPosts()
     print(t.getPosts())
 
-    sys.exit()
 
-    t.setPostsType('drafts')
+    t.setPostsType('queue')
 
     t.setPosts()
     i=0

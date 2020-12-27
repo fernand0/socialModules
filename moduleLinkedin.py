@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import configparser
+import json
 import logging
 import os
 import oauth2 as oauth
@@ -50,12 +51,15 @@ class moduleLinkedin(Content):
             logging.warning("Account not configured")
 
     def authorize(self):
-        try:
+        if True:
             config = configparser.ConfigParser()
-            config.read(CONFIGDIR + '/.rssLinkedin')
+            configLinkedin = CONFIGDIR + '/.rssLinkedin'
+            config.read(configLinkedin)
             self.CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY") 
+            print(self.CONSUMER_KEY)
             self.CONSUMER_SECRET = config.get("Linkedin", "CONSUMER_SECRET") 
-            self.state = config.get("Linkedin", state) 
+            print(self.CONSUMER_SECRET)
+            self.state = config.get("Linkedin", 'state') 
 
             import requests
             payload = {'response_type':'code',
@@ -65,20 +69,28 @@ class moduleLinkedin(Content):
                     'state':self.state,
                     'scope': 'r_liteprofile r_emailaddress w_member_social' }
             print('https://www.linkedin.com/oauth/v2/authorization?'
-                    + urllib.parse.urlencode(payload))
+                    + urllib.parse.urlencode(payload)) 
 
-            access_token = input("Copy and paste the url in a browser and write here the access token ")
-
+            resUrl = input("Copy and paste the url in a browser and write here the access token ") 
+            splitUrl = urllib.parse.urlsplit(resUrl) 
+            result = urllib.parse.parse_qsl(splitUrl.query)
+            access_token = result[0][1] 
             url = 'https://www.linkedin.com/oauth/v2/accessToken'
             payload = {'grant_type':'authorization_code',
                     'code':access_token,
                     'redirect_uri':'http://localhost:8080/code',
                     'client_id': self.CONSUMER_KEY,
                     'client_secret': self.CONSUMER_SECRET}
+
             res = requests.post(url, data=payload)
             print(res.text)
+            config.set("Linkedin", 'ACCESS_TOKEN', json.loads(res.text)['access_token'])
+            shutil.copyfile(configLinkedin, '{}.bak'.format(configLinkedin))
+            with open(configLinkedin, 'w') as configfile:
+               config.write(configfile)
+
             sys.exit()
-        except:
+        else:
             print("Some problem")
  
     def getClient(self):

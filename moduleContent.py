@@ -199,11 +199,35 @@ class Content:
             return 'posts' 
 
     def publishPost(self, post, link, comment):
-        logging.info("    Publishing in {self.service}: %s" % post)
+        logging.info(f"    Publishing in {self.service}: {post}")
         try: 
             return self.publishApiPost((post,link,comment))
         except:        
             return(self.report(self.service, post, link, sys.exc_info())) 
+
+    def do_edit(self, j, **kwargs): 
+        post = self.getPosts()[j]
+        if ('newTitle' in kwargs) and kwargs['newTitle']:
+            oldTitle = self.getPostTitle(post)
+            newTitle = kwargs['newTitle']
+            logging.info(f"New title {newTitle}")
+            res = self.editApiTitle(post, newTitle)
+            res = self.processReply(res)
+            update = "Changed "+oldTitle+" with "+newTitle+" id " + str(res)
+        if ('newState' in kwargs) and kwargs['newState']:
+            oldState = self.getPostState(post)
+            newState = kwargs['newState']
+            logging.info("New state %s", newState)
+            res = self.editApiState(post, newState)
+            res = self.processReply(res)
+            update = "Changed "+oldState+" to "+newState+" id " + str(res)
+        return update
+
+
+    def edit(self, j, newTitle): 
+        update = self.do_edit(j, newTitle=newTitle)
+        return update
+
 
     def delete(self, j): 
         logging.info("Deleting id %s" % j)
