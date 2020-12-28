@@ -22,7 +22,7 @@ class moduleLinkedin(Content):
     def __init__(self):
         super().__init__()
         self.user = None
-        self.ln = None
+        self.client = None
 
     def setClient(self, linkedinAC=""):
         logging.info("    Connecting Linkedin {}".format(str(linkedinAC)))
@@ -40,7 +40,7 @@ class moduleLinkedin(Content):
             self.CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY") 
             self.CONSUMER_SECRET = config.get("Linkedin", "CONSUMER_SECRET") 
             self.ACCESS_TOKEN = config.get("Linkedin", "ACCESS_TOKEN") 
-            self.ln = linkedin.LinkedInApplication(token=self.ACCESS_TOKEN)
+            self.client = linkedin.LinkedInApplication(token=self.ACCESS_TOKEN)
             #self.USER_TOKEN = config.get("Linkedin", "USER_TOKEN") 
             #self.USER_SECRET = config.get("Linkedin", "USER_SECRET") 
             #self.RETURN_URL = config.get("Linkedin", "RETURN_URL")
@@ -93,9 +93,6 @@ class moduleLinkedin(Content):
         else:
             print("Some problem")
  
-    def getClient(self):
-        return self.ln
- 
     def setPosts(self):
         logging.info("  Setting posts")
         urn = self.URN
@@ -108,7 +105,7 @@ class moduleLinkedin(Content):
 
         print(url)
         print(author)
-        access_token = self.ln.authentication.token.access_token
+        access_token = self.client.authentication.token.access_token
         headers = {'X-Restli-Protocol-Version': '2.0.0',
            'Content-Type': 'application/json',
            'Authorization': f'Bearer {access_token}'}
@@ -119,7 +116,7 @@ class moduleLinkedin(Content):
 
     def publishPost(self, post, link, comment):
 
-        res = self.ln.submit_share(comment=comment, title=post,description=None,
+        res = self.client.submit_share(comment=comment, title=post,description=None,
                 submitted_url=link, submitted_image_url=None, 
                 urn=self.URN, visibility_code='anyone')
         logging.info("    Reply %s"%str(res))

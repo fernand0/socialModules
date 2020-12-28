@@ -41,9 +41,6 @@ class modulePocket(Content,Queue):
 
         self.client = client
  
-    def getClient(self):
-        return self.client    
-    
     def setPosts(self):
         logging.info("  Setting posts")
         posts = []
@@ -92,16 +89,16 @@ class modulePocket(Content,Queue):
         logging.info("Title: %s" % str(title))
         url = self.getLink(j)
         logging.info("Url: %s" % str(url))
-        if self.getBuffer():            
-            for profile in self.getSocialNetworks():
-                if profile[0] in self.getBufferapp():
-                    lenMax = self.len(profile)
-                    logging.info("   getBuffer %s" % profile)
-                    socialNetwork = (profile,self.getSocialNetworks()[profile])
-                    listPosts = []
-                    listPosts.append((title, url))
-                    update = update + self.buffer[socialNetwork].addPosts(listPosts)
-                    update = update + '\n'
+        #if self.getBuffer():            
+        #    for profile in self.getSocialNetworks():
+        #        if profile[0] in self.getBufferapp():
+        #            lenMax = self.len(profile)
+        #            logging.info("   getBuffer %s" % profile)
+        #            socialNetwork = (profile,self.getSocialNetworks()[profile])
+        #            listPosts = []
+        #            listPosts.append((title, url))
+        #            update = update + self.buffer[socialNetwork].addPosts(listPosts)
+        #            update = update + '\n'
 
         if self.getProgram():
             logging.info("getProgram")
@@ -123,7 +120,7 @@ class modulePocket(Content,Queue):
                     logging.info("Uppdate: {}".format(update))
                     update = update + '\n'
 
-        if not self.getBuffer() and not self.getProgram():
+        if  not self.getProgram(): #not self.getBuffer() and
             logging.info("Not getBuffer, getProgram {}".format(self.getSocialNetworks()))
             return ""
             delayedBlogs = []

@@ -81,12 +81,6 @@ class Content:
             cmd = getattr(self, 'setApiPosts')
         self.assignPosts(cmd())
 
-    def setApiPosts(self):
-        self.posts = []
-
-    def setApiDrafts(self):
-        self.drafts = []
- 
     def getClient(self):
         return self.client
 
@@ -150,16 +144,13 @@ class Content:
         return(self.posts)
 
     def assignPosts(self, posts):
-        if hasattr(self, 'getPostsType'): 
-            if self.getPostsType() == 'drafts': 
-                self.drafts = posts
-            else:
-                self.posts = posts
-        else:
-            self.posts = posts
+        self.posts = posts
 
     def getPosts(self):
         posts = self.posts
+        if hasattr(self, 'getPostsType'): 
+            if self.getPostsType() == 'drafts': 
+                posts = self.drafts
         return(posts)
 
     def getPost(self, i):
@@ -179,18 +170,22 @@ class Content:
     def getLink(self, i):
         link = ''
         if i < len(self.getPosts()): 
-            post = self.getPosts()[i]
-            link = post[1]
+            post = self.getPost(i)
+            link = self.getPostLink(post)
         return(link) 
  
     def getId(self, j):
-        post = self.getPosts()[j]
-        return self.getPostId(post)
+        idPost = -1
+        if j < len(self.getPosts()): 
+            post = self.getPosts(j)
+            idPost =  self.getPostId(post)
+        return(idPost)
 
     def splitPost(self, post): 
         splitListPosts = []
         for imgL in post[3]: 
             myPost = list(post) 
+            logging.info("mP",myPost)
             myPost[3] = imgL 
             splitListPosts.append(tuple(myPost))
 
@@ -220,7 +215,8 @@ class Content:
         if hasattr(self, 'postsType'): 
             return self.postsType 
         else:
-            return 'posts' 
+            return None
+        #    return 'posts' 
 
     def publishPost(self, post, link, comment):
         logging.info(f"    Publishing in {self.service}: {post}")
@@ -234,29 +230,31 @@ class Content:
         return reply
 
     def do_edit(self, j, **kwargs): 
-        post = self.getPosts()[j]
-        if ('newTitle' in kwargs) and kwargs['newTitle']:
-            oldTitle = self.getPostTitle(post)
-            newTitle = kwargs['newTitle']
-            logging.info(f"New title {newTitle}")
-            res = self.editApiTitle(post, newTitle)
-            res = self.processReply(res)
-            update = "Changed "+oldTitle+" with "+newTitle+" id " + str(res)
-        if ('newState' in kwargs) and kwargs['newState']:
-            oldState = self.getPostState(post)
-            newState = kwargs['newState']
-            logging.info("New state %s", newState)
-            res = self.editApiState(post, newState)
-            res = self.processReply(res)
-            update = "Changed "+oldState+" to "+newState+" id " + str(res)
-        if ('newLink' in kwargs) and kwargs['newLink']:
-            oldLink = self.getPostLink(post)
-            newLink = kwargs['newLink']
-            logging.info(f"New link {newLink}")
-            res = self.editApiLink(post, newLink)
-            res = self.processReply(res)
-            update = "Changed "+oldLink+" with "+newLink+" id " + str(res)
-        return update
+        update = ""
+        if j < len(self.getPosts()):
+            post = self.getPosts(j)
+            if ('newTitle' in kwargs) and kwargs['newTitle']:
+                oldTitle = self.getPostTitle(post)
+                newTitle = kwargs['newTitle']
+                logging.info(f"New title {newTitle}")
+                res = self.editApiTitle(post, newTitle)
+                res = self.processReply(res)
+                update = "Changed "+oldTitle+" with "+newTitle+" id " + str(res)
+            if ('newState' in kwargs) and kwargs['newState']:
+                oldState = self.getPostState(post)
+                newState = kwargs['newState']
+                logging.info("New state %s", newState)
+                res = self.editApiState(post, newState)
+                res = self.processReply(res)
+                update = "Changed "+oldState+" to "+newState+" id " + str(res)
+            if ('newLink' in kwargs) and kwargs['newLink']:
+                oldLink = self.getPostLink(post)
+                newLink = kwargs['newLink']
+                logging.info(f"New link {newLink}")
+                res = self.editApiLink(post, newLink)
+                res = self.processReply(res)
+                update = "Changed "+oldLink+" with "+newLink+" id " + str(res)
+            return update
 
     def edit(self, j, newTitle): 
         update = self.do_edit(j, newTitle=newTitle)

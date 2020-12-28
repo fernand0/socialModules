@@ -29,7 +29,7 @@ class moduleTwitter(Content,Queue):
     def __init__(self):
         super().__init__()
         self.user = None
-        self.tc = None
+        self.client = None
         self.service = 'Twitter'
 
     def setClient(self, twitterAC):
@@ -72,25 +72,22 @@ class moduleTwitter(Content,Queue):
             logging.warning("Unexpected error:", sys.exc_info()[0])
             t = None
 
-        self.tc = t
+        self.client = t
  
     def getId(self, i):
         post = self.getPosts()[i]
         return(post['id'])
 
-    def getClient(self):
-        return self.tc
- 
     def setPosts(self):
         logging.info("  Setting posts")
         self.posts = []
-        #tweets = self.tc.statuses.home_timeline()
+        #tweets = self.client.statuses.home_timeline()
         try: 
-            self.posts = self.tc.statuses.user_timeline()
+            self.posts = self.client.statuses.user_timeline()
         except:
             self.posts = []
         if True:
-            self.favs = self.tc.favorites.list(count=100)
+            self.favs = self.client.favorites.list(count=100)
             print(self.favs)
             for post in self.favs: 
                 title = self.getPostTitle(post) 
@@ -136,7 +133,7 @@ class moduleTwitter(Content,Queue):
         try:
             logging.info("     Publishing: %s" % post)
             post = post[:(240 - (len(link) + 1))]
-            res = self.tc.statuses.update(status=post+" " + link)
+            res = self.client.statuses.update(status=post+" " + link)
 
             if res: 
                 logging.debug("Res: %s" % res)
@@ -156,7 +153,7 @@ class moduleTwitter(Content,Queue):
         if idPost.find('http')>=0:
             idPost = idPost.split('/')[-1]
             print (idPost)
-        result = self.tc.favorites.destroy(_id=idPost)
+        result = self.client.favorites.destroy(_id=idPost)
         logging.info(f"Res: {result}")
         return(result['id'])
 
@@ -166,7 +163,7 @@ class moduleTwitter(Content,Queue):
         logging.info("Deleting id %s" % idPost)
         print("Deleting id %s" % idPost)
 
-        result = self.tc.favorites.destroy(_id=idPost)
+        result = self.client.favorites.destroy(_id=idPost)
         logging.info(f"Res: {result}")
         return(result['id'])
 
@@ -236,7 +233,7 @@ class moduleTwitter(Content,Queue):
     def search(self, text):
         logging.debug("     Searching in Twitter...")
         try:
-            res = self.tc.search.tweets(q=text)
+            res = self.client.search.tweets(q=text)
 
             if res: 
                 logging.debug("Res: %s" % res)

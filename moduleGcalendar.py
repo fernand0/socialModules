@@ -63,9 +63,6 @@ class moduleGcalendar(Content):
         self.name = 'GCalendar' + Acc[3:]
         self.active = 'primary'
 
-    def getClient(self):
-        return(self.client)
-
     def setActive(self, idCal):
         self.active = idCal
 

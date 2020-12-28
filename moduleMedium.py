@@ -42,11 +42,8 @@ class moduleMedium(Content,Queue):
             client = None
             user = None
 
-        self.tc = client
+        self.client = client
         self.user = user
-
-    def getClient(self):
-        return self.tc
 
     def getUser(self):
         return self.user
@@ -66,7 +63,7 @@ class moduleMedium(Content,Queue):
 
     def publishPost(self, post, link, comment):
         logging.info("    Publishing in {} ...".format(self.service))
-        client = self.tc
+        client = self.client
         user = self.user
 
         title = post

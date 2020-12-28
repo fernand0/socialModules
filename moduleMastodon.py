@@ -35,11 +35,8 @@ class moduleMastodon(Content,Queue):
             logging.warning("Mastodon authentication failed!") 
             logging.warning("Unexpected error:", sys.exc_info()[0])
 
-        self.ma = maCli
+        self.client = maCli
         self.user = user
-
-    def getClient(self):
-        return self.ma
 
     def setPosts(self):
         logging.info("  Setting posts")

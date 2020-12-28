@@ -35,6 +35,7 @@ class moduleCache(Content,Queue):
         logging.info(f"setClient {self.service} {param}")
         print(f"setClient {self.service} {param}")
         self.url = param[0]
+        self.postsType = 'posts'
         if isinstance(param, str):
             self.url = param
             self.user = param
@@ -288,19 +289,28 @@ class moduleCache(Content,Queue):
                 update = update[1]['id']
                 # link: https://www.facebook.com/[name]/posts/[second part of id]
         logging.info("Update before return %s"% update)
-        return(update)
-    
-    def delete(self, j):
-        logging.info("Deleting %d"% j)
+        return(update) 
+
+    def deleteApi(self, j):
         post = self.obtainPostData(j)
-        logging.info("Deleting %s"% post[0])
         posts = self.getPosts()
         posts = posts[:j] + posts[j+1:]
         self.assignPosts(posts)
         self.updatePostsCache()
 
-        logging.info("Deleted %s"% post[0])
         return("%s"% post[0])
+
+    #def delete(self, j):
+    #    logging.info("Deleting %d"% j)
+    #    post = self.obtainPostData(j)
+    #    logging.info("Deleting %s"% post[0])
+    #    posts = self.getPosts()
+    #    posts = posts[:j] + posts[j+1:]
+    #    self.assignPosts(posts)
+    #    self.updatePostsCache()
+
+    #    logging.info("Deleted %s"% post[0])
+    #    return("%s"% post[0])
 
     def move(self, j, dest):
         k = int(dest)

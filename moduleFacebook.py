@@ -36,7 +36,7 @@ class moduleFacebook(Content,Queue):
     def __init__(self):
         super().__init__()
         self.user = None
-        self.fc = None
+        self.client = None
         self.service = 'Facebook'
 
     def setClient(self, facebookAC='me'):
@@ -57,7 +57,7 @@ class moduleFacebook(Content,Queue):
             try:
                 oauth_access_token = config.get("Facebook", "oauth_access_token")
                 graph = facebook.GraphAPI(oauth_access_token, version='3.0') 
-                self.fc = graph
+                self.client = graph
                 self.setPage(self.user)
 
             except: 
@@ -71,7 +71,7 @@ class moduleFacebook(Content,Queue):
 
     def setPage(self, facebookAC='me'):
         perms = ['publish_actions','manage_pages','publish_pages'] 
-        pages = self.fc.get_connections("me", "accounts") 
+        pages = self.client.get_connections("me", "accounts") 
         self.pages = pages
 
         if (facebookAC != 'me'): 
@@ -87,9 +87,6 @@ class moduleFacebook(Content,Queue):
                     # Publishing as me 
                     self.page = facebookAC 
 
-    def getClient(self):
-        return self.fc
- 
     def setPosts(self):
         logging.info("  Setting posts")
         self.posts = []
@@ -129,7 +126,7 @@ class moduleFacebook(Content,Queue):
             logging.info("     Publishing: %s" % post[:250])
             if (not isinstance(self.page, str)):
                 res = self.page.put_object('me', "feed", message=post, link=link)
-                #res = self.page.put_object(self.fc.get_object('me')['id'], "feed", message=post, link=link)
+                #res = self.page.put_object(self.client.get_object('me')['id'], "feed", message=post, link=link)
                 if res:
                     logging.debug("Res: %s" % res)
                     if 'id' in res:
@@ -158,11 +155,11 @@ class moduleFacebook(Content,Queue):
 
     def getPostImages(self,idPost):
         res = []
-        print(self.fc)
-        post = self.fc.get_object('me',fields='id')
+        print(self.client)
+        post = self.client.get_object('me',fields='id')
         myId = post['id']
         field='attachments'
-        post = self.fc.get_object('{}_{}'.format(myId,idPost),fields=field)
+        post = self.client.get_object('{}_{}'.format(myId,idPost),fields=field)
         res.append(post['attachments']['data'][0]['media']['image']['src'])
         subAttach = post['attachments']['data'][0]['subattachments']
         for img in subAttach['data']:

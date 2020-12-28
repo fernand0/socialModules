@@ -20,7 +20,7 @@ class moduleImdb(Content,Queue):
     def __init__(self):
         super().__init__()
         self.service = 'Imdb'
-        self.tmdb = None
+        self.getClient() = None
         self.url=None
         self.fileTV = '/tmp/tv.json'
         self.gen = 'Cine'
@@ -46,14 +46,11 @@ class moduleImdb(Content,Queue):
                 logging.info("Some problem with configuration file")
 
             tmdb.API_KEY = config.get('TMDb', 'api_key')
-            self.tmdb = tmdb
+            self.getClient() = tmdb
             self.channels = config.get('TMDb', 'channels').split(',')
         except:
             logging.info("Fail")
 
-    def getClient(self):
-        return self.tmdb
- 
     def setInfoData(self): 
         # This does not belong here it is the source of the data
         self.data = []
@@ -159,7 +156,7 @@ class moduleImdb(Content,Queue):
 
     def setPostMoreData(self, post):
         postMore = None 
-        mySearch = self.tmdb.Search() 
+        mySearch = self.getClient().Search() 
         title = self.getPostTitle(post)
         response = mySearch.movie(query=title) 
         if len(mySearch.results) > 0: 

@@ -62,14 +62,6 @@ class moduleRss(Content,Queue):
         if 'title' in post:
             return(post['title'].replace('\n', ' '))
 
-    def getLink(self, i):
-        post = self.getPosts()[i]
-        return(self.getPostLink(post))
-
-    def getTitle(self, i):
-        post = self.getPosts()[i]
-        return(self.getPostTitle(post))
-
     def getPostLink(self, post):
         return(post['link'])
 

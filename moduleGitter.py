@@ -85,14 +85,6 @@ class moduleGitter(Content,Queue):
         else:
             return -1
 
-    def getTitle(self, i):
-        post = self.getPosts()[i]
-        return(self.getPostTitle(post))
-
-    def getLink(self, i):
-        post = self.getPosts()[i]
-        return(self.getPostLink(post))
-
     def getPostTitle(self, post):
         if 'text' in post:
             text = post['text']

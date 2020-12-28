@@ -47,9 +47,6 @@ class moduleImgur(Content,Queue):
             logging.warning("Unexpected error:", sys.exc_info()[0])
 
 
-    def getClient(self):
-        return self.client
-
     def setPosts(self, numPosts=20): 
         self.posts = []
         self.drafts = []

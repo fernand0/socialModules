@@ -136,10 +136,6 @@ class moduleGmail(Content,Queue):
 
         return(creds)
 
-
-    def getClient(self):
-        return(self.client)
-
     def createLabel(self, labelName):
         api = self.getClient()
         label_object = {'messageListVisibility': 'show', 

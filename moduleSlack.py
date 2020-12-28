@@ -132,14 +132,6 @@ class moduleSlack(Content,Queue):
 
         logging.info(" Set posts")
 
-    def getTitle(self, i):
-        post = self.getPosts()[i]
-        return(self.getPostTitle(post))
-
-    def getLink(self, i):
-        post = self.getPosts()[i]
-        return(self.getPostLink(post))
-
     def getPostTitle(self, post):
         if ('attachments' in post) and ('title' in post['attachments'][0]):
             return(post['attachments'][0]['title'])

@@ -59,7 +59,7 @@ class moduleTumblr(Content,Queue):
         return name
 
     def setApiPosts(self):
-        setApiPublished()
+        self.setApiPublished()
 
     def setApiPublished(self):
         posts = self.getClient().posts(self.getBlogName())
@@ -81,9 +81,10 @@ class moduleTumblr(Content,Queue):
         queue = self.getClient().queue(self.getUrl().split('/')[2])
         #, offset="75")
         if 'posts' in queue: 
-            self.posts = queue['posts']
+            posts = queue['posts']
         else:
-            self.posts = []
+            posts = []
+        return(posts)
 
     #def setPosts(self):
     #    logging.info("  Setting posts")

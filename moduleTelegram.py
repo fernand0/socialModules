@@ -31,21 +31,18 @@ class moduleTelegram(Content):
             logging.warning("Account not configured") 
             bot = None
 
-        self.tc = bot
+        self.client = bot
         self.user = meMySelf
         self.channel = channel
-
-    def getClient(self):
-        return self.tc
 
     def setPosts(self):
         logging.info("  Setting posts")
         self.posts = []
-        self.posts = self.tc.getUpdates(allowed_updates='message')
+        self.posts = self.client.getUpdates(allowed_updates='message')
 
     def publishPost(self, post, link, comment):
         logging.info("    Publishing in Telegram...")
-        bot = self.tc
+        bot = self.client
         title = post
         content = comment
         links = ""
