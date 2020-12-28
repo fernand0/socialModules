@@ -54,19 +54,6 @@ class moduleMastodon(Content,Queue):
     def getFavs(self):
          return self.favs
 
-    def getPosts(self):
-        if hasattr(self, 'getPostsType'): 
-            logging.debug("  Posts type {}".format(self.getPostsType()))
-            if self.getPostsType() == 'drafts':
-                posts = self.getDrafts()
-            if self.getPostsType() == 'favs':
-                posts = self.getFavs()
-            else:
-                posts = self.getPublished() 
-        else:
-            posts = self.posts
-        return(posts)
-
     def publishPost(self, post, link, comment):
         logging.debug("    Publishing in Mastodon...")
         if comment == None:

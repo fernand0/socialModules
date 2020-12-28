@@ -20,7 +20,7 @@ class moduleImdb(Content,Queue):
     def __init__(self):
         super().__init__()
         self.service = 'Imdb'
-        self.getClient() = None
+        self.client = None
         self.url=None
         self.fileTV = '/tmp/tv.json'
         self.gen = 'Cine'
@@ -46,7 +46,7 @@ class moduleImdb(Content,Queue):
                 logging.info("Some problem with configuration file")
 
             tmdb.API_KEY = config.get('TMDb', 'api_key')
-            self.getClient() = tmdb
+            self.client = tmdb
             self.channels = config.get('TMDb', 'channels').split(',')
         except:
             logging.info("Fail")

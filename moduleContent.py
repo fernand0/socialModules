@@ -82,17 +82,25 @@ class Content:
         self.assignPosts(cmd())
 
     def getClient(self):
-        return self.client
+        client = None
+        if hasattr(self, 'client'):
+            client = self.client
+        return client
 
     def getUrl(self):
-        return(self.url)
-
+        url = ''
+        if hasattr(self, 'url'):
+            url = self.url
+        return(url)
 
     def setUrl(self, url):
         self.url = url
 
     def getName(self):
-        return(self.name)
+        name = ''
+        if hasattr(self,'name'):
+            name = self.name
+        return(name)
 
     def setName(self, name):
         self.name = name
@@ -105,10 +113,10 @@ class Content:
             return(self.postaction)
 
     def getSocialNetworks(self):
-        return(self.socialNetworks)
-
-    def getSocialNetworksAPI(self):
-        return(self.api)
+        socialNetworks = None
+        if hasattr(self, 'socialNetworks'):
+            socialNetworks = self.socialNetworks
+        return(socialNetworks)
 
     def setSocialNetworks(self, socialNetworksConfig):
         socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
@@ -120,37 +128,27 @@ class Content:
                 self.addSocialNetwork((sN, socialNetworksConfig[sN]))
         logging.debug("  sNN {}".format(self.getSocialNetworks()))
 
-    def oldsetSocialNetworks(self, config, section):
-        socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
-                'wordpress', 'medium', 'linkedin','pocket', 'mastodon',
-                'instagram', 'imgur', 'tumblr', 'slack','refind'] 
-        for option in config.options(section):
-            if (option in socialNetworksOpt):
-                nick = config.get(section, option)
-                socialNetwork = (option, nick)
-                self.addSocialNetwork(socialNetwork)
+    #def oldsetSocialNetworks(self, config, section):
+    #    socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
+    #            'wordpress', 'medium', 'linkedin','pocket', 'mastodon',
+    #            'instagram', 'imgur', 'tumblr', 'slack','refind'] 
+    #    for option in config.options(section):
+    #        if (option in socialNetworksOpt):
+    #            nick = config.get(section, option)
+    #            socialNetwork = (option, nick)
+    #            self.addSocialNetwork(socialNetwork)
 
-    def addSocialNetworkAPI(self, socialNetwork):
-        sN = socialNetwork[0]
-        nick = socialNetwork[1]
-        #if sN == 'twitter':
-        #    self.api[socialNetwork] = moduleTwitter.moduleTwitter()
-        #    self.api[socialNetwork].setClient(nick)
-        
     def addSocialNetwork(self, socialNetwork):
         self.socialNetworks[socialNetwork[0]] = socialNetwork[1]
-
-    def getPublished(self):
-        return(self.posts)
 
     def assignPosts(self, posts):
         self.posts = posts
 
     def getPosts(self):
         posts = self.posts
-        if hasattr(self, 'getPostsType'): 
-            if self.getPostsType() == 'drafts': 
-                posts = self.drafts
+        #if hasattr(self, 'getPostsType'): 
+        #    if self.getPostsType() == 'drafts': 
+        #        posts = self.drafts
         return(posts)
 
     def getPost(self, i):

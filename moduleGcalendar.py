@@ -75,9 +75,6 @@ class moduleGcalendar(Content):
     def getCalendarList(self): 
         return(self.calendars)
 
-    def getPosts(self):
-        return(self.posts)
-
     def setPosts(self, date=''):
         logging.info("  Setting posts")
         logging.info("  Setting posts date %s"%date)

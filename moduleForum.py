@@ -153,9 +153,6 @@ class moduleForum(Content,Queue):
                             self.posts[pos+i][1])
                 self.posts = self.posts[pos:]
         
-    def getPosts(self):
-        return self.posts
-
     def getPostTitle(self, post):
         return post[0]
 

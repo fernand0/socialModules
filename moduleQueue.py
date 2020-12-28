@@ -21,9 +21,6 @@ class Queue:
             self.setProfiles()
         return(self.profiles)
  
-    def getPosts(self):        
-        return(self.posts)
-
     def getPostsFormatted(self):    
         return(self.postsFormatted)
 
