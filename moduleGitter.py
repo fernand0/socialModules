@@ -70,9 +70,6 @@ class moduleGitter(Content,Queue):
             logging.warning(self.report(self.service, "", "", sys.exc_info()))
             self.posts = []
 
-    def getPostId(self, post): 
-        return (post['id'])
-
     def getIdPosition(self, idPost): 
         posts = self.getPosts()
         if posts:
@@ -107,9 +104,11 @@ class moduleGitter(Content,Queue):
         else:
             return('')
 
-    def getId(self, i):
-        post = self.getPosts()[i]
-        return(post['ts'])
+    def getPostId(self, post): 
+        idPost = -1
+        if hasattr(self, 'id'):
+            idPost = post['id']
+        return (idPost)
 
     def deleteGitter(self, idPost, idChannel):
         # This does not belong here

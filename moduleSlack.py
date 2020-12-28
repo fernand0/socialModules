@@ -215,9 +215,11 @@ class moduleSlack(Content,Queue):
         return(update)
  
 
-    def getId(self, i):
-        post = self.getPosts()[i]
-        return(post['ts'])
+    def getPstId(self, post):
+        idPost = -1
+        if hasattr(self, 'ts'):
+            postId = post['ts']
+        return(idPost)
 
     def getKeys(self):
         return(self.keys)

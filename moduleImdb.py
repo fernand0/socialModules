@@ -200,9 +200,11 @@ class moduleImdb(Content,Queue):
         else:
             return("")
 
-    def getId(self, i):
-        post = self.getPosts()[i]
-        return(post['ts'])
+    def getPostId(self, post):
+        idPost = -1
+        if hasattr(self, 'ts'):
+            idPost = post['ts']
+        return(idPost)
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)

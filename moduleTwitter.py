@@ -74,9 +74,11 @@ class moduleTwitter(Content,Queue):
 
         self.client = t
  
-    def getId(self, i):
-        post = self.getPosts()[i]
-        return(post['id'])
+    def getPostId(self, post):
+        idPost = -1
+        if hasattr(self, 'id'):
+            idPost = post['id']
+        return(idPost)
 
     def setPosts(self):
         logging.info("  Setting posts")

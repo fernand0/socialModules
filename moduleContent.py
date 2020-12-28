@@ -152,11 +152,11 @@ class Content:
         return(posts)
 
     def getPost(self, i):
+        post = None
         posts = self.getPosts()
         if i < len(posts): 
-            return(self.getPosts()[i])
-        else:
-            return None
+            post = self.getPosts()[i]
+        return post
 
     def getTitle(self, i):        
         title = ''
