@@ -137,7 +137,7 @@ class moduleTwitter(Content,Queue):
             urlTw = "https://twitter.com/%s/status/%s" % (self.user, 
                     self.getPostId(res))
             logging.info("     Link: %s" % urlTw)
-            return(post +'\n'+urlTw)
+            return(urlTw)
 
     def publishApiPost(self, postData): 
         post = postData[0]
@@ -205,6 +205,8 @@ class moduleTwitter(Content,Queue):
 
     def deleteApi(self, j): 
         idPost = self.getId(self.getPost(j))
+        print(idPost)
+        sys.exit()
         result = self.client.favorites.destroy(_id=idPost)
         logging.info(f"Res: {result}")
         return(result)
@@ -288,7 +290,6 @@ def main():
     import moduleTwitter
     tw = moduleTwitter.moduleTwitter()
 
-
     tw.setClient('fernand0')
 
     #print("Testing followers")
@@ -312,6 +313,17 @@ def main():
 
     tw.setPostsType("favs")
     tw.setPosts()
+
+
+    i=0
+    post = tw.getPost(i)
+    title = tw.getPostTitle(post)
+    link = tw.getPostLink(post)
+    url = tw.getPostUrl(post)
+    print(post)
+    print("Title: {}\nTuit: {}\nLink: {}\n".format(title,link,url))
+    tw.deletePost(post)
+    sys.exit()
 
     for i, post in enumerate(tw.getPosts()):
         title = tw.getPostTitle(post)

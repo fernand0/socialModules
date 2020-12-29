@@ -169,7 +169,8 @@ class moduleFacebook(Content,Queue):
         link = postData[1]
         comment = postData[2]
 
-        if post = comment + " " + post
+        if comment:
+            post = comment + " " + post
 
         try: 
             h = HTMLParser() 

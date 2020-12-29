@@ -144,7 +144,6 @@ class moduleTumblr(Content,Queue):
         res = self.getClient().create_link(self.getBlogName(), state='queue',
                 title=postData[0], url=postData[1], description=postData[2])
 
-        res = self.processReply(res)
         return(res)
 
     #def publishPost(self, post, link, comment):
