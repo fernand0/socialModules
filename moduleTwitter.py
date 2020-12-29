@@ -32,83 +32,119 @@ class moduleTwitter(Content,Queue):
         self.client = None
         self.service = 'Twitter'
 
-    def setClient(self, twitterAC):
-        logging.info("     Connecting {}: {}".format(self.service, twitterAC))
-        try:
-            config = configparser.ConfigParser()
-            config.read(CONFIGDIR + '/.rssTwitter')
-
-            if isinstance(twitterAC, str): 
-                self.user = twitterAC
-            elif isinstance(twitterAC[1],str):
-                self.user = twitterAC[1]
-            else:
-                self.user = twitterAC[1][1]
-
-            try: 
-                CONSUMER_KEY = config.get(self.user, "CONSUMER_KEY")
-            except: 
-                CONSUMER_KEY = config.get("appKeys", "CONSUMER_KEY")
-            try: 
-                CONSUMER_SECRET = config.get(self.user, "CONSUMER_SECRET")
-            except: 
-                CONSUMER_SECRET = config.get("appKeys", "CONSUMER_SECRET")
-            TOKEN_KEY = config.get(self.user, "TOKEN_KEY")
-            TOKEN_SECRET = config.get(self.user, "TOKEN_SECRET")
-
-            try:
-                authentication = OAuth(
-                            TOKEN_KEY,
-                            TOKEN_SECRET,
-                            CONSUMER_KEY,
-                            CONSUMER_SECRET)
-                t = Twitter(auth=authentication)
-            except:
-                logging.warning("Twitter authentication failed!")
-                logging.warning("Unexpected error:", sys.exc_info()[0])
-                return("Fail")
-        except:
-            logging.warning("Account not configured")
-            logging.warning("Unexpected error:", sys.exc_info()[0])
-            t = None
-
-        self.client = t
- 
-    def getPostId(self, post):
-        idPost = -1
-        if hasattr(self, 'id'):
-            idPost = post['id']
-        return(idPost)
-
-    def setPosts(self):
-        logging.info("  Setting posts")
-        self.posts = []
-        #tweets = self.client.statuses.home_timeline()
+    def getKeys(self, config): 
         try: 
-            self.posts = self.client.statuses.user_timeline()
+            CONSUMER_KEY = config.get(self.user, "CONSUMER_KEY") 
+        except: 
+            CONSUMER_KEY = config.get("appKeys", "CONSUMER_KEY")
+        try: 
+            CONSUMER_SECRET = config.get(self.user, "CONSUMER_SECRET")
+        except: 
+            CONSUMER_SECRET = config.get("appKeys", "CONSUMER_SECRET")
+        TOKEN_KEY = config.get(self.user, "TOKEN_KEY")
+        TOKEN_SECRET = config.get(self.user, "TOKEN_SECRET")
+        return(CONSUMER_KEY, CONSUMER_SECRET, TOKEN_KEY, TOKEN_SECRET)
+
+    def initApi(self, keys):
+        try:
+            authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
+            t = Twitter(auth=authentication)
         except:
-            self.posts = []
-        if True:
-            self.favs = self.client.favorites.list(count=100)
-            print(self.favs)
-            for post in self.favs: 
-                title = self.getPostTitle(post) 
-                link = self.getPostLink(post) 
-                url = self.getPostUrl(post) 
-                print("Created: {}\nTitle: {}\nLink: {}\nUrl:{}\n".format(
-                    post['created_at'], title,link,url))
-        else:
-            self.favs = []
+            logging.warning("Twitter authentication failed!")
+            logging.warning("Unexpected error:", sys.exc_info()[0])
+            return("Fail")
+        return t
 
-        #outputData = {}
-        serviceName = 'Twitter'
+    #    self.client = t
+ 
+    #def setClient(self, twitterAC):
+    #    logging.info("     Connecting {}: {}".format(self.service, twitterAC))
+    #    try:
+    #        config = configparser.ConfigParser()
+    #        config.read(CONFIGDIR + '/.rssTwitter')
 
-    def getFavs(self):
-         return self.favs
+    #        if isinstance(twitterAC, str): 
+    #            self.user = twitterAC
+    #        elif isinstance(twitterAC[1],str):
+    #            self.user = twitterAC[1]
+    #        else:
+    #            self.user = twitterAC[1][1]
 
-    def publishPost(self, post, link='', comment=''):
-        logging.info("     Publishing in {}...".format(self.service))
-        if comment != None: 
+    #        try: 
+    #            CONSUMER_KEY = config.get(self.user, "CONSUMER_KEY")
+    #        except: 
+    #            CONSUMER_KEY = config.get("appKeys", "CONSUMER_KEY")
+    #        try: 
+    #            CONSUMER_SECRET = config.get(self.user, "CONSUMER_SECRET")
+    #        except: 
+    #            CONSUMER_SECRET = config.get("appKeys", "CONSUMER_SECRET")
+    #        TOKEN_KEY = config.get(self.user, "TOKEN_KEY")
+    #        TOKEN_SECRET = config.get(self.user, "TOKEN_SECRET")
+
+    #        try:
+    #            authentication = OAuth(
+    #                        TOKEN_KEY,
+    #                        TOKEN_SECRET,
+    #                        CONSUMER_KEY,
+    #                        CONSUMER_SECRET)
+    #            t = Twitter(auth=authentication)
+    #        except:
+    #            logging.warning("Twitter authentication failed!")
+    #            logging.warning("Unexpected error:", sys.exc_info()[0])
+    #            return("Fail")
+    #    except:
+    #        logging.warning("Account not configured")
+    #        logging.warning("Unexpected error:", sys.exc_info()[0])
+    #        t = None
+
+    #    self.client = t
+
+    def setApiPosts(self):
+        posts = self.getClient().statuses.user_timeline()
+        return posts
+
+    def setApiFavs(self): 
+        posts = self.getClient().favorites.list(count=100)
+        return posts
+
+    #def setPosts(self):
+    #    logging.info("  Setting posts")
+    #    self.posts = []
+    #    #tweets = self.client.statuses.home_timeline()
+    #    try: 
+    #        self.posts = self.client.statuses.user_timeline()
+    #    except:
+    #        self.posts = []
+    #    if True:
+    #        self.favs = self.client.favorites.list(count=100)
+    #        #print(self.favs)
+    #        for post in self.favs: 
+    #            title = self.getPostTitle(post) 
+    #            link = self.getPostLink(post) 
+    #            url = self.getPostUrl(post) 
+    #            #print("Created: {}\nTitle: {}\nLink: {}\nUrl:{}\n".format(
+    #            #    post['created_at'], title,link,url))
+    #    else:
+    #        self.favs = []
+
+    #    #outputData = {}
+    #    serviceName = 'Twitter'
+
+    def processReply(self, reply): 
+        if reply: 
+            res = reply
+            logging.debug("Res: %s" % res)
+            urlTw = "https://twitter.com/%s/status/%s" % (self.user, 
+                    self.getPostId(res))
+            logging.info("     Link: %s" % urlTw)
+            return(post +'\n'+urlTw)
+
+    def publishApiPost(self, postData): 
+        post = postData[0]
+        link = postData[1]
+        comment = postData[2]
+
+        if comment: 
             post = comment + " " + post
         try:
             h = HTMLParser()
@@ -119,55 +155,69 @@ class moduleTwitter(Content,Queue):
 
         res = None
         try:
-            logging.info("     Publishing: %s" % post)
             post = post[:(240 - (len(link) + 1))]
+            logging.info("     Publishing: %s" % post)
             res = self.client.statuses.update(status=post+" " + link)
 
-            if res: 
-                logging.debug("Res: %s" % res)
-                urlTw = "https://twitter.com/%s/status/%s" % (self.user, res['id'])
-                logging.info("     Link: %s" % urlTw)
-                return(post +'\n'+urlTw)
+            return res
 
         except twitter.api.TwitterHTTPError as twittererror:        
             for error in twittererror.response_data.get("errors", []): 
                 logging.info("      Error code: %s" % error.get("code", None))
             return(self.report('Twitter', post, link, sys.exc_info()))
-        except:        
-            logging.info("Fail!")
-            return(self.report('Twitter', post, link, sys.exc_info()))
 
-    def deletePost(self, idPost): 
-        if idPost.find('http')>=0:
-            idPost = idPost.split('/')[-1]
-            print (idPost)
+
+    #def publishPost(self, post, link='', comment=''):
+    #    logging.info("     Publishing in {}...".format(self.service))
+    #    if comment != None: 
+    #        post = comment + " " + post
+    #    try:
+    #        h = HTMLParser()
+    #        post = h.unescape(post)
+    #    except:
+    #        import html
+    #        post = html.unescape(post)
+
+    #    res = None
+    #    try:
+    #        logging.info("     Publishing: %s" % post)
+    #        post = post[:(240 - (len(link) + 1))]
+    #        res = self.client.statuses.update(status=post+" " + link)
+
+    #        if res: 
+    #            logging.debug("Res: %s" % res)
+    #            urlTw = "https://twitter.com/%s/status/%s" % (self.user, res['id'])
+    #            logging.info("     Link: %s" % urlTw)
+    #            return(post +'\n'+urlTw)
+
+    #    except twitter.api.TwitterHTTPError as twittererror:        
+    #        for error in twittererror.response_data.get("errors", []): 
+    #            logging.info("      Error code: %s" % error.get("code", None))
+    #        return(self.report('Twitter', post, link, sys.exc_info()))
+    #    except:        
+    #        logging.info("Fail!")
+    #        return(self.report('Twitter', post, link, sys.exc_info()))
+
+    def deleteApiPost(self, idPost): 
         result = self.client.favorites.destroy(_id=idPost)
         logging.info(f"Res: {result}")
-        return(result['id'])
+        return(result)
 
-    def delete(self, j): 
-        logging.info("Deleting id %s" % j)
-        idPost = self.getId(j)
-        logging.info("Deleting id %s" % idPost)
-        print("Deleting id %s" % idPost)
-
+    def deleteApi(self, j): 
+        idPost = self.getId(self.getPost(j))
         result = self.client.favorites.destroy(_id=idPost)
         logging.info(f"Res: {result}")
-        return(result['id'])
+        return(result)
 
+    def getPostId(self, post):
+        return self.getAttribute(post, 'id')
 
     def getPostTitle(self, post):
-        if 'text' in post:
-            return(post['text'])
-        else:
-            return ''
+        return self.getAttribute(post, 'text')
 
     def getPostLink(self, post):
-        if 'id_str' in post:
-            return('https://twitter.com/{}/status/{}'.format(
-                self.user, post['id_str']))
-        else:
-            return ''
+        return 'https://twitter.com/{}/status/{}'.format(
+               self.user, self.getAttribute(post, 'id_str'))
 
     def getPostUrl(self, post):
         logging.debug(post)
@@ -245,12 +295,10 @@ def main():
     #tw.setFriends()
     #sys.exit()
 
+    tw.publishPost("Prueba", "http://elmundoesimperfecto.com/", '')
     print("Testing posts")
+    tw.setPostsType('posts')
     tw.setPosts()
-    for i, tweet in enumerate(tw.getPosts()):
-        print("{}) {}".format(i,tweet))
-        #print("@%s: %s" %(tweet[2], tweet[0]))
-
 
     print("Testing title and link")
     
@@ -263,7 +311,7 @@ def main():
     print("Favs")
 
     tw.setPostsType("favs")
-    #tw.publishPost("Tuit desde podman", "", '')
+    tw.setPosts()
 
     for i, post in enumerate(tw.getPosts()):
         title = tw.getPostTitle(post)
@@ -278,7 +326,6 @@ def main():
 
 
 
-
     sys.exit()
 
     res = tw.search('url:fernand0')
@@ -288,7 +335,6 @@ def main():
         print('- @{0} {1} https://twitter.com/{0}/status/{2}'.format(tt['user']['name'], tt['text'], tt['id_str']))
     sys.exit()
 
-    tw.publishPost("Inscripciones 2019 | Congreso Web", "http://congresoweb.es/cw19/inscripciones/", '')
 
 if __name__ == '__main__':
     main()

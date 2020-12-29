@@ -169,20 +169,20 @@ class moduleFacebook(Content,Queue):
         link = postData[1]
         comment = postData[2]
 
-        if not comment:
-            comment = ''
-        else:
-            post = comment + " " + post
+        if post = comment + " " + post
 
-        h = HTMLParser()
-        post = h.unescape(post)
-        res = None
+        try: 
+            h = HTMLParser() 
+            post = h.unescape(post)
+        except: 
+            import html 
+            post = html.unescape(post)
+
+        res = "Fail!"
         logging.info("     Publishing: %s" % post[:250])
         if (not isinstance(self.page, str)):
             res = self.page.put_object('me', "feed", message=post, link=link)
-            return(res)
-        else:
-            return("Fail")
+        return res
 
     #def publishPost(self, post, link='', comment=''):
     #    logging.debug("    Publishing in Facebook...")

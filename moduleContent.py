@@ -237,6 +237,11 @@ class Content:
         except:        
             return(self.report(self.service, post, link, sys.exc_info())) 
 
+    def deletePost(self, post): 
+        idPost = self.getPostId(post)
+        reply = self.deleteApiPost(idPost)
+        return (self.processReply(reply))
+
     def processReply(self, reply):
         logging.debug("Res: %s" % reply) 
         return reply
