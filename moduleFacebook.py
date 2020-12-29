@@ -39,35 +39,51 @@ class moduleFacebook(Content,Queue):
         self.client = None
         self.service = 'Facebook'
 
-    def setClient(self, facebookAC='me'):
-        logging.info("     Connecting {}: {}".format(self.service,
-            str(facebookAC)))
+    def getKeys(self, config): 
+        oauth_access_token = config.get("Facebook", "oauth_access_token")
+        return ((oauth_access_token,))
+
+    def initApi(self, keys):
         try:
-            config = configparser.ConfigParser()
-            config.read(CONFIGDIR + '/.rssFacebook')
-
-            if isinstance(facebookAC, str): 
-                self.user = facebookAC
-            elif isinstance(facebookAC[1], str):
-                self.user = facebookAC[1]
-            else: 
-                # Deprecated
-                self.user = facebookAC[1][1]
-
-            try:
-                oauth_access_token = config.get("Facebook", "oauth_access_token")
-                graph = facebook.GraphAPI(oauth_access_token, version='3.0') 
-                self.client = graph
-                self.setPage(self.user)
-
-            except: 
-                logging.warning("Facebook authentication failed!") 
-                logging.warning("Unexpected error:", sys.exc_info()[0]) 
-                print("Fail!")
-        except:
-            logging.warning("Facebook authentication failed!")
-            logging.warning("Unexpected error:", sys.exc_info()[0])
+            graph = facebook.GraphAPI(keys[0], version='3.0') 
+            self.client = graph
+            self.setPage(self.user)
+        except: 
+            logging.warning("Facebook authentication failed!") 
+            logging.warning("Unexpected error:", sys.exc_info()[0]) 
             print("Fail!")
+
+        return self.client
+
+    #def setClient(self, facebookAC='me'):
+    #    logging.info("     Connecting {}: {}".format(self.service,
+    #        str(facebookAC)))
+    #    try:
+    #        config = configparser.ConfigParser()
+    #        config.read(CONFIGDIR + '/.rssFacebook')
+
+    #        if isinstance(facebookAC, str): 
+    #            self.user = facebookAC
+    #        elif isinstance(facebookAC[1], str):
+    #            self.user = facebookAC[1]
+    #        else: 
+    #            # Deprecated
+    #            self.user = facebookAC[1][1]
+
+    #        try:
+    #            oauth_access_token = config.get("Facebook", "oauth_access_token")
+    #            graph = facebook.GraphAPI(oauth_access_token, version='3.0') 
+    #            self.client = graph
+    #            self.setPage(self.user)
+
+    #        except: 
+    #            logging.warning("Facebook authentication failed!") 
+    #            logging.warning("Unexpected error:", sys.exc_info()[0]) 
+    #            print("Fail!")
+    #    except:
+    #        logging.warning("Facebook authentication failed!")
+    #        logging.warning("Unexpected error:", sys.exc_info()[0])
+    #        print("Fail!")
 
     def setPage(self, facebookAC='me'):
         perms = ['publish_actions','manage_pages','publish_pages'] 
@@ -114,31 +130,60 @@ class moduleFacebook(Content,Queue):
 
         self.postsFormatted = outputData
 
-    def publishPost(self, post, link='', comment=''):
-        logging.debug("    Publishing in Facebook...")
-        if comment == None:
+    def processReply(self, reply): 
+        res = reply
+        if reply: 
+            logging.debug("Res: %s" % reply) 
+            if 'id' in reply: 
+                res = 'https://www.facebook.com/{}'.format(reply['id'])
+                logging.info("     Link: {}".format(res)) 
+        return(res)
+ 
+    def publishApiPost(self, postData):
+        post = postData[0]
+        link = postData[1]
+        comment = postData[2]
+
+        if not comment:
             comment = ''
-        post = comment + " " + post
+        else:
+            post = comment + " " + post
+
         h = HTMLParser()
         post = h.unescape(post)
         res = None
-        try:
-            logging.info("     Publishing: %s" % post[:250])
-            if (not isinstance(self.page, str)):
-                res = self.page.put_object('me', "feed", message=post, link=link)
-                #res = self.page.put_object(self.client.get_object('me')['id'], "feed", message=post, link=link)
-                if res:
-                    logging.debug("Res: %s" % res)
-                    if 'id' in res:
-                        urlFb = 'https://www.facebook.com/%s' % res['id']
-                        logging.info("     Link: %s" % urlFb)
-                        return(urlFb)
+        logging.info("     Publishing: %s" % post[:250])
+        if (not isinstance(self.page, str)):
+            res = self.page.put_object('me', "feed", message=post, link=link)
+            return(res)
+        else:
+            return("Fail")
 
-                    return(res)
-            else:
-                return("Fail")
-        except:        
-            return(self.report('Facebook', post, link, sys.exc_info()))
+    #def publishPost(self, post, link='', comment=''):
+    #    logging.debug("    Publishing in Facebook...")
+    #    if comment == None:
+    #        comment = ''
+    #    post = comment + " " + post
+    #    h = HTMLParser()
+    #    post = h.unescape(post)
+    #    res = None
+    #    try:
+    #        logging.info("     Publishing: %s" % post[:250])
+    #        if (not isinstance(self.page, str)):
+    #            res = self.page.put_object('me', "feed", message=post, link=link)
+    #            #res = self.page.put_object(self.client.get_object('me')['id'], "feed", message=post, link=link)
+    #            if res:
+    #                logging.debug("Res: %s" % res)
+    #                if 'id' in res:
+    #                    urlFb = 'https://www.facebook.com/%s' % res['id']
+    #                    logging.info("     Link: %s" % urlFb)
+    #                    return(urlFb)
+
+    #                return(res)
+    #        else:
+    #            return("Fail")
+    #    except:        
+    #        return(self.report('Facebook', post, link, sys.exc_info()))
 
     def getPostTitle(self, post):
         if 'message' in post:
@@ -171,11 +216,16 @@ class moduleFacebook(Content,Queue):
 
 def main():
 
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
+
     import moduleFacebook
 
     fc = moduleFacebook.moduleFacebook()
 
     fc.setClient('me')
+    sys.exit()
     fc.setPage('Enlaces de fernand0')
     fc.publishPost("Prueba")
     print(fc.user)

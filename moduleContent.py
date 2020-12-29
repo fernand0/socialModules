@@ -35,7 +35,15 @@ class Content:
     def setClient(self, account):
         logging.info("    Connecting {}: {}".format(self.service, account))
 
-        self.user = account
+        if isinstance(account, str): 
+            self.user = account
+        elif isinstance(account[1], str):
+            self.user = account[1]
+        else: 
+            # Deprecated
+            self.user = account[1][1]
+
+
         try:
             config = configparser.ConfigParser()
             config.read(f"{CONFIGDIR}/.rss{self.service}")
@@ -128,15 +136,15 @@ class Content:
                 self.addSocialNetwork((sN, socialNetworksConfig[sN]))
         logging.debug("  sNN {}".format(self.getSocialNetworks()))
 
-    #def oldsetSocialNetworks(self, config, section):
-    #    socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
-    #            'wordpress', 'medium', 'linkedin','pocket', 'mastodon',
-    #            'instagram', 'imgur', 'tumblr', 'slack','refind'] 
-    #    for option in config.options(section):
-    #        if (option in socialNetworksOpt):
-    #            nick = config.get(section, option)
-    #            socialNetwork = (option, nick)
-    #            self.addSocialNetwork(socialNetwork)
+    def oldsetSocialNetworks(self, config, section):
+        socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
+                'wordpress', 'medium', 'linkedin','pocket', 'mastodon',
+                'instagram', 'imgur', 'tumblr', 'slack','refind'] 
+        for option in config.options(section):
+            if (option in socialNetworksOpt):
+                nick = config.get(section, option)
+                socialNetwork = (option, nick)
+                self.addSocialNetwork(socialNetwork)
 
     def addSocialNetwork(self, socialNetwork):
         self.socialNetworks[socialNetwork[0]] = socialNetwork[1]
@@ -210,16 +218,16 @@ class Content:
         self.postsType = postsType
 
     def getPostsType(self):
+        postsType = None
         if hasattr(self, 'postsType'): 
-            return self.postsType 
-        else:
-            return None
-        #    return 'posts' 
+            postsType = self.postsType 
+        return postsType
 
-    def publishPost(self, post, link, comment):
+    def publishPost(self, post, link='', comment=''):
         logging.info(f"    Publishing in {self.service}: {post}")
         try: 
-            return self.publishApiPost((post,link,comment))
+            reply = self.publishApiPost((post,link,comment))
+            return (self.processReply(reply))
         except:        
             return(self.report(self.service, post, link, sys.exc_info())) 
 
@@ -230,7 +238,7 @@ class Content:
     def do_edit(self, j, **kwargs): 
         update = ""
         if j < len(self.getPosts()):
-            post = self.getPosts(j)
+            post = self.getPost(j)
             if ('newTitle' in kwargs) and kwargs['newTitle']:
                 oldTitle = self.getPostTitle(post)
                 newTitle = kwargs['newTitle']
@@ -257,6 +265,9 @@ class Content:
     def edit(self, j, newTitle): 
         update = self.do_edit(j, newTitle=newTitle)
         return update
+
+    def editl(self, j, newLink): 
+        update = self.do_edit(j, newLink=newLink)
 
     def delete(self, j): 
         logging.info("Deleting id %s" % j)
@@ -373,8 +384,10 @@ class Content:
         self.bufMax = bufMax
 
     def getBufMax(self):
+        bufMax = 1
         if hasattr(self, 'bufMax') and self.bufMax: 
-            return self.bufMax
+            bufMax = int(self.bufMax)
+        return bufMax
 
     def len(self, profile):
         service = profile
@@ -382,8 +395,8 @@ class Content:
         posts = []
         if self.cache and (service, nick) in self.cache:
             posts = self.cache[(service, nick)].getPosts()
-        elif self.buffer and (service, nick) in self.buffer:
-            posts = self.buffer[(service, nick)].getPosts()
+        #elif self.buffer and (service, nick) in self.buffer:
+        #    posts = self.buffer[(service, nick)].getPosts()
         
         return (len(posts))
 
@@ -418,7 +431,7 @@ class Content:
             return -1
 
     def datePost(self, pos):
-        print(self.getPosts())
+        #print(self.getPosts())
         if 'entries' in self.getPosts():
             return(self.getPosts().entries[pos]['published_parsed'])
         else:
@@ -521,7 +534,7 @@ class Content:
 
     def getImagesCode(self, i):        
         res = self.getImages(i)
-        print(self.getPosts()[i])
+        #print(self.getPosts()[i])
         url = self.getPostLink(self.getPosts()[i]) 
         text = ""
         for iimg in res: 

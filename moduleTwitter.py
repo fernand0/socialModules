@@ -171,8 +171,8 @@ class moduleTwitter(Content,Queue):
 
     def getPostUrl(self, post):
         logging.debug(post)
-        import pprint
-        pprint.pprint(post)
+        #import pprint
+        #pprint.pprint(post)
         if ('urls' in post['entities']): 
             if post['entities']['urls']:
                 if 'expanded_url' in post['entities']['urls'][0]:

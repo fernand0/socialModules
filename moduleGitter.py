@@ -267,18 +267,16 @@ class moduleGitter(Content,Queue):
 
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
-    def publishPost(self, chan, msg):
-        logging.info("Publishing %s" % msg)
-        try:
-            result = self.sc.messages.send(chan, msg)
-        except:
-            logging.info(self.report('Gitter', "", "", sys.exc_info()))
-            result = self.sc.chat_postMessage(channel=theChan, 
-                    text=msg)
-        logging.info(result)
-        if 'id' in result:
-           logging.info(result['id'])
-        logging.info("End publishing %s" % msg)
+    def processReply(self, reply):
+        logging.info(reply)
+        if 'id' in reply:
+           logging.info(reply['id'])
+           reply = reply['id']
+        return reply
+ 
+    def publishApiPost(self, postData): 
+        chan = postData[0]
+        result = self.sc.messages.send(chan, msg)
         return(result)
 
     def getBots(self, channel='tavern-of-the-bots'):

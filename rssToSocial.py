@@ -177,7 +177,6 @@ def updateCaches(blog, socialNetworks, simmulate):
     blog.setPosts()
 
     bufferMax = blog.getBufMax()
-    if bufferMax: bufferMax = int(bufferMax)
 
     for profile in socialNetworks: 
         lenMax = 0
