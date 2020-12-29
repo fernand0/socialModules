@@ -60,7 +60,6 @@ class Content:
             client = None
 
         self.client = client
-        print(self.client)
 
     def getService(self):
         if hasattr(self, 'service'):
