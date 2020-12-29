@@ -211,17 +211,10 @@ class moduleFacebook(Content,Queue):
     #        return(self.report('Facebook', post, link, sys.exc_info()))
 
     def getPostTitle(self, post):
-        title = ''
-        if 'message' in post:
-            title = post['message'].replace('\n', ' ')
-        return title
+        return self.getAttribute(post, 'message')
 
     def getPostLink(self, post):
-        link = ''
-        if 'id' in post:
-            user, idPost = post['id'].split('_')
-            link = 'https://facebook.com/{}/posts/{}'.format(user, idPost)
-        return(link)
+        return self.getAttribute(post, 'id')
 
     def getPostImages(self,idPost):
         res = []

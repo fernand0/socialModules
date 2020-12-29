@@ -74,6 +74,12 @@ class Content:
         else:
             return ''
 
+    def getAttribute(self, post, selector):
+        result = ''
+        if selector in post:
+            result = post[selector]
+        return result
+
     def setPosts(self):
         nick = self.getNick()
         if nick:
