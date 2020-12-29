@@ -87,14 +87,14 @@ class moduleFacebook(Content,Queue):
 
     def setPage(self, facebookAC='me'):
         perms = ['publish_actions','manage_pages','publish_pages'] 
-        pages = self.client.get_connections("me", "accounts") 
+        pages = self.getClient().get_connections("me", "accounts") 
         self.pages = pages
 
         if (facebookAC != 'me'): 
             for i in range(len(pages['data'])): 
                 logging.debug("Selecting %s %s"% (pages['data'][i]['name'], facebookAC)) 
                 if (pages['data'][i]['name'] == facebookAC): 
-                    logging.info("     Writing in... %s"% pages['data'][i]['name']) 
+                    logging.info("     Selected... %s"% pages['data'][i]['name']) 
                     graph2 = facebook.GraphAPI(pages['data'][i]['access_token']) 
                     self.page = graph2
                     self.pageId = pages['data'][i]['id']
@@ -103,32 +103,57 @@ class moduleFacebook(Content,Queue):
                     # Publishing as me 
                     self.page = facebookAC 
 
-    def setPosts(self):
-        logging.info("  Setting posts")
-        self.posts = []
+    def setApiPosts(self):
+        posts = []
         count = 5
-        posts = self.page.get_connections(self.pageId, connection_name='posts') 
+        postsF = self.page.get_connections(self.pageId, 
+                connection_name='posts') 
 
-        for post in posts['data']:
-            print("-->",post)
-            postt = self.page.get_connections(post['id'], connection_name='attachments') 
-            #if postt['data']: 
-            #    print(postt['data'][0])
-            #    if 'url' in postt['data'][0]:
-            #        print(urllib.parse.unquote(postt['data'][0]['url']).split('=')[1])#.split('&')[0])
-            if 'message' in post:
-                self.posts.append(post)
+        if 'data' in postsF: 
+            for post in postsF['data']: 
+                postt = self.page.get_connections(post['id'], 
+                        connection_name='attachments') 
+                if 'message' in post:
+                    posts.append(post)
 
-        outputData = {}
-        serviceName = 'Facebook'
-        outputData[serviceName] = {'sent': [], 'pending': []}
-        for post in self.getPosts():
-            (page, idPost) = post['id'].split('_')
-            url = 'https://facebook.com/' + page + '/posts/' + idPost
-            outputData[serviceName]['sent'].append((post['message'], url, 
-                    '', post['created_time'], '','','','',''))
+        return posts
+        #outputData = {}
+        #serviceName = 'Facebook'
+        #outputData[serviceName] = {'sent': [], 'pending': []}
+        #for post in self.getPosts():
+        #    (page, idPost) = post['id'].split('_')
+        #    url = 'https://facebook.com/' + page + '/posts/' + idPost
+        #    outputData[serviceName]['sent'].append((post['message'], url, 
+        #            '', post['created_time'], '','','','',''))
 
-        self.postsFormatted = outputData
+        #self.postsFormatted = outputData
+
+    #def setPosts(self):
+    #    logging.info("  Setting posts")
+    #    self.posts = []
+    #    count = 5
+    #    posts = self.page.get_connections(self.pageId, connection_name='posts') 
+
+    #    for post in posts['data']:
+    #        print("-->",post)
+    #        postt = self.page.get_connections(post['id'], connection_name='attachments') 
+    #        #if postt['data']: 
+    #        #    print(postt['data'][0])
+    #        #    if 'url' in postt['data'][0]:
+    #        #        print(urllib.parse.unquote(postt['data'][0]['url']).split('=')[1])#.split('&')[0])
+    #        if 'message' in post:
+    #            self.posts.append(post)
+
+    #    outputData = {}
+    #    serviceName = 'Facebook'
+    #    outputData[serviceName] = {'sent': [], 'pending': []}
+    #    for post in self.getPosts():
+    #        (page, idPost) = post['id'].split('_')
+    #        url = 'https://facebook.com/' + page + '/posts/' + idPost
+    #        outputData[serviceName]['sent'].append((post['message'], url, 
+    #                '', post['created_time'], '','','','',''))
+
+    #    self.postsFormatted = outputData
 
     def processReply(self, reply): 
         res = reply
@@ -186,21 +211,20 @@ class moduleFacebook(Content,Queue):
     #        return(self.report('Facebook', post, link, sys.exc_info()))
 
     def getPostTitle(self, post):
+        title = ''
         if 'message' in post:
-            return(post['message'].replace('\n', ' '))
-        else:
-            return ''
+            title = post['message'].replace('\n', ' ')
+        return title
 
     def getPostLink(self, post):
+        link = ''
         if 'id' in post:
             user, idPost = post['id'].split('_')
-            return('https://facebook.com/{}/posts/{}'.format(user, idPost))
-        else:
-            return ''
+            link = 'https://facebook.com/{}/posts/{}'.format(user, idPost)
+        return(link)
 
     def getPostImages(self,idPost):
         res = []
-        print(self.client)
         post = self.client.get_object('me',fields='id')
         myId = post['id']
         field='attachments'
@@ -211,8 +235,6 @@ class moduleFacebook(Content,Queue):
             res.append(img['media']['image']['src'])
 
         return(res)
-
-
 
 def main():
 
@@ -225,8 +247,15 @@ def main():
     fc = moduleFacebook.moduleFacebook()
 
     fc.setClient('me')
-    sys.exit()
     fc.setPage('Enlaces de fernand0')
+    fc.setPostsType('posts')
+    fc.setPosts()
+    for post in fc.getPosts():
+        print(fc.getPostTitle(post))
+        print(fc.getPostLink(post))
+        print(post)
+        #print("@%s: %s" %(tweet[2], tweet[0]))
+    sys.exit()
     fc.publishPost("Prueba")
     print(fc.user)
     sys.exit()
