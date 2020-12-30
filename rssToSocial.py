@@ -297,14 +297,13 @@ def updateCaches(blog, socialNetworks, simmulate):
 
 
 def prepareUpdates(blogs, simmulate, nowait, timeSlots):
-
     msgLog = "Preparing updates"
     logMsg(msgLog, 1, 2)
 
     delayedBlogs = [] 
 
     for blog in blogs:
-        msgLog = "Site: {}".format(blog.getUrl())
+        msgLog = "Updates for site: {}".format(blog.getUrl())
         logMsg(msgLog, 1, 2)
 
         socialNetworks = blog.getSocialNetworks() 

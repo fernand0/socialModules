@@ -43,6 +43,8 @@ class Content:
             # Deprecated
             self.user = account[1][1]
 
+
+
         try:
             config = configparser.ConfigParser()
             config.read(f"{CONFIGDIR}/.rss{self.service}")
