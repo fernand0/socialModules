@@ -73,9 +73,9 @@ def readConfig(checkBlog):
 
     for section in config.sections(): 
         blog = None
-        logging.info("Section: %s"% section)
+        msgLog = "Section: %s"% section
+        logMsg(msgLog, 1, 1)
         url = config.get(section, "url")
-        print("Section: {}".format(section))
         print(" Url: {}".format(url))
         if 'hold' in config.options(section):
             msgLog = " In hold state"
@@ -148,9 +148,7 @@ def readConfig(checkBlog):
             if ("postaction" in config.options(section)):
                 blog.setPostAction(config.get(section, "postaction"))
 
-            print(config[section])
             blog.setSocialNetworks(config[section])
-            print(blog.getSocialNetworks())
 
             if('max' in config.options(section)):
                 blog.setMax(config.get(section, "max")) 
@@ -174,7 +172,9 @@ def updateCaches(blog, socialNetworks, simmulate):
     msgLog = " Updating Caches"
     logMsg(msgLog, 1, 1)
 
+
     blog.setPosts()
+    
 
     bufferMax = blog.getBufMax()
 
@@ -196,8 +196,8 @@ def updateCaches(blog, socialNetworks, simmulate):
         else:
             lenMax = 1
 
-        msgLog = f"  bufferMax: {bufferMax} lenMax: {lenMax}"
-        logMsg(msgLog, 1, 1)
+        msgLog = f"   bufferMax: {bufferMax} lenMax: {lenMax}"
+        logMsg(msgLog, 1, 0)
         logging.debug("  Service %s Lenmax %d" % (profile, lenMax))
         num = blog.getMax()
         if not num: 
@@ -208,8 +208,8 @@ def updateCaches(blog, socialNetworks, simmulate):
         #    #num = lenMax
         ##else:
         #    num = lenMax
-        msgLog = f"  num: {num} bufferMax: {bufferMax} lenMax: {lenMax}"
-        logMsg(msgLog, 1, 1)
+        msgLog = f"   num: {num} bufferMax: {bufferMax} lenMax: {lenMax}"
+        logMsg(msgLog, 1, 0)
 
         lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
 
@@ -271,9 +271,12 @@ def updateCaches(blog, socialNetworks, simmulate):
                         and (profile[0] in blog.getProgram()))):
                     msgLog = "      Delayed"
                     logMsg(msgLog, 1, 1)
-                    msgLog = "      Adding posts" 
-                    logMsg(msgLog, 1, 1)
-                    link = blog.cache[socialNetwork].addPosts(listPosts)
+                    if listPosts:
+                        msgLog = "      Adding posts" 
+                        logMsg(msgLog, 1, 1)
+                        link = blog.cache[socialNetwork].addPosts(listPosts)
+                    else:
+                        link = ''
 
                     if link:
                          logging.info("    Updating link %s %s" % 
@@ -324,8 +327,8 @@ def prepareUpdates(blogs, simmulate, nowait, timeSlots):
 
 
 def prepareUpdatesBlog(blog, socialNetworks, simmulate, nowait, timeSlots):
-    msgLog = " Preparing Updates"
-    logMsg(msgLog, 1, 1)
+    #msgLog = " Preparing Updates"
+    #logMsg(msgLog, 1, 1)
  
     delayedBlogs = []
     delayedPosts = []

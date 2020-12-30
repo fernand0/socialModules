@@ -33,7 +33,6 @@ class moduleCache(Content,Queue):
 
     def setClient(self, param):
         logging.info(f"setClient {self.service} {param}")
-        print(f"setClient {self.service} {param}")
         self.url = param[0]
         self.postsType = 'posts'
         if isinstance(param, str):
@@ -153,9 +152,8 @@ class moduleCache(Content,Queue):
         if listPosts:
             posts = self.getPosts() + listPosts
             self.assignPosts(posts)
-
-            for i,p in enumerate(posts):
-                print(i, self.getPostTitle(p), self.getPostLink(p))
+            #for i,p in enumerate(posts):
+            #    print(i, self.getPostTitle(p), self.getPostLink(p))
             self.updatePostsCache()
             link = listPosts[len(listPosts) - 1][1]
         return(link)

@@ -212,7 +212,12 @@ class moduleTwitter(Content,Queue):
         return(result)
 
     def getPostId(self, post):
-        return self.getAttribute(post, 'id')
+        if isinstance(post, str):
+            # It is the tweet URL
+            idPost = post.split('/')[-1]
+        else:
+            idPost = self.getAttribute(post, 'id')
+        return  idPost
 
     def getPostTitle(self, post):
         return self.getAttribute(post, 'text')
