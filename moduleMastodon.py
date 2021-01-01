@@ -133,7 +133,7 @@ class moduleMastodon(Content,Queue):
             return(post['content'].replace('\n', ' '))
 
     def getPostLink(self, post): 
-        self.getAttribute(post, 'uri')
+        return self.getAttribute(post, 'uri')
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)

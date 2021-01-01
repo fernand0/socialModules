@@ -253,6 +253,8 @@ def updateCaches(blog, socialNetworks, simmulate):
 
             link = ""
             listPosts = blog.getNumPostsData(num, i, lastLink) 
+            for pp in listPosts:
+                print(pp[0])
 
             if listPosts: 
                 print("      Would schedule ...") 
@@ -284,8 +286,9 @@ def updateCaches(blog, socialNetworks, simmulate):
                          if isinstance(lastLink, list):
                              #print(lastLink)
                              link = '\n'.join([ "{}".format (
-                                 post[1]) for post in listPosts])
+                                 post[1]) for post in reversed(listPosts)])
                              link = link + '\n' + '\n'.join(lastLink)
+
 
 
                          updateLastLink(blog.getUrl(), link, socialNetwork) 

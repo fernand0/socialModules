@@ -44,7 +44,6 @@ class Content:
             self.user = account[1][1]
 
 
-
         try:
             config = configparser.ConfigParser()
             config.read(f"{CONFIGDIR}/.rss{self.service}")
@@ -420,6 +419,8 @@ class Content:
 
     def getLinkPosition(self, link):
         posts = self.getPosts()
+        #for pp in posts:
+        #    print(self.getPostTitle(pp))
         pos = len(posts) 
         if posts:
             if not link:

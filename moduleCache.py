@@ -155,7 +155,7 @@ class moduleCache(Content,Queue):
             #for i,p in enumerate(posts):
             #    print(i, self.getPostTitle(p), self.getPostLink(p))
             self.updatePostsCache()
-            link = listPosts[len(listPosts) - 1][1]
+            link = listPosts[len(listPosts)-1][1]
         return(link)
 
     def updatePostsCache(self):
