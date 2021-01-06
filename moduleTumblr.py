@@ -164,8 +164,6 @@ class moduleTumblr(Content,Queue):
         logging.info("servicename %s" %self.service) 
         print("Publishing %d"% j)                
         print("servicename %s" %self.service) 
-        print("servicename %s" %self.getDirect()) 
-        sys.exit()
         if hasattr(self, 'getPostsType') and (self.getPostsType() == 'queue'): 
             logging.info("Publishing queued state %d"% j)                
             res = self.do_edit(j, newState='published') 

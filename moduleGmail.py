@@ -190,21 +190,24 @@ class moduleGmail(Content,Queue):
     def processPosts(self, posts, label, mode):
         pPosts = []
         typePosts = self.getPostsType()
-        for post in posts[typePosts]: 
-            print(post) 
-            if mode != 'raw':
-               meta = self.getMessageMeta(post['id'],typePosts)
-               message = {}
-               message['list'] = post
-               message['meta'] = meta
-            else:
-               raw = self.getMessageRaw(post['id'],typePosts)
-               message = {}
-               message['list'] = post
-               message['meta'] = ''
-               message['raw'] = raw
+        if typePosts in posts:
+            for post in posts[typePosts]: 
+                print(post) 
+                if mode != 'raw':
+                   meta = self.getMessageMeta(post['id'],typePosts)
+                   message = {}
+                   message['list'] = post
+                   message['meta'] = meta
+                else:
+                   raw = self.getMessageRaw(post['id'],typePosts)
+                   message = {}
+                   message['list'] = post
+                   message['meta'] = ''
+                   message['raw'] = raw
 
-            pPosts.insert(0, message) 
+                pPosts.insert(0, message) 
+        else:
+            pPosts = []
         return pPosts
 
 

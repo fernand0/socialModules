@@ -149,7 +149,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
 
                 # Things can have changed during the waiting
                 element, listP = nextPost(blog,socialNetwork)
-                #print(element)
+
                 #element = element[:-2] +(['austrocylindropuntiasubulata', 'cactus', 'cacti'], ) + element[-1:]
                 #element[-2] = ['austrocylindropuntiasubulata', 'cactus',
                 #        'cacti']
@@ -186,6 +186,8 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                                 link, llink = firstLink, link
                     try: 
                         api = getApi(profile, nick) 
+                        print("a",api)
+                        print("c",api.getClient())
                         if profile in ['wordpress']: 
                             result = api.publishPost(title, link, 
                                     comment, tags=links)

@@ -207,6 +207,8 @@ def main():
            print(blog.getPosts()[i])
            (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content , links, comment) = (blog.obtainPostData(i, False))
            print(title, link, comment)
+           print("l",summaryLinks)
+           print("h",summaryHtml)
        sys.exit()
 
    sys.exit()

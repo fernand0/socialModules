@@ -14,80 +14,135 @@ class moduleImgur(Content,Queue):
 
     def __init__(self):
         super().__init__()
-
-    def setClient(self, idName):
-        logging.info("     Connecting Imgur {}".format(str(idName)))
         self.service = 'Imgur'
 
-        if isinstance(idName, str): 
-            self.name = idName
-        elif isinstance(idName[1], str):
-            self.name = idName[1]
-        else:
-            # Deprecated
-            self.name = idName[1][1]
+    def getKeys(self, config): 
+        client_id = config.get(self.user, 'client_id') 
+        client_secret = config.get(self.user, 'client_secret') 
+        access_token = config.get(self.user, 'access_token') 
+        refresh_token = config.get(self.user, 'refresh_token')
 
-        try:
-            config = configparser.ConfigParser()
-            config.read(CONFIGDIR + '/.rssImgur') 
+        return (client_id, client_secret, access_token, refresh_token) 
 
-            if config.sections(): 
-                self.client_id=config.get(self.name, 'client_id') 
-                self.client_secret=config.get(self.name, 'client_secret') 
-                self.access_token=config.get(self.name, 'access_token') 
-                self.refresh_token=config.get(self.name, 'refresh_token')
+    def initApi(self, keys): 
+       client_id = keys[0] 
+       client_secret = keys[1] 
+       access_token = keys[2] 
+       refresh_token = keys[3] 
 
-                self.client = ImgurClient(self.client_id, self.client_secret, 
-                        self.access_token, self.refresh_token)
-            else:
-                logging.warning("Some problem with configuration file!")
-                self.client = None
-        except:
-            logging.warning("User not configured!")
-            logging.warning("Unexpected error:", sys.exc_info()[0])
+       client = ImgurClient(client_id, client_secret, 
+               access_token, refresh_token)
+       
+       return client
+
+    #def setClientt(self, idName):
+
+    #    if isinstance(idName, str): 
+    #        self.name = idName
+    #    elif isinstance(idName[1], str):
+    #        self.name = idName[1]
+    #    else:
+    #        # Deprecated
+    #        self.name = idName[1][1]
+
+    #    try:
+    #        config = configparser.ConfigParser()
+    #        config.read(CONFIGDIR + '/.rssImgur') 
+
+    #        if config.sections(): 
+    #            self.client_id=config.get(self.name, 'client_id') 
+    #            self.client_secret=config.get(self.name, 'client_secret') 
+    #            self.access_token=config.get(self.name, 'access_token') 
+    #            self.refresh_token=config.get(self.name, 'refresh_token')
+
+    #            self.client = ImgurClient(self.client_id, self.client_secret, 
+    #                    self.access_token, self.refresh_token)
+    #        else:
+    #            logging.warning("Some problem with configuration file!")
+    #            self.client = None
+    #    except:
+    #        logging.warning("User not configured!")
+    #        logging.warning("Unexpected error:", sys.exc_info()[0])
+
+    def setApiCache(self, numPosts=20): 
+        import moduleCache
+        cache = moduleCache.moduleCache()
+        cache.setClient((self.url, (self.service, self.user, 'posts')))
+        cache.setPosts()
+        return cache.getPosts()
 
 
-    def setPosts(self, numPosts=20): 
-        self.posts = []
-        self.drafts = []
-        if self.getPostsType() == 'file':
-            # cache setPosts()
-            fileNameQ = fileNamePath(self.getUrl(), (self.service[0].lower() +
-                self.service[1:], self.name))+'.queue'
-            try:
-                with open(fileNameQ,'rb') as f: 
-                    try: 
-                        listP = pickle.load(f) 
-                    except: 
-                        listP = [] 
-            except:
-                listP = []
-            for post in listP:
-                self.posts = [ post ] + self.posts
-        else:
-            client = self.getClient()
-            if client:
-                for album in client.get_account_albums(self.name):
-                    logging.debug("{} {}".format(time.ctime(album.datetime),
-                        album.title))
-                    text = ""
-                    if album.in_gallery: 
-                        #self.posts.insert(0,album)
-                        self.posts.append(album)
-                    else:
-                        #self.drafts.insert(0,album)
-                        self.drafts.append(album)
+    def setApiPosts(self, numPosts=20): 
+        posts = []
+        client = self.getClient() 
+        if client:
+            for album in client.get_account_albums(self.user):
+                logging.debug("{} {}".format(time.ctime(album.datetime),
+                    album.title))
+                text = ""
+                if album.in_gallery: 
+                    posts.append(album)
             else:
                 logging.warning('No client configured!')
-        self.drafts = self.drafts[0:numPosts]
-        self.posts = self.posts[0:numPosts]
-        # We set some limit
+        return (posts[:numPosts])
+ 
+    def setApiDrafts(self, numPosts=20): 
+        posts = []
+        client = self.getClient()
+
+        if client:
+            for album in client.get_account_albums(self.user):
+                logging.debug("{} {}".format(time.ctime(album.datetime),
+                    album.title))
+                text = ""
+                if not album.in_gallery: 
+                    posts.append(album)
+            else:
+                logging.warning('No client configured!')
+
+        return (posts)
+ 
+    #def setPosts(self, numPosts=20): 
+    #    self.posts = []
+    #    self.drafts = []
+    #    if self.getPostsType() == 'file':
+    #        # cache setPosts()
+    #        fileNameQ = fileNamePath(self.getUrl(), (self.service[0].lower() +
+    #            self.service[1:], self.user))+'.queue'
+    #        try:
+    #            with open(fileNameQ,'rb') as f: 
+    #                try: 
+    #                    listP = pickle.load(f) 
+    #                except: 
+    #                    listP = [] 
+    #        except:
+    #            listP = []
+    #        for post in listP:
+    #            self.posts = [ post ] + self.posts
+    #    else:
+    #        client = self.getClient()
+    #        if client:
+    #            for album in client.get_account_albums(self.user):
+    #                logging.debug("{} {}".format(time.ctime(album.datetime),
+    #                    album.title))
+    #                text = ""
+    #                if album.in_gallery: 
+    #                    #self.posts.insert(0,album)
+    #                    self.posts.append(album)
+    #                else:
+    #                    #self.drafts.insert(0,album)
+    #                    self.drafts.append(album)
+    #        else:
+    #            logging.warning('No client configured!')
+    #    self.drafts = self.drafts[0:numPosts]
+    #    self.posts = self.posts[0:numPosts]
+    #    # We set some limit
                     
     def getPostTitle(self, post):
         return post.title
 
     def getPostLink(self,post):
-        if self.getPostsType() == 'file':
+        if self.getPostsType() == 'cache':
             return post[1]
         else: 
             return post.link
@@ -97,12 +152,14 @@ class moduleImgur(Content,Queue):
 
     def extractDataMessage(self, i):
         posts = self.getPosts()
-        if i < len(posts):
-            post = posts[i]
-            if self.getPostsType() == 'file':
+        if i < len(posts): 
+            if self.getPostsType() == 'cache':
+                # Dirty?
+                post = posts[0]
                 return post
             else:
-                logging.debug("Post: %s"% post)
+                post = posts[i]
+                logging.debug(f"Post: {post}")
                 theTitle = self.getPostTitle(post)
                 theLink = self.getPostLink(post)
                 theId = self.getPostId(post)
@@ -123,7 +180,10 @@ class moduleImgur(Content,Queue):
         # mode
         logging.info("     Publishing in: {}".format(self.service))
         logging.info("      {}".format(str(post)))
+        print("s",self)
+        print("sc",self.client)
         api = self.getClient() 
+        print("c",api)
         idPost = idPost.split('/')[-1]
         try: 
             res = api.share_on_imgur(idPost, post, terms=0)            
@@ -267,31 +327,33 @@ class moduleImgur(Content,Queue):
 
     def getNumPostsData(self, num, i, lastLink): 
         listPosts = []
-        if self.getPostsType() == 'posts':
-            j = 0
-            posts = self.getPosts()
-            #for k,p in enumerate(posts):
-            #    print(k,self.getPostTitle(p), self.getPostLink(p))
-            for ii in range(min(i,len(posts)),0,-1):
-                ii = ii - 1
-                if (ii < 0): break
-                idPost = self.getPostId(posts[ii])
-                title = self.getPostTitle(posts[ii])
-                print(ii, idPost, title)
-                if not (idPost in lastLink): 
-                    # Only posts that have not been posted previously. We
-                    # check by link (post[1]) We don't use this code here.
-                    post = self.obtainPostData(ii) 
-                    listPosts.append(post)
+        posts = self.getPosts()
+        #if True: #self.getPostsType() == 'posts':
+        j = 0
+        #for k,p in enumerate(posts):
+        #    print(k,self.getPostTitle(p), self.getPostLink(p))
+        for ii in range(min(i,len(posts)),0,-1):
+            ii = ii - 1
+            if (ii < 0): break
+            idPost = self.getPostId(posts[ii])
+            title = self.getPostTitle(posts[ii])
+            print(ii, idPost, title)
+            if not (idPost in lastLink): 
+                # Only posts that have not been posted previously. We
+                # check by link (post[1]) We don't use this code here.
+                post = self.obtainPostData(ii) 
+                listPosts.append(post)
 
-                    j = j + 1
-                    if j == num:
-                        break
-        else: 
-            # here we can use the general method, starting at the first
-            # post
-            #i = 1 
-            listPosts = Content.getNumPostsData(self, num, i, lastLink)
+                j = j + 1
+                if j == num:
+                    break
+        #listPosts = reversed(listPosts)
+        #else: 
+        #    # here we can use the general method, starting at the first
+        #    # post
+        #    #i = 1 
+        #    i = len(posts)
+        #    listPosts = Content.getNumPostsData(self, num, i, lastLink)
 
         return(listPosts)
 
@@ -312,10 +374,21 @@ def main():
         print("Account: {}".format(acc))
         img = moduleImgur.moduleImgur()
         section = acc
-        img.setSocialNetworks(config, section)
         url = config.get(acc, 'url')
         img.setUrl(url)
         name = url.split('/')[-1]
+        img.setClient(name)
+        if 'posts' in config[acc]:
+            print("si")
+            img.setPostsType(config.get(acc, 'posts'))
+        print(img.getPostsType())
+        img.setPosts()
+        for i,p in enumerate(img.getPosts()):
+            print(i, img.getPostTitle(p), img.getPostLink(p))
+        continue
+        img.setSocialNetworks(config)
+            
+
 
         if ('cache' in config.options(section)): 
             img.setProgram(config.get(section, "cache"))

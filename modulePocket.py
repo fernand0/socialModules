@@ -52,9 +52,10 @@ class modulePocket(Content,Queue):
 
     def getPostTitle(self, post):
         if 'resolved_title' in post:
-            return(post['resolved_title'])
-        else:
-            return ''
+            title = post['resolved_title']
+            if not title and 'excerpt' in post: 
+                title = '[No title]'
+        return title
 
     def getPostId(self, post):
         if 'item_id' in post:
@@ -63,10 +64,12 @@ class modulePocket(Content,Queue):
             return ''
 
     def getPostLink(self, post):
+        link = ''
         if 'resolved_url' in post:
-            return(post['resolved_url'])
-        else:
-            return ''
+            link = post['resolved_url']
+            if not link and 'given_url' in post: 
+                link = post['given_url']
+        return link
 
     def publishPost(self, post, link, comment):
         logging.info(f"    Publishing in {self.service}: {post}")
@@ -243,10 +246,14 @@ def main():
     p.setClient('fernand0')
 
     p.setPosts()
-    print(p.getPosts())
+    #print(p.getPosts())
 
     for i, post in enumerate(p.getPosts()):
         print(i, p.getPostTitle(post), p.getPostLink(post))
+
+    #i=7
+    #print(i,p.getTitle(i))
+    sys.exit()
         
     p.setSocialNetworks(config)
     print(p.getSocialNetworks())

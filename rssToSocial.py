@@ -73,10 +73,11 @@ def readConfig(checkBlog):
 
     for section in config.sections(): 
         blog = None
-        msgLog = "Section: %s"% section
-        logMsg(msgLog, 1, 1)
         url = config.get(section, "url")
         print(" Url: {}".format(url))
+        msgLog = f"Section: {section} Url: {url}"
+        logMsg(msgLog, 1, 1)
+
         if 'hold' in config.options(section):
             msgLog = " In hold state"
             logMsg(msgLog, 1, 1)
@@ -172,9 +173,9 @@ def updateCaches(blog, socialNetworks, simmulate):
     msgLog = " Updating Caches"
     logMsg(msgLog, 1, 1)
 
-
     blog.setPosts()
-    
+    #for i, pp in enumerate(blog.getPosts()):
+    #    print(i,blog.getPostTitle(pp))
 
     bufferMax = blog.getBufMax()
 
@@ -196,9 +197,8 @@ def updateCaches(blog, socialNetworks, simmulate):
         else:
             lenMax = 1
 
-        msgLog = f"   bufferMax: {bufferMax} lenMax: {lenMax}"
-        logMsg(msgLog, 1, 0)
-        logging.debug("  Service %s Lenmax %d" % (profile, lenMax))
+        msgLog = f"  Service {profile} BufferMax {bufferMax} Lenmax {lenMax}"
+        logMsg(msgLog, 1, 1)
         num = blog.getMax()
         if not num: 
             num = bufferMax - lenMax
@@ -249,12 +249,15 @@ def updateCaches(blog, socialNetworks, simmulate):
 
         listPosts = []
 
+        #print(num)
+        #print(i)
+        #print(lastLink)
         if (num > 0):
 
             link = ""
             listPosts = blog.getNumPostsData(num, i, lastLink) 
-            for pp in listPosts:
-                print(pp[0])
+            #for i, pp in enumerate(listPosts):
+            #    print(i, pp[0])
 
             if listPosts: 
                 print("      Would schedule ...") 
@@ -436,6 +439,7 @@ def main():
     delayedBlogs = []
 
     blogs = readConfig(checkBlog)
+    print("2")
     delayedBlogs = prepareUpdates(blogs, simmulate, nowait, timeSlots)
     if not simmulate and delayedBlogs: 
         startPublishing(delayedBlogs)

@@ -33,16 +33,17 @@ class moduleCache(Content,Queue):
 
     def setClient(self, param):
         logging.info(f"setClient {self.service} {param}")
-        self.url = param[0]
         self.postsType = 'posts'
         if isinstance(param, str):
             self.url = param
             self.user = param
             logging.warning("This is not possible!")
         elif isinstance(param[1], str):
+            self.url = param[0]
             self.service = param[1] 
             self.nick = param[2]
         else: 
+            self.url = param[0]
             self.service = param[1][0] 
             self.nick = param[1][1]
 
@@ -53,6 +54,7 @@ class moduleCache(Content,Queue):
         url = self.getUrl()
         service = self.getService()
         nick = self.getNick()
+        logging.debug(f"Url {url} service {service} nick {nick}")
         fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
         logging.debug("File %s" % fileNameQ)
         try:
@@ -66,7 +68,7 @@ class moduleCache(Content,Queue):
 
         return(listP)
 
-    #def setPosts(self):        
+    #def setPostt(self):        
     #    logging.debug("Service %s Nick %s" % (self.service, self.nick))
     #    fileNameQ = fileNamePath(self.url, 
     #            (self.service, self.nick)) + ".queue"
@@ -150,12 +152,16 @@ class moduleCache(Content,Queue):
     def addPosts(self, listPosts):
         link = ''
         if listPosts:
-            posts = self.getPosts() + listPosts
+            posts = self.getPosts()
+            for pp in listPosts:
+                posts.append(pp)
+            #for i, pp in enumerate(posts):
+            #    print(i, pp)
+            #    link = pp[1]
             self.assignPosts(posts)
-            #for i,p in enumerate(posts):
-            #    print(i, self.getPostTitle(p), self.getPostLink(p))
+            for i,p in enumerate(posts):
+                print(i, self.getPostTitle(p), self.getPostLink(p))
             self.updatePostsCache()
-            link = listPosts[len(listPosts)-1][1]
         return(link)
 
     def updatePostsCache(self):

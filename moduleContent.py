@@ -43,7 +43,6 @@ class Content:
             # Deprecated
             self.user = account[1][1]
 
-
         try:
             config = configparser.ConfigParser()
             config.read(f"{CONFIGDIR}/.rss{self.service}")
@@ -81,6 +80,7 @@ class Content:
 
     def setPosts(self):
         nick = self.getNick()
+        url = self.getUrl()
         if nick:
             identifier = nick
         else:
@@ -89,7 +89,12 @@ class Content:
         logging.info(f"  Setting posts in {self.service} ({identifier})")
 
         if hasattr(self, 'getPostsType'):
-            cmd = getattr(self, 'setApi'+self.getPostsType().capitalize())
+            typePosts = self.getPostsType()
+            if typePosts == 'cache':
+                print("s",self.service)
+                cmd = getattr(self, 'setApiCache')
+            else: 
+                cmd = getattr(self, 'setApi'+self.getPostsType().capitalize())
         else:
             cmd = getattr(self, 'setApiPosts')
         self.assignPosts(cmd())
@@ -159,6 +164,11 @@ class Content:
 
     def getPosts(self):
         posts = self.posts
+        #if hasattr(self, 'getPostsType'): 
+        #    if self.getPostsType() == 'cache':
+        #        print(self.cache)
+        #        posts = self.cache
+        
         #if hasattr(self, 'getPostsType'): 
         #    if self.getPostsType() == 'drafts': 
         #        posts = self.drafts
@@ -379,6 +389,7 @@ class Content:
                     cache = moduleCache.moduleCache() 
                     param = (self.url, (service, nick))
                     cache.setClient(param)
+                    cache.setUrl(self.getUrl())
                     cache.setPosts()
                     self.cache[(service, nick)] = cache
 
