@@ -44,7 +44,7 @@ class Content:
             self.user = account[1][1]
 
         try:
-            config = configparser.ConfigParser()
+            config = configparser.RawConfigParser()
             config.read(f"{CONFIGDIR}/.rss{self.service}")
             keys = self.getKeys(config)
 
@@ -78,7 +78,7 @@ class Content:
             result = post[selector]
         return result
 
-    def setPosts(self):
+    def setPosts(self, numPosts=100):
         nick = self.getNick()
         url = self.getUrl()
         if nick:
@@ -97,7 +97,8 @@ class Content:
                 cmd = getattr(self, 'setApi'+self.getPostsType().capitalize())
         else:
             cmd = getattr(self, 'setApiPosts')
-        self.assignPosts(cmd())
+        self.assignPosts(cmd(numPosts))
+
 
     def getClient(self):
         client = None
@@ -198,7 +199,8 @@ class Content:
     def getId(self, j):
         idPost = -1
         if j < len(self.getPosts()): 
-            post = self.getPosts(j)
+            post = self.getPost(j)
+            logging.info(f"Post: {post}")
             idPost =  self.getPostId(post)
         return(idPost)
 
@@ -227,7 +229,8 @@ class Content:
         if hasattr(self, 'drafts'): 
             return self.drafts
         else:
-            return None
+            if hasattr(self, 'getPostsType'):
+                return self.getPosts()
 
     def setPostsType(self, postsType):
         self.postsType = postsType

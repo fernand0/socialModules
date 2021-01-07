@@ -165,6 +165,10 @@ class moduleSlack(Content,Queue):
                 url=text[pos+1:-1]
             return(url) 
 
+    def getPostId(self, post):
+        idPost = self.getAttribute(post, 'ts')
+        return idPost
+        
     def publish(self, j):
         logging.info("Publishing %d"% j)
         post = self.obtainPostData(j)

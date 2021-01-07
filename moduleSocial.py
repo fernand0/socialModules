@@ -165,20 +165,25 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                     logMsg(msgLog, 1, 1)
 
                     result = None
+
                     # Destination
                     if profile in ['twitter', 'facebook', 'mastodon', 
                             'imgur', 'wordpress','linkedin', 'tumblr',
-                            'pocket', 'medium']: 
+                            'pocket', 'medium','telegram']: 
                         if profile in ['telegram', 'facebook']: 
                             comment = summaryLinks 
-                            pos1 = comment.find('http://fernand0.blogalia') 
-                            if pos1 >=0: 
-                                pos2 = comment.find(' ',pos1+1) 
-                                pos3 = comment.find('\n',pos1+1) 
-                                pos2 = min(pos2, pos3) 
-                                logging.info(comment) 
-                                comment = "\n{}(Enlace censurado por Facebook){}".format( comment[:pos1-1], comment[pos2:]) 
-                                logging.debug(comment) 
+                        if profile in ['facebook']: 
+                            pos1 = 0
+                            while pos1>=0:
+                                pos1 = comment.find('http://fernand0.blogalia',pos1) 
+                                if pos1 >=0: 
+                                    pos2 = comment.find(' ',pos1+1) 
+                                    pos3 = comment.find('\n',pos1+1) 
+                                    pos2 = min(pos2, pos3) 
+                                    logging.info(comment) 
+                                    comment = "\n{}(Enlace censurado por Facebook){}".format( comment[:pos1-1], comment[pos2:]) 
+                                    logging.debug(comment) 
+                                    pos1=pos2
                         elif profile == 'medium': 
                             comment = summaryHtml 
                         elif profile == 'pocket': 

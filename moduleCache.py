@@ -50,7 +50,7 @@ class moduleCache(Content,Queue):
     def getSocialNetwork(self):
         return (self.service, self.nick)
 
-    def setApiPosts(self):        
+    def setApiPosts(self, numPosts=20):        
         url = self.getUrl()
         service = self.getService()
         nick = self.getNick()
@@ -158,9 +158,10 @@ class moduleCache(Content,Queue):
             #for i, pp in enumerate(posts):
             #    print(i, pp)
             #    link = pp[1]
+            link = listPosts[-1][1]
             self.assignPosts(posts)
-            for i,p in enumerate(posts):
-                print(i, self.getPostTitle(p), self.getPostLink(p))
+            #for i,p in enumerate(posts):
+            #    print(i, self.getPostTitle(p), self.getPostLink(p))
             self.updatePostsCache()
         return(link)
 

@@ -74,14 +74,13 @@ def readConfig(checkBlog):
     for section in config.sections(): 
         blog = None
         url = config.get(section, "url")
-        print(" Url: {}".format(url))
-        msgLog = f"Section: {section} Url: {url}"
-        logMsg(msgLog, 1, 1)
+        msgLog = f"Section: {section} | Url: {url}"
 
         if 'hold' in config.options(section):
-            msgLog = " In hold state"
+            msgLog = msgLog + " -> In hold state"
             logMsg(msgLog, 1, 1)
             continue
+        logMsg(msgLog, 1, 1)
         if (not checkBlog) or (checkBlog.upper() == section.upper()):
             if ("rss" in config.options(section)):
                 rssFeed = config.get(section, "rss")
@@ -439,7 +438,6 @@ def main():
     delayedBlogs = []
 
     blogs = readConfig(checkBlog)
-    print("2")
     delayedBlogs = prepareUpdates(blogs, simmulate, nowait, timeSlots)
     if not simmulate and delayedBlogs: 
         startPublishing(delayedBlogs)

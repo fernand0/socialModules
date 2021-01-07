@@ -97,8 +97,10 @@ class moduleImgur(Content,Queue):
                 text = ""
                 if not album.in_gallery: 
                     posts.append(album)
-            else:
-                logging.warning('No client configured!')
+                    logging.debug("Draft {} {}".format(time.ctime(album.datetime), 
+                        album.title))
+        else:
+            logging.warning('No client configured!')
 
         return (posts)
  

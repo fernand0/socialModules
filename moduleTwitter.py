@@ -99,11 +99,11 @@ class moduleTwitter(Content,Queue):
 
     #    self.client = t
 
-    def setApiPosts(self):
+    def setApiPosts(self,numPosts=20):
         posts = self.getClient().statuses.user_timeline()
         return posts
 
-    def setApiFavs(self): 
+    def setApiFavs(self, numposts=20): 
         posts = self.getClient().favorites.list(count=100)
         return posts
 

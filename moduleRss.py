@@ -97,6 +97,10 @@ class moduleRss(Content,Queue):
         else:
             comment = ""#theSummary
 
+        pos = theLink.find('?source=rss')
+        if pos >=0:
+            theLink = theLink[:pos]
+
         theSummaryLinks = ""
 
         soup = BeautifulSoup(theDescription, 'lxml')
@@ -146,7 +150,7 @@ class moduleRss(Content,Queue):
             theImage = self.extractImage(soup)
         logging.debug("theImage %s"% theImage)
         theLinks = theSummaryLinks
-        theSummaryLinks = theContent + theLinks
+        theSummaryLinks = theContent + '\n' + theLinks
             
         logging.debug("=========")
         logging.debug("Results: ")
