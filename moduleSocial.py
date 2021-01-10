@@ -150,13 +150,6 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                 # Things can have changed during the waiting
                 element, listP = nextPost(blog,socialNetwork)
 
-
-                #element = element[:-2] +(['austrocylindropuntiasubulata', 'cactus', 'cacti'], ) + element[-1:]
-                #element[-2] = ['austrocylindropuntiasubulata', 'cactus',
-                #        'cacti']
-                #print(element)
-
-               
                 if element:
                     (title, link, firstLink, image, summary, summaryHtml, 
                             summaryLinks, content, links, comment) = element
@@ -176,7 +169,8 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                         if profile in ['facebook']: 
                             pos1 = 0
                             while pos1>=0:
-                                pos1 = comment.find('http://fernand0.blogalia',pos1) 
+                                pos1 = comment.find(
+                                        'http://fernand0.blogalia',pos1) 
                                 if pos1 >=0: 
                                     pos2 = comment.find(' ',pos1+1) 
                                     pos3 = comment.find('\n',pos1+1) 
@@ -233,7 +227,6 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                         else:
                             print("What happened?")
 
-                       
                     if j+1 < numPosts:
                         logger.info("Time: %s Waiting ... %.2f minutes to schedule next post in %s" % (time.asctime(), tSleep2/60, socialNetwork[0]))
                         time.sleep(tSleep2) 

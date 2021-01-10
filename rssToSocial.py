@@ -280,8 +280,8 @@ def updateCaches(blog, socialNetworks, simmulate):
                     (blog.getProgram() 
                         and isinstance(blog.getProgram(), str) 
                         and (profile[0] in blog.getProgram()))):
-                    msgLog = "      Delayed"
-                    logMsg(msgLog, 1, 1)
+                    #msgLog = "      Delayed"
+                    #logMsg(msgLog, 1, 1)
                     if listPosts:
                         msgLog = "      Adding posts" 
                         logMsg(msgLog, 1, 1)
