@@ -241,10 +241,10 @@ class Content:
             postsType = self.postsType 
         return postsType
 
-    def publishPost(self, post, link='', comment=''):
+    def publishPost(self, post, link='', comment='', **more):
         logging.info(f"    Publishing in {self.service}: {post}")
         try: 
-            reply = self.publishApiPost((post,link,comment))
+            reply = self.publishApiPost((post,link,comment,more))
             return (self.processReply(reply))
         except:        
             return(self.report(self.service, post, link, sys.exc_info())) 
@@ -452,9 +452,10 @@ class Content:
                     # When there are duplicates (there shouldn't be) it returns
                     # the last one
                     pos = i
-            return(pos)
+                    print(url[:lenCmp],linkS[:lenCmp])
         else:
-            return -1
+            pos =  -1
+        return(pos)
 
     def datePost(self, pos):
         #print(self.getPosts())

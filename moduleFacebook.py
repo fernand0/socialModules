@@ -103,7 +103,7 @@ class moduleFacebook(Content,Queue):
                     # Publishing as me 
                     self.page = facebookAC 
 
-    def setApiPosts(self):
+    def setApiPosts(self, numPosts=20):
         posts = []
         count = 5
         postsF = self.page.get_connections(self.pageId, 

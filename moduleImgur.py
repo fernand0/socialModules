@@ -143,6 +143,12 @@ class moduleImgur(Content,Queue):
     def getPostTitle(self, post):
         return post.title
 
+    def getLinkPosition(self, link):
+        if self.getPostsType() == 'posts':
+            return len(self.getPosts())
+        else:
+            return Content.getLinkPosition(self, link)
+
     def getPostLink(self,post):
         if self.getPostsType() == 'cache':
             return post[1]
@@ -331,6 +337,8 @@ class moduleImgur(Content,Queue):
         listPosts = []
         posts = self.getPosts()
         #if True: #self.getPostsType() == 'posts':
+        num = 1
+        # Only one post each time
         j = 0
         #for k,p in enumerate(posts):
         #    print(k,self.getPostTitle(p), self.getPostLink(p))
@@ -340,7 +348,8 @@ class moduleImgur(Content,Queue):
             idPost = self.getPostId(posts[ii])
             title = self.getPostTitle(posts[ii])
             print(ii, idPost, title)
-            if not (idPost in lastLink): 
+            if (not ((idPost in lastLink) 
+                or ('https://imgur.com/a/'+idPost in lastLink))): 
                 # Only posts that have not been posted previously. We
                 # check by link (post[1]) We don't use this code here.
                 post = self.obtainPostData(ii) 
@@ -384,11 +393,18 @@ def main():
             print("si")
             img.setPostsType(config.get(acc, 'posts'))
         print(img.getPostsType())
-        img.setPosts()
+        img.setPosts(100)
+        socialNetwork = (config[acc]['cache'], 
+                config[acc][config[acc]['cache']])
+        print(socialNetwork)
+        lastLink, lastTime = checkLastLink(img.getUrl(), socialNetwork)
         for i,p in enumerate(img.getPosts()):
-            print(i, img.getPostTitle(p), img.getPostLink(p))
+            link = img.getPostLink(p)
+            #print(i, img.getPostTitle(p), img.getPostLink(p))
+            if not (link in lastLink): 
+                print(i, img.getPostTitle(p), img.getPostLink(p))
+        #print(lastLink)
         continue
-        img.setSocialNetworks(config)
             
 
 

@@ -196,8 +196,8 @@ def updateCaches(blog, socialNetworks, simmulate):
         else:
             lenMax = 1
 
-        msgLog = f"  Service {profile} BufferMax {bufferMax} Lenmax {lenMax}"
-        logMsg(msgLog, 1, 1)
+        msgLog = f"   BufferMax {bufferMax} Lenmax {lenMax}"
+        logMsg(msgLog, 1, 0)
         num = blog.getMax()
         if not num: 
             num = bufferMax - lenMax
@@ -207,9 +207,6 @@ def updateCaches(blog, socialNetworks, simmulate):
         #    #num = lenMax
         ##else:
         #    num = lenMax
-        msgLog = f"   num: {num} bufferMax: {bufferMax} lenMax: {lenMax}"
-        logMsg(msgLog, 1, 0)
-
         lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
 
         if isinstance(lastLink, list):
@@ -220,28 +217,35 @@ def updateCaches(blog, socialNetworks, simmulate):
         else:
             myLastLink = lastLink
 
+        #if lastLink and isinstance(lastLink, list):
+        #    myLastLink = lastLink[0]
+        #else:
+        #    myLastLink = lastLink
+
         i = blog.getLinkPosition(myLastLink)
+        
+        msgLog = "    Last time: {}".format(
+                    time.strftime('%Y-%m-%d %H:%M:%S', 
+                    time.localtime(lastTime))) 
+        logMsg(msgLog, 1, 1) 
+
+        msgLog = "    Last link: {}".format(myLastLink) 
+        logMsg(msgLog, 1, 1)
+
+        msgLog = f"    Would add {num} posts"
+        logMsg(msgLog, 1, 1)
+
         if (i == 0):
-            msgLog = "   No new posts."
+            msgLog = "    No new posts."
         else:
-            msgLog = "   New posts."
+            msgLog = "    New posts."
+
+        logMsg(msgLog, 1, 1)
 
         hours = blog.getTime() 
 
-        if lastLink and isinstance(lastLink, list):
-            myLastLink = lastLink[0]
-        else:
-            myLastLink = lastLink
-
-        msgLog = "    Profile {}".format(profile.capitalize())
-        logMsg(msgLog, 2, 0)
-
-        msgLog = "    Last time: {}".format(time.strftime('%Y-%m-%d %H:%M:%S', 
-                    time.localtime(lastTime)))
-        logMsg(msgLog, 1, 1)
-
-        msgLog = "    Last link: {}".format(myLastLink)
-        logMsg(msgLog, 1, 1)
+        #msgLog = "    Profile {}".format(profile.capitalize())
+        #logMsg(msgLog, 2, 0)
 
         #msgLog = "bufferMax - lenMax = num %d %d %d"% (bufferMax, lenMax, num)
         #logMsg(msgLog, 2, 0)
@@ -255,14 +259,17 @@ def updateCaches(blog, socialNetworks, simmulate):
 
             link = ""
             listPosts = blog.getNumPostsData(num, i, lastLink) 
+            #print(num)
             #for i, pp in enumerate(listPosts):
             #    print(i, pp[0])
+            #sys.exit()
 
             if listPosts: 
                 print("      Would schedule ...") 
-                [ print("       - Posts: {}".format(post[0])) 
+                logging.info("      Would schedule ...") 
+                [ print("       - {}".format(post[0])) 
                         for post in listPosts ] 
-                [ logging.info("    Scheduling posts {}".format(post[0])) 
+                [ logging.info("     - {}".format(post[0])) 
                         for post in listPosts ]
 
             if simmulate:

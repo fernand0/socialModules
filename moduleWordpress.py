@@ -177,10 +177,46 @@ class moduleWordpress(Content,Queue):
                         
         return(idTags)
 
-    def publishApiPost(self, post, link='', comment='', tags=[]):
-        pass
+    def processReply(self, reply): 
+        res = reply
+        if res.ok: 
+            logging.info("Res: %s" % res)
+            resJ = json.loads(res.text)
+            logging.debug("Res text: %s" % resJ)
+            logging.debug("Res slug: %s" % resJ['generated_slug'])
+            title = resJ['title']['raw']
+            res = "{} - \n https://{}/{}".format(title, self.my_site,
+                resJ['generated_slug'])
+        else: 
+            tres = type(res)
+            logging.info(f"Res: {res} type {tres}")
+            print(f"Res: {res} type {tres}")
+            res = "Fail!"
+        return res
 
-    def publishPost(self, post, link='', comment='', tags=[]):
+    def publishApiPost(self, postData): 
+        if len(postData)>3:
+           tags = postData[3]['tags']
+           idTags = self.checkTags(tags)
+           logging.info("     Tags: {idTags}")
+           idTags = ','.join(str(v) for v in idTags) 
+        else: 
+           idTags = "" 
+        title = postData[0]
+        link = postData[1]
+        comment = postData[2]
+        payload = {"title":title,
+                 "content":comment, 
+                 "status":'publish',
+                 # One of: publish, future, draft, pending, private
+                 'tags':idTags}
+        res = requests.post(self.api_base2 
+                + self.api_posts.format(self.my_site), 
+                headers = self.headers, 
+                data = payload) 
+        return res
+
+    def publishPostt(self, post, link='', comment='', tags=[]):
         logging.debug("     Publishing in Wordpress...")
         title = post
         res = None
@@ -213,7 +249,7 @@ class moduleWordpress(Content,Queue):
                     resJ['generated_slug']))
             else: 
                 tres = type(res)
-                logginf.info(f"Res: {res} type {tres}")
+                logging.info(f"Res: {res} type {tres}")
                 print(f"Res: {res} type {tres}")
                 return("Fail!")
         except KeyError:
@@ -339,7 +375,7 @@ def main():
     #wp.setPostsType('posts')
     #wp.setPosts(5)
     #if res[:4] == 'Fail':
-    #   wp.authorize()
+    # wp.authorize()
 
     print("Testing tags")
     wp.setTags()
@@ -356,10 +392,10 @@ def main():
 
     sel = input('Select one ')
     pos =  int(sel)
-    post = wp.getPosts()[pos]
+    post = wp.getPost(pos)
     print("{}) {} {}".format(pos, wp.getPostTitle(post), 
             wp.getPostLink(post)))
-    wp.publishPost("prueba", '', "lala")
+    wp.publishPost(wp.getPostTitle(post), wp.getPostLink(post), '')
     sys.exit()
 
     wp.publishPost(post, '', title)
@@ -376,7 +412,7 @@ def main():
     #    #input('next?')
 
     print("Testing posting")
-    print(title, post)
+    #print(title, post)
 
     sys.exit()
 

@@ -34,7 +34,6 @@ def logMsg(msgLog, log=1, output=1):
         print("====================================") 
         print("{}".format(msgLog)) 
         print("====================================") 
-        print("")
  
 def fileNamePath(url, socialNetwork=()):
     if not socialNetwork: 
