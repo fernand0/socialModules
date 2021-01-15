@@ -101,8 +101,9 @@ class moduleWordpress(Content,Queue):
         with open(configWordpress, 'w') as configfile:
             config.write(configfile)
 
-    def setApiPosts(self, numPosts=100, morePosts=False): 
+    def setApiPosts(self, morePosts=False): 
         posts = []
+        numPosts = 100
         try: 
             posts = requests.get(self.api_base + 
                     self.api_posts.format(self.my_site)+f'?number={numPosts}', 

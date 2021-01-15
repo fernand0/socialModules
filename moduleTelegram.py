@@ -12,8 +12,30 @@ class moduleTelegram(Content):
 
     def __init__(self):
         super().__init__()
+        self.service = 'Telegram'
 
-    def setClient(self, channel):
+    def getKeys(self,config):
+        print(config)
+        print(config.get('Telegram','TOKEN'))
+        TOKEN = config['Telegram']['TOKEN']
+        print(TOKEN)
+        return((TOKEN, ))
+
+    def initApi(self, keys):
+        logging.info("     Connecting Telegram")
+        TOKEN = keys[0]
+        try: 
+            bot = telepot.Bot(TOKEN) 
+            meMySelf = bot.getMe() 
+        except: 
+            logging.warning("Telegram authentication failed!") 
+            logging.warning("Unexpected error:", sys.exc_info()[0])
+
+        self.user = meMySelf
+        #self.channel = channel
+        return bot
+
+    def setClientt(self, channel):
         logging.info("     Connecting Telegram")
         try:
             config = configparser.ConfigParser() 
@@ -35,10 +57,14 @@ class moduleTelegram(Content):
         self.user = meMySelf
         self.channel = channel
 
+    def setChannel(self, channel):
+        self.channel = channel
+
     def setPosts(self):
         logging.info("  Setting posts")
         self.posts = []
-        self.posts = self.client.getUpdates(allowed_updates='message')
+        self.posts = self.getClient().getUpdates(allowed_updates='message')
+        print(self.posts)
 
     def publishPost(self, post, link, comment):
         logging.info("    Publishing in Telegram...")
@@ -89,14 +115,21 @@ class moduleTelegram(Content):
 
 
 def main():
+
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
+
     import moduleTelegram
 
     tel = moduleTelegram.moduleTelegram()
 
-    tel.setClient('testFernand0')
+    tel.setClient('Telegram')
+    tel.setChannel('testFernand0')
 
     print("Testing posts")
     tel.setPosts()
+
     for post in tel.getPosts():
         print(post)
 
@@ -107,6 +140,8 @@ def main():
         title = tel.getPostTitle(post)
         link = tel.getPostLink(post)
         print("Title: {}\nLink: {}\n".format(title,link))
+
+    sys.exit()
 
 if __name__ == '__main__':
     main()

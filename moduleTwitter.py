@@ -99,12 +99,12 @@ class moduleTwitter(Content,Queue):
 
     #    self.client = t
 
-    def setApiPosts(self,numPosts=20):
+    def setApiPosts(self):
         posts = self.getClient().statuses.user_timeline()
         return posts
 
-    def setApiFavs(self, numposts=20): 
-        posts = self.getClient().favorites.list(count=100)
+    def setApiFavs(self): 
+        posts = self.getClient().favorites.list() #count=100)
         return posts
 
     #def setPosts(self):
@@ -318,6 +318,14 @@ def main():
 
     tw.setPostsType("favs")
     tw.setPosts()
+
+    for post in tw.getPosts():
+        title = tw.getPostTitle(post)
+        link = tw.getPostLink(post)
+        url = tw.getPostUrl(post)
+        print("Title: {}\nLink: {}\nUrl:{}\n".format(title,link,url))
+    print(len(tw.getPosts()))
+
 
 
     i=0

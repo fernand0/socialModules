@@ -138,7 +138,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
             diffTime = time.time() - lastTime #- round(float(hours)*60*60)
 
             if (nowait or diffTime > hours):
-                msgLog = " [d] {} -> {} ({}): waiting... {:.2f} minutes".format(
+                msgLog = " {} -> {} ({}): waiting... {:.2f} minutes".format(
                         urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0], 
                         profile, nick , tSleep/60) 
                 fileNameNext = setNextTime(blog, socialNetwork, tNow, tSleep)
@@ -154,7 +154,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                     (title, link, firstLink, image, summary, summaryHtml, 
                             summaryLinks, content, links, comment) = element
 
-                    msgLog = " [d] Publishing in: {} ({}) at {}".format(
+                    msgLog = " Publishing in: {} ({}) at {}".format(
                             profile.capitalize(), nick, time.asctime())
                     logMsg(msgLog, 1, 1)
 
@@ -200,15 +200,15 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                     if  isinstance(result, int):
                         result = str(result)
                     if isinstance(result, str):
-                        if result[:4]=='Fail':
-                            link=''
-                        elif result[:21] == 'Wordpress API expired':
-                            print(" [d] Not published: {} - {}".format(
-                                result, 'Fail'))
+                        if ((result[:4]=='Fail') or
+                                (result[:21] == 'Wordpress API expired')):
+                            print(" Not published: {} ({}) - Res: {}".format(
+                                profile.capitalize(), nick, result))
+                            link = ''
                             result = 'Fail!'
                         else: 
-                            print(" [d] Published: {} - {}".format(
-                                result, 'OK'))
+                            print(" Published in: {} ({}):\n  Res: {}".format( 
+                                profile.capitalize(), nick, result))
                             result = 'OK'
                     else:
                         result = 'OK'
@@ -230,8 +230,8 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                     if j+1 < numPosts:
                         logger.info("Time: %s Waiting ... %.2f minutes to schedule next post in %s" % (time.asctime(), tSleep2/60, socialNetwork[0]))
                         time.sleep(tSleep2) 
-                    msgLog = " [d] Finished in: {} at {}".format(
-                            profile.capitalize(), time.asctime())
+                    msgLog = " Finished in: {} ({}) at {}".format(
+                            profile.capitalize(), nick, time.asctime())
                     logMsg(msgLog, 1, 1)
                 else: 
                     result == ''
@@ -306,64 +306,4 @@ if __name__ == "__main__":
         timeSlots = 60*60
     if listPosts:
         moduleSocial.publishDelayTwitter(blog, listPosts ,'fernand0Test', timeSlots)
-
-#def publishDirect(blog, socialNetwork, i): 
-#    link = None
-#    if (i > 0): 
-#        profile = socialNetwork[0]
-#        nick = socialNetwork[1]
-#        (title, link, firstLink, image, summary, summaryHtml, 
-#                summaryLinks, content , links, comment) = (blog.obtainPostData(i - 1, False)) 
-#        logging.info("  Publishing directly\n") 
-#        serviceName = profile.capitalize() 
-#        print("   Publishing in %s %s" % (serviceName, title))
-#        if profile in ['telegram', 'facebook']:
-#            comment = summaryLinks
-#        elif profile == 'medium': 
-#            comment = summaryHtml
-#        else:
-#            comment = ''
-#
-#        if (profile in ['twitter', 'facebook', 'telegram', 'mastodon', 
-#            'linkedin', 'pocket', 'medium', 'instagram']): 
-#            # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically 
-#            import importlib 
-#            mod = importlib.import_module('module'+serviceName) 
-#            cls = getattr(mod, 'module'+serviceName) 
-#            api = cls() 
-#            api.setClient(nick) 
-#            if profile in ['facebook']: 
-#                pos1= comment.find('http://fernand0.blogalia')
-#                if pos1 >=0:
-#                    pos2 = comment.find(' ',pos1+1)
-#                    pos3 = comment.find('\n',pos1+1)
-#                    pos2 = min(pos2, pos3)
-#                    logging.info(comment)
-#                    comment = "{}(Enlace censurado por Facebook){}".format(
-#                            comment[:pos1-1],
-#                            comment[pos2:])
-#
-#                    logging.info(comment)
-#                else:
-#                    comment = None
-#                #url = link
-#                #apiurl = "http://tinyurl.com/api-create.php?url=" 
-#                #tinyurl = urllib.request.urlopen(apiurl + url).read() 
-#                #link = tinyurl.decode("utf-8")
-#            #print(link)
-#            result = api.publishPost(title, link, comment) 
-#            logging.debug(result) 
-#            if isinstance(result, str): 
-#                logging.info("Result %s"%str(result)) 
-#                if result[:4]=='Fail': 
-#                    logging.debug("Fail detected %s"%str(result)) 
-#                    if ((result.find('duplicate')>=0) or 
-#                            (result.find('abusive')>=0)): 
-#                        duplicate = True 
-#                        link='' 
-#                        logging.info("Posting failed") 
-#                elif result.find('Bad Request')>=0: 
-#                    link='' 
-#                    logging.info("Posting failed") 
-#    return link
 

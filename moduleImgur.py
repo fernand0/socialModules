@@ -64,7 +64,7 @@ class moduleImgur(Content,Queue):
     #        logging.warning("User not configured!")
     #        logging.warning("Unexpected error:", sys.exc_info()[0])
 
-    def setApiCache(self, numPosts=20): 
+    def setApiCache(self): 
         import moduleCache
         cache = moduleCache.moduleCache()
         cache.setClient((self.url, (self.service, self.user, 'posts')))
@@ -72,7 +72,7 @@ class moduleImgur(Content,Queue):
         return cache.getPosts()
 
 
-    def setApiPosts(self, numPosts=20): 
+    def setApiPosts(self): 
         posts = []
         client = self.getClient() 
         if client:
@@ -84,9 +84,9 @@ class moduleImgur(Content,Queue):
                     posts.append(album)
             else:
                 logging.warning('No client configured!')
-        return (posts[:numPosts])
+        return (posts)
  
-    def setApiDrafts(self, numPosts=20): 
+    def setApiDrafts(self): 
         posts = []
         client = self.getClient()
 
@@ -188,10 +188,10 @@ class moduleImgur(Content,Queue):
         # mode
         logging.info("     Publishing in: {}".format(self.service))
         logging.info("      {}".format(str(post)))
-        print("s",self)
-        print("sc",self.client)
+        #print("s",self)
+        #print("sc",self.client)
         api = self.getClient() 
-        print("c",api)
+        #print("c",api)
         idPost = idPost.split('/')[-1]
         try: 
             res = api.share_on_imgur(idPost, post, terms=0)            
@@ -347,7 +347,7 @@ class moduleImgur(Content,Queue):
             if (ii < 0): break
             idPost = self.getPostId(posts[ii])
             title = self.getPostTitle(posts[ii])
-            print(ii, idPost, title)
+            #print(ii, idPost, title)
             if (not ((idPost in lastLink) 
                 or ('https://imgur.com/a/'+idPost in lastLink))): 
                 # Only posts that have not been posted previously. We

@@ -51,14 +51,14 @@ class moduleMastodon(Content,Queue):
     #    self.client = maCli
     #    self.user = user
 
-    def setApiPosts(self, numPosts=20):
+    def setApiPosts(self):
         statuses = self.getClient().account_statuses(self.getClient().me())
         posts = []
         for toot in  statuses:
             posts.append(toot)
         return posts
 
-    def setApiFavs(self, numPosts=20):
+    def setApiFavs(self):
         statuses = self.getClient().favourites()
         posts = []
         for toot in  statuses:

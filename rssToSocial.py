@@ -77,7 +77,7 @@ def readConfig(checkBlog):
         msgLog = f"Section: {section} | Url: {url}"
 
         if 'hold' in config.options(section):
-            msgLog = msgLog + " -> In hold state"
+            msgLog = msgLog + " (In hold state)"
             logMsg(msgLog, 1, 1)
             continue
         logMsg(msgLog, 1, 1)
@@ -376,12 +376,13 @@ def startPublishing(delayedBlogs):
         delayedPosts = {executor.submit(moduleSocial.publishDelay, *args): 
                 args for args in delayedBlogs}
         time.sleep(5)
+        messages = []
         for future in concurrent.futures.as_completed(delayedPosts):
             dataBlog = delayedPosts[future]
             try:
                 res = future.result()
                 if res:
-                    print("  Published: %s"% str(res))
+                    messages.append(f"  Published in: {dataBlog[1][0]} {dataBlog[1][1]}:\n   {res}")
                     if not dataBlog[0].getProgram():
                         posL = res.find('http')
                         if posL>=0:
@@ -394,10 +395,13 @@ def startPublishing(delayedBlogs):
             except Exception as exc:
                 print('{} generated an exception: {}'.format(
                     str(dataBlog), exc))
-    
+
     msgLog = " Finished delayed at %s" % time.asctime()
     logMsg(msgLog, 1, 2)
 
+    for msgLog in messages: 
+        logMsg(msgLog, 1, 1)
+    
 
 def main():
 

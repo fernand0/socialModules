@@ -79,6 +79,7 @@ class moduleTumblr(Content,Queue):
  
     def setApiQueue(self):
         queue = self.getClient().queue(self.getUrl().split('/')[2])
+
         #, offset="75")
         if 'posts' in queue: 
             posts = queue['posts']
@@ -228,7 +229,8 @@ def main():
     t.setPosts()
     i=0
     print(t.getPosts())
-    print(t.getPosts())
+    for i,p in enumerate(t.getPosts()):
+        print(i, t.getPostTitle(p), t.getPostLink(p))
     print(len(t.getPosts()))
     print(t.getPostTitle(t.getPosts()[i]))
     print(t.getPostLink(t.getPosts()[i]))

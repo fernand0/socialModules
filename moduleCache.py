@@ -50,7 +50,7 @@ class moduleCache(Content,Queue):
     def getSocialNetwork(self):
         return (self.service, self.nick)
 
-    def setApiPosts(self, numPosts=20):        
+    def setApiPosts(self):        
         url = self.getUrl()
         service = self.getService()
         nick = self.getNick()

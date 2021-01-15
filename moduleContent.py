@@ -78,7 +78,7 @@ class Content:
             result = post[selector]
         return result
 
-    def setPosts(self, numPosts=100):
+    def setPosts(self):
         nick = self.getNick()
         url = self.getUrl()
         if nick:
@@ -97,7 +97,7 @@ class Content:
                 cmd = getattr(self, 'setApi'+self.getPostsType().capitalize())
         else:
             cmd = getattr(self, 'setApiPosts')
-        self.assignPosts(cmd(numPosts))
+        self.assignPosts(cmd())
 
 
     def getClient(self):
@@ -452,7 +452,7 @@ class Content:
                     # When there are duplicates (there shouldn't be) it returns
                     # the last one
                     pos = i
-                    print(url[:lenCmp],linkS[:lenCmp])
+                    #print(url[:lenCmp],linkS[:lenCmp])
         else:
             pos =  -1
         return(pos)
