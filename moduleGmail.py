@@ -192,7 +192,6 @@ class moduleGmail(Content,Queue):
         typePosts = self.getPostsType()
         if typePosts in posts:
             for post in posts[typePosts]: 
-                print(post) 
                 if mode != 'raw':
                    meta = self.getMessageMeta(post['id'],typePosts)
                    message = {}
@@ -210,13 +209,12 @@ class moduleGmail(Content,Queue):
             pPosts = []
         return pPosts
 
-
     def setApiDrafts(self, label=None, mode=''): 
         posts = self.getClient().users().drafts().list(userId='me').execute() 
         posts = self.processPosts(posts, label, mode)
         return posts
 
-    def setApiPosts(self, label=None, mode=''): 
+    def setApiMessages(self, label=None, mode=''): 
         posts = self.getClient().users().messages().list(userId='me').execute()
         posts = self.processPosts(posts, label, mode)
         return posts
@@ -318,7 +316,10 @@ class moduleGmail(Content,Queue):
             message[header]= value
 
     def getPostLink(self, post):
-        return ''
+        fromP = self.getHeader(post, 'From')
+        snipP = self.getHeader(post, 'snippet')
+        result = f"From: {fromP}\nText: {snipP}"
+        return result
 
     def getPostTitle(self, post):
         logging.debug(post)
@@ -631,7 +632,7 @@ def main():
         #if 'posts' in config.options(Acc):
         #    self.setPostType(config.get(Acc, 'posts'))
         print("Test setPosts")
-        api.setPostsType('drafts')
+        api.setPostsType('messages')
         res = api.setPosts()
         print("Test getPosts")
         #print(api.getPosts())
@@ -640,7 +641,9 @@ def main():
         #res = api.setPosts()
         #print("Test getPosts")
         for post in api.getPosts():
+            print(post)
             print(api.getPostTitle(post))
+            print(api.getPostLink(post))
 
     sys.exit()
     print(api.getPosts())

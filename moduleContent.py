@@ -91,7 +91,6 @@ class Content:
         if hasattr(self, 'getPostsType'):
             typePosts = self.getPostsType()
             if typePosts == 'cache':
-                print("s",self.service)
                 cmd = getattr(self, 'setApiCache')
             else: 
                 cmd = getattr(self, 'setApi'+self.getPostsType().capitalize())
