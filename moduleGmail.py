@@ -44,6 +44,7 @@ class moduleGmail(Content,Queue):
         self.service = "Gmail"
         self.nick = None
         self.scopes = ['https://www.googleapis.com/auth/gmail.modify']
+        self.scopes = ['https://mail.google.com/']
 
     def API(self, Acc):
         # Back compatibility
@@ -277,10 +278,21 @@ class moduleGmail(Content,Queue):
                 + acc[1]+ '.pickle')
         return(theName)
     
-    def getMessage(self, id): 
+    def getMessageId(self, idPost): 
         api = self.getClient()
-        message = api.users().drafts().get(userId="me", 
-                id=id).execute()['message']
+        message = api.users().messages().get(userId="me", id=idPost).execute()
+        import pprint
+        #pprint.pprint(message)
+        mes = ""
+        for part in message['payload']['parts']:
+            mes  = mes + str(base64.urlsafe_b64decode(part['body']['data']))
+        return(mes)
+
+    def getMessage(self, idPost): 
+        api = self.getClient()
+        message = api.users().drafts().get(userId="me", id=idPost).execute()
+        print(message)
+        print(message['message'])
         return message
 
     def getMessageRaw(self, msgId, typePost='drafts'): 
@@ -348,7 +360,7 @@ class moduleGmail(Content,Queue):
 
     def getPostId(self, message):
         if 'list' in message:
-            message = message['meta']
+            message = message['list']
         return(message['id'])
 
     def getHeaderEmail(self, message, header = 'Subject'):
@@ -477,6 +489,12 @@ class moduleGmail(Content,Queue):
  
         return("Trashed %s"% title)
  
+    def deleteApiPost(self, idPost): 
+        api = self.getClient()
+        result = api.users().messages().trash(userId='me', id=idPost).execute()
+        logging.info(f"Res: {result}")
+        return(result)
+
     def delete(self, j, typePost='drafts'):
         logging.info("Deleting %d"% j)
 
