@@ -192,8 +192,8 @@ class moduleTumblr(Content,Queue):
         return res
 
     def deleteApi(self, j): 
-        logging.info("Deleting id %s" % idPost)
         idPost = self.getId(j)
+        logging.info("Deleting post %s" % idPost)
         return self.getClient().delete_post(self.getBlogName(), idPost)
 
     #def delete(self, j): 

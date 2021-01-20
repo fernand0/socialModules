@@ -31,11 +31,11 @@ class moduleTelegram(Content):
             logging.warning("Telegram authentication failed!") 
             logging.warning("Unexpected error:", sys.exc_info()[0])
 
-        self.user = meMySelf
+        #self.user = meMySelf
         #self.channel = channel
         return bot
 
-    def setClientt(self, channel):
+    def setClient(self, channel):
         logging.info("     Connecting Telegram")
         try:
             config = configparser.ConfigParser() 
@@ -54,7 +54,7 @@ class moduleTelegram(Content):
             bot = None
 
         self.client = bot
-        self.user = meMySelf
+        self.user = channel
         self.channel = channel
 
     def setChannel(self, channel):
@@ -72,7 +72,7 @@ class moduleTelegram(Content):
         title = post
         content = comment
         links = ""
-        channel = self.channel
+        channel = self.user
 
         from html.parser import HTMLParser
         h = HTMLParser()
