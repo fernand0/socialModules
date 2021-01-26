@@ -70,9 +70,6 @@ class moduleGitter(Content,Queue):
             logging.warning(self.report(self.service, "", "", sys.exc_info()))
             self.posts = []
 
-    def getPostId(self, post): 
-        return (post['id'])
-
     def getIdPosition(self, idPost): 
         posts = self.getPosts()
         if posts:
@@ -84,14 +81,6 @@ class moduleGitter(Content,Queue):
             return (pos)
         else:
             return -1
-
-    def getTitle(self, i):
-        post = self.getPosts()[i]
-        return(self.getPostTitle(post))
-
-    def getLink(self, i):
-        post = self.getPosts()[i]
-        return(self.getPostLink(post))
 
     def getPostTitle(self, post):
         if 'text' in post:
@@ -115,9 +104,11 @@ class moduleGitter(Content,Queue):
         else:
             return('')
 
-    def getId(self, i):
-        post = self.getPosts()[i]
-        return(post['ts'])
+    def getPostId(self, post): 
+        idPost = -1
+        if hasattr(self, 'id'):
+            idPost = post['id']
+        return (idPost)
 
     def deleteGitter(self, idPost, idChannel):
         # This does not belong here
@@ -276,18 +267,16 @@ class moduleGitter(Content,Queue):
 
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
-    def publishPost(self, chan, msg):
-        logging.info("Publishing %s" % msg)
-        try:
-            result = self.sc.messages.send(chan, msg)
-        except:
-            logging.info(self.report('Gitter', "", "", sys.exc_info()))
-            result = self.sc.chat_postMessage(channel=theChan, 
-                    text=msg)
-        logging.info(result)
-        if 'id' in result:
-           logging.info(result['id'])
-        logging.info("End publishing %s" % msg)
+    def processReply(self, reply):
+        logging.info(reply)
+        if 'id' in reply:
+           logging.info(reply['id'])
+           reply = reply['id']
+        return reply
+ 
+    def publishApiPost(self, postData): 
+        chan = postData[0]
+        result = self.sc.messages.send(chan, msg)
         return(result)
 
     def getBots(self, channel='tavern-of-the-bots'):
@@ -377,7 +366,7 @@ def main():
     site.deletePost(rep['ts'], theChan)
     sys.exit()
 
-    site.setSocialNetworks(config, section)
+    site.setSocialNetworks(config)
 
     if ('buffer' in config.options(section)): 
         site.setBufferapp(config.get(section, "buffer"))

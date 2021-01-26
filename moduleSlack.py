@@ -67,7 +67,7 @@ class moduleSlack(Content,Queue):
 
         url = config.get(section, "url")
         self.setUrl(url)
-        self.setSocialNetworks(config, section)
+        self.setSocialNetworks(config[section])
         #if ('buffer' in config.options(section)): 
         #    self.setBufferapp(config.get(section, "buffer"))
 
@@ -102,7 +102,7 @@ class moduleSlack(Content,Queue):
 
         url = config.get(section, "url")
         self.setUrl(url)
-        self.setSocialNetworks(config, section)
+        self.oldsetSocialNetworks(config, section)
         #if ('buffer' in config.options(section)): 
         #    self.setBufferapp(config.get(section, "buffer"))
 
@@ -131,14 +131,6 @@ class moduleSlack(Content,Queue):
             self.posts = []
 
         logging.info(" Set posts")
-
-    def getTitle(self, i):
-        post = self.getPosts()[i]
-        return(self.getPostTitle(post))
-
-    def getLink(self, i):
-        post = self.getPosts()[i]
-        return(self.getPostLink(post))
 
     def getPostTitle(self, post):
         if ('attachments' in post) and ('title' in post['attachments'][0]):
@@ -173,6 +165,10 @@ class moduleSlack(Content,Queue):
                 url=text[pos+1:-1]
             return(url) 
 
+    def getPostId(self, post):
+        idPost = self.getAttribute(post, 'ts')
+        return idPost
+        
     def publish(self, j):
         logging.info("Publishing %d"% j)
         post = self.obtainPostData(j)
@@ -182,16 +178,16 @@ class moduleSlack(Content,Queue):
         url = self.getLink(j)
         logging.info("Title: %s" % str(title))
         logging.info("Url: %s" % str(url))
-        if self.getBuffer():            
-            for profile in self.getSocialNetworks():
-                if profile[0] in self.getBufferapp():
-                    lenMax = self.len(profile)
-                    logging.info("   getBuffer %s" % profile)
-                    socialNetwork = (profile,self.getSocialNetworks()[profile])
-                    listPosts = []
-                    listPosts.append((title, url))
-                    update = update + self.buffer[socialNetwork].addPosts(listPosts)
-                    update = update + '\n'
+        #if self.getBuffer():            
+        #    for profile in self.getSocialNetworks():
+        #        if profile[0] in self.getBufferapp():
+        #            lenMax = self.len(profile)
+        #            logging.info("   getBuffer %s" % profile)
+        #            socialNetwork = (profile,self.getSocialNetworks()[profile])
+        #            listPosts = []
+        #            listPosts.append((title, url))
+        #            update = update + self.buffer[socialNetwork].addPosts(listPosts)
+        #            update = update + '\n'
 
         if self.getProgram():
             logging.info("getProgram")
@@ -223,9 +219,11 @@ class moduleSlack(Content,Queue):
         return(update)
  
 
-    def getId(self, i):
-        post = self.getPosts()[i]
-        return(post['ts'])
+    def getPstId(self, post):
+        idPost = -1
+        if hasattr(self, 'ts'):
+            postId = post['ts']
+        return(idPost)
 
     def getKeys(self):
         return(self.keys)
@@ -464,19 +462,35 @@ def main():
             level=logging.INFO, 
             format='%(asctime)s %(message)s')
 
-
     import moduleSlack
 
     site = moduleSlack.moduleSlack()
-
     CHANNEL = 'tavern-of-the-bots' 
 
-    url = "http://fernand0-errbot.slack.com/" 
-    site.setUrl(url)
+    try: 
+        # My own config settings
+        config = configparser.ConfigParser() 
+        config.read(CONFIGDIR + '/.rssBlogs')
+        
+        section = "Blog7"
+        url = config.get(section, 'url')
+        site.setSocialNetworks(config)
+        print(site.getSocialNetworks)
+    except:
+        url = "http://fernand0-errbot.slack.com/" 
 
+    site.setSocialNetworks(socialNetworks)
+    print("---")
+    print(site.getSocialNetworks())
+    print("---")
+    print(site.getSocialNetworks())
+
+    sys.exit()
 
     site.setClient()
+    site.setUrl(url)
     site.setPosts()
+
     print("Posts: {}".format(site.getPosts()))
     theChannel = site.getChanId(CHANNEL)  
     print("the Channel {} has code {}".format(CHANNEL, theChannel))

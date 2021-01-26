@@ -21,74 +21,109 @@ class moduleMastodon(Content,Queue):
     def __init__(self):
         super().__init__()
         self.service = None
-
-    def setClient(self, user):
-        logging.info("     Connecting Mastodon")
         self.service = 'Mastodon'
-        try:
-            maCli = mastodon.Mastodon( 
-               access_token = CONFIGDIR + '/.rssMastodon', 
-               api_base_url = 'https://mastodon.social'
-            )
 
-        except: 
-            logging.warning("Mastodon authentication failed!") 
-            logging.warning("Unexpected error:", sys.exc_info()[0])
+    def getKeys(self, config):
+        access_token = config[self.user]['access_token']
+        return ((access_token, ))
 
-        self.ma = maCli
-        self.user = user
+    def initApi(self, keys):
+        maCli = mastodon.Mastodon(
+                access_token = keys[0], 
+                api_base_url = 'https://mastodon.social'
+        )
 
-    def getClient(self):
-        return self.ma
+        return maCli
 
-    def setPosts(self):
-        logging.info("  Setting posts")
-        self.posts = []
-        self.favs = []
-        #posts = self.getClient().timeline_home()
-        posts = self.getClient().account_statuses(self.getClient().me())
-        for toot in  posts:
-            self.posts.append(toot)
+    #def setClient(self, user):
+    #    logging.info("     Connecting Mastodon")
+    #    self.service = 'Mastodon'
+    #    try:
+    #        maCli = mastodon.Mastodon( 
+    #           access_token = CONFIGDIR + '/.rssMastodon', 
+    #           api_base_url = 'https://mastodon.social'
+    #        )
 
-        favs = self.getClient().favourites()
-        for toot in  favs:
-            self.favs.append(toot)
+    #    except: 
+    #        logging.warning("Mastodon authentication failed!") 
+    #        logging.warning("Unexpected error:", sys.exc_info()[0])
 
-    def getFavs(self):
-         return self.favs
+    #    self.client = maCli
+    #    self.user = user
 
-    def getPosts(self):
-        if hasattr(self, 'getPostsType'): 
-            logging.debug("  Posts type {}".format(self.getPostsType()))
-            if self.getPostsType() == 'drafts':
-                posts = self.getDrafts()
-            if self.getPostsType() == 'favs':
-                posts = self.getFavs()
-            else:
-                posts = self.getPublished() 
-        else:
-            posts = self.posts
-        return(posts)
+    def setApiPosts(self):
+        statuses = self.getClient().account_statuses(self.getClient().me())
+        posts = []
+        for toot in  statuses:
+            posts.append(toot)
+        return posts
 
-    def publishPost(self, post, link, comment):
-        logging.debug("    Publishing in Mastodon...")
-        if comment == None:
-            comment = ''
-        title = post
-        content = comment
-        post = comment + " " + post + " " + link
+    def setApiFavs(self):
+        statuses = self.getClient().favourites()
+        posts = []
+        for toot in  statuses:
+            posts.append(toot)
+        return posts
+
+    #def setPosts(self):
+    #    logging.info("  Setting posts")
+    #    self.posts = []
+    #    self.favs = []
+    #    #posts = self.getClient().timeline_home()
+    #    posts = self.getClient().account_statuses(self.getClient().me())
+    #    for toot in  posts:
+    #        self.posts.append(toot)
+
+    #    favs = self.getClient().favourites()
+    #    for toot in  favs:
+    #        self.favs.append(toot)
+
+    #def getFavs(self):
+    #     return self.favs
+    
+    def processReply(self, reply): 
+        res = reply
+        logging.debug("Res: %s" % res) 
+        if 'uri' in res: 
+            logging.info("     Toot: %s" % res['uri']) 
+            res = res['uri']
+        return res
+
+    def publishApiPost(self, postData):
+        post = postData[0]
+        link = postData[1] 
+        comment = postData[2]
+        post = post + " " + link
+        if comment: 
+            post = comment + " " + post
+
         h = HTMLParser()
         post = h.unescape(post)
         try:
-            logging.info("     Publishing in Mastodon: %s" % post)
             res = self.getClient().toot(post)
-            logging.debug("Res: %s" % res)
-            if 'uri' in res:
-                logging.info("     Toot: %s" % res['uri'])
-                return(res['uri'])
-            return res
         except:        
-            return(self.report('Mastodon', post, link, sys.exc_info()))
+            res = self.report('Mastodon', post, link, sys.exc_info())
+        return res
+
+    #def publishPost(self, post, link, comment):
+    #    logging.debug("    Publishing in Mastodon...")
+    #    if comment == None:
+    #        comment = ''
+    #    title = post
+    #    content = comment
+    #    post = comment + " " + post + " " + link
+    #    h = HTMLParser()
+    #    post = h.unescape(post)
+    #    try:
+    #        logging.info("     Publishing in Mastodon: %s" % post)
+    #        res = self.getClient().toot(post)
+    #        logging.debug("Res: %s" % res)
+    #        if 'uri' in res:
+    #            logging.info("     Toot: %s" % res['uri'])
+    #            return(res['uri'])
+    #        return res
+    #    except:        
+    #        return(self.report('Mastodon', post, link, sys.exc_info()))
 
     def getPostTitle(self, post):
         if 'card' in post and post['card']:
@@ -97,11 +132,8 @@ class moduleMastodon(Content,Queue):
         if 'content' in post:
             return(post['content'].replace('\n', ' '))
 
-    def getPostLink(self, post):
-        if 'uri' in post:
-            return(post['uri'])
-        else:
-            return ''
+    def getPostLink(self, post): 
+        return self.getAttribute(post, 'uri')
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)
@@ -135,23 +167,35 @@ class moduleMastodon(Content,Queue):
 
 
 def main():
+
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
+
     import moduleMastodon
 
     mastodon = moduleMastodon.moduleMastodon()
     mastodon.setClient('fernand0')
     print("Testing posts")
+    mastodon.setPostsType('posts')
     mastodon.setPosts()
     print(mastodon.getClient().me())
     for post in mastodon.getPosts():
         print(post)
+
+
     print("Favorites")
-    for post in mastodon.favs:
+    mastodon.setPostsType('posts')
+    mastodon.setPosts()
+    for post in mastodon.getPosts():
         print(post)
 
     print("Testing title and link")
 
     print("Posts")
 
+    mastodon.setPostsType('posts')
+    mastodon.setPosts()
     for post in mastodon.getPosts():
         title = mastodon.getPostTitle(post)
         link = mastodon.getPostLink(post)
@@ -160,7 +204,8 @@ def main():
     print("Favs")
 
     mastodon.setPostsType("favs")
-    for i, post in enumerate(mastodon.favs):
+    mastodon.setPosts()
+    for i, post in enumerate(mastodon.getPosts()):
         print("i",i)
         print("1",post)
         print("2",mastodon.getPost(i))
@@ -172,19 +217,19 @@ def main():
     (theTitle, theLink, firstLink, theImage, theSummary, 
             content, theSummaryLinks, theContent, theLinks, comment) = mastodon.extractDataMessage(0)
 
-    config = configparser.ConfigParser()
-    config.read(CONFIGDIR + '/.rssBlogs')
+    #config = configparser.ConfigParser()
+    #config.read(CONFIGDIR + '/.rssBlogs')
 
-    import modulePocket
-    
-    p = modulePocket.modulePocket()
+    #import modulePocket
+    #
+    #p = modulePocket.modulePocket()
 
-    p.setClient('fernand0')
-    p.publishPost(theTitle, firstLink, '')
+    #p.setClient('fernand0')
+    #p.publishPost(theTitle, firstLink, '')
 
 
 
-    #mastodon.publishPost("I'll publish several links each day about technology, social internet, security, ... as in", 'https://twitter.com/fernand0', '')
+    mastodon.publishPost("I'll publish several links each day about technology, social internet, security, ... as in", 'https://twitter.com/fernand0', '')
 
 
 if __name__ == '__main__':

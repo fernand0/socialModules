@@ -32,13 +32,18 @@ class moduleRss(Content,Queue):
 
     def setRssFeed(self, feed):
         self.rssFeed = feed
+        self.max = None
+        self.bufMax = None
 
     def setClient(self, feed):
         logging.info("Feed %s" % str(feed))
-        if isinstance(feed, tuple):
-            self.rssFeed = feed[0]#+feed[1][1]
+        if isinstance(feed, str):
+            self.rssFeed = feed
+        elif isinstance(feed, tuple):
+            self.rssFeed = feed[1]#+feed[1][1]
         else:
             self.rssFeed = feed
+        logging.info("The Feed %s" % str(self.rssFeed))
         self.service = 'Rss'
 
     def setPosts(self):
@@ -56,14 +61,6 @@ class moduleRss(Content,Queue):
     def getPostTitle(self, post):
         if 'title' in post:
             return(post['title'].replace('\n', ' '))
-
-    def getLink(self, i):
-        post = self.getPosts()[i]
-        return(self.getPostLink(post))
-
-    def getTitle(self, i):
-        post = self.getPosts()[i]
-        return(self.getPostTitle(post))
 
     def getPostLink(self, post):
         return(post['link'])
@@ -99,6 +96,10 @@ class moduleRss(Content,Queue):
             comment = post['comment']
         else:
             comment = ""#theSummary
+
+        pos = theLink.find('?source=rss')
+        if pos >=0:
+            theLink = theLink[:pos]
 
         theSummaryLinks = ""
 
@@ -149,7 +150,7 @@ class moduleRss(Content,Queue):
             theImage = self.extractImage(soup)
         logging.debug("theImage %s"% theImage)
         theLinks = theSummaryLinks
-        theSummaryLinks = theContent + theLinks
+        theSummaryLinks = theContent + '\n' + theLinks
             
         logging.debug("=========")
         logging.debug("Results: ")
@@ -210,6 +211,8 @@ def main():
            print(blog.getPosts()[i])
            (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content , links, comment) = (blog.obtainPostData(i, False))
            print(title, link, comment)
+           print("l",summaryLinks)
+           print("h",summaryHtml)
        sys.exit()
 
    sys.exit()
@@ -235,7 +238,7 @@ def main():
        if ("cache" in config.options(section)):
            blog.setProgram(config.get(section, "cache"))
 
-       blog.setSocialNetworks(config, section)
+       blog.setSocialNetworks(config)
 
        print(blog.getSocialNetworks())
        blog.setCache()

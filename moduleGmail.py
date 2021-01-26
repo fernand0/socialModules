@@ -41,57 +41,52 @@ class moduleGmail(Content,Queue):
         super().__init__()
         Content().__init__()
         Queue().__init__()
-        self.service = None
+        self.service = "Gmail"
         self.nick = None
-        self.id = None
         self.scopes = ['https://www.googleapis.com/auth/gmail.modify']
+        self.scopes = ['https://mail.google.com/']
 
     def API(self, Acc):
         # Back compatibility
         self.setClient(Acc)
 
-    def setClient(self, Acc):
-        logging.info("     Connecting GMail %s"%str(Acc))
-   
+    def getKeys(key, config):
+        return (())
+
+    def initApi(self, keys):
         SCOPES = self.scopes
-        api = {}
-    
-        self.service = 'gmail'
-        if type(Acc) == str: 
-            self.url = Acc
-            pos = Acc.rfind('@') 
-            self.server = Acc[pos+1:] 
-            self.nick   = Acc[:pos] 
-            self.name = 'GMail_{}'.format(Acc[0]) 
-            import hashlib
-            self.name = 'GMail_{}'.format(Acc)
-        elif isinstance(Acc, tuple):
-            if (len(Acc) > 1) and isinstance(Acc[1], tuple):
-                logging.debug("Acc %s" % str(Acc))
-                self.url = Acc[0]
-                pos = Acc[0].rfind('@') 
-                self.server = Acc[0][pos+1:] 
-                self.nick   = Acc[0][:pos]
-                self.setPostsType(Acc[1][2])
-            elif len(Acc)>1:
-                logging.info("Acc %s" % str(Acc))
-                self.url = Acc[1]
-                pos = Acc[1].rfind('@') 
-                self.server = Acc[1][pos+1:] 
-                self.nick   = Acc[1][:pos]
-            self.name = 'GMail_{}'.format(Acc[0]) 
+        creds = self.authorize()
+        service = build('gmail', 'v1', credentials=creds, cache_discovery=False)
+        return service
 
-        self.id = '{} {}@{}'.format(self.name[-1], self.nick, self.server)
-        logging.debug("Id %s" % self.id)
+    #def setClient(self, Acc):
+    #    logging.info("     Connecting GMail %s"%str(Acc))
+   
+    #    api = {}
+    #
+    #    self.service = 'gmail'
+    #    if type(Acc) == str: 
+    #        self.user = Acc
+    #        #self.name = 'GMail_{}'.format(Acc)
+    #    elif isinstance(Acc, tuple):
+    #        if (len(Acc) > 1) and isinstance(Acc[1], tuple):
+    #            self.user = Acc[0]
+    #            #self.setPostsType(Acc[1][2])
+    #        elif len(Acc)>1:
+    #            self.user = Acc[1]
+    #            #if len(Acc)>2:
+    #            #    self.setPostsType(Acc[2]) 
+    #        #self.name = 'GMail_{}'.format(Acc[0]) 
 
-        try:
-            creds = self.authorize()
-            service = build('gmail', 'v1', credentials=creds, cache_discovery=False)
-            self.client = service
-        except:
-            logging.warning("Problem with authorization")
-            logging.warning("Unexpected error:", sys.exc_info()[0])
-            return("Fail")
+    #    try:
+    #        creds = self.authorize()
+    #        service = build('gmail', 'v1', 
+    #                credentials=creds, cache_discovery=False)
+    #        self.client = service
+    #    except:
+    #        logging.warning("Problem with authorization")
+    #        logging.warning("Unexpected error:", sys.exc_info()[0])
+    #        return("Fail")
 
     def authorize(self):
         # based on Code from
@@ -100,6 +95,10 @@ class moduleGmail(Content,Queue):
         SCOPES = self.scopes
 
         logging.info("Authorizing GMail")
+        pos = self.user.rfind('@') 
+        self.server = self.user[pos+1:]
+        self.nick = self.user[:pos]
+
         fileCredStore = self.confName((self.server, self.nick)) 
         fileTokenStore = self.confTokenName((self.server, self.nick)) 
         creds = None
@@ -135,10 +134,6 @@ class moduleGmail(Content,Queue):
             pickle.dump(creds, token)
 
         return(creds)
-
-
-    def getClient(self):
-        return(self.client)
 
     def createLabel(self, labelName):
         api = self.getClient()
@@ -190,58 +185,86 @@ class moduleGmail(Content,Queue):
                                                 body=list_labels).execute()
         return(message)
         
-    def setPosts(self, label=None, mode=''): 
-        logging.info("  Setting posts")
-        api = self.getClient()
+    def getDrafts(self):
+        return self.getPosts()
 
-        self.posts = []
-        self.drafts = []
-        try: 
-            if hasattr(self, 'getPostsType'): 
-                typePosts = self.getPostsType()
-                logging.info("  Setting posts type {}".format(typePosts))
-            elif label == 'drafts': 
-                typePosts = 'drafts' 
-            else: 
-                typePosts = 'messages' 
-            if typePosts == 'drafts':
-                posts = api.users().drafts().list(userId='me').execute() 
-            else:
-                posts = api.users().messages().list(userId='me').execute()
-        #except client.HttpAccessTokenRefreshError: 
-        #    return "Fail"
-        except: 
-            logging.warning("GMail failed!") 
-            logging.warning("Unexpected error:", sys.exc_info()[0]) 
-            return("Fail")
-
-        logging.debug("--setPosts %s" % posts)
-
+    def processPosts(self, posts, label, mode):
+        pPosts = []
+        typePosts = self.getPostsType()
         if typePosts in posts:
-           self.rawPosts = []
-           for post in posts[typePosts]: 
-               if mode != 'raw':
+            for post in posts[typePosts]: 
+                if mode != 'raw':
                    meta = self.getMessageMeta(post['id'],typePosts)
                    message = {}
                    message['list'] = post
                    message['meta'] = meta
-               else:
+                else:
                    raw = self.getMessageRaw(post['id'],typePosts)
                    message = {}
                    message['list'] = post
                    message['meta'] = ''
                    message['raw'] = raw
 
-               if typePosts == 'drafts': 
-                   self.drafts.insert(0, message) 
-               else: 
-                   self.posts.insert(0, message) 
-
-        if typePosts == 'drafts': 
-           logging.debug("drafts {}".format(str(self.drafts))) 
+                pPosts.insert(0, message) 
         else:
-           logging.debug("posts {}".format(str(self.posts)))
-        return "OK"
+            pPosts = []
+        return pPosts
+
+    def setApiDrafts(self, label=None, mode=''): 
+        posts = self.getClient().users().drafts().list(userId='me').execute() 
+        posts = self.processPosts(posts, label, mode)
+        return posts
+
+    def setApiMessages(self, label=None, mode=''): 
+        posts = self.getClient().users().messages().list(userId='me').execute()
+        posts = self.processPosts(posts, label, mode)
+        return posts
+
+    #def setPosts(self, label=None, mode=''): 
+    #    logging.info("  Setting posts")
+    #    api = self.getClient()
+
+    #    self.posts = []
+    #    self.drafts = []
+    #    try: 
+    #        if hasattr(self, 'getPostsType'): 
+    #            typePosts = self.getPostsType()
+    #            logging.info("  Setting posts type {}".format(typePosts))
+    #        elif label == 'drafts': 
+    #            typePosts = 'drafts' 
+    #        else: 
+    #            typePosts = 'messages' 
+    #        if typePosts == 'drafts':
+    #            posts = api.users().drafts().list(userId='me').execute() 
+    #        else:
+    #            posts = api.users().messages().list(userId='me').execute()
+    #    #except client.HttpAccessTokenRefreshError: 
+    #    #    return "Fail"
+    #    except: 
+    #        logging.warning("GMail failed!") 
+    #        logging.warning("Unexpected error:", sys.exc_info()[0]) 
+    #        return("Fail")
+
+    #    logging.debug("--setPosts %s" % posts)
+    #    #print("--setPosts %s" % posts)
+
+    #    for post in posts[typePosts]: 
+    #       if mode != 'raw':
+    #           meta = self.getMessageMeta(post['id'],typePosts)
+    #           message = {}
+    #           message['list'] = post
+    #           message['meta'] = meta
+    #       else:
+    #               raw = self.getMessageRaw(post['id'],typePosts)
+    #               message = {}
+    #               message['list'] = post
+    #               message['meta'] = ''
+    #               message['raw'] = raw
+
+    #       self.posts.insert(0, message) 
+
+    #    logging.debug("posts {}".format(str(self.posts)))
+    #    return "OK"
 
     def confName(self, acc):
         theName = os.path.expanduser(CONFIGDIR + '/' + '.' 
@@ -255,10 +278,21 @@ class moduleGmail(Content,Queue):
                 + acc[1]+ '.pickle')
         return(theName)
     
-    def getMessage(self, id): 
+    def getMessageId(self, idPost): 
         api = self.getClient()
-        message = api.users().drafts().get(userId="me", 
-                id=id).execute()['message']
+        message = api.users().messages().get(userId="me", id=idPost).execute()
+        import pprint
+        #pprint.pprint(message)
+        mes = ""
+        for part in message['payload']['parts']:
+            mes  = mes + str(base64.urlsafe_b64decode(part['body']['data']))
+        return(mes)
+
+    def getMessage(self, idPost): 
+        api = self.getClient()
+        message = api.users().drafts().get(userId="me", id=idPost).execute()
+        print(message)
+        print(message['message'])
         return message
 
     def getMessageRaw(self, msgId, typePost='drafts'): 
@@ -294,7 +328,10 @@ class moduleGmail(Content,Queue):
             message[header]= value
 
     def getPostLink(self, post):
-        return ''
+        fromP = self.getHeader(post, 'From')
+        snipP = self.getHeader(post, 'snippet')
+        result = f"From: {fromP}\nText: {snipP}"
+        return result
 
     def getPostTitle(self, post):
         logging.debug(post)
@@ -323,7 +360,7 @@ class moduleGmail(Content,Queue):
 
     def getPostId(self, message):
         if 'list' in message:
-            message = message['meta']
+            message = message['list']
         return(message['id'])
 
     def getHeaderEmail(self, message, header = 'Subject'):
@@ -422,6 +459,7 @@ class moduleGmail(Content,Queue):
     def publish(self, j):
         logging.info("Publishing %d"% j)                
         logging.info("servicename %s" %self.service)
+        logging.info("post %s" %self.getPosts())
         idPost = self.getPosts()[j]['list']['id'] #thePost[-1]
         title = self.getHeader(self.getPosts()[j]['meta'], 'Subject')
         
@@ -451,6 +489,12 @@ class moduleGmail(Content,Queue):
  
         return("Trashed %s"% title)
  
+    def deleteApiPost(self, idPost): 
+        api = self.getClient()
+        result = api.users().messages().trash(userId='me', id=idPost).execute()
+        logging.info(f"Res: {result}")
+        return(result)
+
     def delete(self, j, typePost='drafts'):
         logging.info("Deleting %d"% j)
 
@@ -606,15 +650,18 @@ def main():
         #if 'posts' in config.options(Acc):
         #    self.setPostType(config.get(Acc, 'posts'))
         print("Test setPosts")
-        res = api.setPosts()
-        print("Test getPosts")
-        print(api.getPosts())
         api.setPostsType('messages')
-        print("Test setPosts (posts)")
         res = api.setPosts()
         print("Test getPosts")
+        #print(api.getPosts())
+        #api.setPostsType('messages')
+        #print("Test setPosts (posts)")
+        #res = api.setPosts()
+        #print("Test getPosts")
         for post in api.getPosts():
             print(post)
+            print(api.getPostTitle(post))
+            print(api.getPostLink(post))
 
     sys.exit()
     print(api.getPosts())

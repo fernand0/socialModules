@@ -56,7 +56,7 @@ class moduleForum(Content,Queue):
             if isinstance(forumData, str):
                 self.url = forumData 
             else:
-                self.url = forumData[0]
+                self.url = forumData[1]
             self.selected = config.get(self.url,'forums').split('\n') 
             self.selector = config.get(self.url,'selector').split('\n')
             self.idSeparator = config.get(self.url,'idSeparator')
@@ -153,9 +153,6 @@ class moduleForum(Content,Queue):
                             self.posts[pos+i][1])
                 self.posts = self.posts[pos:]
         
-    def getPosts(self):
-        return self.posts
-
     def getPostTitle(self, post):
         return post[0]
 

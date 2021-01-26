@@ -34,18 +34,6 @@ class moduleHtml():
          self.lastLinkPublished = {}
          #self.logger = logging.getLogger(__name__)
  
-    def getUrl(self):
-        return(self.url)
-
-    def setUrl(self, url):
-        self.url = url
-
-    def getName(self):
-        return(self.name)
-
-    def setName(self, name):
-        self.name = name
-
     def getLinksToAvoid(self):
         return(self.linksToAvoid)
  

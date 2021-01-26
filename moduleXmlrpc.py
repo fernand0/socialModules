@@ -39,24 +39,6 @@ class moduleXmlrpc():
         self.user = nick
         self.setXmlRpc()
         
-    def getUrl(self):
-        return(self.url)
-
-    def setUrl(self, url):
-        self.url = url
-
-    def getName(self):
-        return(self.name)
-
-    def setName(self, name):
-        self.name = name
-
-    def getSocialNetworks(self):
-        return(self.socialNetworks)
- 
-    def addSocialNetwork(self, socialNetwork):
-        self.socialNetworks[socialNetwork[0]] = socialNetwork[1]
-
     def addLastLinkPublished(self, socialNetwork, lastLink, lastTime):
         self.lastLinkPublished[socialNetwork] = (lastLink, lastTime)
 
@@ -103,9 +85,6 @@ class moduleXmlrpc():
                 blogId, blogName = self.blogId(srv, usr, pwd)
                 self.setId(blogId)
                 self.setName(blogName)
-
-    def getPosts(self):
-        return(self.posts)
 
     def getPostsXmlRpc(self):
         return(self.postsXmlRpc)

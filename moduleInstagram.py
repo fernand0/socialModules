@@ -48,16 +48,13 @@ class moduleInstagram(Content):
             logging.warning("Account not configured")
             api = None
 
-        self.ic = api
- 
-    def getClient(self):
-        return self.ic
+        self.client = api
  
     def setPosts(self):
         logging.info("  Setting posts")
         self.posts = []
-        if self.ic.getSelfUserFeed():
-            igs = self.ic.LastJson['items']
+        if self.client.getSelfUserFeed():
+            igs = self.client.LastJson['items']
             # Relevant items
             # 'code': 'BzlL-OXBYOe' -> https://www.instagram.com/p/BzlL-OXBYOe
             # 'caption' -> 'text'
@@ -74,7 +71,7 @@ class moduleInstagram(Content):
         comment = resizeImage(image)
         # resizeImage provided by configMod.py
         try: 
-            res = self.ic.uploadPhoto(comment, caption=post)
+            res = self.client.uploadPhoto(comment, caption=post)
             self.setPosts()
             title = self.getPosts()[0]['caption']['text']
             print("Title %s" % title)
@@ -89,9 +86,9 @@ class moduleInstagram(Content):
                         yy = path[1]
                         mm = path[2]
                         dd = path[3]
-                        self.ic.comment(mediaId, 'Original: %s [%s-%s-%s]'% (link,yy,mm,dd))
+                        self.client.comment(mediaId, 'Original: %s [%s-%s-%s]'% (link,yy,mm,dd))
                     else:
-                        self.ic.comment(mediaId, 'Original: %s'% link)
+                        self.client.comment(mediaId, 'Original: %s'% link)
                 logging.info("     Published in Instagram...")
 
                 return(self.getPosts()[0]['code']) 

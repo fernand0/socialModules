@@ -31,42 +31,122 @@ class Content:
         self.xmlrpc = None
         self.api = {}
         self.lastLinkPublished = {}
- 
+
+    def setClient(self, account):
+        logging.info("    Connecting {}: {}".format(self.service, account))
+
+        if isinstance(account, str): 
+            self.user = account
+        elif isinstance(account[1], str):
+            self.user = account[1]
+        else: 
+            # Deprecated
+            self.user = account[1][1]
+
+        try:
+            config = configparser.RawConfigParser()
+            config.read(f"{CONFIGDIR}/.rss{self.service}")
+            keys = self.getKeys(config)
+
+            try:
+                client = self.initApi(keys)
+            except:
+                logging.warning(f"{self.service} authentication failed!")
+                logging.warning("Unexpected error:", sys.exc_info()[0])
+                client = None
+        except:
+            logging.warning("Account not configured")
+            client = None
+
+        self.client = client
+
+    def getService(self):
+        if hasattr(self, 'service'):
+            return(self.service)
+        else:
+            return ''
+
+    def getNick(self):
+        if hasattr(self, 'nick'):
+            return(self.nick)
+        else:
+            return ''
+
+    def getAttribute(self, post, selector):
+        result = ''
+        if selector in post:
+            result = post[selector]
+        return result
+
+    def setPosts(self):
+        nick = self.getNick()
+        url = self.getUrl()
+        if nick:
+            identifier = nick
+        else:
+            identifier = self.getUrl()
+
+        logging.info(f"  Setting posts in {self.service} ({identifier})")
+
+        if hasattr(self, 'getPostsType'):
+            typePosts = self.getPostsType()
+            if typePosts == 'cache':
+                cmd = getattr(self, 'setApiCache')
+            else: 
+                cmd = getattr(self, 'setApi'+self.getPostsType().capitalize())
+        else:
+            cmd = getattr(self, 'setApiPosts')
+        self.assignPosts(cmd())
+
+
+    def getClient(self):
+        client = None
+        if hasattr(self, 'client'):
+            client = self.client
+        return client
+
     def getUrl(self):
-        return(self.url)
+        url = ''
+        if hasattr(self, 'url'):
+            url = self.url
+        return(url)
 
     def setUrl(self, url):
         self.url = url
 
     def getName(self):
-        return(self.name)
+        name = ''
+        if hasattr(self,'name'):
+            name = self.name
+        return(name)
 
     def setName(self, name):
         self.name = name
 
+    def setPostAction(self, action):
+        self.postaction = action
+
+    def getPostAction(self):
+        if hasattr(self, 'postaction'):
+            return(self.postaction)
+
     def getSocialNetworks(self):
-        return(self.socialNetworks)
+        socialNetworks = None
+        if hasattr(self, 'socialNetworks'):
+            socialNetworks = self.socialNetworks
+        return(socialNetworks)
 
-    def getSocialNetworksAPI(self):
-        return(self.api)
-
-    def newsetSocialNetworks(self, socialNetworksConfig):
+    def setSocialNetworks(self, socialNetworksConfig):
         socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
                 'wordpress', 'medium', 'linkedin','pocket', 'mastodon',
-                'instagram', 'imgur', 'tumblr', 'slack', 'refind'] 
-        logging.info("  sNC {}".format(socialNetworksConfig))
+                'instagram', 'imgur', 'tumblr', 'slack', 'refind','file'] 
+        logging.debug("  sNC {}".format(socialNetworksConfig))
         for sN in socialNetworksConfig:
-            if (sN[0] in socialNetworksOpt):
-                if sN[1].find('\n'):
-                    sNs = sN[1].split('\n')
-                    for el in sNs: 
-                        self.addSocialNetwork((sN[0], el))
-                else: 
-                    self.addSocialNetwork(sN)
-        logging.info("  sNN {}".format(self.getSocialNetworks()))
+            if sN in socialNetworksOpt:
+                self.addSocialNetwork((sN, socialNetworksConfig[sN]))
+        logging.debug("  sNN {}".format(self.getSocialNetworks()))
 
-
-    def setSocialNetworks(self, config, section):
+    def oldsetSocialNetworks(self, config, section):
         socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
                 'wordpress', 'medium', 'linkedin','pocket', 'mastodon',
                 'instagram', 'imgur', 'tumblr', 'slack','refind'] 
@@ -76,32 +156,14 @@ class Content:
                 socialNetwork = (option, nick)
                 self.addSocialNetwork(socialNetwork)
 
-    def addSocialNetworkAPI(self, socialNetwork):
-        sN = socialNetwork[0]
-        nick = socialNetwork[1]
-        #if sN == 'twitter':
-        #    self.api[socialNetwork] = moduleTwitter.moduleTwitter()
-        #    self.api[socialNetwork].setClient(nick)
-        
     def addSocialNetwork(self, socialNetwork):
         self.socialNetworks[socialNetwork[0]] = socialNetwork[1]
 
-    def getPublished(self):
-        return(self.posts)
-
-    def setPosts(self):
-        pass 
-
     def assignPosts(self, posts):
-        if hasattr(self, 'getPostsType'): 
-            if self.getPostsType() == 'drafts': 
-                self.drafts = posts
-            else:
-                self.posts = posts
-        else:
-            self.posts = posts
+        self.posts = posts
 
     def getPosts(self):
+<<<<<<< HEAD
         if not hasattr(self, 'getPostsType'): 
             theType = 'posts'
         logging.debug("  Posts type {}".format(self.getPostsType()))
@@ -110,27 +172,53 @@ class Content:
         print(f"cmd {theType}")
         posts = cmd()
 
+=======
+        posts = self.posts
+        #if hasattr(self, 'getPostsType'): 
+        #    if self.getPostsType() == 'cache':
+        #        print(self.cache)
+        #        posts = self.cache
+        
+        #if hasattr(self, 'getPostsType'): 
+        #    if self.getPostsType() == 'drafts': 
+        #        posts = self.drafts
+>>>>>>> 58c75668fe6f1afc17f7b25d8d31d9215a7be8ae
         return(posts)
 
     def getPost(self, i):
+        post = None
         posts = self.getPosts()
         if i < len(posts): 
-            return(self.getPosts()[i])
-        else:
-            return None
+            post = self.getPosts()[i]
+        return post
 
     def getTitle(self, i):        
-        post = self.getPost(i)
-        return(self.getPostTitle(post))
+        title = ''
+        if i < len(self.getPosts()): 
+            post = self.getPost(i)
+            title = self.getPostTitle(post)
+        return(title)
 
     def getLink(self, i):
-        post = self.getPost(i)
-        return(self.getPostLink(post))
+        link = ''
+        if i < len(self.getPosts()): 
+            post = self.getPost(i)
+            link = self.getPostLink(post)
+        return(link) 
+ 
+    def getId(self, j):
+        idPost = -1
+        if j < len(self.getPosts()): 
+            post = self.getPost(j)
+            logging.info(f"Post: {post}")
+            idPost =  self.getPostId(post)
+        return(idPost)
 
     def splitPost(self, post): 
         splitListPosts = []
         for imgL in post[3]: 
             myPost = list(post) 
+            logging.info("mP",myPost)
             myPost[3] = imgL 
             splitListPosts.append(tuple(myPost))
 
@@ -151,16 +239,75 @@ class Content:
         if hasattr(self, 'drafts'): 
             return self.drafts
         else:
-            return None
+            if hasattr(self, 'getPostsType'):
+                return self.getPosts()
 
     def setPostsType(self, postsType):
         self.postsType = postsType
 
     def getPostsType(self):
+        postsType = None
         if hasattr(self, 'postsType'): 
-            return self.postsType 
-        else:
-            return 'posts' 
+            postsType = self.postsType 
+        return postsType
+
+    def publishPost(self, post, link='', comment='', **more):
+        logging.info(f"    Publishing in {self.service}: {post}")
+        try: 
+            reply = self.publishApiPost((post,link,comment,more))
+            return (self.processReply(reply))
+        except:        
+            return(self.report(self.service, post, link, sys.exc_info())) 
+
+    def deletePost(self, post): 
+        idPost = self.getPostId(post)
+        reply = self.deleteApiPost(idPost)
+        return (self.processReply(reply))
+
+    def processReply(self, reply):
+        logging.debug("Res: %s" % reply) 
+        return reply
+
+    def do_edit(self, j, **kwargs): 
+        update = ""
+        if j < len(self.getPosts()):
+            post = self.getPost(j)
+            if ('newTitle' in kwargs) and kwargs['newTitle']:
+                oldTitle = self.getPostTitle(post)
+                newTitle = kwargs['newTitle']
+                logging.info(f"New title {newTitle}")
+                res = self.editApiTitle(post, newTitle)
+                res = self.processReply(res)
+                update = "Changed "+oldTitle+" with "+newTitle+" id " + str(res)
+            if ('newState' in kwargs) and kwargs['newState']:
+                oldState = self.getPostState(post)
+                newState = kwargs['newState']
+                logging.info("New state %s", newState)
+                res = self.editApiState(post, newState)
+                res = self.processReply(res)
+                update = "Changed "+oldState+" to "+newState+" id " + str(res)
+            if ('newLink' in kwargs) and kwargs['newLink']:
+                oldLink = self.getPostLink(post)
+                newLink = kwargs['newLink']
+                logging.info(f"New link {newLink}")
+                res = self.editApiLink(post, newLink)
+                res = self.processReply(res)
+                update = "Changed "+oldLink+" with "+newLink+" id " + str(res)
+            return update
+
+    def edit(self, j, newTitle): 
+        update = self.do_edit(j, newTitle=newTitle)
+        return update
+
+    def editl(self, j, newLink): 
+        update = self.do_edit(j, newLink=newLink)
+
+    def delete(self, j): 
+        logging.info("Deleting id %s" % j)
+        result = self.deleteApi(j)
+        logging.info(result)
+        res = self.processReply(result)
+        return(res)
 
     def updatePostsCache(self,socialNetwork):
         service = socialNetwork[0]
@@ -173,9 +320,7 @@ class Content:
 
         return 'Ok'
 
-
     def getNextPosts(self, socialNetwork):
-        print("sn",socialNetwork)
         if socialNetwork in self.nextPosts:
             return self.nextPosts[socialNetwork]
         else:
@@ -206,34 +351,34 @@ class Content:
     def setTime(self, time):
         self.time = time
 
-    def getBuffer(self):
-        return(self.buffer)
+    #def getBuffer(self):
+    #    return(self.buffer)
 
-    def setBuffer(self): 
-        import moduleBuffer 
-        # https://github.com/fernand0/scripts/blob/master/moduleBuffer.py
-        self.buffer = {}
-        for service in self.getSocialNetworks():
-            if service[0] in self.getBufferapp():
-                nick = self.getSocialNetworks()[service]
-                buf = moduleBuffer.moduleBuffer() 
-                buf.setClient(self.url, (service, nick))
-                buf.setPosts()
-                self.buffer[(service, nick)] = buf
+    #def setBuffer(self): 
+    #    import moduleBuffer 
+    #    # https://github.com/fernand0/scripts/blob/master/moduleBuffer.py
+    #    self.buffer = {}
+    #    for service in self.getSocialNetworks():
+    #        if service[0] in self.getBufferapp():
+    #            nick = self.getSocialNetworks()[service]
+    #            buf = moduleBuffer.moduleBuffer() 
+    #            buf.setClient(self.url, (service, nick))
+    #            buf.setPosts()
+    #            self.buffer[(service, nick)] = buf
 
-    def getBufferapp(self):
-        return(self.bufferapp)
+    #def getBufferapp(self):
+    #    return(self.bufferapp)
  
-    def setBufferapp(self, bufferapp):
-        self.bufferapp = bufferapp
-        self.setBuffer()
+    #def setBufferapp(self, bufferapp):
+    #    self.bufferapp = bufferapp
+    #    self.setBuffer()
     
     def setMax(self, maxVal):
         self.max = maxVal
 
     def getMax(self):
-        if hasattr(self, 'max'): 
-            max = int(self.max)
+        if hasattr(self, 'max') and self.max:
+                max = int(self.max)
         else:
             max = None
         return max
@@ -257,6 +402,7 @@ class Content:
                     cache = moduleCache.moduleCache() 
                     param = (self.url, (service, nick))
                     cache.setClient(param)
+                    cache.setUrl(self.getUrl())
                     cache.setPosts()
                     self.cache[(service, nick)] = cache
 
@@ -264,8 +410,7 @@ class Content:
         return(self.program)
  
     def setProgram(self, program):
-        if (len(program)>4) or program.find('\n')>0:
-            program = program.split('\n')
+        program = program.split('\n')
         self.program = program
         self.setCache()
 
@@ -273,7 +418,10 @@ class Content:
         self.bufMax = bufMax
 
     def getBufMax(self):
-        return(self.bufMax)
+        bufMax = 1
+        if hasattr(self, 'bufMax') and self.bufMax: 
+            bufMax = int(self.bufMax)
+        return bufMax
 
     def len(self, profile):
         service = profile
@@ -281,8 +429,8 @@ class Content:
         posts = []
         if self.cache and (service, nick) in self.cache:
             posts = self.cache[(service, nick)].getPosts()
-        elif self.buffer and (service, nick) in self.buffer:
-            posts = self.buffer[(service, nick)].getPosts()
+        #elif self.buffer and (service, nick) in self.buffer:
+        #    posts = self.buffer[(service, nick)].getPosts()
         
         return (len(posts))
 
@@ -295,6 +443,8 @@ class Content:
 
     def getLinkPosition(self, link):
         posts = self.getPosts()
+        #for pp in posts:
+        #    print(self.getPostTitle(pp))
         pos = len(posts) 
         if posts:
             if not link:
@@ -312,12 +462,13 @@ class Content:
                     # When there are duplicates (there shouldn't be) it returns
                     # the last one
                     pos = i
-            return(pos)
+                    #print(url[:lenCmp],linkS[:lenCmp])
         else:
-            return -1
+            pos =  -1
+        return(pos)
 
     def datePost(self, pos):
-        print(self.getPosts())
+        #print(self.getPosts())
         if 'entries' in self.getPosts():
             return(self.getPosts().entries[pos]['published_parsed'])
         else:
@@ -388,10 +539,8 @@ class Content:
         return("Fail! %s" % data[1])
         #print("----Unexpected error: %s"% data[2]) 
 
-
     def getPostTitle(self, post):
-        logging.info("ppost {}".format(post))
-        return str(post)
+        return None
     
     def getPostDate(self, post):
         return None
@@ -400,11 +549,7 @@ class Content:
         return ''
 
     def getImages(self, i):        
-        if hasattr(self, 'getPostsType'):
-            if self.getPostsType() == 'drafts':
-                posts = self.getDrafts()
-            else:
-                posts = self.getPosts()
+        posts = self.getPosts()
         theTitle = None
         theLink = None
         res = None
@@ -426,6 +571,7 @@ class Content:
 
     def getImagesCode(self, i):        
         res = self.getImages(i)
+        #print(self.getPosts()[i])
         url = self.getPostLink(self.getPosts()[i]) 
         text = ""
         for iimg in res: 
@@ -451,4 +597,11 @@ class Content:
                 text = '{}\n<p><a href="{}"><img class="alignnone size-full wp-image-3306" src="{}" alt="{} {}" width="776" height="1035" /></a></p>'.format(text,url, iimg[0],title, description)
         return(text)
 
+def main():
 
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
+
+if __name__ == '__main__':
+    main()

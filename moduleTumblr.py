@@ -32,58 +32,75 @@ class moduleTumblr(Content,Queue):
         self.tc = None
         self.service = 'Tumblr'
 
-    def setClient(self, tumblr):
-        logging.info("    Connecting {}".format(self.service))
-        try:
-            config = configparser.ConfigParser()
-            config.read(CONFIGDIR + '/.rssTumblr')
+    def getKeys(self, config): 
+        consumer_key = config.get("Buffer1", "consumer_key") 
+        consumer_secret = config.get("Buffer1", "consumer_secret") 
+        oauth_token = config.get("Buffer1", "oauth_token")
+        oauth_secret = config.get("Buffer1", "oauth_secret")
 
-            self.user = tumblr
+        return (consumer_key, consumer_secret, oauth_token, oauth_secret)
 
-            consumer_key = config.get("Buffer1", "consumer_key")
-            consumer_secret = config.get("Buffer1", "consumer_secret")
-            oauth_token = config.get("Buffer1", "oauth_token")
-            oauth_secret = config.get("Buffer1", "oauth_secret")
 
-            try:
-                client = pytumblr.TumblrRestClient(consumer_key, 
-                        consumer_secret, oauth_token, oauth_secret)
-            except:
-                logging.warning("Tumblr authentication failed!")
-                logging.warning("Unexpected error:", sys.exc_info()[0])
-                client = None
-        except:
-            logging.warning("Account not configured")
-            client = None
-
-        self.tc = client
-        logging.info(f"Url: {tumblr}")
+    def initApi(self, keys):
+        client = pytumblr.TumblrRestClient(keys[0], keys[1], keys[2], keys[3])
+        tumblr = self.user
         if isinstance(tumblr,str):
             self.url = f"https://{tumblr}.tumblr.com/"
+        elif isinstance(tumblr[1],str): 
+            self.url = f"https://{tumblr[1]}.tumblr.com/"
         elif isinstance(tumblr,tuple): 
             self.url = f"https://{tumblr[1][1]}.tumblr.com/"
         logging.info(f"Url: {self.url}")
- 
-    def getClient(self):
-        return self.tc
- 
+
+        return client
+
     def getBlogName(self):
         name = self.getUrl().split('/')[2]
         return name
 
-    def setPosts(self):
-        logging.info("  Setting posts")
-        logging.info(f"  Setting posts {self.getUrl()}")
+    def setApiPosts(self):
+        self.setApiPublished()
+
+    def setApiPublished(self):
         posts = self.getClient().posts(self.getBlogName())
         if 'posts' in posts:
-            self.posts = posts['posts']
+            posts = posts['posts']
+        else:
+            posts = []
+        return(posts)
+
+    def setApiDrafts(self):
+        drafts = self.getClient().drafts(self.getUrl().split('/')[2])
+        #, offset="75")
+        if 'posts' in drafts: 
+            self.posts = drafts['posts']
         else:
             self.posts = []
-        drafts = self.getClient().queue(self.getUrl().split('/')[2])
-        if 'posts' in drafts: 
-            self.drafts = drafts['posts']
+ 
+    def setApiQueue(self):
+        queue = self.getClient().queue(self.getUrl().split('/')[2])
+
+        #, offset="75")
+        if 'posts' in queue: 
+            posts = queue['posts']
         else:
-            self.drafts = []
+            posts = []
+        return(posts)
+
+    #def setPosts(self):
+    #    logging.info("  Setting posts")
+    #    logging.info(f"  Setting posts {self.getUrl()}")
+    #    posts = self.getClient().posts(self.getBlogName())
+    #    if 'posts' in posts:
+    #        self.posts = posts['posts']
+    #    else:
+    #        self.posts = []
+    #    drafts = self.getClient().queue(self.getUrl().split('/')[2])
+    #    #, offset="75")
+    #    if 'posts' in drafts: 
+    #        self.drafts = drafts['posts']
+    #    else:
+    #        self.drafts = []
 
     def getPostTitle(self, post):
         logging.debug(f"getPostTitle {post}")       
@@ -101,10 +118,6 @@ class moduleTumblr(Content,Queue):
                 url = post['post_url']
         return url
 
-    def getId(self, j):
-        post = self.getPosts()[j]
-        return self.getPostId(post)
-
     def getPostId(self, post):
         logging.debug(f"getPostId {post}")       
         idPost = ""
@@ -113,44 +126,86 @@ class moduleTumblr(Content,Queue):
                 idPost = post['id']
         return idPost
 
-    def publishPost(self, post, link, comment):
-        logging.info("    Publishing in Tumblr: %s" % post)
-        try:
-            client = self.tc 
-            res = client.create_link(self.getBlogName(), state='queue',
-                    title=post, url=link, description="")
+    def getPostState(self, post):
+        logging.debug(f"getPostState {post}")       
+        state = ""
+        if post:
+            if 'state' in post:
+                state = post['state']
+        return state
 
-            logging.debug("Res: %s" % res)
-            if 'id'  in res:
-                logging.info("Res: %s" % res['id'])
-                res = res['id']
+    def processReply(self, reply): 
+        logging.debug("Res: %s" % reply) 
+        if 'id'  in reply: 
+            logging.info("Res: %s" % reply['id']) 
+            res = reply['id']
+        return res
 
-            return(res)
-        except:        
-            return(self.report('Tumblr', post, link, sys.exc_info()))
+    def publishApiPost(self, postData):
+        res = self.getClient().create_link(self.getBlogName(), state='queue',
+                title=postData[0], url=postData[1], description=postData[2])
 
-    def edit(self, j, newTitle=''): 
-        logging.info("New title %s", newTitle)
-        post = self.getPosts()[j]
-        oldTitle = self.getPostTitle(post)
-        url=self.getUrl()
-        name = url.split('/')[2]
+        return(res)
+
+    #def publishPost(self, post, link, comment):
+    #    logging.info("    Publishing in Tumblr: %s" % post)
+    #    try:
+    #        client = self.tc 
+    #        res = client.create_link(self.getBlogName(), state='queue',
+    #                title=post, url=link, description="")
+
+    #        res = self.processReply(res)
+    #        return(res)
+    #    except:        
+    #        return(self.report('Tumblr', post, link, sys.exc_info()))
+
+    def publish(self, j):
+        # This is not publishing but changing state -> editing
+        logging.info("Publishing %d"% j)                
+        logging.info("servicename %s" %self.service) 
+        print("Publishing %d"% j)                
+        print("servicename %s" %self.service) 
+        if hasattr(self, 'getPostsType') and (self.getPostsType() == 'queue'): 
+            logging.info("Publishing queued state %d"% j)                
+            res = self.do_edit(j, newState='published') 
+        else:
+            # Not tested
+            (title, link, firstLink, image, summary, summaryHtml, summaryLinks,
+                    content, links, comment) = self.obtainPostData(j)
+            logging.info("Publishing {} {}".format(title, link))
+            res = self.publishPost(title, link, comment)
+
+        return(res)
+
+    def editApiTitle(self, post, newTitle): 
         idPost = post['id']
-        res = self.getClient().edit_post(name, id=idPost, 
-                type=post['type'], title = newTitle)
-        logging.info("Res: {}".format(res))
-        update = "Changed "+oldTitle+" with "+newTitle
-        return(update)
+        typePost = post['type']
+        res = self.getClient().edit_post(self.getBlogName(), id=idPost, 
+                type=typePost, title = newTitle)
+        return res
 
-    def delete(self, j): 
-        logging.info("Deleting id %s" % j)
+    def editApiState(self, post, newState): 
+        idPost = post['id']
+        typePost = post['type']
+        res = self.getClient().edit_post(self.getBlogName(), id=idPost, 
+                type=typePost, state=newState)
+        return res
+
+    def deleteApi(self, j): 
         idPost = self.getId(j)
-        #self.sc.token = self.user_slack_token        
-        logging.info("Deleting id %s" % idPost)
-        client = self.tc
-        result = client.delete_post(self.getBlogName(), idPost)
-        logging.info(result)
-        return(result['ok'])
+        logging.info("Deleting post %s" % idPost)
+        return self.getClient().delete_post(self.getBlogName(), idPost)
+
+    #def delete(self, j): 
+    #    logging.info("Deleting id %s" % j)
+    #    idPost = self.getId(j)
+    #    #self.sc.token = self.user_slack_token        
+    #    logging.info("Deleting id %s" % idPost)
+    #    client = self.tc
+    #    result = client.delete_post(self.getBlogName(), idPost)
+    #    logging.info(result)
+    #    res = self.processReply(res)
+    #    return(res)
 
 
 def main():
@@ -164,14 +219,23 @@ def main():
     t = moduleTumblr.moduleTumblr()
 
     t.setClient('fernand0')
-    t.setPostsType('drafts')
-
+    t.setPostsType('queue')
     t.setPosts()
     print(t.getPosts())
-    print(t.getPostTitle(t.getPosts()[1]))
-    print(t.getPostLink(t.getPosts()[1]))
-    print(t.getPostId(t.getPosts()[1]))
-    print(t.delete(1))
+
+
+    t.setPostsType('queue')
+
+    t.setPosts()
+    i=0
+    print(t.getPosts())
+    for i,p in enumerate(t.getPosts()):
+        print(i, t.getPostTitle(p), t.getPostLink(p))
+    print(len(t.getPosts()))
+    print(t.getPostTitle(t.getPosts()[i]))
+    print(t.getPostLink(t.getPosts()[i]))
+    print(t.getPostId(t.getPosts()[i]))
+    print(t.publish(i))
     sys.exit()
 
     config = configparser.ConfigParser()
