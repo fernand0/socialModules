@@ -107,6 +107,7 @@ class Content:
         logging.debug("  Posts type {}".format(self.getPostsType()))
         theType = self.getPostsType().capitalize()
         cmd = getattr(self, f"get{theType}")
+        print(f"cmd {theType}")
         posts = cmd()
 
         return(posts)

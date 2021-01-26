@@ -301,9 +301,12 @@ def main():
         img.setUrl(url)
         if 'posts' in config.options(acc):
             img.setPostsType(config.get(acc, 'posts'))
+        else:
+            img.setPostsType(config.get(acc, 'drafts'))
         img.setPosts()
         for i, im in enumerate(img.getPosts()):
             print(i, img.getPostTitle(im))
+            print(img.obtainPostData(i))
         lastLink = None
         i = 1
         if 'wordpress' in img.getSocialNetworks():
