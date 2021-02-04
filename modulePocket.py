@@ -96,7 +96,7 @@ class modulePocket(Content,Queue):
         return reply
 
     def publishApiPost(self, postData):
-        link = postData[0]
+        link = postData[1]
         if not link.startswith('http'):
             pos = link.find('http')
             link = link[pos:]

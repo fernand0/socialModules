@@ -5,6 +5,8 @@ import sys
 
 import configparser
 
+from bs4 import BeautifulSoup
+from bs4 import Tag
 from html.parser import HTMLParser
 
 import mastodon
@@ -133,7 +135,16 @@ class moduleMastodon(Content,Queue):
             return(post['content'].replace('\n', ' '))
 
     def getPostLink(self, post): 
-        return self.getAttribute(post, 'uri')
+        if ('card' in post) and post['card']:
+            link =  self.getAttribute(post['card'], 'url')
+        else: 
+            soup = BeautifulSoup(post['content'], 'lxml')
+            link = soup.a
+            if link: 
+                link = link['href']
+            else:
+                link =  self.getAttribute(post, 'uri')
+        return link
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)
@@ -151,12 +162,9 @@ class moduleMastodon(Content,Queue):
             content = None 
             theContent = None
             if 'card' in post and post['card']: 
-                if 'description' in post['card']: 
-                    theContent = post['card']['description']
+                theContent = self.getAttribute(post['card'], 'description')
             firstLink = theLink
-            if 'card' in post and post['card']: 
-                if 'url' in post['card']: 
-                    firstLink = post['card']['url']
+            self.getPostLink(post)
             theImage = None
             theSummary = None
 
@@ -183,9 +191,8 @@ def main():
     for post in mastodon.getPosts():
         print(post)
 
-
     print("Favorites")
-    mastodon.setPostsType('posts')
+    mastodon.setPostsType('favs')
     mastodon.setPosts()
     for post in mastodon.getPosts():
         print(post)

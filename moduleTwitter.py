@@ -9,8 +9,6 @@ import requests
 import sys
 import urllib
 
-from bs4 import BeautifulSoup
-from bs4 import Tag
 
 import twitter
 from twitter import *
@@ -199,6 +197,7 @@ class moduleTwitter(Content,Queue):
     #        return(self.report('Twitter', post, link, sys.exc_info()))
 
     def deleteApiPost(self, idPost): 
+        logging.info("Deleting: {}".format(str(idPost)))
         result = self.client.favorites.destroy(_id=idPost)
         logging.info(f"Res: {result}")
         return(result)
@@ -301,7 +300,7 @@ def main():
     #tw.setFriends()
     #sys.exit()
 
-    tw.publishPost("Prueba", "http://elmundoesimperfecto.com/", '')
+    #tw.publishPost("Prueba", "http://elmundoesimperfecto.com/", '')
     print("Testing posts")
     tw.setPostsType('posts')
     tw.setPosts()

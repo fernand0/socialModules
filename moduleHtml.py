@@ -16,8 +16,10 @@ import moduleCache
 # https://github.com/fernand0/scripts/blob/master/moduleCache.py
 
 from configMod import *
+from moduleContent import *
+from moduleQueue import *
 
-class moduleHtml():
+class moduleHtml(Content,Queue):
 
     def __init__(self):
          self.url = ""
@@ -32,8 +34,15 @@ class moduleHtml():
          self.program = None
          self.xmlrpc = None
          self.lastLinkPublished = {}
+         self.service = 'Html'
          #self.logger = logging.getLogger(__name__)
+
+    def initApi(self, keys):
+        return self
  
+    def getKeys(self, config):
+        return None
+
     def getLinksToAvoid(self):
         return(self.linksToAvoid)
  
@@ -211,7 +220,6 @@ class moduleHtml():
     
             return (soup.get_text().strip('\n'), theSummaryLinks)
                 
-
     def obtainPostData(self, post, debug=False):
         theSummary = post['summary']
         content = post['description']
@@ -283,6 +291,13 @@ class moduleHtml():
 
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
+    def click(self, url): 
+        headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36' }
+        print("url",url)
+        response = requests.get(url,headers=headers) 
+        if response.status_code != 200: 
+            logging.info(response.text)
+        return("Click OK")
 
 if __name__ == "__main__":
 
@@ -369,6 +384,7 @@ def main():
     import moduleHtml
 
     html = moduleHtml.moduleHtml()
+    html.setClient(reflexioneseirreflexiones)
 
 if __name__ == "__main__":
     main()

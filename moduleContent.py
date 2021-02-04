@@ -29,8 +29,10 @@ class Content:
         self.buffer = None
         self.cache = None
         self.xmlrpc = None
+        self.serach = None
         self.api = {}
         self.lastLinkPublished = {}
+        self.numPosts = 0
 
     def setClient(self, account):
         logging.info("    Connecting {}: {}".format(self.service, account))
@@ -111,8 +113,23 @@ class Content:
             url = self.url
         return(url)
 
+    def setNumPosts(self, numPosts):
+        self.numPosts = numPosts
+
+    def getNumPosts(self):
+        return self.numPosts
+
     def setUrl(self, url):
         self.url = url
+
+    def setSearch(self, term):
+        self.search = term
+
+    def getSearch(self):
+        name = ''
+        if hasattr(self,'search'):
+            name = self.search
+        return(name)
 
     def getName(self):
         name = ''
@@ -139,7 +156,8 @@ class Content:
     def setSocialNetworks(self, socialNetworksConfig):
         socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
                 'wordpress', 'medium', 'linkedin','pocket', 'mastodon',
-                'instagram', 'imgur', 'tumblr', 'slack', 'refind','file'] 
+                'instagram', 'imgur', 'tumblr', 'slack', 'refind','file',
+                'kindle'] 
         logging.debug("  sNC {}".format(socialNetworksConfig))
         for sN in socialNetworksConfig:
             if sN in socialNetworksOpt:
@@ -514,6 +532,9 @@ class Content:
         else:
             theSummaryLinks = ""
     
+
+        print("post")#.strip('\n'))#, theSummaryLinks)
+        print("post",soup.get_text())#.strip('\n'))#, theSummaryLinks)
         return (soup.get_text().strip('\n'), theSummaryLinks)
 
     def report(self, profile, post, link, data): 

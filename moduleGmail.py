@@ -43,8 +43,8 @@ class moduleGmail(Content,Queue):
         Queue().__init__()
         self.service = "Gmail"
         self.nick = None
-        self.scopes = ['https://www.googleapis.com/auth/gmail.modify']
         self.scopes = ['https://mail.google.com/']
+        self.scopes = ['https://www.googleapis.com/auth/gmail.modify']
 
     def API(self, Acc):
         # Back compatibility
@@ -191,6 +191,8 @@ class moduleGmail(Content,Queue):
     def processPosts(self, posts, label, mode):
         pPosts = []
         typePosts = self.getPostsType()
+        if typePosts == 'search':
+            typePosts = 'messages'
         if typePosts in posts:
             for post in posts[typePosts]: 
                 if mode != 'raw':
@@ -210,6 +212,25 @@ class moduleGmail(Content,Queue):
             pPosts = []
         return pPosts
 
+    def setApiSearch(self, label=None, mode=''): 
+        posts = self.setApiMessages()
+        postsS = []
+        for post in posts: 
+            title = self.getPostTitle(post)
+            if title.find(self.getSearch())>=0:
+                postsS.append(post)
+        return postsS
+
+
+    def setApiSearchh(self, label=None, mode=''): 
+        # Not sure about how the searching works
+        searchTerm  = self.getSearch()
+        searchQ = f"in:inbox is:unread Subject:({searchTerm})"
+        posts = self.getClient().users().messages().list(
+                userId='me',q=searchQ,includeSpamTrash=False).execute()
+        posts = self.processPosts(posts, label, mode)
+        return posts
+     
     def setApiDrafts(self, label=None, mode=''): 
         posts = self.getClient().users().drafts().list(userId='me').execute() 
         posts = self.processPosts(posts, label, mode)
@@ -281,7 +302,7 @@ class moduleGmail(Content,Queue):
     def getMessageId(self, idPost): 
         api = self.getClient()
         message = api.users().messages().get(userId="me", id=idPost).execute()
-        import pprint
+        #import pprint
         #pprint.pprint(message)
         mes = ""
         for part in message['payload']['parts']:
@@ -327,6 +348,17 @@ class moduleGmail(Content,Queue):
             del message[header]
             message[header]= value
 
+    def getPostLinks(self, post):
+        message = self.getMessageId(self.getPostId(post))
+        soup = BeautifulSoup(message, 'lxml')
+        res = soup.find_all('a')
+        links = []
+        for element in res:
+            link = element['href']
+            if not (link in links):
+                links.append(link)
+        return(links)
+
     def getPostLink(self, post):
         fromP = self.getHeader(post, 'From')
         snipP = self.getHeader(post, 'snippet')
@@ -359,9 +391,16 @@ class moduleGmail(Content,Queue):
                 return(head['value'])
 
     def getPostId(self, message):
-        if 'list' in message:
+        if isinstance(message, str):
+            idPost = message
+        elif 'list' in message:
             message = message['list']
-        return(message['id'])
+            idPost = message['id']
+        elif isinstance(message, tuple):
+            print(message)
+            idPost = message
+
+        return(idPost)
 
     def getHeaderEmail(self, message, header = 'Subject'):
         if header in message:
@@ -412,7 +451,7 @@ class moduleGmail(Content,Queue):
             posSignature = snippet.find('-- ')
             if posIni < posSignature: 
                 theLink = snippet[posIni:posFin]
-        theLinks = None
+        theLinks = self.getPostLinks(message)
         content = None
         theContent = None
         #date = int(self.getHeader(message, 'internalDate'))/1000
