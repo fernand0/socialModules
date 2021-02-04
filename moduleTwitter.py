@@ -102,7 +102,8 @@ class moduleTwitter(Content,Queue):
         return posts
 
     def setApiFavs(self): 
-        posts = self.getClient().favorites.list() #count=100)
+        posts = self.getClient().favorites.list(tweet_mode='extended') #count=100)
+        # https://stackoverflow.com/questions/38717816/twitter-api-text-field-value-is-truncated
         return posts
 
     #def setPosts(self):
@@ -227,8 +228,8 @@ class moduleTwitter(Content,Queue):
 
     def getPostUrl(self, post):
         logging.debug(post)
-        #import pprint
-        #pprint.pprint(post)
+        import pprint
+        pprint.pprint(post)
         if ('urls' in post['entities']): 
             if post['entities']['urls']:
                 if 'expanded_url' in post['entities']['urls'][0]:
@@ -259,12 +260,11 @@ class moduleTwitter(Content,Queue):
             theLinks = None
             content = None 
             theContent = None
-            if 'text' in post and post['text']: 
-                theContent = post['text']
-            firstLink = theLink
-            pos = theContent.find('http')
-            if pos >= 0:
-                firstLink=theContent[pos:].split(' ')[0]
+
+            firstLink = self.getPostUrl(post)
+            #pos = theContent.find('http')
+            #if pos >= 0:
+            #    firstLink=theContent[pos:].split(' ')[0]
             theImage = None
             theSummary = None
 
@@ -324,6 +324,8 @@ def main():
         url = tw.getPostUrl(post)
         print("Title: {}\nLink: {}\nUrl:{}\n".format(title,link,url))
     print(len(tw.getPosts()))
+
+    sys.exit()
 
 
 
