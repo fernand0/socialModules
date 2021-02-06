@@ -48,7 +48,7 @@ class moduleMastodon(Content,Queue):
         post, link, comment, plus = postData
         post = self.addComment(post, comment)
 
-        res=''
+        res='Fail!'
         res = self.getClient().toot(post+" "+link)
 
         return res

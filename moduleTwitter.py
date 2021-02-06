@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import configparser
-import logging
-import pickle
 import sys
 
 import twitter
@@ -63,14 +61,13 @@ class moduleTwitter(Content,Queue):
 
         post = post[:(240 - (len(link) + 1))]
         logging.info("     Publishing: %s" % post)
-        res = ''
+        res = 'Fail!'
         try:
             res = self.getClient().statuses.update(status=post+" " + link)
         except twitter.api.TwitterHTTPError as twittererror:        
             for error in twittererror.response_data.get("errors", []): 
                 logging.info("      Error code: %s" % error.get("code", None))
             res = self.report('Twitter', post, link, sys.exc_info())
-        
         return res
 
     def deleteApiPosts(self, idPost): 
@@ -83,14 +80,6 @@ class moduleTwitter(Content,Queue):
         result = self.getClient().favorites.destroy(_id=idPost)
         logging.info(f"Res: {result}")
         return(result)
-
-    #def deleteApi(self, j): 
-    #    idPost = self.getId(self.getPost(j))
-    #    print(idPost)
-    #    sys.exit()
-    #    result = self.client.favorites.destroy(_id=idPost)
-    #    logging.info(f"Res: {result}")
-    #    return(result)
 
     def getPostId(self, post):
         if isinstance(post, str) or isinstance(post, int):
@@ -107,8 +96,8 @@ class moduleTwitter(Content,Queue):
         return self.getAttribute(post, 'text')
 
     def getPostUrl(self, post):
-        return 'https://twitter.com/{}/status/{}'.format(
-               self.user, self.getAttribute(post, 'id_str'))
+        idPost = self.getAttribute(post, 'id_str')
+        return f'https://twitter.com/{self.user}/status/{idPost}'
 
     def getPostLink(self, post):
         result = ''

@@ -106,7 +106,6 @@ class Content:
             cmd = getattr(self, 'setApiPosts')
         self.assignPosts(cmd())
 
-
     def getClient(self):
         client = None
         if hasattr(self, 'client'):
