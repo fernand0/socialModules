@@ -56,6 +56,7 @@ class Queue:
         return (theTitle, theLink, None, None, None, None, None, None, None, None)
 
     def obtainPostData(self, i, debug=False):
+        logging.info("Service %s"% self.service)
         return (self.extractDataMessage(i))
 
     def selectAndExecute(self, command, args):

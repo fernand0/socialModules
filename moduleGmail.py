@@ -528,6 +528,10 @@ class moduleGmail(Content,Queue):
  
         return("Trashed %s"% title)
  
+    def deleteApiSearch(self, idPost): 
+        result = self.deleteApiPost(idPost)
+        return result
+
     def deleteApiPost(self, idPost): 
         api = self.getClient()
         result = api.users().messages().trash(userId='me', id=idPost).execute()

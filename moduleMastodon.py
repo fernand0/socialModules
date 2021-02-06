@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
-import os
-import sys
-
 import configparser
+import sys
 
 from bs4 import BeautifulSoup
 from bs4 import Tag
@@ -22,117 +20,71 @@ class moduleMastodon(Content,Queue):
 
     def __init__(self):
         super().__init__()
-        self.service = None
-        self.service = 'Mastodon'
 
     def getKeys(self, config):
         access_token = config[self.user]['access_token']
         return ((access_token, ))
 
     def initApi(self, keys):
-        maCli = mastodon.Mastodon(
-                access_token = keys[0], 
-                api_base_url = 'https://mastodon.social'
-        )
-
-        return maCli
-
-    #def setClient(self, user):
-    #    logging.info("     Connecting Mastodon")
-    #    self.service = 'Mastodon'
-    #    try:
-    #        maCli = mastodon.Mastodon( 
-    #           access_token = CONFIGDIR + '/.rssMastodon', 
-    #           api_base_url = 'https://mastodon.social'
-    #        )
-
-    #    except: 
-    #        logging.warning("Mastodon authentication failed!") 
-    #        logging.warning("Unexpected error:", sys.exc_info()[0])
-
-    #    self.client = maCli
-    #    self.user = user
+        client = mastodon.Mastodon(access_token = keys[0], 
+                api_base_url = 'https://mastodon.social')
+        return client
 
     def setApiPosts(self):
-        statuses = self.getClient().account_statuses(self.getClient().me())
-        posts = []
-        for toot in  statuses:
-            posts.append(toot)
+        posts = self.getClient().account_statuses(self.getClient().me())
         return posts
 
     def setApiFavs(self):
-        statuses = self.getClient().favourites()
-        posts = []
-        for toot in  statuses:
-            posts.append(toot)
+        posts = self.getClient().favourites()
         return posts
 
-    #def setPosts(self):
-    #    logging.info("  Setting posts")
-    #    self.posts = []
-    #    self.favs = []
-    #    #posts = self.getClient().timeline_home()
-    #    posts = self.getClient().account_statuses(self.getClient().me())
-    #    for toot in  posts:
-    #        self.posts.append(toot)
-
-    #    favs = self.getClient().favourites()
-    #    for toot in  favs:
-    #        self.favs.append(toot)
-
-    #def getFavs(self):
-    #     return self.favs
-    
     def processReply(self, reply): 
-        res = reply
-        logging.debug("Res: %s" % res) 
-        if 'uri' in res: 
-            logging.info("     Toot: %s" % res['uri']) 
-            res = res['uri']
+        res = ''
+        if reply: 
+            res = self.getAttribute(reply, 'uri')
         return res
 
     def publishApiPost(self, postData):
-        post = postData[0]
-        link = postData[1] 
-        comment = postData[2]
-        post = post + " " + link
-        if comment: 
-            post = comment + " " + post
+        post, link, comment, plus = postData
+        post = self.addComment(post, comment)
 
-        h = HTMLParser()
-        post = h.unescape(post)
-        try:
-            res = self.getClient().toot(post)
-        except:        
-            res = self.report('Mastodon', post, link, sys.exc_info())
+        res=''
+        res = self.getClient().toot(post+" "+link)
+
         return res
 
-    #def publishPost(self, post, link, comment):
-    #    logging.debug("    Publishing in Mastodon...")
-    #    if comment == None:
-    #        comment = ''
-    #    title = post
-    #    content = comment
-    #    post = comment + " " + post + " " + link
-    #    h = HTMLParser()
-    #    post = h.unescape(post)
-    #    try:
-    #        logging.info("     Publishing in Mastodon: %s" % post)
-    #        res = self.getClient().toot(post)
-    #        logging.debug("Res: %s" % res)
-    #        if 'uri' in res:
-    #            logging.info("     Toot: %s" % res['uri'])
-    #            return(res['uri'])
-    #        return res
-    #    except:        
-    #        return(self.report('Mastodon', post, link, sys.exc_info()))
+    def deleteApiPosts(self, idPost): 
+        result = self.getClient().status_delete(idPost)
+        logging.info(f"Res: {result}")
+        return(result)
+
+    def deleteApiFavs(self, idPost): 
+        logging.info("Deleting: {}".format(str(idPost)))
+        print("Deleting: {}".format(str(idPost)))
+        result = self.client.status_unfavourite(idPost)
+        logging.info(f"Res: {result}")
+        return(result)
+
+    def getPostId(self, post): 
+        if isinstance(post, str):
+            idPost = post
+        else: 
+            idPost = self.getAttribute(post, 'id')
+        return idPost
+
+    def getUrlId(self, post):
+        return (post.split('/')[-1])
 
     def getPostTitle(self, post):
-        if 'card' in post and post['card']:
-            if 'title' in post['card']:
-                return(post['card']['title'])
+        result = ''
         if 'content' in post:
-            return(post['content'].replace('\n', ' '))
+            result = self.getAttribute(post, 'content').replace('\n', ' ')
+        elif 'card' in post and post['card']:
+            result = self.getAttribute(post['card'], 'title')
+        return result
+
+    def getPostUrl(self, post):
+        return self.getAttribute(post, 'url')
 
     def getPostLink(self, post): 
         if ('card' in post) and post['card']:
@@ -156,23 +108,26 @@ class moduleMastodon(Content,Queue):
         if i < len(self.getPosts()):
             post = self.getPost(i)
             theTitle = self.getPostTitle(post)
-            theLink = self.getPostLink(post)
+            theLink = self.getPostUrl(post)
+            firstLink = self.getPostLink(post)
+            theId = self.getPostId(post)
 
-            theLinks = None
+            theLinks = [ firstLink , ]
             content = None 
             theContent = None
             if 'card' in post and post['card']: 
                 theContent = self.getAttribute(post['card'], 'description')
-            firstLink = theLink
-            self.getPostLink(post)
+
             theImage = None
             theSummary = None
 
             theSummaryLinks = None
-            comment = None
+            comment = theId
 
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
+    def search(self, text):
+        pass
 
 def main():
 
@@ -184,18 +139,36 @@ def main():
 
     mastodon = moduleMastodon.moduleMastodon()
     mastodon.setClient('fernand0')
+    #print("Testing posting and deleting")
+    #res = mastodon.publishPost("Prueba ", "http://elmundoesimperfecto.com/", '')
+    #print(res)
+    #idPost = mastodon.getUrlId(res)
+    #print(idPost)
+    #input('Delete? ')
+    #mastodon.deletePostId(idPost)
+    #sys.exit()
     print("Testing posts")
     mastodon.setPostsType('posts')
     mastodon.setPosts()
     print(mastodon.getClient().me())
-    for post in mastodon.getPosts():
-        print(post)
+    for i, post in enumerate(mastodon.getPosts()):
+        #print(post)
+        title = mastodon.getPostTitle(post)
+        link = mastodon.getPostLink(post)
+        url = mastodon.getPostUrl(post)
+        theId = mastodon.getPostId(post)
+        print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
 
     print("Favorites")
     mastodon.setPostsType('favs')
     mastodon.setPosts()
     for post in mastodon.getPosts():
-        print(post)
+        print(post) 
+        print(mastodon.getPostTitle(post)) 
+        #input("Delete ?") 
+        #mastodon.deletePost(post)
+
+    #sys.exit()
 
     print("Testing title and link")
 
@@ -221,6 +194,7 @@ def main():
         print("Title: {}\nLink: {}\n".format(title,link))
         print(mastodon.extractDataMessage(i))
 
+    sys.exit()
     (theTitle, theLink, firstLink, theImage, theSummary, 
             content, theSummaryLinks, theContent, theLinks, comment) = mastodon.extractDataMessage(0)
 
