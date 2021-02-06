@@ -35,7 +35,6 @@ class moduleFacebook(Content,Queue):
 
     def initApi(self, keys):
         graph = facebook.GraphAPI(keys[0], version='3.0') 
-        #self.setPage(self.user)
         return graph 
 
     def setPage(self, facebookAC='me'):
@@ -57,6 +56,8 @@ class moduleFacebook(Content,Queue):
                     self.page = facebookAC 
 
     def setApiPosts(self):
+        if not self.page:
+            self.setPage(self.user)
         posts = []
         postsF = self.page.get_connections(self.pageId, connection_name='posts') 
         if 'data' in postsF: 
