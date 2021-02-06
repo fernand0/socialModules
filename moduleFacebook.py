@@ -58,6 +58,7 @@ class moduleFacebook(Content,Queue):
     def setApiPosts(self):
         if not self.page:
             self.setPage(self.user)
+
         posts = []
         postsF = self.page.get_connections(self.pageId, connection_name='posts') 
         if 'data' in postsF: 
