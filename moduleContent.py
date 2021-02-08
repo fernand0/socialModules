@@ -563,8 +563,8 @@ class Content:
             theSummaryLinks = ""
     
 
-        print("post")#.strip('\n'))#, theSummaryLinks)
-        print("post",soup.get_text())#.strip('\n'))#, theSummaryLinks)
+        #print("post")#.strip('\n'))#, theSummaryLinks)
+        #print("post",soup.get_text())#.strip('\n'))#, theSummaryLinks)
         return (soup.get_text().strip('\n'), theSummaryLinks)
 
     def report(self, profile, post, link, data): 

@@ -28,6 +28,7 @@ class moduleFacebook(Content,Queue):
 
     def __init__(self):
         super().__init__()
+        self.page = None
 
     def getKeys(self, config): 
         oauth_access_token = config.get(self.service, "oauth_access_token")
@@ -44,9 +45,10 @@ class moduleFacebook(Content,Queue):
 
         if (facebookAC != 'me'): 
             for i in range(len(pages['data'])): 
-                logging.debug("Selecting %s %s"% (pages['data'][i]['name'], facebookAC)) 
+                logging.debug("Selecting %s %s" % (
+                    pages['data'][i]['name'], facebookAC)) 
                 if (pages['data'][i]['name'] == facebookAC): 
-                    logging.info("     Selected... %s"% pages['data'][i]['name']) 
+                    logging.info("     Selected... %s" % pages['data'][i]['name']) 
                     graph2 = facebook.GraphAPI(pages['data'][i]['access_token']) 
                     self.page = graph2
                     self.pageId = pages['data'][i]['id']
@@ -82,9 +84,6 @@ class moduleFacebook(Content,Queue):
 
         #self.postsFormatted = outputData
 
-    def getUrlId(self, post):
-        return (post.split('/')[-1])
-
     def processReply(self, reply): 
         res = reply
         if reply: 
@@ -97,6 +96,9 @@ class moduleFacebook(Content,Queue):
     def publishApiPost(self, postData):
         post, link, comment, plus = postData
         post = self.addComment(post, comment)
+
+        if not self.page:
+            self.setPage(self.user)
 
         res = "Fail!"
         if (not isinstance(self.page, str)):
@@ -112,8 +114,8 @@ class moduleFacebook(Content,Queue):
         result = self.getAttribute(post, 'id')
         return result
 
-    #def getUrlId(self, post):
-    #    return (post.split('/')[-1])
+    def getUrlId(self, post):
+        return (post.split('/')[-1])
 
     def getPostTitle(self, post):
         return self.getAttribute(post, 'title')

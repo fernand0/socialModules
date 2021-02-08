@@ -374,8 +374,8 @@ def main():
     wp = moduleWordpress.moduleWordpress()
     wp.setClient('avecesunafoto')
     wp.setPostsType('posts')
-    wp.setPosts(5)
-    if res[:4] == 'Fail': 
+    res = wp.setPosts()
+    if (res[:4] == 'Fail'): 
         wp.authorize()
 
     print("Testing tags")
