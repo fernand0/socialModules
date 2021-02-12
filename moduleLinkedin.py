@@ -2,28 +2,22 @@
 
 import configparser
 import json
-import logging
-import os
-import oauth2 as oauth
-import pickle
 import requests
 import sys
 import urllib.parse
 
 from html.parser import HTMLParser
+import oauth2 as oauth
 from linkedin_v2 import linkedin
-
 
 from configMod import *
 from moduleContent import *
+
 
 class moduleLinkedin(Content):
 
     def __init__(self):
         super().__init__()
-        self.user = None
-        self.client = None
-        self.service = 'Linkedin'
 
     def getKeys(self, config):
         CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY") 
@@ -39,17 +33,16 @@ class moduleLinkedin(Content):
         return client
 
     def authorize(self):
-        if True:
+        # Needs some cleaning
+        try:
             config = configparser.ConfigParser()
             configLinkedin = CONFIGDIR + '/.rssLinkedin'
             config.read(configLinkedin)
-            self.CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY") 
-            print(self.CONSUMER_KEY)
-            self.CONSUMER_SECRET = config.get("Linkedin", "CONSUMER_SECRET") 
-            print(self.CONSUMER_SECRET)
+            keys = self.getKeys(config)
+            self.CONSUMER_KEY = keys[0] 
+            self.CONSUMER_SECRET = keys[1]
             self.state = config.get("Linkedin", 'state') 
 
-            import requests
             payload = {'response_type':'code',
                     'client_id': self.CONSUMER_KEY,
                     'client_secret': self.CONSUMER_SECRET,
@@ -78,139 +71,41 @@ class moduleLinkedin(Content):
                config.write(configfile)
 
             sys.exit()
-        else:
+        except:
             print("Some problem") 
 
     def setApiPosts(self):
         urn = self.URN
         author = f"urn:li:person:{urn}"        
         author = urllib.parse.quote(author)
-        url = 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List({})&sortBy=LAST_MODIFIED'.format(author)
+        posts = []
+        #posts =  self.getClient().get_posts(urn=self.URN)
+        print(posts)
+        #url = 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List({})&sortBy=LAST_MODIFIED'.format(author)
 
-        access_token = self.client.authentication.token.access_token
-        headers = {'X-Restli-Protocol-Version': '2.0.0',
-           'Content-Type': 'application/json',
-           'Authorization': f'Bearer {access_token}'}
+        #access_token = self.client.authentication.token.access_token
+        #headers = {'X-Restli-Protocol-Version': '2.0.0',
+        #   'Content-Type': 'application/json',
+        #   'Authorization': f'Bearer {access_token}'}
 
-        posts = requests.get(url,headers=headers,data={'q':author})
+        #posts = requests.get(url,headers=headers,data={'q':author})
+        print(posts)
         return posts
-
-    #def setPosts(self):
-    #    logging.info("  Setting posts")
-    #    urn = self.URN
-    #    author = f"urn:li:person:{urn}"        
-    #    print(author,type(author))
-    #    author = urllib.parse.quote(author)
-    #    #url = 'https://api.linkedin.com/v2/originalArticles'#.format('{8822}')  
-    #    #print(author)
-    #    url = 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List({})&sortBy=LAST_MODIFIED'.format(author)
-
-    #    print(url)
-    #    print(author)
-    #    access_token = self.client.authentication.token.access_token
-    #    headers = {'X-Restli-Protocol-Version': '2.0.0',
-    #       'Content-Type': 'application/json',
-    #       'Authorization': f'Bearer {access_token}'}
-
-    #    # b'{"serviceErrorCode":100,"message":"Not enough permissions to access: GET-authors /ugcPosts","status":403}'
-    #    res = requests.get(url,headers=headers,data={'q':author})
-    #    self.posts = res
 
     def processReply(self, reply):
         return reply
 
     def publishApiPost(self, postData):
-        post = postData[0]
-        link = postData[1]
-        comment = postData[2]
-        res = self.client.submit_share(comment=comment, 
-                title=post,description=None,
-                submitted_url=link, submitted_image_url=None, 
+        post, link, comment, plus = postData
+        res = self.getClient().submit_share(comment=comment, title=post,
+                description=None, submitted_url=link, submitted_image_url=None, 
                 urn=self.URN, visibility_code='anyone')
         return res
  
-    #def publishPost(self, post, link, comment):
-
-    #    res = self.client.submit_share(comment=comment, title=post,description=None,
-    #            submitted_url=link, submitted_image_url=None, 
-    #            urn=self.URN, visibility_code='anyone')
-    #    logging.info("    Reply %s"%str(res))
-
-    #    return res
-
-    #    # Based on https://github.com/gutsytechster/linkedin-post
-    #    access_token = self.ACCESS_TOKEN
-    #    urn = self.URN
-
-    #    author = f"urn:li:person:{urn}"
-
-    #    headers = {'X-Restli-Protocol-Version': '2.0.0',
-    #       'Content-Type': 'application/json',
-    #       'Authorization': f'Bearer {access_token}'}
-
-    #    api_url_base = 'https://api.linkedin.com/v2/'
-    #    api_url = f'{api_url_base}ugcPosts'
-    #
-    #    logging.info("    Publishing in LinkedIn...")
-    #    if comment == None:
-    #        comment = ''
-    #    postC = comment + " " + post + " " + link
-    #    h = HTMLParser()
-    #    postC = h.unescape(post)
-    #    try:
-    #        logging.info("    Publishing in Linkedin: %s" % post)
-    #        if link: 
-    #            post_data = {
-    #                "author": author,
-    #                "lifecycleState": "PUBLISHED",
-    #                "specificContent": {
-    #                    "com.linkedin.ugc.ShareContent": {
-    #                        "shareCommentary": {
-    #                            "text": comment
-    #                        },
-    #                        "shareMediaCategory": "ARTICLE",
-    #                        "media": [
-    #                            { "status": "READY",
-    #                                #"description": {
-    #                                #    "text": "El mundo es imperfecto"
-    #                                #    },
-    #                                "originalUrl": link,
-    #                                "title": {
-    #                                    "text": post
-    #                                }
-    #                           }
-    #                        ]
-    #                    },
-    #                },
-    #                "visibility": {
-    #                    "com.linkedin.ugc.MemberNetworkVisibility": "CONNECTIONS"
-    #                },
-    #            }
-    #        else: 
-    #            post_data = {
-    #                 "author": author,
-    #                 "lifecycleState": "PUBLISHED",
-    #                 "specificContent": {
-    #                     "com.linkedin.ugc.ShareContent": {
-    #                         "shareCommentary": {
-    #                             "text": post
-    #                         },
-    #                         "shareMediaCategory": "NONE"
-    #                     },
-    #                 },
-    #                 "visibility": {
-    #                     "com.linkedin.ugc.MemberNetworkVisibility": "CONNECTIONS"
-    #                 },
-    #            }
-
-    #        res = requests.post(api_url, headers=headers, json=post_data)
-    #        logging.info("Res: %s" % res)
-    #        if res.status_code == 201: 
-    #            return("Success ") 
-    #        else: 
-    #            return(res.content)
-    #    except:        
-    #        return(self.report('LinkedIn', post, link, sys.exc_info()))
+    def deleteApiPosts(self, idPost): 
+        result = self.getClient().delete_post(idPost,urn=self.URN)
+        logging.info(f"Res: {result}")
+        return(result)
 
     def getPostTitle(self, post):
         # Not  developed
@@ -233,13 +128,18 @@ def main():
     except: 
         ln.authorize()
 
-    print(ln.publishPost("A ver otro", "https://www.linkedin.com/in/fernand0/",''))
+
+    #print("ll",ln.publishPost("A ver otro", "https://www.linkedin.com/in/fernand0/",''))
+    #sys.exit()
+    print(ln.deleteApiPosts('6764243697006727168'))
+    sys.exit()
 
     print("Testing posts")
     ln.setPostsType('posts')
     ln.setPosts()
     for post in ln.getPosts():
         print(post)
+
         
     sys.exit()
 

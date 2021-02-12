@@ -210,7 +210,9 @@ def main():
        for i, post in enumerate(blog.getPosts()):
            print(blog.getPosts()[i])
            (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content , links, comment) = (blog.obtainPostData(i, False))
-           print(title, link, comment)
+           theId = comment
+           url = firstLink
+           print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
            print("l",summaryLinks)
            print("h",summaryHtml)
        sys.exit()

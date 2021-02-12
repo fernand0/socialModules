@@ -3,12 +3,15 @@
 # in other programs
 
 import configparser
+import html
 import os
 import pickle
 import logging
+
 from bs4 import Tag
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
+from html.parser import HTMLParser
 
 from configMod import *
 
@@ -29,8 +32,14 @@ class Content:
         self.buffer = None
         self.cache = None
         self.xmlrpc = None
+        self.serach = None
         self.api = {}
         self.lastLinkPublished = {}
+        self.numPosts = 0
+        self.user = None
+        self.client = None
+        self.service = self.__class__.__name__[6:]
+        # They start with module
 
     def setClient(self, account):
         logging.info("    Connecting {}: {}".format(self.service, account))
@@ -80,7 +89,6 @@ class Content:
 
     def setPosts(self):
         nick = self.getNick()
-        url = self.getUrl()
         if nick:
             identifier = nick
         else:
@@ -98,7 +106,6 @@ class Content:
             cmd = getattr(self, 'setApiPosts')
         self.assignPosts(cmd())
 
-
     def getClient(self):
         client = None
         if hasattr(self, 'client'):
@@ -111,8 +118,23 @@ class Content:
             url = self.url
         return(url)
 
+    def setNumPosts(self, numPosts):
+        self.numPosts = numPosts
+
+    def getNumPosts(self):
+        return self.numPosts
+
     def setUrl(self, url):
         self.url = url
+
+    def setSearch(self, term):
+        self.search = term
+
+    def getSearch(self):
+        name = ''
+        if hasattr(self,'search'):
+            name = self.search
+        return(name)
 
     def getName(self):
         name = ''
@@ -139,7 +161,8 @@ class Content:
     def setSocialNetworks(self, socialNetworksConfig):
         socialNetworksOpt = ['twitter', 'facebook', 'telegram', 
                 'wordpress', 'medium', 'linkedin','pocket', 'mastodon',
-                'instagram', 'imgur', 'tumblr', 'slack', 'refind','file'] 
+                'instagram', 'imgur', 'tumblr', 'slack', 'refind','file',
+                'kindle'] 
         logging.debug("  sNC {}".format(socialNetworksConfig))
         for sN in socialNetworksConfig:
             if sN in socialNetworksOpt:
@@ -208,6 +231,7 @@ class Content:
  
     def getId(self, j):
         idPost = -1
+        logging.info(f"Posts {self.getPosts()} j: {j}")
         if j < len(self.getPosts()): 
             post = self.getPost(j)
             logging.info(f"Post: {post}")
@@ -251,6 +275,17 @@ class Content:
             postsType = self.postsType 
         return postsType
 
+    def addComment(self, post, comment):
+       if comment: 
+            post = comment + " " + post
+            try:
+                h = HTMLParser()
+                post = h.unescape(post)
+            except:
+                post = html.unescape(post) 
+
+       return post
+
     def publishPost(self, post, link='', comment='', **more):
         logging.info(f"    Publishing in {self.service}: {post}")
         try: 
@@ -259,10 +294,31 @@ class Content:
         except:        
             return(self.report(self.service, post, link, sys.exc_info())) 
 
-    def deletePost(self, post): 
-        idPost = self.getPostId(post)
-        reply = self.deleteApiPost(idPost)
+    def deletePostId(self, idPost): 
+        logging.info("Deleting: {}".format(str(idPost)))
+        typePosts = self.getPostsType()
+        if typePosts:
+            if typePosts == 'cache':
+                cmd = getattr(self, 'deleteApiCache')
+            else: 
+                cmd = getattr(self, 'deleteApi' 
+                        + self.getPostsType().capitalize())
+        else:
+            cmd = getattr(self, 'deleteApiPosts')
+        reply = cmd(idPost)
         return (self.processReply(reply))
+
+    def deletePost(self, post): 
+        logging.debug(f"Deleting post: {post}")
+        idPost = self.getPostId(post)
+        result = self.deletepostId(idPost)
+        return (result)
+
+    def delete(self, j): 
+        logging.debug(f"Deleting Pos: {j}")
+        idPost = self.getId(self.getPost(j))
+        result = self.deletepostId(idPost)
+        return(res)
 
     def processReply(self, reply):
         logging.debug("Res: %s" % reply) 
@@ -301,13 +357,6 @@ class Content:
 
     def editl(self, j, newLink): 
         update = self.do_edit(j, newLink=newLink)
-
-    def delete(self, j): 
-        logging.info("Deleting id %s" % j)
-        result = self.deleteApi(j)
-        logging.info(result)
-        res = self.processReply(result)
-        return(res)
 
     def updatePostsCache(self,socialNetwork):
         service = socialNetwork[0]
@@ -525,6 +574,9 @@ class Content:
         else:
             theSummaryLinks = ""
     
+
+        #print("post")#.strip('\n'))#, theSummaryLinks)
+        #print("post",soup.get_text())#.strip('\n'))#, theSummaryLinks)
         return (soup.get_text().strip('\n'), theSummaryLinks)
 
     def report(self, profile, post, link, data): 

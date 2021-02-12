@@ -147,6 +147,12 @@ def readConfig(checkBlog):
                 blog.setTime(config.get(section, "time"))
             if ("postaction" in config.options(section)):
                 blog.setPostAction(config.get(section, "postaction"))
+            if ("numposts" in config.options(section)):
+                blog.setNumPosts(config.get(section, "numposts"))
+            else:
+                blog.setNumPosts(1)
+
+
 
             blog.setSocialNetworks(config[section])
 
@@ -161,6 +167,8 @@ def readConfig(checkBlog):
                 blog.setProgram(config.get(section, "cache"))
             if ('posts' in config.options(section)): 
                 blog.setPostsType(config.get(section, "posts"))
+                if blog.getPostsType() == 'search': 
+                    blog.setSearch(config.get(section, "search"))
             else:
                 blog.setPostsType("posts")
 
@@ -172,9 +180,13 @@ def updateCaches(blog, socialNetworks, simmulate):
     msgLog = " Updating Caches"
     logMsg(msgLog, 1, 1)
 
+    
     blog.setPosts()
     #for i, pp in enumerate(blog.getPosts()):
-    #    print(i,blog.getPostTitle(pp))
+    #    print(i,blog.getPostTitle(pp),
+    #            #blog.getPostLink(pp),
+    #            blog.getPostLinks(pp)[0])
+    #sys.exit()
 
     bufferMax = blog.getBufMax()
 
@@ -272,6 +284,7 @@ def updateCaches(blog, socialNetworks, simmulate):
                 [ logging.info("     - {}".format(post[0])) 
                         for post in listPosts ]
 
+            
             if simmulate:
                 print("Simmulation {}".format(str(listPosts))) 
             elif ((blog.getProgram() 
@@ -358,11 +371,11 @@ def prepareUpdatesBlog(blog, socialNetworks, simmulate, nowait, timeSlots):
                     and isinstance(blog.getProgram(), str) 
                     and (profile[0] in blog.getProgram()))): 
 
-                    delayedBlogs.append((blog, 
-                        socialNetwork, 1, nowait, timeSlots))
+                    delayedBlogs.append((blog, socialNetwork, 
+                        int(blog.getNumPosts()), nowait, timeSlots))
             else: 
-                delayedBlogs.append((blog, 
-                        socialNetwork, 1, nowait, 0))
+                delayedBlogs.append((blog, socialNetwork, 
+                    int(blog.getNumPosts()), nowait, 0))
 
     return(delayedBlogs)
 

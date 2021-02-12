@@ -393,7 +393,7 @@ def main():
             print("si")
             img.setPostsType(config.get(acc, 'posts'))
         print(img.getPostsType())
-        img.setPosts(100)
+        img.setPosts()
         socialNetwork = (config[acc]['cache'], 
                 config[acc][config[acc]['cache']])
         print(socialNetwork)
@@ -403,6 +403,7 @@ def main():
             #print(i, img.getPostTitle(p), img.getPostLink(p))
             if not (link in lastLink): 
                 print(i, img.getPostTitle(p), img.getPostLink(p))
+                print(img.obtainPostData(i))
         #print(lastLink)
         continue
             

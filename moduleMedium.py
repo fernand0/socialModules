@@ -73,7 +73,7 @@ class moduleMedium(Content,Queue):
         from html.parser import HTMLParser
         h = HTMLParser()
         title = h.unescape(title)
-        textOrig = 'Publicado originalmente en <a href="%s">%s</a>\n\n' % (link, title)
+        textOrig = 'Publicado originalmente en <a href="%s">%s</a><br />\n\n' % (link, title)
 
         try:
             res = client.create_post(user_id=user["id"], title=title,

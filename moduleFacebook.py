@@ -1,20 +1,13 @@
 #!/usr/bin/env python
 
-import click
 import configparser
-import logging
-import os
-import pickle
-import requests
 import sys
-import urllib
 
 from bs4 import BeautifulSoup
 from bs4 import Tag
+from html.parser import HTMLParser
 
 import facebook
-
-from html.parser import HTMLParser
 
 from configMod import *
 from moduleContent import *
@@ -35,55 +28,15 @@ class moduleFacebook(Content,Queue):
 
     def __init__(self):
         super().__init__()
-        self.user = None
-        self.client = None
-        self.service = 'Facebook'
+        self.page = None
 
     def getKeys(self, config): 
-        oauth_access_token = config.get("Facebook", "oauth_access_token")
+        oauth_access_token = config.get(self.service, "oauth_access_token")
         return ((oauth_access_token,))
 
     def initApi(self, keys):
-        try:
-            graph = facebook.GraphAPI(keys[0], version='3.0') 
-            self.client = graph
-            self.setPage(self.user)
-        except: 
-            logging.warning("Facebook authentication failed!") 
-            logging.warning("Unexpected error:", sys.exc_info()[0]) 
-            print("Fail!")
-
-        return self.client
-
-    #def setClient(self, facebookAC='me'):
-    #    logging.info("     Connecting {}: {}".format(self.service,
-    #        str(facebookAC)))
-    #    try:
-    #        config = configparser.ConfigParser()
-    #        config.read(CONFIGDIR + '/.rssFacebook')
-
-    #        if isinstance(facebookAC, str): 
-    #            self.user = facebookAC
-    #        elif isinstance(facebookAC[1], str):
-    #            self.user = facebookAC[1]
-    #        else: 
-    #            # Deprecated
-    #            self.user = facebookAC[1][1]
-
-    #        try:
-    #            oauth_access_token = config.get("Facebook", "oauth_access_token")
-    #            graph = facebook.GraphAPI(oauth_access_token, version='3.0') 
-    #            self.client = graph
-    #            self.setPage(self.user)
-
-    #        except: 
-    #            logging.warning("Facebook authentication failed!") 
-    #            logging.warning("Unexpected error:", sys.exc_info()[0]) 
-    #            print("Fail!")
-    #    except:
-    #        logging.warning("Facebook authentication failed!")
-    #        logging.warning("Unexpected error:", sys.exc_info()[0])
-    #        print("Fail!")
+        graph = facebook.GraphAPI(keys[0], version='3.0') 
+        return graph 
 
     def setPage(self, facebookAC='me'):
         perms = ['publish_actions','manage_pages','publish_pages'] 
@@ -92,9 +45,10 @@ class moduleFacebook(Content,Queue):
 
         if (facebookAC != 'me'): 
             for i in range(len(pages['data'])): 
-                logging.debug("Selecting %s %s"% (pages['data'][i]['name'], facebookAC)) 
+                logging.debug("Selecting %s %s" % (
+                    pages['data'][i]['name'], facebookAC)) 
                 if (pages['data'][i]['name'] == facebookAC): 
-                    logging.info("     Selected... %s"% pages['data'][i]['name']) 
+                    logging.info("     Selected... %s" % pages['data'][i]['name']) 
                     graph2 = facebook.GraphAPI(pages['data'][i]['access_token']) 
                     self.page = graph2
                     self.pageId = pages['data'][i]['id']
@@ -104,17 +58,19 @@ class moduleFacebook(Content,Queue):
                     self.page = facebookAC 
 
     def setApiPosts(self):
-        posts = []
-        count = 5
-        postsF = self.page.get_connections(self.pageId, 
-                connection_name='posts') 
+        if not self.page:
+            self.setPage(self.user)
 
+        posts = []
+        postsF = self.page.get_connections(self.pageId, connection_name='posts') 
         if 'data' in postsF: 
             for post in postsF['data']: 
                 postt = self.page.get_connections(post['id'], 
                         connection_name='attachments') 
-                if 'message' in post:
-                    posts.append(post)
+                if 'data' in postt:
+                    # We need to merge the two dictionaries to have the id and
+                    # the other data
+                    posts.append({**postt['data'][0] , **post})
 
         return posts
         #outputData = {}
@@ -128,33 +84,6 @@ class moduleFacebook(Content,Queue):
 
         #self.postsFormatted = outputData
 
-    #def setPosts(self):
-    #    logging.info("  Setting posts")
-    #    self.posts = []
-    #    count = 5
-    #    posts = self.page.get_connections(self.pageId, connection_name='posts') 
-
-    #    for post in posts['data']:
-    #        print("-->",post)
-    #        postt = self.page.get_connections(post['id'], connection_name='attachments') 
-    #        #if postt['data']: 
-    #        #    print(postt['data'][0])
-    #        #    if 'url' in postt['data'][0]:
-    #        #        print(urllib.parse.unquote(postt['data'][0]['url']).split('=')[1])#.split('&')[0])
-    #        if 'message' in post:
-    #            self.posts.append(post)
-
-    #    outputData = {}
-    #    serviceName = 'Facebook'
-    #    outputData[serviceName] = {'sent': [], 'pending': []}
-    #    for post in self.getPosts():
-    #        (page, idPost) = post['id'].split('_')
-    #        url = 'https://facebook.com/' + page + '/posts/' + idPost
-    #        outputData[serviceName]['sent'].append((post['message'], url, 
-    #                '', post['created_time'], '','','','',''))
-
-    #    self.postsFormatted = outputData
-
     def processReply(self, reply): 
         res = reply
         if reply: 
@@ -165,57 +94,43 @@ class moduleFacebook(Content,Queue):
         return(res)
  
     def publishApiPost(self, postData):
-        post = postData[0]
-        link = postData[1]
-        comment = postData[2]
+        post, link, comment, plus = postData
+        post = self.addComment(post, comment)
 
-        if comment:
-            post = comment + " " + post
-
-        try: 
-            h = HTMLParser() 
-            post = h.unescape(post)
-        except: 
-            import html 
-            post = html.unescape(post)
+        if not self.page:
+            self.setPage(self.user)
 
         res = "Fail!"
-        logging.info("     Publishing: %s" % post[:250])
         if (not isinstance(self.page, str)):
             res = self.page.put_object('me', "feed", message=post, link=link)
         return res
 
-    #def publishPost(self, post, link='', comment=''):
-    #    logging.debug("    Publishing in Facebook...")
-    #    if comment == None:
-    #        comment = ''
-    #    post = comment + " " + post
-    #    h = HTMLParser()
-    #    post = h.unescape(post)
-    #    res = None
-    #    try:
-    #        logging.info("     Publishing: %s" % post[:250])
-    #        if (not isinstance(self.page, str)):
-    #            res = self.page.put_object('me', "feed", message=post, link=link)
-    #            #res = self.page.put_object(self.client.get_object('me')['id'], "feed", message=post, link=link)
-    #            if res:
-    #                logging.debug("Res: %s" % res)
-    #                if 'id' in res:
-    #                    urlFb = 'https://www.facebook.com/%s' % res['id']
-    #                    logging.info("     Link: %s" % urlFb)
-    #                    return(urlFb)
+    def deleteApiPosts(self, idPost): 
+        result = self.page.delete_object(idPost)
+        logging.info(f"Res: {result}")
+        return(result)
 
-    #                return(res)
-    #        else:
-    #            return("Fail")
-    #    except:        
-    #        return(self.report('Facebook', post, link, sys.exc_info()))
+    def getPostId(self, post):
+        result = self.getAttribute(post, 'id')
+        return result
+
+    def getUrlId(self, post):
+        return (post.split('/')[-1])
 
     def getPostTitle(self, post):
-        return self.getAttribute(post, 'message')
+        return self.getAttribute(post, 'title')
+
+    def getPostUrl(self, post):
+        idPost = self.getPostId(post)
+        return f"https://facebook.com/{idPost}"
+        #return f'https://twitter.com/{self.user}/status/{idPost}'
 
     def getPostLink(self, post):
-        return self.getAttribute(post, 'id')
+        result = self.getAttribute(post, 'url')
+        pos = result.find('=')
+        pos2 = result.find('&',pos)
+        import urllib.parse
+        return urllib.parse.unquote(result[pos+1:pos2])
 
     def getPostImages(self,idPost):
         res = []
@@ -237,18 +152,26 @@ def main():
             format='%(asctime)s %(message)s')
 
     import moduleFacebook
-
     fc = moduleFacebook.moduleFacebook()
 
     fc.setClient('me')
     fc.setPage('Enlaces de fernand0')
+    #print("Testing posting and deleting")
+    #res = fc.publishPost("Prueba borrando 7", "http://elmundoesimperfecto.com/", '')
+    #print("Res",res)
+    #idPost = fc.getUrlId(res)
+    #print("id",idPost)
+    #input('Delete? ')
+    #fc.deletePostId(idPost)
+    #sys.exit() 
     fc.setPostsType('posts')
     fc.setPosts()
-    for post in fc.getPosts():
-        print(fc.getPostTitle(post))
-        print(fc.getPostLink(post))
-        print(post)
-        #print("@%s: %s" %(tweet[2], tweet[0]))
+    for i, post in enumerate(fc.getPosts()):
+        title = fc.getPostTitle(post)
+        link = fc.getPostLink(post)
+        url = fc.getPostUrl(post)
+        theId = fc.getPostId(post)
+        print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
     sys.exit()
     fc.publishPost("Prueba")
     print(fc.user)
