@@ -100,7 +100,9 @@ class Content:
             if typePosts == "cache":
                 cmd = getattr(self, "setApiCache")
             else:
-                cmd = getattr(self, f"setApi{self.getPostsType().capitalize()}")
+                cmd = getattr(
+                    self, f"setApi{self.getPostsType().capitalize()}"
+                )
         else:
             cmd = getattr(self, "setApiPosts")
         self.assignPosts(cmd())
@@ -314,8 +316,9 @@ class Content:
             if typePosts == "cache":
                 cmd = getattr(self, "deleteApiCache")
             else:
-                cmd = (getattr(self, "deleteApi"
-                       + self.getPostsType().capitalize()))
+                cmd = getattr(
+                    self, "deleteApi" + self.getPostsType().capitalize()
+                )
         else:
             cmd = getattr(self, "deleteApiPosts")
         reply = cmd(idPost)
@@ -655,26 +658,31 @@ class Content:
                 else:
                     title = iimg[1]
                 if title[-1] in string.punctuation:
-                    text = '{}\n<p><h4>{}</h4></p><p><a href="{}">' \
-                           '<img class="alignnone size-full ' \
-                           'wp-image-3306" src="{}" alt="{} {}" ' \
-                           'width="776" height="1035" /></a></p>'.format( 
-                                   text, description, url, iimg[0], 
-                                   title, description)
+                    text = (
+                        '{}\n<p><h4>{}</h4></p><p><a href="{}">'
+                        '<img class="alignnone size-full '
+                        'wp-image-3306" src="{}" alt="{} {}" '
+                        'width="776" height="1035" /></a></p>'.format(
+                            text, description, url, iimg[0], title, description
+                        )
+                    )
                 else:
-                    text = '{}\n<p><h4>{}</h4></p><p><a href="{}">'\
-                           '<img class="alignnone size-full ' \
-                           'wp-image-3306" src="{}" alt="{}. {}"' \
-                           'width="776" height="1035" /></a></p>'.format( 
-                                   text, description, url, iimg[0], 
-                                   title, description
+                    text = (
+                        '{}\n<p><h4>{}</h4></p><p><a href="{}">'
+                        '<img class="alignnone size-full '
+                        'wp-image-3306" src="{}" alt="{}. {}"'
+                        'width="776" height="1035" /></a></p>'.format(
+                            text, description, url, iimg[0], title, description
+                        )
                     )
             else:
                 title = iimg[1]
-                text = '{}\n<p><a href="{}"><img class="alignnone ' \
-                        'size-full wp-image-3306" src="{}" alt="{} {}"' \ 
-                        'width="776" height="1035" /></a></p>'.format( 
+                text = (
+                    '{}\n<p><a href="{}"><img class="alignnone '
+                    'size-full wp-image-3306" src="{}" alt="{} {}"'
+                    'width="776" height="1035" /></a></p>'.format(
                         text, url, iimg[0], title, description
+                    )
                 )
         return text
 
