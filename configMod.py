@@ -15,11 +15,12 @@ CONFIGDIR = APPDIR + "/config"
 DATADIR = APPDIR + "/data"
 TMPDIR = "/tmp"
 WWWDIR = "/var/www/html/img/"
-WWWADDRESS = 'https://elmundoesimperfecto.com/img/'
-NAMEIMG = 'instagram.jpg'
+WWWADDRESS = "https://elmundoesimperfecto.com/img/"
+NAMEIMG = "instagram.jpg"
 
-FAIL = 'Fail!'
-OK = 'OK'
+FAIL = "Fail!"
+OK = "OK"
+
 
 def logMsg(msgLog, log=1, output=1):
     if log == 1:
@@ -29,144 +30,153 @@ def logMsg(msgLog, log=1, output=1):
 
     if output == 1:
         print(msgLog)
-    elif output == 2: 
-        print("") 
-        print("====================================") 
-        print("{}".format(msgLog)) 
-        print("====================================") 
- 
-def fileNamePath(url, socialNetwork=()):
-    if not socialNetwork: 
-        theName = (DATADIR  + '/' 
-               + urllib.parse.urlparse(url).netloc + ".last")
-    else: 
-        theName = os.path.expanduser(DATADIR + '/' 
-                    + urllib.parse.urlparse(url).netloc 
-                    + '_' 
-                    + socialNetwork[0] + '_' + socialNetwork[1])
-    return(theName)
+    elif output == 2:
+        print("")
+        print("====================================")
+        print("{}".format(msgLog))
+        print("====================================")
 
-def setNextTime(blog, socialNetwork, tNow, tSleep):        
-    fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext' 
-    with open(fileNameNext,'wb') as f:
+
+def fileNamePath(url, socialNetwork=()):
+    if not socialNetwork:
+        theName = DATADIR + "/" + urllib.parse.urlparse(url).netloc + ".last"
+    else:
+        theName = os.path.expanduser(
+            DATADIR
+            + "/"
+            + urllib.parse.urlparse(url).netloc
+            + "_"
+            + socialNetwork[0]
+            + "_"
+            + socialNetwork[1]
+        )
+    return theName
+
+
+def setNextTime(blog, socialNetwork, tNow, tSleep):
+    fileNameNext = fileNamePath(blog.getUrl(), socialNetwork) + ".timeNext"
+    with open(fileNameNext, "wb") as f:
         pickle.dump((tNow, tSleep), f)
     return fileNameNext
 
-def getNextTime(blog, socialNetwork):        
-    fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext' 
+
+def getNextTime(blog, socialNetwork):
+    fileNameNext = fileNamePath(blog.getUrl(), socialNetwork) + ".timeNext"
     try:
-        with open(fileNameNext,'rb') as f:
+        with open(fileNameNext, "rb") as f:
             tNow, tSleep = pickle.load(f)
         return tNow, tSleep
     except:
         # File does not exist, we need to create it.
         with open(fileNameNext, "wb") as f:
-            logging.warning("File %s does not exist. Creating it."
-                    % fileNameNext) 
+            logging.warning("File %s does not exist. Creating it." % fileNameNext)
             # None published, or non-existent file
             return 0, 0
- 
-def getLastLink(fileName):        
+
+
+def getLastLink(fileName):
     if not os.path.isdir(os.path.dirname(fileName)):
         sys.exit("No directory {} exists".format(os.path.dirname(fileName)))
     if os.path.isfile(fileName):
-        with open(fileName, "rb") as f: 
+        with open(fileName, "rb") as f:
             linkLast = f.read().decode().split()  # Last published
     else:
         # File does not exist, we need to create it.
         with open(fileName, "wb") as f:
-            logging.warning("File %s does not exist. Creating it."
-                    % fileName) 
-            linkLast = ''  
+            logging.warning("File %s does not exist. Creating it." % fileName)
+            linkLast = ""
             # None published, or non-existent file
-    if len(linkLast) == 1: 
-        return(linkLast[0], os.path.getmtime(fileName))
+    if len(linkLast) == 1:
+        return (linkLast[0], os.path.getmtime(fileName))
     else:
-        return(linkLast, os.path.getmtime(fileName))
+        return (linkLast, os.path.getmtime(fileName))
+
 
 def checkLastLink(url, socialNetwork=()):
     # Redundant with moduleCache
-    if not socialNetwork: 
-        fileNameL = (DATADIR  + '/' 
-               + urllib.parse.urlparse(url).netloc + ".last")
+    if not socialNetwork:
+        fileNameL = DATADIR + "/" + urllib.parse.urlparse(url).netloc + ".last"
     else:
-        fileNameL = fileNamePath(url, socialNetwork)+".last"
+        fileNameL = fileNamePath(url, socialNetwork) + ".last"
     logging.debug("Checking last link: %s" % fileNameL)
-    #print("Checking last link: %s" % fileNameL)
+    # print("Checking last link: %s" % fileNameL)
     (linkLast, timeLast) = getLastLink(fileNameL)
-    return(linkLast, timeLast)
+    return (linkLast, timeLast)
 
-def newUpdateLastLink(url, link, lastLink, socialNetwork=()): 
-    if isinstance(lastLink, list): 
-        link = '\n'.join([ "{}".format (post[1]) for post in listPosts]) 
-        link = link + '\n' + '\n'.join(lastLink)
 
-    if not socialNetwork: 
-        fileName = (DATADIR  + '/' 
-               + urllib.parse.urlparse(url).netloc + ".last")
-    else: 
+def newUpdateLastLink(url, link, lastLink, socialNetwork=()):
+    if isinstance(lastLink, list):
+        link = "\n".join(["{}".format(post[1]) for post in listPosts])
+        link = link + "\n" + "\n".join(lastLink)
+
+    if not socialNetwork:
+        fileName = DATADIR + "/" + urllib.parse.urlparse(url).netloc + ".last"
+    else:
         fileName = fileNamePath(url, socialNetwork) + ".last"
 
     print(fileName)
-    with open(fileName, "w") as f: 
-        if isinstance(link, bytes): 
+    with open(fileName, "w") as f:
+        if isinstance(link, bytes):
             f.write(link.decode())
-        elif isinstance(link, str): 
+        elif isinstance(link, str):
             f.write(link)
         else:
             f.write(link[0])
+
 
 def updateLastLink(url, link, socialNetwork=()):
-    if not socialNetwork: 
-        fileName = (DATADIR  + '/' 
-               + urllib.parse.urlparse(url).netloc + ".last")
-    else: 
+    if not socialNetwork:
+        fileName = DATADIR + "/" + urllib.parse.urlparse(url).netloc + ".last"
+    else:
         fileName = fileNamePath(url, socialNetwork) + ".last"
 
-    with open(fileName, "w") as f: 
-        if isinstance(link, bytes): 
+    with open(fileName, "w") as f:
+        if isinstance(link, bytes):
             f.write(link.decode())
-        elif isinstance(link, str): 
+        elif isinstance(link, str):
             f.write(link)
         else:
             f.write(link[0])
+
 
 def resizeImage(imgUrl):
     print(imgUrl)
     response = requests.get(imgUrl, stream=True)
 
-    fileName = '{}/{}'.format(TMPDIR,
-            urllib.parse.urlparse(response.url)[2].split('/')[-1])
-    with open(fileName,'wb') as f: 
+    fileName = "{}/{}".format(
+        TMPDIR, urllib.parse.urlparse(response.url)[2].split("/")[-1]
+    )
+    with open(fileName, "wb") as f:
         shutil.copyfileobj(response.raw, f)
 
     im = Image.open(fileName)
     size = im.size
 
-    if size[0] < size[1]: 
-       dif = size[1]-size[0]
-       box = (0, dif/2 , size[0], dif/2+size[0])
+    if size[0] < size[1]:
+        dif = size[1] - size[0]
+        box = (0, dif / 2, size[0], dif / 2 + size[0])
     else:
-       dif = size[0]-size[1]
-       box = (dif/2, 0 , dif/2 + size[1], size[1])
+        dif = size[0] - size[1]
+        box = (dif / 2, 0, dif / 2 + size[1], size[1])
     region = im.crop(box)
     fileNameOutput = WWWDIR + NAMEIMG
-    print("f",fileNameOutput)
-    try: 
+    print("f", fileNameOutput)
+    try:
         region.save(fileNameOutput)
-    except: 
-        fileNameOutput = '/tmp/' + NAMEIMG
+    except:
+        fileNameOutput = "/tmp/" + NAMEIMG
         region.save(fileNameOutput)
-    address = '{}{}'.format(WWWADDRESS,NAMEIMG)
-    return(address)
+    address = "{}{}".format(WWWADDRESS, NAMEIMG)
+    return address
 
 
 def getApi(profile, nick):
     # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
     import importlib
+
     serviceName = profile.capitalize()
-    mod = importlib.import_module('module' + serviceName) 
-    cls = getattr(mod, 'module' + serviceName)
+    mod = importlib.import_module("module" + serviceName)
+    cls = getattr(mod, "module" + serviceName)
     api = cls()
     api.setClient(nick)
 

@@ -10,34 +10,33 @@ from moduleContent import *
 from moduleQueue import *
 from configMod import *
 
-class moduleImgur(Content,Queue):
 
+class moduleImgur(Content, Queue):
     def __init__(self):
         super().__init__()
-        self.service = 'Imgur'
+        self.service = "Imgur"
 
-    def getKeys(self, config): 
-        client_id = config.get(self.user, 'client_id') 
-        client_secret = config.get(self.user, 'client_secret') 
-        access_token = config.get(self.user, 'access_token') 
-        refresh_token = config.get(self.user, 'refresh_token')
+    def getKeys(self, config):
+        client_id = config.get(self.user, "client_id")
+        client_secret = config.get(self.user, "client_secret")
+        access_token = config.get(self.user, "access_token")
+        refresh_token = config.get(self.user, "refresh_token")
 
-        return (client_id, client_secret, access_token, refresh_token) 
+        return (client_id, client_secret, access_token, refresh_token)
 
-    def initApi(self, keys): 
-       client_id = keys[0] 
-       client_secret = keys[1] 
-       access_token = keys[2] 
-       refresh_token = keys[3] 
+    def initApi(self, keys):
+        client_id = keys[0]
+        client_secret = keys[1]
+        access_token = keys[2]
+        refresh_token = keys[3]
 
-       client = ImgurClient(client_id, client_secret, 
-               access_token, refresh_token)
-       
-       return client
+        client = ImgurClient(client_id, client_secret, access_token, refresh_token)
 
-    #def setClientt(self, idName):
+        return client
 
-    #    if isinstance(idName, str): 
+    # def setClientt(self, idName):
+
+    #    if isinstance(idName, str):
     #        self.name = idName
     #    elif isinstance(idName[1], str):
     #        self.name = idName[1]
@@ -47,15 +46,15 @@ class moduleImgur(Content,Queue):
 
     #    try:
     #        config = configparser.ConfigParser()
-    #        config.read(CONFIGDIR + '/.rssImgur') 
+    #        config.read(CONFIGDIR + '/.rssImgur')
 
-    #        if config.sections(): 
-    #            self.client_id=config.get(self.name, 'client_id') 
-    #            self.client_secret=config.get(self.name, 'client_secret') 
-    #            self.access_token=config.get(self.name, 'access_token') 
+    #        if config.sections():
+    #            self.client_id=config.get(self.name, 'client_id')
+    #            self.client_secret=config.get(self.name, 'client_secret')
+    #            self.access_token=config.get(self.name, 'access_token')
     #            self.refresh_token=config.get(self.name, 'refresh_token')
 
-    #            self.client = ImgurClient(self.client_id, self.client_secret, 
+    #            self.client = ImgurClient(self.client_id, self.client_secret,
     #                    self.access_token, self.refresh_token)
     #        else:
     #            logging.warning("Some problem with configuration file!")
@@ -64,47 +63,46 @@ class moduleImgur(Content,Queue):
     #        logging.warning("User not configured!")
     #        logging.warning("Unexpected error:", sys.exc_info()[0])
 
-    def setApiCache(self): 
+    def setApiCache(self):
         import moduleCache
+
         cache = moduleCache.moduleCache()
-        cache.setClient((self.url, (self.service, self.user, 'posts')))
+        cache.setClient((self.url, (self.service, self.user, "posts")))
         cache.setPosts()
         return cache.getPosts()
 
-
-    def setApiPosts(self): 
+    def setApiPosts(self):
         posts = []
-        client = self.getClient() 
+        client = self.getClient()
         if client:
             for album in client.get_account_albums(self.user):
-                logging.debug("{} {}".format(time.ctime(album.datetime),
-                    album.title))
+                logging.debug("{} {}".format(time.ctime(album.datetime), album.title))
                 text = ""
-                if album.in_gallery: 
+                if album.in_gallery:
                     posts.append(album)
             else:
-                logging.warning('No client configured!')
-        return (posts)
- 
-    def setApiDrafts(self): 
+                logging.warning("No client configured!")
+        return posts
+
+    def setApiDrafts(self):
         posts = []
         client = self.getClient()
 
         if client:
             for album in client.get_account_albums(self.user):
-                logging.debug("{} {}".format(time.ctime(album.datetime),
-                    album.title))
+                logging.debug("{} {}".format(time.ctime(album.datetime), album.title))
                 text = ""
-                if not album.in_gallery: 
+                if not album.in_gallery:
                     posts.append(album)
-                    logging.debug("Draft {} {}".format(time.ctime(album.datetime), 
-                        album.title))
+                    logging.debug(
+                        "Draft {} {}".format(time.ctime(album.datetime), album.title)
+                    )
         else:
-            logging.warning('No client configured!')
+            logging.warning("No client configured!")
 
-        return (posts)
- 
-    #def setPosts(self, numPosts=20): 
+        return posts
+
+    # def setPosts(self, numPosts=20):
     #    self.posts = []
     #    self.drafts = []
     #    if self.getPostsType() == 'file':
@@ -112,11 +110,11 @@ class moduleImgur(Content,Queue):
     #        fileNameQ = fileNamePath(self.getUrl(), (self.service[0].lower() +
     #            self.service[1:], self.user))+'.queue'
     #        try:
-    #            with open(fileNameQ,'rb') as f: 
-    #                try: 
-    #                    listP = pickle.load(f) 
-    #                except: 
-    #                    listP = [] 
+    #            with open(fileNameQ,'rb') as f:
+    #                try:
+    #                    listP = pickle.load(f)
+    #                except:
+    #                    listP = []
     #        except:
     #            listP = []
     #        for post in listP:
@@ -128,7 +126,7 @@ class moduleImgur(Content,Queue):
     #                logging.debug("{} {}".format(time.ctime(album.datetime),
     #                    album.title))
     #                text = ""
-    #                if album.in_gallery: 
+    #                if album.in_gallery:
     #                    #self.posts.insert(0,album)
     #                    self.posts.append(album)
     #                else:
@@ -139,29 +137,29 @@ class moduleImgur(Content,Queue):
     #    self.drafts = self.drafts[0:numPosts]
     #    self.posts = self.posts[0:numPosts]
     #    # We set some limit
-                    
+
     def getPostTitle(self, post):
         return post.title
 
     def getLinkPosition(self, link):
-        if self.getPostsType() == 'posts':
+        if self.getPostsType() == "posts":
             return len(self.getPosts())
         else:
             return Content.getLinkPosition(self, link)
 
-    def getPostLink(self,post):
-        if self.getPostsType() == 'cache':
+    def getPostLink(self, post):
+        if self.getPostsType() == "cache":
             return post[1]
-        else: 
+        else:
             return post.link
 
-    def getPostId(self,post):
+    def getPostId(self, post):
         return post.id
 
     def extractDataMessage(self, i):
         posts = self.getPosts()
-        if i < len(posts): 
-            if self.getPostsType() == 'cache':
+        if i < len(posts):
+            if self.getPostsType() == "cache":
                 # Dirty?
                 post = posts[0]
                 return post
@@ -179,48 +177,66 @@ class moduleImgur(Content,Queue):
             thePost = None
             theTags = None
 
-        return (theTitle,  theLink, theLink, theId, 
-                None, None, None, None, theTags, thePost)
+        return (
+            theTitle,
+            theLink,
+            theLink,
+            theId,
+            None,
+            None,
+            None,
+            None,
+            theTags,
+            thePost,
+        )
 
-       
-    def publishPost(self, post, idPost, comment=''):
+    def publishPost(self, post, idPost, comment=""):
         # This method publishes (as public post) some gallery that is in draft
         # mode
         logging.info("     Publishing in: {}".format(self.service))
         logging.info("      {}".format(str(post)))
-        #print("s",self)
-        #print("sc",self.client)
-        api = self.getClient() 
-        #print("c",api)
-        idPost = idPost.split('/')[-1]
-        try: 
-            res = api.share_on_imgur(idPost, post, terms=0)            
-            logging.info("      Res: %s" % res) 
-            if res: 
-                return(OK) 
-        except: 
-            logging.info(self.report('Imgur', post, idPost, sys.exc_info()))
-            return(self.report('Imgur', post, idPost, sys.exc_info()))
+        # print("s",self)
+        # print("sc",self.client)
+        api = self.getClient()
+        # print("c",api)
+        idPost = idPost.split("/")[-1]
+        try:
+            res = api.share_on_imgur(idPost, post, terms=0)
+            logging.info("      Res: %s" % res)
+            if res:
+                return OK
+        except:
+            logging.info(self.report("Imgur", post, idPost, sys.exc_info()))
+            return self.report("Imgur", post, idPost, sys.exc_info())
 
-        return(FAIL)
+        return FAIL
 
     def publish(self, j):
-        logging.info("Publishing %d"% j)                
-        logging.info("servicename %s" %self.service)
-        (title, link, firstLink, image, summary, summaryHtml, 
-                summaryLinks, content, links, comment) = self.obtainPostData(j)
+        logging.info("Publishing %d" % j)
+        logging.info("servicename %s" % self.service)
+        (
+            title,
+            link,
+            firstLink,
+            image,
+            summary,
+            summaryHtml,
+            summaryLinks,
+            content,
+            links,
+            comment,
+        ) = self.obtainPostData(j)
         logging.info("Publishing {} {}".format(title, link))
         idPost = link
         logging.info("Publishing {} {}".format(title, idPost))
         logging.info("Publishing getP {}".format(self.getProgram()))
-        
+
         if self.getProgram():
             logging.info("getProgram")
             for profile in self.getSocialNetworks():
                 nick = self.getSocialNetworks()[profile]
                 logging.info("Social: {} Nick: {}".format(profile, nick))
-                if ((profile[0] in self.getProgram()) or 
-                        (profile in self.getProgram())): 
+                if (profile[0] in self.getProgram()) or (profile in self.getProgram()):
                     logging.info("Social: {} Nick: {}".format(profile, nick))
                     lenMax = self.len(profile)
                     socialNetwork = (profile, nick)
@@ -232,53 +248,53 @@ class moduleImgur(Content,Queue):
                     self.cache[socialNetwork].posts = listP
                     update = update + self.cache[socialNetwork].updatePostsCache()
                     logging.info("Uppdate: {}".format(update))
-                    update = update + '\n'
+                    update = update + "\n"
             return update
         else:
             api = self.getClient()
             try:
-                res = api.share_on_imgur(idPost, title, terms=0)            
+                res = api.share_on_imgur(idPost, title, terms=0)
                 logging.info("Res: %s" % res)
-                return(res)
+                return res
             except:
                 post = title
                 link = idPost
-                logging.info(self.report('Imgur', post, link, sys.exc_info()))
-                return(FAIL)
+                logging.info(self.report("Imgur", post, link, sys.exc_info()))
+                return FAIL
 
-        return("%s"% title)
+        return "%s" % title
 
-    def delete(self,j):
-        logging.info("Deleting %d"% j)
+    def delete(self, j):
+        logging.info("Deleting %d" % j)
         post = self.obtainPostData(j)
-        logging.info("Deleting %s"% post[0])
+        logging.info("Deleting %s" % post[0])
         idPost = self.posts[j].id
-        logging.info("id %s"% idPost)
+        logging.info("id %s" % idPost)
         logging.info(self.getClient().album_delete(idPost))
         sys.exit()
-        self.posts = self.posts[:j] + self.posts[j+1:]
+        self.posts = self.posts[:j] + self.posts[j + 1 :]
         self.updatePostsCache()
 
-        logging.info("Deleted %s"% post[0])
-        return("%s"% post[0])
+        logging.info("Deleted %s" % post[0])
+        return "%s" % post[0]
 
     def extractImages(self, post):
         theTitle = self.getPostTitle(post)
-        theLink = self.getPostLink(post) 
+        theLink = self.getPostLink(post)
         data = self.getClient().get_album_images(self.getPostId(post))
 
         res = []
         title = theTitle
         for img in data:
-            urlImg = 'https://i.imgur.com/{}.jpg'.format(img.id)
+            urlImg = "https://i.imgur.com/{}.jpg".format(img.id)
             titleImg = img.description
             if titleImg:
-                description = titleImg.split('#')
+                description = titleImg.split("#")
                 description, tags = description[0], description[1:]
-                aTags= []
-                while tags: 
+                aTags = []
+                while tags:
                     aTag = tags.pop().strip()
-                    aTags.append(aTag) 
+                    aTags.append(aTag)
                 tags = aTags
             else:
                 description = ""
@@ -286,152 +302,153 @@ class moduleImgur(Content,Queue):
             if img.name:
                 try:
                     from dateutil.parser import parse
-                    myDate = str(parse(img.name.split('_')[1])).split(' ')[0]
+
+                    myDate = str(parse(img.name.split("_")[1])).split(" ")[0]
                     tags.append(myDate)
                     if description:
-                        description = '{} ({})'.format(description, myDate)
+                        description = "{} ({})".format(description, myDate)
                     else:
-                        description = '({})'.format(myDate)
+                        description = "({})".format(myDate)
                 except:
                     logging.warning("Name in different format {}".format(img.name))
-            res.append((urlImg,title, description, tags))
+            res.append((urlImg, title, description, tags))
         return res
 
     def extractImagesOld(self, post):
         theTitle = self.getPostTitle(post)
-        theLink = self.getPostLink(post) 
-        page = urlopen(theLink).read() 
-        soup = BeautifulSoup(page,'lxml') 
+        theLink = self.getPostLink(post)
+        page = urlopen(theLink).read()
+        soup = BeautifulSoup(page, "lxml")
 
         res = []
-        script = soup.find_all('script')
-        pos = script[9].text.find('image')
-        pos = script[9].text.find('{',pos+1)
-        pos2 = script[9].text.find('\n',pos+1)
-        data = json.loads(script[9].text[pos:pos2-1])
+        script = soup.find_all("script")
+        pos = script[9].text.find("image")
+        pos = script[9].text.find("{", pos + 1)
+        pos2 = script[9].text.find("\n", pos + 1)
+        data = json.loads(script[9].text[pos : pos2 - 1])
         import pprint
+
         pprint.pprint(data)
         sys.exit()
-        title = data['title']
-        for img in data['album_images']['images']:
-            urlImg = 'https://i.imgur.com/{}.jpg'.format(img['hash'])
-            if 'description' in img:
-                titleImg = img['description']
+        title = data["title"]
+        for img in data["album_images"]["images"]:
+            urlImg = "https://i.imgur.com/{}.jpg".format(img["hash"])
+            if "description" in img:
+                titleImg = img["description"]
                 if titleImg:
-                    description = titleImg.split('#')
+                    description = titleImg.split("#")
                     description, tags = description[0], description[1:]
-                    aTags= []
-                    while tags: 
+                    aTags = []
+                    while tags:
                         aTag = tags.pop().strip()
-                        aTags.append(aTag) 
+                        aTags.append(aTag)
                     tags = aTags
                 else:
                     description = ""
                     tags = []
             else:
                 titleImg = ""
-            res.append((urlImg,title, description, tags))
+            res.append((urlImg, title, description, tags))
         return res
 
-    def getNumPostsData(self, num, i, lastLink): 
+    def getNumPostsData(self, num, i, lastLink):
         listPosts = []
         posts = self.getPosts()
-        #if True: #self.getPostsType() == 'posts':
+        # if True: #self.getPostsType() == 'posts':
         num = 1
         # Only one post each time
         j = 0
-        #for k,p in enumerate(posts):
+        # for k,p in enumerate(posts):
         #    print(k,self.getPostTitle(p), self.getPostLink(p))
-        for ii in range(min(i,len(posts)),0,-1):
+        for ii in range(min(i, len(posts)), 0, -1):
             ii = ii - 1
-            if (ii < 0): break
+            if ii < 0:
+                break
             idPost = self.getPostId(posts[ii])
             title = self.getPostTitle(posts[ii])
-            #print(ii, idPost, title)
-            if (not ((idPost in lastLink) 
-                or ('https://imgur.com/a/'+idPost in lastLink))): 
+            # print(ii, idPost, title)
+            if not (
+                (idPost in lastLink) or ("https://imgur.com/a/" + idPost in lastLink)
+            ):
                 # Only posts that have not been posted previously. We
                 # check by link (post[1]) We don't use this code here.
-                post = self.obtainPostData(ii) 
+                post = self.obtainPostData(ii)
                 listPosts.append(post)
 
                 j = j + 1
                 if j == num:
                     break
-        #listPosts = reversed(listPosts)
-        #else: 
+        # listPosts = reversed(listPosts)
+        # else:
         #    # here we can use the general method, starting at the first
         #    # post
-        #    #i = 1 
+        #    #i = 1
         #    i = len(posts)
         #    listPosts = Content.getNumPostsData(self, num, i, lastLink)
 
-        return(listPosts)
+        return listPosts
 
 
-def main(): 
+def main():
 
-    logging.basicConfig(stream=sys.stdout, 
-            level=logging.INFO, 
-            format='%(asctime)s %(message)s')
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s"
+    )
 
     import moduleImgur
 
     config = configparser.ConfigParser()
-    config.read(CONFIGDIR + '/.rssBlogs')
+    config.read(CONFIGDIR + "/.rssBlogs")
 
     accounts = ["Blog20", "Blog21"]
     for acc in accounts:
         print("Account: {}".format(acc))
         img = moduleImgur.moduleImgur()
         section = acc
-        url = config.get(acc, 'url')
+        url = config.get(acc, "url")
         img.setUrl(url)
-        name = url.split('/')[-1]
+        name = url.split("/")[-1]
         img.setClient(name)
-        if 'posts' in config[acc]:
+        if "posts" in config[acc]:
             print("si")
-            img.setPostsType(config.get(acc, 'posts'))
+            img.setPostsType(config.get(acc, "posts"))
         print(img.getPostsType())
         img.setPosts()
-        socialNetwork = (config[acc]['cache'], 
-                config[acc][config[acc]['cache']])
+        socialNetwork = (config[acc]["cache"], config[acc][config[acc]["cache"]])
         print(socialNetwork)
         lastLink, lastTime = checkLastLink(img.getUrl(), socialNetwork)
-        for i,p in enumerate(img.getPosts()):
+        for i, p in enumerate(img.getPosts()):
             link = img.getPostLink(p)
-            #print(i, img.getPostTitle(p), img.getPostLink(p))
-            if not (link in lastLink): 
+            # print(i, img.getPostTitle(p), img.getPostLink(p))
+            if not (link in lastLink):
                 print(i, img.getPostTitle(p), img.getPostLink(p))
                 print(img.obtainPostData(i))
-        #print(lastLink)
+        # print(lastLink)
         continue
-            
 
-
-        if ('cache' in config.options(section)): 
+        if "cache" in config.options(section):
             img.setProgram(config.get(section, "cache"))
-            cache = config.get(acc, 'cache')
+            cache = config.get(acc, "cache")
             user = config.get(acc, cache)
         img.setCache()
         img.setClient(name)
         img.setUrl(url)
-        if 'posts' in config.options(acc):
-            img.setPostsType(config.get(acc, 'posts'))
+        if "posts" in config.options(acc):
+            img.setPostsType(config.get(acc, "posts"))
         else:
-            img.setPostsType(config.get(acc, 'drafts'))
+            img.setPostsType(config.get(acc, "drafts"))
         img.setPosts()
         for i, im in enumerate(img.getPosts()):
             print(i, img.getPostTitle(im))
             print(img.obtainPostData(i))
         lastLink = None
         i = 1
-        if 'wordpress' in img.getSocialNetworks():
-            socialNetwork = ('wordpress', img.getSocialNetworks()['wordpress'])
+        if "wordpress" in img.getSocialNetworks():
+            socialNetwork = ("wordpress", img.getSocialNetworks()["wordpress"])
             lastLink, lastTime = checkLastLink(url, socialNetwork)
 
-            #print("lastLink",lastLink)
-            print("lastLink",lastLink[0])
+            # print("lastLink",lastLink)
+            print("lastLink", lastLink[0])
             pos = img.getLinkPosition(lastLink[0])
             print("pos {}".format(pos))
             i = pos
@@ -443,42 +460,41 @@ def main():
         # Code from this point is not expected to work, but in some cases can
         # serve as an example.
 
-        if cache == 'wordpress': 
-            import moduleWordpress 
-            wp = moduleWordpress.moduleWordpress() 
+        if cache == "wordpress":
+            import moduleWordpress
+
+            wp = moduleWordpress.moduleWordpress()
             wp.setClient(user)
             continue
             wp.publishPost(title, link, comment, tags=links)
             continue
         else:
-            socialNetwork = ('imgur', img.getSocialNetworks()['imgur'])
+            socialNetwork = ("imgur", img.getSocialNetworks()["imgur"])
             lastLink, lastTime = checkLastLink(url, socialNetwork)
             i = 1
-            listPosts = img.getNumPostsData(1,i)
+            listPosts = img.getNumPostsData(1, i)
             print(listPosts)
             continue
 
-
         sys.exit()
-        #img.publishPost(img.getPosts()[5],img.getPostLink(img.getPosts()[0]))
-        #print(dir(img.getPosts()[0]))
-        #for method in img.getPosts()[0].__dir__():
+        # img.publishPost(img.getPosts()[5],img.getPostLink(img.getPosts()[0]))
+        # print(dir(img.getPosts()[0]))
+        # for method in img.getPosts()[0].__dir__():
         #    print(method)
         #    #print(img.method())
-        #print("datetime",img.getPosts()[0].datetime)
+        # print("datetime",img.getPosts()[0].datetime)
         imgs = img.getClient().get_album_images(img.getPosts()[-1].id)
-        print("imgs",imgs)
+        print("imgs", imgs)
         for iimg in imgs:
-            print("id",iimg.id)
-            print("title",iimg.title)
-            print("descr",iimg.description)
-            print("name",iimg.name)
+            print("id", iimg.id)
+            print("title", iimg.title)
+            print("descr", iimg.description)
+            print("name", iimg.name)
         print(img.extractImages(img.getPosts()[-2]))
         print(img.getImagesCode(-1))
-        continue 
+        continue
 
-        #print(img.getImages(0))
-
+        # print(img.getImages(0))
 
         print("---- Posts ----")
         for i, post in enumerate(img.getPosts()):
@@ -486,7 +502,7 @@ def main():
             print(img.getPostLink(post))
             print(img.getPostId(post))
             print(img.obtainPostData(i))
-            #print(img.getImagesCode(i))
+            # print(img.getImagesCode(i))
         print("---- Drafts ----")
         for i, post in enumerate(img.getDrafts()):
             print(img.getPostTitle(post))
@@ -495,7 +511,7 @@ def main():
         print("----")
         time.sleep(2)
     sys.exit()
-    pos=3
+    pos = 3
     post = img.getImages(pos)
     postWP = img.getImagesCode(pos)
     title = img.getPostTitle(img.getPosts()[pos])
@@ -503,7 +519,7 @@ def main():
     print("---post images ----")
     print(post)
     print("---title----")
-    print (title)
+    print(title)
     print("---postWP----")
     print(postWP)
     print("---tags----")
@@ -512,40 +528,38 @@ def main():
     # Testing Wordpress publishing
     img.setSocialNetworks(config)
     print(img.getSocialNetworks())
-    service='wordpress'
+    service = "wordpress"
     socialNetwork = (service, img.getSocialNetworks()[service])
 
     import moduleWordpress
+
     wp = moduleWordpress.moduleWordpress()
-    wp.setClient('avecesunafoto')
+    wp.setClient("avecesunafoto")
 
+    print(wp.publishPost(title, "", postWP, tags=post[-1]))
 
-    print(wp.publishPost(title, '', postWP, tags=post[-1]))
- 
     sys.exit()
     for service in img.getSocialNetworks():
         socialNetwork = (service, img.getSocialNetworks()[service])
-        
+
         linkLast, lastTime = checkLastLink(img.getUrl(), socialNetwork)
         print("linkLast {} {}".format(socialNetwork, linkLast))
         i = img.getLinkPosition(linkLast)
         print(i)
-        print(img.getNumPostsData(2,i))
- 
+        print(img.getNumPostsData(2, i))
+
     sys.exit()
-    txt = ''
+    txt = ""
     fileName = fileNamePath(img.url)
     urls = getLastLink(fileName)
-    thePost=None
+    thePost = None
     for i, post in enumerate(img.getPosts()):
-        print("{}) {} {}".format(i, img.getPostTitle(post), 
-            img.getPostLink(post)))
-        #print(img.getPosts()[i])
-        if not img.getPostTitle(post).startswith('>'):
+        print("{}) {} {}".format(i, img.getPostTitle(post), img.getPostLink(post)))
+        # print(img.getPosts()[i])
+        if not img.getPostTitle(post).startswith(">"):
             if not (img.getPostLink(post).encode() in urls[0]):
-                print("--->",img.getPostTitle(post))
+                print("--->", img.getPostTitle(post))
                 thePost = post
-
 
     if thePost:
         res = downloadUrl(img.getPostLink(thePost))
@@ -554,31 +568,35 @@ def main():
         print(res)
         sys.exit()
 
+        # sel = input('Publish? (p/w) ')
 
-        #sel = input('Publish? (p/w) ') 
-
-        #if sel == 'p':
+        # if sel == 'p':
         #    print('pubishing! {}'.format(res [0][2]))
         #    print(img.publish(pos))
-        #elif sel == 'w':
-        print('Wordpressing! {}'.format(res [0][2]))
-        import moduleWordpress 
-        wp = moduleWordpress.moduleWordpress() 
-        wp.setClient('avecesunafoto') 
-        title = res [0][2]
-        text = '' 
-        for iimg in res: 
-            text = '{}\n<p><a href="{}"><img class="alignnone size-full wp-image-3306" src="{}" alt="" width="776" height="1035" /></a></p>'.format(text,iimg[0],iimg[1])
+        # elif sel == 'w':
+        print("Wordpressing! {}".format(res[0][2]))
+        import moduleWordpress
 
-        print('----') 
-        print(title) 
-        print(text) 
+        wp = moduleWordpress.moduleWordpress()
+        wp.setClient("avecesunafoto")
+        title = res[0][2]
+        text = ""
+        for iimg in res:
+            text = '{}\n<p><a href="{}"><img class="alignnone size-full wp-image-3306" src="{}" alt="" width="776" height="1035" /></a></p>'.format(
+                text, iimg[0], iimg[1]
+            )
 
-        theUrls = [img.getPostLink(thePost).encode(), ] + urls[0]
-        wp.publishPost(text, '', title)
+        print("----")
+        print(title)
+        print(text)
+
+        theUrls = [
+            img.getPostLink(thePost).encode(),
+        ] + urls[0]
+        wp.publishPost(text, "", title)
 
         updateLastLink(img.url, theUrls)
-        #elif sel == 's':
+        # elif sel == 's':
         #    import pprint
         #    pprint.pprint(img.getPosts()[pos])
         #    pprint.pprint(img.getPosts()[pos].views)
@@ -586,17 +604,18 @@ def main():
         #    pprint.pprint(img.getPosts()[pos].section)
         #    #pprint.pprint(dir(img.getPosts()[pos]))
 
-        text = ''
+        text = ""
         for img in res:
-            text = '{}\n<p><a href="{}"><img class="alignnone size-full wp-image-3306" src="{}" alt="" width="776" height="1035" /></a></p>'.format(text,img[0],img[1])
+            text = '{}\n<p><a href="{}"><img class="alignnone size-full wp-image-3306" src="{}" alt="" width="776" height="1035" /></a></p>'.format(
+                text, img[0], img[1]
+            )
 
         print("---")
         print(text)
 
+        # print(img.publish(0))
+        # img.delete(8)
 
 
-        #print(img.publish(0))
-        #img.delete(8)
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

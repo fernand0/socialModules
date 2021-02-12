@@ -19,35 +19,35 @@ from configMod import *
 from moduleQueue import *
 from moduleContent import *
 
-class moduleCache(Content,Queue):
-    
+
+class moduleCache(Content, Queue):
     def __init__(self):
         super().__init__()
-        self.service = 'Cache'
+        self.service = "Cache"
         self.nick = None
-        #self.url = url
-        #self.socialNetwork = (socialNetwork, nick)
+        # self.url = url
+        # self.socialNetwork = (socialNetwork, nick)
 
     def setClient(self, param):
         logging.info(f"setClient {self.service} {param}")
-        self.postsType = 'posts'
+        self.postsType = "posts"
         if isinstance(param, str):
             self.url = param
             self.user = param
             logging.warning("This is not possible!")
         elif isinstance(param[1], str):
             self.url = param[0]
-            self.service = param[1] 
+            self.service = param[1]
             self.nick = param[2]
-        else: 
+        else:
             self.url = param[0]
-            self.service = param[1][0] 
+            self.service = param[1][0]
             self.nick = param[1][1]
 
     def getSocialNetwork(self):
         return (self.service, self.nick)
 
-    def setApiPosts(self):        
+    def setApiPosts(self):
         url = self.getUrl()
         service = self.getService()
         nick = self.getNick()
@@ -55,28 +55,28 @@ class moduleCache(Content,Queue):
         fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
         logging.debug("File %s" % fileNameQ)
         try:
-            with open(fileNameQ,'rb') as f: 
-                try: 
-                    listP = pickle.load(f) 
-                except: 
-                    listP = [] 
+            with open(fileNameQ, "rb") as f:
+                try:
+                    listP = pickle.load(f)
+                except:
+                    listP = []
         except:
             listP = []
 
-        return(listP)
+        return listP
 
-    #def setPostt(self):        
+    # def setPostt(self):
     #    logging.debug("Service %s Nick %s" % (self.service, self.nick))
-    #    fileNameQ = fileNamePath(self.url, 
+    #    fileNameQ = fileNamePath(self.url,
     #            (self.service, self.nick)) + ".queue"
     #    logging.debug("File %s" % fileNameQ)
     #    print("File %s" % fileNameQ)
     #    try:
-    #        with open(fileNameQ,'rb') as f: 
-    #            try: 
-    #                listP = pickle.load(f) 
-    #            except: 
-    #                listP = [] 
+    #        with open(fileNameQ,'rb') as f:
+    #            try:
+    #                listP = pickle.load(f)
+    #            except:
+    #                listP = []
     #    except:
     #        listP = []
 
@@ -92,16 +92,16 @@ class moduleCache(Content,Queue):
         self.setProfile(self.service)
         profile = self.getProfile()
         logging.debug("Profile %s" % profile)
-    
-        profile.id = profile['id']
-        profile.profile_id = profile['service_id']
+
+        profile.id = profile["id"]
+        profile.profile_id = profile["service_id"]
         schedules = profile.schedules
         if schedules:
             self.schedules = schedules
         else:
             self.schedules = None
-        #print(self.schedules[0]['times'])
-        #print(len(self.schedules[0]['times']))
+        # print(self.schedules[0]['times'])
+        # print(len(self.schedules[0]['times']))
 
     def setSchedules(self, command):
         schedules = CronTab(user=True)
@@ -109,37 +109,37 @@ class moduleCache(Content,Queue):
         self.schedules = []
         schedules = schedules.find_command(command)
         for sched in schedules:
-            #print(sched.minute, sched.hour)
+            # print(sched.minute, sched.hour)
             self.schedules.append(sched)
 
     def addSchedules(self, times):
-       myTimes = self.schedules[0].hour
-       print("sched", self.schedules[0].render())
-       for time in times:
-           print(time) 
-           hour = time.split(':')[0]
-           if int(hour) not in myTimes:
-               myTimesS = str(myTimes)
-               print(myTimes)
-               myTimesS = myTimesS + ',' + str(hour)
-               self.schedules[0].hour.also.on(str(hour))
-           self.crontab.write()
+        myTimes = self.schedules[0].hour
+        print("sched", self.schedules[0].render())
+        for time in times:
+            print(time)
+            hour = time.split(":")[0]
+            if int(hour) not in myTimes:
+                myTimesS = str(myTimes)
+                print(myTimes)
+                myTimesS = myTimesS + "," + str(hour)
+                self.schedules[0].hour.also.on(str(hour))
+            self.crontab.write()
 
-    def delSchedules(self, times): 
-        myTimes = self.schedules[0].hour 
+    def delSchedules(self, times):
+        myTimes = self.schedules[0].hour
         timesI = []
         for time in times:
-            timesI.append(int(time.split(':')[0]))
-        print("my",myTimes)
-        print("myI",timesI)
+            timesI.append(int(time.split(":")[0]))
+        print("my", myTimes)
+        print("myI", timesI)
 
         myNewTimes = []
         for time in myTimes:
-            print("time",time)
+            print("time", time)
             if time not in timesI:
                 myNewTimes.append(time)
-                
-        print("myN",myNewTimes)
+
+        print("myN", myNewTimes)
         self.schedules[0].hour.clear()
         for time in myNewTimes:
             self.schedules[0].hour.also.on(str(time))
@@ -147,39 +147,47 @@ class moduleCache(Content,Queue):
         self.crontab.write()
 
     def addPosts(self, listPosts):
-        link = ''
+        link = ""
         if listPosts:
             posts = self.getPosts()
             for pp in listPosts:
                 posts.append(pp)
-            #for i, pp in enumerate(posts):
+            # for i, pp in enumerate(posts):
             #    print(i, pp)
             #    link = pp[1]
             self.assignPosts(posts)
-            #for i,p in enumerate(posts):
+            # for i,p in enumerate(posts):
             #    print(i, self.getPostTitle(p), self.getPostLink(p))
             self.updatePostsCache()
         link = listPosts[-1][1]
-        return(link)
+        return link
 
     def updatePostsCache(self):
-        fileNameQ = fileNamePath(self.url, 
-                (self.service, self.nick)) + ".queue"
+        fileNameQ = fileNamePath(self.url, (self.service, self.nick)) + ".queue"
 
-        with open(fileNameQ, 'wb') as f: 
+        with open(fileNameQ, "wb") as f:
             posts = self.getPosts()
             pickle.dump(posts, f)
 
         logging.debug("Writing in %s" % fileNameQ)
         logging.debug("Posts: {}".format(str(self.getPosts())))
 
-        return 'Ok'
+        return "Ok"
 
     def extractDataMessage(self, i):
-        logging.info("Service %s"% self.service)
-        (theTitle, theLink, firstLink, theImage, theSummary, content, 
-                theSummaryLinks, theContent, theLinks, comment) = (None, 
-                        None, None, None, None, None, None, None, None, None) 
+        logging.info("Service %s" % self.service)
+        (
+            theTitle,
+            theLink,
+            firstLink,
+            theImage,
+            theSummary,
+            content,
+            theSummaryLinks,
+            theContent,
+            theLinks,
+            comment,
+        ) = (None, None, None, None, None, None, None, None, None, None)
 
         if i < len(self.getPosts()):
             messageRaw = self.getPosts()[i]
@@ -197,31 +205,42 @@ class moduleCache(Content,Queue):
             theSummaryLinks = content
             comment = None
 
-        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+        return (
+            theTitle,
+            theLink,
+            firstLink,
+            theImage,
+            theSummary,
+            content,
+            theSummaryLinks,
+            theContent,
+            theLinks,
+            comment,
+        )
 
     def getPostTitle(self, post):
-        title = ''
+        title = ""
         if post:
             title = post[0]
-        return(title)
+        return title
 
     def getPostLink(self, post):
         if post:
             link = post[1]
-            return (link)
-        return(None)
+            return link
+        return None
 
-    def editApiLink(self, post, newLink=''):
+    def editApiLink(self, post, newLink=""):
         oldLink = self.getPostLink(post)
         idPost = self.getLinkPosition(oldLink)
-        post = post[:1] + ( newLink, ) + post[2:]
+        post = post[:1] + (newLink,) + post[2:]
         posts = self.getPosts()
         posts[idPost] = post
         self.assignPosts(posts)
         self.updatePostsCache()
-        return(idPost)
+        return idPost
 
-    def editApiTitle(self, post, newTitle=''):
+    def editApiTitle(self, post, newTitle=""):
         oldLink = self.getPostLink(post)
         idPost = self.getLinkPosition(oldLink)
         oldTitle = self.getPostTitle(post)
@@ -232,9 +251,9 @@ class moduleCache(Content,Queue):
         posts[idPost] = post
         self.assignPosts(posts)
         self.updatePostsCache()
-        return(idPost)
+        return idPost
 
-    #def edit(self, j, newTitle=''):
+    # def edit(self, j, newTitle=''):
     #    logging.info("New title %s", newTitle)
     #    thePost = self.obtainPostData(j)
     #    oldTitle = thePost[0]
@@ -255,56 +274,58 @@ class moduleCache(Content,Queue):
         posts = self.getPosts()
         # We do not use j, Maybe in the future.
         logging.info(f"posts {posts}")
-        if (j>=0) and (j<len(posts)):
-            textS = text.split(' http')
-            post = (textS[0], 'http'+textS[1], '','','','','','','','')
-            self.assignPosts(posts[:j] + [ post ] + posts[j:])
+        if (j >= 0) and (j < len(posts)):
+            textS = text.split(" http")
+            post = (textS[0], "http" + textS[1], "", "", "", "", "", "", "", "")
+            self.assignPosts(posts[:j] + [post] + posts[j:])
             self.updatePostsCache()
 
-            #link = f"http{link}" 
-            #pos = self.getLinkPosition(link)
-            #logging.info(f"pos {pos}")
-            #newPost = self.getNumPostsData(1,pos)
-            #logging.info(f"newpost {newPost}")
+            # link = f"http{link}"
+            # pos = self.getLinkPosition(link)
+            # logging.info(f"pos {pos}")
+            # newPost = self.getNumPostsData(1,pos)
+            # logging.info(f"newpost {newPost}")
 
     def publish(self, j):
-        logging.info("Publishing %d"% j)
+        logging.info("Publishing %d" % j)
         post = self.obtainPostData(j)
         logging.info("Publishing {post[0]} in {self.service} user {self.nick}")
         api = getApi(self.service, self.nick)
-        comment = ''
+        comment = ""
         title = post[0]
         link = post[1]
-        comment = ''
+        comment = ""
         update = api.publishPost(title, link, comment)
         logging.info("Publishing title: %s" % title)
         logging.info("Social network: %s Nick: %s" % (self.service, self.nick))
         posts = self.getPosts()
-        if (not isinstance(update, str) 
-                or (isinstance(update, str) and update[:4] != "Fail")):
-            self.assignPosts(posts[:j] + posts[j+1:])
+        if not isinstance(update, str) or (
+            isinstance(update, str) and update[:4] != "Fail"
+        ):
+            self.assignPosts(posts[:j] + posts[j + 1 :])
             logging.debug("Updating %s" % posts)
             self.updatePostsCache()
             logging.info("Update ... %s" % str(update))
-            if ((isinstance(update, str) and ('text' in update))
-                    or (isinstance(update, bytes) and (b'text' in update))):
-                update = update['text']
+            if (isinstance(update, str) and ("text" in update)) or (
+                isinstance(update, bytes) and (b"text" in update)
+            ):
+                update = update["text"]
             if type(update) == tuple:
-                update = update[1]['id']
+                update = update[1]["id"]
                 # link: https://www.facebook.com/[name]/posts/[second part of id]
-        logging.info("Update before return %s"% update)
-        return(update) 
+        logging.info("Update before return %s" % update)
+        return update
 
     def deleteApi(self, j):
         post = self.obtainPostData(j)
         posts = self.getPosts()
-        posts = posts[:j] + posts[j+1:]
+        posts = posts[:j] + posts[j + 1 :]
         self.assignPosts(posts)
         self.updatePostsCache()
 
-        return("%s"% post[0])
+        return "%s" % post[0]
 
-    #def delete(self, j):
+    # def delete(self, j):
     #    logging.info("Deleting %d"% j)
     #    post = self.obtainPostData(j)
     #    logging.info("Deleting %s"% post[0])
@@ -318,41 +339,42 @@ class moduleCache(Content,Queue):
 
     def move(self, j, dest):
         k = int(dest)
-        logging.info("Moving %d to %d"% (j, k))
+        logging.info("Moving %d to %d" % (j, k))
         posts = self.getPosts()
         post = posts[j]
-        logging.info("Moving %s"% post[0])
+        logging.info("Moving %s" % post[0])
         if j > k:
-            for i in range(j-1,k-1,-1):
-                posts[i+1] = posts[i]
+            for i in range(j - 1, k - 1, -1):
+                posts[i + 1] = posts[i]
         elif j < k:
             for i in range(j, k):
-                posts[i] = posts[i+1]
+                posts[i] = posts[i + 1]
 
         posts[k] = post
         self.assignPosts(posts)
         self.updatePostsCache()
-        logging.info("Moved %s"% post[0])
-        return("%s"% post[0])
- 
+        logging.info("Moved %s" % post[0])
+        return "%s" % post[0]
+
+
 def main():
 
-    logging.basicConfig(stream=sys.stdout, 
-            level=logging.INFO, 
-            format='%(asctime)s %(message)s')
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s"
+    )
 
     import moduleCache
 
     try:
-        config = configparser.ConfigParser() 
-        config.read(CONFIGDIR + '/.rssBlogs')
-        
+        config = configparser.ConfigParser()
+        config.read(CONFIGDIR + "/.rssBlogs")
+
         section = "Blog7"
-        url = config.get(section, 'url')
-        cache = config[section]['cache']
-        for sN in cache.split('\n'):
+        url = config.get(section, "url")
+        cache = config[section]["cache"]
+        for sN in cache.split("\n"):
             nick = config[section][sN]
-            print('- ', sN, nick)
+            print("- ", sN, nick)
             site = moduleCache.moduleCache()
             site.setClient((url, (sN, nick)))
             site.setPosts()
@@ -362,33 +384,37 @@ def main():
                 print(i, site.getPostTitle(post))
                 link = site.getPostLink(post)
                 print(link)
-                #updateLastLink(url, link, (sN, nick))
+                # updateLastLink(url, link, (sN, nick))
             return
             site.posts = posts
-            #site.updatePostsCache()
-                
+            # site.updatePostsCache()
+
             print(checkLastLink(url, (sN, nick)))
-        
+
     except:
         cache = moduleCache.moduleCache()
-        cache.setClient(('http://fernand0-errbot.slack.com/', 
-                ('twitter', 'fernand0')))
+        cache.setClient(("http://fernand0-errbot.slack.com/", ("twitter", "fernand0")))
         cache.setPosts()
         print(len(cache.getPosts()))
         sys.exit()
         print(cache.getPostTitle(cache.getPosts()[0]))
         print(cache.getPostLink(cache.getPosts()[0]))
-        print(cache.selectAndExecute('insert', 'A2 Do You Really Have a Right to be “Forgotten”? - Assorted Stuff https://www.assortedstuff.com/do-you-really-have-a-right-to-be-forgotten/'))
+        print(
+            cache.selectAndExecute(
+                "insert",
+                "A2 Do You Really Have a Right to be “Forgotten”? - Assorted Stuff https://www.assortedstuff.com/do-you-really-have-a-right-to-be-forgotten/",
+            )
+        )
         print(cache.getPostTitle(cache.getPosts()[9]))
         print(cache.getPostLink(cache.getPosts()[9]))
         cache.setPosts()
         print(cache.getPostTitle(cache.getPosts()[9]))
         sys.exit()
-        cache.setSchedules('rssToSocial')
+        cache.setSchedules("rssToSocial")
         print(cache.schedules)
-        cache.addSchedules(['9:00','20:15'])
+        cache.addSchedules(["9:00", "20:15"])
         print(cache.schedules)
-        cache.delSchedules(['9:00','20:15'])
+        cache.delSchedules(["9:00", "20:15"])
     sys.exit()
 
     print(cache.getPosts())
@@ -396,54 +422,63 @@ def main():
     print(len(cache.getPosts()[0]))
     # It has 10 elements
     print(cache.obtainPostData(0))
-    print(cache.selectAndExecute('show', 'T0'))
-    print(cache.selectAndExecute('show', 'M0'))
-    print(cache.selectAndExecute('show', 'F1'))
-    print(cache.selectAndExecute('show', '*2'))
-    print(cache.selectAndExecute('show', 'TM3'))
-    print(cache.selectAndExecute('show', 'TM6'))
-    print(cache.selectAndExecute('move', 'T5 0'))
-    #print(cache.selectAndExecute('editl', 'T1 https://www.pagetable.com/?p=1152'))
-    #print(cache.selectAndExecute('delete', 'F7'))
-    #print(cache.selectAndExecute('edit', 'T3'))
-    #print(cache.selectAndExecute('edit', 'T0'))
-    #print(cache.selectAndExecute('publish', 'T1'))
+    print(cache.selectAndExecute("show", "T0"))
+    print(cache.selectAndExecute("show", "M0"))
+    print(cache.selectAndExecute("show", "F1"))
+    print(cache.selectAndExecute("show", "*2"))
+    print(cache.selectAndExecute("show", "TM3"))
+    print(cache.selectAndExecute("show", "TM6"))
+    print(cache.selectAndExecute("move", "T5 0"))
+    # print(cache.selectAndExecute('editl', 'T1 https://www.pagetable.com/?p=1152'))
+    # print(cache.selectAndExecute('delete', 'F7'))
+    # print(cache.selectAndExecute('edit', 'T3'))
+    # print(cache.selectAndExecute('edit', 'T0'))
+    # print(cache.selectAndExecute('publish', 'T1'))
     sys.exit()
 
     blog.cache.setPosts()
-    print('T0', blog.cache.selectAndExecute('show', 'T0'))
-    print('T3', blog.cache.selectAndExecute('show', 'T3'))
-    print('TF2', blog.cache.selectAndExecute('show', 'TF2'))
-    print('F4', blog.cache.selectAndExecute('show', 'F4'))
-    print('*3', blog.cache.selectAndExecute('show', '*3'))
-    #print('F0', blog.cache.selectAndExecute('delete', 'F0'))
-    #print('edit F0', blog.cache.selectAndExecute('edit', 'F0'+' '+'LLVM 8.0.0 Release.'))
-    #print('edit F0', blog.cache.editPost('F0', 'Así es Guestboard, un "Slack" para la organización de eventos.'))
-    #print('publish T0', blog.cache.publishPost('T0'))
-    #ca.movePost('T4 T3')
-    #ca.editPost('T4', "My Stepdad's Huge Dataset.") 
-    #ca.editPost('F5', "¡Sumate al datatón y a WiDS 2019! - lanacion.com")
+    print("T0", blog.cache.selectAndExecute("show", "T0"))
+    print("T3", blog.cache.selectAndExecute("show", "T3"))
+    print("TF2", blog.cache.selectAndExecute("show", "TF2"))
+    print("F4", blog.cache.selectAndExecute("show", "F4"))
+    print("*3", blog.cache.selectAndExecute("show", "*3"))
+    # print('F0', blog.cache.selectAndExecute('delete', 'F0'))
+    # print('edit F0', blog.cache.selectAndExecute('edit', 'F0'+' '+'LLVM 8.0.0 Release.'))
+    # print('edit F0', blog.cache.editPost('F0', 'Así es Guestboard, un "Slack" para la organización de eventos.'))
+    # print('publish T0', blog.cache.publishPost('T0'))
+    # ca.movePost('T4 T3')
+    # ca.editPost('T4', "My Stepdad's Huge Dataset.")
+    # ca.editPost('F5', "¡Sumate al datatón y a WiDS 2019! - lanacion.com")
     sys.exit()
-    print(ca.editPost('F1', 'Alternative Names for the Tampon Tax - The Belladonna Comedy'))
+    print(
+        ca.editPost(
+            "F1", "Alternative Names for the Tampon Tax - The Belladonna Comedy"
+        )
+    )
     sys.exit()
-    print(cache.editPost(postsP, 'F1', '10 Tricks to Appear Smart During Meetings – The Cooper Review – Medium...'))
+    print(
+        cache.editPost(
+            postsP,
+            "F1",
+            "10 Tricks to Appear Smart During Meetings – The Cooper Review – Medium...",
+        )
+    )
     sys.exit()
 
-    publishPost(api, profiles, ('F',1))
+    publishPost(api, profiles, ("F", 1))
 
     posts.update(postsP)
-    print("-> Posts",posts)
-    #print("Posts",profiles)
-    print("Keys",posts.keys())
-    print("Pending",type(profiles))
+    print("-> Posts", posts)
+    # print("Posts",profiles)
+    print("Keys", posts.keys())
+    print("Pending", type(profiles))
     profiles = listSentPosts(api, "")
-    print("Sent",type(profiles))
-
+    print("Sent", type(profiles))
 
     if profiles:
-       toPublish, toWhere = input("Which one do you want to publish? ").split(' ')
-       #publishPost(api, profiles, toPublish)
+        toPublish, toWhere = input("Which one do you want to publish? ").split(" ")
+        # publishPost(api, profiles, toPublish)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

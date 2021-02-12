@@ -15,12 +15,12 @@ from email.utils import formatdate
 from email import encoders
 import smtplib
 
-#import getpass
-#import keyring
-#import keyrings
+# import getpass
+# import keyring
+# import keyrings
+
 
 class moduleSmtp(Content):
-
     def __init__(self):
         super().__init__()
         self.user = None
@@ -28,11 +28,11 @@ class moduleSmtp(Content):
 
     def setClient(self, user):
         logging.info("     Connecting SMTP")
-        try: 
-            self.user = user 
+        try:
+            self.user = user
             self.client = smtplib.SMTP()
-            try: 
-                self.client.connect('localhost')
+            try:
+                self.client.connect("localhost")
                 logging.info("     Logging OK")
             except:
                 logging.warning("SMTP authentication failed!")
@@ -41,16 +41,19 @@ class moduleSmtp(Content):
             logging.warning("Account not configured")
             api = None
 
-    def publishPost(self, post, subject, toaddr, fromaddr='fernand0@elmundoesimperfecto.com'):
+    def publishPost(
+        self, post, subject, toaddr, fromaddr="fernand0@elmundoesimperfecto.com"
+    ):
         logging.info("     Publishing in SMTP")
-        if True: 
-            msg = MIMEText(post,'html')
-            msg['Subject'] = subject
-            msg['From'] = fromaddr
+        if True:
+            msg = MIMEText(post, "html")
+            msg["Subject"] = subject
+            msg["From"] = fromaddr
             res = self.client.sendmail(fromaddr, toaddr, msg.as_string())
         else:
             logging.info("     Not published in SMTP. Exception ...")
-            return('Fail')
+            return "Fail"
+
 
 def main():
 
@@ -58,16 +61,18 @@ def main():
 
     ig = moduleSmtp.moduleSmtp()
 
-    ig.setClient('fernand0')
+    ig.setClient("fernand0")
 
-    url = 'https://avecesunafoto.wordpress.com/2017/07/19/maria-fernandez-guajardo-consejos-practicos-de-una-feminista-zaragozana-en-el-silicon-valley/'
+    url = "https://avecesunafoto.wordpress.com/2017/07/19/maria-fernandez-guajardo-consejos-practicos-de-una-feminista-zaragozana-en-el-silicon-valley/"
     import requests
+
     req = requests.get(url)
     import time
-    ig.publishPost(req.text, 'Test {}'.format(time.asctime()), 'fernand0@elmundoesimperfecto.com')
-    
+
+    ig.publishPost(
+        req.text, "Test {}".format(time.asctime()), "fernand0@elmundoesimperfecto.com"
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-
