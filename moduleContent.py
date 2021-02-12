@@ -220,6 +220,7 @@ class Content:
  
     def getId(self, j):
         idPost = -1
+        logging.info(f"Posts {self.getPosts()} j: {j}")
         if j < len(self.getPosts()): 
             post = self.getPost(j)
             logging.info(f"Post: {post}")
@@ -303,7 +304,7 @@ class Content:
         return (result)
 
     def delete(self, j): 
-        logging.debug("Deleting Pos: {j}")
+        logging.debug(f"Deleting Pos: {j}")
         idPost = self.getId(self.getPost(j))
         result = self.deletepostId(idPost)
         return(res)

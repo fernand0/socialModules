@@ -218,7 +218,8 @@ class moduleGmail(Content,Queue):
         for post in posts: 
             title = self.getPostTitle(post)
             if title.find(self.getSearch())>=0:
-                postsS.append(post)
+                # Older ones first
+                postsS.insert(0,post)
         return postsS
 
 

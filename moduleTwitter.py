@@ -38,7 +38,8 @@ class moduleTwitter(Content,Queue):
         return client
 
     def setApiPosts(self):
-        posts = self.getClient().statuses.user_timeline()
+        posts = self.getClient().statuses.user_timeline(count=100)
+        #posts = self.getClient().statuses.user_timeline(_id='fernand0')
         return posts
 
     def setApiFavs(self): 
@@ -88,6 +89,14 @@ class moduleTwitter(Content,Queue):
         else:
             idPost = self.getAttribute(post, 'id')
         return  idPost
+
+    def getPostApiSource(self, post):
+        source = self.getAttribute(post, 'source')
+        return source
+
+    def getPostApiDate(self, post):
+        date = self.getAttribute(post, 'created_at')
+        return date
 
     def getUrlId(self, post):
         return (post.split('/')[-1])
