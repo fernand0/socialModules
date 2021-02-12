@@ -104,7 +104,7 @@ def nextPost(blog, socialNetwork, listP):
     if listP:
         element = listP[0]
         listP = listP[1:]
-    elif type(listP) == type(()):
+    elif isinstance(listPi, type(())):
         element = listP
         listP = []
     else:
@@ -133,7 +133,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
     # print(numPosts)
     llink = None
     tSleep = random.random() * timeSlots
-    tSleep2 = timeSlots - tSleep
+    # tSleep2 = timeSlots - tSleep
 
     listP = listNextPosts(blog, socialNetwork)
     element, listP = nextPost(blog, socialNetwork, listP)
@@ -204,16 +204,19 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                     if profile in ["facebook"]:
                         pos1 = 0
                         while pos1 >= 0:
-                            pos1 = comment.find("http://fernand0.blogalia", pos1)
+                            pos1 = comment.find(
+                                "http://fernand0.blogalia", pos1
+                            )
                             if pos1 >= 0:
                                 pos2 = comment.find(" ", pos1 + 1)
                                 pos3 = comment.find("\n", pos1 + 1)
                                 pos2 = min(pos2, pos3)
                                 logging.info(comment)
+                                str1 = comment[: pos1 - 1]
+                                str2 = comment[pos2:]
                                 comment = (
-                                    "\n{}(Enlace censurado por Facebook){}".format(
-                                        comment[: pos1 - 1], comment[pos2:]
-                                    )
+                                    f"\n{str1}(Enlace censurado por "
+                                    f"Facebook){str2}"
                                 )
                                 logging.debug(comment)
                                 pos1 = pos2
@@ -232,13 +235,17 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                 try:
                     api = getApi(profile, nick)
                     if profile in ["wordpress"]:
-                        result = api.publishPost(title, link, comment, tags=links)
+                        result = api.publishPost(
+                            title, link, comment, tags=links
+                        )
                     elif profile in ["html"]:
                         result = api.click(myLink)
                     else:
                         result = api.publishPost(title, link, comment)
                 except:
-                    logging.warning("Some problem in {}".format(profile.capitalize()))
+                    logging.warning(
+                        "Some problem in {}".format(profile.capitalize())
+                    )
                     logging.warning("Unexpected error:", sys.exc_info()[0])
 
                 logging.info("Result: {}".format(str(result)))
@@ -370,4 +377,6 @@ if __name__ == "__main__":
         listPosts.append(blog.obtainPostData(i - 1))
         timeSlots = 60 * 60
     if listPosts:
-        moduleSocial.publishDelayTwitter(blog, listPosts, "fernand0Test", timeSlots)
+        moduleSocial.publishDelayTwitter(
+            blog, listPosts, "fernand0Test", timeSlots
+        )
