@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import configparser
 import sys
 
 import twitter
+import logging
+
 from twitter import *
 
 # pip install twitter
@@ -201,7 +202,8 @@ def main():
     # sys.exit()
 
     # print("Testing posting and deleting")
-    # res = tw.publishPost("Prueba borrando 7", "http://elmundoesimperfecto.com/", '')
+    # res = tw.publishPost("Prueba borrando 7",
+    # "http://elmundoesimperfecto.com/", '')
     # print(res)
     # idPost = tw.getUrlId(res)
     # print(idPost)
