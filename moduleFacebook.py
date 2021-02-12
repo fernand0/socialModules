@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 
-import configparser
 import sys
-
-from bs4 import BeautifulSoup
-from bs4 import Tag
-from html.parser import HTMLParser
 
 import facebook
 
@@ -39,7 +34,7 @@ class moduleFacebook(Content, Queue):
         return graph
 
     def setPage(self, facebookAC="me"):
-        perms = ["publish_actions", "manage_pages", "publish_pages"]
+        # perms = ["publish_actions", "manage_pages", "publish_pages"]
         pages = self.getClient().get_connections("me", "accounts")
         self.pages = pages
 
@@ -49,8 +44,12 @@ class moduleFacebook(Content, Queue):
                     "Selecting %s %s" % (pages["data"][i]["name"], facebookAC)
                 )
                 if pages["data"][i]["name"] == facebookAC:
-                    logging.info("     Selected... %s" % pages["data"][i]["name"])
-                    graph2 = facebook.GraphAPI(pages["data"][i]["access_token"])
+                    logging.info(
+                        "     Selected... %s" % pages["data"][i]["name"]
+                    )
+                    graph2 = facebook.GraphAPI(
+                        pages["data"][i]["access_token"]
+                    )
                     self.page = graph2
                     self.pageId = pages["data"][i]["id"]
                     break
@@ -63,7 +62,9 @@ class moduleFacebook(Content, Queue):
             self.setPage(self.user)
 
         posts = []
-        postsF = self.page.get_connections(self.pageId, connection_name="posts")
+        postsF = self.page.get_connections(
+            self.pageId, connection_name="posts"
+        )
         if "data" in postsF:
             for post in postsF["data"]:
                 postt = self.page.get_connections(
@@ -140,7 +141,9 @@ class moduleFacebook(Content, Queue):
         post = self.client.get_object("me", fields="id")
         myId = post["id"]
         field = "attachments"
-        post = self.client.get_object("{}_{}".format(myId, idPost), fields=field)
+        post = self.client.get_object(
+            "{}_{}".format(myId, idPost), fields=field
+        )
         res.append(post["attachments"]["data"][0]["media"]["image"]["src"])
         subAttach = post["attachments"]["data"][0]["subattachments"]
         for img in subAttach["data"]:
@@ -162,7 +165,8 @@ def main():
     fc.setClient("me")
     fc.setPage("Enlaces de fernand0")
     # print("Testing posting and deleting")
-    # res = fc.publishPost("Prueba borrando 7", "http://elmundoesimperfecto.com/", '')
+    # res = fc.publishPost("Prueba borrando 7",
+    # "http://elmundoesimperfecto.com/", '')
     # print("Res",res)
     # idPost = fc.getUrlId(res)
     # print("id",idPost)
