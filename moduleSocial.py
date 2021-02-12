@@ -104,7 +104,7 @@ def nextPost(blog, socialNetwork, listP):
     if listP:
         element = listP[0]
         listP = listP[1:]
-    elif isinstance(listPi, type(())):
+    elif isinstance(listP, type(())):
         element = listP
         listP = []
     else:

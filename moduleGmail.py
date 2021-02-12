@@ -4,25 +4,25 @@
 # This module tries to replicate moduleCache and moduleBuffer but with mails
 # stored as Drafts in a Gmail account
 
-# From: https://github.com/gsuitedevs/python-samples/blob/master/gmail/quickstart/quickstart.py
+# From:
+# https://github.com/gsuitedevs/python-samples/blob/master/gmail/quickstart/quickstart.py
+
 from __future__ import print_function
 from googleapiclient.discovery import build
-from httplib2 import Http
-from oauth2client import file, client, tools
+from bs4 import BeautifulSoup
 
 
-import configparser, os
+import configparser
 import datetime
 import io
 import logging
+import os
 import pickle
 import sys
 
-import moduleSocial
 import moduleImap
 
 import googleapiclient
-from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
@@ -54,9 +54,10 @@ class moduleGmail(Content, Queue):
         return ()
 
     def initApi(self, keys):
-        SCOPES = self.scopes
         creds = self.authorize()
-        service = build("gmail", "v1", credentials=creds, cache_discovery=False)
+        service = build(
+            "gmail", "v1", credentials=creds, cache_discovery=False
+        )
         return service
 
     # def setClient(self, Acc):
@@ -117,11 +118,15 @@ class moduleGmail(Content, Queue):
 
                 try:
                     flow = InstalledAppFlow.from_client_secrets_file(
-                        fileCredStore, SCOPES, redirect_uri="urn:ietf:wg:oauth:2.0:oob"
+                        fileCredStore,
+                        SCOPES,
+                        redirect_uri="urn:ietf:wg:oauth:2.0:oob",
                     )
                     creds = flow.run_console(
-                        authorization_prompt_message="Please visit this URL: {url}",
-                        success_message="The auth flow is complete; you may close this window.",
+                        authorization_prompt_message="Please visit this URL:"
+                        " {url}",
+                        success_message="The auth flow is complete;"
+                        " you may close this window.",
                     )
                     # Save the credentials for the next run
                 except FileNotFoundError:
@@ -142,7 +147,12 @@ class moduleGmail(Content, Queue):
             "name": labelName,
             "labelListVisibility": "labelShow",
         }
-        return api.users().labels().create(userId="me", body=label_object).execute()
+        return (
+            api.users()
+            .labels()
+            .create(userId="me", body=label_object)
+            .execute()
+        )
 
     def updateLabel(self, label_id, labelName):
         api = self.getClient()
@@ -172,7 +182,9 @@ class moduleGmail(Content, Queue):
         return list(map(lambda x: x["id"], labels))
 
     def getLabelsEqIds(self, sel=""):
-        labels = list(filter(lambda x: sel.upper() == x["name"].upper(), self.labels))
+        labels = list(
+            filter(lambda x: sel.upper() == x["name"].upper(), self.labels)
+        )
         return list(map(lambda x: x["id"], labels))
 
     def getListLabel(self, label):
@@ -182,7 +194,10 @@ class moduleGmail(Content, Queue):
         ]
         print(list_labels)
         response = (
-            api.users().messages().list(userId="me", labelIds=list_labels).execute()
+            api.users()
+            .messages()
+            .list(userId="me", labelIds=list_labels)
+            .execute()
         )
         return response
 
@@ -468,7 +483,6 @@ class moduleGmail(Content, Queue):
         return results["labels"]
 
     def getLabelId(self, name):
-        api = self.getClient()
         results = self.getLabelList()
         labelId = None
         for label in results:
@@ -487,7 +501,7 @@ class moduleGmail(Content, Queue):
         logging.info("Message %s" % message)
 
         theTitle = self.getHeader(message, "Subject")
-        if theTitle == None:
+        if theTitle is None:
             theTitle = self.getHeader(message, "subject")
         snippet = self.getHeader(message, "snippet")
 
@@ -528,20 +542,19 @@ class moduleGmail(Content, Queue):
 
     def edit(self, j, newTitle):
         logging.info("New title %s", newTitle)
-        thePost = self.obtainPostData(j)
-        oldTitle = thePost[0]
         logging.info("servicename %s" % self.service)
 
         import base64
         import email
-        from email.parser import BytesParser
 
         api = self.getClient()
 
         idPost = self.getPosts()[j]["list"]["id"]  # thePost[-1]
         title = self.getHeader(self.getPosts()[j]["meta"], "Subject")
         message = self.getMessageRaw(idPost)
-        theMsg = email.message_from_bytes(base64.urlsafe_b64decode(message["raw"]))
+        theMsg = email.message_from_bytes(
+            base64.urlsafe_b64decode(message["raw"])
+        )
         self.setHeaderEmail(theMsg, "subject", newTitle)
         message["raw"] = theMsg.as_bytes()
         message["raw"] = base64.urlsafe_b64encode(message["raw"]).decode()
@@ -566,7 +579,12 @@ class moduleGmail(Content, Queue):
 
         api = self.getClient()
         try:
-            res = api.users().drafts().send(userId="me", body={"id": idPost}).execute()
+            res = (
+                api.users()
+                .drafts()
+                .send(userId="me", body={"id": idPost})
+                .execute()
+            )
             logging.info("Res: %s" % res)
         except:
             return self.report("Gmail", idPost, "", sys.exc_info())
@@ -582,11 +600,17 @@ class moduleGmail(Content, Queue):
             title = self.getHeader(self.getPosts()[j]["meta"], "Subject")
         except:
             title = ""
-        if typePost == "drafts":
-            update = api.users().drafts().trash(userId="me", id=idPost).execute()
-        else:
-            update = api.users().messages().trash(userId="me", id=idPost).execute()
 
+        if typePost == "drafts":
+            update = (
+                api.users().drafts().trash(userId="me", id=idPost).execute()
+            )
+        else:
+            update = (
+                api.users().messages().trash(userId="me", id=idPost).execute()
+            )
+
+        logging.info(f"Update {update}")
         return "Trashed %s" % title
 
     def deleteApiSearch(self, idPost):
@@ -609,10 +633,15 @@ class moduleGmail(Content, Queue):
         except:
             title = ""
         if typePost == "drafts":
-            update = api.users().drafts().delete(userId="me", id=idPost).execute()
+            update = (
+                api.users().drafts().delete(userId="me", id=idPost).execute()
+            )
         else:
-            update = api.users().messages().delete(userId="me", id=idPost).execute()
+            update = (
+                api.users().messages().delete(userId="me", id=idPost).execute()
+            )
 
+        logging.info(f"Update {update}")
         return "Deleted %s" % title
 
     def copyMessage(self, message, labels=""):
@@ -777,6 +806,7 @@ def main():
         print("Test setPosts")
         api.setPostsType("messages")
         res = api.setPosts()
+        print(res)
         print("Test getPosts")
         # print(api.getPosts())
         # api.setPostsType('messages')
@@ -807,7 +837,10 @@ def main():
     sys.exit()
     print("G29", api.selectAndExecute("publish", "G29"))
     print("G29", api.selectAndExecute("delete", "G29"))
-    print("G25", api.selectAndExecute("edit", "G27" + " " + "Cebollinos (hechos)"))
+    print(
+        "G25",
+        api.selectAndExecute("edit", "G27" + " " + "Cebollinos (hechos)"),
+    )
     print("M18", api.editPost("M18", "Vaya"))
     print("M10", api.publishPost("M10"))
     sys.exit()
@@ -847,7 +880,9 @@ def main():
     print(type(profiles[1]), pp.pformat(profiles[1]))
 
     if profiles:
-        toPublish, toWhere = input("Which one do you want to publish? ").split(" ")
+        toPublish, toWhere = input("Which one do you want to publish? ").split(
+            " "
+        )
         # publishPost(api, pp, profiles, toPublish)
 
 
