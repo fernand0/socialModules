@@ -4,13 +4,12 @@
 
 import configparser
 import html
-import os
-import pickle
 import logging
+import pickle
+import re
+import sys
 
 from bs4 import Tag
-from urllib.request import urlopen
-from bs4 import BeautifulSoup
 from html.parser import HTMLParser
 
 from configMod import *
@@ -101,7 +100,7 @@ class Content:
             if typePosts == "cache":
                 cmd = getattr(self, "setApiCache")
             else:
-                cmd = getattr(self, "setApi" + self.getPostsType().capitalize())
+                cmd = getattr(self, f"setApi{self.getPostsType().capitalize()}")
         else:
             cmd = getattr(self, "setApiPosts")
         self.assignPosts(cmd())
@@ -315,7 +314,8 @@ class Content:
             if typePosts == "cache":
                 cmd = getattr(self, "deleteApiCache")
             else:
-                cmd = getattr(self, "deleteApi" + self.getPostsType().capitalize())
+                cmd = (getattr(self, "deleteApi"
+                       + self.getPostsType().capitalize()))
         else:
             cmd = getattr(self, "deleteApiPosts")
         reply = cmd(idPost)
@@ -331,7 +331,7 @@ class Content:
         logging.debug(f"Deleting Pos: {j}")
         idPost = self.getId(self.getPost(j))
         result = self.deletepostId(idPost)
-        return res
+        return result
 
     def processReply(self, reply):
         logging.debug("Res: %s" % reply)
@@ -347,21 +347,21 @@ class Content:
                 logging.info(f"New title {newTitle}")
                 res = self.editApiTitle(post, newTitle)
                 res = self.processReply(res)
-                update = "Changed " + oldTitle + " with " + newTitle + " id " + str(res)
+                update = f"Changed {oldTitle} with {newTitle} Id {str(res)}"
             if ("newState" in kwargs) and kwargs["newState"]:
                 oldState = self.getPostState(post)
                 newState = kwargs["newState"]
                 logging.info("New state %s", newState)
                 res = self.editApiState(post, newState)
                 res = self.processReply(res)
-                update = "Changed " + oldState + " to " + newState + " id " + str(res)
+                update = f"Changed {oldState} to {newState} Id {str(res)}"
             if ("newLink" in kwargs) and kwargs["newLink"]:
                 oldLink = self.getPostLink(post)
                 newLink = kwargs["newLink"]
                 logging.info(f"New link {newLink}")
                 res = self.editApiLink(post, newLink)
                 res = self.processReply(res)
-                update = "Changed " + oldLink + " with " + newLink + " id " + str(res)
+                update = f"Changed {oldLink} with {newLink} Id {str(res)}"
             return update
 
     def edit(self, j, newTitle):
@@ -370,6 +370,7 @@ class Content:
 
     def editl(self, j, newLink):
         update = self.do_edit(j, newLink=newLink)
+        return update
 
     def updatePostsCache(self, socialNetwork):
         service = socialNetwork[0]
@@ -559,7 +560,7 @@ class Content:
         j = 0
         linksTxt = ""
         links = soup.find_all(["a", "iframe"])
-        for link in soup.find_all(["a", "iframe"]):
+        for link in links:
             theLink = ""
             if len(link.contents) > 0:
                 if not isinstance(link.contents[0], Tag):
@@ -580,8 +581,8 @@ class Content:
             if (linksToAvoid == "") or (not re.search(linksToAvoid, theLink)):
                 if theLink:
                     link.append(" [" + str(j) + "]")
-                    linksTxt = linksTxt + "[" + str(j) + "] " + link.contents[0] + "\n"
-                    linksTxt = linksTxt + "    " + theLink + "\n"
+                    linksTxt = f"{linksTxt} [{str(j)}] {link.contents[0]}\n"
+                    linksTxt = f"{linksTxt}     {theLink}\n"
                     j = j + 1
 
         if linksTxt != "":
@@ -616,8 +617,6 @@ class Content:
 
     def getImages(self, i):
         posts = self.getPosts()
-        theTitle = None
-        theLink = None
         res = None
         if i < len(posts):
             post = posts[i]
@@ -656,17 +655,26 @@ class Content:
                 else:
                     title = iimg[1]
                 if title[-1] in string.punctuation:
-                    text = '{}\n<p><h4>{}</h4></p><p><a href="{}"><img class="alignnone size-full wp-image-3306" src="{}" alt="{} {}" width="776" height="1035" /></a></p>'.format(
-                        text, description, url, iimg[0], title, description
-                    )
+                    text = '{}\n<p><h4>{}</h4></p><p><a href="{}">' \
+                           '<img class="alignnone size-full ' \
+                           'wp-image-3306" src="{}" alt="{} {}" ' \
+                           'width="776" height="1035" /></a></p>'.format( 
+                                   text, description, url, iimg[0], 
+                                   title, description)
                 else:
-                    text = '{}\n<p><h4>{}</h4></p><p><a href="{}"><img class="alignnone size-full wp-image-3306" src="{}" alt="{}. {}" width="776" height="1035" /></a></p>'.format(
-                        text, description, url, iimg[0], title, description
+                    text = '{}\n<p><h4>{}</h4></p><p><a href="{}">'\
+                           '<img class="alignnone size-full ' \
+                           'wp-image-3306" src="{}" alt="{}. {}"' \
+                           'width="776" height="1035" /></a></p>'.format( 
+                                   text, description, url, iimg[0], 
+                                   title, description
                     )
             else:
                 title = iimg[1]
-                text = '{}\n<p><a href="{}"><img class="alignnone size-full wp-image-3306" src="{}" alt="{} {}" width="776" height="1035" /></a></p>'.format(
-                    text, url, iimg[0], title, description
+                text = '{}\n<p><a href="{}"><img class="alignnone ' \
+                        'size-full wp-image-3306" src="{}" alt="{} {}"' \ 
+                        'width="776" height="1035" /></a></p>'.format( 
+                        text, url, iimg[0], title, description
                 )
         return text
 
