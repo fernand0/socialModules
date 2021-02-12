@@ -28,3 +28,4 @@ gitterpy
 slack_sdk
 Pillow
 readability-lxml
+pre-commit

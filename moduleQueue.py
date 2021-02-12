@@ -1,10 +1,9 @@
 # This module provides infrastructure for managing content in different
 # queues: local cache, buffer, Gmail, ...
 
-import configparser
-import os
 import logging
 import re
+import urllib.parse
 
 
 class Queue:
@@ -28,7 +27,7 @@ class Queue:
         return len(self.getPosts())
 
     def reorderTitle(self, oldTitle):
-        p = re.compile("\w")
+        p = re.compile(r"\w")
         newTitle = ""
         for word in oldTitle.split():
             if not p.search(word):
@@ -53,7 +52,18 @@ class Queue:
         else:
             theTitle = None
             theLink = None
-        return (theTitle, theLink, None, None, None, None, None, None, None, None)
+        return (
+            theTitle,
+            theLink,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
 
     def obtainPostData(self, i, debug=False):
         logging.info("Service %s" % self.service)
@@ -145,39 +155,39 @@ class Queue:
         # Moving posts, we identify the profile by the first letter. We can use
         # several letters and if we put a '*' we'll move the posts in all the
         # social networks
-        logging.info("To move %s to %s" % (toMove, toWhere))
+        # logging.info("To move %s to %s" % (toMove, toWhere))
 
-        i = 0
-        profMov = ""
+        # i = 0
+        # profMov = ""
         return args
-        while toMove[i].isalpha():
-            profMov = profMov + toMove[i]
-            i = i + 1
+        # while toMove[i].isalpha():
+        #     profMov = profMov + toMove[i]
+        #     i = i + 1
 
-        profiles = cache["profiles"]
-        for profile in profiles:
-            logging.info("Social Network %s" % profile)
-            logging.info("profMov %s", profMov)
-            if "socialNetwork" in profile:
-                logging.info("socialNetwork %s", profile["socialNetwork"])
+        # profiles = cache["profiles"]
+        # for profile in profiles:
+        #     logging.info("Social Network %s" % profile)
+        #     logging.info("profMov %s", profMov)
+        #     if "socialNetwork" in profile:
+        #         logging.info("socialNetwork %s", profile["socialNetwork"])
 
-                serviceName = profile["socialNetwork"][0].capitalize()
-                nick = profile["socialNetwork"][1]
-                if (serviceName[0] in profMov) or toMove[0] == "*":
-                    logging.info("to Move %s to %s" % (toMove, toWhere))
-                    j = int(toMove[-1])
-                    k = int(toWhere[-1])
-                    postI = posts[serviceName]["pending"][i]
-                    postJ = posts[serviceName]["pending"][j]
-                    posts[serviceName]["pending"][i] = postJ
-                    posts[serviceName]["pending"][j] = postI
-                    updatePostsCache(profile["socialNetwork"])
+        #         serviceName = profile["socialNetwork"][0].capitalize()
+        #         nick = profile["socialNetwork"][1]
+        #         if (serviceName[0] in profMov) or toMove[0] == "*":
+        #             logging.info("to Move %s to %s" % (toMove, toWhere))
+        #             j = int(toMove[-1])
+        #             k = int(toWhere[-1])
+        #             postI = posts[serviceName]["pending"][i]
+        #             postJ = posts[serviceName]["pending"][j]
+        #             posts[serviceName]["pending"][i] = postJ
+        #             posts[serviceName]["pending"][j] = postI
+        #             updatePostsCache(profile["socialNetwork"])
 
-        return (
-            posts[serviceName]["pending"][i][0]
-            + " "
-            + posts[serviceName]["pending"][j][0]
-        )
+        # return (
+        #     posts[serviceName]["pending"][i][0]
+        #     + " "
+        #     + posts[serviceName]["pending"][j][0]
+        # )
 
     def copyPost(self, api, log, profiles, toCopy, toWhere):
         logging.info(toCopy + " " + toWhere)
@@ -211,5 +221,7 @@ class Queue:
                     serviceName = profiles[j].formatted_service
                     if serviceName[0] in profWhe:
                         profiles[j].updates.new(
-                            urllib.parse.quote(update.text + " " + link).encode("utf-8")
+                            urllib.parse.quote(
+                                update.text + " " + link
+                            ).encode("utf-8")
                         )
