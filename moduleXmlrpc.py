@@ -13,11 +13,13 @@ from bs4 import BeautifulSoup
 from bs4 import Tag
 from pdfrw import PdfReader
 import moduleCache
-# https://github.com/fernand0/scripts/blob/master/moduleCache.py
+# https://github.com/fernand0/socialMeodules/blob/master/moduleCache.py
+from moduleContent import *
+# https://github.com/fernand0/socialMeodules/blob/master/moduleContent.py
 
 from configMod import *
 
-class moduleXmlrpc():
+class moduleXmlrpc(Content):
 
     def __init__(self):
          self.url = ""
