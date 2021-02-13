@@ -51,6 +51,7 @@ class Content:
             # Deprecated
             self.user = account[1][1]
 
+        logging.debug(f"Service: {self.service}")
         try:
             config = configparser.RawConfigParser()
             config.read(f"{CONFIGDIR}/.rss{self.service}")
@@ -95,7 +96,7 @@ class Content:
 
         logging.info(f"  Setting posts in {self.service} ({identifier})")
 
-        if hasattr(self, "getPostsType"):
+        if hasattr(self, "getPostsType") and self.getPostsType():
             typePosts = self.getPostsType()
             if typePosts == "cache":
                 cmd = getattr(self, "setApiCache")
