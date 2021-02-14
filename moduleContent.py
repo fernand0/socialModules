@@ -75,6 +75,12 @@ class Content:
         else:
             return ""
 
+    def getUser(self):
+        if hasattr(self, "user"):
+            return self.user
+        else:
+            return ""
+
     def getNick(self):
         if hasattr(self, "nick"):
             return self.nick
@@ -83,8 +89,11 @@ class Content:
 
     def getAttribute(self, post, selector):
         result = ""
-        if selector in post:
+        try:
             result = post[selector]
+        except:
+            result = ""
+
         return result
 
     def setPosts(self):
@@ -333,8 +342,8 @@ class Content:
 
     def delete(self, j):
         logging.debug(f"Deleting Pos: {j}")
-        idPost = self.getId(self.getPost(j))
-        result = self.deletepostId(idPost)
+        idPost = self.getPostId(self.getPost(j))
+        result = self.deletePostId(idPost)
         return result
 
     def processReply(self, reply):

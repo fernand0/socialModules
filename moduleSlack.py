@@ -21,7 +21,9 @@ from moduleQueue import *
 class moduleSlack(Content, Queue):
     def __init__(self):
         super().__init__()
+        self.slack_token = None
         self.user_slack_token = None
+        self.channel = None
 
     def getKeys(self, config):
         slack_token = config.get(self.service, "oauth-token")
@@ -33,6 +35,14 @@ class moduleSlack(Content, Queue):
         self.slack_token = keys[0]
         self.user_slack_token = keys[1]
         return client
+
+    def setChannel(self, channel="links"):
+        # setPage in Facebook
+        theChannel = self.getChanId(channel)
+        self.channel = theChannel
+
+    def getChannel(self):
+        return self.channel
 
     # def setClient(self, user=None):
     #    # https://api.slack.com/authentication/basics
@@ -118,9 +128,9 @@ class moduleSlack(Content, Queue):
     # def getSlackClient(self):
     #    return self.sc
 
-    def setApiPosts(self, channel="links"):
+    def setApiPosts(self):
         posts = []
-        theChannel = self.getChanId(channel)
+        theChannel = self.getChannel()
         self.getClient().token = self.slack_token
         data = {"count": 1000, "channel": theChannel}
         history = self.getClient().api_call("conversations.history", data=data)
@@ -152,17 +162,56 @@ class moduleSlack(Content, Queue):
     #     logging.info(" Set posts")
 
     def processReply(self, reply):
-        return self.getAttribute(reply, "ok")
+        return self.getAttribute(reply, "ts")
 
     def publishApiPost(self, postData):
         post, link, comment, plus = postData
-        theChan = self.getChanId(chan)
-        logging.info(f"Publishing {msg} in {chan}")
+        chan = self.getChannel()
+        # logging.info(f"Publishing {post} in {chan}")
         self.getClient().token = self.user_slack_token
-        data = {"channel": theChan, "text": f"{msg} {link}"}
+        data = {"channel": chan, "text": f"{post} {link}"}
         result = self.getClient().api_call("chat.postMessage", data=data)  # ,
         self.getClient().token = self.slack_token
         return result
+
+    def deleteApiPosts(self, idPost):
+        # theChannel or the name of the channel?
+        theChan = self.getChannel()
+
+        result = None
+
+        self.getClient().token = self.user_slack_token
+        data = {"channel": theChan, "ts": idPost}
+        result = self.getClient().api_call(
+            "chat.delete", data=data
+        )  # , channel=theChannel, ts=idPost)
+
+        return result
+
+    # def deletePost(self, idPost, chan):
+    #     # theChannel or the name of the channel?
+    #     theChan = self.getChanId(chan)
+    #     logging.info("Deleting id %s from %s" % (idPost, theChan))
+
+    #     result = None
+
+    #     try:
+    #         self.getClient().token = self.user_slack_token
+    #         data = {"channel": theChan, "ts": idPost}
+    #         result = self.getClient().api_call(
+    #             "chat.delete", data=data
+    #         )  # , channel=theChannel, ts=idPost)
+    #     except:
+    #         logging.info(
+    #             self.report("Slack", "Error deleting", "", sys.exc_info())
+    #         )
+
+    #     logging.debug(result)
+    #     return result
+
+    def getPostId(self, post):
+        idPost = self.getAttribute(post, "ts")
+        return idPost
 
     def getPostTitle(self, post):
         if ("attachments" in post) and ("title" in post["attachments"][0]):
@@ -183,23 +232,25 @@ class moduleSlack(Content, Queue):
         else:
             return "No title"
 
+    def getPostUrl(self, post):
+        return (
+            f"{self.getUser()}archives/"
+            f"{self.getChannel()}/p{self.getPostId(post)}"
+        )
+
     def getPostLink(self, post):
         if "attachments" in post:
-            return post["attachments"][0]["original_url"]
+            link = post["attachments"][0]["original_url"]
         else:
             text = post["text"]
             if text.startswith("<") and text.count("<") == 1:
                 # The link is the only text
-                url = post["text"][1:-1]
+                link = post["text"][1:-1]
             else:
                 # Some people include URLs in the title of the page
                 pos = text.rfind("<")
-                url = text[pos + 1 : -1]
-            return url
-
-    def getPostId(self, post):
-        idPost = self.getAttribute(post, "ts")
-        return idPost
+                link = text[pos + 1 : -1]
+        return link
 
     def publish(self, j):
         logging.info("Publishing %d" % j)
@@ -242,48 +293,18 @@ class moduleSlack(Content, Queue):
         logging.info("Update before return %s" % update)
         return update
 
-    def getPstId(self, post):
-        idPost = -1
-        if hasattr(self, "ts"):
-            idPost = post["ts"]
-        return idPost
-
-    def setKeys(self, keys):
-        self.keys = keys
-
-    def delete(self, j, theChannel=None):
-        logging.info("Deleting id %s" % j)
-        if not theChannel:
-            theChannel = self.getChanId("links")
-        idPost = self.getId(j)
-        # self.sc.token = self.user_slack_token
-        logging.info("Deleting id %s" % idPost)
-        data = {"channel": theChannel, "ts": idPost}
-        result = self.getClient().api_call("chat.delete", data=data)
-        # self.sc.token = self.slack_token
-        logging.info(result)
-        return result["ok"]
-
-    def deletePost(self, idPost, chan):
-        # theChannel or the name of the channel?
-        theChan = self.getChanId(chan)
-        logging.info("Deleting id %s from %s" % (idPost, theChan))
-
-        result = None
-
-        try:
-            self.getClient().token = self.user_slack_token
-            data = {"channel": theChan, "ts": idPost}
-            result = self.getClient().api_call(
-                "chat.delete", data=data
-            )  # , channel=theChannel, ts=idPost)
-        except:
-            logging.info(
-                self.report("Slack", "Error deleting", "", sys.exc_info())
-            )
-
-        logging.debug(result)
-        return result
+    # def delete(self, j, theChannel=None):
+    #     logging.info("Deleting id %s" % j)
+    #     if not theChannel:
+    #         theChannel = self.getChanId("links")
+    #     idPost = self.getId(j)
+    #     # self.sc.token = self.user_slack_token
+    #     logging.info("Deleting id %s" % idPost)
+    #     data = {"channel": theChannel, "ts": idPost}
+    #     result = self.getClient().api_call("chat.delete", data=data)
+    #     # self.sc.token = self.slack_token
+    #     logging.info(result)
+    #     return result["ok"]
 
     def getChanId(self, name):
         logging.debug("getChanId %s" % self.service)
@@ -312,8 +333,9 @@ class moduleSlack(Content, Queue):
         ) = (None, None, None, None, None, None, None, None, None, None)
 
         if i < len(self.getPosts()):
-            theTitle = self.getTitle[0]
-            theLink = self.getLink[1]
+            post = self.getPost(i)
+            theTitle = self.getPostTitle(post)
+            theLink = self.getPostLinkl(post)
 
             theLinks = None
             content = None
@@ -339,6 +361,7 @@ class moduleSlack(Content, Queue):
         )
 
     def obtainPostData(self, i, debug=False):
+        # This does not belong here
         if not self.posts:
             self.setPosts()
 
@@ -450,24 +473,24 @@ class moduleSlack(Content, Queue):
             comment,
         )
 
-    def publishPostt(self, msg, link, chan="links"):
-        theChan = self.getChanId(chan)
-        logging.info(f"Publishing {msg} in {chan}")
-        try:
-            self.getClient().token = self.user_slack_token
-            data = {"channel": theChan, "text": f"{msg} {link}"}
-            result = self.getClient().api_call(
-                "chat.postMessage", data=data
-            )  # ,
-            self.getClient().token = self.slack_token
-        except:
-            logging.info(self.report("Slack", "", "", sys.exc_info()))
-            result = self.getClient().chat_postMessage(
-                channel=theChan, text=f"{msg} {link}"
-            )
-        logging.info(result["ok"])
-        logging.info("End publishing %s" % msg)
-        return result
+    # def publishPost(self, msg, link, chan="links"):
+    #     theChan = self.getChanId(chan)
+    #     logging.info(f"Publishing {msg} in {chan}")
+    #     try:
+    #         self.getClient().token = self.user_slack_token
+    #         data = {"channel": theChan, "text": f"{msg} {link}"}
+    #         result = self.getClient().api_call(
+    #             "chat.postMessage", data=data
+    #         )  # ,
+    #         self.getClient().token = self.slack_token
+    #     except:
+    #         logging.info(self.report("Slack", "", "", sys.exc_info()))
+    #         result = self.getClient().chat_postMessage(
+    #             channel=theChan, text=f"{msg} {link}"
+    #         )
+    #     logging.info(result["ok"])
+    #     logging.info("End publishing %s" % msg)
+    #     return result
 
     def getBots(self, channel="tavern-of-the-bots"):
         if not self.posts:
@@ -530,6 +553,8 @@ def main():
         print(site.getSocialNetworks())
     except:
         url = "http://fernand0-errbot.slack.com/"
+    site.setClient(url)
+    site.setChannel("links")
 
     # site.setSocialNetworks(socialNetworks)
     # print("---")
@@ -537,67 +562,53 @@ def main():
     # print("---")
     # print(site.getSocialNetworks())
 
-    print("Testing posting and deleting")
+    # print("Testing posting and deleting")
     res = site.publishPost(
         "Prueba borrando 7", "http://elmundoesimperfecto.com/", ""
     )
-    print(res)
-    sys.exit()
-    # idPost = tw.getUrlId(res)
+    print("res", res)
+    # idPost = res
     # print(idPost)
-    # input('Delete? ')
-    # tw.deletePostId(idPost)
+    # input("Delete? ")
+    # site.deletePostId(idPost)
     # sys.exit()
     print("Testing posts")
-    tw.setPostsType("posts")
-    tw.setPosts()
+    site.setPostsType("posts")
+    site.setPosts()
 
     print("Testing title and link")
 
-    for i, post in enumerate(tw.getPosts()):
-        title = tw.getPostTitle(post)
-        link = tw.getPostLink(post)
-        url = tw.getPostUrl(post)
-        theId = tw.getPostId(post)
+    for i, post in enumerate(site.getPosts()):
+        title = site.getPostTitle(post)
+        link = site.getPostLink(post)
+        url = site.getPostUrl(post)
+        theId = site.getPostId(post)
         print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
 
-    print("Favs")
-
-    tw.setPostsType("favs")
-    tw.setPosts()
-
-    for post in tw.getPosts():
-        title = tw.getPostTitle(post)
-        link = tw.getPostLink(post)
-        url = tw.getPostUrl(post)
-        print("Title: {}\nLink: {}\nUrl:{}\n".format(title, link, url))
-    print(len(tw.getPosts()))
-
-    sys.exit()
-
     i = 0
-    post = tw.getPost(i)
-    title = tw.getPostTitle(post)
-    link = tw.getPostLink(post)
-    url = tw.getPostUrl(post)
+    post = site.getPost(i)
+    title = site.getPostTitle(post)
+    link = site.getPostLink(post)
+    url = site.getPostUrl(post)
     print(post)
     print("Title: {}\nTuit: {}\nLink: {}\n".format(title, link, url))
-    tw.deletePost(post)
+    input("Delete?")
+    site.delete(i)
     sys.exit()
 
-    for i, post in enumerate(tw.getPosts()):
-        title = tw.getPostTitle(post)
-        link = tw.getPostLink(post)
-        url = tw.getPostUrl(post)
+    for i, post in enumerate(site.getPosts()):
+        title = site.getPostTitle(post)
+        link = site.getPostLink(post)
+        url = site.getPostUrl(post)
         print("Title: {}\nTuit: {}\nLink: {}\n".format(title, link, url))
         input("Delete?")
-        print("Deleted https://twitter.com/i/status/{}".format(tw.delete(i)))
+        print("Deleted https://twitter.com/i/status/{}".format(site.delete(i)))
 
         time.sleep(5)
 
     sys.exit()
 
-    res = tw.search("url:fernand0")
+    res = site.search("url:fernand0")
 
     for tt in res["statuses"]:
         # print(tt)

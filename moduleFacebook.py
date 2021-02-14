@@ -57,6 +57,9 @@ class moduleFacebook(Content, Queue):
                     # Publishing as me
                     self.page = facebookAC
 
+    def getPage(self, facebookAC="me"):
+        return self.page
+
     def setApiPosts(self):
         if not self.page:
             self.setPage(self.user)
@@ -91,9 +94,10 @@ class moduleFacebook(Content, Queue):
         res = reply
         if reply:
             logging.debug("Res: %s" % reply)
-            if "id" in reply:
-                res = "https://www.facebook.com/{}".format(reply["id"])
-                logging.info("     Link: {}".format(res))
+            res = "https://www.facebook.com/{}".format(
+                self.getAttribute(reply, "id")
+            )
+            logging.info("     Link: {}".format(res))
         return res
 
     def publishApiPost(self, postData):
@@ -164,15 +168,16 @@ def main():
 
     fc.setClient("me")
     fc.setPage("Enlaces de fernand0")
-    # print("Testing posting and deleting")
-    # res = fc.publishPost("Prueba borrando 7",
-    # "http://elmundoesimperfecto.com/", '')
-    # print("Res",res)
-    # idPost = fc.getUrlId(res)
-    # print("id",idPost)
-    # input('Delete? ')
-    # fc.deletePostId(idPost)
-    # sys.exit()
+    print("Testing posting and deleting")
+    res = fc.publishPost(
+        "Prueba borrando 7", "http://elmundoesimperfecto.com/", ""
+    )
+    print("Res", res)
+    idPost = fc.getUrlId(res)
+    print("id", idPost)
+    input("Delete? ")
+    fc.deletePostId(idPost)
+    sys.exit()
     fc.setPostsType("posts")
     fc.setPosts()
     for i, post in enumerate(fc.getPosts()):
