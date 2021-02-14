@@ -16,9 +16,7 @@
 #
 
 import moduleRss
-import moduleXmlrpc
 import moduleSocial
-import moduleCache
 import moduleSlack
 import moduleForum
 import moduleGmail
@@ -30,36 +28,18 @@ import moduleMastodon
 import moduleTwitter
 
 import configparser
-import os
 import logging
-import random
-import threading
-import feedparser
-import facebook
-from twitter import *
-from medium import Client
-from html.parser import HTMLParser
-import telepot
-import re
 import sys
 import time
-import datetime
-import pickle
-from bs4 import BeautifulSoup
-from bs4 import NavigableString
-from bs4 import Tag
-from bs4 import Doctype
-import importlib
-import urllib.parse
 
-# sudo pip install buffpy version does not work
-# Better use:
-# git clone https://github.com/vtemian/buffpy.git
-# cd buffpy
-# sudo python setup.py install
-from buffpy.api import API
-from buffpy.managers.profiles import Profiles
-from buffpy.managers.updates import Update
+# # sudo pip install buffpy version does not work
+# # Better use:
+# # git clone https://github.com/vtemian/buffpy.git
+# # cd buffpy
+# # sudo python setup.py install
+# from buffpy.api import API
+# from buffpy.managers.profiles import Profiles
+# from buffpy.managers.updates import Update
 
 from configMod import *
 
@@ -92,7 +72,7 @@ def readConfig(checkBlog):
             elif url.find("slack") > 0:
                 logging.info(" Blog Slack: {}".format(url))
                 blog = moduleSlack.moduleSlack()
-                blog.setSlackClient(os.path.expanduser(CONFIGDIR + "/.rssSlack"))
+                blog.setClient(url)
             elif url.find("imgur") > 0:
                 logging.info(" Blog ImgUr: {}".format(url))
                 blog = moduleImgur.moduleImgur()
@@ -196,7 +176,6 @@ def updateCaches(blog, socialNetworks, simmulate):
 
         nick = socialNetworks[profile]
         socialNetwork = (profile, nick)
-        nameProfile = profile + "_" + nick
         msgLog = "  Service: {} Nick: {}".format(profile, nick)
         logMsg(msgLog, 1, 1)
 
@@ -216,7 +195,7 @@ def updateCaches(blog, socialNetworks, simmulate):
                 num = 0
         # if lenMax <= num:
         #    #num = lenMax
-        ##else:
+        # #else:
         #    num = lenMax
         lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
 
@@ -253,12 +232,13 @@ def updateCaches(blog, socialNetworks, simmulate):
 
         logMsg(msgLog, 1, 1)
 
-        hours = blog.getTime()
+        # hours = blog.getTime()
 
         # msgLog = "    Profile {}".format(profile.capitalize())
         # logMsg(msgLog, 2, 0)
 
-        # msgLog = "bufferMax - lenMax = num %d %d %d"% (bufferMax, lenMax, num)
+        # msgLog = "bufferMax - lenMax =
+        #           num %d %d %d"% (bufferMax, lenMax, num)
         # logMsg(msgLog, 2, 0)
 
         listPosts = []
@@ -279,7 +259,10 @@ def updateCaches(blog, socialNetworks, simmulate):
                 print("      Would schedule ...")
                 logging.info("      Would schedule ...")
                 [print("       - {}".format(post[0])) for post in listPosts]
-                [logging.info("     - {}".format(post[0])) for post in listPosts]
+                [
+                    logging.info("     - {}".format(post[0]))
+                    for post in listPosts
+                ]
 
             if simmulate:
                 print("Simmulation {}".format(str(listPosts)))
@@ -306,7 +289,10 @@ def updateCaches(blog, socialNetworks, simmulate):
                     if isinstance(lastLink, list):
                         # print(lastLink)
                         link = "\n".join(
-                            ["{}".format(post[1]) for post in reversed(listPosts)]
+                            [
+                                "{}".format(post[1])
+                                for post in reversed(listPosts)
+                            ]
                         )
                         link = link + "\n" + "\n".join(lastLink)
 
@@ -353,7 +339,6 @@ def prepareUpdatesBlog(blog, socialNetworks, simmulate, nowait, timeSlots):
     # logMsg(msgLog, 1, 1)
 
     delayedBlogs = []
-    delayedPosts = []
 
     for profile in socialNetworks:
         nick = socialNetworks[profile]
@@ -373,7 +358,13 @@ def prepareUpdatesBlog(blog, socialNetworks, simmulate, nowait, timeSlots):
             ):
 
                 delayedBlogs.append(
-                    (blog, socialNetwork, int(blog.getNumPosts()), nowait, timeSlots)
+                    (
+                        blog,
+                        socialNetwork,
+                        int(blog.getNumPosts()),
+                        nowait,
+                        timeSlots,
+                    )
                 )
             else:
                 delayedBlogs.append(
@@ -404,7 +395,8 @@ def startPublishing(delayedBlogs):
                 res = future.result()
                 if res:
                     messages.append(
-                        f"  Published in: {dataBlog[1][0]} {dataBlog[1][1]}:\n   {res}"
+                        f"  Published in: {dataBlog[1][0]} {dataBlog[1][1]}:"
+                        f"\n   {res}"
                     )
                     if not dataBlog[0].getProgram():
                         posL = res.find("http")
@@ -417,7 +409,9 @@ def startPublishing(delayedBlogs):
                                 )
 
             except Exception as exc:
-                print("{} generated an exception: {}".format(str(dataBlog), exc))
+                print(
+                    "{} generated an exception: {}".format(str(dataBlog), exc)
+                )
 
     msgLog = " Finished delayed at %s" % time.asctime()
     logMsg(msgLog, 1, 2)
@@ -438,8 +432,6 @@ def main():
 
     msgLog = "Launched at %s" % time.asctime()
     logMsg(msgLog, 1, 2)
-
-    isDebug = False
 
     import argparse
 
@@ -489,7 +481,6 @@ def main():
     config.read(CONFIGDIR + "/.rssBlogs")
 
     blogs = []
-    delayedPosts = []
     delayedBlogs = []
 
     blogs = readConfig(checkBlog)
