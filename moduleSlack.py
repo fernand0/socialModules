@@ -151,6 +151,19 @@ class moduleSlack(Content, Queue):
 
     #     logging.info(" Set posts")
 
+    def processReply(self, reply):
+        return self.getAttribute(reply, "ok")
+
+    def publishApiPost(self, postData):
+        post, link, comment, plus = postData
+        theChan = self.getChanId(chan)
+        logging.info(f"Publishing {msg} in {chan}")
+        self.getClient().token = self.user_slack_token
+        data = {"channel": theChan, "text": f"{msg} {link}"}
+        result = self.getClient().api_call("chat.postMessage", data=data)  # ,
+        self.getClient().token = self.slack_token
+        return result
+
     def getPostTitle(self, post):
         if ("attachments" in post) and ("title" in post["attachments"][0]):
             return post["attachments"][0]["title"]
@@ -437,7 +450,7 @@ class moduleSlack(Content, Queue):
             comment,
         )
 
-    def publishPost(self, msg, link, chan="links"):
+    def publishPostt(self, msg, link, chan="links"):
         theChan = self.getChanId(chan)
         logging.info(f"Publishing {msg} in {chan}")
         try:
@@ -504,7 +517,7 @@ def main():
     import moduleSlack
 
     site = moduleSlack.moduleSlack()
-    CHANNEL = "tavern-of-the-bots"
+    # CHANNEL = "tavern-of-the-bots"
 
     try:
         # My own config settings
@@ -524,6 +537,80 @@ def main():
     # print("---")
     # print(site.getSocialNetworks())
 
+    print("Testing posting and deleting")
+    res = site.publishPost(
+        "Prueba borrando 7", "http://elmundoesimperfecto.com/", ""
+    )
+    print(res)
+    sys.exit()
+    # idPost = tw.getUrlId(res)
+    # print(idPost)
+    # input('Delete? ')
+    # tw.deletePostId(idPost)
+    # sys.exit()
+    print("Testing posts")
+    tw.setPostsType("posts")
+    tw.setPosts()
+
+    print("Testing title and link")
+
+    for i, post in enumerate(tw.getPosts()):
+        title = tw.getPostTitle(post)
+        link = tw.getPostLink(post)
+        url = tw.getPostUrl(post)
+        theId = tw.getPostId(post)
+        print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
+
+    print("Favs")
+
+    tw.setPostsType("favs")
+    tw.setPosts()
+
+    for post in tw.getPosts():
+        title = tw.getPostTitle(post)
+        link = tw.getPostLink(post)
+        url = tw.getPostUrl(post)
+        print("Title: {}\nLink: {}\nUrl:{}\n".format(title, link, url))
+    print(len(tw.getPosts()))
+
+    sys.exit()
+
+    i = 0
+    post = tw.getPost(i)
+    title = tw.getPostTitle(post)
+    link = tw.getPostLink(post)
+    url = tw.getPostUrl(post)
+    print(post)
+    print("Title: {}\nTuit: {}\nLink: {}\n".format(title, link, url))
+    tw.deletePost(post)
+    sys.exit()
+
+    for i, post in enumerate(tw.getPosts()):
+        title = tw.getPostTitle(post)
+        link = tw.getPostLink(post)
+        url = tw.getPostUrl(post)
+        print("Title: {}\nTuit: {}\nLink: {}\n".format(title, link, url))
+        input("Delete?")
+        print("Deleted https://twitter.com/i/status/{}".format(tw.delete(i)))
+
+        time.sleep(5)
+
+    sys.exit()
+
+    res = tw.search("url:fernand0")
+
+    for tt in res["statuses"]:
+        # print(tt)
+        print(
+            "- @{0} {1} https://twitter.com/{0}/status/{2}".format(
+                tt["user"]["name"], tt["text"], tt["id_str"]
+            )
+        )
+    sys.exit()
+
+
+if __name__ == "__main__":
+    main()
     print("Set Client")
     site.setClient("fernand0-errbot")
     print("sc", site.getClient())
