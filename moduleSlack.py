@@ -504,7 +504,6 @@ class moduleSlack(Content, Queue):
             oldChan = self.getChannel()
             self.setChannel(channel)
             self.setPosts()
-            self.channel = oldChan
         msgs = {}
         for msg in self.getPosts():
             if msg["text"].find("Hello") >= 0:
@@ -523,6 +522,8 @@ class moduleSlack(Content, Queue):
         for name in msgs:
             a, b, c = msgs[name]
             theBots.append("{2} [{1}] {0} {3}".format(a, b, c, name))
+
+        self.channel = oldChan
         return theBots
 
     def search(self, channel, text):
