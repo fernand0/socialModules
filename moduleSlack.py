@@ -498,7 +498,6 @@ class moduleSlack(Content, Queue):
 
     def getBots(self, channel="tavern-of-the-bots"):
         if not self.posts:
-<<<<<<< HEAD
             oldChan = self.getChannel()
             self.setChannel(channel)
             self.setPosts()
