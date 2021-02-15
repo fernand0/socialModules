@@ -162,7 +162,11 @@ class moduleSlack(Content, Queue):
     #     logging.info(" Set posts")
 
     def processReply(self, reply):
-        return self.getAttribute(reply, "ts")
+        if self.getAttribute(reply, "ok"):
+            res = self.getAttribute(reply, "ts")
+        else:
+            res = "Fail!"
+        return res
 
     def publishApiPost(self, postData):
         post, link, comment, plus = postData
@@ -494,7 +498,10 @@ class moduleSlack(Content, Queue):
 
     def getBots(self, channel="tavern-of-the-bots"):
         if not self.posts:
-            self.setPosts(channel)
+            oldChan = self.getChannel()
+            self.setChannel(channel)
+            self.setPosts()
+            self.channel = oldChan
         msgs = {}
         for msg in self.getPosts():
             if msg["text"].find("Hello") >= 0:

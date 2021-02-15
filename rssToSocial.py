@@ -73,6 +73,7 @@ def readConfig(checkBlog):
                 logging.info(" Blog Slack: {}".format(url))
                 blog = moduleSlack.moduleSlack()
                 blog.setClient(url)
+                blog.setChannel("links")
             elif url.find("imgur") > 0:
                 logging.info(" Blog ImgUr: {}".format(url))
                 blog = moduleImgur.moduleImgur()

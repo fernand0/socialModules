@@ -320,7 +320,7 @@ class Content:
             return self.report(self.service, post, link, sys.exc_info())
 
     def deletePostId(self, idPost):
-        logging.info("Deleting: {}".format(str(idPost)))
+        logging.debug(f"Deleting: {idPost}")
         typePosts = self.getPostsType()
         if typePosts:
             if typePosts == "cache":
@@ -337,7 +337,8 @@ class Content:
     def deletePost(self, post):
         logging.debug(f"Deleting post: {post}")
         idPost = self.getPostId(post)
-        result = self.deletepostId(idPost)
+        logging.debug(f"Deleting post: {idPost}")
+        result = self.deletePostId(idPost)
         return result
 
     def delete(self, j):
