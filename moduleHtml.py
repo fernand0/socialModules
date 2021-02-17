@@ -293,7 +293,7 @@ class moduleHtml(Content,Queue):
 
     def click(self, url): 
         headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36' }
-        print("url",url)
+        logging.debug("url",url)
         response = requests.get(url,headers=headers) 
         if response.status_code != 200: 
             logging.info(response.text)

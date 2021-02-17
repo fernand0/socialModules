@@ -153,6 +153,7 @@ class moduleCache(Content,Queue):
         link = ''
         if listPosts:
             posts = self.getPosts()
+            logging.info(f"a Posts: {posts} listP: {listPosts}")
             for pp in listPosts:
                 posts.append(pp)
             #for i, pp in enumerate(posts):
