@@ -129,6 +129,9 @@ class moduleSlack(Content, Queue):
         return self.sc
 
     def setApiPosts(self):
+        if not self.channel:
+            # Can we improve this in mosuleSlack and moduleFacebook?
+            self.setChannel('links')
         posts = []
         theChannel = self.getChannel()
         self.getClient().token = self.slack_token
@@ -213,6 +216,7 @@ class moduleSlack(Content, Queue):
     #     logging.debug(result)
     #     return result
 
+
     def getPostId(self, post):
         idPost = self.getAttribute(post, "ts")
         return idPost
@@ -265,6 +269,11 @@ class moduleSlack(Content, Queue):
         url = self.getLink(j)
         logging.info("Title: %s" % str(title))
         logging.info("Url: %s" % str(url))
+        logging.info("getProgram: %s" % str(self.getProgram()))
+        logging.info("getSN %s" % str(self.getSocialNetworks()))
+        logging.info("self: %s" % str(self))
+
+        return str(self.getProgram())
 
         if self.getProgram():
             logging.info("getProgram")
@@ -289,7 +298,8 @@ class moduleSlack(Content, Queue):
                     update = update + "\n"
 
         theChannel = "links"  # self.getChanId("links")
-        res = self.deletePost(self.getId(j), theChannel)
+        self.setChannel(theChannel)
+        res = self.deletePostId(self.getId(j))
         logging.info("Res: %s" % str(res))
         update = update + str(res["ok"])
 

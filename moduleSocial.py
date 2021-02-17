@@ -276,10 +276,10 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                 if result == "OK":
                     if blog.getPostAction():
                         logging.info("Postaction: {}".format(str(idPost)))
-                        print("del", blog.deletePostId(idPost))
-                    with open(fileNameNext, "wb") as f:
-                        pickle.dump((tNow, tSleep), f)
-                    if hasattr(blog, "cache") and blog.cache:
+                        logging.info("del",blog.deletePostId(idPost))
+                    with open(fileNameNext,'wb') as f:
+                        pickle.dump((tNow,tSleep), f)
+                    if hasattr(blog, 'cache') and blog.cache:
                         blog.cache[socialNetwork].posts = listP
                         blog.cache[socialNetwork].updatePostsCache()
                     elif hasattr(blog, "nextPosts"):

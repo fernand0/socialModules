@@ -11,6 +11,7 @@ from __future__ import print_function
 from googleapiclient.discovery import build
 from bs4 import BeautifulSoup
 
+from bs4 import BeautifulSoup
 
 import configparser
 import datetime
