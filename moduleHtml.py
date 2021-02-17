@@ -2,17 +2,13 @@
 # using several generic APIs  (XML-RPC, blogger API, Metaweblog API, ...)
 
 import configparser
-import os
 import time
 import urllib
 import requests
-import feedparser
-import pickle
 import logging
 from bs4 import BeautifulSoup
 from bs4 import Tag
 from pdfrw import PdfReader
-import moduleCache
 
 # https://github.com/fernand0/scripts/blob/master/moduleCache.py
 
@@ -214,7 +210,7 @@ class moduleHtml(Content, Queue):
             j = 0
             linksTxt = ""
             links = soup.find_all(["a", "iframe"])
-            for link in soup.find_all(["a", "iframe"]):
+            for link in links:
                 theLink = ""
                 if len(link.contents) > 0:
                     if not isinstance(link.contents[0], Tag):
@@ -232,11 +228,18 @@ class moduleHtml(Content, Queue):
                     else:
                         continue
 
-                if (linksToAvoid == "") or (not re.search(linksToAvoid, theLink)):
+                if (linksToAvoid == "") or (
+                    not re.search(linksToAvoid, theLink)
+                ):
                     if theLink:
                         link.append(" [" + str(j) + "]")
                         linksTxt = (
-                            linksTxt + "[" + str(j) + "] " + link.contents[0] + "\n"
+                            linksTxt
+                            + "["
+                            + str(j)
+                            + "] "
+                            + link.contents[0]
+                            + "\n"
                         )
                         linksTxt = linksTxt + "    " + theLink + "\n"
                         j = j + 1
@@ -396,11 +399,12 @@ if __name__ == "__main__":
         print(time.asctime(blog.datePost(5)))
         blog.obtainPostData(0)
         if blog.getUrl().find("ando") > 0:
-            blog.newPost("Prueba %s" % time.asctime(), "description %s" % "prueba")
+            blog.newPost(
+                "Prueba %s" % time.asctime(), "description %s" % "prueba"
+            )
             print(blog.selectPost())
 
     for blog in blogs:
-        import urllib
 
         urlFile = open(
             DATADIR
@@ -410,7 +414,9 @@ if __name__ == "__main__":
             "r",
         )
         linkLast = urlFile.read().rstrip()  # Last published
-        print(blog.getUrl() + blog.getRssFeed(), blog.getLinkPosition(linkLast))
+        print(
+            blog.getUrl() + blog.getRssFeed(), blog.getLinkPosition(linkLast)
+        )
         print("description ->", blog.getPostsRss().entries[5]["description"])
         for post in posts:
             if "content" in post:
