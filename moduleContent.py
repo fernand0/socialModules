@@ -37,6 +37,8 @@ class Content:
         self.numPosts = 0
         self.user = None
         self.client = None
+        ser = self.__class__.__name__
+        logging.info(f"setting service {ser}")
         self.service = self.__class__.__name__[6:]
         # They start with module
 
@@ -45,8 +47,8 @@ class Content:
 
         if isinstance(account, str):
             self.user = account
-        elif isinstance(account[1], str):
-            self.user = account[1]
+        elif isinstance(account[0], str):
+            self.user = account[0]
         else:
             # Deprecated
             self.user = account[1][1]
@@ -104,12 +106,18 @@ class Content:
             identifier = self.getUrl()
 
         logging.info(f"  Setting posts in {self.service} ({identifier})")
+        val = hasattr(self, "getPostsType")
+        logging.info(f"  Setting posts in {val}")
 
+        typePosts = self.getPostsType()
+        logging.debug(f"setApi{typePosts}")
         if hasattr(self, "getPostsType") and self.getPostsType():
             typePosts = self.getPostsType()
+            logging.debug(f"setApi{typePosts}")
             if typePosts == "cache":
                 cmd = getattr(self, "setApiCache")
             else:
+                logging.debug(f"setApi{typePosts}")
                 cmd = getattr(
                     self, f"setApi{self.getPostsType().capitalize()}"
                 )
@@ -343,7 +351,10 @@ class Content:
 
     def delete(self, j):
         logging.debug(f"Deleting Pos: {j}")
+        post = self.getPost(j)
+        logging.debug(f"Deleting Pos Id: {post}")
         idPost = self.getPostId(self.getPost(j))
+        logging.debug(f"Deleting Pos Id: {idPost}")
         result = self.deletePostId(idPost)
         return result
 

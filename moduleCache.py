@@ -40,8 +40,7 @@ class moduleCache(Content,Queue):
             logging.warning("This is not possible!")
         elif isinstance(param[1], str):
             self.url = param[0]
-            self.service = param[1] 
-            self.nick = param[2]
+            self.nick = param[1]
         else: 
             self.url = param[0]
             self.service = param[1][0] 
@@ -296,6 +295,10 @@ class moduleCache(Content,Queue):
                 # link: https://www.facebook.com/[name]/posts/[second part of id]
         logging.info("Update before return %s"% update)
         return(update) 
+
+    def delete(self, j):
+        # Not sure
+        return self.deleteApi(j)
 
     def deleteApi(self, j):
         post = self.obtainPostData(j)

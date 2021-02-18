@@ -235,7 +235,8 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                 if result == 'OK':
                     if blog.getPostAction(): 
                         logging.info("Postaction: {}".format(str(idPost)))
-                        logging.info("del",blog.deletePostId(idPost))
+                        logging.info("del {}".format(str(
+                            blog.deletePostId(idPost))))
                     with open(fileNameNext,'wb') as f:
                         pickle.dump((tNow,tSleep), f)
                     if hasattr(blog, 'cache') and blog.cache:

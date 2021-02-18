@@ -165,6 +165,7 @@ def getApi(profile, nick):
     # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
     import importlib
     serviceName = profile.capitalize()
+    logging.debug(f"Module {serviceName} nick {nick}")
     mod = importlib.import_module('module' + serviceName) 
     cls = getattr(mod, 'module' + serviceName)
     api = cls()
