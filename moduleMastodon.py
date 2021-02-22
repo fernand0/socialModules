@@ -22,6 +22,9 @@ class moduleMastodon(Content,Queue):
         super().__init__()
 
     def getKeys(self, config):
+        if self.user.startswith('@'):
+            self.user = self.user[1:]
+
         access_token = config[self.user]['access_token']
         return ((access_token, ))
 
