@@ -34,8 +34,8 @@ class moduleImdb(Content,Queue):
         date = time.strftime('%Y-%m-%d')
         if isinstance(init,str): 
             self.url = init 
-        elif isinstance(init[2],str):
-            self.url = init[2].format(date)
+        elif isinstance(init[1],str):
+            self.url = init[1].format(date)
         else:
             self.url = init[1][2].format(date)
         try:

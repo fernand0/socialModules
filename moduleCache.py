@@ -49,6 +49,10 @@ class moduleCache(Content,Queue):
     def getSocialNetwork(self):
         return (self.service, self.nick)
 
+    def setApiDrafts(self):        
+        # Every cache is the same, even the origin are drafts ??
+        return(self.setApiPosts())
+
     def setApiPosts(self):        
         url = self.getUrl()
         service = self.getService()

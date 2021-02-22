@@ -238,6 +238,9 @@ class moduleGmail(Content,Queue):
         posts = self.processPosts(posts, label, mode)
         return posts
 
+    def setApiPosts(self, label=None, mode=''): 
+        return self.setApiMessages(label, mode)
+
     def setApiMessages(self, label=None, mode=''): 
         posts = self.getClient().users().messages().list(userId='me').execute()
         posts = self.processPosts(posts, label, mode)

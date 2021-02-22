@@ -47,6 +47,9 @@ class Content:
 
         if isinstance(account, str):
             self.user = account
+        elif isinstance(account[1], str) and (account[1].find('@') >= 0):
+            # Grrrr
+            self.user = account[1]
         elif isinstance(account[0], str):
             self.user = account[0]
         else:
