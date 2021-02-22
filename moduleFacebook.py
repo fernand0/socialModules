@@ -38,6 +38,9 @@ class moduleFacebook(Content,Queue):
         graph = facebook.GraphAPI(keys[0], version='3.0') 
         return graph 
 
+    def getPage(self):
+        return self.page
+
     def setPage(self, facebookAC='me'):
         perms = ['publish_actions','manage_pages','publish_pages'] 
         pages = self.getClient().get_connections("me", "accounts") 
@@ -62,7 +65,8 @@ class moduleFacebook(Content,Queue):
             self.setPage(self.user)
 
         posts = []
-        postsF = self.page.get_connections(self.pageId, connection_name='posts') 
+        postsF = self.getPage().get_connections(
+                self.pageId, connection_name='posts') 
         if 'data' in postsF: 
             for post in postsF['data']: 
                 postt = self.page.get_connections(post['id'], 
