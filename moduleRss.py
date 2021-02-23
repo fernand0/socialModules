@@ -55,7 +55,8 @@ class moduleRss(Content,Queue):
             urlRss = self.getRssFeed()
         else: 
             urlRss = urllib.parse.urljoin(self.url,self.getRssFeed())
-        logging.debug("Rss: %s" % urlRss)
+        logging.info("Rss: %s" % urlRss)
+        logging.info(f"Rss: {feedparser.parse(urlRss)}")
         self.posts = feedparser.parse(urlRss).entries
  
     def getPostTitle(self, post):
@@ -181,101 +182,106 @@ class moduleRss(Content,Queue):
 
 
 
-def main():
+def main(): 
 
-   import moduleRss
-    
-   if os.path.exists(CONFIGDIR + '/.rssBlogs'):
-       config = configparser.ConfigParser()
-       config.read(CONFIGDIR + '/.rssBlogs') 
-   else:
-       print("no")
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO, 
+            format='%(asctime)s %(message)s')
 
-   print("Configured blogs:")
+    import moduleRss
+     
+    if os.path.exists(CONFIGDIR + '/.rssBlogs'):
+        config = configparser.ConfigParser()
+        config.read(CONFIGDIR + '/.rssBlogs') 
+    else:
+        print("no")
 
-   accounts = ["Blog22", "Blog1", "Blog2", "Blog9"]
-   for acc in accounts:
-       print("Account: {}".format(acc))
-       blog = moduleRss.moduleRss()
-       try:
-           rssFeed = config.get(acc, 'rss')
-           url = config.get(acc, 'url')
-       except:
-           rssFeed = 'http://rss.slashdot.org/Slashdot/slashdotMain'
-           url = 'http://slashdot.org/'
-       blog.setRssFeed(rssFeed)
-       blog.setUrl(url)
-       blog.setPosts()
-       print(len(blog.getPosts()))
-       for i, post in enumerate(blog.getPosts()):
-           print(blog.getPosts()[i])
-           (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content , links, comment) = (blog.obtainPostData(i, False))
-           theId = comment
-           url = firstLink
-           print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
-           print("l",summaryLinks)
-           print("h",summaryHtml)
-       sys.exit()
+    print("Configured blogs:")
 
-   sys.exit()
-   blogs = []
+    accounts = ["Blog9", "Blog22", "Blog1", "Blog2", "Blog9"]
+    for acc in accounts:
+        print("Account: {}".format(acc))
+        blog = moduleRss.moduleRss()
+        try:
+            url = config.get(acc, 'url')
+            blog.setUrl(url)
+            rssFeed = config.get(acc, 'rss')
+        except:
+            rssFeed = 'http://rss.slashdot.org/Slashdot/slashdotMain'
+            url = 'http://slashdot.org/'
+        blog.setClient(urllib.parse.urljoin(url,rssFeed))
+        #blog.setRssFeed(rssFeed)
+        blog.setUrl(url)
+        blog.setPosts()
+        print(len(blog.getPosts()))
+        for i, post in enumerate(blog.getPosts()):
+            print(blog.getPosts()[i])
+            (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content , links, comment) = (blog.obtainPostData(i, False))
+            theId = comment
+            url = firstLink
+            print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
+            print("l",summaryLinks)
+            print("h",summaryHtml)
+        sys.exit()
 
-   for section in config.sections():
-       print(section)
-       blog = moduleRss.moduleRss()
-       url = config.get(section, "url")
-       print("Url: %s"% url)
-       blog.setUrl(url)
-       if 'rss' in config.options(section): 
-           rssFeed = config.get(section, "rss")
-           print(rssFeed) 
-           blog.setRssFeed(rssFeed)
-       optFields = ["linksToAvoid", "time", "buffer"]
-       if ("linksToAvoid" in config.options(section)):
-           blog.setLinksToAvoid(config.get(section, "linksToAvoid"))
-       if ("time" in config.options(section)):
-           blog.setTime(config.get(section, "time"))
-       if ("buffer" in config.options(section)):
-           blog.setBufferapp(config.get(section, "buffer"))
-       if ("cache" in config.options(section)):
-           blog.setProgram(config.get(section, "cache"))
+    sys.exit()
+    blogs = []
 
-       blog.setSocialNetworks(config)
+    for section in config.sections():
+        print(section)
+        blog = moduleRss.moduleRss()
+        url = config.get(section, "url")
+        print("Url: %s"% url)
+        blog.setUrl(url)
+        if 'rss' in config.options(section): 
+            rssFeed = config.get(section, "rss")
+            print(rssFeed) 
+            blog.setRssFeed(rssFeed)
+        optFields = ["linksToAvoid", "time", "buffer"]
+        if ("linksToAvoid" in config.options(section)):
+            blog.setLinksToAvoid(config.get(section, "linksToAvoid"))
+        if ("time" in config.options(section)):
+            blog.setTime(config.get(section, "time"))
+        if ("buffer" in config.options(section)):
+            blog.setBufferapp(config.get(section, "buffer"))
+        if ("cache" in config.options(section)):
+            blog.setProgram(config.get(section, "cache"))
 
-       print(blog.getSocialNetworks())
-       blog.setCache()
+        blog.setSocialNetworks(config)
 
-       blogs.append(blog)
+        print(blog.getSocialNetworks())
+        blog.setCache()
 
-   for blog in blogs:
-       print(blog.getUrl())
-       print(blog.getRssFeed())
-       print(blog.getSocialNetworks())
-       if 'twitterac' in blog.getSocialNetworks():
-           print(blog.getSocialNetworks()['twitterac'])
-       blog.setPosts()
-       if blog.getPosts():
-           for i, post in enumerate(blog.getPosts()):
-               print(blog.getPosts()[i])
-               print(blog.getTitle(i))
-               print(blog.getLink(i))
-               print(blog.getPostTitle(post))
-               print(blog.getPostLink(post))
-       else:
-           print("No posts")
+        blogs.append(blog)
 
-       for service in blog.getSocialNetworks():
-           socialNetwork = (service, blog.getSocialNetworks()[service])
-           
-           linkLast, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
-           print("linkLast {} {}".format(socialNetwork, linkLast))
-           print(blog.getUrl()+blog.getRssFeed(),
-                   blog.getLinkPosition(linkLast))
-       #if blog.getPosts(): 
-       #    print("description ->", blog.getPosts()[5]['description'])
-       #for post in blog.getPosts():
-       #    if "content" in post:
-       #        print(post['content'][:100])
+    for blog in blogs:
+        print(blog.getUrl())
+        print(blog.getRssFeed())
+        print(blog.getSocialNetworks())
+        if 'twitterac' in blog.getSocialNetworks():
+            print(blog.getSocialNetworks()['twitterac'])
+        blog.setPosts()
+        if blog.getPosts():
+            for i, post in enumerate(blog.getPosts()):
+                print(blog.getPosts()[i])
+                print(blog.getTitle(i))
+                print(blog.getLink(i))
+                print(blog.getPostTitle(post))
+                print(blog.getPostLink(post))
+        else:
+            print("No posts")
+
+        for service in blog.getSocialNetworks():
+            socialNetwork = (service, blog.getSocialNetworks()[service])
+            
+            linkLast, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
+            print("linkLast {} {}".format(socialNetwork, linkLast))
+            print(blog.getUrl()+blog.getRssFeed(),
+                    blog.getLinkPosition(linkLast))
+        #if blog.getPosts(): 
+        #    print("description ->", blog.getPosts()[5]['description'])
+        #for post in blog.getPosts():
+        #    if "content" in post:
+        #        print(post['content'][:100])
 
 if __name__ == "__main__":
     main()

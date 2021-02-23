@@ -162,8 +162,7 @@ class moduleTwitter(Content,Queue):
 
 def main():
 
-    logging.basicConfig(stream=sys.stdout, 
-            level=logging.INFO, 
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO, 
             format='%(asctime)s %(message)s')
 
     import moduleTwitter
