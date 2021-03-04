@@ -28,6 +28,7 @@ class moduleCache(Content,Queue):
         super().__init__()
         self.service = 'Cache'
         self.nick = None
+        self.postaction = 'delete'
         #self.url = url
         #self.socialNetwork = (socialNetwork, nick)
 
@@ -155,6 +156,8 @@ class moduleCache(Content,Queue):
     def addPosts(self, listPosts):
         link = ''
         if listPosts:
+            if not self.getPosts():
+                self.setPosts()
             posts = self.getPosts()
             logging.info(f"a Posts: {posts} listP: {listPosts}")
             for pp in listPosts:

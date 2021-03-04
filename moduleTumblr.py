@@ -135,15 +135,26 @@ class moduleTumblr(Content,Queue):
         return state
 
     def processReply(self, reply): 
-        logging.debug("Res: %s" % reply) 
+        logging.info("Res: %s" % reply) 
+        res = reply
         if 'id'  in reply: 
             logging.info("Res: %s" % reply['id']) 
             res = reply['id']
         return res
 
     def publishApiPost(self, postData):
-        res = self.getClient().create_link(self.getBlogName(), state='queue',
-                title=postData[0], url=postData[1], description=postData[2])
+        if self.getPostsType() == 'post':
+             res = self.getClient().create_link(self.getBlogName(), 
+                     state='queue', title=postData[0], url=postData[1], 
+                     description=postData[2])
+        elif self.getPostsType() == 'queue':
+            idPost = postData[1].split('/')[-2]
+            logging.debug(f"idPost {idPost}")
+            res = self.editApiStateId(idPost, 'published')
+        else:
+             res = self.getClient().create_link(self.getBlogName(), 
+                     state='queue', title=postData[0], url=postData[1], 
+                     description=postData[2])
 
         return(res)
 
@@ -184,11 +195,15 @@ class moduleTumblr(Content,Queue):
                 type=typePost, title = newTitle)
         return res
 
+    def editApiStateId(self, idPost, newState): 
+        res = self.getClient().edit_post(self.getBlogName(), 
+                                         id=idPost, state=newState)
+        return (res)
+
     def editApiState(self, post, newState): 
         idPost = post['id']
         typePost = post['type']
-        res = self.getClient().edit_post(self.getBlogName(), id=idPost, 
-                type=typePost, state=newState)
+        res = self.editApiStateId(idPost, newState)
         return res
 
     def deleteApi(self, j): 

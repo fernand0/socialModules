@@ -31,6 +31,7 @@ class moduleImdb(Content,Queue):
     def setClient(self, init=()):
         logging.info("Setting client")
         logging.info(f"Setting client {str(init)}")
+        logging.info(f"Url {self.getUrl()}")
         date = time.strftime('%Y-%m-%d')
         if isinstance(init,str): 
             self.url = init 

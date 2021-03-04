@@ -19,11 +19,13 @@ from moduleQueue import *
 
 
 class moduleSlack(Content, Queue):
+
     def __init__(self):
         super().__init__()
         self.slack_token = None
         self.user_slack_token = None
         self.channel = None
+        self.postaction = 'delete'
 
     def getKeys(self, config):
         slack_token = config.get(self.service, "oauth-token")
@@ -31,6 +33,12 @@ class moduleSlack(Content, Queue):
         return (slack_token, user_slack_token)
 
     def initApi(self, keys):
+        logging.info(f"user {self.user}")
+        if self.user.find('@')>=0:
+            channel, user = self.user.split('@')
+            self.user = user
+            #self.setChannel(channel)
+
         client = WebClient(keys[0])
         self.slack_token = keys[0]
         self.user_slack_token = keys[1]
@@ -174,7 +182,9 @@ class moduleSlack(Content, Queue):
     def publishApiPost(self, postData):
         post, link, comment, plus = postData
         chan = self.getChannel()
-        # logging.info(f"Publishing {post} in {chan}")
+        if not chan:
+            self.setChannel()
+            chan = self.getChannel()
         self.getClient().token = self.user_slack_token
         data = {"channel": chan, "text": f"{post} {link}"}
         result = self.getClient().api_call("chat.postMessage", data=data)  # ,

@@ -173,6 +173,8 @@ class Content:
     def getPostAction(self):
         if hasattr(self, "postaction"):
             return self.postaction
+        else:
+            return ""
 
     def getSocialNetworks(self):
         socialNetworks = None
@@ -324,10 +326,10 @@ class Content:
 
     def publishPost(self, post, link="", comment="", **more):
         logging.info(f"    Publishing in {self.service}: {post}")
-        try:
+        if True:
             reply = self.publishApiPost((post, link, comment, more))
             return self.processReply(reply)
-        except:
+        else:
             return self.report(self.service, post, link, sys.exc_info())
 
     def deletePostId(self, idPost):

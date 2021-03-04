@@ -57,7 +57,8 @@ class moduleGmail(Content,Queue):
     def initApi(self, keys):
         SCOPES = self.scopes
         creds = self.authorize()
-        service = build('gmail', 'v1', credentials=creds, cache_discovery=False)
+        service = build('gmail', 'v1', 
+                        credentials=creds, cache_discovery=False)
         return service
 
     #def setClient(self, Acc):
@@ -503,6 +504,8 @@ class moduleGmail(Content,Queue):
     def publish(self, j):
         logging.info("Publishing %d"% j)                
         logging.info("servicename %s" %self.service)
+        if not self.getPosts():
+            self.setPosts()
         logging.info("post %s" %self.getPosts())
         idPost = self.getPosts()[j]['list']['id'] #thePost[-1]
         title = self.getHeader(self.getPosts()[j]['meta'], 'Subject')

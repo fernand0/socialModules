@@ -13,6 +13,7 @@ class modulePocket(Content,Queue):
 
     def __init__(self):
         super().__init__()
+        self.postaction='archive'
 
     def getKeys(self, config): 
         consumer_key = config.get("appKeys", "consumer_key")
