@@ -526,7 +526,10 @@ class Content:
         posts = self.getPosts()
         # for pp in posts:
         #    print(self.getPostTitle(pp))
-        pos = len(posts)
+        try:
+            pos = len(posts)
+        except:
+            pos = 100
         if posts:
             if not link:
                 logging.debug(self.getPosts())
