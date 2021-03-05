@@ -59,6 +59,8 @@ class moduleForum(Content, Queue):
             self.selected = config.get(self.url, "forums").split("\n")
             self.selector = config.get(self.url, "selector").split("\n")
             self.idSeparator = config.get(self.url, "idSeparator")
+            if "selectorby" in config[self.url]:
+                self.selectorby = config.get(self.url, "selectorby")
         except:
             logging.warning("Forum not configured!")
             logging.warning("Unexpected error:", sys.exc_info()[0])
@@ -66,13 +68,20 @@ class moduleForum(Content, Queue):
 
     def getLinks(self, url, idSelector):
         headers = {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/39.0.2171.95 Safari/537.36"
         }
 
         selector = self.selector[idSelector]
         response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.content, features="lxml")
-        links = soup.find_all(class_=selector)
+        # print(f"Soup: {soup}")
+        if hasattr(self, "selectorby") and (self.selectorby == "a"):
+            links = soup.find_all("a", {"class": selector})
+        else:
+            links = soup.find_all(class_=selector)
+        logging.debug(f"Links: {links}")
         return links
 
     def getClient(self):
@@ -80,7 +89,8 @@ class moduleForum(Content, Queue):
 
     def extractLink(self, data):
         url = self.url
-        logging.info("Url: %s" % url)
+        logging.info(f"Url:  {url}")
+        logging.debug(f"Data: {data}")
         if "index.php" in url:
             link = url[:-9] + data.get("href")
         else:
@@ -93,17 +103,16 @@ class moduleForum(Content, Queue):
     def extractId(self, link):
         pos = link.rfind(self.idSeparator)
         if not link[-1].isdigit():
-            idPost = int(link[pos + 1 : -1])
+            # idPost = int(link[pos + 1 : -1])
+            idPost = link[pos + 1 : -1]
         else:
-            idPost = int(link[pos + 1 :])
-        # print("Id: {}".format(idPost))
+            # idPost = int(link[pos + 1 :])
+            idPost = link[pos + 1 :]
+        logging.debug(f"Id: {idPost}")
         return idPost
 
     def setPosts(self):
         url = self.url
-        selected = self.selected
-        selector = self.selector
-        idSeparator = self.idSeparator
 
         forums = self.getLinks(url, 0)
 
@@ -111,20 +120,22 @@ class moduleForum(Content, Queue):
         listId = []
         posts = {}
         for i, forum in enumerate(forums):
-            # print("forum %s"%forum)
+            logging.info("forum %s" % forum)
             if forum.name != "a":
                 # It is inside some other tag
                 forum = forum.contents[0]
             text = forum.text
             if text in self.selected:
                 link = self.extractLink(forum)
-                logging.debug("  - {} {}".format(text, link))
+                logging.debug(f"  - {text} {link}")
                 links = self.getLinks(link, 1)
                 for j, post in enumerate(links):
-                    logging.debug("Post %s" % (post))
+                    logging.debug(f"Post {post}")
                     linkF = self.extractLink(post)
+                    logging.debug(f"linkF {linkF}")
                     if linkF:
                         idPost = self.extractId(linkF)
+                        logging.debug(f"idPost {idPost}")
                         listId.append(idPost)
                         textF = post.text
                         posts[idPost] = [textF, linkF]
@@ -145,7 +156,9 @@ class moduleForum(Content, Queue):
             pos = self.getLinkPosition(lastLink)
             # print(self.posts[pos][1])
             # print('>>>',pos, len(self.posts))
-            if pos == len(self.posts):  # and (str(lastLink) != self.posts[pos][1]):
+            if pos == len(
+                self.posts
+            ):  # and (str(lastLink) != self.posts[pos][1]):
                 pos = 0
             if pos < len(self.posts) - 1:
                 for i, post in enumerate(self.posts[pos:]):
@@ -162,7 +175,13 @@ class moduleForum(Content, Queue):
 
 
 def main():
+
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s"
+    )
+
     forums = [
+        "https://mammillaria.forumotion.net/",
         "https://www.cactuseros.com/foro/index.php",
         "http://foro.infojardin.com/",
         "https://cactiguide.com/forum/",
@@ -173,8 +192,9 @@ def main():
         forum.setPosts()
         lastLink, lastTime = checkLastLink(forum.url)
         pos = forum.getLinkPosition(lastLink)
+        logging.debug(f"Pos: {pos}")
 
-        if pos == len(forum.getPosts()) - 1:
+        if pos >= len(forum.getPosts()) - 1:
             print("No new posts!\n")
         else:
             for post in forum.getPosts()[pos:]:
