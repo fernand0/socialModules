@@ -81,7 +81,7 @@ class moduleForum(Content, Queue):
             links = soup.find_all("a", {"class": selector})
         else:
             links = soup.find_all(class_=selector)
-        logging.info(f"Links: {links}")
+        logging.debug(f"Links: {links}")
         return links
 
     def getClient(self):
@@ -90,7 +90,7 @@ class moduleForum(Content, Queue):
     def extractLink(self, data):
         url = self.url
         logging.info(f"Url:  {url}")
-        logging.info(f"Data: {data}")
+        logging.debug(f"Data: {data}")
         if "index.php" in url:
             link = url[:-9] + data.get("href")
         else:
@@ -108,7 +108,7 @@ class moduleForum(Content, Queue):
         else:
             # idPost = int(link[pos + 1 :])
             idPost = link[pos + 1 :]
-        logging.info(f"Id: {idPost}")
+        logging.debug(f"Id: {idPost}")
         return idPost
 
     def setPosts(self):
@@ -127,15 +127,15 @@ class moduleForum(Content, Queue):
             text = forum.text
             if text in self.selected:
                 link = self.extractLink(forum)
-                logging.info(f"  - {text} {link}")
+                logging.debug(f"  - {text} {link}")
                 links = self.getLinks(link, 1)
                 for j, post in enumerate(links):
-                    logging.info(f"Post {post}")
+                    logging.debug(f"Post {post}")
                     linkF = self.extractLink(post)
-                    logging.info(f"linkF {linkF}")
+                    logging.debug(f"linkF {linkF}")
                     if linkF:
                         idPost = self.extractId(linkF)
-                        logging.info(f"idPost {idPost}")
+                        logging.debug(f"idPost {idPost}")
                         listId.append(idPost)
                         textF = post.text
                         posts[idPost] = [textF, linkF]
@@ -192,7 +192,7 @@ def main():
         forum.setPosts()
         lastLink, lastTime = checkLastLink(forum.url)
         pos = forum.getLinkPosition(lastLink)
-        logging.info(f"Pos: {pos}")
+        logging.debug(f"Pos: {pos}")
 
         if pos >= len(forum.getPosts()) - 1:
             print("No new posts!\n")
