@@ -35,35 +35,6 @@ class moduleImgur(Content,Queue):
        
        return client
 
-    #def setClientt(self, idName):
-
-    #    if isinstance(idName, str): 
-    #        self.name = idName
-    #    elif isinstance(idName[1], str):
-    #        self.name = idName[1]
-    #    else:
-    #        # Deprecated
-    #        self.name = idName[1][1]
-
-    #    try:
-    #        config = configparser.ConfigParser()
-    #        config.read(CONFIGDIR + '/.rssImgur') 
-
-    #        if config.sections(): 
-    #            self.client_id=config.get(self.name, 'client_id') 
-    #            self.client_secret=config.get(self.name, 'client_secret') 
-    #            self.access_token=config.get(self.name, 'access_token') 
-    #            self.refresh_token=config.get(self.name, 'refresh_token')
-
-    #            self.client = ImgurClient(self.client_id, self.client_secret, 
-    #                    self.access_token, self.refresh_token)
-    #        else:
-    #            logging.warning("Some problem with configuration file!")
-    #            self.client = None
-    #    except:
-    #        logging.warning("User not configured!")
-    #        logging.warning("Unexpected error:", sys.exc_info()[0])
-
     def setApiCache(self): 
         import moduleCache
         cache = moduleCache.moduleCache()
@@ -104,42 +75,13 @@ class moduleImgur(Content,Queue):
 
         return (posts)
  
-    #def setPosts(self, numPosts=20): 
-    #    self.posts = []
-    #    self.drafts = []
-    #    if self.getPostsType() == 'file':
-    #        # cache setPosts()
-    #        fileNameQ = fileNamePath(self.getUrl(), (self.service[0].lower() +
-    #            self.service[1:], self.user))+'.queue'
-    #        try:
-    #            with open(fileNameQ,'rb') as f: 
-    #                try: 
-    #                    listP = pickle.load(f) 
-    #                except: 
-    #                    listP = [] 
-    #        except:
-    #            listP = []
-    #        for post in listP:
-    #            self.posts = [ post ] + self.posts
-    #    else:
-    #        client = self.getClient()
-    #        if client:
-    #            for album in client.get_account_albums(self.user):
-    #                logging.debug("{} {}".format(time.ctime(album.datetime),
-    #                    album.title))
-    #                text = ""
-    #                if album.in_gallery: 
-    #                    #self.posts.insert(0,album)
-    #                    self.posts.append(album)
-    #                else:
-    #                    #self.drafts.insert(0,album)
-    #                    self.drafts.append(album)
-    #        else:
-    #            logging.warning('No client configured!')
-    #    self.drafts = self.drafts[0:numPosts]
-    #    self.posts = self.posts[0:numPosts]
-    #    # We set some limit
-                    
+    def editApiTitle(self, post, newTitle):
+        title = self.getPostTitle(post)
+        idPost = self.getPostId(post)
+        fields = {'ids':None, 'title':newTitle}
+        # 'ids' parameter is optional but in the Python package check for it
+        self.getClient().update_album(idPost, fields)
+
     def getPostTitle(self, post):
         return post.title
 
@@ -393,20 +335,20 @@ def main():
             print("si")
             img.setPostsType(config.get(acc, 'posts'))
         print(img.getPostsType())
-        img.setPosts(100)
-        socialNetwork = (config[acc]['cache'], 
-                config[acc][config[acc]['cache']])
-        print(socialNetwork)
-        lastLink, lastTime = checkLastLink(img.getUrl(), socialNetwork)
+        img.setPosts()
+        # lastLink, lastTime = checkLastLink(img.getUrl(), socialNetwork)
         for i,p in enumerate(img.getPosts()):
             link = img.getPostLink(p)
             #print(i, img.getPostTitle(p), img.getPostLink(p))
-            if not (link in lastLink): 
-                print(i, img.getPostTitle(p), img.getPostLink(p))
+            # if not (link in lastLink): 
+            print(i, img.getPostTitle(p), img.getPostLink(p))
         #print(lastLink)
-        continue
-            
+        i = 5
+        p = img.getPost(i)
+        print(i, img.getPostTitle(p), img.getPostLink(p))
+        print(img.editApiTitle(p, 'No se su nombre'))
 
+        return
 
         if ('cache' in config.options(section)): 
             img.setProgram(config.get(section, "cache"))
