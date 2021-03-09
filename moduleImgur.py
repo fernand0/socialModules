@@ -313,6 +313,7 @@ def main():
         if 'posts' in config[acc]:
             print("si")
             img.setPostsType(config.get(acc, 'posts'))
+        img.setPostsType('posts')
         print(img.getPostsType())
         img.setPosts()
         # lastLink, lastTime = checkLastLink(img.getUrl(), socialNetwork)
@@ -324,7 +325,9 @@ def main():
         print(i, img.getPostTitle(p), img.getPostLink(p))
         print(img.editApiTitle(p, 'No se su nombre'))
 
-        return
+        selection = input("Which one? ")
+        print(selection)
+        break
 
         if ('cache' in config.options(section)):
             img.setProgram(config.get(section, "cache"))
@@ -348,7 +351,8 @@ def main():
             pos = img.getLinkPosition(lastLink[0])
             print(f"pos {pos}")
             i = pos
-        num = 5
+        print()
+        num = int(selection)
         listPosts = img.getNumPostsData(num, i, lastLink)
         print(f"listPosts: {listPosts}")
         continue
@@ -395,8 +399,8 @@ def main():
             print(img.obtainPostData(i))
         print("----")
         time.sleep(2)
-    sys.exit()
-    pos = 3
+    pos = int(selection)
+
     post = img.getImages(pos)
     postWP = img.getImagesCode(pos)
     title = img.getPostTitle(img.getPosts()[pos])
@@ -410,17 +414,35 @@ def main():
     print("---tags----")
     print(tags)
 
+    publishCache = False
+    if publishCache:
+        listPosts = img.getNumPostsData(1, pos, '')
+        print(listPosts)
+        input("Add? ")
+
+        import moduleCache
+        cache = moduleCache.moduleCache()
+        cache.setClient(('https://imgur.com/user/ftricas', 
+                        ('wordpress', 'avecesunafoto')))
+        cache.setPosts()
+        print(cache.getPosts())
+        cache.addPosts(listPosts)
+
+    sys.exit()
+
     # Testing Wordpress publishing
     img.setSocialNetworks(config)
     print(img.getSocialNetworks())
     service = 'wordpress'
     socialNetwork = (service, img.getSocialNetworks()[service])
 
-    import moduleWordpress
-    wp = moduleWordpress.moduleWordpress()
-    wp.setClient('avecesunafoto')
+    publishWordpress = False
+    if publishWordpress:
+        import moduleWordpress
+        wp = moduleWordpress.moduleWordpress()
+        wp.setClient('avecesunafoto')
 
-    print(wp.publishPost(title, '', postWP, tags=post[-1]))
+        print(wp.publishPost(title, '', postWP, tags=post[-1]))
  
     sys.exit()
     for service in img.getSocialNetworks():
