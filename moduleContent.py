@@ -552,7 +552,7 @@ class Content:
                 if isinstance(link, bytes):
                     linkS = linkS.decode()
                 url = self.getPostLink(entry)
-                logging.debug("{} {}".format(url, linkS))
+                logging.debug("\n{}\n{}".format(url, linkS))
                 # print("{} {}".format(url, linkS))
                 lenCmp = min(len(url), len(linkS))
                 if url[:lenCmp] == linkS[:lenCmp]:

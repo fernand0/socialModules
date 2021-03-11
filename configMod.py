@@ -117,12 +117,14 @@ def newUpdateLastLink(url, link, lastLink, socialNetwork=()):
             f.write(link[0])
 
 def updateLastLink(url, link, socialNetwork=()):
+    logging.debug(f"Url: {url} Link: {link} SocialNetwork: {socialNetwork}")
     if not socialNetwork: 
         fileName = (DATADIR  + '/' 
                + urllib.parse.urlparse(url).netloc + ".last")
     else: 
         fileName = fileNamePath(url, socialNetwork) + ".last"
 
+    logging.debug(f"fileName: {fileName}")
     with open(fileName, "w") as f: 
         if isinstance(link, bytes): 
             f.write(link.decode())

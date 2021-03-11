@@ -61,6 +61,8 @@ class moduleForum(Content, Queue):
             self.idSeparator = config.get(self.url, "idSeparator")
             if "selectorby" in config[self.url]:
                 self.selectorby = config.get(self.url, "selectorby")
+            if "idWhere" in config[self.url]:
+                self.idWhere = config.get(self.url, "idWhere")
         except:
             logging.warning("Forum not configured!")
             logging.warning("Unexpected error:", sys.exc_info()[0])
@@ -94,20 +96,37 @@ class moduleForum(Content, Queue):
         if "index.php" in url:
             link = url[:-9] + data.get("href")
         else:
-            link = url + "/" + data.get("href")
+            if url[-1] != '/':
+                link = url + "/" + data.get("href")
+            else:
+                link = url + data.get("href")
         if "sid" in link:
             link = link.split("&sid")[0]
         logging.info("Link: %s" % link)
         return link
 
     def extractId(self, link):
-        pos = link.rfind(self.idSeparator)
-        if not link[-1].isdigit():
+        pos2 = 0
+        if hasattr(self, 'idWhere') and self.idWhere == '0':
+            pos2 = link.find(self.idSeparator)
+            pos = link.rfind('/')
+        else:
+            pos = link.rfind(self.idSeparator)
+        if not link[-1].isdigit() and (pos2 == 0):
             # idPost = int(link[pos + 1 : -1])
             idPost = link[pos + 1 : -1]
         else:
-            # idPost = int(link[pos + 1 :])
-            idPost = link[pos + 1 :]
+            if pos2>0: 
+                idPost = link[pos+1:pos2]
+            else:
+                # idPost = int(link[pos + 1 :])
+                idPost = link[pos + 1 :]
+        print(f"Link: {link} idPost: {idPost}")
+        try: 
+            idPost = int(idPost)
+        except:
+            idPost = int(idPost[1:])
+
         logging.debug(f"Id: {idPost}")
         return idPost
 
@@ -150,15 +169,16 @@ class moduleForum(Content, Queue):
                 self.posts.append(posts[i])
 
             lastLink, lastTime = checkLastLink(self.url)
+            logging.debug(f"LastLink: {lastLink}")
             # for i, post in enumerate(self.posts):
             #    print("{}) {}".format(i, post))
             # print(lastLink)
             pos = self.getLinkPosition(lastLink)
+            logging.debug(f"Position: {pos} Len: {len(self.posts)}")
             # print(self.posts[pos][1])
             # print('>>>',pos, len(self.posts))
-            if pos == len(
-                self.posts
-            ):  # and (str(lastLink) != self.posts[pos][1]):
+            if pos == len(self.posts):  
+                # and (str(lastLink) != self.posts[pos][1]):
                 pos = 0
             if pos < len(self.posts) - 1:
                 for i, post in enumerate(self.posts[pos:]):
@@ -177,7 +197,7 @@ class moduleForum(Content, Queue):
 def main():
 
     logging.basicConfig(
-        stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s"
+        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
 
     forums = [
@@ -201,6 +221,7 @@ def main():
                 print("   {}".format(post[0]))
                 print("   {}".format(post[1]))
             # updateLastLink(forum.url, forum.getPosts()[-1][1])
+        sys.exit()
         print(forum.getPosts())
 
 
