@@ -51,22 +51,27 @@ class moduleTumblr(Content, Queue):
         return name
 
     def setApiPosts(self):
-        self.setApiPublished()
+        posts = self.setApiPublished()
+        return posts
 
     def setApiPublished(self):
-        posts = self.getClient().posts(self.getBlogName())
+        posts = self.getClient().posts(self.getUrl().split('/')[2])
+        print("p",posts['posts'])
+        print("p",'posts' in posts)
         if 'posts' in posts:
             posts = posts['posts']
         else:
             posts = []
-        return(posts)
+
+        return (posts)
 
     def setApiDrafts(self):
         drafts = self.getClient().drafts(self.getUrl().split('/')[2])
         if 'posts' in drafts:
-            self.posts = drafts['posts']
+            posts = drafts['posts']
         else:
-            self.posts = []
+            posts = []
+        return (posts)
 
     def setApiQueue(self):
         queue = self.getClient().queue(self.getUrl().split('/')[2])
@@ -186,9 +191,10 @@ def main():
     t = moduleTumblr.moduleTumblr()
 
     t.setClient('fernand0')
-    t.setPostsType('queue')
+    t.setPostsType('posts')
     t.setPosts()
     print(t.getPosts())
+    sys.exit()
 
     t.setPostsType('queue')
 
