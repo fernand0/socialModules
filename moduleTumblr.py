@@ -56,8 +56,6 @@ class moduleTumblr(Content, Queue):
 
     def setApiPublished(self):
         posts = self.getClient().posts(self.getUrl().split('/')[2])
-        print("p",posts['posts'])
-        print("p",'posts' in posts)
         if 'posts' in posts:
             posts = posts['posts']
         else:
