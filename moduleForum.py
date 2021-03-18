@@ -91,7 +91,7 @@ class moduleForum(Content, Queue):
 
     def extractLink(self, data):
         url = self.url
-        logging.info(f"Url:  {url}")
+        logging.debug(f"Url:  {url}")
         logging.debug(f"Data: {data}")
         if "index.php" in url:
             link = url[:-9] + data.get("href")
@@ -102,7 +102,7 @@ class moduleForum(Content, Queue):
                 link = url + data.get("href")
         if "sid" in link:
             link = link.split("&sid")[0]
-        logging.info("Link: %s" % link)
+        logging.debug("Link: %s" % link)
         return link
 
     def extractId(self, link):
@@ -121,7 +121,7 @@ class moduleForum(Content, Queue):
             else:
                 # idPost = int(link[pos + 1 :])
                 idPost = link[pos + 1 :]
-        print(f"Link: {link} idPost: {idPost}")
+        logging.debug(f"Link: {link} idPost: {idPost}")
         try: 
             idPost = int(idPost)
         except:
@@ -139,7 +139,7 @@ class moduleForum(Content, Queue):
         listId = []
         posts = {}
         for i, forum in enumerate(forums):
-            logging.info("forum %s" % forum)
+            logging.debug("forum %s" % forum)
             if forum.name != "a":
                 # It is inside some other tag
                 forum = forum.contents[0]
