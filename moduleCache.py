@@ -293,7 +293,7 @@ class moduleCache(Content,Queue):
             self.assignPosts(posts[:j] + posts[j+1:])
             logging.debug("Updating %s" % posts)
             self.updatePostsCache()
-            logging.info("Update ... %s" % str(update))
+            logging.debug("Update ... %s" % str(update))
             if ((isinstance(update, str) and ('text' in update))
                     or (isinstance(update, bytes) and (b'text' in update))):
                 update = update['text']

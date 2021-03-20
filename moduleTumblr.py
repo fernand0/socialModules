@@ -177,6 +177,10 @@ class moduleTumblr(Content, Queue):
         logging.info("Deleting post %s" % idPost)
         return self.getClient().delete_post(self.getBlogName(), idPost)
 
+    def deleteApiQueue(self, idPost):
+        logging.info("Deleting from queue %s" % idPost)
+        return self.getClient().delete_post(self.getBlogName(), idPost)
+
 
 def main():
 
