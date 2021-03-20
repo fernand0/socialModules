@@ -22,8 +22,9 @@ imgurpython
 Mastodon.py
 medium
 pocket-api
-python-tumblpy
+pytumblr
 telepot
 gitterpy
 slack_sdk
 Pillow
+readability-lxml

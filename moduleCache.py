@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# encoding: utf-8
-
 # Queue [cache] files name is composed of a dot, followed by the path of the
 # URL, followed by the name of the social network and the name of the user for
 # posting there.
@@ -13,13 +10,10 @@
 #  obtainPostData method.
 
 import configparser, os
-import pickle
-import logging
-import sys
-import importlib
-importlib.reload(sys)
-#sys.setdefaultencoding("UTF-8")
 from crontab import CronTab
+import logging
+import pickle
+import sys
 
 from configMod import *
 from moduleQueue import *
@@ -140,7 +134,8 @@ class moduleCache(Content,Queue):
         return(link)
 
     def updatePostsCache(self):
-        fileNameQ = fileNamePath(self.url, (self.service, self.nick)) + ".queue"
+        fileNameQ = fileNamePath(self.url, 
+                (self.service, self.nick)) + ".queue"
 
         with open(fileNameQ, 'wb') as f: 
             if hasattr(self, 'getPostsType'): 
@@ -158,7 +153,9 @@ class moduleCache(Content,Queue):
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)
-        (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None) 
+        (theTitle, theLink, firstLink, theImage, theSummary, content, 
+                theSummaryLinks, theContent, theLinks, comment) = (None, 
+                        None, None, None, None, None, None, None, None, None) 
 
         if i < len(self.getPosts()):
             messageRaw = self.getPosts()[i]
@@ -204,11 +201,6 @@ class moduleCache(Content,Queue):
             return (link)
         return(None)
 
-    #def isForMe(self, args):
-    #    logging.info("isForMe %s" % str(self.service))
-    #    return ((self.service[0].capitalize() in args.split()[0])
-    #           or (args[0] == '*'))
-
     def editl(self, j, newLink=''):
         logging.info("New link %s", newLink)
         thePost = self.obtainPostData(j)
@@ -248,13 +240,14 @@ class moduleCache(Content,Queue):
     def publish(self, j):
         logging.info("Publishing %d"% j)
         post = self.obtainPostData(j)
-        logging.info("Publishing %s"% post[0])
-        import importlib
-        serviceName = self.service.capitalize()
-        mod = importlib.import_module('module' + serviceName) 
-        cls = getattr(mod, 'module' + serviceName)
-        api = cls()
-        api.setClient(self.nick)
+        logging.info("Publishing {post[0]} in {self.service} user {self.nick}")
+        api = getApi(self.service, self.nick)
+        #import importlib
+        #serviceName = self.service.capitalize()
+        #mod = importlib.import_module('module' + serviceName) 
+        #cls = getattr(mod, 'module' + serviceName)
+        #api = cls()
+        #api.setClient(self.nick)
         comment = ''
         title = post[0]
         link = post[1]
@@ -262,7 +255,8 @@ class moduleCache(Content,Queue):
         update = api.publishPost(title, link, comment)
         logging.info("Publishing title: %s" % title)
         logging.info("Social network: %s Nick: %s" % (self.service, self.nick))
-        if not isinstance(update, str) or (isinstance(update, str) and update[:4] != "Fail"):
+        if (not isinstance(update, str) 
+                or (isinstance(update, str) and update[:4] != "Fail")):
             self.posts = self.posts[:j] + self.posts[j+1:]
             logging.debug("Updating %s" % self.posts)
             self.updatePostsCache()
@@ -325,7 +319,6 @@ class moduleCache(Content,Queue):
  
 def main():
     import moduleCache
-    import moduleSlack
 
     cache = moduleCache.moduleCache()
     cache.setClient(('http://fernand0-errbot.slack.com/', 

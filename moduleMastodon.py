@@ -38,17 +38,37 @@ class moduleMastodon(Content,Queue):
         self.ma = maCli
         self.user = user
 
-
     def getClient(self):
         return self.ma
 
     def setPosts(self):
         logging.info("  Setting posts")
         self.posts = []
+        self.favs = []
         #posts = self.getClient().timeline_home()
         posts = self.getClient().account_statuses(self.getClient().me())
         for toot in  posts:
             self.posts.append(toot)
+
+        favs = self.getClient().favourites()
+        for toot in  favs:
+            self.favs.append(toot)
+
+    def getFavs(self):
+         return self.favs
+
+    def getPosts(self):
+        if hasattr(self, 'getPostsType'): 
+            logging.debug("  Posts type {}".format(self.getPostsType()))
+            if self.getPostsType() == 'drafts':
+                posts = self.getDrafts()
+            if self.getPostsType() == 'favs':
+                posts = self.getFavs()
+            else:
+                posts = self.getPublished() 
+        else:
+            posts = self.posts
+        return(posts)
 
     def publishPost(self, post, link, comment):
         logging.debug("    Publishing in Mastodon...")
@@ -83,6 +103,37 @@ class moduleMastodon(Content,Queue):
         else:
             return ''
 
+    def extractDataMessage(self, i):
+        logging.info("Service %s"% self.service)
+        (theTitle, theLink, firstLink, theImage, theSummary, 
+                content, theSummaryLinks, theContent, theLinks, comment) = (
+                        None, None, None, None, None, 
+                        None, None, None, None, None) 
+
+        if i < len(self.getPosts()):
+            post = self.getPost(i)
+            theTitle = self.getPostTitle(post)
+            theLink = self.getPostLink(post)
+
+            theLinks = None
+            content = None 
+            theContent = None
+            if 'card' in post and post['card']: 
+                if 'description' in post['card']: 
+                    theContent = post['card']['description']
+            firstLink = theLink
+            if 'card' in post and post['card']: 
+                if 'url' in post['card']: 
+                    firstLink = post['card']['url']
+            theImage = None
+            theSummary = None
+
+            theSummaryLinks = None
+            comment = None
+
+        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+
+
 def main():
     import moduleMastodon
 
@@ -93,13 +144,44 @@ def main():
     print(mastodon.getClient().me())
     for post in mastodon.getPosts():
         print(post)
+    print("Favorites")
+    for post in mastodon.favs:
+        print(post)
 
     print("Testing title and link")
+
+    print("Posts")
 
     for post in mastodon.getPosts():
         title = mastodon.getPostTitle(post)
         link = mastodon.getPostLink(post)
         print("Title: {}\nLink: {}\n".format(title,link))
+
+    print("Favs")
+
+    mastodon.setPostsType("favs")
+    for i, post in enumerate(mastodon.favs):
+        print("i",i)
+        print("1",post)
+        print("2",mastodon.getPost(i))
+        title = mastodon.getPostTitle(post)
+        link = mastodon.getPostLink(post)
+        print("Title: {}\nLink: {}\n".format(title,link))
+        print(mastodon.extractDataMessage(i))
+
+    (theTitle, theLink, firstLink, theImage, theSummary, 
+            content, theSummaryLinks, theContent, theLinks, comment) = mastodon.extractDataMessage(0)
+
+    config = configparser.ConfigParser()
+    config.read(CONFIGDIR + '/.rssBlogs')
+
+    import modulePocket
+    
+    p = modulePocket.modulePocket()
+
+    p.setClient('fernand0')
+    p.publishPost(theTitle, firstLink, '')
+
 
 
     #mastodon.publishPost("I'll publish several links each day about technology, social internet, security, ... as in", 'https://twitter.com/fernand0', '')

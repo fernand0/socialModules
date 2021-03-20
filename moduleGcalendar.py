@@ -9,7 +9,6 @@ import datetime
 #from dateutil.parser import parse
 import dateparser
 import logging
-import importlib
 import sys
 
 import googleapiclient

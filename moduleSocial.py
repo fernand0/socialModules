@@ -109,65 +109,6 @@ def nextPost(blog, socialNetwork):
 
     return(element,listP)
 
-def publishDirect(blog, socialNetwork, i): 
-    link = None
-    if (i > 0): 
-        profile = socialNetwork[0]
-        nick = socialNetwork[1]
-        (title, link, firstLink, image, summary, summaryHtml, 
-                summaryLinks, content , links, comment) = (blog.obtainPostData(i - 1, False)) 
-        logging.info("  Publishing directly\n") 
-        serviceName = profile.capitalize() 
-        print("   Publishing in %s %s" % (serviceName, title))
-        if profile in ['telegram', 'facebook']:
-            comment = summaryLinks
-        elif profile == 'medium': 
-            comment = summaryHtml
-        else:
-            comment = ''
-
-        if (profile in ['twitter', 'facebook', 'telegram', 'mastodon', 
-            'linkedin', 'pocket', 'medium', 'instagram']): 
-            # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically 
-            import importlib 
-            mod = importlib.import_module('module'+serviceName) 
-            cls = getattr(mod, 'module'+serviceName) 
-            api = cls() 
-            api.setClient(nick) 
-            if profile in ['facebook']: 
-                pos1= comment.find('http://fernand0.blogalia')
-                if pos1 >=0:
-                    pos2 = comment.find(' ',pos1+1)
-                    pos3 = comment.find('\n',pos1+1)
-                    pos2 = min(pos2, pos3)
-                    logging.info(comment)
-                    comment = "{}(Enlace censurado por Facebook){}".format(
-                            comment[:pos1-1],
-                            comment[pos2:])
-
-                    logging.info(comment)
-                else:
-                    comment = None
-                #url = link
-                #apiurl = "http://tinyurl.com/api-create.php?url=" 
-                #tinyurl = urllib.request.urlopen(apiurl + url).read() 
-                #link = tinyurl.decode("utf-8")
-            #print(link)
-            result = api.publishPost(title, link, comment) 
-            logging.debug(result) 
-            if isinstance(result, str): 
-                logging.info("Result %s"%str(result)) 
-                if result[:4]=='Fail': 
-                    logging.debug("Fail detected %s"%str(result)) 
-                    if ((result.find('duplicate')>=0) or 
-                            (result.find('abusive')>=0)): 
-                        duplicate = True 
-                        link='' 
-                        logging.info("Posting failed") 
-                elif result.find('Bad Request')>=0: 
-                    link='' 
-                    logging.info("Posting failed") 
-    return link
 
 def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots): 
     # We allow the rest of the Blogs to start
@@ -177,7 +118,11 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
     profile = socialNetwork[0]
     nick = socialNetwork[1]
 
+
+    print(numPosts)
+
     for j in  range(numPosts): 
+        llink = None
         tSleep = random.random()*timeSlots
         tSleep2 = timeSlots - tSleep
         
@@ -186,7 +131,6 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
         if element:
             tNow = time.time()
 
-            #lastLink, lastTime = checkLastLinkPublished(blog.getUrl(), socialNetwork)
             lastTime = getNextTime(blog, socialNetwork)
             lastTime = float(lastTime[0])
 
@@ -215,104 +159,54 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                     logMsg(msgLog, 1, 1)
 
                     result = None
+                    # Destination
                     if profile in ['twitter', 'facebook', 'mastodon', 
-                            'imgur', 'wordpress','linkedin']: 
-                        # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
-                        try:
-                            import importlib
-                            serviceName = profile.capitalize()
-                            mod = importlib.import_module('module' +
-                                    serviceName) 
-                            cls = getattr(mod, 'module' + serviceName)
-                            api = cls()
-                            api.setClient(nick)
-                            if profile in ['telegram', 'facebook']: 
-                                comment = summaryLinks 
-                                pos1 = comment.find('http://fernand0.blogalia') 
-                                if pos1 >=0: 
-                                    pos2 = comment.find(' ',pos1+1) 
-                                    pos3 = comment.find('\n',pos1+1) 
-                                    pos2 = min(pos2, pos3) 
-                                    logging.info(comment) 
-                                    comment = "\n{}(Enlace censurado por Facebook){}".format( comment[:pos1-1], comment[pos2:]) 
-                                    logging.debug(comment) 
-                            elif profile == 'medium': 
-                                comment = summaryHtml 
-                            if profile in ['wordpress']: 
-                                result = api.publishPost(title, link, comment, tags=links)
-                            else: 
-                                result = api.publishPost(title, link, comment)
-                        except:
-                            logging.warning("Some problem in {}".format(
-                                profile.capitalize())) 
-                            logging.warning("Unexpected error:", sys.exc_info()[0]) 
+                            'imgur', 'wordpress','linkedin', 'tumblr',
+                            'pocket', 'medium']: 
+                        if profile in ['telegram', 'facebook']: 
+                            comment = summaryLinks 
+                            pos1 = comment.find('http://fernand0.blogalia') 
+                            if pos1 >=0: 
+                                pos2 = comment.find(' ',pos1+1) 
+                                pos3 = comment.find('\n',pos1+1) 
+                                pos2 = min(pos2, pos3) 
+                                logging.info(comment) 
+                                comment = "\n{}(Enlace censurado por Facebook){}".format( comment[:pos1-1], comment[pos2:]) 
+                                logging.debug(comment) 
+                        elif profile == 'medium': 
+                            comment = summaryHtml 
+                        elif profile == 'pocket': 
+                            if firstLink: 
+                                link, llink = firstLink, link
+                    try: 
+                        api = getApi(profile, nick) 
+                        if profile in ['wordpress']: 
+                            result = api.publishPost(title, link, 
+                                    comment, tags=links)
+                        else: 
+                            result = api.publishPost(title, link, comment)
+                    except:
+                        logging.warning("Some problem in {}".format(
+                            profile.capitalize())) 
+                        logging.warning("Unexpected error:", sys.exc_info()[0]) 
 
-                        if isinstance(result, str):
-                            if result[:4]=='Fail':
-                                link=''
-                            elif result[:21] == 'Wordpress API expired':
-                                print(" [d] Not published: {} - {}".format(
-                                    result, 'Fail'))
-                                result = 'Fail!'
-                            else: 
-                                print(" [d] Published: {} - {}".format(
-                                    result, 'OK'))
-                                result = 'OK'
-                    else: 
-                        print(element)
-                        try: 
-                            if profile in ['telegram', 'facebook']: 
-                                comment = summaryLinks 
-                            elif profile == 'medium': 
-                                comment = summaryHtml 
-                            else: 
-                                comment = '' 
-                            if (profile in ['twitter', 'facebook', 'telegram', 
-                                'mastodon', 'linkedin', 'pocket', 'medium', 
-                                'instagram']): 
-                                # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically 
-                                import importlib 
-                                serviceName = profile.capitalize()
-                                mod = importlib.import_module('module'
-                                        + serviceName) 
-                                cls = getattr(mod, 'module'+serviceName) 
-                                api = cls() 
-                                api.setClient(nick) 
-                                if profile in ['facebook']: 
-                                    pos1= comment.find('http://fernand0.blogalia') 
-                                    if pos1 >=0: 
-                                        pos2 = comment.find(' ',pos1+1) 
-                                        pos3 = comment.find('\n',pos1+1) 
-                                        pos2 = min(pos2, pos3) 
-                                        logging.info(comment) 
-                                        comment = "{}(Enlace censurado por Facebook){}".format( comment[:pos1-1], comment[pos2:]) 
-
-                                        logging.info(comment) 
-                                    else: 
-                                        comment = None 
-                                result = api.publishPost(title, link, comment) 
-                                logging.info(result) 
-                                if isinstance(result, str): 
-                                    logging.info("Result %s"%str(result)) 
-                                    if result[:4]=='Fail': 
-                                        logging.debug("Fail detected %s"%str(result)) 
-                                        if ((result.find('duplicate')>=0) or
-                                                (result.find('abusive')>=0)):
-                                            duplicate = True 
-                                            link='' 
-                                            logging.info("Posting failed") 
-                                        elif result.find('Bad Request')>=0: 
-                                            link='' 
-                                            logging.info("Posting failed") 
-                                else: 
-                                    print(" [d] Published: {} - {}".format( 
-                                        result, 'OK')) 
-                                    result = 'OK'
-                        except:
-                                logging.warning("Some problem in {}".format(
-                                    profile.capitalize())) 
-                                logging.warning("Unexpected error:", sys.exc_info()[0]) 
-
+                    logging.info("Result: {}".format(str(result)))
+                    if  isinstance(result, int):
+                        result = str(result)
+                    if isinstance(result, str):
+                        if result[:4]=='Fail':
+                            link=''
+                        elif result[:21] == 'Wordpress API expired':
+                            print(" [d] Not published: {} - {}".format(
+                                result, 'Fail'))
+                            result = 'Fail!'
+                        else: 
+                            print(" [d] Published: {} - {}".format(
+                                result, 'OK'))
+                            result = 'OK'
+                    else:
+                        result = 'OK'
+ 
                     if result == 'OK':
                         with open(fileNameNext,'wb') as f:
                             pickle.dump((tNow,tSleep), f)
@@ -338,6 +232,8 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
             logging.info("There are no new posts in {}".format(blog.getUrl()))
 
         if result == 'OK':
+            if llink:
+                link = llink
             return link
         else:
             return ''
@@ -404,4 +300,63 @@ if __name__ == "__main__":
     if listPosts:
         moduleSocial.publishDelayTwitter(blog, listPosts ,'fernand0Test', timeSlots)
 
+#def publishDirect(blog, socialNetwork, i): 
+#    link = None
+#    if (i > 0): 
+#        profile = socialNetwork[0]
+#        nick = socialNetwork[1]
+#        (title, link, firstLink, image, summary, summaryHtml, 
+#                summaryLinks, content , links, comment) = (blog.obtainPostData(i - 1, False)) 
+#        logging.info("  Publishing directly\n") 
+#        serviceName = profile.capitalize() 
+#        print("   Publishing in %s %s" % (serviceName, title))
+#        if profile in ['telegram', 'facebook']:
+#            comment = summaryLinks
+#        elif profile == 'medium': 
+#            comment = summaryHtml
+#        else:
+#            comment = ''
+#
+#        if (profile in ['twitter', 'facebook', 'telegram', 'mastodon', 
+#            'linkedin', 'pocket', 'medium', 'instagram']): 
+#            # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically 
+#            import importlib 
+#            mod = importlib.import_module('module'+serviceName) 
+#            cls = getattr(mod, 'module'+serviceName) 
+#            api = cls() 
+#            api.setClient(nick) 
+#            if profile in ['facebook']: 
+#                pos1= comment.find('http://fernand0.blogalia')
+#                if pos1 >=0:
+#                    pos2 = comment.find(' ',pos1+1)
+#                    pos3 = comment.find('\n',pos1+1)
+#                    pos2 = min(pos2, pos3)
+#                    logging.info(comment)
+#                    comment = "{}(Enlace censurado por Facebook){}".format(
+#                            comment[:pos1-1],
+#                            comment[pos2:])
+#
+#                    logging.info(comment)
+#                else:
+#                    comment = None
+#                #url = link
+#                #apiurl = "http://tinyurl.com/api-create.php?url=" 
+#                #tinyurl = urllib.request.urlopen(apiurl + url).read() 
+#                #link = tinyurl.decode("utf-8")
+#            #print(link)
+#            result = api.publishPost(title, link, comment) 
+#            logging.debug(result) 
+#            if isinstance(result, str): 
+#                logging.info("Result %s"%str(result)) 
+#                if result[:4]=='Fail': 
+#                    logging.debug("Fail detected %s"%str(result)) 
+#                    if ((result.find('duplicate')>=0) or 
+#                            (result.find('abusive')>=0)): 
+#                        duplicate = True 
+#                        link='' 
+#                        logging.info("Posting failed") 
+#                elif result.find('Bad Request')>=0: 
+#                    link='' 
+#                    logging.info("Posting failed") 
+#    return link
 

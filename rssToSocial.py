@@ -16,23 +16,18 @@
 #
 
 import moduleRss
-# https://github.com/fernand0/scripts/blob/master/moduleRss.py
 import moduleXmlrpc
-# https://github.com/fernand0/scripts/blob/master/moduleXmlrpc.py
 import moduleSocial
-# https://github.com/fernand0/scripts/blob/master/moduleSocial.py
 import moduleCache
-# https://github.com/fernand0/scripts/blob/master/moduleCache.py
 import moduleSlack
-# https://github.com/fernand0/scripts/blob/master/moduleSlack.py
 import moduleForum
-# https://github.com/fernand0/scripts/blob/master/moduleForum.py
 import moduleGmail
-# https://github.com/fernand0/scripts/blob/master/moduleGmail.py
 import moduleWordpress
-# https://github.com/fernand0/scripts/blob/master/moduleImgur.py
 import moduleImgur
 import moduleImdb
+import modulePocket
+import moduleMastodon
+import moduleTwitter
 
 import configparser
 import os
@@ -82,6 +77,10 @@ def readConfig(checkBlog):
         url = config.get(section, "url")
         print("Section: {}".format(section))
         print(" Url: {}".format(url))
+        if 'hold' in config.options(section):
+            msgLog = " In hold state"
+            logMsg(msgLog, 1, 1)
+            continue
         if (not checkBlog) or (checkBlog.upper() == section.upper()):
             if ("rss" in config.options(section)):
                 rssFeed = config.get(section, "rss")
@@ -122,8 +121,23 @@ def readConfig(checkBlog):
                 logging.info(" Imdb: {}".format(imdb))
                 blog = moduleImdb.moduleImdb()
                 #blog.setClient((url,config.get(section,'channels').split(',')))
+            elif url.find('pocket')>=0:
+                pocket = config.get(section,'url')
+                logging.info(" Pocket: {}".format(pocket))
+                blog = modulePocket.modulePocket()
+                blog.setClient(pocket)
 
                 # If checkBlog is empty it will add all of them
+            elif url.find('mastodon')>=0:
+                mastodon = config.get(section,'url')
+                logging.info(" Mastodon: {}".format(mastodon))
+                blog = moduleMastodon.moduleMastodon()
+                blog.setClient(mastodon.split('@')[-1])
+            elif url.find('twitter')>=0:
+                twitter = config.get(section,'url')
+                logging.info(" Twitter: {}".format(twitter))
+                blog = moduleTwitter.moduleTwitter()
+                blog.setClient(twitter.split('/')[-1])
 
             blog.setUrl(url)
 
@@ -171,33 +185,42 @@ def updateCaches(blog, socialNetworks, simmulate):
         msgLog = "  Service: {} Nick: {}".format(profile, nick) 
         logMsg(msgLog, 1, 1)
 
-        if (blog.getProgram() and (profile[0] in blog.getProgram())): 
+        if (blog.getProgram() and ((profile[0] in blog.getProgram()))
+                or (blog.getProgram() and (profile in blog.getProgram()))): 
             lenMax = blog.len(profile)
         else:
             lenMax = bufferMax - 1
 
-        #msgLog = "   Service: {} Nick: {}".format(profile.capitalize(), nick)
-        #logMsg(msgLog, 1, 1)
 
         logging.debug("  Service %s Lenmax %d" % (profile, lenMax))
         num = blog.getMax()
+        #print(num, bufferMax, lenMax)
         if not num: 
-            num = bufferMax - lenMax
+            num = bufferMax #- lenMax
+        if lenMax > num:
+            num = 0
+        else:
+            num = num - lenMax
+        msgLog = f"  num: {num} bufferMax: {bufferMax} lenMax: {lenMax}"
+        logMsg(msgLog, 1, 1)
 
         lastLink, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
 
         if isinstance(lastLink, list):
-            myLastLink = lastLink[0]
+            if len(lastLink)>0:
+                myLastLink = lastLink[0]
+            else:
+                myLastLink = ''
         else:
             myLastLink = lastLink
 
         i = blog.getLinkPosition(myLastLink)
+        #print("i ",i)
  
         if (i == 0):
             msgLog = "   No new posts."
         else:
             msgLog = "   New posts."
-        logMsg(msgLog, 1, 1)
 
         hours = blog.getTime() 
 
@@ -216,8 +239,8 @@ def updateCaches(blog, socialNetworks, simmulate):
         msgLog = "    Last link: {}".format(myLastLink)
         logMsg(msgLog, 1, 1)
 
-        msgLog = "bufferMax - lenMax = num %d %d %d"% (bufferMax, lenMax, num)
-        logMsg(msgLog, 2, 0)
+        #msgLog = "bufferMax - lenMax = num %d %d %d"% (bufferMax, lenMax, num)
+        #logMsg(msgLog, 2, 0)
 
         listPosts = []
 

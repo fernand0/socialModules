@@ -30,8 +30,10 @@ class moduleWordpress(Content,Queue):
         self.api_posts_search='?search={}'
 
     def setClient(self, user):
-        logging.info("     Connecting Wordpress")
+        logging.info(f"     Connecting Wordpress {user}")
         self.service = 'Wordpress'
+        if isinstance(user, tuple):
+            user = user[1][1]
         try:
             config = configparser.RawConfigParser()
             config.read(CONFIGDIR + '/.rssWordpress')
@@ -144,7 +146,10 @@ class moduleWordpress(Content,Queue):
             idTags = self.checkTags(tags)
             # They must be in a comma separated string
             idTags = ','.join(str(v) for v in idTags)
-            payload = {"title":title,"content":comment,"status":'publish',#'draft', 
+            print("co",comment)
+            payload = {"title":title,"content":comment,
+                    "status":'publish', 
+                    # One of: publish, future, draft, pending, private
                     'tags':idTags}
             res = requests.post(self.api_base2 
                     + self.api_posts.format(self.my_site), 
@@ -159,6 +164,11 @@ class moduleWordpress(Content,Queue):
                 return("{} - \n https://{}/{}".format(title,
                     self.my_site,
                     resJ['generated_slug']))
+            else: 
+                tres = type(res)
+                logginf.info(f"Res: {res} type {tres}")
+                print(f"Res: {res} type {tres}")
+                return("Fail!")
         except KeyError:
             logging.info("Fail!")
             logging.info(self.report('KeyError Wordpress', post, link, sys.exc_info()))
