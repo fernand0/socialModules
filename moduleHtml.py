@@ -67,7 +67,7 @@ class moduleHtml(Content, Queue):
                 blog = moduleRss.moduleRss()
                 pos = theUrl2.find("/", 9)
                 blog.setUrl(theUrl2[: pos + 1])
-                rssFeed = theUrl2[pos + 1 :]
+                rssFeed = theUrl2[pos + 1:]
                 blog.setRssFeed(rssFeed)
                 blog.setPosts()
                 posPost = blog.getLinkPosition(theUrl)
@@ -281,7 +281,7 @@ class moduleHtml(Content, Queue):
             if firstLink[lenProt:pos] == theTitle[: pos - lenProt]:
                 # A way to identify retumblings. They have the name of the
                 # tumblr at the beggining of the anchor text
-                theTitle = theTitle[pos - lenProt + 1 :]
+                theTitle = theTitle[pos - lenProt + 1:]
 
         theSummary = soup.get_text()
         if self.getLinksToAvoid():
