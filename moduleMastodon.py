@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 
-import configparser
 import sys
 
 from bs4 import BeautifulSoup
-from bs4 import Tag
-from html.parser import HTMLParser
 
 import mastodon
 
@@ -162,7 +159,8 @@ def main():
     mastodon = moduleMastodon.moduleMastodon()
     mastodon.setClient("fernand0")
     # print("Testing posting and deleting")
-    # res = mastodon.publishPost("Prueba ", "http://elmundoesimperfecto.com/", '')
+    # res = mastodon.publishPost("Prueba ",
+    #                            "http://elmundoesimperfecto.com/", '')
     # print(res)
     # idPost = mastodon.getUrlId(res)
     # print(idPost)
@@ -241,7 +239,8 @@ def main():
     # p.publishPost(theTitle, firstLink, '')
 
     mastodon.publishPost(
-        "I'll publish several links each day about technology, social internet, security, ... as in",
+        "I'll publish several links each day about technology, "
+        "social internet, security, ... as in",
         "https://twitter.com/fernand0",
         "",
     )
