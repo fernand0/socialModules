@@ -222,6 +222,7 @@ class moduleGmail(Content,Queue):
             if title.find(self.getSearch())>=0:
                 # Older ones first
                 postsS.insert(0,post)
+        logging.info(f"Num posts {len(postsS)}")
         return postsS
 
 

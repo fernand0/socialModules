@@ -375,6 +375,7 @@ def main():
     wp.setClient('avecesunafoto')
     wp.setPostsType('posts')
     res = wp.setPosts()
+    res = wp.getPosts()
     if ((res == None) or (res[:4] == 'Fail')): 
         wp.authorize()
 

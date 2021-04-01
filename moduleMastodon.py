@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-import configparser
 import logging
 import sys
 
 from bs4 import BeautifulSoup
 
 import mastodon
-#pip install Mastodon.py
+# pip install Mastodon.py
 
 from configMod import *
 from moduleContent import *

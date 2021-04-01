@@ -223,6 +223,9 @@ def updateCaches(blog, socialNetworks, simmulate):
         msgLog = "    Last link: {}".format(myLastLink)
         logMsg(msgLog, 1, 1)
 
+        msgLog = f"    Available {len(blog.getPosts())}"
+        logMsg(msgLog, 1, 1)
+
         msgLog = f"    Would add {num} posts"
         logMsg(msgLog, 1, 1)
 
