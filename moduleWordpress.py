@@ -144,7 +144,7 @@ class moduleWordpress(Content,Queue):
     #    return('OK')
 
     def setTags(self): 
-        res = requests.get(self.api_base + self.api_tags.format(self.my_site)) 
+        res = requests.get(self.api_base + self.api_tags.format(self.my_site)+'?number=1000') 
         if res.ok:
             self.tags = json.loads(res.text)
 
@@ -165,6 +165,7 @@ class moduleWordpress(Content,Queue):
                     headers = self.headers,
                     data = payload)
             reply = json.loads(res.text)
+
             if 'ID' in reply:
                 newTags.append(tag)
                 idTags.append(reply['ID'])

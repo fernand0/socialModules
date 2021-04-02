@@ -413,6 +413,17 @@ def main():
     print(postWP)
     print("---tags----")
     print(tags)
+    print("---post extractDataMessage ----")
+    element = img.extractDataMessage(pos)
+    print(element)
+    (title, link, firstLink, image, summary, summaryHtml, 
+           summaryLinks, content, links, comment) = element
+
+    user = 'avecesunafoto'
+    import moduleWordpress
+    wp = moduleWordpress.moduleWordpress()
+    wp.setClient(user)
+    wp.publishPost(title, link, comment, tags=links)
 
     publishCache = False
     if publishCache:
