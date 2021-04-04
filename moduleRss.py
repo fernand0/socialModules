@@ -181,7 +181,6 @@ class moduleRss(Content,Queue):
     #    return lookAt
 
 
-
 def main(): 
 
     logging.basicConfig(stream=sys.stdout, level=logging.INFO, 
