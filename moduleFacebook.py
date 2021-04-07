@@ -74,7 +74,8 @@ class moduleFacebook(Content,Queue):
                 if 'data' in postt:
                     # We need to merge the two dictionaries to have the id and
                     # the other data
-                    posts.append({**postt['data'][0] , **post})
+                    if postt['data']:
+                        posts.append({**postt['data'][0] , **postt})
 
         return posts
         #outputData = {}

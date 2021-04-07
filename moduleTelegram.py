@@ -61,11 +61,11 @@ class moduleTelegram(Content):
     def setChannel(self, channel):
         self.channel = channel
 
-    def setPosts(self):
-        logging.info("  Setting posts")
-        self.posts = []
-        self.posts = self.getClient().getUpdates(allowed_updates='message')
-        print(self.posts)
+    # def setPosts(self):
+    #     logging.info("  Setting posts")
+    #     self.posts = []
+    #     self.posts = self.getClient().getUpdates(allowed_updates='message')
+    #     print(self.posts)
 
     def publishApiPost(self, postData):
         post, link, comment, plus = postData
