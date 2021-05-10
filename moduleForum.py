@@ -83,6 +83,9 @@ class moduleForum(Content, Queue):
             links = soup.find_all("a", {"class": selector})
         else:
             links = soup.find_all(class_=selector)
+        if not links:
+            links = soup.find_all('a')
+
         logging.debug(f"Links: {links}")
         return links
 
@@ -201,6 +204,7 @@ def main():
     )
 
     forums = [
+        #'https://cactuspro.com/forum/',
         "https://mammillaria.forumotion.net/",
         "https://www.cactuseros.com/foro/index.php",
         "http://foro.infojardin.com/",

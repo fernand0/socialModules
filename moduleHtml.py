@@ -154,6 +154,15 @@ class moduleHtml(Content, Queue):
             ("|", "| "),
             ("│", "| "),
             ("└", "-"),
+            ("→", "->"),
+            ("⁄", "/"),
+            ("⅓", "1/3"),
+            ("📸", "(camera)"),
+            ("✅", "(x)"),
+            ("👽", "(alien)"),
+            ("👍", "(ok)"),
+            ("🙀", "(oh)"),
+            ("🚀", "(despegar)"),
         ]
 
         from readability import Document
@@ -172,6 +181,7 @@ class moduleHtml(Content, Queue):
         myText = doc.summary()
         for a, b in replaceChars:
             myText = myText.replace(a, b)
+            theTitle = theTitle.replace(a, b)
 
         return (myText, theTitle)
 
@@ -335,13 +345,16 @@ class moduleHtml(Content, Queue):
             comment,
         )
 
+    def publishPost(self, title, url, comment = None):
+        return self.click(url)
+
     def click(self, url):
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3)"
             " AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47"
             " Safari/537.36"
         }
-        logging.debug("url", url)
+        logging.debug(f"url: {url}")
         response = requests.get(url, headers=headers)
         if response.status_code != 200:
             logging.info(response.text)

@@ -316,6 +316,18 @@ class moduleCache(Content,Queue):
 
         return("%s"% post[0])
 
+    def obtainPostData(self, i, debug=False):
+        if not self.posts:
+            self.setPosts()
+
+        posts = self.getPosts()
+
+        if not posts:
+            return (None, None, None, None, None, None, None, None, None, None)
+        post = posts[i]
+        return post
+
+
     #def delete(self, j):
     #    logging.info("Deleting %d"% j)
     #    post = self.obtainPostData(j)

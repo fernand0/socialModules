@@ -132,7 +132,6 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
     #print(numPosts)
     llink = None
     tSleep = random.random()*timeSlots
-    tSleep2 = timeSlots - tSleep
     
     listP = listNextPosts(blog, socialNetwork)
     element, listP = nextPost(blog, socialNetwork, listP)
@@ -209,6 +208,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                     elif profile in ['html']: 
                         result = api.click(myLink)
                     else: 
+                        title = f"'{title}'"
                         result = api.publishPost(title, link, comment)
                 except:
                     logging.warning("Some problem in {}".format(

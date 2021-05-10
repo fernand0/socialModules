@@ -309,11 +309,12 @@ class moduleGmail(Content,Queue):
     def getMessageId(self, idPost): 
         api = self.getClient()
         message = api.users().messages().get(userId="me", id=idPost).execute()
-        #import pprint
-        #pprint.pprint(message)
+        # import pprint
+        # pprint.pprint(f"mes: {message}")
         mes = ""
-        for part in message['payload']['parts']:
-            mes  = mes + str(base64.urlsafe_b64decode(part['body']['data']))
+        if 'parts' in message['payload']:
+            for part in message['payload']['parts']:
+                mes  = mes + str(base64.urlsafe_b64decode(part['body']['data']))
         return(mes)
 
     def getMessage(self, idPost): 
@@ -470,6 +471,7 @@ class moduleGmail(Content,Queue):
         theSummaryLinks = message
         comment = self.getPostId(message) 
 
+        theLink = theLinks[0]
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
     def editl(self, j, newTitle):
@@ -501,6 +503,9 @@ class moduleGmail(Content,Queue):
         logging.info("Update %s" % update)
         update = "Changed "+title+" with "+newTitle
         return(update)
+
+    def publishPost(self, j):
+        return self.publish(self, j)
 
     def publish(self, j):
         logging.info("Publishing %d"% j)                
@@ -547,8 +552,14 @@ class moduleGmail(Content,Queue):
         logging.info(f"Res: {result}")
         return(result)
 
-    def delete(self, j, typePost='drafts'):
+    def delete(self, j):
         logging.info("Deleting %d"% j)
+
+        typePost = self.getPostsType()
+        logging.info(f"Deleting {typePost}")
+
+        if (not typePost or (typePost == 'search')):
+            typePost = 'messages'
 
         api = self.getClient()
         idPost = self.getPosts()[j]['list']['id'] #thePost[-1]
@@ -556,10 +567,15 @@ class moduleGmail(Content,Queue):
             title = self.getHeader(self.getPosts()[j]['meta'], 'Subject')
         except:
             title = ''
+
+        logging.info(f"id {idPost}")
+
         if typePost == 'drafts': 
-            update = api.users().drafts().delete(userId='me', id=idPost).execute() 
+            update = api.users().drafts().trash(userId='me', id=idPost).execute() 
         else:
-            update = api.users().messages().delete(userId='me', id=idPost).execute() 
+            logging.info(f"id {idPost}")
+            update = api.users().messages().trash(userId='me', id=idPost).execute() 
+            logging.info(f"id {update}")
  
         return("Deleted %s"% title)
  
@@ -677,7 +693,7 @@ class moduleGmail(Content,Queue):
 
 def main():
     logging.basicConfig(stream=sys.stdout, 
-            level=logging.INFO, 
+            level=logging.DEBUG, 
             format='%(asctime)s %(message)s')
 
     import moduleGmail

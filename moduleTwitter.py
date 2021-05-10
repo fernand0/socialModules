@@ -60,7 +60,13 @@ class moduleTwitter(Content,Queue):
         post, link, comment, plus = postData
         post = self.addComment(post, comment)
 
-        post = post[:(240 - (len(link) + 1))]
+        # post = post[:(240 - (len(link) + 1))]
+        post = post[:(240 - (23 + 1))]
+        # https://help.twitter.com/en/using-twitter/how-to-tweet-a-link
+        # A URL of any length will be altered to 23 characters, even if the
+        # link itself is less than 23 characters long. Your character count
+        # will reflect this.
+
         logging.info("     Publishing: %s" % post)
         res = 'Fail!'
         try:

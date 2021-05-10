@@ -88,8 +88,10 @@ def readConfig(checkBlog):
                 logging.info(" Forum: {}".format(forum))
                 blog = moduleForum.moduleForum()
                 blog.setClient(forum)
-            elif "gmail" in config.options(section):
-                mail = config.get(section, "gmail")
+            elif (("gmail" in config.options(section)) or
+                    (("service" in config.options(section))
+                        and (config[section]['service']=='gmail'))):
+                mail = config.get(section, "url")
                 logging.info(" Gmail: {}".format(mail))
                 blog = moduleGmail.moduleGmail()
                 blog.setClient(("gmail", mail))

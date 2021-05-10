@@ -110,13 +110,12 @@ class Content:
 
         logging.info(f"  Setting posts in {self.service} ({identifier})")
         val = hasattr(self, "getPostsType")
-        logging.info(f"  Setting posts in {val}")
 
         typePosts = self.getPostsType()
-        logging.debug(f"setApi{typePosts}")
+        logging.debug(f"setApi {typePosts}")
         if hasattr(self, "getPostsType") and self.getPostsType():
             typePosts = self.getPostsType()
-            logging.debug(f"setApi{typePosts}")
+            logging.debug(f"setApi {typePosts}")
             if typePosts == "cache":
                 cmd = getattr(self, "setApiCache")
             else:
