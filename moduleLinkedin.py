@@ -129,9 +129,9 @@ def main():
         ln.authorize()
 
 
-    #print("ll",ln.publishPost("A ver otro", "https://www.linkedin.com/in/fernand0/",''))
+    print("ll",ln.publishPost("A ver otro", "https://www.linkedin.com/in/fernand0/",''))
     #sys.exit()
-    print(ln.deleteApiPosts('6764243697006727168'))
+    # print(ln.deleteApiPosts('6764243697006727168'))
     sys.exit()
 
     print("Testing posts")

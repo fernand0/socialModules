@@ -41,6 +41,7 @@ class Content:
         logging.info(f"setting service {ser}")
         self.service = self.__class__.__name__[6:]
         # They start with module
+        self.hold = None
 
     def setClient(self, account):
         logging.info("    Connecting {}: {}".format(self.service, account))
@@ -437,11 +438,17 @@ class Content:
     def setLinksToAvoid(self, linksToAvoid):
         self.linksToAvoid = linksToAvoid
 
+    def setTime(self, time):
+        self.time = time
+
     def getTime(self):
         return self.time
 
-    def setTime(self, time):
-        self.time = time
+    def setHold(self, hold):
+        self.hold = hold
+
+    def getHold(self):
+        return self.hold
 
     # def getBuffer(self):
     #    return(self.buffer)

@@ -72,6 +72,9 @@ class moduleCache(Content,Queue):
 
         return(listP)
 
+    def getLinkPosition(self, link):
+        return 1
+
     #def setPostt(self):        
     #    logging.debug("Service %s Nick %s" % (self.service, self.nick))
     #    fileNameQ = fileNamePath(self.url, 
@@ -276,9 +279,9 @@ class moduleCache(Content,Queue):
             #logging.info(f"newpost {newPost}")
 
     def publish(self, j):
-        logging.info("Publishing %d"% j)
+        logging.info(">>>Publishing %d"% j)
         post = self.obtainPostData(j)
-        logging.info("Publishing {post[0]} in {self.service} user {self.nick}")
+        logging.info(">>>Publishing {post[0]} in {self.service} user {self.nick}")
         api = getApi(self.service, self.nick)
         comment = ''
         title = post[0]

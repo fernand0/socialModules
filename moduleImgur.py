@@ -80,11 +80,11 @@ class moduleImgur(Content, Queue):
     def getPostTitle(self, post):
         return post.title
 
-    def getLinkPosition(self, link):
-        if self.getPostsType() == 'posts':
-            return len(self.getPosts())
-        else:
-            return Content.getLinkPosition(self, link)
+    # def getLinkPosition(self, link):
+    #     if self.getPostsType() == 'posts':
+    #         return len(self.getPosts())
+    #     else:
+    #         return Content.getLinkPosition(self, link)
 
     def getPostLink(self, post):
         if self.getPostsType() == 'cache':
@@ -301,7 +301,7 @@ def main():
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs')
 
-    accounts = ["Blog20", "Blog21"]
+    accounts = ["Blog21"] #, "Blog21"]
     for acc in accounts:
         print("Account: {}".format(acc))
         img = moduleImgur.moduleImgur()
@@ -320,10 +320,16 @@ def main():
         for i, p in enumerate(img.getPosts()):
             link = img.getPostLink(p)
             print(i, img.getPostTitle(p), img.getPostLink(p))
-        i = 5
+        socialNetwork = ('wordpress','avecesunafoto')
+        lastLink, lastTime = checkLastLink(img.getUrl(), socialNetwork)
+        print(lastLink)
+        i = img.getLinkPosition(lastLink)
+        print(f"i: {i}")
+        print(img.getNumPostsData(1,i, lastLink))
+        print(img.obtainPostData(i))
         p = img.getPost(i)
         print(i, img.getPostTitle(p), img.getPostLink(p))
-        print(img.editApiTitle(p, 'No se su nombre'))
+        # print(img.editApiTitle(p, 'No se su nombre'))
 
         selection = input("Which one? ")
         print(selection)
