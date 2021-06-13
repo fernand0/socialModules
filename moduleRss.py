@@ -129,8 +129,8 @@ class moduleRss(Content,Queue):
 
 
         theSummary = soup.get_text()
-        if self.getLinksToAvoid():
-            (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinkstoavoid())
+        if hasattr(self, 'getLinksToAvoid') and self.getLinksToAvoid():
+            (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinksToAvoid())
             logging.debug("theC %s" % theContent)
             if theContent.startswith('Anuncios'): 
                 theContent = ''
@@ -196,7 +196,7 @@ def main():
 
     print("Configured blogs:")
 
-    accounts = ["Blog9", "Blog22", "Blog1", "Blog2", "Blog9"]
+    accounts = ["Blog2", "Blog9", "Blog22", "Blog1"]
     for acc in accounts:
         print("Account: {}".format(acc))
         blog = moduleRss.moduleRss()

@@ -19,15 +19,23 @@ class moduleMastodon(Content, Queue):
         super().__init__()
 
     def getKeys(self, config):
-        if self.user.startswith('@'):
-            self.user = self.user[1:]
+        #if self.user.startswith('@'):
+        #    self.user = self.user[1:]
 
         access_token = config[self.user]['access_token']
         return ((access_token, ))
 
     def initApi(self, keys):
+        pos = self.user.find('@',1) # The first character can be @
+        if pos > 0:
+            self.base_url = f"https://{self.user[pos:]}"
+            self.user = self.user[:pos]
+        else:
+            self.base_url = 'https://mastodon.social'
+            
+        print(f"user:  {self.user} base: {self.base_url}")
         client = mastodon.Mastodon(access_token=keys[0],
-                                   api_base_url='https://mastodon.social')
+                                   api_base_url=self.base_url)
         return client
 
     def setApiPosts(self):
@@ -44,12 +52,31 @@ class moduleMastodon(Content, Queue):
             res = self.getAttribute(reply, 'uri')
         return res
 
+    def publishApiImage(self, postData):
+        post, image, plus = postData
+
+        res = 'Fail!'
+        if True:
+            res = self.getClient().media_post(image, "image/png")
+            res = self.getClient().status_post(post, media_ids = res['id'])
+        else:
+            res = self.getClient().status_post(post+" "+link,
+                    visibility='private')
+        print(f"res: {res}")
+        return res
+ 
     def publishApiPost(self, postData):
         post, link, comment, plus = postData
         post = self.addComment(post, comment)
 
         res = 'Fail!'
-        res = self.getClient().toot(post+" "+link)
+        if True:
+            res = self.getClient().toot(post+" "+link)
+        else:
+            res = self.getClient().status_post(post+" "+link,
+                    visibility='private')
+            # 'direct' 'private' 'unlisted' 'public'
+
 
         return res
 
@@ -134,21 +161,20 @@ class moduleMastodon(Content, Queue):
 def main():
 
     logging.basicConfig(stream=sys.stdout,
-                        level=logging.INFO,
+                        level=logging.DEBUG,
                         format='%(asctime)s %(message)s')
 
     import moduleMastodon
 
     mastodon = moduleMastodon.moduleMastodon()
-    mastodon.setClient('fernand0')
-    # print("Testing posting and deleting")
-    # res = mastodon.publishPost("Prueba ",
-    #                            "http://elmundoesimperfecto.com/", '')
-    # print(res)
-    # idPost = mastodon.getUrlId(res)
-    # print(idPost)
-    # input('Delete? ')
-    # mastodon.deletePostId(idPost)
+    mastodon.setClient('@fernand0Test@fosstodon.org')
+    print("Testing posting and deleting")
+    res = mastodon.publishImage("Prueba ", "/tmp/prueba.png")
+    print(res)
+    idPost = mastodon.getUrlId(res)
+    print(idPost)
+    input('Delete? ')
+    mastodon.deletePostId(idPost)
     # sys.exit()
     print("Testing posts")
     mastodon.setPostsType('posts')

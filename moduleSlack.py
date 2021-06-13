@@ -25,7 +25,7 @@ class moduleSlack(Content, Queue):
         self.slack_token = None
         self.user_slack_token = None
         self.channel = None
-        self.postaction = 'delete'
+        self.postaction = None
 
     def getKeys(self, config):
         slack_token = config.get(self.service, "oauth-token")

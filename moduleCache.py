@@ -72,8 +72,8 @@ class moduleCache(Content,Queue):
 
         return(listP)
 
-    def getLinkPosition(self, link):
-        return 1
+    # def getLinkPosition(self, link):
+    #     return 1
 
     #def setPostt(self):        
     #    logging.debug("Service %s Nick %s" % (self.service, self.nick))
@@ -233,6 +233,7 @@ class moduleCache(Content,Queue):
         return(idPost)
 
     def editApiTitle(self, post, newTitle=''):
+        logging.info(f"ApiTitle: {newTitle}. Post: {post}")
         oldLink = self.getPostLink(post)
         idPost = self.getLinkPosition(oldLink)
         oldTitle = self.getPostTitle(post)

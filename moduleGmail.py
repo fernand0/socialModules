@@ -215,15 +215,13 @@ class moduleGmail(Content,Queue):
         return pPosts
 
     def setApiSearch(self, label=None, mode=''): 
-        posts = self.setApiMessages()
-        postsS = []
-        for post in posts: 
-            title = self.getPostTitle(post)
-            if title.find(self.getSearch())>=0:
-                # Older ones first
-                postsS.insert(0,post)
-        logging.info(f"Num posts {len(postsS)}")
-        return postsS
+        posts = self.getClient().users().messages().list(userId='me',
+                q=self.getSearch()).execute()
+        #posts = self.setApiMessages()
+        posts = self.processPosts(posts, label, mode)
+        print(posts)
+        logging.info(f"Num posts {len(posts)}")
+        return posts
 
 
     def setApiSearchh(self, label=None, mode=''): 

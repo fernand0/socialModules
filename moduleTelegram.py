@@ -42,7 +42,10 @@ class moduleTelegram(Content):
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssTelegram')
 
-            TOKEN = config.get("Telegram", "TOKEN")
+            if channel in config:
+                TOKEN = config.get(channel, "TOKEN")
+            else:
+                TOKEN = config.get("Telegram", "TOKEN")
 
             try:
                 bot = telepot.Bot(TOKEN)
@@ -61,11 +64,17 @@ class moduleTelegram(Content):
     def setChannel(self, channel):
         self.channel = channel
 
-    # def setPosts(self):
-    #     logging.info("  Setting posts")
-    #     self.posts = []
-    #     self.posts = self.getClient().getUpdates(allowed_updates='message')
-    #     print(self.posts)
+    def publishApiImage(self, postData):
+        post, image, plus = postData
+
+        bot = self.getClient()
+        channel = self.user
+        if True:
+            bot.sendPhoto('@'+channel, photo=open(image, 'rb'), caption=post)
+        else:
+            return(self.report('Telegram', post, sys.exc_info()))
+
+
 
     def publishApiPost(self, postData):
         post, link, comment, plus = postData
@@ -93,6 +102,7 @@ class moduleTelegram(Content):
 
         logging.info("Publishing (text to )" + textToPublish)
         logging.info("Publishing (text to 2)" + textToPublish2)
+
 
         try:
             bot.sendMessage('@'+channel, textToPublish, parse_mode='HTML')
@@ -171,22 +181,24 @@ def main():
 
     tel = moduleTelegram.moduleTelegram()
 
-    tel.setClient('Telegram')
-    tel.setChannel('testFernand0')
+    tel.setClient('testFernand0')
+    # tel.setChannel('testFernand0')
 
-    print("Testing posts")
-    tel.setPosts()
+    res = tel.publishImage("Prueba imagen", "/tmp/prueba.png")
 
-    for post in tel.getPosts():
-        print(post)
+    # print("Testing posts")
+    # tel.setPosts()
 
-    print("Testing title and link")
+    # for post in tel.getPosts():
+    #     print(post)
 
-    for post in tel.getPosts():
-        print(post)
-        title = tel.getPostTitle(post)
-        link = tel.getPostLink(post)
-        print("Title: {}\nLink: {}\n".format(title, link))
+    # print("Testing title and link")
+
+    # for post in tel.getPosts():
+    #     print(post)
+    #     title = tel.getPostTitle(post)
+    #     link = tel.getPostLink(post)
+    #     print("Title: {}\nLink: {}\n".format(title, link))
 
     sys.exit()
 

@@ -33,8 +33,8 @@ class moduleTwitter(Content,Queue):
         return(CONSUMER_KEY, CONSUMER_SECRET, TOKEN_KEY, TOKEN_SECRET)
 
     def initApi(self, keys):
-        authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
-        client = Twitter(auth=authentication)
+        self.authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
+        client = Twitter(auth=self.authentication)
         return client
 
     def setApiPosts(self):
@@ -56,12 +56,32 @@ class moduleTwitter(Content,Queue):
         logging.info("     Res: %s" % res)
         return(res)
 
+    def publishApiImage(self, postData): 
+        post, imageName, more = postData
+        with open(imageName, "rb") as imagefile:
+                imagedata = imagefile.read()
+    
+        res = 'Fail!'
+        try:
+            t_upload = Twitter(domain='upload.twitter.com', 
+                            auth=self.authentication)
+            id_img1 = t_upload.media.upload(media=imagedata)["media_id_string"]
+            res = self.getClient().statuses.update(status=post, 
+                media_ids=id_img1)
+        except twitter.api.TwitterHTTPError as twittererror:        
+            for error in twittererror.response_data.get("errors", []): 
+                logging.info("      Error code: %s" % error.get("code", None))
+            res = self.report('Twitter', post, link, sys.exc_info())
+        return res
+
     def publishApiPost(self, postData): 
         post, link, comment, plus = postData
         post = self.addComment(post, comment)
 
         # post = post[:(240 - (len(link) + 1))]
-        post = post[:(240 - (23 + 1))]
+        if link:
+            post = post[:(240 - (23 + 1))]
+            post = post+" " + link
         # https://help.twitter.com/en/using-twitter/how-to-tweet-a-link
         # A URL of any length will be altered to 23 characters, even if the
         # link itself is less than 23 characters long. Your character count
@@ -70,7 +90,7 @@ class moduleTwitter(Content,Queue):
         logging.info("     Publishing: %s" % post)
         res = 'Fail!'
         try:
-            res = self.getClient().statuses.update(status=post+" " + link)
+            res = self.getClient().statuses.update(status=post)
         except twitter.api.TwitterHTTPError as twittererror:        
             for error in twittererror.response_data.get("errors", []): 
                 logging.info("      Error code: %s" % error.get("code", None))
@@ -180,13 +200,15 @@ def main():
     #tw.setFriends()
     #sys.exit()
 
+    res = tw.publishImage("Prueba imagen", "/tmp/prueba.png")
     #print("Testing posting and deleting")
-    #res = tw.publishPost("Prueba borrando 7", "http://elmundoesimperfecto.com/", '')
-    #print(res)
-    #idPost = tw.getUrlId(res)
-    #print(idPost)
-    #input('Delete? ')
-    #tw.deletePostId(idPost)
+    # res = tw.publishPost("Prueba borrando 7", "http://elmundoesimperfecto.com/", '')
+    # print(res)
+    idPost = tw.getUrlId(res)
+    print(idPost)
+    input('Delete? ')
+    tw.deletePostId(idPost)
+    return
     #sys.exit()
     print("Testing posts")
     tw.setPostsType('posts')

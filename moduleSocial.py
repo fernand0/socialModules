@@ -248,7 +248,8 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                         blog.cache[socialNetwork].updatePostsCache()
                     elif hasattr(blog, 'nextPosts'): 
                         blog.nextPosts[socialNetwork] = listP
-                        blog.updatePostsCache(socialNetwork)
+                        if hasattr(blog, 'updatePostsCache'): 
+                            blog.updatePostsCache(socialNetwork)
                     else:
                         print("What happened?")
 

@@ -48,7 +48,7 @@ class Content:
 
         if isinstance(account, str):
             self.user = account
-        elif isinstance(account[1], str) and (account[1].find('@') >= 0):
+        elif isinstance(account[1], str) and (account[1].find('@') > 0):
             # Grrrr
             self.user = account[1]
         elif isinstance(account[0], str):
@@ -316,20 +316,28 @@ class Content:
     def addComment(self, post, comment):
         if comment:
             post = comment + " " + post
-            try:
-                h = HTMLParser()
-                post = h.unescape(post)
-            except:
-                post = html.unescape(post)
+        try:
+            h = HTMLParser()
+            post = h.unescape(post)
+        except:
+            post = html.unescape(post)
 
         return post
 
+    def publishImage(self, post, image, **more):
+        logging.info(f"    Publishing image in {self.service}: {post}")
+        try:
+            reply = self.publishApiImage((post, image, more))
+            return self.processReply(reply)
+        except:
+            return self.report(self.service, post, image, sys.exc_info())
+       
     def publishPost(self, post, link="", comment="", **more):
         logging.info(f"    Publishing in {self.service}: {post}")
-        if True:
+        try:
             reply = self.publishApiPost((post, link, comment, more))
             return self.processReply(reply)
-        else:
+        except:
             return self.report(self.service, post, link, sys.exc_info())
 
     def deletePostId(self, idPost):
@@ -402,7 +410,7 @@ class Content:
         update = self.do_edit(j, newLink=newLink)
         return update
 
-    def updatePostsCache(self, socialNetwork):
+    def updatePostsCachee(self, socialNetwork):
         service = socialNetwork[0]
         nick = socialNetwork[1]
         fileNameQ = fileNamePath(self.url, (service, nick)) + ".queue"
@@ -683,13 +691,18 @@ class Content:
             if description:
                 import string
 
-                if iimg[1].endswith(" ") or iimg[1].endswith("\xa0"):
+                print(f"iimg {iimg}")
+                if (iimg[1] and iimg[1].endswith(" ") 
+                        or iimg[1].endswith("\xa0")):
                     # \xa0 is actually non-breaking space in Latin1 (ISO
                     # 8859-1), also chr(160).
                     # https://stackoverflow.com/questions/10993612/how-to-remove-xa0-from-string-in-python
                     title = iimg[1][:-1]
                 else:
-                    title = iimg[1]
+                    if iimg[1]:
+                        title = iimg[1]
+                    else:
+                        title = "No title"
                 if title[-1] in string.punctuation:
                     text = (
                         '{}\n<p><h4>{}</h4></p><p><a href="{}">'

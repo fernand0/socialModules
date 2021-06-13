@@ -38,7 +38,7 @@ def logMsg(msgLog, log=1, output=1):
 def fileNamePath(url, socialNetwork=()):
     if not socialNetwork: 
         theName = (DATADIR  + '/' 
-               + urllib.parse.urlparse(url).netloc + ".last")
+               + urllib.parse.urlparse(url).netloc)
     else: 
         myFile = (f"{DATADIR}/{urllib.parse.urlparse(url).netloc}_"
                   f"{socialNetwork[0]}_{socialNetwork[1]}")
