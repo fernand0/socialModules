@@ -219,7 +219,6 @@ class moduleGmail(Content,Queue):
                 q=self.getSearch()).execute()
         #posts = self.setApiMessages()
         posts = self.processPosts(posts, label, mode)
-        print(posts)
         logging.info(f"Num posts {len(posts)}")
         return posts
 
@@ -318,8 +317,8 @@ class moduleGmail(Content,Queue):
     def getMessage(self, idPost): 
         api = self.getClient()
         message = api.users().drafts().get(userId="me", id=idPost).execute()
-        print(message)
-        print(message['message'])
+        # print(message)
+        # print(message['message'])
         return message
 
     def getMessageRaw(self, msgId, typePost='drafts'): 

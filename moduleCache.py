@@ -40,7 +40,10 @@ class moduleCache(Content,Queue):
             self.user = param
             logging.warning("This is not possible!")
         elif isinstance(param[1], str):
-            self.url = param[0]
+            if param[0].find('http')>= 0:
+                self.url = param[0]
+            else:
+                self.socialNetwork = param[0]
             self.nick = param[1]
         else: 
             self.url = param[0]
@@ -56,7 +59,10 @@ class moduleCache(Content,Queue):
 
     def setApiPosts(self):        
         url = self.getUrl()
-        service = self.getService()
+        if hasattr(self, "socialNetwork"):
+            service = self.socialNetwork
+        else: 
+            service = self.getService()
         nick = self.getNick()
         logging.debug(f"Url {url} service {service} nick {nick}")
         fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
@@ -327,7 +333,7 @@ class moduleCache(Content,Queue):
         posts = self.getPosts()
 
         if not posts:
-            return (None, None, None, None, None, None, None, None, None, None)
+            return None
         post = posts[i]
         return post
 

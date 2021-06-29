@@ -152,6 +152,8 @@ class moduleWordpress(Content,Queue):
         return self.tags
 
     def checkTags(self, tags):
+        if isinstance(tags,dict):
+            tags = tags['tags']
         idTags = []
         newTags = []
         if not self.tags:
@@ -198,12 +200,13 @@ class moduleWordpress(Content,Queue):
 
     def publishApiPost(self, postData): 
         if len(postData)>3:
-           tags = postData[3]['tags']
+           tags = postData[3]
            idTags = self.checkTags(tags)
            logging.info("     Tags: {idTags}")
            idTags = ','.join(str(v) for v in idTags) 
         else: 
            idTags = "" 
+        sys.exit()
         title = postData[0]
         link = postData[1]
         comment = postData[2]

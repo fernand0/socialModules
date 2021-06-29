@@ -110,9 +110,9 @@ class Content:
             identifier = self.getUrl()
 
         logging.info(f"  Setting posts in {self.service} ({identifier})")
-        val = hasattr(self, "getPostsType")
 
         typePosts = self.getPostsType()
+        logging.info(f"  Setting posts in {self.service} ({self.getPostsType()})")
         logging.debug(f"setApi {typePosts}")
         if hasattr(self, "getPostsType") and self.getPostsType():
             typePosts = self.getPostsType()
@@ -125,8 +125,12 @@ class Content:
                     self, f"setApi{self.getPostsType().capitalize()}"
                 )
         else:
-            cmd = getattr(self, "setApiPosts")
-        self.assignPosts(cmd())
+            cmd = getattr(self, "setApiPosts") 
+
+        logging.info(f"Cmd: {cmd}")
+        posts = cmd()
+        logging.debug(f"Posts: {posts}")
+        self.assignPosts(posts)
 
     def getClient(self):
         client = None
@@ -294,7 +298,8 @@ class Content:
             if i < 0:
                 break
             post = self.obtainPostData(i, False)
-            listPosts.append(post)
+            if post:
+                listPosts.append(post)
         return listPosts
 
     def getDrafts(self):
@@ -554,8 +559,6 @@ class Content:
 
     def getLinkPosition(self, link):
         posts = self.getPosts()
-        # for pp in posts:
-        #    print(self.getPostTitle(pp))
         pos = len(posts)
         if posts:
             if not link:
@@ -566,7 +569,7 @@ class Content:
                 if isinstance(link, bytes):
                     linkS = linkS.decode()
                 url = self.getPostLink(entry)
-                logging.debug("\n{}\n{}".format(url, linkS))
+                # logging.debug("\n{}\n{}".format(url, linkS))
                 # print("{} {}".format(url, linkS))
                 lenCmp = min(len(url), len(linkS))
                 if url[:lenCmp] == linkS[:lenCmp]:

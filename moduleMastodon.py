@@ -33,7 +33,7 @@ class moduleMastodon(Content, Queue):
         else:
             self.base_url = 'https://mastodon.social'
             
-        print(f"user:  {self.user} base: {self.base_url}")
+        logging.info(f"Mastodon user:  {self.user} base: {self.base_url}")
         client = mastodon.Mastodon(access_token=keys[0],
                                    api_base_url=self.base_url)
         return client

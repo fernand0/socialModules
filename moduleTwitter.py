@@ -58,6 +58,7 @@ class moduleTwitter(Content,Queue):
 
     def publishApiImage(self, postData): 
         post, imageName, more = postData
+        logging.info(f"More: {more}")
         with open(imageName, "rb") as imagefile:
                 imagedata = imagefile.read()
     
@@ -66,6 +67,10 @@ class moduleTwitter(Content,Queue):
             t_upload = Twitter(domain='upload.twitter.com', 
                             auth=self.authentication)
             id_img1 = t_upload.media.upload(media=imagedata)["media_id_string"]
+            if 'alt' in more:
+                t_upload.media.metadata.create(_json={ "media_id": id_img1, 
+                    "alt_text": { "text": more['alt'] }
+})
             res = self.getClient().statuses.update(status=post, 
                 media_ids=id_img1)
         except twitter.api.TwitterHTTPError as twittererror:        
@@ -200,7 +205,8 @@ def main():
     #tw.setFriends()
     #sys.exit()
 
-    res = tw.publishImage("Prueba imagen", "/tmp/prueba.png")
+    res = tw.publishImage("Prueba imagen", "/tmp/2021-06-25_image.png", 
+           alt= "Imagen con alt")
     #print("Testing posting and deleting")
     # res = tw.publishPost("Prueba borrando 7", "http://elmundoesimperfecto.com/", '')
     # print(res)

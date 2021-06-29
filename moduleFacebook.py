@@ -110,6 +110,23 @@ class moduleFacebook(Content,Queue):
             res = self.page.put_object('me', "feed", message=post, link=link)
         return res
 
+    def publishApiImage(self, postData): 
+        post, imageName, more = postData
+        with open(imageName, "rb") as imagefile:
+                imagedata = imagefile.read()
+    
+        res = 'Fail!'
+        try:
+            if 'alt' in more:
+                res = self.page.put_photo(imagedata, message=post, 
+                    alt_text_custom = more['alt'])
+            else:
+                res = self.page.put_photo(imagedata, message=post)
+        except:
+            res = self.report('Facebook', post, '', sys.exc_info())
+        return res
+
+
     def deleteApiPosts(self, idPost): 
         result = self.page.delete_object(idPost)
         logging.info(f"Res: {result}")
@@ -160,7 +177,11 @@ def main():
     fc = moduleFacebook.moduleFacebook()
 
     fc.setClient('me')
-    fc.setPage('Enlaces de fernand0')
+    fc.setPage('Fernand0Test')
+
+    res = fc.publishImage("prueba imagen", "/tmp/2021-06-26_image.png", alt="Imagen con alt")
+    print(res)
+    return
     #print("Testing posting and deleting")
     #res = fc.publishPost("Prueba borrando 7", "http://elmundoesimperfecto.com/", '')
     #print("Res",res)

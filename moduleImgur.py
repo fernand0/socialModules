@@ -18,10 +18,14 @@ class moduleImgur(Content, Queue):
         self.service = 'Imgur'
 
     def getKeys(self, config):
-        client_id = config.get(self.user, 'client_id')
-        client_secret = config.get(self.user, 'client_secret')
-        access_token = config.get(self.user, 'access_token')
-        refresh_token = config.get(self.user, 'refresh_token')
+        if self.user.find('http')>=0:
+            user = self.user.split('/')[-1]
+        else:
+            user = self.user
+        client_id = config.get(user, 'client_id')
+        client_secret = config.get(user, 'client_secret')
+        access_token = config.get(user, 'access_token')
+        refresh_token = config.get(user, 'refresh_token')
 
         return (client_id, client_secret, access_token, refresh_token)
 
@@ -46,8 +50,16 @@ class moduleImgur(Content, Queue):
     def setApiPosts(self):
         posts = []
         client = self.getClient()
+        logging.debug(f"Client: {client} {self.user} ")
+        if self.user.find('https')>=0:
+            user = self.user.split('/')[-1]
+        else:
+            user = self.user
+
+        logging.debug(f"User: {user}")
+
         if client:
-            for album in client.get_account_albums(self.user):
+            for album in client.get_account_albums(user):
                 logging.debug(f"{time.ctime(album.datetime)} {album.title}")
                 if album.in_gallery:
                     posts.append(album)
@@ -58,14 +70,22 @@ class moduleImgur(Content, Queue):
     def setApiDrafts(self):
         posts = []
         client = self.getClient()
+        logging.info(f"Client: {client}")
+        logging.info(f"User: {self.user}")
 
         if client:
-            for album in client.get_account_albums(self.user):
+            if self.user.find('http')>= 0:
+                user = self.user.split('/')[-1]
+            else:
+                user = self.user
+
+            logging.info(f"User: {user}")
+            for album in client.get_account_albums(user):
                 info = f"{time.ctime(album.datetime)} {album.title}"
-                logging.debug(info)
+                logging.info(f"Info: {info}")
                 if not album.in_gallery:
                     posts.append(album)
-                    logging.debug(f"Draft: {info}")
+                    # logging.info(f"Draft: {info}")
         else:
             logging.warning('No client configured!')
 
@@ -293,7 +313,7 @@ class moduleImgur(Content, Queue):
 
 def main():
 
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
                         format='%(asctime)s %(message)s')
 
     import moduleImgur
@@ -301,7 +321,7 @@ def main():
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs')
 
-    accounts = ["Blog21"] #, "Blog21"]
+    accounts = ["Blog20"] #, "Blog21"]
     for acc in accounts:
         print("Account: {}".format(acc))
         img = moduleImgur.moduleImgur()
@@ -313,7 +333,7 @@ def main():
         if 'posts' in config[acc]:
             print("si")
             img.setPostsType(config.get(acc, 'posts'))
-        img.setPostsType('posts')
+        #img.setPostsType('posts')
         print(img.getPostsType())
         img.setPosts()
         # lastLink, lastTime = checkLastLink(img.getUrl(), socialNetwork)
@@ -323,13 +343,13 @@ def main():
         socialNetwork = ('wordpress','avecesunafoto')
         lastLink, lastTime = checkLastLink(img.getUrl(), socialNetwork)
         print(lastLink)
-        i = img.getLinkPosition(lastLink)
-        print(f"i: {i}")
-        print(img.getNumPostsData(1,i, lastLink))
-        print(img.obtainPostData(i))
-        p = img.getPost(i)
-        print(i, img.getPostTitle(p), img.getPostLink(p))
-        # print(img.editApiTitle(p, 'No se su nombre'))
+        # i = img.getLinkPosition(lastLink)
+        # print(f"i: {i}")
+        # print(img.getNumPostsData(1,i, lastLink))
+        # print(img.obtainPostData(i))
+        # p = img.getPost(i)
+        # print(i, img.getPostTitle(p), img.getPostLink(p))
+        # # print(img.editApiTitle(p, 'No se su nombre'))
 
         selection = input("Which one? ")
         print(selection)
@@ -405,33 +425,35 @@ def main():
             print(img.obtainPostData(i))
         print("----")
         time.sleep(2)
+
     pos = int(selection)
 
     post = img.getImages(pos)
-    postWP = img.getImagesCode(pos)
-    title = img.getPostTitle(img.getPosts()[pos])
-    tags = img.getImagesTags(pos)
-    print("---post images ----")
     print(post)
-    print("---title----")
-    print(title)
-    print("---postWP----")
-    print(postWP)
-    print("---tags----")
-    print(tags)
-    print("---post extractDataMessage ----")
-    element = img.extractDataMessage(pos)
-    print(element)
-    (title, link, firstLink, image, summary, summaryHtml, 
-           summaryLinks, content, links, comment) = element
+    # postWP = img.getImagesCode(pos)
+    # title = img.getPostTitle(img.getPosts()[pos])
+    # tags = img.getImagesTags(pos)
+    # print("---post images ----")
+    # print(post)
+    # print("---title----")
+    # print(title)
+    # print("---postWP----")
+    # print(postWP)
+    # print("---tags----")
+    # print(tags)
+    # print("---post extractDataMessage ----")
+    # element = img.extractDataMessage(pos)
+    # print(element)
+    # (title, link, firstLink, image, summary, summaryHtml, 
+    #        summaryLinks, content, links, comment) = element
 
-    user = 'avecesunafoto'
-    import moduleWordpress
-    wp = moduleWordpress.moduleWordpress()
-    wp.setClient(user)
-    wp.publishPost(title, link, comment, tags=links)
+    # user = 'avecesunafoto'
+    # import moduleWordpress
+    # wp = moduleWordpress.moduleWordpress()
+    # wp.setClient(user)
+    # wp.publishPost(title, link, comment, tags=links)
 
-    publishCache = False
+    publishCache = True
     if publishCache:
         listPosts = img.getNumPostsData(1, pos, '')
         print(listPosts)
@@ -439,8 +461,10 @@ def main():
 
         import moduleCache
         cache = moduleCache.moduleCache()
+        # cache.setClient(('https://imgur.com/user/ftricas', 
+        #                 ('wordpress', 'avecesunafoto')))
         cache.setClient(('https://imgur.com/user/ftricas', 
-                        ('wordpress', 'avecesunafoto')))
+                        ('imgur', 'ftricas')))
         cache.setPosts()
         print(cache.getPosts())
         cache.addPosts(listPosts)
