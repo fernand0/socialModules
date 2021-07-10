@@ -76,7 +76,7 @@ class moduleWordpress(Content,Queue):
     def authorize(self): 
         # Firstly the data of the blog 
         config = configparser.ConfigParser()
-        config.read(CONFIGDIR + '/.rssBlogs')
+        config.read(CONFIGDIR + '/.rssBlogs2')
         url = config.get('Blog8','url')
         name = urllib.parse.urlparse(url).netloc.split('.')[0] 
         # Second the authentication data of the blog
@@ -206,7 +206,6 @@ class moduleWordpress(Content,Queue):
            idTags = ','.join(str(v) for v in idTags) 
         else: 
            idTags = "" 
-        sys.exit()
         title = postData[0]
         link = postData[1]
         comment = postData[2]

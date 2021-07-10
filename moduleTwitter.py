@@ -92,7 +92,7 @@ class moduleTwitter(Content,Queue):
         # link itself is less than 23 characters long. Your character count
         # will reflect this.
 
-        logging.info("     Publishing: %s" % post)
+        logging.debug("     Publishing: %s" % post)
         res = 'Fail!'
         try:
             res = self.getClient().statuses.update(status=post)
@@ -199,25 +199,25 @@ def main():
     import moduleTwitter
     tw = moduleTwitter.moduleTwitter()
 
-    tw.setClient('fernand0Test')
+    tw.setClient('fernand0')
 
     #print("Testing followers")
     #tw.setFriends()
     #sys.exit()
 
-    res = tw.publishImage("Prueba imagen", "/tmp/2021-06-25_image.png", 
-           alt= "Imagen con alt")
+    # res = tw.publishImage("Prueba imagen", "/tmp/2021-06-25_image.png", 
+    #        alt= "Imagen con alt")
     #print("Testing posting and deleting")
     # res = tw.publishPost("Prueba borrando 7", "http://elmundoesimperfecto.com/", '')
     # print(res)
-    idPost = tw.getUrlId(res)
-    print(idPost)
-    input('Delete? ')
-    tw.deletePostId(idPost)
-    return
+    # idPost = tw.getUrlId(res)
+    # print(idPost)
+    # input('Delete? ')
+    # tw.deletePostId(idPost)
+    # return
     #sys.exit()
     print("Testing posts")
-    tw.setPostsType('posts')
+    tw.setPostsType('favs')
     tw.setPosts()
 
     print("Testing title and link")
@@ -228,6 +228,8 @@ def main():
         url = tw.getPostUrl(post)
         theId = tw.getPostId(post)
         print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
+
+    return
 
     print("Favs")
 

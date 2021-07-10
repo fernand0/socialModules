@@ -38,8 +38,8 @@ class Content:
         self.user = None
         self.client = None
         ser = self.__class__.__name__
-        logging.info(f"setting service {ser}")
         self.service = self.__class__.__name__[6:]
+        logging.debug(f"Setting service {self.service}")
         # They start with module
         self.hold = None
 
@@ -109,7 +109,7 @@ class Content:
         else:
             identifier = self.getUrl()
 
-        logging.info(f"  Setting posts in {self.service} ({identifier})")
+        logging.info(f"  Setting posts in {self.service} -- ({identifier})")
 
         typePosts = self.getPostsType()
         logging.info(f"  Setting posts in {self.service} ({self.getPostsType()})")
@@ -127,9 +127,9 @@ class Content:
         else:
             cmd = getattr(self, "setApiPosts") 
 
-        logging.info(f"Cmd: {cmd}")
+        logging.debug(f"Cmd: {cmd}")
         posts = cmd()
-        logging.debug(f"Posts: {posts}")
+        logging.info(f"Posts: {posts}")
         self.assignPosts(posts)
 
     def getClient(self):
@@ -350,7 +350,7 @@ class Content:
         typePosts = self.getPostsType()
         if typePosts:
             if typePosts == "cache":
-                cmd = getattr(self, "deleteApiCache")
+                cmd = getattr(self, "deleteApi")
             else:
                 cmd = getattr(
                     self, "deleteApi" + self.getPostsType().capitalize()

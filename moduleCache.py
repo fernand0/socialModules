@@ -33,7 +33,7 @@ class moduleCache(Content,Queue):
         #self.socialNetwork = (socialNetwork, nick)
 
     def setClient(self, param):
-        logging.info(f"setClient {self.service} {param}")
+        logging.info(f"setClient {self.service} -{param}-")
         self.postsType = 'posts'
         if isinstance(param, str):
             self.url = param
@@ -44,7 +44,10 @@ class moduleCache(Content,Queue):
                 self.url = param[0]
             else:
                 self.socialNetwork = param[0]
+                self.service = param[0] 
             self.nick = param[1]
+            if self.nick.find('\n')>=0:
+                self.nick = None
         else: 
             self.url = param[0]
             self.service = param[1][0] 
@@ -64,7 +67,7 @@ class moduleCache(Content,Queue):
         else: 
             service = self.getService()
         nick = self.getNick()
-        logging.debug(f"Url {url} service {service} nick {nick}")
+        logging.info(f"Url {url} service {service} nick {nick}")
         fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
         logging.debug("File %s" % fileNameQ)
         try:
@@ -376,6 +379,49 @@ def main():
             format='%(asctime)s %(message)s')
 
     import moduleCache
+
+    queues = []
+    for fN in os.listdir(f"{DATADIR}"):
+        if fN.find('queue')>=0:
+            queues.append(fN)
+
+    for i, fN in enumerate(queues):
+        print(f"{i}) {fN}")
+
+    sel = input('Select one ')
+
+    fN = queues[int(sel)]
+    url, sN, nick = fN.split('_')
+    nick = nick[:-len('.queue')]
+
+    print(f"url: {url} social network: {sN} nick: {nick}")
+    fNP = f"{DATADIR}/{fN}"
+    import time
+    fileT = time.strftime("%Y-%m-%d %H:%M:%S", 
+            time.localtime(os.path.getmtime(fNP)))
+    print(f"File name: {fNP} Date: {fileT}")
+
+    action = input(f"Actions: (D)elete, (S)how (T)itles ")
+
+
+
+    if action.upper()in ['S','T']: 
+        url = f"https://{url}/"
+
+        site = moduleCache.moduleCache()
+        site.setClient((url, (sN, nick)))
+        site.setPosts()
+        if action.upper() == 'T': 
+            [ print(f"- {post[0]}") for post in site.getPosts() ]
+        else: 
+            print(site.getPosts())
+    elif action.upper() in ['D']:
+        fileDelete = f"{fNP}"
+        ok = input(f"I'll delete {fileDelete} ")
+        os.remove(fileDelete)
+
+
+    return 
 
     try:
         config = configparser.ConfigParser() 

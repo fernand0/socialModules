@@ -289,14 +289,18 @@ class moduleImgur(Content, Queue):
     def getNumPostsData(self, num, i, lastLink):
         listPosts = []
         posts = self.getPosts()
+        logging.info(f"Eo posts: {posts}")
+        logging.info(f"Eo posts last: {lastLink}")
         num = 1
         # Only one post each time
         j = 0
         for ii in range(min(i, len(posts)), 0, -1):
+            logging.info(f"iii: {ii}")
             ii = ii - 1
             if (ii < 0):
                 break
             idPost = self.getPostId(posts[ii])
+            logging.info(f"idPost: {idPost}")
             if (not ((idPost in lastLink)
                      or ('https://imgur.com/a/'+idPost in lastLink))):
                 # Only posts that have not been posted previously. We
