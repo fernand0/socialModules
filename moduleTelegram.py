@@ -100,8 +100,8 @@ class moduleTelegram(Content):
             textToPublish = text[:4080] + ' ...'
             textToPublish2 = '... ' + text[4081:]
 
-        logging.info("Publishing (text to )" + textToPublish)
-        logging.info("Publishing (text to 2)" + textToPublish2)
+        logging.debug("Publishing (text to )" + textToPublish)
+        logging.debug("Publishing (text to 2)" + textToPublish2)
 
 
         try:

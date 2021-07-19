@@ -108,7 +108,7 @@ class moduleFacebook(Content,Queue):
         res = "Fail!"
         if (not isinstance(self.page, str)):
             res = self.page.put_object('me', "feed", message=post, link=link)
-        return res
+        return self.processReply(res)
 
     def publishApiImage(self, postData): 
         post, imageName, more = postData

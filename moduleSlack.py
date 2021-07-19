@@ -404,8 +404,8 @@ class moduleSlack(Content, Queue):
 
         theTitle = self.getTitle(i)
         theLink = self.getLink(i)
-        logging.info(theTitle)
-        logging.info(theLink)
+        logging.debug(theTitle)
+        logging.debug(theLink)
         if theLink.find("tumblr") > 0:
             theTitle = post["text"]
         firstLink = theLink
@@ -420,7 +420,7 @@ class moduleSlack(Content, Queue):
         elif "thumb_url" in post:
             theImage = post["thumb_url"]
         else:
-            logging.info("Fail image")
+            logging.debug("Fail image")
             logging.debug("Fail image %s", post)
             theImage = ""
 

@@ -44,7 +44,7 @@ class Content:
         self.hold = None
 
     def setClient(self, account):
-        logging.info("    Connecting {}: {}".format(self.service, account))
+        logging.info(f"    Connecting {self.service}: {account}")
 
         if isinstance(account, str):
             self.user = account
@@ -104,15 +104,15 @@ class Content:
 
     def setPosts(self):
         nick = self.getNick()
+        logging.debug(f"nick: {nick}")
         if nick:
             identifier = nick
         else:
             identifier = self.getUrl()
 
-        logging.info(f"  Setting posts in {self.service} -- ({identifier})")
-
         typePosts = self.getPostsType()
-        logging.info(f"  Setting posts in {self.service} ({self.getPostsType()})")
+        logging.info(f"  Setting posts in {self.service} {identifier}"
+                     f"  (type: {self.getPostsType()})")
         logging.debug(f"setApi {typePosts}")
         if hasattr(self, "getPostsType") and self.getPostsType():
             typePosts = self.getPostsType()
@@ -129,7 +129,7 @@ class Content:
 
         logging.debug(f"Cmd: {cmd}")
         posts = cmd()
-        logging.info(f"Posts: {posts}")
+        #logging.info(f"Posts: {posts}")
         self.assignPosts(posts)
 
     def getClient(self):
@@ -338,7 +338,7 @@ class Content:
             return self.report(self.service, post, image, sys.exc_info())
        
     def publishPost(self, post, link="", comment="", **more):
-        logging.info(f"    Publishing in {self.service}: {post}")
+        logging.info(f"    ->Publishing in {self.service}: {post}")
         try:
             reply = self.publishApiPost((post, link, comment, more))
             return self.processReply(reply)

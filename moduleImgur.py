@@ -70,8 +70,8 @@ class moduleImgur(Content, Queue):
     def setApiDrafts(self):
         posts = []
         client = self.getClient()
-        logging.info(f"Client: {client}")
-        logging.info(f"User: {self.user}")
+        logging.debug(f"Client: {client}")
+        logging.debug(f"User: {self.user}")
 
         if client:
             if self.user.find('http')>= 0:
@@ -79,10 +79,10 @@ class moduleImgur(Content, Queue):
             else:
                 user = self.user
 
-            logging.info(f"User: {user}")
+            logging.debug(f"User: {user}")
             for album in client.get_account_albums(user):
                 info = f"{time.ctime(album.datetime)} {album.title}"
-                logging.info(f"Info: {info}")
+                logging.debug(f"Info: {info}")
                 if not album.in_gallery:
                     posts.append(album)
                     # logging.info(f"Draft: {info}")
@@ -289,8 +289,8 @@ class moduleImgur(Content, Queue):
     def getNumPostsData(self, num, i, lastLink):
         listPosts = []
         posts = self.getPosts()
-        logging.info(f"Eo posts: {posts}")
-        logging.info(f"Eo posts last: {lastLink}")
+        logging.debug(f"Eo posts: {posts}")
+        logging.debug(f"Eo posts last: {lastLink}")
         num = 1
         # Only one post each time
         j = 0

@@ -96,7 +96,7 @@ class moduleGmail(Content,Queue):
 
         SCOPES = self.scopes
 
-        logging.info("Authorizing GMail")
+        #logging.info(f"    Connecting {self.service}: {account}")
         pos = self.user.rfind('@') 
         self.server = self.user[pos+1:]
         self.nick = self.user[:pos]
@@ -131,7 +131,7 @@ class moduleGmail(Content,Queue):
                     print(fileCredStore)
                     sys.exit()
 
-        logging.info("Storing creds")
+        logging.debug("Storing creds")
         with open(fileTokenStore, 'wb') as token:
             pickle.dump(creds, token)
 
@@ -386,6 +386,7 @@ class moduleGmail(Content,Queue):
         return(None)
 
     def getHeader(self, message, header = 'Subject'):
+        logging.info(f"Message: {message}")
         if 'meta' in message:
             message = message['meta']
         for head in message: 
@@ -441,35 +442,39 @@ class moduleGmail(Content,Queue):
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)
-        message = self.getPosts()[i]
-        logging.info("Message %s"% message)
+        posts = self.getPosts()
+        if posts:
+            message = posts[i]
+            logging.debug("Message %s"% message)
 
-        theTitle = self.getHeader(message, 'Subject')
-        if theTitle == None:
-            theTitle = self.getHeader(message, 'subject')
-        snippet = self.getHeader(message, 'snippet')
+            theTitle = self.getHeader(message, 'Subject')
+            if theTitle == None:
+                theTitle = self.getHeader(message, 'subject')
+            snippet = self.getHeader(message, 'snippet')
 
-        theLink = None
-        if snippet:
-            posIni = snippet.find('http')
-            posFin = snippet.find(' ', posIni)
-            posSignature = snippet.find('-- ')
-            if posIni < posSignature: 
-                theLink = snippet[posIni:posFin]
-        theLinks = self.getPostLinks(message)
-        content = None
-        theContent = None
-        #date = int(self.getHeader(message, 'internalDate'))/1000
-        #firstLink = '{}'.format(datetime.datetime.fromtimestamp(date)) # Bad!
-        firstLink = None
-        theImage = None
-        theSummary = snippet
+            theLink = None
+            if snippet:
+                posIni = snippet.find('http')
+                posFin = snippet.find(' ', posIni)
+                posSignature = snippet.find('-- ')
+                if posIni < posSignature: 
+                    theLink = snippet[posIni:posFin]
+            theLinks = self.getPostLinks(message)
+            content = None
+            theContent = None
+            #date = int(self.getHeader(message, 'internalDate'))/1000
+            #firstLink = '{}'.format(datetime.datetime.fromtimestamp(date)) # Bad!
+            firstLink = None
+            theImage = None
+            theSummary = snippet
 
-        theSummaryLinks = message
-        comment = self.getPostId(message) 
+            theSummaryLinks = message
+            comment = self.getPostId(message) 
 
-        theLink = theLinks[0]
-        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+            theLink = theLinks[0]
+            return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+        else:
+            return (None, None, None, None, None, None, None, None, None, None)
 
     def editl(self, j, newTitle):
         return('Not implemented!')

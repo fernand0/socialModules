@@ -42,7 +42,8 @@ class moduleTumblr(Content, Queue):
             self.url = f"https://{tumblr[1]}.tumblr.com/"
         elif isinstance(tumblr, tuple):
             self.url = f"https://{tumblr[1][1]}.tumblr.com/"
-        logging.info(f"Url: {self.url}")
+        logging.debug(f"Url: {self.url}")
+        self.service = 'tumblr'
 
         return client
 
@@ -120,7 +121,7 @@ class moduleTumblr(Content, Queue):
         return res
 
     def publishApiPost(self, postData):
-        if self.getPostsType() == 'post':
+        if self.getPostsType() == 'posts':
             res = self.getClient().create_link(self.getBlogName(),
                                                state='queue',
                                                title=postData[0],

@@ -33,7 +33,7 @@ class moduleCache(Content,Queue):
         #self.socialNetwork = (socialNetwork, nick)
 
     def setClient(self, param):
-        logging.info(f"setClient {self.service} -{param}-")
+        logging.info(f"    Connecting Cache {self.service}: {param}")
         self.postsType = 'posts'
         if isinstance(param, str):
             self.url = param
@@ -67,7 +67,7 @@ class moduleCache(Content,Queue):
         else: 
             service = self.getService()
         nick = self.getNick()
-        logging.info(f"Url {url} service {service} nick {nick}")
+        logging.debug(f"Url {url} service {service} nick {nick}")
         fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
         logging.debug("File %s" % fileNameQ)
         try:
@@ -171,7 +171,7 @@ class moduleCache(Content,Queue):
             if not self.getPosts():
                 self.setPosts()
             posts = self.getPosts()
-            logging.info(f"a Posts: {posts} listP: {listPosts}")
+            logging.debug(f"a Posts: {posts} listP: {listPosts}")
             for pp in listPosts:
                 posts.append(pp)
             #for i, pp in enumerate(posts):

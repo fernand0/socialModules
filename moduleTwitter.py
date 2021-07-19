@@ -33,6 +33,7 @@ class moduleTwitter(Content,Queue):
         return(CONSUMER_KEY, CONSUMER_SECRET, TOKEN_KEY, TOKEN_SECRET)
 
     def initApi(self, keys):
+        self.url = f"https://twitter.com/{self.user}"
         self.authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
         client = Twitter(auth=self.authentication)
         return client
@@ -52,8 +53,9 @@ class moduleTwitter(Content,Queue):
         res = ''
         if reply: 
             idPost = self.getPostId(reply)
-            res = f"https://twitter.com/{self.user}/status/{idPost}"
-        logging.info("     Res: %s" % res)
+            title = self.getAttribute(reply, 'title')
+            res = f"{title} https://twitter.com/{self.user}/status/{idPost}"
+        logging.info(f"     Res: {res}")
         return(res)
 
     def publishApiImage(self, postData): 
@@ -100,17 +102,18 @@ class moduleTwitter(Content,Queue):
             for error in twittererror.response_data.get("errors", []): 
                 logging.info("      Error code: %s" % error.get("code", None))
             res = self.report('Twitter', post, link, sys.exc_info())
-        return res
+
+        return self.processReply(res)
 
     def deleteApiPosts(self, idPost): 
         result = self.getClient().statuses.destroy(_id=idPost)
-        logging.info(f"Res: {result}")
+        logging.debug(f"Res: {result}")
         return(result)
 
     def deleteApiFavs(self, idPost): 
         logging.info("Deleting: {}".format(str(idPost)))
         result = self.getClient().favorites.destroy(_id=idPost)
-        logging.info(f"Res: {result}")
+        logging.debug(f"Res: {result}")
         return(result)
 
     def getPostId(self, post):

@@ -36,11 +36,15 @@ def logMsg(msgLog, log=1, output=1):
         print("====================================") 
  
 def fileNamePath(url, socialNetwork=()):
+    myNetloc = urllib.parse.urlparse(url).netloc
+    if not myNetloc:
+        myNetloc=url
+    if myNetloc.endswith('/'):
+        myNetloc = myNetloc[:-1]
     if not socialNetwork: 
-        theName = (DATADIR  + '/' 
-               + urllib.parse.urlparse(url).netloc)
+        theName = (f"{DATADIR}/{myNetloc}")
     else: 
-        myFile = (f"{DATADIR}/{urllib.parse.urlparse(url).netloc}_"
+        myFile = (f"{DATADIR}/{myNetloc}_"
                   f"{socialNetwork[0]}_{socialNetwork[1]}")
         theName = os.path.expanduser(myFile)
     return(theName)

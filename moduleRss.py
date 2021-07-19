@@ -36,26 +36,26 @@ class moduleRss(Content,Queue):
         self.bufMax = None
 
     def setClient(self, feed):
-        logging.info("Feed %s" % str(feed))
+        logging.debug("Feed %s" % str(feed))
         if isinstance(feed, str):
             self.rssFeed = feed
         elif isinstance(feed, tuple):
             self.rssFeed = feed[1]#+feed[1][1]
         else:
             self.rssFeed = feed
-        logging.info("The Feed %s" % str(self.rssFeed))
+        logging.debug("The Feed %s" % str(self.rssFeed))
         self.service = 'Rss'
 
     def setPosts(self):
         msgLog = "  Setting posts"
         logging.info(msgLog)
 
-        logging.info(f"   Feed {self.rssFeed}") 
+        logging.debug(f"   Feed {self.rssFeed}") 
         if self.rssFeed.find('http')>=0: 
             urlRss = self.getRssFeed()
         else: 
             urlRss = urllib.parse.urljoin(self.url,self.getRssFeed())
-        logging.info("Rss: %s" % urlRss)
+        logging.debug("Rss: %s" % urlRss)
         self.posts = feedparser.parse(urlRss).entries
  
     def getPostTitle(self, post):

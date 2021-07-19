@@ -28,16 +28,26 @@ class modulePocket(Content,Queue):
 
     def setApiPosts(self):
         posts = []
-        dictPosts = self.client.retrieve()['list']
+        dictPosts = self.client.retrieve()
+        logging.info(f"setApi posts: {dictPosts}")
+        dictPosts = dictPosts['list']
+        logging.info(f"setApi posts: {dictPosts}")
         for post in dictPosts:
             posts.append(dictPosts[post])
 
         return(posts[:100])
 
     def processReply(self, reply): 
-        return reply
+        res = ''
+        if reply: 
+            idPost = self.getPostId(reply)
+            title = self.getPostTitle(reply)
+            res = f"{title} https://getpocket.com/read/{idPost}"
+        logging.info(f"     Res: {res}")
+        return(res)
 
     def publishApiPost(self, postData):
+        logging.debug(f"postData: {postData} in {self}")
         post, link, comment, plus = postData
 
         # This belongs here?
@@ -50,11 +60,11 @@ class modulePocket(Content,Queue):
                 # Sometimes there are two links or something after the link
                 link=link[:pos]
         res = self.getClient().add(link)
-        return res
+        return self.processReply(res)
 
     def publish(self, j): 
         # This does not belong here
-        logging.info("Publishing %d"% j)
+        logging.info("...Publishing %d"% j)
         #post = self.obtainPostData(j)
         #logging.info("Publishing %s"% post[0])
         update = '' 
@@ -168,15 +178,16 @@ class modulePocket(Content,Queue):
 
 
     def getPostTitle(self, post):
-        if 'resolved_title' in post:
-            title = post['resolved_title']
-            if not title and 'excerpt' in post: 
-                title = '[No title]'
-        return title
+        if 'item' in post: 
+            if 'title' in post['item']:
+                return(post['item']['title'])
+        else:
+            return ''
 
     def getPostId(self, post):
-        if 'item_id' in post:
-            return(post['item_id'])
+        if 'item' in post: 
+            if 'item_id' in post['item']:
+                return(post['item']['item_id'])
         else:
             return ''
 
@@ -220,17 +231,18 @@ def main():
             format='%(asctime)s %(message)s')
 
     config = configparser.ConfigParser()
-    config.read(CONFIGDIR + '/.rssBlogs')
+    config.read(CONFIGDIR + '/.rssBlogs2')
 
     import modulePocket
     
     p = modulePocket.modulePocket()
 
-    p.setClient('fernand0')
+    p.setClient('ftricas')
     p.setPostsType('posts')
 
     p.setPosts()
-    #print(p.getPosts())
+    print(p.getPosts())
+    return
 
     p.publishPost('El Mundo Es Imperfecto', 'https://elmundoesimperfecto.com/', '')
     sys.exit()
