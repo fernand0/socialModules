@@ -33,6 +33,7 @@ class moduleTwitter(Content,Queue):
         return(CONSUMER_KEY, CONSUMER_SECRET, TOKEN_KEY, TOKEN_SECRET)
 
     def initApi(self, keys):
+        # self.service = 'twitter'
         self.url = f"https://twitter.com/{self.user}"
         self.authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
         client = Twitter(auth=self.authentication)
