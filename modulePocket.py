@@ -175,16 +175,20 @@ class modulePocket(Content,Queue):
             rep = "Fail!"
         return rep
 
-
-
     def getPostTitle(self, post):
-        if 'item' in post: 
-            if 'title' in post['item']:
-                return(post['item']['title'])
-        else:
-            return ''
+        title = ''
+        if 'resolved_title' in post:
+            title = post['resolved_title']
+            if not title and ('given_title' in post):
+                title = post['given_title']
+        #elif 'item' in post: 
+        #    if 'title' in post['item']:
+        #        title = (post['item']['title'])
+        if not title: 
+            title = self.getPostLink(post)
+        return title
 
-    def getPostId(self, post):
+    def getPostId(self, post): 
         if 'item' in post: 
             if 'item_id' in post['item']:
                 return(post['item']['item_id'])

@@ -82,7 +82,7 @@ class moduleImgur(Content, Queue):
             logging.debug(f"User: {user}")
             for album in client.get_account_albums(user):
                 info = f"{time.ctime(album.datetime)} {album.title}"
-                logging.debug(f"Info: {info}")
+                logging.info(f"Info: {info}")
                 if not album.in_gallery:
                     posts.append(album)
                     # logging.info(f"Draft: {info}")
@@ -294,6 +294,7 @@ class moduleImgur(Content, Queue):
         num = 1
         # Only one post each time
         j = 0
+        logging.info(f"i: {i}, len: {len(posts)}")
         for ii in range(min(i, len(posts)), 0, -1):
             logging.info(f"iii: {ii}")
             ii = ii - 1
@@ -325,7 +326,7 @@ def main():
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs')
 
-    accounts = ["Blog20"] #, "Blog21"]
+    accounts = ["Blog21"] #, "Blog20"]
     for acc in accounts:
         print("Account: {}".format(acc))
         img = moduleImgur.moduleImgur()
@@ -457,7 +458,8 @@ def main():
     # wp.setClient(user)
     # wp.publishPost(title, link, comment, tags=links)
 
-    publishCache = True
+    publishCache = False
+    publishWordpress = True
     if publishCache:
         listPosts = img.getNumPostsData(1, pos, '')
         print(listPosts)
@@ -473,21 +475,29 @@ def main():
         print(cache.getPosts())
         cache.addPosts(listPosts)
 
-    sys.exit()
 
     # Testing Wordpress publishing
     img.setSocialNetworks(config)
     print(img.getSocialNetworks())
     service = 'wordpress'
-    socialNetwork = (service, img.getSocialNetworks()[service])
+    nick = 'avecesunafoto'
+    socialNetwork = (service, nick) #img.getSocialNetworks()[service])
 
-    publishWordpress = False
     if publishWordpress:
+        listPosts = img.getNumPostsData(1, pos, '')
+        post = listPosts[0]
+        title = post[0]
+        postWP = post[9]
+        tags = post[8]
+        print(title)
+        print(postWP)
+        print(tags)
+        input("Publish? ")
         import moduleWordpress
         wp = moduleWordpress.moduleWordpress()
         wp.setClient('avecesunafoto')
 
-        print(wp.publishPost(title, '', postWP, tags=post[-1]))
+        print(wp.publishPost(title, '', postWP, tags=tags))
  
     sys.exit()
     for service in img.getSocialNetworks():

@@ -31,7 +31,7 @@ class Content:
         self.buffer = None
         self.cache = None
         self.xmlrpc = None
-        self.serach = None
+        self.search = None
         self.api = {}
         self.lastLinkPublished = {}
         self.numPosts = 0
@@ -210,28 +210,6 @@ class Content:
                 self.addSocialNetwork((sN, socialNetworksConfig[sN]))
         logging.debug("  sNN {}".format(self.getSocialNetworks()))
 
-    def oldsetSocialNetworks(self, config, section):
-        socialNetworksOpt = [
-            "twitter",
-            "facebook",
-            "telegram",
-            "wordpress",
-            "medium",
-            "linkedin",
-            "pocket",
-            "mastodon",
-            "instagram",
-            "imgur",
-            "tumblr",
-            "slack",
-            "refind",
-        ]
-        for option in config.options(section):
-            if option in socialNetworksOpt:
-                nick = config.get(section, option)
-                socialNetwork = (option, nick)
-                self.addSocialNetwork(socialNetwork)
-
     def addSocialNetwork(self, socialNetwork):
         self.socialNetworks[socialNetwork[0]] = socialNetwork[1]
 
@@ -338,7 +316,7 @@ class Content:
             return self.report(self.service, post, image, sys.exc_info())
        
     def publishPost(self, post, link="", comment="", **more):
-        logging.info(f"    ->Publishing in {self.service}: {post}")
+        logging.info(f"    Publishing in {self.service}: {post}")
         try:
             reply = self.publishApiPost((post, link, comment, more))
             return self.processReply(reply)
@@ -489,38 +467,37 @@ class Content:
         self.max = maxVal
 
     def getMax(self):
-        if hasattr(self, "max") and self.max:
-            max = int(self.max)
-        else:
-            max = None
-        return max
+        maxVal = None
+        if hasattr(self, "max"): # and self.max:
+            maxVal = int(self.max)
+        return maxVal
 
-    def getCache(self):
-        return self.cache
+    # def getCache(self):
+    #     return self.cache
 
-    def setCache(self):
-        import moduleCache
+    # def setCache(self):
+    #     import moduleCache
 
-        # https://github.com/fernand0/scripts/blob/master/moduleCache.py
-        self.cache = {}
-        for service in self.getSocialNetworks():
-            if (
-                self.getProgram()
-                and isinstance(self.getProgram(), list)
-                and service in self.getProgram()
-            ) or (
-                self.getProgram()
-                and isinstance(self.getProgram(), str)
-                and (service[0] in self.getProgram())
-            ):
+    #     # https://github.com/fernand0/scripts/blob/master/moduleCache.py
+    #     self.cache = {}
+    #     for service in self.getSocialNetworks():
+    #         if (
+    #             self.getProgram()
+    #             and isinstance(self.getProgram(), list)
+    #             and service in self.getProgram()
+    #         ) or (
+    #             self.getProgram()
+    #             and isinstance(self.getProgram(), str)
+    #             and (service[0] in self.getProgram())
+    #         ):
 
-                nick = self.getSocialNetworks()[service]
-                cache = moduleCache.moduleCache()
-                param = (self.url, (service, nick))
-                cache.setClient(param)
-                cache.setUrl(self.getUrl())
-                cache.setPosts()
-                self.cache[(service, nick)] = cache
+    #             nick = self.getSocialNetworks()[service]
+    #             cache = moduleCache.moduleCache()
+    #             param = (self.url, (service, nick))
+    #             cache.setClient(param)
+    #             cache.setUrl(self.getUrl())
+    #             cache.setPosts()
+    #             self.cache[(service, nick)] = cache
 
     def getProgram(self):
         return self.program

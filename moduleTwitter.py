@@ -53,10 +53,12 @@ class moduleTwitter(Content,Queue):
     def processReply(self, reply): 
         res = ''
         if reply: 
-            idPost = self.getPostId(reply)
-            title = self.getAttribute(reply, 'title')
-            res = f"{title} https://twitter.com/{self.user}/status/{idPost}"
-        logging.info(f"     Res: {res}")
+            if not ('Fail!' in reply):
+                idPost = self.getPostId(reply)
+                title = self.getAttribute(reply, 'title')
+                res = f"{title} https://twitter.com/{self.user}/status/{idPost}"
+            else:
+                res = reply
         return(res)
 
     def publishApiImage(self, postData): 
@@ -104,7 +106,7 @@ class moduleTwitter(Content,Queue):
                 logging.info("      Error code: %s" % error.get("code", None))
             res = self.report('Twitter', post, link, sys.exc_info())
 
-        return self.processReply(res)
+        return res
 
     def deleteApiPosts(self, idPost): 
         result = self.getClient().statuses.destroy(_id=idPost)
@@ -203,7 +205,14 @@ def main():
     import moduleTwitter
     tw = moduleTwitter.moduleTwitter()
 
-    tw.setClient('fernand0')
+    tw.setClient('fernand0Test')
+
+    print("Testing bad link")
+    res = tw.publishPost("Post MTProto Analysis: Accessible Overview", "https://telegra.ph/LoU-ETH-4a-proof-07-16", '')
+
+    logging.info(f"Res: {res}")
+
+    return
 
     #print("Testing followers")
     #tw.setFriends()

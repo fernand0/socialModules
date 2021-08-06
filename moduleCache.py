@@ -15,7 +15,6 @@ import logging
 import sys
 import importlib
 importlib.reload(sys)
-#sys.setdefaultencoding("UTF-8")
 from crontab import CronTab
 
 from configMod import *
@@ -81,25 +80,14 @@ class moduleCache(Content,Queue):
 
         return(listP)
 
-    # def getLinkPosition(self, link):
-    #     return 1
-
-    #def setPostt(self):        
-    #    logging.debug("Service %s Nick %s" % (self.service, self.nick))
-    #    fileNameQ = fileNamePath(self.url, 
-    #            (self.service, self.nick)) + ".queue"
-    #    logging.debug("File %s" % fileNameQ)
-    #    print("File %s" % fileNameQ)
-    #    try:
-    #        with open(fileNameQ,'rb') as f: 
-    #            try: 
-    #                listP = pickle.load(f) 
-    #            except: 
-    #                listP = [] 
-    #    except:
-    #        listP = []
-
-    #    return(listP)
+    def availableSlots(self):
+        self.setPosts()
+        lenMax = len(self.getPosts()) 
+        bufferMax = self.getMax()
+        num = 1
+        if bufferMax > 1: 
+            num = bufferMax - lenMax 
+        return num
 
     def getHoursSchedules(self, command=None):
         return self.schedules[0].hour.render()
@@ -255,22 +243,6 @@ class moduleCache(Content,Queue):
         self.updatePostsCache()
         return(idPost)
 
-    #def edit(self, j, newTitle=''):
-    #    logging.info("New title %s", newTitle)
-    #    thePost = self.obtainPostData(j)
-    #    oldTitle = thePost[0]
-    #    if not newTitle:
-    #        newTitle = self.reorderTitle(oldTitle)
-    #    thePost = thePost[1:]
-    #    thePost = (newTitle,) + thePost
-    #    posts = self.getPosts()
-    #    posts[j] = thePost
-    #    logging.info("Service Name %s" % self.name)
-    #    self.assignPosts(posts)
-    #    self.updatePostsCache()
-    #    update = "Changed "+oldTitle+" with "+newTitle
-    #    return(update)
-
     def insert(self, j, text):
         logging.info("Inserting %s", text)
         posts = self.getPosts()
@@ -281,12 +253,6 @@ class moduleCache(Content,Queue):
             post = (textS[0], 'http'+textS[1], '','','','','','','','')
             self.assignPosts(posts[:j] + [ post ] + posts[j:])
             self.updatePostsCache()
-
-            #link = f"http{link}" 
-            #pos = self.getLinkPosition(link)
-            #logging.info(f"pos {pos}")
-            #newPost = self.getNumPostsData(1,pos)
-            #logging.info(f"newpost {newPost}")
 
     def publish(self, j):
         logging.info(">>>Publishing %d"% j)
@@ -321,6 +287,7 @@ class moduleCache(Content,Queue):
         return self.deleteApi(j)
 
     def deleteApi(self, j):
+        logging.info(f"Deleting: {j}")
         post = self.obtainPostData(j)
         posts = self.getPosts()
         posts = posts[:j] + posts[j+1:]
@@ -339,19 +306,6 @@ class moduleCache(Content,Queue):
             return None
         post = posts[i]
         return post
-
-
-    #def delete(self, j):
-    #    logging.info("Deleting %d"% j)
-    #    post = self.obtainPostData(j)
-    #    logging.info("Deleting %s"% post[0])
-    #    posts = self.getPosts()
-    #    posts = posts[:j] + posts[j+1:]
-    #    self.assignPosts(posts)
-    #    self.updatePostsCache()
-
-    #    logging.info("Deleted %s"% post[0])
-    #    return("%s"% post[0])
 
     def move(self, j, dest):
         k = int(dest)
