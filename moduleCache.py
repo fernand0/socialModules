@@ -83,10 +83,9 @@ class moduleCache(Content,Queue):
     def availableSlots(self):
         self.setPosts()
         lenMax = len(self.getPosts()) 
-        bufferMax = self.getMax()
         num = 1
-        if bufferMax > 1: 
-            num = bufferMax - lenMax 
+        if self.getMax() > 1: 
+            num = self.getMax() - lenMax 
         return num
 
     def getHoursSchedules(self, command=None):

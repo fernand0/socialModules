@@ -33,17 +33,20 @@ class moduleMedium(Content,Queue):
                 client.access_token = config.get("appKeys","access_token") 
                 # Get profile details of the user identified by the access
                 # token.  
-                user = client.get_current_user()
+                userRaw = client.get_current_user()
+                user = userRaw['username']
             except: 
                 logging.warning("Medium authentication failed!") 
                 logging.warning("Unexpected error:", sys.exc_info()[0])
         except: 
             logging.warning("Account not configured") 
             client = None
+            userRaw = None
             user = None
 
         self.client = client
         self.user = user
+        self.userRaw = userRaw
 
     def getUser(self):
         return self.user
@@ -54,7 +57,7 @@ class moduleMedium(Content,Queue):
 
         import moduleRss
         content = moduleRss.moduleRss()
-        rssFeed='https://medium.com/feed/@{}'.format(self.user['username'])
+        rssFeed='https://medium.com/feed/@{}'.format(self.getUser())
         #print(rssFeed)
         content.setRssFeed(rssFeed)
         content.setPosts()
@@ -64,7 +67,7 @@ class moduleMedium(Content,Queue):
     def publishPost(self, post, link, comment):
         logging.info("    Publishing in {} ...".format(self.service))
         client = self.client
-        user = self.user
+        user = self.getUser()
 
         title = post
         content = comment

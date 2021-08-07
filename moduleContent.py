@@ -16,6 +16,7 @@ from configMod import *
 
 
 class Content:
+
     def __init__(self):
         self.url = ""
         self.name = ""
@@ -81,6 +82,9 @@ class Content:
         else:
             return ""
 
+    def setUser(self, nick):
+        self.user = nick
+
     def getUser(self):
         if hasattr(self, "user"):
             return self.user
@@ -143,6 +147,32 @@ class Content:
         if hasattr(self, "url"):
             url = self.url
         return url
+
+    def getLastTime(self):
+        lastTime = 0.0
+        print(f"In lastTime")
+        import inspect
+        print(f"Object members: {inspect.getmembers(self)[3]}")
+        print(f"Object: {self}")
+        print(f"Social: {self.url} {self.service} {self.user}")
+
+        lastTime = 0.0
+        myLastLink = ""
+        # You always need to check lastLink? 
+        # Example: gmail, Twitter
+        try:
+            url = self.getUrl()
+            service = self.service.lower()
+            nick = self.user
+            fN = (f"{fileNamePath(url, (service, nick))}.last")
+            print(f"File: {fN}")
+            myLastLink, lastTime = getLastLink(fN)
+        except:
+            fN = ""
+            msgLog = (f"No last link")
+            logMsg(msgLog, 2, 0)
+
+        return myLastLink, lastTime
 
     def setNumPosts(self, numPosts):
         self.numPosts = numPosts
@@ -218,14 +248,6 @@ class Content:
 
     def getPosts(self):
         posts = self.posts
-        # if hasattr(self, 'getPostsType'):
-        #    if self.getPostsType() == 'cache':
-        #        print(self.cache)
-        #        posts = self.cache
-
-        # if hasattr(self, 'getPostsType'):
-        #    if self.getPostsType() == 'drafts':
-        #        posts = self.drafts
         return posts
 
     def getPost(self, i):
