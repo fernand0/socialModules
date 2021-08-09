@@ -26,7 +26,7 @@ class moduleHtml(Content, Queue):
         self.socialNetworks = {}
         self.linksToAvoid = ""
         self.postsRss = None
-        self.time = []
+        self.time = 0
         self.bufferapp = None
         self.program = None
         self.xmlrpc = None

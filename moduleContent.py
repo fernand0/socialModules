@@ -149,12 +149,11 @@ class Content:
         return url
 
     def getLastTime(self):
-        lastTime = 0.0
-        print(f"In lastTime")
-        import inspect
-        print(f"Object members: {inspect.getmembers(self)[3]}")
-        print(f"Object: {self}")
-        print(f"Social: {self.url} {self.service} {self.user}")
+        # print(f"In lastTime")
+        # import inspect
+        # print(f"Object members: {inspect.getmembers(self)[3]}")
+        # print(f"Object: {self}")
+        # print(f"Social: {self.url} {self.service} {self.user}")
 
         lastTime = 0.0
         myLastLink = ""
@@ -171,6 +170,9 @@ class Content:
             fN = ""
             msgLog = (f"No last link")
             logMsg(msgLog, 2, 0)
+
+        self.lastLinkPublished = myLastLink
+        self.lastTimePublished = lastTime
 
         return myLastLink, lastTime
 

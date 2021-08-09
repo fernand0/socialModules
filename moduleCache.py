@@ -83,6 +83,9 @@ class moduleCache(Content,Queue):
     def availableSlots(self):
         self.setPosts()
         lenMax = len(self.getPosts()) 
+        # print(f"len: {self}  {lenMax} {self.getMax()}")
+        # import inspect
+        # print(f"Object len: {inspect.getmembers(self)}")
         num = 1
         if self.getMax() > 1: 
             num = self.getMax() - lenMax 

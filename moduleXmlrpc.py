@@ -30,7 +30,7 @@ class moduleXmlrpc(Content):
          self.linksToAvoid = ""
          self.xmlrpc = None
          self.postsXmlRpc = None
-         self.time = []
+         self.time = 0
          self.bufferapp = None
          self.program = None
          self.lastLinkPublished = {}
