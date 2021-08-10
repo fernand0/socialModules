@@ -688,14 +688,16 @@ class Content:
         url = self.getPostLink(self.getPosts()[i])
         text = ""
         for iimg in res:
+            print(iimg)
+                   
             if iimg[2]:
                 description = iimg[2]
             else:
                 description = ""
+
             if description:
                 import string
 
-                print(f"iimg {iimg}")
                 if (iimg[1] and iimg[1].endswith(" ") 
                         or iimg[1].endswith("\xa0")):
                     # \xa0 is actually non-breaking space in Latin1 (ISO
@@ -707,33 +709,53 @@ class Content:
                         title = iimg[1]
                     else:
                         title = "No title"
+                if iimg[0].endswith('mp4'):
+                    srcTxt = (f"<video width='640' height='360' controls "#"class='alignnone size-full "
+                              #f"wp-image-3306'>
+                              f'src="{iimg[0]}" '
+                              f'type="video/mp4"></video>')
+                else:
+                    srcTxt = (f"<img class='alignnone size-full "
+                              f"wp-image-3306' src='{iimg[0]}' "
+                              f"alt='{title} {description}' "
+                              f"width='776' height='1035' />")
+ 
                 if title[-1] in string.punctuation:
                     text = (
                         '{}\n<p><h4>{}</h4></p><p><a href="{}">'
-                        '<img class="alignnone size-full '
-                        'wp-image-3306" src="{}" alt="{} {}" '
-                        'width="776" height="1035" /></a></p>'.format(
-                            text, description, url, iimg[0], title, description
+                        #'<img class="alignnone size-full '
+                        #'wp-image-3306" src="{}" 
+                        '{} </a></p>'.format( text, description, url, srcTxt)
                         )
-                    )
                 else:
                     text = (
                         '{}\n<p><h4>{}</h4></p><p><a href="{}">'
-                        '<img class="alignnone size-full '
-                        'wp-image-3306" src="{}" alt="{}. {}"'
-                        'width="776" height="1035" /></a></p>'.format(
-                            text, description, url, iimg[0], title, description
+                        #'<img class="alignnone size-full '
+                        #'wp-image-3306" src="{}" 
+                        '{} /></a></p>'.format(
+                            text, description, url, srcTxt
                         )
-                    )
+                        )
             else:
                 title = iimg[1]
+                if iimg[0].endswith('mp4'):
+                    srcTxt = (f"<video width='640' height='360' controls " #class='alignnone size-full "
+                              #f"wp-image-3306'>
+                              f" src='{iimg[0]}' "
+                              f"type='video/mp4'></video>")
+                else:
+                    srcTxt = (f"<a href='{url}'><img class='alignnone size-full "
+                              f"wp-image-3306' src='{iimg[0]}' "
+                              f"alt='{title} {description}' "
+                              f"width='776' height='1035' /></a>")
                 text = (
-                    '{}\n<p><a href="{}"><img class="alignnone '
-                    'size-full wp-image-3306" src="{}" alt="{} {}"'
-                    'width="776" height="1035" /></a></p>'.format(
-                        text, url, iimg[0], title, description
+                    '{}\n<p>'#<img class="alignnone '
+                    #'size-full wp-image-3306" src="{}" 
+                    '{} '
+                    #'alt="{} {}"'
+                    #'width="776" height="1035" />
+                    '</p>'.format(text, url, srcTxt )
                     )
-                )
         return text
 
 

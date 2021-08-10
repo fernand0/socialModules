@@ -25,7 +25,6 @@ class moduleMedium(Content,Queue):
             
             application_id = config.get("appKeys","ClientID")
             application_secret = config.get("appKeys","ClientSecret")
-
             
             try: 
                 client = Client(application_id = application_id, 
@@ -51,6 +50,9 @@ class moduleMedium(Content,Queue):
     def getUser(self):
         return self.user
 
+    def getUserRaw(self):
+        return self.userRaw
+
     def setPosts(self):
         logging.info("  Setting posts")
         self.posts = []
@@ -67,7 +69,7 @@ class moduleMedium(Content,Queue):
     def publishPost(self, post, link, comment):
         logging.info("    Publishing in {} ...".format(self.service))
         client = self.client
-        user = self.getUser()
+        user = self.getUserRaw()
 
         title = post
         content = comment

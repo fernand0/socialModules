@@ -223,7 +223,17 @@ class moduleImgur(Content, Queue):
         res = []
         title = theTitle
         for img in data:
-            urlImg = 'https://i.imgur.com/{}.jpg'.format(img.id)
+            print(f"Img: {img}")
+            print(f"Img: {img.type}")
+            if img.type == 'video/mp4':
+                print("Es vídeo")
+                urlImg = img.mp4
+            else:
+                print("Es imagen")
+                urlImg = img.link
+            import inspect
+            print(inspect.getmembers(img)[2][1])
+            # urlImg = 'https://i.imgur.com/{}.jpg'.format(img.id)
             titleImg = img.description
             if titleImg:
                 description = titleImg.split('#')
@@ -358,105 +368,11 @@ def main():
 
         selection = input("Which one? ")
         print(selection)
-        break
-
-        if ('cache' in config.options(section)):
-            img.setProgram(config.get(section, "cache"))
-            cache = config.get(acc, 'cache')
-            user = config.get(acc, cache)
-        img.setCache()
-        img.setClient(name)
-        img.setUrl(url)
-        if 'posts' in config.options(acc):
-            img.setPostsType(config.get(acc, 'posts'))
-        img.setPosts()
-        for i, im in enumerate(img.getPosts()):
-            print(i, img.getPostTitle(im))
-        lastLink = None
-        i = 1
-        if 'wordpress' in img.getSocialNetworks():
-            socialNetwork = ('wordpress', img.getSocialNetworks()['wordpress'])
-            lastLink, lastTime = checkLastLink(url, socialNetwork)
-
-            print(f"lastLink {lastLink[0]}")
-            pos = img.getLinkPosition(lastLink[0])
-            print(f"pos {pos}")
-            i = pos
-        print()
-        num = int(selection)
-        listPosts = img.getNumPostsData(num, i, lastLink)
-        print(f"listPosts: {listPosts}")
-        continue
-        # Code from this point is not expected to work, but in some cases can
-        # serve as an example.
-
-        if cache == 'wordpress':
-            import moduleWordpress
-            wp = moduleWordpress.moduleWordpress()
-            wp.setClient(user)
-            continue
-            wp.publishPost(title, link, comment, tags=links)
-            continue
-        else:
-            socialNetwork = ('imgur', img.getSocialNetworks()['imgur'])
-            lastLink, lastTime = checkLastLink(url, socialNetwork)
-            i = 1
-            listPosts = img.getNumPostsData(1, i)
-            print(listPosts)
-            continue
-
-        sys.exit()
-        imgs = img.getClient().get_album_images(img.getPosts()[-1].id)
-        print("imgs", imgs)
-        for iimg in imgs:
-            print(f"id {iimg.id}")
-            print(f"title {iimg.title}")
-            print(f"descr {iimg.description}")
-            print(f"name {iimg.name}")
-        print(img.extractImages(img.getPosts()[-2]))
-        print(img.getImagesCode(-1))
-        continue
-
-        print("---- Posts ----")
-        for i, post in enumerate(img.getPosts()):
-            print(img.getPostTitle(post))
-            print(img.getPostLink(post))
-            print(img.getPostId(post))
-            print(img.obtainPostData(i))
-        print("---- Drafts ----")
-        for i, post in enumerate(img.getDrafts()):
-            print(img.getPostTitle(post))
-            print(img.getPostLink(post))
-            print(img.obtainPostData(i))
-        print("----")
-        time.sleep(2)
 
     pos = int(selection)
 
     post = img.getImages(pos)
-    print(post)
-    # postWP = img.getImagesCode(pos)
-    # title = img.getPostTitle(img.getPosts()[pos])
-    # tags = img.getImagesTags(pos)
-    # print("---post images ----")
-    # print(post)
-    # print("---title----")
-    # print(title)
-    # print("---postWP----")
-    # print(postWP)
-    # print("---tags----")
-    # print(tags)
-    # print("---post extractDataMessage ----")
-    # element = img.extractDataMessage(pos)
-    # print(element)
-    # (title, link, firstLink, image, summary, summaryHtml, 
-    #        summaryLinks, content, links, comment) = element
-
-    # user = 'avecesunafoto'
-    # import moduleWordpress
-    # wp = moduleWordpress.moduleWordpress()
-    # wp.setClient(user)
-    # wp.publishPost(title, link, comment, tags=links)
+    print(f"Post: {post}")
 
     publishCache = False
     publishWordpress = True
