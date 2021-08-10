@@ -732,9 +732,7 @@ class Content:
                         '{}\n<p><h4>{}</h4></p><p><a href="{}">'
                         #'<img class="alignnone size-full '
                         #'wp-image-3306" src="{}" 
-                        '{} /></a></p>'.format(
-                            text, description, url, srcTxt
-                        )
+                        '{} /></a></p>'.format( text, description, url, srcTxt)
                         )
             else:
                 title = iimg[1]
@@ -754,7 +752,7 @@ class Content:
                     '{} '
                     #'alt="{} {}"'
                     #'width="776" height="1035" />
-                    '</p>'.format(text, url, srcTxt )
+                    '</p>'.format(text, srcTxt )
                     )
         return text
 
