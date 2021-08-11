@@ -120,7 +120,6 @@ class Content:
         logging.debug(f"setApi {typePosts}")
         if hasattr(self, "getPostsType") and self.getPostsType():
             typePosts = self.getPostsType()
-            logging.debug(f"setApi {typePosts}")
             if typePosts == "cache":
                 cmd = getattr(self, "setApiCache")
             else:
@@ -163,9 +162,11 @@ class Content:
             url = self.getUrl()
             service = self.service.lower()
             nick = self.user
+            fN = (f"{fileNamePath(url, (service, nick))}.timeNext")
+            with open(fN,'rb') as f: 
+                    lastTime, llastTime = pickle.load(f)
             fN = (f"{fileNamePath(url, (service, nick))}.last")
-            print(f"File: {fN}")
-            myLastLink, lastTime = getLastLink(fN)
+            myLastLink, llastTime = getLastLink(fN)
         except:
             fN = ""
             msgLog = (f"No last link")

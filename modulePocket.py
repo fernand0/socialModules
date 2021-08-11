@@ -29,9 +29,7 @@ class modulePocket(Content,Queue):
     def setApiPosts(self):
         posts = []
         dictPosts = self.client.retrieve()
-        logging.info(f"setApi posts: {dictPosts}")
         dictPosts = dictPosts['list']
-        logging.info(f"setApi posts: {dictPosts}")
         for post in dictPosts:
             posts.append(dictPosts[post])
 

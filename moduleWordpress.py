@@ -211,7 +211,7 @@ class moduleWordpress(Content,Queue):
         comment = postData[2]
         payload = {"title":title,
                  "content":comment, 
-                 "status":'draft',
+                 "status":'publish',
                  # One of: publish, future, draft, pending, private
                  'tags':idTags}
         res = requests.post(self.api_base2 

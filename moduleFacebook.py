@@ -46,9 +46,12 @@ class moduleFacebook(Content,Queue):
         pages = self.getClient().get_connections("me", "accounts") 
         self.pages = pages
 
+        # Publishing as me 
+        self.page = facebookAC 
+
         if (facebookAC != 'me'): 
             for i in range(len(pages['data'])): 
-                logging.debug("Selecting %s %s" % (
+                logging.debug("    Page: %s %s" % (
                     pages['data'][i]['name'], facebookAC)) 
                 if (pages['data'][i]['name'] == facebookAC): 
                     logging.info("     Selected... %s" % pages['data'][i]['name']) 
@@ -56,9 +59,6 @@ class moduleFacebook(Content,Queue):
                     self.page = graph2
                     self.pageId = pages['data'][i]['id']
                     break
-                else: 
-                    # Publishing as me 
-                    self.page = facebookAC 
 
     def setApiPosts(self):
         if not self.page:

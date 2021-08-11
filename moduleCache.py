@@ -66,9 +66,9 @@ class moduleCache(Content,Queue):
         else: 
             service = self.getService()
         nick = self.getNick()
-        logging.debug(f"Url {url} service {service} nick {nick}")
+        logging.debug(f"Url: {url} service {service} nick {nick}")
         fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
-        logging.debug("File %s" % fileNameQ)
+        logging.debug("File: %s" % fileNameQ)
         try:
             with open(fileNameQ,'rb') as f: 
                 try: 
