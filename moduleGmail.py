@@ -172,7 +172,8 @@ class moduleGmail(Content,Queue):
         api = self.getClient()
         list_labels = [ label, ]
         print(list_labels)
-        response = api.users().messages().list(userId='me',
+        response = api.users().messages().list(userId='me', 
+                                               q='before:2021/2/28 is:unread',
                                                labelIds=list_labels).execute()
         return(response)
 
@@ -311,7 +312,14 @@ class moduleGmail(Content,Queue):
         mes = ""
         if 'parts' in message['payload']:
             for part in message['payload']['parts']:
-                mes  = mes + str(base64.urlsafe_b64decode(part['body']['data']))
+                logging.debug(f"Part: {part}")
+                if 'data' in part['body']:
+                    mes  = mes + str(base64.urlsafe_b64decode(part['body']['data']))
+                else: 
+                    for pp in part['parts']:
+                        mes  = mes + str(base64.urlsafe_b64decode(pp['body']['data']))
+        else:
+            mes  = str(base64.urlsafe_b64decode(message['payload']['body']['data']))
         return(mes)
 
     def getMessage(self, idPost): 
@@ -353,10 +361,36 @@ class moduleGmail(Content,Queue):
             del message[header]
             message[header]= value
 
+    def getPostLinksWithText(self, post):
+        message = self.getMessageId(self.getPostId(post))
+        messageClean = message.replace('\\r\\n',' ')
+        soup = BeautifulSoup(messageClean, 'lxml')
+        logging.debug(f"Soup: {soup}")
+        res = soup.find_all('a', href=True)
+        data = {}
+        for element in res:
+            link = element['href']
+            if not link and 'title' in element:
+                if 'http' in element['title']:
+                    link = element['title']
+            text = element.text
+            logging.debug(f"Linkk: {link} text: {text}")
+            if (link and not (link in data)):
+                data[link] = (text, link, element)
+            else:
+                data[link] = (f"{data[link][0]} {text}", data[link][1], 
+                        data[link][2])
+        links = []
+        for key in data:
+            links.append(data[key])
+        return(links)
+
     def getPostLinks(self, post):
         message = self.getMessageId(self.getPostId(post))
         soup = BeautifulSoup(message, 'lxml')
-        res = soup.find_all('a')
+        logging.debug(soup)
+        res = soup.find_all('a', href=True)
+        logging.debug(res)
         links = []
         for element in res:
             link = element['href']
@@ -386,7 +420,7 @@ class moduleGmail(Content,Queue):
         return(None)
 
     def getHeader(self, message, header = 'Subject'):
-        logging.info(f"Message: {message}")
+        logging.debug(f"Message: {message}")
         if 'meta' in message:
             message = message['meta']
         for head in message: 
@@ -403,7 +437,7 @@ class moduleGmail(Content,Queue):
             message = message['list']
             idPost = message['id']
         elif isinstance(message, tuple):
-            print(message)
+            logging.debug(message)
             idPost = message
 
         return(idPost)
@@ -434,7 +468,7 @@ class moduleGmail(Content,Queue):
         labelId = None
         for label in results: 
             if (label['name'].lower() == name.lower()) or (label['name'].lower() == name.lower().replace('-',' ')): 
-                print(label)
+                logging.debug(label)
                 labelId = label['id'] 
                 break
     
@@ -460,6 +494,7 @@ class moduleGmail(Content,Queue):
                 if posIni < posSignature: 
                     theLink = snippet[posIni:posFin]
             theLinks = self.getPostLinks(message)
+            theSummaryLinks = self.getPostLinksWithText(message)
             content = None
             theContent = None
             #date = int(self.getHeader(message, 'internalDate'))/1000
@@ -468,7 +503,7 @@ class moduleGmail(Content,Queue):
             theImage = None
             theSummary = snippet
 
-            theSummaryLinks = message
+            # theSummaryLinks = message
             comment = self.getPostId(message) 
 
             theLink = theLinks[0]
@@ -548,6 +583,9 @@ class moduleGmail(Content,Queue):
         result = self.deleteApiPost(idPost)
         return result
 
+    def deleteApiMessages(self, idPost): 
+        return self.deleteApiPost(idPost)
+
     def deleteApiPost(self, idPost): 
         api = self.getClient()
         result = api.users().messages().trash(userId='me', id=idPost).execute()
@@ -604,15 +642,11 @@ class moduleGmail(Content,Queue):
                     label = label[:-1]
                 if label.upper() in notAllowedLabels:
                     label = 'old-'+label
-                print("label %s"%label)
+                logging.debug("label %s"%label)
                 try: 
-                    print("aquí")
                     labelId = self.getLabelId(label)
-                    print("aquí",labelId)
                 except:
-                    print("except")
                     labelId = self.getLabelId('old-'+label)
-                    print("except")
                 if not labelId :  
                     try: 
                         labelId = self.createLabel(label)

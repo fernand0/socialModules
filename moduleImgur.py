@@ -223,16 +223,15 @@ class moduleImgur(Content, Queue):
         res = []
         title = theTitle
         for img in data:
-            print(f"Img: {img}")
-            print(f"Img: {img.type}")
+            logging.debug(f"Img: {img}")
             if img.type == 'video/mp4':
-                print("Es vídeo")
+                logging.info("Es vídeo")
                 urlImg = img.mp4
             else:
-                print("Es imagen")
+                logging.info("Es imagen")
                 urlImg = img.link
-            import inspect
-            print(inspect.getmembers(img)[2][1])
+            # import inspect
+            # loggin.debug(inspect.getmembers(img)[2][1])
             # urlImg = 'https://i.imgur.com/{}.jpg'.format(img.id)
             titleImg = img.description
             if titleImg:

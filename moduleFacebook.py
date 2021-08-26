@@ -111,21 +111,25 @@ class moduleFacebook(Content,Queue):
         return self.processReply(res)
 
     def publishApiImage(self, postData): 
-        post, imageName, more = postData
-        with open(imageName, "rb") as imagefile:
-                imagedata = imagefile.read()
-    
         res = 'Fail!'
-        try:
-            if 'alt' in more:
-                res = self.page.put_photo(imagedata, message=post, 
-                    alt_text_custom = more['alt'])
-            else:
-                res = self.page.put_photo(imagedata, message=post)
-        except:
-            res = self.report('Facebook', post, '', sys.exc_info())
+        logging.debug(f"{postData} Len: {len(postData)}")
+        if len(postData) == 3:
+            post, imageName, more = postData
+            yield(f" publishing api {post} - {imageName} - {more}")
+            with open(imageName, "rb") as imagefile:
+                    imagedata = imagefile.read()
+    
+            try:
+                if 'alt' in more:
+                    res = self.page.put_photo(imagedata, message=post, 
+                        alt_text_custom = more['alt'])
+                else:
+                    res = self.page.put_photo(imagedata, message=post)
+            except:
+                res = self.report('Facebook', post, '', sys.exc_info())
+        else:
+            logging.debug(f" not published")
         return res
-
 
     def deleteApiPosts(self, idPost): 
         result = self.page.delete_object(idPost)

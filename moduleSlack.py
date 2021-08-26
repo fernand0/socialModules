@@ -26,6 +26,7 @@ class moduleSlack(Content, Queue):
         self.user_slack_token = None
         self.channel = None
         self.postaction = None
+        self.service = "Slack"
 
     def getKeys(self, config):
         slack_token = config.get(self.service, "oauth-token")
@@ -52,59 +53,7 @@ class moduleSlack(Content, Queue):
     def getChannel(self):
         return self.channel
 
-    # def setClient(self, user=None):
-    #    # https://api.slack.com/authentication/basics
-    #    logging.info("     Setting Client")
-    #    logging.info("     Connecting {}".format(self.service))
-    #    try:
-    #        config = configparser.ConfigParser()
-    #        config.read(CONFIGDIR + "/.rssSlack")
-
-    #        if config.sections():
-    #            self.slack_token = config.get("Slack", "oauth-token")
-    #            self.user_slack_token
-    #                   = config.get("Slack", "user-oauth-token")
-
-    #            self.sc = WebClient(self.slack_token)
-    #        else:
-    #            logging.warning("Account not configured")
-    #            if sys.exc_info()[0]:
-    #                logging.warning(
-    #                    "Unexpected error: {}".format(sys.exc_info()[0])
-    #                )
-    #            print("Please, configure a {} Account".format(self.service))
-    #            sys.exit(-1)
-    #    except:
-    #        logging.warning("Something failed. not configured")
-    #        if sys.exc_info()[0]:
-    #            logging.warning(
-    #                "Unexpected error: {}".format(sys.exc_info()[0])
-    #            )
-    #            logging.info(self.report(self.service,
-    #                         "", "", sys.exc_info()))
-    #        print("Please, configure a {} Account".format(self.service))
-    #        sys.exit(-1)
-    #        logging.info(self.report("Slack", text, sys.exc_info()))
-    #        self.sc = slack.WebClient(token=self.slack_token)
-
-    #    config = configparser.ConfigParser()
-    #    config.read(CONFIGDIR + "/.rssBlogs")
-    #    section = "Blog7"
-
-    #    url = config.get(section, "url")
-    #    self.setUrl(url)
-    #    self.setSocialNetworks(config[section])
-    #    # if ('buffer' in config.options(section)):
-    #    #    self.setBufferapp(config.get(section, "buffer"))
-
-    #    if "cache" in config.options(section):
-    #        self.setProgram(config.get(section, "cache"))
-    #        logging.info("getProgram {}".format(str(self.getProgram())))
-
-    #    logging.info("     Connected {}".format(self.service))
-
     def setSlackClient(self, slackCredentials):
-        self.service = "slack"
         config = configparser.ConfigParser()
         if not slackCredentials:
             slackCredentials = CONFIGDIR + "/.rssSlack"
@@ -577,7 +526,7 @@ def main():
         section = "Blog7"
         url = config.get(section, "url")
         site.setSocialNetworks(config)
-        print(site.getSocialNetworks())
+        print(f"social: {site.getSocialNetworks()}")
     except:
         url = "http://fernand0-errbot.slack.com/"
     site.setClient(url)

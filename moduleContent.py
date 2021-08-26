@@ -63,6 +63,7 @@ class Content:
             config = configparser.RawConfigParser()
             config.read(f"{CONFIGDIR}/.rss{self.service}")
             keys = self.getKeys(config)
+            logging.debug(f"keys {keys}")
 
             try:
                 client = self.initApi(keys)
@@ -86,10 +87,10 @@ class Content:
         self.user = nick
 
     def getUser(self):
+        user = ""
         if hasattr(self, "user"):
-            return self.user
-        else:
-            return ""
+            user = self.user
+        return user
 
     def getNick(self):
         if hasattr(self, "nick"):
@@ -147,6 +148,31 @@ class Content:
             url = self.url
         return url
 
+    def getLastLink(self):        
+        url = self.getUrl()
+        service = self.service.lower()
+        nick = self.getUser()
+        fileName = (f"{fileNamePath(url, (service, nick))}.last")
+
+        logging.debug(f"fileName: {fileName}")
+        if not os.path.isdir(os.path.dirname(fileName)):
+            sys.exit("No directory {} exists".format(os.path.dirname(fileName)))
+        if os.path.isfile(fileName):
+            with open(fileName, "rb") as f: 
+                linkLast = f.read().decode().split()  # Last published
+        else:
+            # File does not exist, we need to create it.
+            # Should we create it here? It is a reading function!!
+            with open(fileName, "wb") as f:
+                logging.warning("File %s does not exist. Creating it."
+                        % fileName) 
+                linkLast = ''  
+                # None published, or non-existent file
+        if len(linkLast) == 1: 
+            return linkLast[0]
+        else:
+            return linkLast
+
     def getLastTime(self):
         # print(f"In lastTime")
         # import inspect
@@ -161,12 +187,11 @@ class Content:
         try:
             url = self.getUrl()
             service = self.service.lower()
-            nick = self.user
+            nick = self.getUser()
             fN = (f"{fileNamePath(url, (service, nick))}.timeNext")
             with open(fN,'rb') as f: 
-                    lastTime, llastTime = pickle.load(f)
-            fN = (f"{fileNamePath(url, (service, nick))}.last")
-            myLastLink, llastTime = getLastLink(fN)
+                lastTime, llastTime = pickle.load(f)
+            myLastLink = self.getLastLink()
         except:
             fN = ""
             msgLog = (f"No last link")
@@ -213,12 +238,18 @@ class Content:
         else:
             return ""
 
+    def getSocialNetwork(self):
+        socialNetwork = (self.service, self.nick)
+        return socialNetwork
+
+
     def getSocialNetworks(self):
         socialNetworks = None
         if hasattr(self, "socialNetworks"):
             socialNetworks = self.socialNetworks
         return socialNetworks
 
+    # Old ? To eliminate
     def setSocialNetworks(self, socialNetworksConfig):
         socialNetworksOpt = [
             "twitter",
@@ -333,7 +364,7 @@ class Content:
         return post
 
     def publishImage(self, post, image, **more):
-        logging.info(f"    Publishing image in {self.service}: {post}")
+        logging.info(f"    Publishing image {image} in {self.service}: {post}")
         try:
             reply = self.publishApiImage((post, image, more))
             return self.processReply(reply)
@@ -342,8 +373,18 @@ class Content:
        
     def publishPost(self, post, link="", comment="", **more):
         logging.info(f"    Publishing in {self.service}: {post}")
+        logging.debug(f"    Publishing in {self.service}: {link}")
+        logging.debug(f"    Publishing in {self.service}: {comment}")
+        reply = 'Fail!'
         try:
-            reply = self.publishApiPost((post, link, comment, more))
+            if (hasattr(self, 'getPostsType') 
+                    and (self.getPostsType())
+                    and (hasattr(self, 
+                        f"publishApi{self.getPostsType().capitalize()}"))): 
+                method = getattr(self, f"publishApi{self.getPostsType().capitalize()}")
+                reply = method((post, link, comment, more))
+            else:
+                reply = self.publishApiPost((post, link, comment, more))
             return self.processReply(reply)
         except:
             return self.report(self.service, post, link, sys.exc_info())

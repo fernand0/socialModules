@@ -121,22 +121,28 @@ class moduleTumblr(Content, Queue):
         return res
 
     def publishApiPost(self, postData):
-        if self.getPostsType() == 'posts':
-            res = self.getClient().create_link(self.getBlogName(),
-                                               state='queue',
-                                               title=postData[0],
-                                               url=postData[1],
-                                               description=postData[2])
-        elif self.getPostsType() == 'queue':
-            idPost = postData[1].split('/')[-2]
-            logging.debug(f"idPost {idPost}")
-            res = self.editApiStateId(idPost, 'published')
-        else:
-            res = self.getClient().create_link(self.getBlogName(),
-                                               state='queue',
-                                               title=postData[0],
-                                               url=postData[1],
-                                               description=postData[2])
+        logging.info(f"type: {self.getPostsType()}")
+        try:
+            if self.getPostsType() == 'posts':
+                res = self.getClient().create_link(self.getBlogName(),
+                                                   state='queue',
+                                                   title=postData[0],
+                                                   url=postData[1],
+                                                   description=postData[2])
+            elif self.getPostsType() == 'queue':
+                idPost = postData[1].split('/')[-2]
+                logging.debug(f"idPost {idPost}")
+                res = self.editApiStateId(idPost, 'published')
+            else:
+                res = self.getClient().create_link(self.getBlogName(),
+                                                   state='queue',
+                                                   title=postData[0],
+                                                   url=postData[1],
+                                                   description=postData[2])
+        except ConnectionError as connectionError:
+            for error in twittererror.response_data.get("errors", []): 
+                logging.info("      Error code: %s" % error.get("code", None))
+            res = self.report('Twitter', post, link, sys.exc_info())
 
         return(res)
 

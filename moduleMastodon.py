@@ -29,7 +29,7 @@ class moduleMastodon(Content, Queue):
         pos = self.user.find('@',1) # The first character can be @
         if pos > 0:
             self.base_url = f"https://{self.user[pos:]}"
-            self.user = self.user[:pos]
+            #self.user = self.user[:pos]
         else:
             self.base_url = 'https://mastodon.social'
             

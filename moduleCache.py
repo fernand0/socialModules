@@ -44,16 +44,13 @@ class moduleCache(Content,Queue):
             else:
                 self.socialNetwork = param[0]
                 self.service = param[0] 
-            self.nick = param[1]
-            if self.nick.find('\n')>=0:
-                self.nick = None
+            self.user = param[1]
+            if self.user.find('\n')>=0:
+                self.user = None
         else: 
             self.url = param[0]
             self.service = param[1][0] 
-            self.nick = param[1][1]
-
-    def getSocialNetwork(self):
-        return (self.service, self.nick)
+            self.user = param[1][1]
 
     def setApiDrafts(self):        
         # Every cache is the same, even the origin are drafts ??
@@ -65,7 +62,7 @@ class moduleCache(Content,Queue):
             service = self.socialNetwork
         else: 
             service = self.getService()
-        nick = self.getNick()
+        nick = self.getUser()
         logging.debug(f"Url: {url} service {service} nick {nick}")
         fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
         logging.debug("File: %s" % fileNameQ)
@@ -176,7 +173,7 @@ class moduleCache(Content,Queue):
 
     def updatePostsCache(self):
         fileNameQ = fileNamePath(self.url, 
-                (self.service, self.nick)) + ".queue"
+                (self.service, self.user)) + ".queue"
 
         with open(fileNameQ, 'wb') as f: 
             posts = self.getPosts()

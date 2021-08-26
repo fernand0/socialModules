@@ -62,27 +62,32 @@ class moduleTwitter(Content,Queue):
         return(res)
 
     def publishApiImage(self, postData): 
-        post, imageName, more = postData
-        logging.info(f"More: {more}")
-        with open(imageName, "rb") as imagefile:
-                imagedata = imagefile.read()
+        logging.debug(f"{postData} Len: {len(postData)}")
+        if len(postData) == 3:
+            post, imageName, more = postData
+            with open(imageName, "rb") as imagefile:
+                    imagedata = imagefile.read()
     
-        res = 'Fail!'
-        try:
-            t_upload = Twitter(domain='upload.twitter.com', 
-                            auth=self.authentication)
-            id_img1 = t_upload.media.upload(media=imagedata)["media_id_string"]
-            if 'alt' in more:
-                t_upload.media.metadata.create(_json={ "media_id": id_img1, 
-                    "alt_text": { "text": more['alt'] }
+            try:
+                t_upload = Twitter(domain='upload.twitter.com', 
+                                auth=self.authentication)
+                id_img1 = t_upload.media.upload(media=imagedata)["media_id_string"]
+                if 'alt' in more:
+                    t_upload.media.metadata.create(_json={ "media_id": id_img1, 
+                        "alt_text": { "text": more['alt'] }
 })
-            res = self.getClient().statuses.update(status=post, 
-                media_ids=id_img1)
-        except twitter.api.TwitterHTTPError as twittererror:        
-            for error in twittererror.response_data.get("errors", []): 
-                logging.info("      Error code: %s" % error.get("code", None))
-            res = self.report('Twitter', post, link, sys.exc_info())
+                res = self.getClient().statuses.update(status=post, 
+                    media_ids=id_img1)
+            except twitter.api.TwitterHTTPError as twittererror:        
+                for error in twittererror.response_data.get("errors", []): 
+                    logging.info("      Error code: %s" % error.get("code", None))
+                res = self.report('Twitter', post, link, sys.exc_info())
+        else:
+            logging.debug(f" not published")
         return res
+
+    # def publishApiPosts(self, postData): 
+    #     return self.publishApiPost(postData)
 
     def publishApiPost(self, postData): 
         post, link, comment, plus = postData
@@ -207,12 +212,22 @@ def main():
 
     tw.setClient('fernand0Test')
 
-    print("Testing bad link")
-    res = tw.publishPost("Post MTProto Analysis: Accessible Overview", "https://telegra.ph/LoU-ETH-4a-proof-07-16", '')
+    print("Testing duplicate post")
 
-    logging.info(f"Res: {res}")
+    res = tw.publishPost("Best Practices for Writing a Dockerfile", "https://blog.bitsrc.io/best-practices-for-writing-a-dockerfile-68893706c3", '')
+    print(f"Res: {res}")
+    print(f"End Res")
+    print(res.find('Status is a duplicate'))
+    input("Repeat?")
+    res = tw.publishPost("Best Practices for Writing a Dockerfile", "https://blog.bitsrc.io/best-practices-for-writing-a-dockerfile-68893706c3", '')
 
-    return
+    sys.exit()
+    # print("Testing bad link")
+    # res = tw.publishPost("Post MTProto Analysis: Accessible Overview", "https://telegra.ph/LoU-ETH-4a-proof-07-16", '')
+
+    # logging.info(f"Res: {res}")
+
+    # return
 
     #print("Testing followers")
     #tw.setFriends()
@@ -229,9 +244,10 @@ def main():
     # tw.deletePostId(idPost)
     # return
     #sys.exit()
-    print("Testing posts")
-    tw.setPostsType('favs')
-    tw.setPosts()
+
+    # print("Testing posts")
+    # tw.setPostsType('favs')
+    # tw.setPosts()
 
     print("Testing title and link")
     
