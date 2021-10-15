@@ -89,6 +89,22 @@ class moduleTwitter(Content,Queue):
     # def publishApiPosts(self, postData): 
     #     return self.publishApiPost(postData)
 
+    def publishApiRT(self, postData): 
+        post, link, comment, plus = postData
+        idPost = plus['idPost']
+
+        logging.debug("     Retweeting: %s" % post)
+        res = 'Fail!'
+        try:
+            res = self.getClient().statuses.retweet._id(_id=idPost)
+            #         result = t.statuses.retweet._id(_id=tweet['id'])
+        except twitter.api.TwitterHTTPError as twittererror:        
+            for error in twittererror.response_data.get("errors", []): 
+                logging.info("      Error code: %s" % error.get("code", None))
+            res = self.report('Twitter', post, link, sys.exc_info())
+
+        return res
+
     def publishApiPost(self, postData): 
         post, link, comment, plus = postData
         post = self.addComment(post, comment)
@@ -151,6 +167,9 @@ class moduleTwitter(Content,Queue):
         return f'https://twitter.com/{self.user}/status/{idPost}'
 
     def getPostLink(self, post):
+        return self.getPostUrl(post)
+
+    def getPostContentLink(self, post):
         result = ''
         if ('urls' in post['entities']): 
             if post['entities']['urls']:
@@ -176,7 +195,7 @@ class moduleTwitter(Content,Queue):
             #pprint.pprint(post)
             theTitle = self.getPostTitle(post)
             theLink = self.getPostUrl(post)
-            firstLink = self.getPostLink(post)
+            firstLink = self.getPostContentLink(post)
             theId = self.getPostId(post)
 
             theLinks = [ firstLink, ]
@@ -204,13 +223,46 @@ class moduleTwitter(Content,Queue):
 
 def main():
 
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO, 
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, 
             format='%(asctime)s %(message)s')
 
     import moduleTwitter
     tw = moduleTwitter.moduleTwitter()
 
     tw.setClient('fernand0Test')
+
+    testingRT = False
+    if testingRT:
+        print("Testing RT")
+        tw1 = moduleTwitter.moduleTwitter() 
+        tw1.setClient('reflexioneseir')
+        tw1.setPosts()
+        tweet = tw1.getPosts()[10]
+        idPost = tweet['id']
+        title = tw1.getPostTitle(tweet)
+        link = tw1.getPostLink(tweet)
+        tw.publishApiRT((title, link, '', {'idPost' : idPost}))
+
+        sys.exit()
+        
+    testingSearch = True
+    if testingSearch:
+        myLastLink = 'https://twitter.com/reflexioneseir/status/1235128399452164096'
+        myLastLink = 'http://fernand0.blogalia.com//historias/78135'
+        tw1 = moduleTwitter.moduleTwitter() 
+        tw1.setClient('reflexioneseir')
+        tw1.setPostsType('posts')
+        tw1.setPosts()
+        i = tw1.getLinkPosition(myLastLink)
+        print(i)
+        print(tw1.getPosts()[i-1])
+        print(tw1.getPostLink(tw1.getPosts()[i-1]))
+        num = 1
+        lastLink = myLastLink
+        listPosts = tw1.getNumPostsData(num, i, lastLink)
+        print(listPosts)
+        sys.exit()
+
 
     print("Testing duplicate post")
 

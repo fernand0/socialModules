@@ -92,13 +92,14 @@ class moduleSlack(Content, Queue):
         posts = []
         theChannel = self.getChannel()
         self.getClient().token = self.slack_token
-        data = {"count": 1000, "channel": theChannel}
+        data = {"limit": 1000, "channel": theChannel}
         history = self.getClient().api_call("conversations.history", data=data)
         try:
             posts = history["messages"]
         except:
             posts = []
 
+        logging.debug(f"Posts: {posts}")
         return posts
 
     # def setPosts(self, channel="links"):
@@ -538,16 +539,6 @@ def main():
     # print("---")
     # print(site.getSocialNetworks())
 
-    # print("Testing posting and deleting")
-    res = site.publishPost(
-        "Prueba borrando 7", "http://elmundoesimperfecto.com/", ""
-    )
-    print("res", res)
-    # idPost = res
-    # print(idPost)
-    # input("Delete? ")
-    # site.deletePostId(idPost)
-    # sys.exit()
     print("Testing posts")
     site.setPostsType("posts")
     site.setPosts()
@@ -561,15 +552,28 @@ def main():
         theId = site.getPostId(post)
         print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
 
-    i = 0
-    post = site.getPost(i)
-    title = site.getPostTitle(post)
-    link = site.getPostLink(post)
-    url = site.getPostUrl(post)
-    print(post)
-    print("Title: {}\nTuit: {}\nLink: {}\n".format(title, link, url))
-    input("Delete?")
-    site.delete(i)
+    testingDelete = False
+    if testingDelete:
+        # print("Testing posting and deleting")
+        res = site.publishPost(
+            "Prueba borrando 7", "http://elmundoesimperfecto.com/", ""
+        )
+        print("res", res)
+        # idPost = res
+        # print(idPost)
+        # input("Delete? ")
+        # site.deletePostId(idPost)
+        # sys.exit()
+
+        i = 0
+        post = site.getPost(i)
+        title = site.getPostTitle(post)
+        link = site.getPostLink(post)
+        url = site.getPostUrl(post)
+        print(post)
+        print("Title: {}\nTuit: {}\nLink: {}\n".format(title, link, url))
+        input("Delete?")
+        site.delete(i)
     sys.exit()
 
     for i, post in enumerate(site.getPosts()):

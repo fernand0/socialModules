@@ -345,7 +345,7 @@ class moduleHtml(Content, Queue):
             comment,
         )
 
-    def publishPost(self, title, url, comment = None):
+    def publishPost(self, title, url, comment = None, **more):
         return self.click(url)
 
     def click(self, url):

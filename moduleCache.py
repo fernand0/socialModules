@@ -77,16 +77,32 @@ class moduleCache(Content,Queue):
 
         return(listP)
 
-    def availableSlots(self):
+    #def getMax(self):
+    #    return self.availableSlots()
+
+    def getMax(self):
+        maxVal = 0
+        if hasattr(self, "max"): # and self.max:
+            maxVal = int(self.max)
         self.setPosts()
         lenMax = len(self.getPosts()) 
-        # print(f"len: {self}  {lenMax} {self.getMax()}")
-        # import inspect
-        # print(f"Object len: {inspect.getmembers(self)}")
         num = 1
-        if self.getMax() > 1: 
-            num = self.getMax() - lenMax 
+        if maxVal > 1: 
+            num = maxVal - lenMax 
+        if num < 0:
+            num = 0
         return num
+
+    # def availableSlots(self):
+    #     self.setPosts()
+    #     lenMax = len(self.getPosts()) 
+    #     # print(f"len: {self}  {lenMax} {self.getMax()}")
+    #     # import inspect
+    #     # print(f"Object len: {inspect.getmembers(self)}")
+    #     num = 1
+    #     if self.getMax() > 1: 
+    #         num = self.getMax() - lenMax 
+    #     return num
 
     def getHoursSchedules(self, command=None):
         return self.schedules[0].hour.render()

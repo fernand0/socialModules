@@ -154,10 +154,15 @@ class Content:
         nick = self.getUser()
         fileName = (f"{fileNamePath(url, (service, nick))}.last")
 
+        logging.debug(f"Urll: {url}")
+        logging.debug(f"Nickl: {nick}")
+        logging.debug(f"Servicel: {service}")
         logging.debug(f"fileName: {fileName}")
         if not os.path.isdir(os.path.dirname(fileName)):
             sys.exit("No directory {} exists".format(os.path.dirname(fileName)))
-        if os.path.isfile(fileName):
+        if service in ['html']:
+            linkLast = ''
+        elif os.path.isfile(fileName):
             with open(fileName, "rb") as f: 
                 linkLast = f.read().decode().split()  # Last published
         else:
@@ -168,18 +173,16 @@ class Content:
                         % fileName) 
                 linkLast = ''  
                 # None published, or non-existent file
+        lastLink = ''
         if len(linkLast) == 1: 
-            return linkLast[0]
+            logging.info(f"linkLast len 1 {linkLast}")
+            lastLink = linkLast[0]
         else:
-            return linkLast
+            lastLink = linkLast
+        self.lastLink = lastLink
+        return lastLink
 
     def getLastTime(self):
-        # print(f"In lastTime")
-        # import inspect
-        # print(f"Object members: {inspect.getmembers(self)[3]}")
-        # print(f"Object: {self}")
-        # print(f"Social: {self.url} {self.service} {self.user}")
-
         lastTime = 0.0
         myLastLink = ""
         # You always need to check lastLink? 
@@ -188,9 +191,8 @@ class Content:
             url = self.getUrl()
             service = self.service.lower()
             nick = self.getUser()
-            fN = (f"{fileNamePath(url, (service, nick))}.timeNext")
-            with open(fN,'rb') as f: 
-                lastTime, llastTime = pickle.load(f)
+            fN = (f"{fileNamePath(url, (service, nick))}.last")
+            lastTime = os.path.getctime(fN)
             myLastLink = self.getLastLink()
         except:
             fN = ""
@@ -288,7 +290,7 @@ class Content:
         post = None
         posts = self.getPosts()
         if i < len(posts):
-            post = self.getPosts()[i]
+            post = posts[i]
         return post
 
     def getTitle(self, i):

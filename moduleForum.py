@@ -155,7 +155,10 @@ class moduleForum(Content, Queue):
     def setPosts(self):
         url = self.url
 
-        forums = self.getLinks(url, 0)
+        try:
+            forums = self.getLinks(url, 0)
+        except:
+            forums = []
 
         logging.info(" Reading in .... %s" % self.url)
         listId = []

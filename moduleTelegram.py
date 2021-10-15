@@ -120,7 +120,7 @@ class moduleTelegram(Content):
         if links:
             bot.sendMessage('@'+channel, links, parse_mode='HTML')
 
-    def publishPost(self, post, link, comment):
+    def publishPost(self, post, link, comment, **more):
         logging.info("    Publishing in Telegram...")
         bot = self.client
         title = post
@@ -128,39 +128,43 @@ class moduleTelegram(Content):
         links = ""
         channel = self.user
 
+        logging.info(f"{self.service}: Title: {title} Link: {link}")
+        text = ('<a href="'+link+'">' + title+ "</a>\n")
+        textToPublish = text
+        textToPublish2 = ""
         from html.parser import HTMLParser
         h = HTMLParser()
         title = h.unescape(title)
-        content = content.replace('<', '&lt;')
-        text = ('<a href="'+link+'">' + title
-                + "</a>\n" + content + '\n\n' + links)
-        textToPublish2 = ""
-        if len(text) < 4090:
-            textToPublish = text
-            links = ""
-        else:
-            text = '<a href="'+link+'">'+title + "</a>\n" + content
-            textToPublish = text[:4080] + ' ...'
-            textToPublish2 = '... ' + text[4081:]
+        if content:
+            content = content.replace('<', '&lt;')
+            text = (text + content + '\n\n' + links)
+            textToPublish2 = ""
+            if len(text) < 4090:
+                textToPublish = text
+                links = ""
+            else:
+                textToPublish = text[:4080] + ' ...'
+                textToPublish2 = '... ' + text[4081:]
 
-        logging.info("Publishing (text to )" + textToPublish)
-        logging.info("Publishing (text to 2)" + textToPublish2)
+            logging.info("Publishing (text to )" + textToPublish)
+            logging.info("Publishing (text to 2)" + textToPublish2)
 
-        try:
-            bot.sendMessage('@'+channel, textToPublish, parse_mode='HTML')
-        except:
-            return(self.report('Telegram', textToPublish,
-                               link, sys.exc_info()))
-
-        if textToPublish2:
+        if textToPublish:
             try:
-                bot.sendMessage('@'+channel, textToPublish2[:4090],
-                                parse_mode='HTML')
+                bot.sendMessage('@'+channel, textToPublish, parse_mode='HTML')
             except:
-                bot.sendMessage('@'+channel, "Text is longer",
-                                parse_mode='HTML')
-        if links:
-            bot.sendMessage('@'+channel, links, parse_mode='HTML')
+                return(self.report('Telegram', textToPublish,
+                                   link, sys.exc_info()))
+
+            if textToPublish2:
+                try:
+                    bot.sendMessage('@'+channel, textToPublish2[:4090],
+                                    parse_mode='HTML')
+                except:
+                    bot.sendMessage('@'+channel, "Text is longer",
+                                    parse_mode='HTML')
+            if links:
+                bot.sendMessage('@'+channel, links, parse_mode='HTML')
 
     def getPostTitle(self, post):
         if 'channel_post' in post:

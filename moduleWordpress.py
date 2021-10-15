@@ -183,8 +183,8 @@ class moduleWordpress(Content,Queue):
 
     def processReply(self, reply): 
         res = reply
+        logging.info("Res: %s" % res)
         if res.ok: 
-            logging.info("Res: %s" % res)
             resJ = json.loads(res.text)
             logging.debug("Res text: %s" % resJ)
             logging.debug("Res slug: %s" % resJ['generated_slug'])
@@ -194,8 +194,7 @@ class moduleWordpress(Content,Queue):
         else: 
             tres = type(res)
             logging.info(f"Res: {res} type {tres}")
-            print(f"Res: {res} type {tres}")
-            res = "Fail!"
+            res = "Fail! Failed authentication."
         return res
 
     def publishApiPost(self, postData): 
@@ -372,6 +371,7 @@ def main():
     logging.basicConfig(stream=sys.stdout, 
             level=logging.INFO, 
             format='%(asctime)s %(message)s')
+
     import moduleWordpress
 
     wp = moduleWordpress.moduleWordpress()
@@ -404,7 +404,6 @@ def main():
     sys.exit()
 
     wp.publishPost(post, '', title)
-
 
     #pos = wp.getLinkPosition('https://avecesunafoto.wordpress.com/2020/03/10/gamoncillo/')
     #img = wp.obtainPostData(pos)

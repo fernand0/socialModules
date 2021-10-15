@@ -36,9 +36,12 @@ def logMsg(msgLog, log=1, output=1):
         print("====================================") 
  
 def fileNamePath(url, socialNetwork=()):
-    myNetloc = urllib.parse.urlparse(url).netloc
+    urlParsed = urllib.parse.urlparse(url)
+    myNetloc = urlParsed.netloc
     if not myNetloc:
         myNetloc=url
+    if 'twitter' in myNetloc:
+        myNetloc = f"{myNetloc}_{urlParsed.path[1:]}"
     if myNetloc.endswith('/'):
         myNetloc = myNetloc[:-1]
     if not socialNetwork: 

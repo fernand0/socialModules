@@ -40,6 +40,7 @@ class Queue:
         return(newTitle)
 
     def extractDataMessage(self, i):
+        logging.info("extract queue")
         if hasattr(self, 'getPostsType'):
             if self.getPostsType() == 'drafts':
                 posts = self.getDrafts()
@@ -56,7 +57,7 @@ class Queue:
         return (theTitle, theLink, None, None, None, None, None, None, None, None)
 
     def obtainPostData(self, i, debug=False):
-        logging.info("Service %s"% self.service)
+        logging.info("Obtain post data Service %s"% self.service)
         return (self.extractDataMessage(i))
 
     def selectAndExecute(self, command, args):
