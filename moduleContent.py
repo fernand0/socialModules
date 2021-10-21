@@ -34,7 +34,7 @@ class Content:
         self.xmlrpc = None
         self.search = None
         self.api = {}
-        self.lastLinkPublished = {}
+        self.lastLinkPublished = None 
         self.numPosts = 0
         self.user = None
         self.client = None
@@ -182,22 +182,25 @@ class Content:
         self.lastLink = lastLink
         return lastLink
 
-    def getLastTime(self):
+    def getLastTime(self, other = None):
         lastTime = 0.0
         myLastLink = ""
         # You always need to check lastLink? 
         # Example: gmail, Twitter
-        try:
-            url = self.getUrl()
-            service = self.service.lower()
-            nick = self.getUser()
-            fN = (f"{fileNamePath(url, (service, nick))}.last")
-            lastTime = os.path.getctime(fN)
-            myLastLink = self.getLastLink()
-        except:
-            fN = ""
-            msgLog = (f"No last link")
-            logMsg(msgLog, 2, 0)
+        if other:
+            myLastLink,lastTime = other.getLastTime()
+        else:
+            try:
+                url = self.getUrl()
+                service = self.service.lower()
+                nick = self.getUser()
+                fN = (f"{fileNamePath(url, (service, nick))}.last")
+                lastTime = os.path.getctime(fN)
+                myLastLink = self.getLastLink()
+            except:
+                fN = ""
+                msgLog = (f"No last link")
+                logMsg(msgLog, 2, 0)
 
         self.lastLinkPublished = myLastLink
         self.lastTimePublished = lastTime
@@ -283,14 +286,34 @@ class Content:
         self.posts = posts
 
     def getPosts(self):
-        posts = self.posts
+        posts = None
+        if hasattr(self, 'posts'):
+            posts = self.posts
         return posts
 
     def getPost(self, i):
         post = None
         posts = self.getPosts()
-        if i < len(posts):
+        if posts and (i < len(posts)):
             post = posts[i]
+        return post
+
+    def getNextPost(self):
+        # Needs testing. cache, multiple links in lastLink, others
+        post = None
+        lastLink = self.getLastLinkPublished()
+        if lastLink:
+            print(f"lastLink: {lastLink}")
+            posLast = self.getLinkPosition(lastLink)
+            print(f"lastLink pos: {posLast}")
+
+            if posLast > 0:
+                post = self.getPost(posLast - 1)
+            else:
+                post = None
+        else:
+            post = self.getPost(0)
+
         return post
 
     def getTitle(self, i):
@@ -604,8 +627,8 @@ class Content:
 
     def getLinkPosition(self, link):
         posts = self.getPosts()
-        pos = len(posts)
         if posts:
+            pos = len(posts)
             if not link:
                 logging.debug(self.getPosts())
                 return len(self.getPosts())

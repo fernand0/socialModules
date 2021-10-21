@@ -65,25 +65,30 @@ class moduleTwitter(Content,Queue):
         logging.debug(f"{postData} Len: {len(postData)}")
         if len(postData) == 3:
             post, imageName, more = postData
-            with open(imageName, "rb") as imagefile:
-                    imagedata = imagefile.read()
+            if imagename:
+                with open(imageName, "rb") as imagefile:
+                        imagedata = imagefile.read()
     
-            try:
-                t_upload = Twitter(domain='upload.twitter.com', 
-                                auth=self.authentication)
-                id_img1 = t_upload.media.upload(media=imagedata)["media_id_string"]
-                if 'alt' in more:
-                    t_upload.media.metadata.create(_json={ "media_id": id_img1, 
-                        "alt_text": { "text": more['alt'] }
+                try:
+                    t_upload = Twitter(domain='upload.twitter.com', 
+                                    auth=self.authentication)
+                    id_img1 = t_upload.media.upload(media=imagedata)["media_id_string"]
+                    if 'alt' in more:
+                        t_upload.media.metadata.create(_json={ "media_id": id_img1, 
+                            "alt_text": { "text": more['alt'] }
 })
-                res = self.getClient().statuses.update(status=post, 
-                    media_ids=id_img1)
-            except twitter.api.TwitterHTTPError as twittererror:        
-                for error in twittererror.response_data.get("errors", []): 
-                    logging.info("      Error code: %s" % error.get("code", None))
-                res = self.report('Twitter', post, link, sys.exc_info())
+                    res = self.getClient().statuses.update(status=post, 
+                        media_ids=id_img1)
+                except twitter.api.TwitterHTTPError as twittererror:        
+                    for error in twittererror.response_data.get("errors", []): 
+                        logging.info("      Error code: %s" % error.get("code", None))
+                    res = self.report('Twitter', post, link, sys.exc_info())
+            else:
+                logging.info(f"No image available")
+                res = "Fail! No image available"
         else:
-            logging.debug(f" not published")
+            res = "Fail! Not published, not enough arguments"
+            logging.debug(res)
         return res
 
     # def publishApiPosts(self, postData): 

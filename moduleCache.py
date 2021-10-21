@@ -93,6 +93,19 @@ class moduleCache(Content,Queue):
             num = 0
         return num
 
+    def getNextPost(self):
+        # cache always shows the first item
+        post = None
+        posts = self.getPosts()
+
+        if posts and (len(posts) > 0):
+            posLast = 1
+            print(f"lastLink pos: {posLast}")
+            post = self.getPost(posLast - 1)
+
+        return post
+
+
     # def availableSlots(self):
     #     self.setPosts()
     #     lenMax = len(self.getPosts()) 
