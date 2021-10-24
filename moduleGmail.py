@@ -399,17 +399,20 @@ class moduleGmail(Content,Queue):
         return(links)
 
     def getPostLink(self, post):
-        fromP = self.getHeader(post, 'From')
-        snipP = self.getHeader(post, 'snippet')
-        result = f"From: {fromP}\nText: {snipP}"
-        return result
+        # fromP = self.getHeader(post, 'From')
+        # snippet = self.getHeader(post, 'snippet')
+        theLink = self.getPostLinks(post)[0]
 
+        # result = f"From: {fromP}\nText: {snipP}"
+        result = theLink
+        return result
+    
     def getPostTitle(self, post):
         logging.debug(post)
+        title = ""
         if post:
             title = self.getHeader(post)
-            return (title)
-        return(None)
+        return (title)
 
     def getPostDate(self, post):
         logging.debug(post)

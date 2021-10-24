@@ -65,9 +65,22 @@ class moduleRss(Content,Queue):
     def getPostLink(self, post):
         return(post['link'])
 
-    def getPostTitle(self, post):
-        if 'title' in post:
-            return(post['title'].replace('\n', ' '))
+    def getPostContentHtml(self, post):
+        summary = ""
+        if 'summary' in post:
+            summary = self.getAttribute(post, 'summary')
+        return summary
+
+    def getPostContent(self, post):
+        summary = self.getPostContentHtml(post)
+        soup = BeautifulSoup(summary, 'lxml')
+        for node in soup.find_all('blockquote'):
+            node = node.get_text()
+            logging.debug(f"Node: {node}")
+            node = f'"{node[1:-1]}"'
+            # We need to delete before and after \n
+            logging.debug(f"Node: {node}")
+        return soup.get_text()
 
     def obtainPostData(self, i, debug=False):
         if not self.posts:
@@ -195,7 +208,7 @@ def main():
 
     print("Configured blogs:")
 
-    accounts = ["Blog9"] #, "Blog9", "Blog22", "Blog1"]
+    accounts = ["Blog9", "Blog22", "Blog1"]
     for acc in accounts:
         print("Account: {}".format(acc))
         blog = moduleRss.moduleRss()
@@ -211,6 +224,16 @@ def main():
         blog.setUrl(url)
         blog.setPosts()
         print(len(blog.getPosts()))
+        testingPost = True
+        if testingPost:
+            post = blog.getPosts()[0]
+            print(post)
+            print(f" - {blog.getPostTitle(post)}")
+            print(f" - {blog.getPostLink(post)}")
+            print(f" - {blog.getPostContent(post)}")
+            print(f" - {blog.extractPostLinks(post)}")
+
+        continue 
         for i, post in enumerate(blog.getPosts()):
             print(blog.getPosts()[i])
             (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content , links, comment) = (blog.obtainPostData(i, False))

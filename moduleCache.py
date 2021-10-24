@@ -95,6 +95,7 @@ class moduleCache(Content,Queue):
 
     def getNextPost(self):
         # cache always shows the first item
+        # Some standard contition?
         post = None
         posts = self.getPosts()
 

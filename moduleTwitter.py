@@ -50,6 +50,25 @@ class moduleTwitter(Content,Queue):
         # https://stackoverflow.com/questions/38717816/twitter-api-text-field-value-is-truncated
         return posts
 
+    #def getNextPost(self):
+    #    # cache always shows the first item
+    #    post = None
+    #    posts = self.getPosts()
+
+    #    if self.getPostsType() == 'favs':
+    #        # We will return always the first fav (there can be too many)
+    #        if posts and (len(posts) > 0):
+    #            posLast = 1
+    #        else:
+    #            posLast = -1
+    #    else:
+    #        posLast = self.getLinkPosition(self.getLastLinkPublished())
+    #    print(f"lastLink pos: {posLast}")
+    #    post = self.getPost(posLast - 1)
+
+    #    return post
+
+
     def processReply(self, reply): 
         res = ''
         if reply: 
@@ -165,7 +184,14 @@ class moduleTwitter(Content,Queue):
         return (post.split('/')[-1])
 
     def getPostTitle(self, post):
-        return self.getAttribute(post, 'text')
+        title = ""
+        if 'text' in post:
+            title = self.getAttribute(post, 'text')
+        elif 'full_text' in post:
+            title = self.getAttribute(post, 'full_text')
+        # if 'http' in title:
+            # title = title.split('http')[0]
+        return title
 
     def getPostUrl(self, post):
         idPost = self.getAttribute(post, 'id_str')
@@ -173,6 +199,15 @@ class moduleTwitter(Content,Queue):
 
     def getPostLink(self, post):
         return self.getPostUrl(post)
+
+    def extractPostLinks(self, post, linksToAvoid=""):
+        return (self.getPostContent(post), self.getPostContentLink(post))
+
+    def getPostContent(self, post):
+        result = ''
+        if 'full_text' in post:
+            result = self.getAttribute(post, 'full_text')
+        return result
 
     def getPostContentLink(self, post):
         result = ''
@@ -236,6 +271,21 @@ def main():
 
     tw.setClient('fernand0Test')
 
+    testingFav = True
+    if testingFav:
+        print("Testing Fav")
+        tw.setClient('fernand0')
+        tw.setPostsType('favs')
+        tw.setPosts()
+        tweet = tw.getPosts()[0]
+        tweet = tw.getNextPost()
+        print(tweet)
+        print(f" -Title {tw.getPostTitle(tweet)}")
+        print(f" -Link {tw.getPostLink(tweet)}")
+        print(f" -Content link {tw.getPostContentLink(tweet)}")
+        print(f" -Post link {tw.extractPostLinks(tweet)}")
+        sys.exit()
+
     testingRT = False
     if testingRT:
         print("Testing RT")
@@ -249,8 +299,9 @@ def main():
         tw.publishApiRT((title, link, '', {'idPost' : idPost}))
 
         sys.exit()
-        
-    testingSearch = True
+
+
+    testingSearch = False
     if testingSearch:
         myLastLink = 'https://twitter.com/reflexioneseir/status/1235128399452164096'
         myLastLink = 'http://fernand0.blogalia.com//historias/78135'
@@ -268,6 +319,7 @@ def main():
         print(listPosts)
         sys.exit()
 
+    sys.exit()
 
     print("Testing duplicate post")
 

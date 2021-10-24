@@ -9,6 +9,7 @@ import pickle
 import re
 import sys
 
+from bs4 import BeautifulSoup
 from bs4 import Tag
 from html.parser import HTMLParser
 
@@ -243,6 +244,12 @@ class Content:
         else:
             return ""
 
+    def getPostContentHtml(self, post):
+        return ""
+
+    def getPostContentLink(self, post):
+        return ""
+
     def getSocialNetwork(self):
         socialNetwork = (self.service, self.nick)
         return socialNetwork
@@ -301,18 +308,29 @@ class Content:
     def getNextPost(self):
         # Needs testing. cache, multiple links in lastLink, others
         post = None
-        lastLink = self.getLastLinkPublished()
-        if lastLink:
-            print(f"lastLink: {lastLink}")
-            posLast = self.getLinkPosition(lastLink)
-            print(f"lastLink pos: {posLast}")
+        posts = self.getPosts()
+        posLast = -1
 
-            if posLast > 0:
-                post = self.getPost(posLast - 1)
+        if posts and (len(posts) > 0):
+            if self.getPostsType() == 'favs':
+                # This is not the correct condition, it should be independent
+                # of social network
+                posLast = 1
             else:
-                post = None
+                lastLink = self.getLastLinkPublished()
+                if lastLink:
+                    print(f"lastLink: {lastLink}")
+                    posLast = self.getLinkPosition(lastLink)
+                    print(f"lastLink pos: {posLast}")
+                else:
+                    posLast = len(posts)
         else:
-            post = self.getPost(0)
+                posLast = -1
+
+        if posLast > 0:
+            post = self.getPost(posLast - 1)
+        else:
+            post = None
 
         return post
 
@@ -658,22 +676,31 @@ class Content:
 
     def extractImage(self, soup):
         # This should go to the moduleHtml
+        imageLink = ""
         pageImage = soup.findAll("img")
         #  Only the first one
         if len(pageImage) > 0:
             imageLink = pageImage[0]["src"]
-        else:
-            imageLink = ""
 
         if imageLink.find("?") > 0:
             return imageLink[: imageLink.find("?")]
         else:
             return imageLink
 
+    def extractPostLinks(self, post, linksToAvoid=""):
+        soup = BeautifulSoup(self.getPostContentHtml(post), 'lxml')
+        return self.extractLinks(soup, linksToAvoid)
+
     def extractLinks(self, soup, linksToAvoid=""):
         # This should go to the moduleHtml
         j = 0
         linksTxt = ""
+
+        for node in soup.find_all('blockquote'):
+            nodeT = node.get_text()
+            node.parent.insert(node.parent.index(node)+1, f'"{nodeT[1:-1]}"')
+            # We need to delete before and after \n
+
         links = soup.find_all(["a", "iframe"])
         for link in links:
             theLink = ""
@@ -728,6 +755,9 @@ class Content:
         return None
 
     def getPostLink(self, post):
+        return ""
+
+    def getPostContent(self, post):
         return ""
 
     def getImages(self, i):

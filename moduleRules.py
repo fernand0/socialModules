@@ -98,7 +98,6 @@ class moduleRules:
     def executeAction(self, src, more, action, 
                     noWait, timeSlots, simmulate, name=""): 
 
-
         sys.path.append(path)
         from configMod import logMsg
 
@@ -172,9 +171,10 @@ class moduleRules:
 
         indent = f"{indent}  "
 
+        msgLog = (f"{indent}Last time: {myTime}")
+        logMsg(msgLog, 1, 1)
+
         if myLastLink:
-            msgLog = (f"{indent}Last time: {myTime}")
-            logMsg(msgLog, 1, 1)
             msgLo = (f"{indent}Last link: {myLastLink}")
             logMsg(msgLog, 1, 1)
 
@@ -252,17 +252,33 @@ class moduleRules:
                 [ logMsg(f"{indent}- {post[0][:200]}", 1, 1) 
                             for post in listPosts 
                 ]
-                logMsg(f"Next post: {nextPost}", 1, 1)
-                logMsg(f"Title Next post: {apiSrc.getPostTitle(apiSrc.getNextPost())}", 1, 1)
+                logMsg(f"{indent}Next post: {nextPost}", 2, 0)
+                npost = apiSrc.getNextPost()
+                #logMsg(f"npost {npost}")
+                ntitle = apiSrc.getPostTitle(npost)
+                logMsg(f"{indent}Title Next post: {ntitle}", 1, 1)
+                nlink = apiSrc.getPostLink(npost)
+                logMsg(f"{indent}Link Next post: {nlink}", 1, 1)
+                extract = apiSrc.extractPostLinks(npost)
+                nsummary = f"{extract[0]}\n{extract[1]} "
+                #logMsg(f"First link Next post: {apiSrc.getPostContentLink(apiSrc.getNextPost())}", 1, 1)
 
                 indent = f"{indent[:-1]}"
 
                 # Only the last one.
                 title = listPosts[-1][0]
+                if (title != ntitle):
+                    print(f"Differ: t {title} - {ntitle}")
                 link = listPosts[-1][1]
+                if (link != nlink):
+                    print(f"Differ: l {link} - {nlink}")
                 llink = ''
                 firstLink = listPosts[-1][2]
                 summaryLinks = listPosts[-1][6]
+                if (summaryLinks != extract[0]):
+                    print(f"Differ: s {summaryLinks} - {extract[0]}")
+                if (firstLink != extract[1]):
+                    print(f"Differ: f {firstLink} - {extract[1]}")
                 comment = listPosts[-1][-1]
                 tags = listPosts[-1][-2]
 

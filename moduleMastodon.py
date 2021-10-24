@@ -46,6 +46,25 @@ class moduleMastodon(Content, Queue):
         posts = self.getClient().favourites()
         return posts
 
+    #def getNextPost(self):
+    #    # cache always shows the first item
+    #    post = None
+    #    posts = self.getPosts()
+
+    #    if self.getPostsType() == 'favs':
+    #        # We will return always the first fav (there can be too many)
+    #        if posts and (len(posts) > 0):
+    #            posLast = 1
+    #        else
+    #            posLast = -1
+    #    else:
+    #        posLast = self.getLinkPosition(self.getLastLinkPublished())
+    #    print(f"lastLink pos: {posLast}")
+    #    post = self.getPost(posLast - 1)
+
+    #    return post
+
+
     def processReply(self, reply):
         res = ''
         if reply:
@@ -104,7 +123,12 @@ class moduleMastodon(Content, Queue):
 
     def getPostTitle(self, post):
         result = ''
-        if 'content' in post:
+        import pprint
+        print(f"post: {post}")
+        pprint.pprint(post)
+        if 'card' in post and post['card'] and 'title' in post['card']:
+            result = self.getAttribute(post['card'], 'title')
+        elif 'content' in post:
             result = self.getAttribute(post, 'content').replace('\n', ' ')
         elif 'card' in post and post['card']:
             result = self.getAttribute(post['card'], 'title')
@@ -114,6 +138,19 @@ class moduleMastodon(Content, Queue):
         return self.getAttribute(post, 'url')
 
     def getPostLink(self, post):
+        return self.getPostUrl(post)
+
+    def extractPostLinks(self, post, linksToAvoid=""):
+        return (self.getPostContent(post), self.getPostContentLink(post))
+
+    def getPostContent(self, post):
+        result = ''
+        if 'content' in post:
+            result = self.getAttribute(post, 'content')
+        return result
+
+    def getPostContentLink(self, post):
+        link = ''
         if ('card' in post) and post['card']:
             link = self.getAttribute(post['card'], 'url')
         else:
@@ -136,7 +173,7 @@ class moduleMastodon(Content, Queue):
             post = self.getPost(i)
             theTitle = self.getPostTitle(post)
             theLink = self.getPostUrl(post)
-            firstLink = self.getPostLink(post)
+            firstLink = self.getPostContentLink(post)
             theId = self.getPostId(post)
 
             theLinks = [firstLink, ]
@@ -168,6 +205,22 @@ def main():
 
     mastodon = moduleMastodon.moduleMastodon()
     mastodon.setClient('@fernand0Test@fosstodon.org')
+    testingFav = True
+    if testingFav:
+        print("Testing Fav")
+        mastodon.setClient('fernand0')
+        mastodon.setPostsType('favs')
+        mastodon.setPosts()
+        toot = mastodon.getPosts()[0]
+        toot = mastodon.getNextPost()
+        print(toot)
+        print(f" -Title {mastodon.getPostTitle(toot)}")
+        print(f" -Link {mastodon.getPostLink(toot)}")
+        print(f" -Content link {mastodon.getPostContentLink(toot)}")
+        print(f" -Post link {mastodon.extractPostLinks(toot)}")
+        sys.exit()
+
+
     print("Testing posting and deleting")
     res = mastodon.publishImage("Prueba ", "/tmp/prueba.png")
     print(res)
