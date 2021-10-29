@@ -395,12 +395,27 @@ class Content:
 
         return posLast
 
+    def getNumNextPost(self):
+        listPosts = []
+        posLast = self.getPosNextPost()
+        i = posLast
+
+        for j in range(num, 0, -1): 
+            i = i - 1
+            if i < 0:
+                break
+            post = self.getPost(i - 1)
+            if post:
+                listPosts.append(post)
+
+        return [ listPosts ]
+
+
     def getNextPost(self):
         posLast = self.getPosNextPost()
-
         post = self.getPost(posLast - 1)
 
-        return [ post ]
+        return post
 
     def getTitle(self, i):
         title = ""
