@@ -99,7 +99,6 @@ class moduleCache(Content,Queue):
 
         posLast = 1
 
-        # We will return a list for the case of returning more than one post
         return posLast
 
 

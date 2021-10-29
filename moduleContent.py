@@ -388,18 +388,14 @@ class Content:
             else:
                 lastLink = self.getLastLinkPublished()
                 if lastLink:
-                    print(f"lastLink: {lastLink}")
                     posLast = self.getLinkPosition(lastLink)
-                    print(f"lastLink pos: {posLast}")
                 else:
                     posLast = len(posts)
-        else:
-                posLast = -1
+
 
         return posLast
 
     def getNextPost(self):
-        post = None
         posLast = self.getPosNextPost()
 
         post = self.getPost(posLast - 1)
