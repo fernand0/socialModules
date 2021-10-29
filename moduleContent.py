@@ -376,9 +376,7 @@ class Content:
             post = posts[i]
         return post
 
-    def getNextPost(self):
-        # Needs testing. cache, multiple links in lastLink, others
-        post = None
+    def getPosNextPost(self):
         posts = self.getPosts()
         posLast = -1
 
@@ -398,12 +396,17 @@ class Content:
         else:
                 posLast = -1
 
+        return posLast
+
+    def getNextPost(self):
+        post = None
+        posLast = self.getPosNextPost()
+
         if posLast > 0:
             post = self.getPost(posLast - 1)
-        else:
-            post = None
 
         return [ post ]
+
 
     def getTitle(self, i):
         title = ""

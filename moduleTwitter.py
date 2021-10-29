@@ -82,7 +82,7 @@ class moduleTwitter(Content,Queue):
                 except twitter.api.TwitterHTTPError as twittererror:        
                     for error in twittererror.response_data.get("errors", []): 
                         logging.info("      Error code: %s" % error.get("code", None))
-                    res = self.report('Twitter', post, link, sys.exc_info())
+                    res = self.report('Twitter', post, imageName, sys.exc_info())
             else:
                 logging.info(f"No image available")
                 res = "Fail! No image available"
