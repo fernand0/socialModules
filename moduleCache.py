@@ -10,10 +10,12 @@
 #  obtainPostData method.
 
 import configparser, os
-from crontab import CronTab
-import logging
 import pickle
+import logging
 import sys
+import importlib
+importlib.reload(sys)
+from crontab import CronTab
 
 from configMod import *
 from moduleQueue import *
@@ -25,35 +27,45 @@ class moduleCache(Content,Queue):
         super().__init__()
         self.service = 'Cache'
         self.nick = None
+        self.postaction = 'delete'
         #self.url = url
         #self.socialNetwork = (socialNetwork, nick)
 
     def setClient(self, param):
-        logging.info(f"setClient {self.service} {param}")
+        logging.info(f"    Connecting Cache {self.service}: {param}")
         self.postsType = 'posts'
         if isinstance(param, str):
             self.url = param
             self.user = param
             logging.warning("This is not possible!")
         elif isinstance(param[1], str):
-            self.url = param[0]
-            self.service = param[1] 
-            self.nick = param[2]
+            if param[0].find('http')>= 0:
+                self.url = param[0]
+            else:
+                self.socialNetwork = param[0]
+                self.service = param[0] 
+            self.user = param[1]
+            if self.user.find('\n')>=0:
+                self.user = None
         else: 
             self.url = param[0]
             self.service = param[1][0] 
-            self.nick = param[1][1]
+            self.user = param[1][1]
 
-    def getSocialNetwork(self):
-        return (self.service, self.nick)
+    def setApiDrafts(self):        
+        # Every cache is the same, even the origin are drafts ??
+        return(self.setApiPosts())
 
     def setApiPosts(self):        
         url = self.getUrl()
-        service = self.getService()
-        nick = self.getNick()
-        logging.debug(f"Url {url} service {service} nick {nick}")
+        if hasattr(self, "socialNetwork"):
+            service = self.socialNetwork
+        else: 
+            service = self.getService()
+        nick = self.getUser()
+        logging.debug(f"Url: {url} service {service} nick {nick}")
         fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
-        logging.debug("File %s" % fileNameQ)
+        logging.debug("File: %s" % fileNameQ)
         try:
             with open(fileNameQ,'rb') as f: 
                 try: 
@@ -65,22 +77,47 @@ class moduleCache(Content,Queue):
 
         return(listP)
 
-    #def setPostt(self):        
-    #    logging.debug("Service %s Nick %s" % (self.service, self.nick))
-    #    fileNameQ = fileNamePath(self.url, 
-    #            (self.service, self.nick)) + ".queue"
-    #    logging.debug("File %s" % fileNameQ)
-    #    print("File %s" % fileNameQ)
-    #    try:
-    #        with open(fileNameQ,'rb') as f: 
-    #            try: 
-    #                listP = pickle.load(f) 
-    #            except: 
-    #                listP = [] 
-    #    except:
-    #        listP = []
+    #def getMax(self):
+    #    return self.availableSlots()
 
-    #    return(listP)
+    def getMax(self):
+        maxVal = 0
+        if hasattr(self, "max"): # and self.max:
+            maxVal = int(self.max)
+        self.setPosts()
+        lenMax = len(self.getPosts()) 
+        num = 1
+        if maxVal > 1: 
+            num = maxVal - lenMax 
+        if num < 0:
+            num = 0
+        return num
+
+    def getNextPost(self):
+        # cache always shows the first item
+        # Some standard contition?
+        post = None
+        posts = self.getPosts()
+
+        if posts and (len(posts) > 0):
+            posLast = 1
+            print(f"lastLink pos: {posLast}")
+            post = self.getPost(posLast - 1)
+
+        # We will return a list for the case of returning more than one post
+        return [ post ]
+
+
+    # def availableSlots(self):
+    #     self.setPosts()
+    #     lenMax = len(self.getPosts()) 
+    #     # print(f"len: {self}  {lenMax} {self.getMax()}")
+    #     # import inspect
+    #     # print(f"Object len: {inspect.getmembers(self)}")
+    #     num = 1
+    #     if self.getMax() > 1: 
+    #         num = self.getMax() - lenMax 
+    #     return num
 
     def getHoursSchedules(self, command=None):
         return self.schedules[0].hour.render()
@@ -149,7 +186,10 @@ class moduleCache(Content,Queue):
     def addPosts(self, listPosts):
         link = ''
         if listPosts:
+            if not self.getPosts():
+                self.setPosts()
             posts = self.getPosts()
+            logging.debug(f"a Posts: {posts} listP: {listPosts}")
             for pp in listPosts:
                 posts.append(pp)
             #for i, pp in enumerate(posts):
@@ -164,7 +204,7 @@ class moduleCache(Content,Queue):
 
     def updatePostsCache(self):
         fileNameQ = fileNamePath(self.url, 
-                (self.service, self.nick)) + ".queue"
+                (self.service, self.user)) + ".queue"
 
         with open(fileNameQ, 'wb') as f: 
             posts = self.getPosts()
@@ -177,9 +217,7 @@ class moduleCache(Content,Queue):
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)
-        (theTitle, theLink, firstLink, theImage, theSummary, content, 
-                theSummaryLinks, theContent, theLinks, comment) = (None, 
-                        None, None, None, None, None, None, None, None, None) 
+        (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None) 
 
         if i < len(self.getPosts()):
             messageRaw = self.getPosts()[i]
@@ -222,6 +260,7 @@ class moduleCache(Content,Queue):
         return(idPost)
 
     def editApiTitle(self, post, newTitle=''):
+        logging.info(f"ApiTitle: {newTitle}. Post: {post}")
         oldLink = self.getPostLink(post)
         idPost = self.getLinkPosition(oldLink)
         oldTitle = self.getPostTitle(post)
@@ -234,22 +273,6 @@ class moduleCache(Content,Queue):
         self.updatePostsCache()
         return(idPost)
 
-    #def edit(self, j, newTitle=''):
-    #    logging.info("New title %s", newTitle)
-    #    thePost = self.obtainPostData(j)
-    #    oldTitle = thePost[0]
-    #    if not newTitle:
-    #        newTitle = self.reorderTitle(oldTitle)
-    #    thePost = thePost[1:]
-    #    thePost = (newTitle,) + thePost
-    #    posts = self.getPosts()
-    #    posts[j] = thePost
-    #    logging.info("Service Name %s" % self.name)
-    #    self.assignPosts(posts)
-    #    self.updatePostsCache()
-    #    update = "Changed "+oldTitle+" with "+newTitle
-    #    return(update)
-
     def insert(self, j, text):
         logging.info("Inserting %s", text)
         posts = self.getPosts()
@@ -261,16 +284,10 @@ class moduleCache(Content,Queue):
             self.assignPosts(posts[:j] + [ post ] + posts[j:])
             self.updatePostsCache()
 
-            #link = f"http{link}" 
-            #pos = self.getLinkPosition(link)
-            #logging.info(f"pos {pos}")
-            #newPost = self.getNumPostsData(1,pos)
-            #logging.info(f"newpost {newPost}")
-
     def publish(self, j):
-        logging.info("Publishing %d"% j)
+        logging.info(">>>Publishing %d"% j)
         post = self.obtainPostData(j)
-        logging.info("Publishing {post[0]} in {self.service} user {self.nick}")
+        logging.info(">>>Publishing {post[0]} in {self.service} user {self.nick}")
         api = getApi(self.service, self.nick)
         comment = ''
         title = post[0]
@@ -285,7 +302,7 @@ class moduleCache(Content,Queue):
             self.assignPosts(posts[:j] + posts[j+1:])
             logging.debug("Updating %s" % posts)
             self.updatePostsCache()
-            logging.info("Update ... %s" % str(update))
+            logging.debug("Update ... %s" % str(update))
             if ((isinstance(update, str) and ('text' in update))
                     or (isinstance(update, bytes) and (b'text' in update))):
                 update = update['text']
@@ -295,7 +312,12 @@ class moduleCache(Content,Queue):
         logging.info("Update before return %s"% update)
         return(update) 
 
+    def delete(self, j):
+        # Not sure
+        return self.deleteApi(j)
+
     def deleteApi(self, j):
+        logging.info(f"Deleting: {j}")
         post = self.obtainPostData(j)
         posts = self.getPosts()
         posts = posts[:j] + posts[j+1:]
@@ -304,17 +326,16 @@ class moduleCache(Content,Queue):
 
         return("%s"% post[0])
 
-    #def delete(self, j):
-    #    logging.info("Deleting %d"% j)
-    #    post = self.obtainPostData(j)
-    #    logging.info("Deleting %s"% post[0])
-    #    posts = self.getPosts()
-    #    posts = posts[:j] + posts[j+1:]
-    #    self.assignPosts(posts)
-    #    self.updatePostsCache()
+    def obtainPostData(self, i, debug=False):
+        if not self.posts:
+            self.setPosts()
 
-    #    logging.info("Deleted %s"% post[0])
-    #    return("%s"% post[0])
+        posts = self.getPosts()
+
+        if not posts:
+            return None
+        post = posts[i]
+        return post
 
     def move(self, j, dest):
         k = int(dest)
@@ -342,6 +363,49 @@ def main():
             format='%(asctime)s %(message)s')
 
     import moduleCache
+
+    queues = []
+    for fN in os.listdir(f"{DATADIR}"):
+        if fN.find('queue')>=0:
+            queues.append(fN)
+
+    for i, fN in enumerate(queues):
+        print(f"{i}) {fN}")
+
+    sel = input('Select one ')
+
+    fN = queues[int(sel)]
+    url, sN, nick = fN.split('_')
+    nick = nick[:-len('.queue')]
+
+    print(f"url: {url} social network: {sN} nick: {nick}")
+    fNP = f"{DATADIR}/{fN}"
+    import time
+    fileT = time.strftime("%Y-%m-%d %H:%M:%S", 
+            time.localtime(os.path.getmtime(fNP)))
+    print(f"File name: {fNP} Date: {fileT}")
+
+    action = input(f"Actions: (D)elete, (S)how (T)itles ")
+
+
+
+    if action.upper()in ['S','T']: 
+        url = f"https://{url}/"
+
+        site = moduleCache.moduleCache()
+        site.setClient((url, (sN, nick)))
+        site.setPosts()
+        if action.upper() == 'T': 
+            [ print(f"- {post[0]}") for post in site.getPosts() ]
+        else: 
+            print(site.getPosts())
+    elif action.upper() in ['D']:
+        fileDelete = f"{fNP}"
+        ok = input(f"I'll delete {fileDelete} ")
+        os.remove(fileDelete)
+
+
+    return 
 
     try:
         config = configparser.ConfigParser() 
