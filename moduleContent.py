@@ -211,7 +211,7 @@ class Content:
         else:
             lastLink = linkLast
  
-        return linkLast
+        return lastLink
 
     def getLastLink(self):        
         url = self.getUrl()
