@@ -34,17 +34,22 @@ def logMsg(msgLog, log=1, output=1):
         print("====================================") 
         print("{}".format(msgLog)) 
         print("====================================") 
-        print("")
  
 def fileNamePath(url, socialNetwork=()):
+    urlParsed = urllib.parse.urlparse(url)
+    myNetloc = urlParsed.netloc
+    if not myNetloc:
+        myNetloc=url
+    if 'twitter' in myNetloc:
+        myNetloc = f"{myNetloc}_{urlParsed.path[1:]}"
+    if myNetloc.endswith('/'):
+        myNetloc = myNetloc[:-1]
     if not socialNetwork: 
-        theName = (DATADIR  + '/' 
-               + urllib.parse.urlparse(url).netloc + ".last")
+        theName = (f"{DATADIR}/{myNetloc}")
     else: 
-        theName = os.path.expanduser(DATADIR + '/' 
-                    + urllib.parse.urlparse(url).netloc 
-                    + '_' 
-                    + socialNetwork[0] + '_' + socialNetwork[1])
+        myFile = (f"{DATADIR}/{myNetloc}_"
+                  f"{socialNetwork[0]}_{socialNetwork[1]}")
+        theName = os.path.expanduser(myFile)
     return(theName)
 
 def setNextTime(blog, socialNetwork, tNow, tSleep):        
@@ -55,6 +60,7 @@ def setNextTime(blog, socialNetwork, tNow, tSleep):
 
 def getNextTime(blog, socialNetwork):        
     fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext' 
+    logging.debug(f"fileNameNext {fileNameNext}")
     try:
         with open(fileNameNext,'rb') as f:
             tNow, tSleep = pickle.load(f)
@@ -68,6 +74,7 @@ def getNextTime(blog, socialNetwork):
             return 0, 0
  
 def getLastLink(fileName):        
+    logging.debug(f"fileName: {fileName}")
     if not os.path.isdir(os.path.dirname(fileName)):
         sys.exit("No directory {} exists".format(os.path.dirname(fileName)))
     if os.path.isfile(fileName):
@@ -75,6 +82,7 @@ def getLastLink(fileName):
             linkLast = f.read().decode().split()  # Last published
     else:
         # File does not exist, we need to create it.
+        # Should we create it here? It is a reading function!!
         with open(fileName, "wb") as f:
             logging.warning("File %s does not exist. Creating it."
                     % fileName) 
@@ -87,27 +95,18 @@ def getLastLink(fileName):
 
 def checkLastLink(url, socialNetwork=()):
     # Redundant with moduleCache
-    if not socialNetwork: 
-        fileNameL = (DATADIR  + '/' 
-               + urllib.parse.urlparse(url).netloc + ".last")
-    else:
-        fileNameL = fileNamePath(url, socialNetwork)+".last"
+    fileNameL = fileNamePath(url, socialNetwork)+".last"
     logging.debug("Checking last link: %s" % fileNameL)
+    #print("Checking last link: %s" % fileNameL)
     (linkLast, timeLast) = getLastLink(fileNameL)
     return(linkLast, timeLast)
-
-
 
 def newUpdateLastLink(url, link, lastLink, socialNetwork=()): 
     if isinstance(lastLink, list): 
         link = '\n'.join([ "{}".format (post[1]) for post in listPosts]) 
         link = link + '\n' + '\n'.join(lastLink)
 
-    if not socialNetwork: 
-        fileName = (DATADIR  + '/' 
-               + urllib.parse.urlparse(url).netloc + ".last")
-    else: 
-        fileName = fileNamePath(url, socialNetwork) + ".last"
+    fileName = fileNamePath(url, socialNetwork) + ".last"
 
     print(fileName)
     with open(fileName, "w") as f: 
@@ -119,12 +118,10 @@ def newUpdateLastLink(url, link, lastLink, socialNetwork=()):
             f.write(link[0])
 
 def updateLastLink(url, link, socialNetwork=()):
-    if not socialNetwork: 
-        fileName = (DATADIR  + '/' 
-               + urllib.parse.urlparse(url).netloc + ".last")
-    else: 
-        fileName = fileNamePath(url, socialNetwork) + ".last"
+    logging.debug(f"Url: {url} Link: {link} SocialNetwork: {socialNetwork}")
+    fileName = fileNamePath(url, socialNetwork) + ".last"
 
+    logging.debug(f"fileName: {fileName}")
     with open(fileName, "w") as f: 
         if isinstance(link, bytes): 
             f.write(link.decode())
@@ -162,14 +159,18 @@ def resizeImage(imgUrl):
     address = '{}{}'.format(WWWADDRESS,NAMEIMG)
     return(address)
 
-
-def getApi(profile, nick):
+def getModule(profile):
     # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
     import importlib
     serviceName = profile.capitalize()
+    logging.debug(f"Module {serviceName}")
     mod = importlib.import_module('module' + serviceName) 
     cls = getattr(mod, 'module' + serviceName)
     api = cls()
+    return api
+
+def getApi(profile, nick):
+    api = getModule(profile)
     api.setClient(nick)
 
     return api

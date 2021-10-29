@@ -20,7 +20,7 @@ class moduleImdb(Content,Queue):
     def __init__(self):
         super().__init__()
         self.service = 'Imdb'
-        self.tmdb = None
+        self.client = None
         self.url=None
         self.fileTV = '/tmp/tv.json'
         self.gen = 'Cine'
@@ -31,6 +31,14 @@ class moduleImdb(Content,Queue):
     def setClient(self, init=()):
         logging.info("Setting client")
         logging.info(f"Setting client {str(init)}")
+        logging.info(f"Url {self.getUrl()}")
+        date = time.strftime('%Y-%m-%d')
+        if isinstance(init,str): 
+            self.url = init 
+        elif isinstance(init[1],str):
+            self.url = init[1].format(date)
+        else:
+            self.url = init[1][2].format(date)
         try:
             try:
                 config = configparser.ConfigParser()
@@ -39,17 +47,11 @@ class moduleImdb(Content,Queue):
                 logging.info("Some problem with configuration file")
 
             tmdb.API_KEY = config.get('TMDb', 'api_key')
-            self.tmdb = tmdb
+            self.client = tmdb
             self.channels = config.get('TMDb', 'channels').split(',')
-            if init:
-                date = time.strftime('%Y-%m-%d')
-                self.url = init[1][2].format(date)
         except:
             logging.info("Fail")
 
-    def getClient(self):
-        return self.tmdb
- 
     def setInfoData(self): 
         # This does not belong here it is the source of the data
         self.data = []
@@ -155,7 +157,7 @@ class moduleImdb(Content,Queue):
 
     def setPostMoreData(self, post):
         postMore = None 
-        mySearch = self.tmdb.Search() 
+        mySearch = self.getClient().Search() 
         title = self.getPostTitle(post)
         response = mySearch.movie(query=title) 
         if len(mySearch.results) > 0: 
@@ -199,9 +201,11 @@ class moduleImdb(Content,Queue):
         else:
             return("")
 
-    def getId(self, i):
-        post = self.getPosts()[i]
-        return(post['ts'])
+    def getPostId(self, post):
+        idPost = -1
+        if hasattr(self, 'ts'):
+            idPost = post['ts']
+        return(idPost)
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)

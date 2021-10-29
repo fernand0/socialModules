@@ -1,61 +1,96 @@
 #!/usr/bin/env python
 
 import configparser
-import os
+import logging
 import telepot
 import sys
 
 from configMod import *
 from moduleContent import *
 
+
 class moduleTelegram(Content):
 
     def __init__(self):
         super().__init__()
+        self.service = 'Telegram'
+
+    def getKeys(self, config):
+        print(config)
+        print(config.get('Telegram', 'TOKEN'))
+        TOKEN = config['Telegram']['TOKEN']
+        print(TOKEN)
+        return((TOKEN, ))
+
+    def initApi(self, keys):
+        logging.info("     Connecting Telegram")
+        TOKEN = keys[0]
+        try:
+            bot = telepot.Bot(TOKEN)
+            meMySelf = bot.getMe()
+        except:
+            logging.warning("Telegram authentication failed!")
+            logging.warning("Unexpected error:", sys.exc_info()[0])
+
+        # self.user = meMySelf
+        # self.channel = channel
+        return bot
 
     def setClient(self, channel):
         logging.info("     Connecting Telegram")
         try:
-            config = configparser.ConfigParser() 
-            config.read(CONFIGDIR + '/.rssTelegram') 
-            
-            TOKEN = config.get("Telegram", "TOKEN") 
-            
-            try: 
-                bot = telepot.Bot(TOKEN) 
-                meMySelf = bot.getMe() 
-            except: 
-                logging.warning("Telegram authentication failed!") 
+            config = configparser.ConfigParser()
+            config.read(CONFIGDIR + '/.rssTelegram')
+
+            if channel in config:
+                TOKEN = config.get(channel, "TOKEN")
+            else:
+                TOKEN = config.get("Telegram", "TOKEN")
+
+            try:
+                bot = telepot.Bot(TOKEN)
+                meMySelf = bot.getMe()
+            except:
+                logging.warning("Telegram authentication failed!")
                 logging.warning("Unexpected error:", sys.exc_info()[0])
-        except: 
-            logging.warning("Account not configured") 
+        except:
+            logging.warning("Account not configured")
             bot = None
 
-        self.tc = bot
-        self.user = meMySelf
+        self.client = bot
+        self.user = channel
         self.channel = channel
 
-    def getClient(self):
-        return self.tc
+    def setChannel(self, channel):
+        self.channel = channel
 
-    def setPosts(self):
-        logging.info("  Setting posts")
-        self.posts = []
-        self.posts = self.tc.getUpdates(allowed_updates='message')
+    def publishApiImage(self, postData):
+        post, image, plus = postData
 
-    def publishPost(self, post, link, comment):
-        logging.info("    Publishing in Telegram...")
-        bot = self.tc
+        bot = self.getClient()
+        channel = self.user
+        if True:
+            bot.sendPhoto('@'+channel, photo=open(image, 'rb'), caption=post)
+        else:
+            return(self.report('Telegram', post, sys.exc_info()))
+
+
+
+    def publishApiPost(self, postData):
+        post, link, comment, plus = postData
+
+        bot = self.getClient()
         title = post
         content = comment
         links = ""
-        channel = self.channel
+        channel = self.user
 
         from html.parser import HTMLParser
         h = HTMLParser()
         title = h.unescape(title)
-        content = content.replace('<','&lt;')
-        text = '<a href="'+link+'">'+title+ "</a>\n" + content + '\n\n' + links
+        content = content.replace('<', '&lt;')
+        text = ('<a href="'+link+'">'
+                + title + "</a>\n" + content + '\n\n' + links)
         textToPublish2 = ""
         if len(text) < 4090:
             textToPublish = text
@@ -63,23 +98,73 @@ class moduleTelegram(Content):
         else:
             text = '<a href="'+link+'">'+title + "</a>\n" + content
             textToPublish = text[:4080] + ' ...'
-            textToPublish2 = '... '+ text[4081:]
+            textToPublish2 = '... ' + text[4081:]
 
-        logging.info("Publishing (text to )"+ textToPublish)
-        logging.info("Publishing (text to 2)"+ textToPublish2)
+        logging.debug("Publishing (text to )" + textToPublish)
+        logging.debug("Publishing (text to 2)" + textToPublish2)
+
 
         try:
-            bot.sendMessage('@'+channel, textToPublish, parse_mode='HTML') 
+            bot.sendMessage('@'+channel, textToPublish, parse_mode='HTML')
         except:
-            return(self.report('Telegram', textToPublish, link, sys.exc_info()))
+            return(self.report('Telegram', textToPublish, 
+                link, sys.exc_info()))
 
         if textToPublish2:
             try:
-                bot.sendMessage('@'+channel, textToPublish2[:4090], parse_mode='HTML') 
+                bot.sendMessage('@'+channel, textToPublish2[:4090],
+                                parse_mode='HTML')
             except:
-                bot.sendMessage('@'+channel, "Text is longer", parse_mode='HTML') 
+                bot.sendMessage('@'+channel, "Text is longer",
+                                parse_mode='HTML')
         if links:
-            bot.sendMessage('@'+channel, links, parse_mode='HTML') 
+            bot.sendMessage('@'+channel, links, parse_mode='HTML')
+
+    def publishPost(self, post, link, comment, **more):
+        logging.info("    Publishing in Telegram...")
+        bot = self.client
+        title = post
+        content = comment
+        links = ""
+        channel = self.user
+
+        logging.info(f"{self.service}: Title: {title} Link: {link}")
+        text = ('<a href="'+link+'">' + title+ "</a>\n")
+        textToPublish = text
+        textToPublish2 = ""
+        from html.parser import HTMLParser
+        h = HTMLParser()
+        title = h.unescape(title)
+        if content:
+            content = content.replace('<', '&lt;')
+            text = (text + content + '\n\n' + links)
+            textToPublish2 = ""
+            if len(text) < 4090:
+                textToPublish = text
+                links = ""
+            else:
+                textToPublish = text[:4080] + ' ...'
+                textToPublish2 = '... ' + text[4081:]
+
+            logging.info("Publishing (text to )" + textToPublish)
+            logging.info("Publishing (text to 2)" + textToPublish2)
+
+        if textToPublish:
+            try:
+                bot.sendMessage('@'+channel, textToPublish, parse_mode='HTML')
+            except:
+                return(self.report('Telegram', textToPublish,
+                                   link, sys.exc_info()))
+
+            if textToPublish2:
+                try:
+                    bot.sendMessage('@'+channel, textToPublish2[:4090],
+                                    parse_mode='HTML')
+                except:
+                    bot.sendMessage('@'+channel, "Text is longer",
+                                    parse_mode='HTML')
+            if links:
+                bot.sendMessage('@'+channel, links, parse_mode='HTML')
 
     def getPostTitle(self, post):
         if 'channel_post' in post:
@@ -92,25 +177,35 @@ class moduleTelegram(Content):
 
 
 def main():
+
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+                        format='%(asctime)s %(message)s')
+
     import moduleTelegram
 
     tel = moduleTelegram.moduleTelegram()
 
     tel.setClient('testFernand0')
+    # tel.setChannel('testFernand0')
 
-    print("Testing posts")
-    tel.setPosts()
-    for post in tel.getPosts():
-        print(post)
+    res = tel.publishImage("Prueba imagen", "/tmp/prueba.png")
 
-    print("Testing title and link")
+    # print("Testing posts")
+    # tel.setPosts()
 
-    for post in tel.getPosts():
-        print(post)
-        title = tel.getPostTitle(post)
-        link = tel.getPostLink(post)
-        print("Title: {}\nLink: {}\n".format(title,link))
+    # for post in tel.getPosts():
+    #     print(post)
+
+    # print("Testing title and link")
+
+    # for post in tel.getPosts():
+    #     print(post)
+    #     title = tel.getPostTitle(post)
+    #     link = tel.getPostLink(post)
+    #     print("Title: {}\nLink: {}\n".format(title, link))
+
+    sys.exit()
+
 
 if __name__ == '__main__':
     main()
-

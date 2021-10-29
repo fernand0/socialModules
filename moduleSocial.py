@@ -87,7 +87,7 @@ from configMod import *
 
 logger = logging.getLogger(__name__)
 
-def nextPost(blog, socialNetwork):
+def listNextPosts(blog, socialNetwork):
     listP = ""
     if blog.getProgram():
         if socialNetwork in blog.cache:
@@ -96,7 +96,9 @@ def nextPost(blog, socialNetwork):
     else:
         listP = blog.getNextPosts(socialNetwork)
         logging.debug("listP {}".format(listP))
+    return listP
 
+def nextPost(blog, socialNetwork, listP):
     if listP: 
         element = listP[0]
         listP = listP[1:] 
@@ -114,58 +116,70 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
     # We allow the rest of the Blogs to start
 
     result = ''
+    idPost = 0
 
     profile = socialNetwork[0]
     nick = socialNetwork[1]
 
+    listP = listNextPosts(blog, socialNetwork)
 
-    print(numPosts)
+    # element, listP = nextPost(blog, socialNetwork)
+    # We need to separate nextPost from getting the list of 'cached' posts
+    if not listP:
+        listP = []
 
-    for j in  range(numPosts): 
-        llink = None
-        tSleep = random.random()*timeSlots
-        tSleep2 = timeSlots - tSleep
-        
-        element, listP = nextPost(blog,socialNetwork)
+    #numPosts = min(numPosts, len(listP)+1)
+    #print(numPosts)
+    llink = None
+    tSleep = random.random()*timeSlots
+    
+    listP = listNextPosts(blog, socialNetwork)
+    element, listP = nextPost(blog, socialNetwork, listP)
 
-        if element:
-            tNow = time.time()
+    if element:
+        tNow = time.time()
 
-            lastTime = getNextTime(blog, socialNetwork)
-            lastTime = float(lastTime[0])
+        lastTime = getNextTime(blog, socialNetwork)
+        lastTime = float(lastTime[0])
 
-            hours = float(blog.getTime())*60*60
-            diffTime = time.time() - lastTime #- round(float(hours)*60*60)
+        hours = float(blog.getTime())*60*60
+        diffTime = time.time() - lastTime #- round(float(hours)*60*60)
 
-            if (nowait or diffTime > hours):
-                msgLog = " [d] {} -> {} ({}): waiting... {:.2f} minutes".format(
-                        urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0], 
-                        profile, nick , tSleep/60) 
-                fileNameNext = setNextTime(blog, socialNetwork, tNow, tSleep)
+        if (nowait or diffTime > hours):
+            msgLog = " {} -> {} ({}): waiting... {:.2f} minutes".format(
+                    urllib.parse.urlparse(blog.getUrl()).netloc.split('.')[0], 
+                    profile, nick , tSleep/60) 
+            fileNameNext = setNextTime(blog, socialNetwork, tNow, tSleep)
+            logMsg(msgLog, 1, 1)
+
+            logger.debug("     I'll publish %s" % element[0])
+            time.sleep(tSleep) 
+
+            # Things can have changed during the waiting
+            listP = listNextPosts(blog, socialNetwork)
+            element, listP = nextPost(blog,socialNetwork, listP)
+
+            if element:
+                (title, link, firstLink, image, summary, summaryHtml, 
+                        summaryLinks, content, links, comment) = element
+
+                msgLog = " Publishing in: {} ({}) at {}".format(
+                        profile.capitalize(), nick, time.asctime())
                 logMsg(msgLog, 1, 1)
 
-                logger.debug("     I'll publish %s" % element[0])
-                time.sleep(tSleep) 
+                result = None
 
-                # Things can have changed during the waiting
-                element, listP = nextPost(blog,socialNetwork)
-               
-                if element:
-                    (title, link, firstLink, image, summary, summaryHtml, 
-                            summaryLinks, content, links, comment) = element
-
-                    msgLog = " [d] Publishing in: {} ({}) at {}".format(
-                            profile.capitalize(), nick, time.asctime())
-                    logMsg(msgLog, 1, 1)
-
-                    result = None
-                    # Destination
-                    if profile in ['twitter', 'facebook', 'mastodon', 
-                            'imgur', 'wordpress','linkedin', 'tumblr',
-                            'pocket', 'medium']: 
-                        if profile in ['telegram', 'facebook']: 
-                            comment = summaryLinks 
-                            pos1 = comment.find('http://fernand0.blogalia') 
+                # Destination
+                if profile in ['twitter', 'facebook', 'mastodon', 
+                        'imgur', 'wordpress','linkedin', 'tumblr',
+                        'pocket', 'medium','telegram','kindle']: 
+                    if profile in ['telegram', 'facebook']: 
+                        comment = summaryLinks 
+                    if profile in ['facebook']: 
+                        pos1 = 0
+                        while pos1>=0:
+                            pos1 = comment.find(
+                                    'http://fernand0.blogalia',pos1) 
                             if pos1 >=0: 
                                 pos2 = comment.find(' ',pos1+1) 
                                 pos3 = comment.find('\n',pos1+1) 
@@ -173,70 +187,87 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                                 logging.info(comment) 
                                 comment = "\n{}(Enlace censurado por Facebook){}".format( comment[:pos1-1], comment[pos2:]) 
                                 logging.debug(comment) 
-                        elif profile == 'medium': 
-                            comment = summaryHtml 
-                        elif profile == 'pocket': 
-                            if firstLink: 
-                                link, llink = firstLink, link
-                    try: 
-                        api = getApi(profile, nick) 
-                        if profile in ['wordpress']: 
-                            result = api.publishPost(title, link, 
-                                    comment, tags=links)
-                        else: 
-                            result = api.publishPost(title, link, comment)
-                    except:
-                        logging.warning("Some problem in {}".format(
-                            profile.capitalize())) 
-                        logging.warning("Unexpected error:", sys.exc_info()[0]) 
+                                pos1=pos2
+                    elif profile == 'medium': 
+                        comment = summaryHtml 
+                    elif profile == 'pocket': 
+                        if firstLink: 
+                            link, llink = firstLink, link
+                        idPost = element[-1]
+                    elif profile == 'kindle': 
+                        myLink = links[0]
+                        idPost = element[-1]
+                        llink = idPost
+                        profile = 'html'
 
-                    logging.info("Result: {}".format(str(result)))
-                    if  isinstance(result, int):
-                        result = str(result)
-                    if isinstance(result, str):
-                        if result[:4]=='Fail':
-                            link=''
-                        elif result[:21] == 'Wordpress API expired':
-                            print(" [d] Not published: {} - {}".format(
-                                result, 'Fail'))
-                            result = 'Fail!'
-                        else: 
-                            print(" [d] Published: {} - {}".format(
-                                result, 'OK'))
-                            result = 'OK'
-                    else:
+                try: 
+                    api = getApi(profile, nick) 
+                    if profile in ['wordpress']: 
+                        result = api.publishPost(title, link, 
+                                comment, tags=links)
+                    elif profile in ['html']: 
+                        result = api.click(myLink)
+                    else: 
+                        title = f"'{title}'"
+                        result = api.publishPost(title, link, comment)
+                except:
+                    logging.warning("Some problem in {}".format(
+                        profile.capitalize())) 
+                    logging.warning("Unexpected error:", sys.exc_info()[0]) 
+
+                logging.info("Result: {}".format(str(result)))
+                #sys.exit()
+                if  isinstance(result, int):
+                    result = str(result)
+                if isinstance(result, str):
+                    if ((result[:4]=='Fail') or
+                            (result[:21] == 'Wordpress API expired')):
+                        print(" Not published: {} ({}) - Res: {}".format(
+                            profile.capitalize(), nick, result))
+                        link = ''
+                        result = 'Fail!'
+                    else: 
+                        print(" Published in: {} ({}):\n  Res: {}".format( 
+                            profile.capitalize(), nick, result))
                         result = 'OK'
+                else:
+                    result = 'OK'
  
-                    if result == 'OK':
-                        with open(fileNameNext,'wb') as f:
-                            pickle.dump((tNow,tSleep), f)
-                        if hasattr(blog, 'cache') and blog.cache:
-                            blog.cache[socialNetwork].posts = listP
-                            blog.cache[socialNetwork].updatePostsCache()
-                        elif hasattr(blog, 'nextPosts'): 
-                            blog.nextPosts[socialNetwork] = listP
+                if result == 'OK':
+                    if blog.getPostAction(): 
+                        logging.info("Postaction")
+                        try: 
+                            logging.info("del {}".format(str( 
+                                blog.deletePostId(idPost))))
+                        except: 
+                            logging.info("Postaction: {}".format(str(idPost)))
+                    with open(fileNameNext,'wb') as f:
+                        pickle.dump((tNow,tSleep), f)
+                    if hasattr(blog, 'cache') and blog.cache:
+                        blog.cache[socialNetwork].posts = listP
+                        blog.cache[socialNetwork].updatePostsCache()
+                    elif hasattr(blog, 'nextPosts'): 
+                        blog.nextPosts[socialNetwork] = listP
+                        if hasattr(blog, 'updatePostsCache'): 
                             blog.updatePostsCache(socialNetwork)
-                        else:
-                            print("What happened?")
+                    else:
+                        print("What happened?")
 
-                       
-                    if j+1 < numPosts:
-                        logger.info("Time: %s Waiting ... %.2f minutes to schedule next post in %s" % (time.asctime(), tSleep2/60, socialNetwork[0]))
-                        time.sleep(tSleep2) 
-                    msgLog = " [d] Finished in: {} at {}".format(
-                            profile.capitalize(), time.asctime())
-                    logMsg(msgLog, 1, 1)
-                else: 
-                    result == ''
-        else: 
-            logging.info("There are no new posts in {}".format(blog.getUrl()))
+                msgLog = " Finished in: {} ({}) at {}".format(
+                        profile.capitalize(), nick, time.asctime())
+                logMsg(msgLog, 1, 1)
+            else: 
+                result == ''
+    else: 
+        logging.info("There are no new posts in {}".format(blog.getUrl()))
 
-        if result == 'OK':
-            if llink:
-                link = llink
-            return link
-        else:
-            return ''
+    if result == 'OK':
+        if llink:
+            link = llink
+    else:
+        link = ''
+
+    return link
    
 def cleanTags(soup):
     tags = [tag.name for tag in soup.find_all()]
@@ -299,64 +330,4 @@ if __name__ == "__main__":
         timeSlots = 60*60
     if listPosts:
         moduleSocial.publishDelayTwitter(blog, listPosts ,'fernand0Test', timeSlots)
-
-#def publishDirect(blog, socialNetwork, i): 
-#    link = None
-#    if (i > 0): 
-#        profile = socialNetwork[0]
-#        nick = socialNetwork[1]
-#        (title, link, firstLink, image, summary, summaryHtml, 
-#                summaryLinks, content , links, comment) = (blog.obtainPostData(i - 1, False)) 
-#        logging.info("  Publishing directly\n") 
-#        serviceName = profile.capitalize() 
-#        print("   Publishing in %s %s" % (serviceName, title))
-#        if profile in ['telegram', 'facebook']:
-#            comment = summaryLinks
-#        elif profile == 'medium': 
-#            comment = summaryHtml
-#        else:
-#            comment = ''
-#
-#        if (profile in ['twitter', 'facebook', 'telegram', 'mastodon', 
-#            'linkedin', 'pocket', 'medium', 'instagram']): 
-#            # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically 
-#            import importlib 
-#            mod = importlib.import_module('module'+serviceName) 
-#            cls = getattr(mod, 'module'+serviceName) 
-#            api = cls() 
-#            api.setClient(nick) 
-#            if profile in ['facebook']: 
-#                pos1= comment.find('http://fernand0.blogalia')
-#                if pos1 >=0:
-#                    pos2 = comment.find(' ',pos1+1)
-#                    pos3 = comment.find('\n',pos1+1)
-#                    pos2 = min(pos2, pos3)
-#                    logging.info(comment)
-#                    comment = "{}(Enlace censurado por Facebook){}".format(
-#                            comment[:pos1-1],
-#                            comment[pos2:])
-#
-#                    logging.info(comment)
-#                else:
-#                    comment = None
-#                #url = link
-#                #apiurl = "http://tinyurl.com/api-create.php?url=" 
-#                #tinyurl = urllib.request.urlopen(apiurl + url).read() 
-#                #link = tinyurl.decode("utf-8")
-#            #print(link)
-#            result = api.publishPost(title, link, comment) 
-#            logging.debug(result) 
-#            if isinstance(result, str): 
-#                logging.info("Result %s"%str(result)) 
-#                if result[:4]=='Fail': 
-#                    logging.debug("Fail detected %s"%str(result)) 
-#                    if ((result.find('duplicate')>=0) or 
-#                            (result.find('abusive')>=0)): 
-#                        duplicate = True 
-#                        link='' 
-#                        logging.info("Posting failed") 
-#                elif result.find('Bad Request')>=0: 
-#                    link='' 
-#                    logging.info("Posting failed") 
-#    return link
 

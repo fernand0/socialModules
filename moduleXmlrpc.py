@@ -13,11 +13,13 @@ from bs4 import BeautifulSoup
 from bs4 import Tag
 from pdfrw import PdfReader
 import moduleCache
-# https://github.com/fernand0/scripts/blob/master/moduleCache.py
+# https://github.com/fernand0/socialMeodules/blob/master/moduleCache.py
+from moduleContent import *
+# https://github.com/fernand0/socialMeodules/blob/master/moduleContent.py
 
 from configMod import *
 
-class moduleXmlrpc():
+class moduleXmlrpc(Content):
 
     def __init__(self):
          self.url = ""
@@ -28,7 +30,7 @@ class moduleXmlrpc():
          self.linksToAvoid = ""
          self.xmlrpc = None
          self.postsXmlRpc = None
-         self.time = []
+         self.time = 0
          self.bufferapp = None
          self.program = None
          self.lastLinkPublished = {}
@@ -39,24 +41,6 @@ class moduleXmlrpc():
         self.user = nick
         self.setXmlRpc()
         
-    def getUrl(self):
-        return(self.url)
-
-    def setUrl(self, url):
-        self.url = url
-
-    def getName(self):
-        return(self.name)
-
-    def setName(self, name):
-        self.name = name
-
-    def getSocialNetworks(self):
-        return(self.socialNetworks)
- 
-    def addSocialNetwork(self, socialNetwork):
-        self.socialNetworks[socialNetwork[0]] = socialNetwork[1]
-
     def addLastLinkPublished(self, socialNetwork, lastLink, lastTime):
         self.lastLinkPublished[socialNetwork] = (lastLink, lastTime)
 
@@ -103,9 +87,6 @@ class moduleXmlrpc():
                 blogId, blogName = self.blogId(srv, usr, pwd)
                 self.setId(blogId)
                 self.setName(blogName)
-
-    def getPosts(self):
-        return(self.posts)
 
     def getPostsXmlRpc(self):
         return(self.postsXmlRpc)

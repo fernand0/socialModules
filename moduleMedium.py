@@ -25,7 +25,6 @@ class moduleMedium(Content,Queue):
             
             application_id = config.get("appKeys","ClientID")
             application_secret = config.get("appKeys","ClientSecret")
-
             
             try: 
                 client = Client(application_id = application_id, 
@@ -33,23 +32,26 @@ class moduleMedium(Content,Queue):
                 client.access_token = config.get("appKeys","access_token") 
                 # Get profile details of the user identified by the access
                 # token.  
-                user = client.get_current_user()
+                userRaw = client.get_current_user()
+                user = userRaw['username']
             except: 
                 logging.warning("Medium authentication failed!") 
                 logging.warning("Unexpected error:", sys.exc_info()[0])
         except: 
             logging.warning("Account not configured") 
             client = None
+            userRaw = None
             user = None
 
-        self.tc = client
+        self.client = client
         self.user = user
-
-    def getClient(self):
-        return self.tc
+        self.userRaw = userRaw
 
     def getUser(self):
         return self.user
+
+    def getUserRaw(self):
+        return self.userRaw
 
     def setPosts(self):
         logging.info("  Setting posts")
@@ -57,17 +59,17 @@ class moduleMedium(Content,Queue):
 
         import moduleRss
         content = moduleRss.moduleRss()
-        rssFeed='https://medium.com/feed/@{}'.format(self.user['username'])
+        rssFeed='https://medium.com/feed/@{}'.format(self.getUser())
         #print(rssFeed)
         content.setRssFeed(rssFeed)
         content.setPosts()
         for post in content.getPosts():
             self.posts.append(post)
 
-    def publishPost(self, post, link, comment):
+    def publishPost(self, post, link, comment, **more):
         logging.info("    Publishing in {} ...".format(self.service))
-        client = self.tc
-        user = self.user
+        client = self.client
+        user = self.getUserRaw()
 
         title = post
         content = comment
@@ -76,7 +78,7 @@ class moduleMedium(Content,Queue):
         from html.parser import HTMLParser
         h = HTMLParser()
         title = h.unescape(title)
-        textOrig = 'Publicado originalmente en <a href="%s">%s</a>\n\n' % (link, title)
+        textOrig = 'Publicado originalmente en <a href="%s">%s</a><br />\n\n' % (link, title)
 
         try:
             res = client.create_post(user_id=user["id"], title=title,
