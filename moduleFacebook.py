@@ -38,14 +38,20 @@ class moduleFacebook(Content,Queue):
         graph = facebook.GraphAPI(keys[0], version='3.0') 
         return graph 
 
+    def getPage(self):
+        return self.page
+
     def setPage(self, facebookAC='me'):
         perms = ['publish_actions','manage_pages','publish_pages'] 
         pages = self.getClient().get_connections("me", "accounts") 
         self.pages = pages
 
+        # Publishing as me 
+        self.page = facebookAC 
+
         if (facebookAC != 'me'): 
             for i in range(len(pages['data'])): 
-                logging.debug("Selecting %s %s" % (
+                logging.debug("    Page: %s %s" % (
                     pages['data'][i]['name'], facebookAC)) 
                 if (pages['data'][i]['name'] == facebookAC): 
                     logging.info("     Selected... %s" % pages['data'][i]['name']) 
@@ -53,16 +59,14 @@ class moduleFacebook(Content,Queue):
                     self.page = graph2
                     self.pageId = pages['data'][i]['id']
                     break
-                else: 
-                    # Publishing as me 
-                    self.page = facebookAC 
 
     def setApiPosts(self):
         if not self.page:
             self.setPage(self.user)
 
         posts = []
-        postsF = self.page.get_connections(self.pageId, connection_name='posts') 
+        postsF = self.getPage().get_connections(
+                self.pageId, connection_name='posts') 
         if 'data' in postsF: 
             for post in postsF['data']: 
                 postt = self.page.get_connections(post['id'], 
@@ -70,7 +74,8 @@ class moduleFacebook(Content,Queue):
                 if 'data' in postt:
                     # We need to merge the two dictionaries to have the id and
                     # the other data
-                    posts.append({**postt['data'][0] , **post})
+                    if postt['data']:
+                        posts.append({**postt['data'][0] , **postt})
 
         return posts
         #outputData = {}
@@ -103,6 +108,27 @@ class moduleFacebook(Content,Queue):
         res = "Fail!"
         if (not isinstance(self.page, str)):
             res = self.page.put_object('me', "feed", message=post, link=link)
+        return self.processReply(res)
+
+    def publishApiImage(self, postData): 
+        res = 'Fail!'
+        logging.debug(f"{postData} Len: {len(postData)}")
+        if len(postData) == 3:
+            post, imageName, more = postData
+            yield(f" publishing api {post} - {imageName} - {more}")
+            with open(imageName, "rb") as imagefile:
+                    imagedata = imagefile.read()
+    
+            try:
+                if 'alt' in more:
+                    res = self.page.put_photo(imagedata, message=post, 
+                        alt_text_custom = more['alt'])
+                else:
+                    res = self.page.put_photo(imagedata, message=post)
+            except:
+                res = self.report('Facebook', post, '', sys.exc_info())
+        else:
+            logging.debug(f" not published")
         return res
 
     def deleteApiPosts(self, idPost): 
@@ -155,7 +181,11 @@ def main():
     fc = moduleFacebook.moduleFacebook()
 
     fc.setClient('me')
-    fc.setPage('Enlaces de fernand0')
+    fc.setPage('Fernand0Test')
+
+    res = fc.publishImage("prueba imagen", "/tmp/2021-06-26_image.png", alt="Imagen con alt")
+    print(res)
+    return
     #print("Testing posting and deleting")
     #res = fc.publishPost("Prueba borrando 7", "http://elmundoesimperfecto.com/", '')
     #print("Res",res)

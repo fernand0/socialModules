@@ -93,13 +93,33 @@ class moduleLinkedin(Content):
         return posts
 
     def processReply(self, reply):
+        logging.info(f"Res {reply}")
+        if isinstance(reply, bytes):
+            res = json.loads(reply)
+        else:
+            res = reply
+        if (('message' in res) and ('expired' in res['message'])):
+            reply = f"Fail! {self.service} token expired"
+        if (('message' in res) and ('duplicate' in res['message'])):
+            reply = f"Fail! {self.service} Status is a duplicate."
+        elif ('message' in res):
+            reply = res['message']
+        else:
+            reply = res
+        logging.info(f"Res: {reply}")
+
         return reply
 
     def publishApiPost(self, postData):
         post, link, comment, plus = postData
-        res = self.getClient().submit_share(comment=comment, title=post,
+        logging.info(f"publishApi ")
+        try:
+            res = self.getClient().submit_share(comment=comment, title=post,
                 description=None, submitted_url=link, submitted_image_url=None, 
                 urn=self.URN, visibility_code='anyone')
+        except:
+            logging.info(f"Exception {sys.exc_info()}")
+            res = self.report('Linkedin', post, link, sys.exc_info())
         return res
  
     def deleteApiPosts(self, idPost): 
@@ -129,9 +149,9 @@ def main():
         ln.authorize()
 
 
-    #print("ll",ln.publishPost("A ver otro", "https://www.linkedin.com/in/fernand0/",''))
+    print("ll",ln.publishPost("A ver otro", "https://www.linkedin.com/in/fernand0/",''))
     #sys.exit()
-    print(ln.deleteApiPosts('6764243697006727168'))
+    # print(ln.deleteApiPosts('6764243697006727168'))
     sys.exit()
 
     print("Testing posts")

@@ -76,7 +76,7 @@ class moduleWordpress(Content,Queue):
     def authorize(self): 
         # Firstly the data of the blog 
         config = configparser.ConfigParser()
-        config.read(CONFIGDIR + '/.rssBlogs')
+        config.read(CONFIGDIR + '/.rssBlogs2')
         url = config.get('Blog8','url')
         name = urllib.parse.urlparse(url).netloc.split('.')[0] 
         # Second the authentication data of the blog
@@ -144,7 +144,7 @@ class moduleWordpress(Content,Queue):
     #    return('OK')
 
     def setTags(self): 
-        res = requests.get(self.api_base + self.api_tags.format(self.my_site)) 
+        res = requests.get(self.api_base + self.api_tags.format(self.my_site)+'?number=1000') 
         if res.ok:
             self.tags = json.loads(res.text)
 
@@ -152,6 +152,8 @@ class moduleWordpress(Content,Queue):
         return self.tags
 
     def checkTags(self, tags):
+        if isinstance(tags,dict):
+            tags = tags['tags']
         idTags = []
         newTags = []
         if not self.tags:
@@ -165,6 +167,7 @@ class moduleWordpress(Content,Queue):
                     headers = self.headers,
                     data = payload)
             reply = json.loads(res.text)
+
             if 'ID' in reply:
                 newTags.append(tag)
                 idTags.append(reply['ID'])
@@ -180,8 +183,8 @@ class moduleWordpress(Content,Queue):
 
     def processReply(self, reply): 
         res = reply
+        logging.info("Res: %s" % res)
         if res.ok: 
-            logging.info("Res: %s" % res)
             resJ = json.loads(res.text)
             logging.debug("Res text: %s" % resJ)
             logging.debug("Res slug: %s" % resJ['generated_slug'])
@@ -191,13 +194,12 @@ class moduleWordpress(Content,Queue):
         else: 
             tres = type(res)
             logging.info(f"Res: {res} type {tres}")
-            print(f"Res: {res} type {tres}")
-            res = "Fail!"
+            res = "Fail! Failed authentication."
         return res
 
     def publishApiPost(self, postData): 
         if len(postData)>3:
-           tags = postData[3]['tags']
+           tags = postData[3]
            idTags = self.checkTags(tags)
            logging.info("     Tags: {idTags}")
            idTags = ','.join(str(v) for v in idTags) 
@@ -369,13 +371,15 @@ def main():
     logging.basicConfig(stream=sys.stdout, 
             level=logging.INFO, 
             format='%(asctime)s %(message)s')
+
     import moduleWordpress
 
     wp = moduleWordpress.moduleWordpress()
     wp.setClient('avecesunafoto')
     wp.setPostsType('posts')
     res = wp.setPosts()
-    if (res[:4] == 'Fail'): 
+    res = wp.getPosts()
+    if ((res == None) or (res[:4] == 'Fail')): 
         wp.authorize()
 
     print("Testing tags")
@@ -400,7 +404,6 @@ def main():
     sys.exit()
 
     wp.publishPost(post, '', title)
-
 
     #pos = wp.getLinkPosition('https://avecesunafoto.wordpress.com/2020/03/10/gamoncillo/')
     #img = wp.obtainPostData(pos)

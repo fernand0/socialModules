@@ -116,6 +116,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
     # We allow the rest of the Blogs to start
 
     result = ''
+    idPost = 0
 
     profile = socialNetwork[0]
     nick = socialNetwork[1]
@@ -131,7 +132,6 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
     #print(numPosts)
     llink = None
     tSleep = random.random()*timeSlots
-    tSleep2 = timeSlots - tSleep
     
     listP = listNextPosts(blog, socialNetwork)
     element, listP = nextPost(blog, socialNetwork, listP)
@@ -208,6 +208,7 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                     elif profile in ['html']: 
                         result = api.click(myLink)
                     else: 
+                        title = f"'{title}'"
                         result = api.publishPost(title, link, comment)
                 except:
                     logging.warning("Some problem in {}".format(
@@ -234,8 +235,12 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
  
                 if result == 'OK':
                     if blog.getPostAction(): 
-                        logging.info("Postaction: {}".format(str(idPost)))
-                        print("del",blog.deletePostId(idPost))
+                        logging.info("Postaction")
+                        try: 
+                            logging.info("del {}".format(str( 
+                                blog.deletePostId(idPost))))
+                        except: 
+                            logging.info("Postaction: {}".format(str(idPost)))
                     with open(fileNameNext,'wb') as f:
                         pickle.dump((tNow,tSleep), f)
                     if hasattr(blog, 'cache') and blog.cache:
@@ -243,7 +248,8 @@ def publishDelay(blog, socialNetwork, numPosts, nowait, timeSlots):
                         blog.cache[socialNetwork].updatePostsCache()
                     elif hasattr(blog, 'nextPosts'): 
                         blog.nextPosts[socialNetwork] = listP
-                        blog.updatePostsCache(socialNetwork)
+                        if hasattr(blog, 'updatePostsCache'): 
+                            blog.updatePostsCache(socialNetwork)
                     else:
                         print("What happened?")
 

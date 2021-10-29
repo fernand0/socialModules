@@ -10,6 +10,7 @@ from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
 
+from bs4 import BeautifulSoup
 
 import configparser, os
 import datetime
@@ -56,7 +57,8 @@ class moduleGmail(Content,Queue):
     def initApi(self, keys):
         SCOPES = self.scopes
         creds = self.authorize()
-        service = build('gmail', 'v1', credentials=creds, cache_discovery=False)
+        service = build('gmail', 'v1', 
+                        credentials=creds, cache_discovery=False)
         return service
 
     #def setClient(self, Acc):
@@ -94,7 +96,7 @@ class moduleGmail(Content,Queue):
 
         SCOPES = self.scopes
 
-        logging.info("Authorizing GMail")
+        #logging.info(f"    Connecting {self.service}: {account}")
         pos = self.user.rfind('@') 
         self.server = self.user[pos+1:]
         self.nick = self.user[:pos]
@@ -129,7 +131,7 @@ class moduleGmail(Content,Queue):
                     print(fileCredStore)
                     sys.exit()
 
-        logging.info("Storing creds")
+        logging.debug("Storing creds")
         with open(fileTokenStore, 'wb') as token:
             pickle.dump(creds, token)
 
@@ -170,7 +172,8 @@ class moduleGmail(Content,Queue):
         api = self.getClient()
         list_labels = [ label, ]
         print(list_labels)
-        response = api.users().messages().list(userId='me',
+        response = api.users().messages().list(userId='me', 
+                                               q='before:2021/4/1 is:unread',
                                                labelIds=list_labels).execute()
         return(response)
 
@@ -213,14 +216,12 @@ class moduleGmail(Content,Queue):
         return pPosts
 
     def setApiSearch(self, label=None, mode=''): 
-        posts = self.setApiMessages()
-        postsS = []
-        for post in posts: 
-            title = self.getPostTitle(post)
-            if title.find(self.getSearch())>=0:
-                # Older ones first
-                postsS.insert(0,post)
-        return postsS
+        posts = self.getClient().users().messages().list(userId='me',
+                q=self.getSearch()).execute()
+        #posts = self.setApiMessages()
+        posts = self.processPosts(posts, label, mode)
+        logging.info(f"Num posts {len(posts)}")
+        return posts
 
 
     def setApiSearchh(self, label=None, mode=''): 
@@ -236,6 +237,9 @@ class moduleGmail(Content,Queue):
         posts = self.getClient().users().drafts().list(userId='me').execute() 
         posts = self.processPosts(posts, label, mode)
         return posts
+
+    def setApiPosts(self, label=None, mode=''): 
+        return self.setApiMessages(label, mode)
 
     def setApiMessages(self, label=None, mode=''): 
         posts = self.getClient().users().messages().list(userId='me').execute()
@@ -303,18 +307,26 @@ class moduleGmail(Content,Queue):
     def getMessageId(self, idPost): 
         api = self.getClient()
         message = api.users().messages().get(userId="me", id=idPost).execute()
-        #import pprint
-        #pprint.pprint(message)
+        # import pprint
+        # pprint.pprint(f"mes: {message}")
         mes = ""
-        for part in message['payload']['parts']:
-            mes  = mes + str(base64.urlsafe_b64decode(part['body']['data']))
+        if 'parts' in message['payload']:
+            for part in message['payload']['parts']:
+                logging.debug(f"Part: {part}")
+                if 'data' in part['body']:
+                    mes  = mes + str(base64.urlsafe_b64decode(part['body']['data']))
+                else: 
+                    for pp in part['parts']:
+                        mes  = mes + str(base64.urlsafe_b64decode(pp['body']['data']))
+        else:
+            mes  = str(base64.urlsafe_b64decode(message['payload']['body']['data']))
         return(mes)
 
     def getMessage(self, idPost): 
         api = self.getClient()
         message = api.users().drafts().get(userId="me", id=idPost).execute()
-        print(message)
-        print(message['message'])
+        # print(message)
+        # print(message['message'])
         return message
 
     def getMessageRaw(self, msgId, typePost='drafts'): 
@@ -349,10 +361,36 @@ class moduleGmail(Content,Queue):
             del message[header]
             message[header]= value
 
+    def getPostLinksWithText(self, post):
+        message = self.getMessageId(self.getPostId(post))
+        messageClean = message.replace('\\r\\n',' ')
+        soup = BeautifulSoup(messageClean, 'lxml')
+        logging.debug(f"Soup: {soup}")
+        res = soup.find_all('a', href=True)
+        data = {}
+        for element in res:
+            link = element['href']
+            if not link and 'title' in element:
+                if 'http' in element['title']:
+                    link = element['title']
+            text = element.text
+            logging.debug(f"Linkk: {link} text: {text}")
+            if (link and not (link in data)):
+                data[link] = (text, link, element)
+            else:
+                data[link] = (f"{data[link][0]} {text}", data[link][1], 
+                        data[link][2])
+        links = []
+        for key in data:
+            links.append(data[key])
+        return(links)
+
     def getPostLinks(self, post):
         message = self.getMessageId(self.getPostId(post))
         soup = BeautifulSoup(message, 'lxml')
-        res = soup.find_all('a')
+        logging.debug(soup)
+        res = soup.find_all('a', href=True)
+        logging.debug(res)
         links = []
         for element in res:
             link = element['href']
@@ -382,6 +420,7 @@ class moduleGmail(Content,Queue):
         return(None)
 
     def getHeader(self, message, header = 'Subject'):
+        logging.debug(f"Message: {message}")
         if 'meta' in message:
             message = message['meta']
         for head in message: 
@@ -398,7 +437,7 @@ class moduleGmail(Content,Queue):
             message = message['list']
             idPost = message['id']
         elif isinstance(message, tuple):
-            print(message)
+            logging.debug(message)
             idPost = message
 
         return(idPost)
@@ -429,7 +468,7 @@ class moduleGmail(Content,Queue):
         labelId = None
         for label in results: 
             if (label['name'].lower() == name.lower()) or (label['name'].lower() == name.lower().replace('-',' ')): 
-                print(label)
+                logging.debug(label)
                 labelId = label['id'] 
                 break
     
@@ -437,34 +476,40 @@ class moduleGmail(Content,Queue):
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)
-        message = self.getPosts()[i]
-        logging.info("Message %s"% message)
+        posts = self.getPosts()
+        if posts:
+            message = posts[i]
+            logging.debug("Message %s"% message)
 
-        theTitle = self.getHeader(message, 'Subject')
-        if theTitle == None:
-            theTitle = self.getHeader(message, 'subject')
-        snippet = self.getHeader(message, 'snippet')
+            theTitle = self.getHeader(message, 'Subject')
+            if theTitle == None:
+                theTitle = self.getHeader(message, 'subject')
+            snippet = self.getHeader(message, 'snippet')
 
-        theLink = None
-        if snippet:
-            posIni = snippet.find('http')
-            posFin = snippet.find(' ', posIni)
-            posSignature = snippet.find('-- ')
-            if posIni < posSignature: 
-                theLink = snippet[posIni:posFin]
-        theLinks = self.getPostLinks(message)
-        content = None
-        theContent = None
-        #date = int(self.getHeader(message, 'internalDate'))/1000
-        #firstLink = '{}'.format(datetime.datetime.fromtimestamp(date)) # Bad!
-        firstLink = None
-        theImage = None
-        theSummary = snippet
+            theLink = None
+            if snippet:
+                posIni = snippet.find('http')
+                posFin = snippet.find(' ', posIni)
+                posSignature = snippet.find('-- ')
+                if posIni < posSignature: 
+                    theLink = snippet[posIni:posFin]
+            theLinks = self.getPostLinks(message)
+            theSummaryLinks = self.getPostLinksWithText(message)
+            content = None
+            theContent = None
+            #date = int(self.getHeader(message, 'internalDate'))/1000
+            #firstLink = '{}'.format(datetime.datetime.fromtimestamp(date)) # Bad!
+            firstLink = None
+            theImage = None
+            theSummary = snippet
 
-        theSummaryLinks = message
-        comment = self.getPostId(message) 
+            # theSummaryLinks = message
+            comment = self.getPostId(message) 
 
-        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+            theLink = theLinks[0]
+            return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+        else:
+            return (None, None, None, None, None, None, None, None, None, None)
 
     def editl(self, j, newTitle):
         return('Not implemented!')
@@ -496,9 +541,16 @@ class moduleGmail(Content,Queue):
         update = "Changed "+title+" with "+newTitle
         return(update)
 
+    def publishPost(self, j):
+        return self.publish(self, j)
+
     def publish(self, j):
         logging.info("Publishing %d"% j)                
         logging.info("servicename %s" %self.service)
+        logging.info(f"type {self.getPostsType()}")
+        logging.info(f"Before post {self.getPosts()}")
+        if not self.getPosts():
+            self.setPosts()
         logging.info("post %s" %self.getPosts())
         idPost = self.getPosts()[j]['list']['id'] #thePost[-1]
         title = self.getHeader(self.getPosts()[j]['meta'], 'Subject')
@@ -533,14 +585,23 @@ class moduleGmail(Content,Queue):
         result = self.deleteApiPost(idPost)
         return result
 
+    def deleteApiMessages(self, idPost): 
+        return self.deleteApiPost(idPost)
+
     def deleteApiPost(self, idPost): 
         api = self.getClient()
         result = api.users().messages().trash(userId='me', id=idPost).execute()
         logging.info(f"Res: {result}")
         return(result)
 
-    def delete(self, j, typePost='drafts'):
+    def delete(self, j):
         logging.info("Deleting %d"% j)
+
+        typePost = self.getPostsType()
+        logging.info(f"Deleting {typePost}")
+
+        if (not typePost or (typePost == 'search')):
+            typePost = 'messages'
 
         api = self.getClient()
         idPost = self.getPosts()[j]['list']['id'] #thePost[-1]
@@ -548,10 +609,15 @@ class moduleGmail(Content,Queue):
             title = self.getHeader(self.getPosts()[j]['meta'], 'Subject')
         except:
             title = ''
+
+        logging.info(f"id {idPost}")
+
         if typePost == 'drafts': 
-            update = api.users().drafts().delete(userId='me', id=idPost).execute() 
+            update = api.users().drafts().trash(userId='me', id=idPost).execute() 
         else:
-            update = api.users().messages().delete(userId='me', id=idPost).execute() 
+            logging.info(f"id {idPost}")
+            update = api.users().messages().trash(userId='me', id=idPost).execute() 
+            logging.info(f"id {update}")
  
         return("Deleted %s"% title)
  
@@ -578,15 +644,11 @@ class moduleGmail(Content,Queue):
                     label = label[:-1]
                 if label.upper() in notAllowedLabels:
                     label = 'old-'+label
-                print("label %s"%label)
+                logging.debug("label %s"%label)
                 try: 
-                    print("aquí")
                     labelId = self.getLabelId(label)
-                    print("aquí",labelId)
                 except:
-                    print("except")
                     labelId = self.getLabelId('old-'+label)
-                    print("except")
                 if not labelId :  
                     try: 
                         labelId = self.createLabel(label)
@@ -669,7 +731,7 @@ class moduleGmail(Content,Queue):
 
 def main():
     logging.basicConfig(stream=sys.stdout, 
-            level=logging.INFO, 
+            level=logging.DEBUG, 
             format='%(asctime)s %(message)s')
 
     import moduleGmail
