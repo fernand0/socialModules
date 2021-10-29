@@ -372,7 +372,7 @@ class Content:
     def getPost(self, i):
         post = None
         posts = self.getPosts()
-        if posts and (i < len(posts)):
+        if posts and (i >= 0) and (i < len(posts)):
             post = posts[i]
         return post
 
@@ -402,11 +402,9 @@ class Content:
         post = None
         posLast = self.getPosNextPost()
 
-        if posLast > 0:
-            post = self.getPost(posLast - 1)
+        post = self.getPost(posLast - 1)
 
         return [ post ]
-
 
     def getTitle(self, i):
         title = ""

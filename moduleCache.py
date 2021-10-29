@@ -96,12 +96,8 @@ class moduleCache(Content,Queue):
     def getPosNextPost(self):
         # cache always shows the first item
         # Some standard contition?
-        posts = self.getPosts()
 
-        posLast = -1 
-
-        if posts and (len(posts) > 0):
-            posLast = 1
+        posLast = 1
 
         # We will return a list for the case of returning more than one post
         return posLast
