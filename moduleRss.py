@@ -43,6 +43,10 @@ class moduleRss(Content,Queue):
             self.rssFeed = feed[1]#+feed[1][1]
         else:
             self.rssFeed = feed
+        if (not 'flickr' in feed) and (not 'dev.to' in feed):
+            self.user = urllib.parse.urlparse(feed).netloc
+        else:
+            self.user = feed
         logging.debug("The Feed %s" % str(self.rssFeed))
         self.service = 'Rss'
 

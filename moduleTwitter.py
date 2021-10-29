@@ -50,25 +50,6 @@ class moduleTwitter(Content,Queue):
         # https://stackoverflow.com/questions/38717816/twitter-api-text-field-value-is-truncated
         return posts
 
-    #def getNextPost(self):
-    #    # cache always shows the first item
-    #    post = None
-    #    posts = self.getPosts()
-
-    #    if self.getPostsType() == 'favs':
-    #        # We will return always the first fav (there can be too many)
-    #        if posts and (len(posts) > 0):
-    #            posLast = 1
-    #        else:
-    #            posLast = -1
-    #    else:
-    #        posLast = self.getLinkPosition(self.getLastLinkPublished())
-    #    print(f"lastLink pos: {posLast}")
-    #    post = self.getPost(posLast - 1)
-
-    #    return post
-
-
     def processReply(self, reply): 
         res = ''
         if reply: 
@@ -84,7 +65,7 @@ class moduleTwitter(Content,Queue):
         logging.debug(f"{postData} Len: {len(postData)}")
         if len(postData) == 3:
             post, imageName, more = postData
-            if imagename:
+            if imageName:
                 with open(imageName, "rb") as imagefile:
                         imagedata = imagefile.read()
     

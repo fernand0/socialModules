@@ -17,7 +17,7 @@ class moduleRules:
 
     def readConfigSrc(self, indent, src, more):
         msgLog = f"Src: Src {src}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, 1)
         msgLog = f"More: Src {more}"
         logMsg(msgLog, 1, 0)
         if src[0] == 'cache':
@@ -30,6 +30,7 @@ class moduleRules:
             apiSrc = getApi(src[0], (sN, nick))
         else:
             apiSrc = getApi(src[0], src[2])
+
 
         for option in more:
             if option == 'posts':
@@ -136,12 +137,11 @@ class moduleRules:
         myLastLink, lastTime = apiDst.getLastTime()
         mmyLastLink, mlastTime = apiSrc.getLastTime(apiDst)
         if myLastLink != mmyLastLink: 
-            msgLog = (f"{indent}Differ: "
-                       "lastLink {myLastLink} mlastLink {mmyLastLink}")
+            msgLog = (f"{indent}Differ ll: "
+                      f"lastLink {myLastLink} mlastLink {mmyLastLink}")
             logMsg(msgLog, 1, 1)
 
-        myTime = time.strftime("%Y-%m-%d %H:%M:%S", 
-                                time.localtime(lastTime))
+        myTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastTime))
         lastLink = myLastLink
 
         # Maybe this should be in moduleContent ?
@@ -175,7 +175,7 @@ class moduleRules:
         logMsg(msgLog, 1, 1)
 
         if myLastLink:
-            msgLo = (f"{indent}Last link: {myLastLink}")
+            msgLog = (f"{indent}Last link: {myLastLink}")
             logMsg(msgLog, 1, 1)
 
         msgLog = (f"{indent}DstMax: {apiDst.getMax()}"
@@ -237,7 +237,6 @@ class moduleRules:
                       f"{indent}└-> Action: {msgAction}")
             logMsg(msgLog, 1, 1)
 
-
             # The source of data can have changes while we were waiting
             apiSrc.setPosts()
 
@@ -253,7 +252,7 @@ class moduleRules:
                             for post in listPosts 
                 ]
                 logMsg(f"{indent}Next post: {nextPost}", 2, 0)
-                npost = apiSrc.getNextPost()
+                npost = apiSrc.getNextPost()[0]
                 #logMsg(f"npost {npost}")
                 ntitle = apiSrc.getPostTitle(npost)
                 logMsg(f"{indent}Title Next post: {ntitle}", 1, 1)
@@ -281,6 +280,9 @@ class moduleRules:
                     print(f"Differ: f {firstLink} - {extract[1]}")
                 comment = listPosts[-1][-1]
                 tags = listPosts[-1][-2]
+                ntags = apiSrc.getPostImagesTags(npost)
+                if (tags != ntags):
+                    print(f"Differ: t {tags} - {ntags}")
 
                 if profile in ['telegram', 'facebook']: 
                     comment = summaryLinks 
@@ -377,6 +379,7 @@ class moduleRules:
                             logging.info(f"self Link: {apiDst.lastLink}")
                             updateLastLink(apiDst.getUrl(), 
                                             link, socialNetwork)
+                            apiSrc.updateLastLink(apiDst, link)
                     else:
                         if res.find('Status is a duplicate')>=0:
                             msgLog = (f"{indent}End publish, "
@@ -393,6 +396,7 @@ class moduleRules:
                     fN = fileNamePath(apiDst.getUrl(), socialNetwork)
                     msgLog = (f"{indent}in file ", f"{fN}.last")
                     logMsg(msgLog, 1, 1)
+                    # apiSrc.updateLastLink(apiDst, link)
 
                 postaction = apiSrc.getPostAction()
                 if (not postaction) and (src[0] in ["cache"]):
@@ -883,10 +887,11 @@ class moduleRules:
                     msgLog = (f"{nameA} {text} Action {k}:"
                               f" {action[3]}@{action[2]} ({action[1]})")
                     textEnd = f"{textEnd}\n{msgLog}"
-                    logMsg(msgLog, 0, 1)
                     if (select and (select.lower() != f"{src[0].lower()}{i}")):
+                        msgLog = f"{msgLog} Skip."
+                        logMsg(msgLog, 0, 1)
                         continue
-                    msgLog = (f"{nameA}  Scheduling...")
+                    msgLog = (f"{msgLog} Scheduling...")
                     logMsg(msgLog, 1, 1)
                     timeSlots = args.timeSlots
                     noWait = args.noWait

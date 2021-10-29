@@ -149,6 +149,70 @@ class Content:
             url = self.url
         return url
 
+    def fileNameBase(self, dst):
+        src = self
+        nameSrc = type(src).__name__
+        if 'module' in nameSrc:
+            nameSrc = nameSrc[len('module'):]
+        nameDst = type(dst).__name__
+        if 'module' in nameDst:
+            nameDst = nameDst[len('module'):]
+        print(f"type s -> {nameSrc} {nameDst}")
+
+        if hasattr(src, 'getPostsType'):
+            typeSrc = src.getPostsType()
+        else:
+            typeSrc = 'posts'
+
+        if hasattr(dst, 'getPostsType'):
+            typeDst = dst.getPostsType()
+        else:
+            typeDst = 'posts'
+
+        fileName = (f"{nameSrc}_{typeSrc}_"
+                    f"{src.getUser()}_{src.getService()}__" 
+                    f"{nameDst}_{typeDst}_"
+                    f"{dst.getUser()}_{dst.getService()}")
+        fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}") 
+        return fileName
+
+    def updateLastLink(self, dst, link):
+        fileName = f"{self.fileNameBase(dst)}.last"
+        # print(f"fil: {fileName} {fileName1}")
+        with open(fileName, "w") as f: 
+            if isinstance(link, bytes): 
+                f.write(link.decode())
+            elif isinstance(link, str): 
+                f.write(link)
+            else:
+                f.write(link[0])
+
+    def getLastLinkNew(self, dst):        
+        fileName = f"{self.fileNameBase(dst)}.last"
+        print(f"lastLinkNew: {fileName}")
+        if not os.path.isdir(os.path.dirname(fileName)):
+            sys.exit("No directory {} exists".format(os.path.dirname(fileName)))
+        if os.path.isfile(fileName):
+            with open(fileName, "rb") as f: 
+                linkLast = f.read().decode().split()  # Last published
+        else:
+            # File does not exist, we need to create it.
+            # Should we create it here? It is a reading function!!
+            with open(fileName, "wb") as f:
+                logging.warning("File %s does not exist. Creating it."
+                        % fileName) 
+                linkLast = ''  
+                # None published, or non-existent file
+
+        lastLink = ''
+        if len(linkLast) == 1: 
+            logging.info(f"linkLastNew len 1 {linkLast}")
+            lastLink = linkLast[0]
+        else:
+            lastLink = linkLast
+ 
+        return linkLast
+
     def getLastLink(self):        
         url = self.getUrl()
         service = self.service.lower()
@@ -189,16 +253,22 @@ class Content:
         # You always need to check lastLink? 
         # Example: gmail, Twitter
         if other:
-            myLastLink,lastTime = other.getLastTime()
-        else:
-            try:
+            fileName = self.fileNameBase(other)
+            lastTime2 = ""
+            if os.path.isfile(fileName):
+                lastTime2 = os.path.getctime(fileName)
+            myLastLink2 = self.getLastLinkNew(other)
+            print(f"myLastLink2: {myLastLink2} {lastTime2}")
+            return myLastLink2, lastTime2
+        try:
                 url = self.getUrl()
                 service = self.service.lower()
                 nick = self.getUser()
                 fN = (f"{fileNamePath(url, (service, nick))}.last")
+                print(f"oldfFN: {fN}")
                 lastTime = os.path.getctime(fN)
                 myLastLink = self.getLastLink()
-            except:
+        except:
                 fN = ""
                 msgLog = (f"No last link")
                 logMsg(msgLog, 2, 0)
@@ -206,6 +276,7 @@ class Content:
         self.lastLinkPublished = myLastLink
         self.lastTimePublished = lastTime
 
+        print(f"myLastLink: {myLastLink} {lastTime}")
         return myLastLink, lastTime
 
     def setNumPosts(self, numPosts):
@@ -332,7 +403,7 @@ class Content:
         else:
             post = None
 
-        return post
+        return [ post ]
 
     def getTitle(self, i):
         title = ""
@@ -760,6 +831,9 @@ class Content:
     def getPostContent(self, post):
         return ""
 
+    def extractImages(self, post):
+        return None
+
     def getImages(self, i):
         posts = self.getPosts()
         res = None
@@ -768,6 +842,22 @@ class Content:
             logging.debug("Post: %s" % post)
             res = self.extractImages(post)
         return res
+
+    def getTags(self, images):
+        # Is this the correct place?
+        tags = []
+        if images:
+            for iimg in images:
+                for tag in iimg[3]:
+                    if tag not in tags:
+                        tags.append(tag)
+
+        return tags
+
+    def getPostImagesTags(self, post):
+        res = self.extractImages(post)
+        tags = self.getTags(res)
+        return tags
 
     def getImagesTags(self, i):
         res = self.getImages(i)

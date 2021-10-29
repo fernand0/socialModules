@@ -46,25 +46,6 @@ class moduleMastodon(Content, Queue):
         posts = self.getClient().favourites()
         return posts
 
-    #def getNextPost(self):
-    #    # cache always shows the first item
-    #    post = None
-    #    posts = self.getPosts()
-
-    #    if self.getPostsType() == 'favs':
-    #        # We will return always the first fav (there can be too many)
-    #        if posts and (len(posts) > 0):
-    #            posLast = 1
-    #        else
-    #            posLast = -1
-    #    else:
-    #        posLast = self.getLinkPosition(self.getLastLinkPublished())
-    #    print(f"lastLink pos: {posLast}")
-    #    post = self.getPost(posLast - 1)
-
-    #    return post
-
-
     def processReply(self, reply):
         res = ''
         if reply:

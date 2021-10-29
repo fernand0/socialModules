@@ -104,7 +104,8 @@ class moduleCache(Content,Queue):
             print(f"lastLink pos: {posLast}")
             post = self.getPost(posLast - 1)
 
-        return post
+        # We will return a list for the case of returning more than one post
+        return [ post ]
 
 
     # def availableSlots(self):
