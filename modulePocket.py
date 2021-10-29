@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import configparser
-import pickle
 import os
+
 from pocket import Pocket, PocketException
 
 from configMod import *
@@ -13,79 +13,56 @@ class modulePocket(Content,Queue):
 
     def __init__(self):
         super().__init__()
-        self.user = None
-        self.client = None
-        self.service = 'pocket'
+        self.postaction='archive'
 
-    def setClient(self, pocket=''):
-        logging.info("    Connecting Pocket")
-        try:
-            config = configparser.ConfigParser()
-            config.read(CONFIGDIR + '/.rssPocket')
+    def getKeys(self, config): 
+        consumer_key = config.get("appKeys", "consumer_key")
+        access_token = config.get("appKeys", "access_token")
 
-            self.user = pocket
+        return(consumer_key, access_token)
 
-            consumer_key = config.get("appKeys", "consumer_key")
-            access_token = config.get("appKeys", "access_token")
+    def initApi(self, keys):
+        consumer_key, access_token = keys
+        client = Pocket(consumer_key=consumer_key, access_token=access_token)
+        return client
 
-            try:
-                client = Pocket(consumer_key=consumer_key, 
-                        access_token=access_token)
-            except:
-                logging.warning("Pocket authentication failed!")
-                logging.warning("Unexpected error:", sys.exc_info()[0])
-                client = None
-        except:
-            logging.warning("Account not configured")
-            client = None
-
-        self.client = client
- 
-    def getClient(self):
-        return self.client    
-    
-    def setPosts(self):
-        logging.info("  Setting posts")
+    def setApiPosts(self):
         posts = []
-        dictPosts = self.client.retrieve()['list']
+        dictPosts = self.client.retrieve()
+        dictPosts = dictPosts['list']
         for post in dictPosts:
             posts.append(dictPosts[post])
-        
-        self.posts = posts[:100]
 
-    def getPostTitle(self, post):
-        if 'resolved_title' in post:
-            return(post['resolved_title'])
-        else:
-            return ''
+        return(posts[:100])
 
-    def getPostId(self, post):
-        if 'item_id' in post:
-            return(post['item_id'])
-        else:
-            return ''
+    def processReply(self, reply): 
+        res = ''
+        if reply: 
+            idPost = self.getPostId(reply)
+            title = self.getPostTitle(reply)
+            res = f"{title} https://getpocket.com/read/{idPost}"
+        logging.info(f"     Res: {res}")
+        return(res)
 
-    def getPostLink(self, post):
-        if 'resolved_url' in post:
-            return(post['resolved_url'])
-        else:
-            return ''
->>>>>>> master
+    def publishApiPost(self, postData):
+        logging.debug(f"postData: {postData} in {self}")
+        post, link, comment, plus = postData
 
-    def publishPost(self, post, link, comment):
-        logging.info(f"    Publishing in {self.service}: {post}")
-    
-        try:
-            client = self.client 
-            res = client.add(link)
-            logging.info("Res: %s" % res)
-            logging.info("Posted!: %s" % post)
-            return(res)
-        except:        
-            return(self.report('Pocket', post, link, sys.exc_info()))
+        # This belongs here?
+        if not link.startswith('http'):
+            logging.warning(f"Link that does not stat with < {link}")
+            pos = link.find('http')
+            link = link[pos:]
+            pos = link.find(' ')
+            if pos >=0:
+                # Sometimes there are two links or something after the link
+                link=link[:pos]
+        res = self.getClient().add(link)
+        return self.processReply(res)
 
     def publish(self, j): 
-        logging.info("Publishing %d"% j)
+        # This does not belong here
+        logging.info("...Publishing %d"% j)
         #post = self.obtainPostData(j)
         #logging.info("Publishing %s"% post[0])
         update = '' 
@@ -93,16 +70,6 @@ class modulePocket(Content,Queue):
         logging.info("Title: %s" % str(title))
         url = self.getLink(j)
         logging.info("Url: %s" % str(url))
-        if self.getBuffer():            
-            for profile in self.getSocialNetworks():
-                if profile[0] in self.getBufferapp():
-                    lenMax = self.len(profile)
-                    logging.info("   getBuffer %s" % profile)
-                    socialNetwork = (profile,self.getSocialNetworks()[profile])
-                    listPosts = []
-                    listPosts.append((title, url))
-                    update = update + self.buffer[socialNetwork].addPosts(listPosts)
-                    update = update + '\n'
 
         if self.getProgram():
             logging.info("getProgram")
@@ -124,7 +91,7 @@ class modulePocket(Content,Queue):
                     logging.info("Uppdate: {}".format(update))
                     update = update + '\n'
 
-        if not self.getBuffer() and not self.getProgram():
+        if  not self.getProgram(): #not self.getBuffer() and
             logging.info("Not getBuffer, getProgram {}".format(self.getSocialNetworks()))
             return ""
             delayedBlogs = []
@@ -206,6 +173,34 @@ class modulePocket(Content,Queue):
             rep = "Fail!"
         return rep
 
+    def getPostTitle(self, post):
+        title = ''
+        if 'resolved_title' in post:
+            title = post['resolved_title']
+            if not title and ('given_title' in post):
+                title = post['given_title']
+        #elif 'item' in post: 
+        #    if 'title' in post['item']:
+        #        title = (post['item']['title'])
+        if not title: 
+            title = self.getPostLink(post)
+        return title
+
+    def getPostId(self, post): 
+        if 'item' in post: 
+            if 'item_id' in post['item']:
+                return(post['item']['item_id'])
+        else:
+            return ''
+
+    def getPostLink(self, post):
+        link = ''
+        if 'resolved_url' in post:
+            link = post['resolved_url']
+            if not link and 'given_url' in post: 
+                link = post['given_url']
+        return link
+
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)
@@ -238,29 +233,35 @@ def main():
             format='%(asctime)s %(message)s')
 
     config = configparser.ConfigParser()
-    config.read(CONFIGDIR + '/.rssBlogs')
+    config.read(CONFIGDIR + '/.rssBlogs2')
 
     import modulePocket
     
     p = modulePocket.modulePocket()
 
-    p.setClient('fernand0')
+    p.setClient('ftricas')
+    p.setPostsType('posts')
 
     p.setPosts()
     print(p.getPosts())
+    return
+
+    p.publishPost('El Mundo Es Imperfecto', 'https://elmundoesimperfecto.com/', '')
+    sys.exit()
 
     for i, post in enumerate(p.getPosts()):
         print(i, p.getPostTitle(post), p.getPostLink(post))
-        
 
     sys.exit()
-    p.setSocialNetworks(config, "Blog25")
+    #i=7
+    #print(i,p.getTitle(i))
+        
+    p.setSocialNetworks(config)
     print(p.getSocialNetworks())
     p.publish(99)
 
     sys.exit()
     
-    sys.exit()
     p.publishPost('El Mundo Es Imperfecto', 'https://elmundoesimperfecto.com/', '')
 
 if __name__ == '__main__':

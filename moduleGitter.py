@@ -14,6 +14,8 @@ import click
 import logging
 import requests
 
+from bs4 import BeautifulSoup
+
 from moduleContent import *
 from moduleQueue import *
 
@@ -23,28 +25,25 @@ class moduleGitter(Content,Queue):
     def __init__(self):
         super().__init__()
         self.service = None
-        self.sc = None
+        self.client = None
+        self.channel = None
         self.keys = []
         self.service = 'Gitter'
 
-    def setClient(self):
+    def getKeys(self, config):
+        token = config.get(self.service, "token")
+        oauth_key = config.get(self.service, "oauth_key")
+        oauth_secret = config.get(self.service, "oauth_secret")
+
+        return (token, oauth_key, oauth_secret)
+
+    def initApi(self, keys):
+
+        self.token = keys[0]
         # https://api.slack.com/authentication/basics
         logging.info("     Connecting {}".format(self.service))
         try:
-            config = configparser.ConfigParser()
-            config.read(CONFIGDIR + '/.rssGitter')
-
-            if config.sections(): 
-                self.token = config.get('Gitter', 'token') 
-
-                self.sc = gitterpy.client.GitterClient(self.token)
-            else:
-                logging.warning("Account not configured") 
-                if sys.exc_info()[0]: 
-                    logging.warning("Unexpected error: {}".format( 
-                        sys.exc_info()[0])) 
-                print("Please, configure a {} Account".format(self.service))
-                sys.exit(-1)
+            client = gitterpy.client.GitterClient(self.token)
         except:
             logging.warning("Account not configured") 
             if sys.exc_info()[0]: 
@@ -54,24 +53,28 @@ class moduleGitter(Content,Queue):
             print("Please, configure a {} Account".format(self.service))
             sys.exit(-1)
             logging.info(self.report('Slack', text, sys.exc_info()))
-            self.sc = slack.WebClient(token=self.slack_token)
+            client = slack.WebClient(token=self.slack_token)
+        return client
 
-    def setPosts(self, channel='links'):
-        logging.info(" Setting posts")
-        self.posts = []
-        #theChannel = self.getChanId(channel)
+    def setChannel(self, channel="links"):
+        # setPage in Facebook
+        self.channel = channel
+
+    def getChannel(self):
+        return self.channel
+
+    def setApiPosts(self):
+        if not self.channel:
+            self.setChannel('fernand0errbot/links')
+        posts = []
         try:
-            history = self.sc.messages.list(channel)
-            try:
-                self.posts = history
-            except:
-                self.posts = []
+            history = self.getClient().messages.list(self.getChannel())
+            posts = history
         except:
             logging.warning(self.report(self.service, "", "", sys.exc_info()))
-            self.posts = []
+            posts = []
 
-    def getPostId(self, post): 
-        return (post['id'])
+        return posts
 
     def getIdPosition(self, idPost): 
         posts = self.getPosts()
@@ -85,14 +88,6 @@ class moduleGitter(Content,Queue):
         else:
             return -1
 
-    def getTitle(self, i):
-        post = self.getPosts()[i]
-        return(self.getPostTitle(post))
-
-    def getLink(self, i):
-        post = self.getPosts()[i]
-        return(self.getPostLink(post))
-
     def getPostTitle(self, post):
         if 'text' in post:
             text = post['text']
@@ -105,6 +100,7 @@ class moduleGitter(Content,Queue):
             return("")
 
     def getPostLink(self, post):
+
         if 'text' in post:
             text = post['text']
             pos = text.rfind('http')
@@ -115,16 +111,21 @@ class moduleGitter(Content,Queue):
         else:
             return('')
 
-    def getId(self, i):
-        post = self.getPosts()[i]
-        return(post['ts'])
+    def getPostId(self, post): 
+        idPost = -1
+        if 'id' in post:
+            idPost = post['id']
+        return (idPost)
 
     def deleteGitter(self, idPost, idChannel):
         # This does not belong here
-        room_id = idChannel
         # '/v1/rooms/:roomId/chatMessages/:chatMessageId"
-        api_meth = 'rooms/{}/chatMessages/{}'.format(room_id, idPost)
-        result = self.sc.delete(api_meth)
+        api_meth  = self.getClient().get_and_update_msg_url(idChannel, idPost)
+        #api_meth = 'rooms/{}/chatMessages/{}'.format(room_id, idPost)
+        print(f"api {api_meth}")
+        #result = self.getClient().put(api_meth,data={'text':''})
+        result = self.getClient().delete(api_meth)
+        print(f"Result: {result}")
         logging.info("Result: {}".format(str(result)))
         return result
 
@@ -135,27 +136,32 @@ class moduleGitter(Content,Queue):
         try:
             result = self.deleteGitter(idPost, idChannel) 
         except:
-            logging.info(self.report('Slack', "Error deleting", "", sys.exc_info()))
+            logging.info(self.report('Gitter', 
+                            "Error deleting", "", sys.exc_info()))
+            result= ""
         logging.debug(result)
         return(result)
     
     def getChanId(self, name):
         logging.debug("getChanId %s"% self.service)
 
-        chanList = self.sc.rooms.rooms_list
+        chanList = self.getClient().rooms.rooms_list
         for channel in chanList:
             if channel['name'].endswith(name):
                 return(channel['id'])
         return(None)
 
     def extractDataMessage(self, i):
-        logging.info("Service %s"% self.service)
+        logging.info(f"extract gitt {i}")
+        logging.info("Extract Service %s"% self.service)
         (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None) 
 
-        print(self.getPosts()[i])
+        logging.info(self.getPosts()[i])
         if i < len(self.getPosts()):
-            theTitle = self.getTitle(0)
-            theLink = self.getLink(0)
+            post = self.getPosts()[i]
+            theTitle = self.getPostTitle(post)
+            theLink = self.getPostLink(post)
+            print("The title: {theTitle}")
 
             theLinks = None
             content = None
@@ -167,127 +173,129 @@ class moduleGitter(Content,Queue):
             theSummaryLinks = None
             comment = None
 
+        print (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
-    def obtainPostData(self, i, debug=False):
-        if not self.posts:
-            self.setPosts()
+    #def obtainPostData(self, i, debug=False):
+    #    if not self.posts:
+    #        self.setPosts()
 
-        posts = self.getPosts()
-        if not posts:
-            return (None, None, None, None, None, None, None, None, None, None)
+    #    posts = self.getPosts()
+    #    if not posts:
+    #        return (None, None, None, None, None, None, None, None, None, None)
 
-        post = posts[i]
-        if 'attachments' in post:
-            post = post['attachments'][0]
+    #    post = posts[i]
+    #    if 'attachments' in post:
+    #        post = post['attachments'][0]
 
-        theContent = ''
-        url = ''
-        firstLink = ''
-        logging.debug("i %d", i)
-        logging.debug("post %s", post)
+    #    theContent = ''
+    #    url = ''
+    #    firstLink = ''
+    #    logging.debug("i %d", i)
+    #    logging.debug("post %s", post)
 
-        theTitle = self.getTitle(i)
-        theLink = self.getLink(i)
-        logging.info(theTitle)
-        logging.info(theLink)
-        if theLink.find('tumblr')>0:
-            theTitle = post['text']
-        firstLink = theLink
-        if 'text' in post: 
-            content = post['text']
-        else:
-            content = theLink
-        theSummary = content
-        theSummaryLinks = content
-        if 'image_url' in post:
-            theImage = post['image_url']
-        elif 'thumb_url' in post:
-            theImage = post['thumb_url']
-        else:
-            logging.info("Fail image")
-            logging.debug("Fail image %s", post)
-            theImage = ''
+    #    theTitle = self.getTitle(i)
+    #    theLink = self.getLink(i)
+    #    logging.info(theTitle)
+    #    logging.info(theLink)
+    #    if theLink.find('tumblr')>0:
+    #        theTitle = post['text']
+    #    firstLink = theLink
+    #    if 'text' in post: 
+    #        content = post['text']
+    #    else:
+    #        content = theLink
+    #    theSummary = content
+    #    theSummaryLinks = content
+    #    if 'image_url' in post:
+    #        theImage = post['image_url']
+    #    elif 'thumb_url' in post:
+    #        theImage = post['thumb_url']
+    #    else:
+    #        logging.info("Fail image")
+    #        logging.debug("Fail image %s", post)
+    #        theImage = ''
 
-        if 'original_url' in post: 
-            theLink = post['original_url']
-        elif url: 
-            theLink = url
-        else:
-            theLink = self.getPostLink(post)
+    #    if 'original_url' in post: 
+    #        theLink = post['original_url']
+    #    elif url: 
+    #        theLink = url
+    #    else:
+    #        theLink = self.getPostLink(post)
 
-        if ('comment' in post):
-            comment = post['comment']
-        else:
-            comment = ""
+    #    if ('comment' in post):
+    #        comment = post['comment']
+    #    else:
+    #        comment = ""
 
-        #print("content", content)
-        theSummaryLinks = ""
+    #    #print("content", content)
+    #    theSummaryLinks = ""
 
-        if not content.startswith('http'):
-            soup = BeautifulSoup(content, 'lxml')
-            link = soup.a
-            if link: 
-                firstLink = link.get('href')
-                if firstLink:
-                    if firstLink[0] != 'h': 
-                        firstLink = theLink
+    #    if not content.startswith('http'):
+    #        soup = BeautifulSoup(content, 'lxml')
+    #        link = soup.a
+    #        if link: 
+    #            firstLink = link.get('href')
+    #            if firstLink:
+    #                if firstLink[0] != 'h': 
+    #                    firstLink = theLink
 
-        if not firstLink: 
-            firstLink = theLink
+    #    if not firstLink: 
+    #        firstLink = theLink
 
-        if 'image_url' in post:
-            theImage = post['image_url']
-        else:
-            theImage = None
-        theLinks = theSummaryLinks
-        theSummaryLinks = theContent + theLinks
-        
-        theContent = ""
-        theSummaryLinks = ""
-        #if self.getLinksToAvoid():
-        #    (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinkstoavoid())
-        #else:
-        #    (theContent, theSummaryLinks) = self.extractLinks(soup, "") 
-            
-        if 'image_url' in post:
-            theImage = post['image_url']
-        else:
-            theImage = None
-        theLinks = theSummaryLinks
-        theSummaryLinks = theContent + theLinks
-
-
-        logging.debug("=========")
-        logging.debug("Results: ")
-        logging.debug("=========")
-        logging.debug("Title:     ", theTitle)
-        logging.debug("Link:      ", theLink)
-        logging.debug("First Link:", firstLink)
-        logging.debug("Summary:   ", content[:200])
-        logging.debug("Sum links: ", theSummaryLinks)
-        logging.debug("the Links"  , theLinks)
-        logging.debug("Comment:   ", comment)
-        logging.debug("Image;     ", theImage)
-        logging.debug("Post       ", theTitle + " " + theLink)
-        logging.debug("==============================================")
-        logging.debug("")
+    #    if 'image_url' in post:
+    #        theImage = post['image_url']
+    #    else:
+    #        theImage = None
+    #    theLinks = theSummaryLinks
+    #    theSummaryLinks = theContent + theLinks
+    #    
+    #    theContent = ""
+    #    theSummaryLinks = ""
+    #    #if self.getLinksToAvoid():
+    #    #    (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinkstoavoid())
+    #    #else:
+    #    #    (theContent, theSummaryLinks) = self.extractLinks(soup, "") 
+    #        
+    #    if 'image_url' in post:
+    #        theImage = post['image_url']
+    #    else:
+    #        theImage = None
+    #    theLinks = theSummaryLinks
+    #    theSummaryLinks = theContent + theLinks
 
 
-        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+    #    logging.debug("=========")
+    #    logging.debug("Results: ")
+    #    logging.debug("=========")
+    #    logging.debug("Title:     ", theTitle)
+    #    logging.debug("Link:      ", theLink)
+    #    logging.debug("First Link:", firstLink)
+    #    logging.debug("Summary:   ", content[:200])
+    #    logging.debug("Sum links: ", theSummaryLinks)
+    #    logging.debug("the Links"  , theLinks)
+    #    logging.debug("Comment:   ", comment)
+    #    logging.debug("Image;     ", theImage)
+    #    logging.debug("Post       ", theTitle + " " + theLink)
+    #    logging.debug("==============================================")
+    #    logging.debug("")
 
-    def publishPost(self, chan, msg):
-        logging.info("Publishing %s" % msg)
-        try:
-            result = self.sc.messages.send(chan, msg)
-        except:
-            logging.info(self.report('Gitter', "", "", sys.exc_info()))
-            result = self.sc.chat_postMessage(channel=theChan, 
-                    text=msg)
-        logging.info(result)
-        if 'id' in result:
-           logging.info(result['id'])
-        logging.info("End publishing %s" % msg)
+
+    #    print (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+    #    return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+
+    def processReply(self, reply):
+        logging.info(reply)
+        if 'id' in reply:
+           logging.info(reply['id'])
+           reply = reply['id']
+        return reply
+ 
+    def publishApiPost(self, postData): 
+        post, link, comment, plus = postData
+        chan = self.getChannel()
+        print(f"Chan: {chan}")
+        result = self.getClient().messages.send(chan, f"{post} {link}")
         return(result)
 
     def getBots(self, channel='tavern-of-the-bots'):
@@ -329,21 +337,78 @@ def main():
     url = "https://gitter.im/fernand0errbot/tavern-of-the-bots"
 
     site.setUrl(url)
+    site.setClient(url)
 
-    site.setClient()
-    theChannel = site.getChanId(CHANNEL)  
-    print("the Channel %s" % theChannel)
+    print(site.getClient().check_auth()[0])
+    # theChannel = site.getChanId(CHANNEL)  
+    # print("the Channel %s" % theChannel)
 
     CHANNEL = 'fernand0errbot/links' 
-    site.setPosts(CHANNEL)
-    print(len(site.getPosts()))
-    post = site.getPosts()[3]
-    print(post)
+    site.setChannel(CHANNEL)
+
+    testingSlack = False
+
+    if testingSlack:
+        import moduleSlack
+
+        siteS = moduleSlack.moduleSlack()
+        try:
+            # My own config settings
+            config = configparser.ConfigParser()
+            config.read(CONFIGDIR + "/.rssBlogs")
+
+            section = "Blog7"
+            url = config.get(section, "url")
+            siteS.setSocialNetworks(config)
+            print(f"social: {siteS.getSocialNetworks()}")
+        except:
+            url = "http://fernand0-errbot.slack.com/"
+        siteS.setClient(url)
+        siteS.setChannel("links")
+        siteS.setPosts()
+        for post in reversed(siteS.getPosts()):
+            link = siteS.getPostLink(post)
+            title = siteS.getPostTitle(post)
+            print(f"Link: {link} {title}")
+            print(f"Reply: {site.publishPost(title, link, '')}")
+            time.sleep(5)
+        sys.exit()
+
+    testingDeleteGitter = False
+    if testingDeleteGitter:
+        site.setPosts()
+        for post in site.getPosts():
+            print(f"Post: {post} {site.getChannel()}")
+            input("Delete? ")
+            site.deletePost(site.getPostId(post), site.getChannel())
+        sys.exit()
+
+    testingPostDelete = False
+    if testingPostDelete:
+        rep = site.publishPost(CHANNEL, 'helloo')
+
+        site.setPosts()
+        print(len(site.getPosts()))
+        post = site.getPosts()[-1]
+        print(post)
+        print("----------------")
+        print("title {}".format(site.getPostTitle(post)))
+        link = site.getPostLink(post)
+        print("link {}".format(link))
+        print(site.getLinkPosition(link))
+        input("Delete? ")
+        site.deletePost(site.getPostId(post), CHANNEL)
+        sys.exit()
+
+    site.setPosts()
+    post = site.getPosts()[-1]
     print("----------------")
     print("title {}".format(site.getPostTitle(post)))
     link = site.getPostLink(post)
     print("link {}".format(link))
     print(site.getLinkPosition(link))
+
+    sys.exit()
 
     print(CHANNEL) 
     site.deletePost(site.getPostId(post), site.getChanId(CHANNEL))
@@ -371,13 +436,13 @@ def main():
     site.setPosts('tavern-of-the-bots')
     print(site.getPosts())
     print(site.getBots())
-    print(site.sc.api_call('channels.list'))
+    print(site.getClient().api_call('channels.list'))
     sys.exit()
     rep = site.publishPost('tavern-of-the-bots', 'hello')
     site.deletePost(rep['ts'], theChan)
     sys.exit()
 
-    site.setSocialNetworks(config, section)
+    site.setSocialNetworks(config)
 
     if ('buffer' in config.options(section)): 
         site.setBufferapp(config.get(section, "buffer"))

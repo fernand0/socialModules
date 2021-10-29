@@ -1029,11 +1029,15 @@ def listMessages(M, folder):
 
 def main():
 
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
+
     config = configparser.ConfigParser()
     config.read([os.path.expanduser('~/.IMAP.cfg')])
 
-    SERVER = config.get("IMAP1", "server")
-    USER = config.get("IMAP1", "user")
+    SERVER = config.get("IMAP6", "server")
+    USER = config.get("IMAP6", "user")
     PASSWORD = getPassword(SERVER, USER)
 
     # IMAP client connection

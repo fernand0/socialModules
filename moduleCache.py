@@ -10,10 +10,12 @@
 #  obtainPostData method.
 
 import configparser, os
-from crontab import CronTab
-import logging
 import pickle
+import logging
 import sys
+import importlib
+importlib.reload(sys)
+from crontab import CronTab
 
 from configMod import *
 from moduleQueue import *
@@ -23,29 +25,47 @@ class moduleCache(Content,Queue):
     
     def __init__(self):
         super().__init__()
-        self.service = None
+        self.service = 'Cache'
         self.nick = None
+        self.postaction = 'delete'
         #self.url = url
         #self.socialNetwork = (socialNetwork, nick)
 
     def setClient(self, param):
-        url = param[0]
-        socialNetwork = param[1]
-        self.url = url
-        self.service = socialNetwork[0]
-        self.nick = socialNetwork[1]
+        logging.info(f"    Connecting Cache {self.service}: {param}")
+        self.postsType = 'posts'
+        if isinstance(param, str):
+            self.url = param
+            self.user = param
+            logging.warning("This is not possible!")
+        elif isinstance(param[1], str):
+            if param[0].find('http')>= 0:
+                self.url = param[0]
+            else:
+                self.socialNetwork = param[0]
+                self.service = param[0] 
+            self.user = param[1]
+            if self.user.find('\n')>=0:
+                self.user = None
+        else: 
+            self.url = param[0]
+            self.service = param[1][0] 
+            self.user = param[1][1]
 
-    def getSocialNetwork(self):
-        return (self.service, self.nick)
+    def setApiDrafts(self):        
+        # Every cache is the same, even the origin are drafts ??
+        return(self.setApiPosts())
 
-    def getService(self):
-        return(self.service)
-
-    def setPosts(self):        
-        logging.debug("Service %s Nick %s" % (self.service, self.nick))
-        fileNameQ = fileNamePath(self.url, 
-                (self.service, self.nick)) + ".queue"
-        logging.debug("File %s" % fileNameQ)
+    def setApiPosts(self):        
+        url = self.getUrl()
+        if hasattr(self, "socialNetwork"):
+            service = self.socialNetwork
+        else: 
+            service = self.getService()
+        nick = self.getUser()
+        logging.debug(f"Url: {url} service {service} nick {nick}")
+        fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
+        logging.debug("File: %s" % fileNameQ)
         try:
             with open(fileNameQ,'rb') as f: 
                 try: 
@@ -55,11 +75,32 @@ class moduleCache(Content,Queue):
         except:
             listP = []
 
-        if hasattr(self, 'getPostsType'): 
-            if self.getPostsType() == 'drafts': 
-                self.drafts = listP
-            else:
-                self.posts = listP
+        return(listP)
+
+    #def getMax(self):
+    #    return self.availableSlots()
+
+    def getMax(self):
+        maxVal = 0
+        if hasattr(self, "max"): # and self.max:
+            maxVal = int(self.max)
+        self.setPosts()
+        lenMax = len(self.getPosts()) 
+        num = 1
+        if maxVal > 1: 
+            num = maxVal - lenMax 
+        if num < 0:
+            num = 0
+        return num
+
+    def getPosNextPost(self):
+        # cache always shows the first item
+        # Some standard contition?
+
+        posLast = 1
+
+        return posLast
+
 
     def getHoursSchedules(self, command=None):
         return self.schedules[0].hour.render()
@@ -128,34 +169,38 @@ class moduleCache(Content,Queue):
     def addPosts(self, listPosts):
         link = ''
         if listPosts:
-            self.posts = self.posts + listPosts
+            if not self.getPosts():
+                self.setPosts()
+            posts = self.getPosts()
+            logging.debug(f"a Posts: {posts} listP: {listPosts}")
+            for pp in listPosts:
+                posts.append(pp)
+            #for i, pp in enumerate(posts):
+            #    print(i, pp)
+            #    link = pp[1]
+            self.assignPosts(posts)
+            #for i,p in enumerate(posts):
+            #    print(i, self.getPostTitle(p), self.getPostLink(p))
             self.updatePostsCache()
-            link = listPosts[len(listPosts) - 1][1]
+        link = listPosts[-1][1]
         return(link)
 
     def updatePostsCache(self):
         fileNameQ = fileNamePath(self.url, 
-                (self.service, self.nick)) + ".queue"
+                (self.service, self.user)) + ".queue"
 
         with open(fileNameQ, 'wb') as f: 
-            if hasattr(self, 'getPostsType'): 
-                if self.getPostsType() == 'drafts': 
-                    pickle.dump(self.drafts, f)
-                else:
-                    pickle.dump(self.posts, f)
-            else:
-                pickle.dump(self.posts, f)
+            posts = self.getPosts()
+            pickle.dump(posts, f)
 
         logging.debug("Writing in %s" % fileNameQ)
-        logging.debug("Posts: {}".format(str(self.posts)))
+        logging.debug("Posts: {}".format(str(self.getPosts())))
 
         return 'Ok'
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)
-        (theTitle, theLink, firstLink, theImage, theSummary, content, 
-                theSummaryLinks, theContent, theLinks, comment) = (None, 
-                        None, None, None, None, None, None, None, None, None) 
+        (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None) 
 
         if i < len(self.getPosts()):
             messageRaw = self.getPosts()[i]
@@ -175,25 +220,11 @@ class moduleCache(Content,Queue):
 
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
-    def getTitle(self, i):
-        if i < len(self.getPosts()): 
-            post = self.getPosts()[i]
-            title = post[0]
-            return (title)
-        return(None)
-
-    def getLink(self, i):
-        if i < len(self.getPosts()): 
-            post = self.getPosts()[i]
-            link = post[1]
-            return (link)
-        return(None) 
-    
     def getPostTitle(self, post):
+        title = ''
         if post:
             title = post[0]
-            return (title)
-        return(None)
+        return(title)
 
     def getPostLink(self, post):
         if post:
@@ -201,53 +232,46 @@ class moduleCache(Content,Queue):
             return (link)
         return(None)
 
-    def editl(self, j, newLink=''):
-        logging.info("New link %s", newLink)
-        thePost = self.obtainPostData(j)
-        oldLink = thePost[1]
-        thePost = thePost[:1] + ( newLink, ) + thePost[2:]
-        print(thePost)
-        self.posts[j] = thePost
-        logging.info("Service Name %s" % self.name)
+    def editApiLink(self, post, newLink=''):
+        oldLink = self.getPostLink(post)
+        idPost = self.getLinkPosition(oldLink)
+        post = post[:1] + ( newLink, ) + post[2:]
+        posts = self.getPosts()
+        posts[idPost] = post
+        self.assignPosts(posts)
         self.updatePostsCache()
-        update = "Changed "+oldLink+" with "+newLink
-        return(update)
+        return(idPost)
 
-    def edit(self, j, newTitle=''):
-        logging.info("New title %s", newTitle)
-        thePost = self.obtainPostData(j)
-        oldTitle = thePost[0]
+    def editApiTitle(self, post, newTitle=''):
+        logging.info(f"ApiTitle: {newTitle}. Post: {post}")
+        oldLink = self.getPostLink(post)
+        idPost = self.getLinkPosition(oldLink)
+        oldTitle = self.getPostTitle(post)
         if not newTitle:
             newTitle = self.reorderTitle(oldTitle)
-        thePost = thePost[1:]
-        thePost = (newTitle,) + thePost
-        self.posts[j] = thePost
-        logging.info("Service Name %s" % self.name)
+        post = (newTitle,) + post[1:]
+        posts = self.getPosts()
+        posts[idPost] = post
+        self.assignPosts(posts)
         self.updatePostsCache()
-        update = "Changed "+oldTitle+" with "+newTitle
-        return(update)
+        return(idPost)
 
     def insert(self, j, text):
         logging.info("Inserting %s", text)
-        print(j)
-        print(text)
+        posts = self.getPosts()
         # We do not use j, Maybe in the future.
-        textS = text.split(' http')
-        post = (textS[0], 'http'+textS[1], '','','','','','','','')
-        self.posts.append(post)
-        self.updatePostsCache()
+        logging.info(f"posts {posts}")
+        if (j>=0) and (j<len(posts)):
+            textS = text.split(' http')
+            post = (textS[0], 'http'+textS[1], '','','','','','','','')
+            self.assignPosts(posts[:j] + [ post ] + posts[j:])
+            self.updatePostsCache()
 
     def publish(self, j):
-        logging.info("Publishing %d"% j)
+        logging.info(">>>Publishing %d"% j)
         post = self.obtainPostData(j)
-        logging.info("Publishing {post[0]} in {self.service} user {self.nick}")
+        logging.info(">>>Publishing {post[0]} in {self.service} user {self.nick}")
         api = getApi(self.service, self.nick)
-        #import importlib
-        #serviceName = self.service.capitalize()
-        #mod = importlib.import_module('module' + serviceName) 
-        #cls = getattr(mod, 'module' + serviceName)
-        #api = cls()
-        #api.setClient(self.nick)
         comment = ''
         title = post[0]
         link = post[1]
@@ -255,12 +279,13 @@ class moduleCache(Content,Queue):
         update = api.publishPost(title, link, comment)
         logging.info("Publishing title: %s" % title)
         logging.info("Social network: %s Nick: %s" % (self.service, self.nick))
+        posts = self.getPosts()
         if (not isinstance(update, str) 
                 or (isinstance(update, str) and update[:4] != "Fail")):
-            self.posts = self.posts[:j] + self.posts[j+1:]
-            logging.debug("Updating %s" % self.posts)
+            self.assignPosts(posts[:j] + posts[j+1:])
+            logging.debug("Updating %s" % posts)
             self.updatePostsCache()
-            logging.info("Update ... %s" % str(update))
+            logging.debug("Update ... %s" % str(update))
             if ((isinstance(update, str) and ('text' in update))
                     or (isinstance(update, bytes) and (b'text' in update))):
                 update = update['text']
@@ -268,75 +293,149 @@ class moduleCache(Content,Queue):
                 update = update[1]['id']
                 # link: https://www.facebook.com/[name]/posts/[second part of id]
         logging.info("Update before return %s"% update)
-        return(update)
-    
-    def delete(self, j):
-        logging.info("Deleting %d"% j)
-        post = self.obtainPostData(j)
-        logging.info("Deleting %s"% post[0])
-        if hasattr(self, 'getPostsType'): 
-            if self.getPostsType() == 'drafts': 
-                self.drafts = self.drafts[:j] + self.drafts[j+1:]
-            else:
-                self.posts = self.posts[:j] + self.posts[j+1:] 
-        else: 
-            self.posts = self.posts[:j] + self.posts[j+1:] 
+        return(update) 
 
+    def delete(self, j):
+        # Not sure
+        return self.deleteApi(j)
+
+    def deleteApi(self, j):
+        logging.info(f"Deleting: {j}")
+        post = self.obtainPostData(j)
+        posts = self.getPosts()
+        posts = posts[:j] + posts[j+1:]
+        self.assignPosts(posts)
         self.updatePostsCache()
 
-        logging.info("Deleted %s"% post[0])
         return("%s"% post[0])
+
+    def obtainPostData(self, i, debug=False):
+        if not self.posts:
+            self.setPosts()
+
+        posts = self.getPosts()
+
+        if not posts:
+            return None
+        post = posts[i]
+        return post
 
     def move(self, j, dest):
         k = int(dest)
         logging.info("Moving %d to %d"% (j, k))
+        posts = self.getPosts()
+        post = posts[j]
+        logging.info("Moving %s"% post[0])
         if j > k:
-            posts = self.getPosts()
-            post = posts[j]
-            logging.info("Moving %s"% post[0])
             for i in range(j-1,k-1,-1):
                 posts[i+1] = posts[i]
-            posts[k] = post
-
-            if hasattr(self, 'getPostsType'): 
-                # Quicnk and dirty hack
-                if self.getPostsType() == 'drafts': 
-                    self.drafts = posts
-                else:
-                    self.posts = posts
-
-            self.updatePostsCache()
-            logging.info("Moved %s"% post[0])
         elif j < k:
-            post = self.posts[j]
-            logging.info("Moving %s"% post[0])
             for i in range(j, k):
-                self.posts[i] = self.posts[i+1]
-            self.posts[k] = post
-            self.updatePostsCache()
-            logging.info("Moved %s"% post[0])
+                posts[i] = posts[i+1]
+
+        posts[k] = post
+        self.assignPosts(posts)
+        self.updatePostsCache()
+        logging.info("Moved %s"% post[0])
         return("%s"% post[0])
  
 def main():
+
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
+
     import moduleCache
 
-    cache = moduleCache.moduleCache()
-    cache.setClient(('http://fernand0-errbot.slack.com/', 
-            ('twitter', 'fernand0')))
-    cache.setPosts()
-    print(cache.getPostTitle(cache.getPosts()[0]))
-    print(cache.getPostLink(cache.getPosts()[0]))
-    print(cache.selectAndExecute('insert', 'A2 Do You Really Have a Right to be “Forgotten”? - Assorted Stuff https://www.assortedstuff.com/do-you-really-have-a-right-to-be-forgotten/'))
-    print(cache.getPostTitle(cache.getPosts()[9]))
-    print(cache.getPostLink(cache.getPosts()[9]))
-    cache.setPosts()
-    print(cache.getPostTitle(cache.getPosts()[9]))
-    sys.exit()
-    cache.setSchedules('rssToSocial')
-    print(cache.schedules)
-    cache.addSchedules(['9:00','20:15'])
-    print(cache.schedules)
-    cache.delSchedules(['9:00','20:15'])
+    queues = []
+    for fN in os.listdir(f"{DATADIR}"):
+        if fN.find('queue')>=0:
+            queues.append(fN)
+
+    for i, fN in enumerate(queues):
+        print(f"{i}) {fN}")
+
+    sel = input('Select one ')
+
+    fN = queues[int(sel)]
+    url, sN, nick = fN.split('_')
+    nick = nick[:-len('.queue')]
+
+    print(f"url: {url} social network: {sN} nick: {nick}")
+    fNP = f"{DATADIR}/{fN}"
+    import time
+    fileT = time.strftime("%Y-%m-%d %H:%M:%S", 
+            time.localtime(os.path.getmtime(fNP)))
+    print(f"File name: {fNP} Date: {fileT}")
+
+    action = input(f"Actions: (D)elete, (S)how (T)itles ")
+
+
+
+    if action.upper()in ['S','T']: 
+        url = f"https://{url}/"
+
+        site = moduleCache.moduleCache()
+        site.setClient((url, (sN, nick)))
+        site.setPosts()
+        if action.upper() == 'T': 
+            [ print(f"- {post[0]}") for post in site.getPosts() ]
+        else: 
+            print(site.getPosts())
+    elif action.upper() in ['D']:
+        fileDelete = f"{fNP}"
+        ok = input(f"I'll delete {fileDelete} ")
+        os.remove(fileDelete)
+
+
+    return 
+
+    try:
+        config = configparser.ConfigParser() 
+        config.read(CONFIGDIR + '/.rssBlogs')
+        
+        section = "Blog7"
+        url = config.get(section, 'url')
+        cache = config[section]['cache']
+        for sN in cache.split('\n'):
+            nick = config[section][sN]
+            print('- ', sN, nick)
+            site = moduleCache.moduleCache()
+            site.setClient((url, (sN, nick)))
+            site.setPosts()
+            print(len(site.getPosts()))
+            posts = site.getPosts()[:8]
+            for i, post in enumerate(posts):
+                print(i, site.getPostTitle(post))
+                link = site.getPostLink(post)
+                print(link)
+                #updateLastLink(url, link, (sN, nick))
+            return
+            site.posts = posts
+            #site.updatePostsCache()
+                
+            print(checkLastLink(url, (sN, nick)))
+        
+    except:
+        cache = moduleCache.moduleCache()
+        cache.setClient(('http://fernand0-errbot.slack.com/', 
+                ('twitter', 'fernand0')))
+        cache.setPosts()
+        print(len(cache.getPosts()))
+        sys.exit()
+        print(cache.getPostTitle(cache.getPosts()[0]))
+        print(cache.getPostLink(cache.getPosts()[0]))
+        print(cache.selectAndExecute('insert', 'A2 Do You Really Have a Right to be “Forgotten”? - Assorted Stuff https://www.assortedstuff.com/do-you-really-have-a-right-to-be-forgotten/'))
+        print(cache.getPostTitle(cache.getPosts()[9]))
+        print(cache.getPostLink(cache.getPosts()[9]))
+        cache.setPosts()
+        print(cache.getPostTitle(cache.getPosts()[9]))
+        sys.exit()
+        cache.setSchedules('rssToSocial')
+        print(cache.schedules)
+        cache.addSchedules(['9:00','20:15'])
+        print(cache.schedules)
+        cache.delSchedules(['9:00','20:15'])
     sys.exit()
 
     print(cache.getPosts())

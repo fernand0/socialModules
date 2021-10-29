@@ -21,9 +21,6 @@ class Queue:
             self.setProfiles()
         return(self.profiles)
  
-    def getPosts(self):        
-        return(self.posts)
-
     def getPostsFormatted(self):    
         return(self.postsFormatted)
 
@@ -43,6 +40,7 @@ class Queue:
         return(newTitle)
 
     def extractDataMessage(self, i):
+        logging.info("extract queue")
         if hasattr(self, 'getPostsType'):
             if self.getPostsType() == 'drafts':
                 posts = self.getDrafts()
@@ -59,6 +57,7 @@ class Queue:
         return (theTitle, theLink, None, None, None, None, None, None, None, None)
 
     def obtainPostData(self, i, debug=False):
+        logging.info("Obtain post data Service %s"% self.service)
         return (self.extractDataMessage(i))
 
     def selectAndExecute(self, command, args):
@@ -66,10 +65,15 @@ class Queue:
         print("Selecting %s" % args)
         argsCont = ''
         pos = args.find(' ')
+        j = -1
         if pos > 0: 
             argsIni = args[:pos]
             argsCont = args[pos+1:]
-            logging.info("Args {} {}".format(argsIni, argsCont))
+            logging.info("Args {}-{}".format(argsIni, argsCont))
+            if (argsCont and len(argsCont)>1): 
+                if argsCont[0].isdigit() and (argsCont[1] == ' '): 
+                    j = int(argsCont[0])
+                    argsCont = argsCont[2:]
         else: 
             argsIni = args
             logging.info("Args {}".format(argsIni))
@@ -87,8 +91,7 @@ class Queue:
         logging.info("Service %s", self.service)
         if len(argsIni) > 2:
             j = int(argsIni[2:]) 
-        else:
-            j = -1
+        logging.info(f"Argscont {argsCont} j {j}")
         cmd = getattr(self, command)
         if (j>=0):
             logging.info("Command %s %d"% (command, j))
@@ -107,7 +110,9 @@ class Queue:
         if j < len(self.getPosts()):
             logging.info("To show post %d" % j)
 
-            (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content, links, comment) = self.obtainPostData(j)
+            (title, link, firstLink, image, summary, summaryHtml, 
+                    summaryLinks, content, links, 
+                    comment) = self.obtainPostData(j)
 
             reply = ''
             logging.info("title %s"%title)

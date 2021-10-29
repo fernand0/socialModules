@@ -24,15 +24,15 @@ class moduleSmtp(Content):
     def __init__(self):
         super().__init__()
         self.user = None
-        self.server = None
+        self.client = None
 
     def setClient(self, user):
         logging.info("     Connecting SMTP")
         try: 
             self.user = user 
-            self.server = smtplib.SMTP()
+            self.client = smtplib.SMTP()
             try: 
-                self.server.connect('localhost')
+                self.client.connect('localhost')
                 logging.info("     Logging OK")
             except:
                 logging.warning("SMTP authentication failed!")
@@ -41,17 +41,13 @@ class moduleSmtp(Content):
             logging.warning("Account not configured")
             api = None
 
- 
-    def getClient(self):
-        return self.server
- 
     def publishPost(self, post, subject, toaddr, fromaddr='fernand0@elmundoesimperfecto.com'):
         logging.info("     Publishing in SMTP")
         if True: 
             msg = MIMEText(post,'html')
             msg['Subject'] = subject
             msg['From'] = fromaddr
-            res = self.server.sendmail(fromaddr, toaddr, msg.as_string())
+            res = self.client.sendmail(fromaddr, toaddr, msg.as_string())
         else:
             logging.info("     Not published in SMTP. Exception ...")
             return('Fail')

@@ -1,191 +1,134 @@
 #!/usr/bin/env python
 
 import configparser
-import logging
-import os
-import oauth2 as oauth
-import pickle
+import json
 import requests
 import sys
 import urllib.parse
 
 from html.parser import HTMLParser
+import oauth2 as oauth
 from linkedin_v2 import linkedin
-
 
 from configMod import *
 from moduleContent import *
+
 
 class moduleLinkedin(Content):
 
     def __init__(self):
         super().__init__()
-        self.user = None
-        self.ln = None
 
-    def setClient(self, linkedinAC=""):
-        logging.info("    Connecting Linkedin {}".format(str(linkedinAC)))
-        try:
-            config = configparser.ConfigParser()
-            config.read(CONFIGDIR + '/.rssLinkedin')
+    def getKeys(self, config):
+        CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY") 
+        CONSUMER_SECRET = config.get("Linkedin", "CONSUMER_SECRET") 
+        ACCESS_TOKEN = config.get("Linkedin", "ACCESS_TOKEN") 
+        URN = config.get("Linkedin", "URN")
 
-            if isinstance(linkedinAC, tuple): 
-                linkedinAC = linkedinAC[1][1]
-            self.user = linkedinAC    
+        return (CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, URN)
 
-            self.CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY") 
-            self.CONSUMER_SECRET = config.get("Linkedin", "CONSUMER_SECRET") 
-            self.ACCESS_TOKEN = config.get("Linkedin", "ACCESS_TOKEN") 
-            self.ln = linkedin.LinkedInApplication(token=self.ACCESS_TOKEN)
-            #self.USER_TOKEN = config.get("Linkedin", "USER_TOKEN") 
-            #self.USER_SECRET = config.get("Linkedin", "USER_SECRET") 
-            #self.RETURN_URL = config.get("Linkedin", "RETURN_URL")
-            #self.ACCESS_TOKEN = config.get("Linkedin", "ACCESS_TOKEN")
-            self.URN = config.get("Linkedin", "URN")
-
-        except:
-            logging.warning("Account not configured")
+    def initApi(self, keys):
+        self.URN = keys[3]
+        client = linkedin.LinkedInApplication(token=keys[2]) 
+        return client
 
     def authorize(self):
+        # Needs some cleaning
         try:
             config = configparser.ConfigParser()
-            config.read(CONFIGDIR + '/.rssLinkedin')
-            self.CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY") 
-            self.CONSUMER_SECRET = config.get("Linkedin", "CONSUMER_SECRET") 
+            configLinkedin = CONFIGDIR + '/.rssLinkedin'
+            config.read(configLinkedin)
+            keys = self.getKeys(config)
+            self.CONSUMER_KEY = keys[0] 
+            self.CONSUMER_SECRET = keys[1]
+            self.state = config.get("Linkedin", 'state') 
 
-            import requests
             payload = {'response_type':'code',
                     'client_id': self.CONSUMER_KEY,
                     'client_secret': self.CONSUMER_SECRET,
                     'redirect_uri': 'http://localhost:8080/code',
-                    'state':'33313134',
+                    'state':self.state,
                     'scope': 'r_liteprofile r_emailaddress w_member_social' }
             print('https://www.linkedin.com/oauth/v2/authorization?'
-                    + urllib.parse.urlencode(payload))
+                    + urllib.parse.urlencode(payload)) 
 
-            access_token = input("Copy and paste the url in a browser and write here the access token ")
-
+            resUrl = input("Copy and paste the url in a browser and write here the access token ") 
+            splitUrl = urllib.parse.urlsplit(resUrl) 
+            result = urllib.parse.parse_qsl(splitUrl.query)
+            access_token = result[0][1] 
             url = 'https://www.linkedin.com/oauth/v2/accessToken'
             payload = {'grant_type':'authorization_code',
                     'code':access_token,
                     'redirect_uri':'http://localhost:8080/code',
                     'client_id': self.CONSUMER_KEY,
                     'client_secret': self.CONSUMER_SECRET}
+
             res = requests.post(url, data=payload)
             print(res.text)
+            config.set("Linkedin", 'ACCESS_TOKEN', json.loads(res.text)['access_token'])
+            shutil.copyfile(configLinkedin, '{}.bak'.format(configLinkedin))
+            with open(configLinkedin, 'w') as configfile:
+               config.write(configfile)
+
             sys.exit()
         except:
-            print("Some problem")
- 
+            print("Some problem") 
 
-    def getClient(self):
-        return None
- 
-    def setPosts(self):
-        logging.info("  Setting posts")
+    def setApiPosts(self):
         urn = self.URN
         author = f"urn:li:person:{urn}"        
-        print(author,type(author))
         author = urllib.parse.quote(author)
-        #url = 'https://api.linkedin.com/v2/originalArticles'#.format('{8822}')  
-        #print(author)
-        url = 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List({})&sortBy=LAST_MODIFIED'.format(author)
+        posts = []
+        #posts =  self.getClient().get_posts(urn=self.URN)
+        print(posts)
+        #url = 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List({})&sortBy=LAST_MODIFIED'.format(author)
 
-        print(url)
-        print(author)
-        access_token = self.ln.authentication.token.access_token
-        headers = {'X-Restli-Protocol-Version': '2.0.0',
-           'Content-Type': 'application/json',
-           'Authorization': f'Bearer {access_token}'}
+        #access_token = self.client.authentication.token.access_token
+        #headers = {'X-Restli-Protocol-Version': '2.0.0',
+        #   'Content-Type': 'application/json',
+        #   'Authorization': f'Bearer {access_token}'}
 
-        # b'{"serviceErrorCode":100,"message":"Not enough permissions to access: GET-authors /ugcPosts","status":403}'
-        res = requests.get(url,headers=headers,data={'q':author})
-        self.posts = res
+        #posts = requests.get(url,headers=headers,data={'q':author})
+        print(posts)
+        return posts
 
-    def publishPost(self, post, link, comment):
+    def processReply(self, reply):
+        logging.info(f"Res {reply}")
+        if isinstance(reply, bytes):
+            res = json.loads(reply)
+        else:
+            res = reply
+        if (('message' in res) and ('expired' in res['message'])):
+            reply = f"Fail! {self.service} token expired"
+        if (('message' in res) and ('duplicate' in res['message'])):
+            reply = f"Fail! {self.service} Status is a duplicate."
+        elif ('message' in res):
+            reply = res['message']
+        else:
+            reply = res
+        logging.info(f"Res: {reply}")
 
-        res = self.ln.submit_share(comment=comment, title=post,description=None,
-                submitted_url=link, submitted_image_url=None, 
-                urn=self.URN, visibility_code='anyone')
-        logging.info("    Reply %s"%str(res))
+        return reply
 
-        return res
-
-        # Based on https://github.com/gutsytechster/linkedin-post
-        access_token = self.ACCESS_TOKEN
-        urn = self.URN
-
-        author = f"urn:li:person:{urn}"
-
-        headers = {'X-Restli-Protocol-Version': '2.0.0',
-           'Content-Type': 'application/json',
-           'Authorization': f'Bearer {access_token}'}
-
-        api_url_base = 'https://api.linkedin.com/v2/'
-        api_url = f'{api_url_base}ugcPosts'
-    
-        logging.info("    Publishing in LinkedIn...")
-        if comment == None:
-            comment = ''
-        postC = comment + " " + post + " " + link
-        h = HTMLParser()
-        postC = h.unescape(post)
+    def publishApiPost(self, postData):
+        post, link, comment, plus = postData
+        logging.info(f"publishApi ")
         try:
-            logging.info("    Publishing in Linkedin: %s" % post)
-            if link: 
-                post_data = {
-                    "author": author,
-                    "lifecycleState": "PUBLISHED",
-                    "specificContent": {
-                        "com.linkedin.ugc.ShareContent": {
-                            "shareCommentary": {
-                                "text": comment
-                            },
-                            "shareMediaCategory": "ARTICLE",
-                            "media": [
-                                { "status": "READY",
-                                    #"description": {
-                                    #    "text": "El mundo es imperfecto"
-                                    #    },
-                                    "originalUrl": link,
-                                    "title": {
-                                        "text": post
-                                    }
-                               }
-                            ]
-                        },
-                    },
-                    "visibility": {
-                        "com.linkedin.ugc.MemberNetworkVisibility": "CONNECTIONS"
-                    },
-                }
-            else: 
-                post_data = {
-                     "author": author,
-                     "lifecycleState": "PUBLISHED",
-                     "specificContent": {
-                         "com.linkedin.ugc.ShareContent": {
-                             "shareCommentary": {
-                                 "text": post
-                             },
-                             "shareMediaCategory": "NONE"
-                         },
-                     },
-                     "visibility": {
-                         "com.linkedin.ugc.MemberNetworkVisibility": "CONNECTIONS"
-                     },
-                }
-
-            res = requests.post(api_url, headers=headers, json=post_data)
-            logging.info("Res: %s" % res)
-            if res.status_code == 201: 
-                return("Success ") 
-            else: 
-                return(res.content)
-        except:        
-            return(self.report('LinkedIn', post, link, sys.exc_info()))
+            res = self.getClient().submit_share(comment=comment, title=post,
+                description=None, submitted_url=link, submitted_image_url=None, 
+                urn=self.URN, visibility_code='anyone')
+        except:
+            logging.info(f"Exception {sys.exc_info()}")
+            res = self.report('Linkedin', post, link, sys.exc_info())
+        return res
+ 
+    def deleteApiPosts(self, idPost): 
+        result = self.getClient().delete_post(idPost,urn=self.URN)
+        logging.info(f"Res: {result}")
+        return(result)
 
     def getPostTitle(self, post):
+        # Not  developed
         return post
 
 
@@ -194,21 +137,31 @@ def main():
     logging.basicConfig(stream=sys.stdout, 
             level=logging.INFO, 
             format='%(asctime)s %(message)s')
+
     import moduleLinkedin
 
     ln = moduleLinkedin.moduleLinkedin()
 
     ln.setClient('fernand0')
-    if False: 
+    try:
+        print(ln.getClient().get_profile())
+    except: 
         ln.authorize()
 
 
-    print(ln.ln.get_profile())
+    print("ll",ln.publishPost("A ver otro", "https://www.linkedin.com/in/fernand0/",''))
+    #sys.exit()
+    # print(ln.deleteApiPosts('6764243697006727168'))
+    sys.exit()
 
-    #print("Testing posts")
-    #ln.setPosts()
-    #for post in ln.getPosts():
-    #    print(post)
+    print("Testing posts")
+    ln.setPostsType('posts')
+    ln.setPosts()
+    for post in ln.getPosts():
+        print(post)
+
+        
+    sys.exit()
 
     import moduleSlack
     slack = moduleSlack.moduleSlack()

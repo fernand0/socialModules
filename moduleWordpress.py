@@ -16,7 +16,7 @@ class moduleWordpress(Content,Queue):
         super().__init__()
         self.user = None
         self.wp = None
-        self.service = None
+        self.service = 'Wordpress'
         self.tags = None
         self.oauth_base='https://public-api.wordpress.com/oauth2/authorize?'
         #self.api_auth='authorize'
@@ -28,33 +28,55 @@ class moduleWordpress(Content,Queue):
         self.api_posts='sites/{}/posts'
         self.api_tags='sites/{}/tags'
         self.api_posts_search='?search={}'
+        self.my_site=None
+        self.headers=None
+        self.access_token=None
 
-    def setClient(self, user):
-        logging.info(f"     Connecting Wordpress {user}")
-        self.service = 'Wordpress'
-        if isinstance(user, tuple):
-            user = user[1][1]
-        try:
-            config = configparser.RawConfigParser()
-            config.read(CONFIGDIR + '/.rssWordpress')
-
-            self.user = user
-            try: 
-                self.access_token =  config.get(user, "access_token")
-            except:
-                logging.warning("Access key does not exist!")
-                logging.warning("Unexpected error:", sys.exc_info()[0])
+    def getKeys(self, config):
+        try: 
+            access_token =  config[self.user]["access_token"]
         except:
-                logging.warning("Config file does not exists")
-                logging.warning("Unexpected error:", sys.exc_info()[0])
+            logging.warning("Access key does not exist!")
+            logging.warning("Unexpected error:", sys.exc_info()[0])
+        return ((access_token, ))
 
+    def initApi(self, keys):
+        self.access_token =  keys[0]
         self.headers = {'Authorization':'Bearer '+self.access_token}
-        self.my_site="{}.wordpress.com".format(user)
+        self.my_site="{}.wordpress.com".format(self.user)
+
+    #def setClient(self, user):
+    #    logging.info(f"     Connecting Wordpress {user}")
+    #    if isinstance(user, str): 
+    #        self.user = user
+    #    elif isinstance(user[1], str):
+    #        self.user = user[1]
+    #    else:
+    #        self.user = user[1][1]
+
+    #    try:
+    #        config = configparser.RawConfigParser()
+    #        config.read(CONFIGDIR + '/.rssWordpress')
+
+    #        try: 
+    #            self.access_token =  config.get(self.user, "access_token")
+    #            logging.info(f"     Connected {user}")
+    #        except:
+    #            logging.info(f"     Not Connected {user}")
+    #            logging.warning("Access key does not exist!")
+    #            logging.warning("Unexpected error:", sys.exc_info()[0])
+    #    except:
+    #            logging.info(f"     Not Not Connected {user}")
+    #            logging.warning("Config file does not exists")
+    #            logging.warning("Unexpected error:", sys.exc_info()[0])
+
+    #    self.headers = {'Authorization':'Bearer '+self.access_token}
+    #    self.my_site="{}.wordpress.com".format(self.user)
 
     def authorize(self): 
         # Firstly the data of the blog 
         config = configparser.ConfigParser()
-        config.read(CONFIGDIR + '/.rssBlogs')
+        config.read(CONFIGDIR + '/.rssBlogs2')
         url = config.get('Blog8','url')
         name = urllib.parse.urlparse(url).netloc.split('.')[0] 
         # Second the authentication data of the blog
@@ -79,30 +101,50 @@ class moduleWordpress(Content,Queue):
         with open(configWordpress, 'w') as configfile:
             config.write(configfile)
 
-    def setPosts(self, morePosts=None): 
-        logging.info("  Setting posts")
-        self.posts = []
+    def setApiPosts(self, morePosts=False): 
+        posts = []
+        numPosts = 100
         try: 
-            #print(self.api_base + self.api_posts.format(self.my_site))
             posts = requests.get(self.api_base + 
-                    self.api_posts.format(self.my_site)+'?number=100', 
+                    self.api_posts.format(self.my_site)+f'?number={numPosts}', 
                     headers = self.headers).json()['posts']
-            self.posts = posts
             if morePosts: 
                 posts2 = requests.get(self.api_base + 
                     self.api_posts.format(self.my_site)+'?number=100&page=2', 
                     headers = self.headers).json()['posts']
-                self.post.append(posts2)
+                posts.append(posts2)
         except KeyError:
             logging.warning("KeyError probably API Key expired")
             logging.warning("Unexpected error:", sys.exc_info()[0])
             return(self.report('Wordpress API expired', '' , '', sys.exc_info()))
         except:
             return(self.report('Wordpress API', '' , '', sys.exc_info()))
-        return('OK')
+        return(posts)
+
+    #def setPosts(self, morePosts=None): 
+    #    logging.info("  Setting posts")
+    #    self.posts = []
+    #    try: 
+    #        #print(self.api_base + self.api_posts.format(self.my_site))
+    #        posts = requests.get(self.api_base + 
+    #                self.api_posts.format(self.my_site)+'?number=100', 
+    #                headers = self.headers).json()['posts']
+    #        self.posts = posts
+    #        if morePosts: 
+    #            posts2 = requests.get(self.api_base + 
+    #                self.api_posts.format(self.my_site)+'?number=100&page=2', 
+    #                headers = self.headers).json()['posts']
+    #            self.post.append(posts2)
+    #    except KeyError:
+    #        logging.warning("KeyError probably API Key expired")
+    #        logging.warning("Unexpected error:", sys.exc_info()[0])
+    #        return(self.report('Wordpress API expired', '' , '', sys.exc_info()))
+    #    except:
+    #        return(self.report('Wordpress API', '' , '', sys.exc_info()))
+    #    return('OK')
 
     def setTags(self): 
-        res = requests.get(self.api_base + self.api_tags.format(self.my_site)) 
+        res = requests.get(self.api_base + self.api_tags.format(self.my_site)+'?number=1000') 
         if res.ok:
             self.tags = json.loads(res.text)
 
@@ -110,6 +152,8 @@ class moduleWordpress(Content,Queue):
         return self.tags
 
     def checkTags(self, tags):
+        if isinstance(tags,dict):
+            tags = tags['tags']
         idTags = []
         newTags = []
         if not self.tags:
@@ -123,6 +167,7 @@ class moduleWordpress(Content,Queue):
                     headers = self.headers,
                     data = payload)
             reply = json.loads(res.text)
+
             if 'ID' in reply:
                 newTags.append(tag)
                 idTags.append(reply['ID'])
@@ -136,14 +181,55 @@ class moduleWordpress(Content,Queue):
                         
         return(idTags)
 
-    def publishPost(self, post, link='', comment='', tags=[]):
+    def processReply(self, reply): 
+        res = reply
+        logging.info("Res: %s" % res)
+        if res.ok: 
+            resJ = json.loads(res.text)
+            logging.debug("Res text: %s" % resJ)
+            logging.debug("Res slug: %s" % resJ['generated_slug'])
+            title = resJ['title']['raw']
+            res = "{} - \n https://{}/{}".format(title, self.my_site,
+                resJ['generated_slug'])
+        else: 
+            tres = type(res)
+            logging.info(f"Res: {res} type {tres}")
+            res = "Fail! Failed authentication."
+        return res
+
+    def publishApiPost(self, postData): 
+        if len(postData)>3:
+           tags = postData[3]
+           idTags = self.checkTags(tags)
+           logging.info("     Tags: {idTags}")
+           idTags = ','.join(str(v) for v in idTags) 
+        else: 
+           idTags = "" 
+        title = postData[0]
+        link = postData[1]
+        comment = postData[2]
+        payload = {"title":title,
+                 "content":comment, 
+                 "status":'publish',
+                 # One of: publish, future, draft, pending, private
+                 'tags':idTags}
+        res = requests.post(self.api_base2 
+                + self.api_posts.format(self.my_site), 
+                headers = self.headers, 
+                data = payload) 
+        return res
+
+    def publishPostt(self, post, link='', comment='', tags=[]):
         logging.debug("     Publishing in Wordpress...")
         title = post
         res = None
         try:
-            logging.info("     Publishing: %s" % post)
+            logging.info("     Publishing: %s %s" % (post,str(tags)))
+            print("     Publishing: %s %s" % (post,str(tags)))
             # The tags must be checked/added previously
             idTags = self.checkTags(tags)
+            logging.info("     Publishing: %s %s" % (post,str(idTags)))
+            print("     Publishing: %s %s" % (post,str(idTags)))
             # They must be in a comma separated string
             idTags = ','.join(str(v) for v in idTags)
             print("co",comment)
@@ -166,7 +252,7 @@ class moduleWordpress(Content,Queue):
                     resJ['generated_slug']))
             else: 
                 tres = type(res)
-                logginf.info(f"Res: {res} type {tres}")
+                logging.info(f"Res: {res} type {tres}")
                 print(f"Res: {res} type {tres}")
                 return("Fail!")
         except KeyError:
@@ -285,13 +371,16 @@ def main():
     logging.basicConfig(stream=sys.stdout, 
             level=logging.INFO, 
             format='%(asctime)s %(message)s')
+
     import moduleWordpress
 
     wp = moduleWordpress.moduleWordpress()
     wp.setClient('avecesunafoto')
+    wp.setPostsType('posts')
     res = wp.setPosts()
-    if res[:4] == 'Fail':
-       wp.authorize()
+    res = wp.getPosts()
+    if ((res == None) or (res[:4] == 'Fail')): 
+        wp.authorize()
 
     print("Testing tags")
     wp.setTags()
@@ -299,6 +388,7 @@ def main():
     #print(wp.checkTags(['test']))
 
     print("Testing posts")
+    wp.setPostsType('posts')
     wp.setPosts()
     for i,post in enumerate(wp.getPosts()):
         print("{}) {} {}".format(i, wp.getPostTitle(post), 
@@ -307,14 +397,13 @@ def main():
 
     sel = input('Select one ')
     pos =  int(sel)
-    post = wp.getPosts()[pos]
+    post = wp.getPost(pos)
     print("{}) {} {}".format(pos, wp.getPostTitle(post), 
             wp.getPostLink(post)))
-    wp.publishPost("prueba", '', "lala")
+    wp.publishPost(wp.getPostTitle(post), wp.getPostLink(post), '')
     sys.exit()
 
     wp.publishPost(post, '', title)
-
 
     #pos = wp.getLinkPosition('https://avecesunafoto.wordpress.com/2020/03/10/gamoncillo/')
     #img = wp.obtainPostData(pos)
@@ -327,7 +416,7 @@ def main():
     #    #input('next?')
 
     print("Testing posting")
-    print(title, post)
+    #print(title, post)
 
     sys.exit()
 
