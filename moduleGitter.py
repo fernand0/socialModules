@@ -88,6 +88,9 @@ class moduleGitter(Content,Queue):
         else:
             return -1
 
+    def getPostContentHtml(self, post):
+        return post.get('html', '')
+
     def getPostTitle(self, post):
         if 'text' in post:
             text = post['text']

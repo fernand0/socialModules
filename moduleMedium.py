@@ -22,14 +22,19 @@ class moduleMedium(Content,Queue):
         try:
             config = configparser.ConfigParser() 
             config.read(CONFIGDIR + '/.rssMedium') 
-            
             application_id = config.get("appKeys","ClientID")
             application_secret = config.get("appKeys","ClientSecret")
+            
             
             try: 
                 client = Client(application_id = application_id, 
                         application_secret = application_secret)
-                client.access_token = config.get("appKeys","access_token") 
+
+                try:
+                    client.access_token = config.get(channel,"access_token")
+                except:
+                    client.access_token = config.get("appKeys","access_token")
+                # client.access_token = config.get("appKeys","access_token") 
                 # Get profile details of the user identified by the access
                 # token.  
                 userRaw = client.get_current_user()
@@ -73,6 +78,7 @@ class moduleMedium(Content,Queue):
 
         title = post
         content = comment
+        print(content)
         links = ""
 
         from html.parser import HTMLParser
@@ -90,6 +96,32 @@ class moduleMedium(Content,Queue):
         except:
             return(self.report('Medium', post, link, sys.exc_info()))
 
+    def publishApiImage(self, postData): 
+        logging.debug(f"{postData} Len: {len(postData)}")
+        client = self.client
+        if len(postData) == 3:
+            post, imageName, more = postData
+            if imageName:
+                # with open(imageName, "rb") as imagefile:
+                #         imagedata = imagefile.read()
+    
+                try:
+                    myImage = client.upload_image(imageName, 'image/png')
+                    myImageUrl =  myImage['url']
+                    res = self.publishPost(post, '', 
+                           f"{more['content']}\n<br/>\n"
+                           f'<figure>\n<img src="{myImageUrl}">\n</figure>') 
+                    print(res)
+                except:
+                    res = self.report('Medium', post, imageName, sys.exc_info())
+            else:
+                logging.info(f"No image available")
+                res = "Fail! No image available"
+        else:
+            res = "Fail! Not published, not enough arguments"
+            logging.debug(res)
+        return res
+
     def getPostTitle(self, post):
         if 'title' in post:
             return(post['title'].replace('\n', ' '))
@@ -100,6 +132,18 @@ class moduleMedium(Content,Queue):
 def main():
     import moduleMedium
 
+
+    testingBotElectrico = True
+    if testingBotElectrico:
+        url = 'https://medium.com/@botElectrico'
+        tel = moduleMedium.moduleMedium()
+
+        tel.setClient('botElectrico')
+        tel.publishImage("Prueba",
+                '/tmp/2021-11-01_image.png',
+                content = "Evolución precio para el día 2021-11-01")
+
+    return
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs')
 

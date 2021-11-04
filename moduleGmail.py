@@ -361,6 +361,14 @@ class moduleGmail(Content,Queue):
             del message[header]
             message[header]= value
 
+    def getPosNextPost(self):
+        # gmail always shows the first item ?
+        # Some standard contition?
+
+        posLast = 1
+
+        return posLast
+
     def getPostLinksWithText(self, post):
         message = self.getMessageId(self.getPostId(post))
         messageClean = message.replace('\\r\\n',' ')
@@ -401,7 +409,10 @@ class moduleGmail(Content,Queue):
     def getPostLink(self, post):
         # fromP = self.getHeader(post, 'From')
         # snippet = self.getHeader(post, 'snippet')
-        theLink = self.getPostLinks(post)[0]
+        if post:
+            theLink = self.getPostLinks(post)[0]
+        else:
+            theLink = ""
 
         # result = f"From: {fromP}\nText: {snipP}"
         result = theLink

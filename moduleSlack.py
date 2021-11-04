@@ -123,11 +123,12 @@ class moduleSlack(Content, Queue):
     #     logging.info(" Set posts")
 
     def processReply(self, reply):
-        if self.getAttribute(reply, "ok"):
-            res = self.getAttribute(reply, "ts")
-        else:
-            res = "Fail!"
-        return res
+        return reply.get('ok','Fail!')
+        #if self.getAttribute(reply, "ok"):
+        #    res = self.getAttribute(reply, "ts")
+        #else:
+        #    res = "Fail!"
+        #return res
 
     def publishApiPost(self, postData):
         post, link, comment, plus = postData
@@ -177,8 +178,7 @@ class moduleSlack(Content, Queue):
     #     return result
 
     def getPostId(self, post):
-        idPost = self.getAttribute(post, "ts")
-        return idPost
+        return (post.get('ts',''))
 
     def getPostTitle(self, post):
         if ("attachments" in post) and ("title" in post["attachments"][0]):
@@ -205,6 +205,12 @@ class moduleSlack(Content, Queue):
             f"{self.getChannel()}/p{self.getPostId(post)}"
         )
 
+    def getPostContentHtml(self, post):
+        return post.get('text', '')
+
+    def getPostContentLink(self, post):
+        return self.getPostLink(post)
+
     def getPostLink(self, post):
         if "attachments" in post:
             link = post["attachments"][0]["original_url"]
@@ -218,6 +224,10 @@ class moduleSlack(Content, Queue):
                 pos = text.rfind("<")
                 link = text[pos + 1 : -1]
         return link
+
+
+    def getPostImage(self, post):
+        return post.get('image_url', '')
 
     def publish(self, j):
         logging.info("Publishing %d" % j)
@@ -546,17 +556,21 @@ def main():
     print("Testing title and link")
 
     for i, post in enumerate(site.getPosts()):
+        print(f"Post: {post}")
         title = site.getPostTitle(post)
         link = site.getPostLink(post)
         url = site.getPostUrl(post)
         theId = site.getPostId(post)
+        summary = site.getPostContentHtml(post)
         print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
+        print(f"{i}) Content: {summary}\n")
 
     testingDelete = False
     if testingDelete:
         # print("Testing posting and deleting")
         res = site.publishPost(
-            "Prueba borrando 7", "http://elmundoesimperfecto.com/", ""
+            "FOSDEM 2022 - FOSDEM 2022 will be online", 
+            "https://fosdem.org/2022/news/2021-10-22-fosdem-online-2022/", ""
         )
         print("res", res)
         # idPost = res
@@ -572,6 +586,7 @@ def main():
         url = site.getPostUrl(post)
         print(post)
         print("Title: {}\nTuit: {}\nLink: {}\n".format(title, link, url))
+        print(f"Content: {site.getPostContentHtml(post)}\n")
         input("Delete?")
         site.delete(i)
     sys.exit()

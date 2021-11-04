@@ -104,9 +104,9 @@ class moduleMastodon(Content, Queue):
 
     def getPostTitle(self, post):
         result = ''
-        import pprint
-        print(f"post: {post}")
-        pprint.pprint(post)
+        # import pprint
+        # print(f"post: {post}")
+        # pprint.pprint(post)
         if 'card' in post and post['card'] and 'title' in post['card']:
             result = self.getAttribute(post['card'], 'title')
         elif 'content' in post:

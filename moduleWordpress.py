@@ -217,6 +217,7 @@ class moduleWordpress(Content,Queue):
                 + self.api_posts.format(self.my_site), 
                 headers = self.headers, 
                 data = payload) 
+        print(f"Resss: {res}")
         return res
 
     def publishPostt(self, post, link='', comment='', tags=[]):
@@ -378,10 +379,11 @@ def main():
     wp.setClient('avecesunafoto')
     wp.setPostsType('posts')
     res = wp.setPosts()
-    res = wp.getPosts()
     if ((res == None) or (res[:4] == 'Fail')): 
         wp.authorize()
+    res = wp.getPosts()
 
+    return
     print("Testing tags")
     wp.setTags()
     print(wp.getTags())

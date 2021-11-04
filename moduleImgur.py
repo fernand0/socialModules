@@ -335,6 +335,28 @@ def main():
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs')
 
+    testingDrafts = True
+    if testingDrafts:
+        img = moduleImgur.moduleImgur()
+        acc = "Blog20"
+        url = config.get(acc, 'url')
+        img.setUrl(url)
+        name = url.split('/')[-1]
+        img.setClient(name)
+        img.setPostsType(config.get(acc, 'posts'))
+        img.setPosts()
+        lastLink = 'https://imgur.com/a/q5zyNtS'
+        img.lastLinkPublished = lastLink
+        i = img.getLinkPosition(lastLink)
+        num = 1
+        listPosts = img.getNumPostsData(num, i, lastLink)
+        print(listPosts)
+        listPosts2 = img.getNumNextPost(1)
+        print(listPosts2)
+        print(f"{img.getPostTitle(img.getNextPost()[0])}")
+
+    
+    return 
     accounts = ["Blog21"] #, "Blog20"]
     for acc in accounts:
         print("Account: {}".format(acc))

@@ -382,7 +382,7 @@ def main():
         # print(title)
         # print(link)
         for action in ruls[rul]:
-            print(f"Action: {action}")
+            # print(f"Action: {action}")
             if action[0] == 'cache':
                 apiDst = getApi('cache', (action[1], (action[2], action[3]))) 
                 logging.info(apiDst)

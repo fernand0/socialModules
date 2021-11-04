@@ -185,6 +185,17 @@ class moduleCache(Content,Queue):
         link = listPosts[-1][1]
         return(link)
 
+    def updatePosts(self, src):
+        fileNameQ = f"{src.fileNameBase(self)}.queue"
+        with open(fileNameQ, 'wb') as f: 
+            posts = self.getPosts2()
+            pickle.dump(posts, f)
+
+        logging.debug("Writing in %s" % fileNameQ)
+        logging.debug("Posts: {}".format(str(self.getPosts())))
+
+        return 'Ok'
+
     def updatePostsCache(self):
         fileNameQ = fileNamePath(self.url, 
                 (self.service, self.user)) + ".queue"
@@ -232,6 +243,12 @@ class moduleCache(Content,Queue):
             return (link)
         return(None)
 
+    def getPostContentHtml(self, post):
+        content = ''
+        if post:
+            content = post[4]
+        return content
+
     def editApiLink(self, post, newLink=''):
         oldLink = self.getPostLink(post)
         idPost = self.getLinkPosition(oldLink)
@@ -266,6 +283,15 @@ class moduleCache(Content,Queue):
             post = (textS[0], 'http'+textS[1], '','','','','','','','')
             self.assignPosts(posts[:j] + [ post ] + posts[j:])
             self.updatePostsCache()
+    
+    def publishApiPost(self, postData): 
+        post, link, comment, plus = postData
+        print(f"----> {post}, {link}, {comment}, {plus}")
+        posts = self.getPosts2()
+        for post in plus['more'][1]:
+            posts.append(post)
+        self.assignPosts(posts)
+        self.updatePosts(plus['more'][0])
 
     def publish(self, j):
         logging.info(">>>Publishing %d"% j)

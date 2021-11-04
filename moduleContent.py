@@ -100,13 +100,14 @@ class Content:
             return ""
 
     def getAttribute(self, post, selector):
-        result = ""
-        try:
-            result = post[selector]
-        except:
-            result = ""
+        return post.get(selector, '')
+        # result = ""
+        # try:
+        #     result = post[selector]
+        # except:
+        #     result = ""
 
-        return result
+        # return result
 
     def setPosts(self):
         nick = self.getNick()
@@ -157,7 +158,7 @@ class Content:
         nameDst = type(dst).__name__
         if 'module' in nameDst:
             nameDst = nameDst[len('module'):]
-        print(f"type s -> {nameSrc} {nameDst}")
+        logMsg(f"type s -> {nameSrc} {nameDst}", 2, 0)
 
         if hasattr(src, 'getPostsType'):
             typeSrc = src.getPostsType()
@@ -188,30 +189,7 @@ class Content:
                 f.write(link[0])
 
     def getLastLinkNew(self, dst):        
-        fileName = f"{self.fileNameBase(dst)}.last"
-        print(f"lastLinkNew: {fileName}")
-        if not os.path.isdir(os.path.dirname(fileName)):
-            sys.exit("No directory {} exists".format(os.path.dirname(fileName)))
-        if os.path.isfile(fileName):
-            with open(fileName, "rb") as f: 
-                linkLast = f.read().decode().split()  # Last published
-        else:
-            # File does not exist, we need to create it.
-            # Should we create it here? It is a reading function!!
-            with open(fileName, "wb") as f:
-                logging.warning("File %s does not exist. Creating it."
-                        % fileName) 
-                linkLast = ''  
-                # None published, or non-existent file
-
-        lastLink = ''
-        if len(linkLast) == 1: 
-            logging.info(f"linkLastNew len 1 {linkLast}")
-            lastLink = linkLast[0]
-        else:
-            lastLink = linkLast
- 
-        return lastLink
+        return self.lastLinkPublished
 
     def getLastLink(self):        
         url = self.getUrl()
@@ -224,6 +202,7 @@ class Content:
         logging.debug(f"Servicel: {service}")
         logging.debug(f"fileName: {fileName}")
         if not os.path.isdir(os.path.dirname(fileName)):
+            return ""
             sys.exit("No directory {} exists".format(os.path.dirname(fileName)))
         if service in ['html']:
             linkLast = ''
@@ -247,6 +226,29 @@ class Content:
         self.lastLink = lastLink
         return lastLink
 
+    def setLastLink(self, dst = None):
+        if dst:
+            fileName = f"{self.fileNameBase(dst)}.last"
+        else:
+            url = self.getUrl()
+            service = self.service.lower()
+            nick = self.getUser()
+            fileName = (f"{fileNamePath(url, (service, nick))}.last")
+
+        lastTime = ''
+        linkLast = ''  
+        if not os.path.isdir(os.path.dirname(fileName)):
+            logMsg("No directory {} exists".format(os.path.dirname(fileName)),
+                    1, 1)
+        if os.path.isfile(fileName):
+            with open(fileName, "rb") as f: 
+                linkLast = f.read().decode().split()  # Last published
+            lastTime = os.path.getctime(fileName)
+
+        self.lastLinkPublished = linkLast
+        self.lastTimePublished = lastTime
+
+
     def getLastTime(self, other = None):
         lastTime = 0.0
         myLastLink = ""
@@ -265,7 +267,6 @@ class Content:
                 service = self.service.lower()
                 nick = self.getUser()
                 fN = (f"{fileNamePath(url, (service, nick))}.last")
-                print(f"oldfFN: {fN}")
                 lastTime = os.path.getctime(fN)
                 myLastLink = self.getLastLink()
         except:
@@ -276,7 +277,7 @@ class Content:
         self.lastLinkPublished = myLastLink
         self.lastTimePublished = lastTime
 
-        print(f"myLastLink: {myLastLink} {lastTime}")
+        logMsg(f"myLastLink: {myLastLink} {lastTime}",2 , 0)
         return myLastLink, lastTime
 
     def setNumPosts(self, numPosts):
@@ -361,7 +362,18 @@ class Content:
         self.socialNetworks[socialNetwork[0]] = socialNetwork[1]
 
     def assignPosts(self, posts):
-        self.posts = posts
+        self.posts = []
+        self.posts2 = []
+        for post in posts:
+            self.posts.append(post)
+            self.posts2.append(post)
+
+    def getPosts2(self):
+        posts = None
+        if hasattr(self, 'posts2'):
+            posts = self.posts2
+        return posts
+
 
     def getPosts(self):
         posts = None
@@ -392,30 +404,40 @@ class Content:
                 else:
                     posLast = len(posts)
 
-
         return posLast
 
-    def getNumNextPost(self):
+    def getNumNextPost(self, num):
         listPosts = []
         posLast = self.getPosNextPost()
         i = posLast
+        print(f"iiii: {i}")
 
         for j in range(num, 0, -1): 
             i = i - 1
             if i < 0:
                 break
-            post = self.getPost(i - 1)
-            if post:
-                listPosts.append(post)
+            post = self.getPost(i)
+            postData = (
+                self.getPostTitle(post),
+                self.getPostLink(post),
+                self.getPostContentLink(post),
+                self.getPostImage(post),
+                self.getPostContentHtml(post),
+                self.getPostContent(post),
+                '',
+                '',
+                ''
+                )
+            if postData:
+                listPosts.append(postData)
 
-        return [ listPosts ]
-
+        return listPosts
 
     def getNextPost(self):
         posLast = self.getPosNextPost()
         post = self.getPost(posLast - 1)
 
-        return post
+        return [ post ]
 
     def getTitle(self, i):
         title = ""
@@ -498,16 +520,22 @@ class Content:
             return self.report(self.service, post, image, sys.exc_info())
        
     def publishPost(self, post, link="", comment="", **more):
-        logging.info(f"    Publishing in {self.service}: {post}")
-        logging.debug(f"    Publishing in {self.service}: {link}")
-        logging.debug(f"    Publishing in {self.service}: {comment}")
+        print("publishPost")
+        print(f"    Publishing in {self.service}: {post}")
+        print(f"    Publishing in {self.service}: {link}")
+        print(f"    Publishing in {self.service}: {comment}")
+        print(f"    Publishing in {self.service}: {more}")
+        if 'tags' in more:
+            print(f"    Publishing in {self.service}: {type(more['tags'])}")
+
         reply = 'Fail!'
         try:
             if (hasattr(self, 'getPostsType') 
                     and (self.getPostsType())
                     and (hasattr(self, 
                         f"publishApi{self.getPostsType().capitalize()}"))): 
-                method = getattr(self, f"publishApi{self.getPostsType().capitalize()}")
+                method = getattr(self, 
+                        f"publishApi{self.getPostsType().capitalize()}")
                 reply = method((post, link, comment, more))
             else:
                 reply = self.publishApiPost((post, link, comment, more))
@@ -613,7 +641,15 @@ class Content:
         self.lastLinkPublished[socialNetwork] = (lastLink, lastTime)
 
     def getLastLinkPublished(self):
-        return self.lastLinkPublished
+        if self.lastLinkPublished and (len(self.lastLinkPublished) == 1): 
+            logging.info(f"linkLast len 1 {self.lastLinkPublished}")
+            lastLink = self.lastLinkPublished[0]
+        else:
+            lastLink = self.lastLinkPublished
+        return lastLink
+
+    def getLastTimePublished(self):
+        return self.lastTimePublished
 
     def getLinksToAvoid(self):
         return self.linksToAvoid
@@ -771,8 +807,11 @@ class Content:
             return imageLink
 
     def extractPostLinks(self, post, linksToAvoid=""):
-        soup = BeautifulSoup(self.getPostContentHtml(post), 'lxml')
-        return self.extractLinks(soup, linksToAvoid)
+        links = []
+        if post:
+            soup = BeautifulSoup(self.getPostContentHtml(post), 'lxml')
+            links = self.extractLinks(soup, linksToAvoid)
+        return  links
 
     def extractLinks(self, soup, linksToAvoid=""):
         # This should go to the moduleHtml
@@ -865,6 +904,9 @@ class Content:
                         tags.append(tag)
 
         return tags
+
+    def getPostImage(self, post):
+        return ""
 
     def getPostImagesTags(self, post):
         res = self.extractImages(post)
