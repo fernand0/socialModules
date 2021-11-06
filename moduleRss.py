@@ -91,7 +91,6 @@ class moduleRss(Content, Queue):
         content = self.getPostContentHtml(post)
         soup = BeautifulSoup(content, 'lxml')
         link = soup.findAll('img')
-        print(f"Imagesss: {link}")
         return link
 
     def getPostImage(self, post):
@@ -104,8 +103,13 @@ class moduleRss(Content, Queue):
 
     def getPostImagesCode(self, post):
         images = self.getPostImages(post)
+        code = ""
         print(f"Images: {images}")
-        return images
+        for img in images:
+            code = (f"{code}<br />\n"
+                    f"{img['alt']}<br />\n"
+                    f"{img}")
+        return code
 
     def getPostContent(self, post):
         summary = self.getPostContentHtml(post)

@@ -201,7 +201,7 @@ class moduleRules:
             i = 1 
             num = 1
             listPosts = apiSrc.getNumPostsData(num, i, lastLink)
-            apiSrc.lastLinkPublished = 'https://avecesunafoto.wordpress.com/2021/11/04/en-el-museo-del-ferrocarril-de-azpeitia/'
+            apiSrc.lastLinkPublished = apiSrc.getPostLink(apiSrc.getPosts()[0])
             listPosts2 = apiSrc.getNumNextPost(num)
             if listPosts2:
                 if (listPosts == listPosts2):
