@@ -205,8 +205,15 @@ class moduleSlack(Content, Queue):
             f"{self.getChannel()}/p{self.getPostId(post)}"
         )
 
+    def getPostContent(self, post):
+        return self.getPostContentHtml(post)
+
     def getPostContentHtml(self, post):
-        return post.get('text', '')
+        if "attachments" in post:
+            text = post.get("attachments", [{}])[0].get('text', '')
+        else:
+            text = post.get('text', '')
+        return text
 
     def getPostContentLink(self, post):
         return self.getPostLink(post)
@@ -225,9 +232,8 @@ class moduleSlack(Content, Queue):
                 link = text[pos + 1 : -1]
         return link
 
-
     def getPostImage(self, post):
-        return post.get('image_url', '')
+        return post.get('attachments',[{}])[0].get('image_url', '')
 
     def publish(self, j):
         logging.info("Publishing %d" % j)
@@ -313,14 +319,14 @@ class moduleSlack(Content, Queue):
             theContent,
             theLinks,
             comment,
-        ) = (None, None, None, None, None, None, None, None, None, None)
+        ) = (None, None, None, None, None, None, None, None, [], None)
 
         if i < len(self.getPosts()):
             post = self.getPost(i)
             theTitle = self.getPostTitle(post)
             theLink = self.getPostLinkl(post)
 
-            theLinks = None
+            theLinks = []
             content = None
             theContent = None
             firstLink = theLink
@@ -424,7 +430,7 @@ class moduleSlack(Content, Queue):
         if "image_url" in post:
             theImage = post["image_url"]
         else:
-            theImage = None
+            theImage = ''
         theLinks = theSummaryLinks
         theSummaryLinks = theContent + theLinks
 
@@ -450,9 +456,9 @@ class moduleSlack(Content, Queue):
             theImage,
             theSummary,
             content,
-            theSummaryLinks,
-            theContent,
-            theLinks,
+            #theSummaryLinks,
+            '',
+            [],
             comment,
         )
 
@@ -562,8 +568,9 @@ def main():
         url = site.getPostUrl(post)
         theId = site.getPostId(post)
         summary = site.getPostContentHtml(post)
+        image = site.getPostImage(post)
         print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
-        print(f"{i}) Content: {summary}\n")
+        print(f"{i}) Content: {summary} {image}\n")
 
     testingDelete = False
     if testingDelete:

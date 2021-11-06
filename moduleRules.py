@@ -66,7 +66,7 @@ class moduleRules:
         msgLog = (f"{indent}socialNetwork: {socialNetwork}")
         logMsg(msgLog, 2, 0)
         msgLog = (f"{indent}Action: {action}")
-        logMsg(msgLog, 1, 1)
+        logMsg(msgLog, 1, 0)
         msgLog = (f"{indent}More: Dst {more}")
         logMsg(msgLog, 1, 0)
 
@@ -133,6 +133,8 @@ class moduleRules:
         indent = f"{indent} "
 
         num = apiDst.getMax()
+        msgLog = (f"{indent}num: {num}")
+        logMsg(msgLog, 1, 1)
 
         apiSrc.setLastLink(apiDst)
 
@@ -171,8 +173,7 @@ class moduleRules:
         indent = f"{indent}  "
         nextPost = (f"{indent}getNextPost: {apiSrc.getNextPost()}")
         msgLog = nextPost
-        logMsg(msgLog, 2, 1)
-        #return
+        logMsg(msgLog, 2, 0)
 
 
         msgLog = (f"{indent}Last time: {myTime}")
@@ -194,8 +195,29 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
 
         listPosts = []
+        
+        testDiffer = False
+        if testDiffer:
+            i = 1 
+            num = 1
+            listPosts = apiSrc.getNumPostsData(num, i, lastLink)
+            apiSrc.lastLinkPublished = 'https://avecesunafoto.wordpress.com/2021/11/04/en-el-museo-del-ferrocarril-de-azpeitia/'
+            listPosts2 = apiSrc.getNumNextPost(num)
+            if listPosts2:
+                if (listPosts == listPosts2):
+                    print("{indent}Equal listPosts")
+                else:
+                    print(f"Differ listPosts (len {len(listPosts[0])}, "
+                          f"{len(listPosts2[0])}:\n")
+                    for i, post in enumerate(listPosts):
+                        for j, line in enumerate(listPosts[i]):
+                            print(f"{j}) {listPosts[i][j]}\n"
+                                  f"{j}) {listPosts2[i][j]}")
+            else:
+                print("f{indent}No listPosts2")
 
-        # return ("ok")
+            return
+ 
         if num>0:
             diffTime = time.time() - lastTime
             msgLog = (f"{indent}Src time: {apiSrc.getTime()} "
@@ -250,13 +272,13 @@ class moduleRules:
             if listPosts and listPosts[0][1]: 
                 if listPosts2:
                     if (listPosts == listPosts2):
-                        print("Equal listPosts")
+                        print("{indent}Equal listPosts")
                     else:
-                        print(f"Differ listPosts:\n"
+                        print(f"{indent}Differ listPosts:\n"
                               f"{listPosts}\n"
                               f"{listPosts2}\n")
                 else:
-                    print("No listPosts2")
+                    print("{indent}No listPosts2")
                 msgLog = f"{indent}Would schedule in {msgAction} ..."
                 logMsg(msgLog, 1, 1)
                 indent = f"{indent} "
@@ -918,6 +940,7 @@ class moduleRules:
                               f" {action[3]}@{action[2]} ({action[1]})")
                     textEnd = f"{textEnd}\n{msgLog}"
                     logMsg(msgLog, 1, 1)
+                    nameA = f"{name} ({action[1]})"
                     if actionMsg == "Skip.":
                         continue
                     timeSlots = args.timeSlots

@@ -100,7 +100,11 @@ class Content:
             return ""
 
     def getAttribute(self, post, selector):
-        return post.get(selector, '')
+        try:
+            return post.get(selector, '')
+        except:
+            print(f"Attribute: {post}")
+            return ""
         # result = ""
         # try:
         #     result = post[selector]
@@ -388,6 +392,9 @@ class Content:
             post = posts[i]
         return post
 
+    def getPostImages(self, post):
+        return self.extractImages(post)
+
     def getPosNextPost(self):
         posts = self.getPosts()
         posLast = -1
@@ -410,7 +417,6 @@ class Content:
         listPosts = []
         posLast = self.getPosNextPost()
         i = posLast
-        print(f"iiii: {i}")
 
         for j in range(num, 0, -1): 
             i = i - 1
@@ -418,15 +424,15 @@ class Content:
                 break
             post = self.getPost(i)
             postData = (
-                self.getPostTitle(post),
-                self.getPostLink(post),
-                self.getPostContentLink(post),
-                self.getPostImage(post),
-                self.getPostContentHtml(post),
-                self.getPostContent(post),
-                '',
-                '',
-                ''
+                self.getPostTitle(post),            #1
+                self.getPostLink(post),             #2
+                self.getPostContentLink(post),      #3
+                self.getPostImage(post),            #4
+                self.getPostContentHtml(post),      #5
+                self.getPostContent(post),          #6
+                '',                                 #7
+                self.getPostImagesTags(post),       #8
+                self.getPostImagesCode(post)        #9
                 )
             if postData:
                 listPosts.append(postData)
@@ -913,6 +919,18 @@ class Content:
         tags = self.getTags(res)
         return tags
 
+    def getPostImagesTags(self, post):
+        res = self.getPostImages(post)
+        tags = []
+        if res: 
+            for iimg in res:
+                for tag in iimg[3]:
+                    if tag not in tags:
+                        tags.append(tag)
+
+        return tags
+
+
     def getImagesTags(self, i):
         res = self.getImages(i)
         tags = []
@@ -922,6 +940,82 @@ class Content:
                     tags.append(tag)
 
         return tags
+
+    def getPostImagesCode(self, post):
+        # Needs work
+        url = self.getPostLink(post)
+        res = self.getPostImages(post)
+        text = ""
+        if res:
+            for iimg in res:
+                print(iimg)
+                       
+                if iimg[2]:
+                    description = iimg[2]
+                else:
+                    description = ""
+
+                if description:
+                    import string
+
+                    if (iimg[1] and iimg[1].endswith(" ") 
+                            or iimg[1].endswith("\xa0")):
+                        # \xa0 is actually non-breaking space in Latin1 (ISO
+                        # 8859-1), also chr(160).
+                        # https://stackoverflow.com/questions/10993612/how-to-remove-xa0-from-string-in-python
+                        title = iimg[1][:-1]
+                    else:
+                        if iimg[1]:
+                            title = iimg[1]
+                        else:
+                            title = "No title"
+                    if iimg[0].endswith('mp4'):
+                        srcTxt = (f"<video width='640' height='360' controls "#"class='alignnone size-full "
+                                  #f"wp-image-3306'>
+                                  f'src="{iimg[0]}" '
+                                  f'type="video/mp4"></video>')
+                    else:
+                        srcTxt = (f"<img class='alignnone size-full "
+                                  f"wp-image-3306' src='{iimg[0]}' "
+                                  f"alt='{title} {description}' "
+                                  f"width='776' height='1035' />")
+ 
+                    if title[-1] in string.punctuation:
+                        text = (
+                            '{}\n<p><h4>{}</h4></p><p><a href="{}">'
+                            #'<img class="alignnone size-full '
+                            #'wp-image-3306" src="{}" 
+                            '{} </a></p>'.format( text, description, url, srcTxt)
+                            )
+                    else:
+                        text = (
+                            '{}\n<p><h4>{}</h4></p><p><a href="{}">'
+                            #'<img class="alignnone size-full '
+                            #'wp-image-3306" src="{}" 
+                            '{} /></a></p>'.format( text, description, url, srcTxt)
+                            )
+                else:
+                    title = iimg[1]
+                    if iimg[0].endswith('mp4'):
+                        srcTxt = (f"<video width='640' height='360' controls " #class='alignnone size-full "
+                                  #f"wp-image-3306'>
+                                  f" src='{iimg[0]}' "
+                                  f"type='video/mp4'></video>")
+                    else:
+                        srcTxt = (f"<a href='{url}'><img class='alignnone size-full "
+                                  f"wp-image-3306' src='{iimg[0]}' "
+                                  f"alt='{title} {description}' "
+                                  f"width='776' height='1035' /></a>")
+                    text = (
+                        '{}\n<p>'#<img class="alignnone '
+                        #'size-full wp-image-3306" src="{}" 
+                        '{} '
+                        #'alt="{} {}"'
+                        #'width="776" height="1035" />
+                        '</p>'.format(text, srcTxt )
+                        )
+        return text
+
 
     def getImagesCode(self, i):
         res = self.getImages(i)

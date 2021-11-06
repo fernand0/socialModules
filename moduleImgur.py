@@ -100,6 +100,15 @@ class moduleImgur(Content, Queue):
     def getPostTitle(self, post):
         return post.title
 
+    def getPostContentHtml(self, post):
+        content = ''
+        if post.description:
+            content = post.description
+        return content
+
+    def getPostContentLink(self, post):
+        return post.link
+
     # def getLinkPosition(self, link):
     #     if self.getPostsType() == 'posts':
     #         return len(self.getPosts())
@@ -111,6 +120,10 @@ class moduleImgur(Content, Queue):
             return post[1]
         else:
             return post.link
+
+    def getPostImage(self, post):
+        # Need rethinking
+        return self.getPostId(post)
 
     def getPostId(self, post):
         return post.id
@@ -131,13 +144,13 @@ class moduleImgur(Content, Queue):
                 thePost = self.getImagesCode(i)
                 theTags = self.getImagesTags(i)
         else:
-            theTitle = None
-            theLink = None
-            thePost = None
-            theTags = None
+            theTitle = ''
+            theLink = ''
+            thePost = ''
+            theTags = ''
 
         return (theTitle,  theLink, theLink, theId,
-                None, None, None, None, theTags, thePost)
+                '', '', '', theTags, thePost)
 
     def publishPost(self, post, idPost, comment='', **more):
         # This method publishes (as public post) some gallery that is in draft

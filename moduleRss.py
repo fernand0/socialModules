@@ -67,13 +67,36 @@ class moduleRss(Content,Queue):
             return(post['title'].replace('\n', ' '))
 
     def getPostLink(self, post):
-        return(post['link'])
+        return post.get('link','')
 
     def getPostContentHtml(self, post):
         summary = ""
-        if 'summary' in post:
+        if 'content' in post:
+            # WordPress
+            summary = post.get('content', [{}])[0].get('value')
+        elif 'summary' in post:
             summary = self.getAttribute(post, 'summary')
         return summary
+
+    def getPostContentLink(self, post):
+        content = self.getPostContentHtml(post)
+        soup = BeautifulSoup(content, 'lxml')
+        link = soup.find('a')
+        if not link:
+            link = self.getPostLink(post)
+        else:
+            link = link['href']
+        return link
+
+    def getPostImage(self, post):
+        content = self.getPostContentHtml(post)
+        soup = BeautifulSoup(content, 'lxml')
+        link = soup.findAll('img')
+        if link:
+            img = link[0]['src']
+        else:
+            img = ''
+        return img
 
     def getPostContent(self, post):
         summary = self.getPostContentHtml(post)
@@ -92,7 +115,7 @@ class moduleRss(Content,Queue):
 
         posts = self.getPosts()
         if not posts:
-            return (None, None, None, None, None, None, None, None, None, None)
+            return (None, None, None, None, None, None, None, None, None)
 
         post = posts[i]
         #print(post)
@@ -185,7 +208,7 @@ class moduleRss(Content,Queue):
         logging.debug("")
 
 
-        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks) #, comment)
 
     #def isForMe(self, args):
     #    logging.info("isForMe %s" % str(self.service))
