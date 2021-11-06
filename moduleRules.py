@@ -196,7 +196,7 @@ class moduleRules:
 
         listPosts = []
         
-        testDiffer = False
+        testDiffer = True
         if testDiffer:
             i = 1 
             num = 1

@@ -393,7 +393,168 @@ class Content:
         return post
 
     def getPostImages(self, post):
+        print("aquí")
         return self.extractImages(post)
+
+    def getImagesTags(self, i):
+        res = self.getImages(i)
+        tags = []
+        for iimg in res:
+            for tag in iimg[3]:
+                if tag not in tags:
+                    tags.append(tag)
+
+        return tags
+
+    def getPostImagesCode(self, post):
+        # Needs work
+        url = self.getPostLink(post)
+        res = self.getPostImages(post)
+        text = ""
+        if res:
+            for iimg in res:
+                print(iimg)
+                       
+                if iimg[2]:
+                    description = iimg[2]
+                else:
+                    description = ""
+
+                if description:
+                    import string
+
+                    if (iimg[1] and iimg[1].endswith(" ") 
+                            or iimg[1].endswith("\xa0")):
+                        # \xa0 is actually non-breaking space in Latin1 (ISO
+                        # 8859-1), also chr(160).
+                        # https://stackoverflow.com/questions/10993612/how-to-remove-xa0-from-string-in-python
+                        title = iimg[1][:-1]
+                    else:
+                        if iimg[1]:
+                            title = iimg[1]
+                        else:
+                            title = "No title"
+                    if iimg[0].endswith('mp4'):
+                        srcTxt = (f"<video width='640' height='360' controls "#"class='alignnone size-full "
+                                  #f"wp-image-3306'>
+                                  f'src="{iimg[0]}" '
+                                  f'type="video/mp4"></video>')
+                    else:
+                        srcTxt = (f"<img class='alignnone size-full "
+                                  f"wp-image-3306' src='{iimg[0]}' "
+                                  f"alt='{title} {description}' "
+                                  f"width='776' height='1035' />")
+ 
+                    if title[-1] in string.punctuation:
+                        text = (
+                            '{}\n<p><h4>{}</h4></p><p><a href="{}">'
+                            #'<img class="alignnone size-full '
+                            #'wp-image-3306" src="{}" 
+                            '{} </a></p>'.format( text, description, url, srcTxt)
+                            )
+                    else:
+                        text = (
+                            '{}\n<p><h4>{}</h4></p><p><a href="{}">'
+                            #'<img class="alignnone size-full '
+                            #'wp-image-3306" src="{}" 
+                            '{} /></a></p>'.format( text, description, url, srcTxt)
+                            )
+                else:
+                    title = iimg[1]
+                    if iimg[0].endswith('mp4'):
+                        srcTxt = (f"<video width='640' height='360' controls " #class='alignnone size-full "
+                                  #f"wp-image-3306'>
+                                  f" src='{iimg[0]}' "
+                                  f"type='video/mp4'></video>")
+                    else:
+                        srcTxt = (f"<a href='{url}'><img class='alignnone size-full "
+                                  f"wp-image-3306' src='{iimg[0]}' "
+                                  f"alt='{title} {description}' "
+                                  f"width='776' height='1035' /></a>")
+                    text = (
+                        '{}\n<p>'#<img class="alignnone '
+                        #'size-full wp-image-3306" src="{}" 
+                        '{} '
+                        #'alt="{} {}"'
+                        #'width="776" height="1035" />
+                        '</p>'.format(text, srcTxt )
+                        )
+        return text
+
+
+    def getImagesCode(self, i):
+        res = self.getImages(i)
+        # print(self.getPosts()[i])
+        url = self.getPostLink(self.getPosts()[i])
+        text = ""
+        for iimg in res:
+            print(iimg)
+                   
+            if iimg[2]:
+                description = iimg[2]
+            else:
+                description = ""
+
+            if description:
+                import string
+
+                if (iimg[1] and iimg[1].endswith(" ") 
+                        or iimg[1].endswith("\xa0")):
+                    # \xa0 is actually non-breaking space in Latin1 (ISO
+                    # 8859-1), also chr(160).
+                    # https://stackoverflow.com/questions/10993612/how-to-remove-xa0-from-string-in-python
+                    title = iimg[1][:-1]
+                else:
+                    if iimg[1]:
+                        title = iimg[1]
+                    else:
+                        title = "No title"
+                if iimg[0].endswith('mp4'):
+                    srcTxt = (f"<video width='640' height='360' controls "#"class='alignnone size-full "
+                              #f"wp-image-3306'>
+                              f'src="{iimg[0]}" '
+                              f'type="video/mp4"></video>')
+                else:
+                    srcTxt = (f"<img class='alignnone size-full "
+                              f"wp-image-3306' src='{iimg[0]}' "
+                              f"alt='{title} {description}' "
+                              f"width='776' height='1035' />")
+ 
+                if title[-1] in string.punctuation:
+                    text = (
+                        '{}\n<p><h4>{}</h4></p><p><a href="{}">'
+                        #'<img class="alignnone size-full '
+                        #'wp-image-3306" src="{}" 
+                        '{} </a></p>'.format( text, description, url, srcTxt)
+                        )
+                else:
+                    text = (
+                        '{}\n<p><h4>{}</h4></p><p><a href="{}">'
+                        #'<img class="alignnone size-full '
+                        #'wp-image-3306" src="{}" 
+                        '{} /></a></p>'.format( text, description, url, srcTxt)
+                        )
+            else:
+                title = iimg[1]
+                if iimg[0].endswith('mp4'):
+                    srcTxt = (f"<video width='640' height='360' controls " #class='alignnone size-full "
+                              #f"wp-image-3306'>
+                              f" src='{iimg[0]}' "
+                              f"type='video/mp4'></video>")
+                else:
+                    srcTxt = (f"<a href='{url}'><img class='alignnone size-full "
+                              f"wp-image-3306' src='{iimg[0]}' "
+                              f"alt='{title} {description}' "
+                              f"width='776' height='1035' /></a>")
+                text = (
+                    '{}\n<p>'#<img class="alignnone '
+                    #'size-full wp-image-3306" src="{}" 
+                    '{} '
+                    #'alt="{} {}"'
+                    #'width="776" height="1035" />
+                    '</p>'.format(text, srcTxt )
+                    )
+        return text
 
     def getPosNextPost(self):
         posts = self.getPosts()
@@ -424,15 +585,15 @@ class Content:
                 break
             post = self.getPost(i)
             postData = (
-                self.getPostTitle(post),            #1
-                self.getPostLink(post),             #2
-                self.getPostContentLink(post),      #3
-                self.getPostImage(post),            #4
-                self.getPostContentHtml(post),      #5
-                self.getPostContent(post),          #6
-                '',                                 #7
-                self.getPostImagesTags(post),       #8
-                self.getPostImagesCode(post)        #9
+                self.getPostTitle(post),            #0
+                self.getPostLink(post),             #1
+                self.getPostContentLink(post),      #2
+                self.getPostImage(post),            #3
+                self.getPostContentHtml(post),      #4
+                self.getPostContent(post),          #5
+                '',                                 #6
+                self.getPostImagesTags(post),       #7
+                self.getPostImagesCode(post)        #8
                 )
             if postData:
                 listPosts.append(postData)
@@ -920,7 +1081,9 @@ class Content:
         return tags
 
     def getPostImagesTags(self, post):
-        res = self.getPostImages(post)
+        # Dirty trick. This whould not be here. Needs work
+        x = Content()
+        res = x.getPostImages(post)
         tags = []
         if res: 
             for iimg in res:
@@ -930,166 +1093,6 @@ class Content:
 
         return tags
 
-
-    def getImagesTags(self, i):
-        res = self.getImages(i)
-        tags = []
-        for iimg in res:
-            for tag in iimg[3]:
-                if tag not in tags:
-                    tags.append(tag)
-
-        return tags
-
-    def getPostImagesCode(self, post):
-        # Needs work
-        url = self.getPostLink(post)
-        res = self.getPostImages(post)
-        text = ""
-        if res:
-            for iimg in res:
-                print(iimg)
-                       
-                if iimg[2]:
-                    description = iimg[2]
-                else:
-                    description = ""
-
-                if description:
-                    import string
-
-                    if (iimg[1] and iimg[1].endswith(" ") 
-                            or iimg[1].endswith("\xa0")):
-                        # \xa0 is actually non-breaking space in Latin1 (ISO
-                        # 8859-1), also chr(160).
-                        # https://stackoverflow.com/questions/10993612/how-to-remove-xa0-from-string-in-python
-                        title = iimg[1][:-1]
-                    else:
-                        if iimg[1]:
-                            title = iimg[1]
-                        else:
-                            title = "No title"
-                    if iimg[0].endswith('mp4'):
-                        srcTxt = (f"<video width='640' height='360' controls "#"class='alignnone size-full "
-                                  #f"wp-image-3306'>
-                                  f'src="{iimg[0]}" '
-                                  f'type="video/mp4"></video>')
-                    else:
-                        srcTxt = (f"<img class='alignnone size-full "
-                                  f"wp-image-3306' src='{iimg[0]}' "
-                                  f"alt='{title} {description}' "
-                                  f"width='776' height='1035' />")
- 
-                    if title[-1] in string.punctuation:
-                        text = (
-                            '{}\n<p><h4>{}</h4></p><p><a href="{}">'
-                            #'<img class="alignnone size-full '
-                            #'wp-image-3306" src="{}" 
-                            '{} </a></p>'.format( text, description, url, srcTxt)
-                            )
-                    else:
-                        text = (
-                            '{}\n<p><h4>{}</h4></p><p><a href="{}">'
-                            #'<img class="alignnone size-full '
-                            #'wp-image-3306" src="{}" 
-                            '{} /></a></p>'.format( text, description, url, srcTxt)
-                            )
-                else:
-                    title = iimg[1]
-                    if iimg[0].endswith('mp4'):
-                        srcTxt = (f"<video width='640' height='360' controls " #class='alignnone size-full "
-                                  #f"wp-image-3306'>
-                                  f" src='{iimg[0]}' "
-                                  f"type='video/mp4'></video>")
-                    else:
-                        srcTxt = (f"<a href='{url}'><img class='alignnone size-full "
-                                  f"wp-image-3306' src='{iimg[0]}' "
-                                  f"alt='{title} {description}' "
-                                  f"width='776' height='1035' /></a>")
-                    text = (
-                        '{}\n<p>'#<img class="alignnone '
-                        #'size-full wp-image-3306" src="{}" 
-                        '{} '
-                        #'alt="{} {}"'
-                        #'width="776" height="1035" />
-                        '</p>'.format(text, srcTxt )
-                        )
-        return text
-
-
-    def getImagesCode(self, i):
-        res = self.getImages(i)
-        # print(self.getPosts()[i])
-        url = self.getPostLink(self.getPosts()[i])
-        text = ""
-        for iimg in res:
-            print(iimg)
-                   
-            if iimg[2]:
-                description = iimg[2]
-            else:
-                description = ""
-
-            if description:
-                import string
-
-                if (iimg[1] and iimg[1].endswith(" ") 
-                        or iimg[1].endswith("\xa0")):
-                    # \xa0 is actually non-breaking space in Latin1 (ISO
-                    # 8859-1), also chr(160).
-                    # https://stackoverflow.com/questions/10993612/how-to-remove-xa0-from-string-in-python
-                    title = iimg[1][:-1]
-                else:
-                    if iimg[1]:
-                        title = iimg[1]
-                    else:
-                        title = "No title"
-                if iimg[0].endswith('mp4'):
-                    srcTxt = (f"<video width='640' height='360' controls "#"class='alignnone size-full "
-                              #f"wp-image-3306'>
-                              f'src="{iimg[0]}" '
-                              f'type="video/mp4"></video>')
-                else:
-                    srcTxt = (f"<img class='alignnone size-full "
-                              f"wp-image-3306' src='{iimg[0]}' "
-                              f"alt='{title} {description}' "
-                              f"width='776' height='1035' />")
- 
-                if title[-1] in string.punctuation:
-                    text = (
-                        '{}\n<p><h4>{}</h4></p><p><a href="{}">'
-                        #'<img class="alignnone size-full '
-                        #'wp-image-3306" src="{}" 
-                        '{} </a></p>'.format( text, description, url, srcTxt)
-                        )
-                else:
-                    text = (
-                        '{}\n<p><h4>{}</h4></p><p><a href="{}">'
-                        #'<img class="alignnone size-full '
-                        #'wp-image-3306" src="{}" 
-                        '{} /></a></p>'.format( text, description, url, srcTxt)
-                        )
-            else:
-                title = iimg[1]
-                if iimg[0].endswith('mp4'):
-                    srcTxt = (f"<video width='640' height='360' controls " #class='alignnone size-full "
-                              #f"wp-image-3306'>
-                              f" src='{iimg[0]}' "
-                              f"type='video/mp4'></video>")
-                else:
-                    srcTxt = (f"<a href='{url}'><img class='alignnone size-full "
-                              f"wp-image-3306' src='{iimg[0]}' "
-                              f"alt='{title} {description}' "
-                              f"width='776' height='1035' /></a>")
-                text = (
-                    '{}\n<p>'#<img class="alignnone '
-                    #'size-full wp-image-3306" src="{}" 
-                    '{} '
-                    #'alt="{} {}"'
-                    #'width="776" height="1035" />
-                    '</p>'.format(text, srcTxt )
-                    )
-        return text
 
 
 def main():

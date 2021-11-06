@@ -11,7 +11,6 @@ import feedparser
 import pickle
 import logging
 from bs4 import BeautifulSoup
-from bs4 import Tag
 from pdfrw import PdfReader
 import moduleCache
 # https://github.com/fernand0/scripts/blob/master/moduleCache.py
@@ -20,7 +19,7 @@ from configMod import *
 from moduleContent import *
 from moduleQueue import *
 
-class moduleRss(Content,Queue):
+class moduleRss(Content, Queue):
 
     def __init__(self):
         super().__init__()
@@ -88,15 +87,25 @@ class moduleRss(Content,Queue):
             link = link['href']
         return link
 
-    def getPostImage(self, post):
+    def getPostImages(self, post):
         content = self.getPostContentHtml(post)
         soup = BeautifulSoup(content, 'lxml')
         link = soup.findAll('img')
+        print(f"Imagesss: {link}")
+        return link
+
+    def getPostImage(self, post):
+        link = self.getPostImages(post)
         if link:
             img = link[0]['src']
         else:
             img = ''
         return img
+
+    def getPostImagesCode(self, post):
+        images = self.getPostImages(post)
+        print(f"Images: {images}")
+        return images
 
     def getPostContent(self, post):
         summary = self.getPostContentHtml(post)
@@ -108,7 +117,8 @@ class moduleRss(Content,Queue):
             # We need to delete before and after \n
             logging.debug(f"Node: {node}")
         return soup.get_text()
-
+        
+        
     def obtainPostData(self, i, debug=False):
         if not self.posts:
             self.setPosts()

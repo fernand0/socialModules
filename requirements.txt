@@ -19,6 +19,7 @@ pdfrw
 python-crontab
 tmdbsimple
 imgurpython
+python-linkedin-v2
 Mastodon.py
 medium
 pocket-api
