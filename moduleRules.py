@@ -202,7 +202,11 @@ class moduleRules:
             num = 1
             listPosts = apiSrc.getNumPostsData(num, i, lastLink)
             if len(apiSrc.getPosts()) > 0:
-                apiSrc.lastLinkPublished = apiSrc.getPostLink(apiSrc.getPosts()[1])
+                try:
+                    apiSrc.lastLinkPublished = apiSrc.getPostLink(apiSrc.getPosts()[1])
+                except:
+                    apiSrc.lastLinkPublished = ''
+
             listPosts2 = apiSrc.getNumNextPost(num)
             print(f"{listPosts}")
             if listPosts2:
@@ -217,6 +221,8 @@ class moduleRules:
                                 if (listPosts[i][j] != listPosts2[i][j]):
                                     print(f"{j}) *{listPosts[i][j]}*\n"
                                         f"{j}) *{listPosts2[i][j]}*")
+                            else:
+                                print(f"{j})")
             else:
                 print(f"{indent}No listPosts2")
 

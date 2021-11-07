@@ -19,7 +19,6 @@ import logging
 import pickle
 import sys
 
-import moduleSocial
 import moduleImap
 
 import googleapiclient
@@ -57,7 +56,10 @@ class moduleGmail(Content,Queue):
     def initApi(self, keys):
         SCOPES = self.scopes
         creds = self.authorize()
-        service = build('gmail', 'v1', 
+        if isinstance(creds, str) and ("Fail!" in creds):
+            service = None
+        else:
+            service = build('gmail', 'v1', 
                         credentials=creds, cache_discovery=False)
         return service
 
@@ -130,7 +132,9 @@ class moduleGmail(Content,Queue):
                     print("no")
                     print(fileCredStore)
                     sys.exit()
-
+                except ValueError:
+                    print("Error de valor")
+                    creds = 'Fail!'
         logging.debug("Storing creds")
         with open(fileTokenStore, 'wb') as token:
             pickle.dump(creds, token)
@@ -216,13 +220,14 @@ class moduleGmail(Content,Queue):
         return pPosts
 
     def setApiSearch(self, label=None, mode=''): 
-        posts = self.getClient().users().messages().list(userId='me',
+        client = self.getClient()
+        posts = []
+        if client:
+            posts = self.getClient().users().messages().list(userId='me',
                 q=self.getSearch()).execute()
-        #posts = self.setApiMessages()
-        posts = self.processPosts(posts, label, mode)
+            posts = self.processPosts(posts, label, mode)
         logging.info(f"Num posts {len(posts)}")
         return posts
-
 
     def setApiSearchh(self, label=None, mode=''): 
         # Not sure about how the searching works
@@ -393,6 +398,11 @@ class moduleGmail(Content,Queue):
             links.append(data[key])
         return(links)
 
+    def getPostContentHtml(self, post):
+        # message = self.getMessageId(self.getPostId(post))
+        snippet = self.getHeader(post, 'snippet')
+        return snippet
+
     def getPostLinks(self, post):
         message = self.getMessageId(self.getPostId(post))
         soup = BeautifulSoup(message, 'lxml')
@@ -521,7 +531,7 @@ class moduleGmail(Content,Queue):
             comment = self.getPostId(message) 
 
             theLink = theLinks[0]
-            return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+            return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks)
         else:
             return (None, None, None, None, None, None, None, None, None, None)
 

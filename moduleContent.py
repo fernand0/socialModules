@@ -577,7 +577,6 @@ class Content:
         listPosts = []
         posLast = self.getPosNextPost()
         i = posLast
-
         for j in range(num, 0, -1): 
             i = i - 1
             if i < 0:
@@ -1061,7 +1060,9 @@ class Content:
         return ""
 
     def getPostContent(self, post):
-        return ""
+        summary = self.getPostContentHtml(post)
+        soup = BeautifulSoup(summary, 'lxml')
+        return soup.get_text()
 
     def extractImages(self, post):
         return None
