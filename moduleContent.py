@@ -393,7 +393,6 @@ class Content:
         return post
 
     def getPostImages(self, post):
-        print("aquí")
         return self.extractImages(post)
 
     def getImagesTags(self, i):
