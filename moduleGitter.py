@@ -159,22 +159,21 @@ class moduleGitter(Content,Queue):
         logging.info("Extract Service %s"% self.service)
         (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None) 
 
-        logging.info(self.getPosts()[i])
         if i < len(self.getPosts()):
             post = self.getPosts()[i]
             theTitle = self.getPostTitle(post)
             theLink = self.getPostLink(post)
             print("The title: {theTitle}")
 
-            theLinks = None
-            content = None
-            theContent = None
+            theLinks = ''
+            content = ''
+            theContent = ''
             firstLink = theLink
-            theImage = None
-            theSummary = None
+            theImage = ''
+            theSummary = ''
 
-            theSummaryLinks = None
-            comment = None
+            theSummaryLinks = ''
+            comment = ''
 
         print (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)

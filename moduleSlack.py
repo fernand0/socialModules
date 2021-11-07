@@ -215,8 +215,6 @@ class moduleSlack(Content, Queue):
             text = post.get('text', '')
         return text
 
-    def getPostContentLink(self, post):
-        return self.getPostLink(post)
 
     def getPostLink(self, post):
         if "attachments" in post:

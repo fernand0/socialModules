@@ -324,7 +324,7 @@ class Content:
         return ""
 
     def getPostContentLink(self, post):
-        return ""
+        return self.getPostLink(post)
 
     def getSocialNetwork(self):
         socialNetwork = (self.service, self.nick)

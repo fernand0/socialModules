@@ -35,6 +35,7 @@ class moduleTumblr(Content, Queue):
 
     def initApi(self, keys):
         client = pytumblr.TumblrRestClient(keys[0], keys[1], keys[2], keys[3])
+        print(f"client: {client}")
         tumblr = self.user
         if isinstance(tumblr, str):
             self.url = f"https://{tumblr}.tumblr.com/"
@@ -73,11 +74,12 @@ class moduleTumblr(Content, Queue):
         return (posts)
 
     def setApiQueue(self):
-        queue = self.getClient().queue(self.getUrl().split('/')[2])
-        if 'posts' in queue:
-            posts = queue['posts']
-        else:
-            posts = []
+        posts = []
+        if self.getClient():
+            queue = self.getClient().queue(self.getUrl().split('/')[2])
+            if 'posts' in queue:
+                posts = queue['posts']
+            
         return(posts)
 
     def getPostTitle(self, post):
