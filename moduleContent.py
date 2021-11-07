@@ -584,14 +584,29 @@ class Content:
             if i < 0:
                 break
             post = self.getPost(i)
+            soup = BeautifulSoup(self.getPostContentHtml(post),'lxml')
+            if hasattr(self, 'getLinksToAvoid') and self.getLinksToAvoid():
+                (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinksToAvoid())
+                logging.debug("theC %s" % theContent)
+                if theContent.startswith('Anuncios'): 
+                    theContent = ''
+                    logging.debug("theC %s"% theContent)
+            else:
+                (theContent, theSummaryLinks) = self.extractLinks(soup, "") 
+                logging.debug("theC %s"% theContent)
+                if theContent.startswith('Anuncios'): 
+                    theContent = ''
+                logging.debug("theC %s"% theContent)
+            # theSummaryLinks = theContent + '\n' + theSummaryLinks
+
             postData = (
                 self.getPostTitle(post),            #0
                 self.getPostLink(post),             #1
                 self.getPostContentLink(post),      #2
                 self.getPostImage(post),            #3
-                self.getPostContentHtml(post),      #4
-                self.getPostContent(post),          #5
-                '',                                 #6
+                self.getPostContent(post),          #4
+                self.getPostContentHtml(post),      #5
+                f"{theContent}\n{theSummaryLinks}", #6
                 self.getPostImagesTags(post),       #7
                 self.getPostImagesCode(post)        #8
                 )

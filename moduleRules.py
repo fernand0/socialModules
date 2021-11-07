@@ -201,8 +201,9 @@ class moduleRules:
             i = 1 
             num = 1
             listPosts = apiSrc.getNumPostsData(num, i, lastLink)
-            apiSrc.lastLinkPublished = apiSrc.getPostLink(apiSrc.getPosts()[0])
+            apiSrc.lastLinkPublished = apiSrc.getPostLink(apiSrc.getPosts()[1])
             listPosts2 = apiSrc.getNumNextPost(num)
+            print(f"{listPosts}")
             if listPosts2:
                 if (listPosts == listPosts2):
                     print("{indent}Equal listPosts")
@@ -211,10 +212,11 @@ class moduleRules:
                           f"{len(listPosts2[0])}:\n")
                     for i, post in enumerate(listPosts):
                         for j, line in enumerate(listPosts[i]):
-                            print(f"{j}) {listPosts[i][j]}\n"
-                                  f"{j}) {listPosts2[i][j]}")
+                            if (listPosts[i][j] != listPosts2[i][j]):
+                                print(f"{j}) *{listPosts[i][j]}*\n"
+                                      f"{j}) *{listPosts2[i][j]}*")
             else:
-                print("f{indent}No listPosts2")
+                print(f"{indent}No listPosts2")
 
             return
  
@@ -278,7 +280,7 @@ class moduleRules:
                               f"{listPosts}\n"
                               f"{listPosts2}\n")
                 else:
-                    print("{indent}No listPosts2")
+                    print(f"{indent}No listPosts2")
                 msgLog = f"{indent}Would schedule in {msgAction} ..."
                 logMsg(msgLog, 1, 1)
                 indent = f"{indent} "

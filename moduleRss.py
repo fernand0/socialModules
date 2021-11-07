@@ -113,7 +113,7 @@ class moduleRss(Content, Queue):
 
     def getPostContent(self, post):
         summary = self.getPostContentHtml(post)
-        soup = BeautifulSoup(summary, 'lxml')
+        soup = BeautifulSoup(summary, 'lxml'?t)
         for node in soup.find_all('blockquote'):
             node = node.get_text()
             logging.debug(f"Node: {node}")
