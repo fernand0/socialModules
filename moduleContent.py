@@ -566,6 +566,7 @@ class Content:
                 posLast = 1
             else:
                 lastLink = self.getLastLinkPublished()
+                print(f"lastLink: {lastLink}")
                 if lastLink:
                     posLast = self.getLinkPosition(lastLink)
                 else:
@@ -577,6 +578,7 @@ class Content:
         listPosts = []
         posLast = self.getPosNextPost()
         i = posLast
+        print(f"iiii: {i}")
         for j in range(num, 0, -1): 
             i = i - 1
             if i < 0:
