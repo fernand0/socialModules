@@ -162,6 +162,7 @@ class moduleRules:
 
         lastLink = myLastLink
         
+        msgLog = (f"{indent}Last link: {myLastLink}")
         apiSrc.setPosts()
 
         if ((src[0] in ['gmail', 'cache'])
@@ -314,6 +315,7 @@ class moduleRules:
                     nsummary = f"{extract[0]}\n{extract[1]} "
                     #logMsg(f"First link Next post: {apiSrc.getPostContentLink(apiSrc.getNextPost())}", 1, 1)
                 else:
+                    logMsg(f"{indent}No npost")
                     ntitle = ''
                     nsummary = ''
                     nlink = ''
