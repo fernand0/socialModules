@@ -196,7 +196,7 @@ class moduleRules:
 
         listPosts = []
         
-        testDiffer = True
+        testDiffer = False
         if testDiffer:
             i = 1 
             num = 1
@@ -300,17 +300,23 @@ class moduleRules:
                 logMsg(f"{indent}Next post: {nextPost}", 2, 0)
                 npost = apiSrc.getNextPost()[0]
                 #logMsg(f"npost {npost}")
-                ntitle = apiSrc.getPostTitle(npost)
-                logMsg(f"{indent}Title Next post: {ntitle}", 1, 1)
-                nlink = apiSrc.getPostLink(npost)
-                logMsg(f"{indent}Link Next post: {nlink}", 1, 1)
-                try:
-                    extract = apiSrc.extractPostLinks(npost)
-                except:
-                    logMsg(f"{indent}Fail extract!")
+                if npost:
+                    ntitle = apiSrc.getPostTitle(npost)
+                    logMsg(f"{indent}Title Next post: {ntitle}", 1, 1)
+                    nlink = apiSrc.getPostLink(npost)
+                    logMsg(f"{indent}Link Next post: {nlink}", 1, 1)
+                    try:
+                        extract = apiSrc.extractPostLinks(npost)
+                    except:
+                        logMsg(f"{indent}Fail extract!")
+                        extract = ('','')
+                    nsummary = f"{extract[0]}\n{extract[1]} "
+                    #logMsg(f"First link Next post: {apiSrc.getPostContentLink(apiSrc.getNextPost())}", 1, 1)
+                else:
+                    ntitle = ''
+                    nsummary = ''
+                    nlink = ''
                     extract = ('','')
-                nsummary = f"{extract[0]}\n{extract[1]} "
-                #logMsg(f"First link Next post: {apiSrc.getPostContentLink(apiSrc.getNextPost())}", 1, 1)
 
                 indent = f"{indent[:-1]}"
 

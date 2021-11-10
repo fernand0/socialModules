@@ -584,34 +584,39 @@ class Content:
             if i < 0:
                 break
             post = self.getPost(i)
-            soup = BeautifulSoup(self.getPostContentHtml(post),'lxml')
-            if hasattr(self, 'getLinksToAvoid') and self.getLinksToAvoid():
-                (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinksToAvoid())
-                logging.debug("theC %s" % theContent)
-                if theContent.startswith('Anuncios'): 
-                    theContent = ''
-                    logging.debug("theC %s"% theContent)
-            else:
-                (theContent, theSummaryLinks) = self.extractLinks(soup, "") 
-                logging.debug("theC %s"% theContent)
-                if theContent.startswith('Anuncios'): 
-                    theContent = ''
-                logging.debug("theC %s"% theContent)
-            # theSummaryLinks = theContent + '\n' + theSummaryLinks
+            if post:
+                contentHtml = self.getPostContentHtml(post)
+                if contentHtml:
+                    soup = BeautifulSoup(contentHtml,'lxml')
+                    if hasattr(self, 'getLinksToAvoid') and self.getLinksToAvoid():
+                        (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinksToAvoid())
+                        logging.debug("theC %s" % theContent)
+                        if theContent.startswith('Anuncios'): 
+                            theContent = ''
+                            logging.debug("theC %s"% theContent)
+                    else:
+                        (theContent, theSummaryLinks) = self.extractLinks(soup, "") 
+                        logging.debug("theC %s"% theContent)
+                        if theContent.startswith('Anuncios'): 
+                            theContent = ''
+                        logging.debug("theC %s"% theContent)
+                    # theSummaryLinks = theContent + '\n' + theSummaryLinks
+                else:
+                    (theContent, theSummaryLinks) = ("", "") 
 
-            postData = (
-                self.getPostTitle(post),            #0
-                self.getPostLink(post),             #1
-                self.getPostContentLink(post),      #2
-                self.getPostImage(post),            #3
-                self.getPostContent(post),          #4
-                self.getPostContentHtml(post),      #5
-                f"{theContent}\n{theSummaryLinks}", #6
-                self.getPostImagesTags(post),       #7
-                self.getPostImagesCode(post)        #8
-                )
-            if postData:
-                listPosts.append(postData)
+                postData = (
+                    self.getPostTitle(post),            #0
+                    self.getPostLink(post),             #1
+                    self.getPostContentLink(post),      #2
+                    self.getPostImage(post),            #3
+                    self.getPostContent(post),          #4
+                    self.getPostContentHtml(post),      #5
+                    f"{theContent}\n{theSummaryLinks}", #6
+                    self.getPostImagesTags(post),       #7
+                    self.getPostImagesCode(post)        #8
+                    )
+                if postData:
+                    listPosts.append(postData)
 
         return listPosts
 
@@ -1062,9 +1067,12 @@ class Content:
         return ""
 
     def getPostContent(self, post):
+        res = ''
         summary = self.getPostContentHtml(post)
-        soup = BeautifulSoup(summary, 'lxml')
-        return soup.get_text()
+        if summary:
+            soup = BeautifulSoup(summary, 'lxml')
+            res = soup.get_text()
+        return  res
 
     def extractImages(self, post):
         return None
