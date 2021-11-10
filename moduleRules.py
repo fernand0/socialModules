@@ -153,18 +153,13 @@ class moduleRules:
             else:
                 myLastLink = lastLink
 
-        # if myLastLink != mmyLastLink: 
-        #     msgLog = (f"{indent}Differ ll: "
-        #               f"lastLink {myLastLink} mlastLink {mmyLastLink}")
-        #     logMsg(msgLog, 1, 1)
-
         myTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastTime))
 
         lastLink = myLastLink
         
         msgLog = (f"{indent}Last link: {myLastLink}")
         apiSrc.setPosts()
-
+        print(f"lastLink: {lastLink}")
         if ((src[0] in ['gmail', 'cache'])
                 or (src[3] == 'favs')):
             i = 1
