@@ -153,17 +153,12 @@ class moduleRules:
             else:
                 myLastLink = lastLink
 
-        # if myLastLink != mmyLastLink: 
-        #     msgLog = (f"{indent}Differ ll: "
-        #               f"lastLink {myLastLink} mlastLink {mmyLastLink}")
-        #     logMsg(msgLog, 1, 1)
-
         myTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastTime))
 
         lastLink = myLastLink
         
         apiSrc.setPosts()
-
+        print(f"lastLink: {lastLink}")
         if ((src[0] in ['gmail', 'cache'])
                 or (src[3] == 'favs')):
             i = 1
@@ -314,6 +309,7 @@ class moduleRules:
                     nsummary = f"{extract[0]}\n{extract[1]} "
                     #logMsg(f"First link Next post: {apiSrc.getPostContentLink(apiSrc.getNextPost())}", 1, 1)
                 else:
+                    logMsg(f"{indent}No npost")
                     ntitle = ''
                     nsummary = ''
                     nlink = ''
