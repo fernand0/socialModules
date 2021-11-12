@@ -497,8 +497,8 @@ class moduleRules:
                 msgLog = (f"{indent}No posts available")
                 logMsg(msgLog, 1, 1)
             elif (diffTime<=hours):
-                msgLog = (f"{indent}Not enough time passed.",
-                          f"We will wait {(hours-diffTime)/(60*60):2.2f} hours")
+                msgLog = (f"{indent}Not enough time passed. We will wait "
+                          f"at least {(hours-diffTime)/(60*60):2.2f} hours.")
                 logMsg(msgLog, 1, 1)
  
         return textEnd
