@@ -138,8 +138,10 @@ class moduleRules:
 
         apiSrc.setLastLink(apiDst)
 
-        myLastLink = apiDst.getLastLinkPublished()
+        myLastLink = apiSrc.getLastLinkPublished()
         lastTime = apiSrc.getLastTimePublished()
+        print(f"{indent}{myLastLink}")
+        return
         if not myLastLink:
             logMsg(f"{indent}lllllastLink not available", 1, 1)
             myLastLink, lastTime = apiDst.getLastTime()

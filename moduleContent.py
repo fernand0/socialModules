@@ -240,7 +240,7 @@ class Content:
             fileName = (f"{fileNamePath(url, (service, nick))}.last")
 
         lastTime = ''
-        linkLast = ''  
+        linkLast = ''
         if not os.path.isdir(os.path.dirname(fileName)):
             logMsg("No directory {} exists".format(os.path.dirname(fileName)),
                     1, 1)
@@ -248,7 +248,7 @@ class Content:
             with open(fileName, "rb") as f: 
                 linkLast = f.read().decode().split()  # Last published
             lastTime = os.path.getctime(fileName)
-
+        
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime
 
