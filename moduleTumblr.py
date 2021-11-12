@@ -144,7 +144,7 @@ class moduleTumblr(Content, Queue):
         except ConnectionError as connectionError:
             for error in twittererror.response_data.get("errors", []): 
                 logging.info("      Error code: %s" % error.get("code", None))
-            res = self.report('Twitter', post, link, sys.exc_info())
+            res = self.report('Tumblr', post, link, sys.exc_info())
 
         return(res)
 

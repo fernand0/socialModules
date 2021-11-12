@@ -286,7 +286,6 @@ class moduleCache(Content,Queue):
     
     def publishApiPost(self, postData): 
         post, link, comment, plus = postData
-        print(f"----> {post}, {link}, {comment}, {plus}")
         posts = self.getPosts2()
         for post in plus['more'][1]:
             posts.append(post)
