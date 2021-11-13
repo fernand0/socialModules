@@ -238,6 +238,7 @@ class Content:
             service = self.service.lower()
             nick = self.getUser()
             fileName = (f"{fileNamePath(url, (service, nick))}.last")
+        print(f"File: {fileName}")
 
         lastTime = ''
         linkLast = ''

@@ -35,7 +35,7 @@ class moduleTumblr(Content, Queue):
 
     def initApi(self, keys):
         client = pytumblr.TumblrRestClient(keys[0], keys[1], keys[2], keys[3])
-        print(f"client: {client}")
+        # print(f"client: {client}")
         tumblr = self.user
         if isinstance(tumblr, str):
             self.url = f"https://{tumblr}.tumblr.com/"
@@ -142,8 +142,7 @@ class moduleTumblr(Content, Queue):
                                                    url=postData[1],
                                                    description=postData[2])
         except ConnectionError as connectionError:
-            for error in twittererror.response_data.get("errors", []): 
-                logging.info("      Error code: %s" % error.get("code", None))
+            logging.info(f"Connection error in {self.service}")
             res = self.report('Tumblr', post, link, sys.exc_info())
 
         return(res)
