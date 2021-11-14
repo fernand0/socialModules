@@ -253,7 +253,6 @@ class Content:
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime
 
-
     def getLastTime(self, other = None):
         lastTime = 0.0
         myLastLink = ""
@@ -284,6 +283,16 @@ class Content:
 
         logMsg(f"myLastLink: {myLastLink} {lastTime}",2 , 0)
         return myLastLink, lastTime
+
+    def setNextTime(self, tNow, tSleep, dst = None):
+        fileNameNext = ''
+        if dst:
+            fileNameNext = f"{self.fileNameBase(dst)}.timeNext"
+            with open(fileNameNext,'wb') as f: 
+                pickle.dump((tNow, tSleep), f) 
+        else:
+            print(f"Not implemented!")
+        return fileNameNext
 
     def setNumPosts(self, numPosts):
         self.numPosts = numPosts
@@ -579,7 +588,7 @@ class Content:
         listPosts = []
         posLast = self.getPosNextPost()
         i = posLast
-        print(f"iiii: {i}")
+        # print(f"iiii: {i}")
         for j in range(num, 0, -1): 
             i = i - 1
             if i < 0:

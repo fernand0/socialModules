@@ -96,13 +96,44 @@ class moduleRules:
 
         return apiDst
 
+    def testDifferPosts(self, apiSrc, lastLink, listPosts):
+        i = 1 
+        num = 1
+        listPosts = apiSrc.getNumPostsData(num, i, lastLink)
+        if len(apiSrc.getPosts()) > 0:
+            try:
+                apiSrc.lastLinkPublished = apiSrc.getPostLink(apiSrc.getPosts()[1])
+            except:
+                apiSrc.lastLinkPublished = ''
+
+        listPosts2 = apiSrc.getNumNextPost(num)
+        print(f"{listPosts}")
+        if listPosts2:
+            if (listPosts == listPosts2):
+                print("{indent}Equal listPosts")
+            else:
+                print(f"Differ listPosts (len {len(listPosts[0])}, "
+                      f"{len(listPosts2[0])}:\n")
+                for i, post in enumerate(listPosts):
+                    for j, line in enumerate(listPosts[i]):
+                        if line:
+                            if (listPosts[i][j] != listPosts2[i][j]):
+                                print(f"{j}) *{listPosts[i][j]}*\n"
+                                      f"{j}) *{listPosts2[i][j]}*")
+                        else:
+                            print(f"{j})")
+        else:
+            print(f"{indent}No listPosts2")
+
+
     def executeAction(self, src, more, action, 
                     noWait, timeSlots, simmulate, name=""): 
 
         sys.path.append(path)
         from configMod import logMsg
 
-        indent = f" {name}"+" "
+        indent = f" {name}->({action[3]}@{action[2]})] -- "+" "
+        # The ']' is opened in executeRules TODO
 
         msgLog = (f"{indent}Sleeping to launch all processes")
         logMsg(msgLog, 1, 0)
@@ -141,26 +172,26 @@ class moduleRules:
         myLastLink = apiSrc.getLastLinkPublished()
         lastTime = apiSrc.getLastTimePublished()
 
-        if not myLastLink:
-            logMsg(f"{indent}lllllastLink not available", 1, 1)
-            myLastLink, lastTime = apiDst.getLastTime()
-            # Maybe this should be in moduleContent ?
-            lastLink = myLastLink
-            if isinstance(lastLink, list):
-                if len(lastLink) > 0:
-                    myLastLink = lastLink[0]
-                else:
-                    myLastLink = ""
-            else:
-                myLastLink = lastLink
+        # if not myLastLink:
+        #     logMsg(f"{indent}lllllastLink not available", 1, 1)
+        #     myLastLink, lastTime = apiDst.getLastTime()
+        #     # Maybe this should be in moduleContent ?
+        #     lastLink = myLastLink
+        #     if isinstance(lastLink, list):
+        #         if len(lastLink) > 0:
+        #             myLastLink = lastLink[0]
+        #         else:
+        #             myLastLink = ""
+        #     else:
+        #         myLastLink = lastLink
 
         myTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastTime))
 
         lastLink = myLastLink
         
-        msgLog = (f"{indent}Last link: {myLastLink}")
+        msgLog = (f"{indent}Last link {action[3]}@{action[2]}: {myLastLink}")
         apiSrc.setPosts()
-        print(f"lastLink: {lastLink}")
+        # print(f"{indent}Last link: {lastLink}")
         if ((src[0] in ['gmail', 'cache'])
                 or (src[3] == 'favs')):
             i = 1
@@ -172,7 +203,6 @@ class moduleRules:
         nextPost = (f"{indent}getNextPost: {apiSrc.getNextPost()}")
         msgLog = nextPost
         logMsg(msgLog, 2, 0)
-
 
         msgLog = (f"{indent}Last time: {myTime}")
         logMsg(msgLog, 1, 1)
@@ -193,55 +223,40 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
 
         listPosts = []
-        
+
         testDiffer = False
         if testDiffer:
-            i = 1 
-            num = 1
-            listPosts = apiSrc.getNumPostsData(num, i, lastLink)
-            if len(apiSrc.getPosts()) > 0:
-                try:
-                    apiSrc.lastLinkPublished = apiSrc.getPostLink(apiSrc.getPosts()[1])
-                except:
-                    apiSrc.lastLinkPublished = ''
-
-            listPosts2 = apiSrc.getNumNextPost(num)
-            print(f"{listPosts}")
-            if listPosts2:
-                if (listPosts == listPosts2):
-                    print("{indent}Equal listPosts")
-                else:
-                    print(f"Differ listPosts (len {len(listPosts[0])}, "
-                          f"{len(listPosts2[0])}:\n")
-                    for i, post in enumerate(listPosts):
-                        for j, line in enumerate(listPosts[i]):
-                            if line:
-                                if (listPosts[i][j] != listPosts2[i][j]):
-                                    print(f"{j}) *{listPosts[i][j]}*\n"
-                                        f"{j}) *{listPosts2[i][j]}*")
-                            else:
-                                print(f"{j})")
-            else:
-                print(f"{indent}No listPosts2")
-
+            self.testDifferPosts(apiSrc, lastLink, listPosts)
             return
- 
+
         if num>0:
-            diffTime = time.time() - lastTime
+            tNow = time.time()
+            diffTime = tNow - lastTime
             msgLog = (f"{indent}Src time: {apiSrc.getTime()} "
                     f"Dst time: {apiDst.getTime()}")
             logMsg(msgLog, 2, 0)
             hours = float(apiDst.getTime())*60*60
 
+        # print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastTime)))
+        # print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(tNow)))
+        # print(f"{type(tNow)} {type(diffTime)}")
+        # print(f"{diffTime}")
+        # print(f"{diffTime/(60*60)}")
+        # print(f"{hours}")
+        # print(f"{diffTime>hours}")
+        # return
+
         numAvailable = 0
         if (num > 0) and (noWait or (diffTime>hours)): 
             tSleep = random.random()*float(timeSlots)*60
-            tNow = time.time()
 
             if ((i>0) and (action[0] not in ['cache'])):
                 #and (src[2] != f"{action[2]}@{action[3]}")): 
+                apiSrc.setNextTime(tNow, tSleep, apiDst)
                 fileNameNext = setNextTime(apiDst, socialNetwork, 
                         tNow, tSleep)
+                with open(fileNameNext,'wb') as f: 
+                    pickle.dump((tNow,tSleep), f)
                 msgLog = (f"{indent}apiSrc: {apiSrc} apiDst: {apiDst}")
                 logMsg(msgLog, 1, 0)
 
@@ -254,8 +269,6 @@ class moduleRules:
                     logMsg(text, 1, 0)
                 msgLog = (f"{indent}{fileNameNext}")
                 logMsg(text, 1, 0)
-                with open(fileNameNext,'wb') as f: 
-                    pickle.dump((tNow,tSleep), f)
 
             if (tSleep>0.0):
                 msgLog= f"{indent}Waiting {tSleep/60:2.2f} minutes" 
@@ -268,7 +281,7 @@ class moduleRules:
             time.sleep(tSleep)
 
             msgLog = (f"{indent}Go!\n"
-                      f"{indent}└-> Action: {msgAction}")
+                    f"{indent}└-> Action: {msgAction}")
             logMsg(msgLog, 1, 1)
 
             # The source of data can have changes while we were waiting
@@ -293,51 +306,54 @@ class moduleRules:
                 msgLog = (f"{indent}listPosts: {listPosts}")
                 logMsg(msgLog, 2, 0)
                 [ logMsg(f"{indent}- {post[0][:200]}", 1, 1) 
+                            for post in listPosts2
+                ]
+                [ logMsg(f"{indent}- {post[0][:200]}", 1, 1) 
                             for post in listPosts 
                 ]
                 logMsg(f"{indent}Next post: {nextPost}", 2, 0)
-                npost = apiSrc.getNextPost()[0]
-                #logMsg(f"npost {npost}")
-                if npost:
-                    ntitle = apiSrc.getPostTitle(npost)
-                    logMsg(f"{indent}Title Next post: {ntitle}", 1, 1)
-                    nlink = apiSrc.getPostLink(npost)
-                    logMsg(f"{indent}Link Next post: {nlink}", 1, 1)
-                    try:
-                        extract = apiSrc.extractPostLinks(npost)
-                    except:
-                        logMsg(f"{indent}Fail extract!")
-                        extract = ('','')
-                    nsummary = f"{extract[0]}\n{extract[1]} "
-                    #logMsg(f"First link Next post: {apiSrc.getPostContentLink(apiSrc.getNextPost())}", 1, 1)
-                else:
-                    logMsg(f"{indent}No npost")
-                    ntitle = ''
-                    nsummary = ''
-                    nlink = ''
-                    extract = ('','')
+                # npost = apiSrc.getNextPost()[0]
+                # #logMsg(f"npost {npost}")
+                # if npost:
+                #     ntitle = apiSrc.getPostTitle(npost)
+                #     logMsg(f"{indent}Title Next post: {ntitle}", 1, 1)
+                #     nlink = apiSrc.getPostLink(npost)
+                #     logMsg(f"{indent}Link Next post: {nlink}", 1, 1)
+                #     try:
+                #         extract = apiSrc.extractPostLinks(npost)
+                #     except:
+                #         logMsg(f"{indent}Fail extract!")
+                #         extract = ('','')
+                #     nsummary = f"{extract[0]}\n{extract[1]} "
+                #     #logMsg(f"First link Next post: {apiSrc.getPostContentLink(apiSrc.getNextPost())}", 1, 1)
+                # else:
+                #     logMsg(f"{indent}No npost")
+                #     ntitle = ''
+                #     nsummary = ''
+                #     nlink = ''
+                #     extract = ('','')
 
                 indent = f"{indent[:-1]}"
 
                 # Only the last one.
                 title = listPosts[-1][0]
-                if (title != ntitle):
-                    print(f"{indent}Differ: t {title} - {ntitle}")
+                # if (title != ntitle):
+                #     print(f"{indent}Differ: t {title} - {ntitle}")
                 link = listPosts[-1][1]
-                if (link != nlink):
-                    print(f"{indent}Differ: l {link} - {nlink}")
+                # if (link != nlink):
+                #     print(f"{indent}Differ: l {link} - {nlink}")
                 llink = ''
                 firstLink = listPosts[-1][2]
                 summaryLinks = listPosts[-1][6]
-                if (summaryLinks != extract[0]):
-                    print(f"{indent}Differ: s {summaryLinks} - {extract[0]}")
-                if (firstLink != extract[1]):
-                    print(f"{indent}Differ: f {firstLink} - {extract[1]}")
+                # if (summaryLinks != extract[0]):
+                #     print(f"{indent}Differ: s {summaryLinks} - {extract[0]}")
+                # if (firstLink != extract[1]):
+                #     print(f"{indent}Differ: f {firstLink} - {extract[1]}")
                 comment = listPosts[-1][-1]
                 tags = listPosts[-1][-2]
-                ntags = apiSrc.getPostImagesTags(npost)
-                if (tags != ntags):
-                    print(f"{indent}Differ: ta {tags} - {ntags}")
+                # ntags = apiSrc.getPostImagesTags(npost)
+                # if (tags != ntags):
+                #     print(f"{indent}Differ: ta {tags} - {ntags}")
 
                 if profile in ['telegram', 'facebook']: 
                     comment = summaryLinks 
@@ -443,6 +459,8 @@ class moduleRules:
                             updateLastLink(apiDst.getUrl(), 
                                             link, socialNetwork)
                             apiSrc.updateLastLink(apiDst, link)
+                        elif link and (src[0] in ['cache']):  
+                            apiSrc.updateLastLink(apiDst, link)
                     else:
                         if res.find('Status is a duplicate')>=0:
                             msgLog = (f"{indent}End publish, "
@@ -458,6 +476,9 @@ class moduleRules:
                     logMsg(msgLog, 1, 1)
                     fN = fileNamePath(apiDst.getUrl(), socialNetwork)
                     msgLog = (f"{indent}in file ", f"{fN}.last")
+                    logMsg(msgLog, 1, 1)
+                    msgLog = (f"{indent}in file ", 
+                              f"{apiSrc.fileNameBase(apiDst)}.last")
                     logMsg(msgLog, 1, 1)
                     # apiSrc.updateLastLink(apiDst, link)
 
@@ -932,7 +953,7 @@ class moduleRules:
                 if src[0] != previous:
                     i = 0
                 previous = src[0]
-                name = f"{src[0]}[{i}]"
+                name = f"{src[0]}{i}>"
                 if src in self.more:
                     # f"  More: {self.more[src]}")
                     more = self.more[src]
@@ -957,7 +978,8 @@ class moduleRules:
                               f" {action[3]}@{action[2]} ({action[1]})")
                     textEnd = f"{textEnd}\n{msgLog}"
                     logMsg(msgLog, 1, 1)
-                    nameA = f"{name} ({action[1]})"
+                    nameA = f"{name} [({action[1]})"
+                    # The '[' is closed in executeAction TODO
                     if actionMsg == "Skip.":
                         continue
                     timeSlots = args.timeSlots
