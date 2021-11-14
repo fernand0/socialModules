@@ -17,16 +17,18 @@ class moduleRules:
 
     def readConfigSrc(self, indent, src, more):
         msgLog = f"Src: Src {src}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, 1)
         msgLog = f"More: Src {more}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, 1)
         if src[0] == 'cache':
-            if src[2].count('@')>1:
-                parts = src[2].split('@')
-                sN = parts[0]
-                nick = '@'.join(parts[1:])
-            else:
-                sN, nick = src[2].split('@')
+            # if src[2].count('@')>1:
+            #     parts = src[2].split('@')
+            #     sN = parts[0]
+            #     nick = '@'.join(parts[1:])
+            # else:
+            #    sN, nick = src[2].split('@')
+            sN = more['service']
+            nick = more['url']
             apiSrc = getApi(src[0], (sN, nick))
         else:
             apiSrc = getApi(src[0], src[2])
@@ -168,22 +170,23 @@ class moduleRules:
         logMsg(msgLog, 1, 1)
 
         apiSrc.setLastLink(apiDst)
+        return
 
         myLastLink = apiSrc.getLastLinkPublished()
         lastTime = apiSrc.getLastTimePublished()
 
-        # if not myLastLink:
-        #     logMsg(f"{indent}lllllastLink not available", 1, 1)
-        #     myLastLink, lastTime = apiDst.getLastTime()
-        #     # Maybe this should be in moduleContent ?
-        #     lastLink = myLastLink
-        #     if isinstance(lastLink, list):
-        #         if len(lastLink) > 0:
-        #             myLastLink = lastLink[0]
-        #         else:
-        #             myLastLink = ""
-        #     else:
-        #         myLastLink = lastLink
+        if not myLastLink:
+            logMsg(f"{indent}lllllastLink not available", 1, 1)
+            myLastLink, lastTime = apiDst.getLastTime()
+            # Maybe this should be in moduleContent ?
+            lastLink = myLastLink
+            if isinstance(lastLink, list):
+                if len(lastLink) > 0:
+                    myLastLink = lastLink[0]
+                else:
+                    myLastLink = ""
+            else:
+                myLastLink = lastLink
 
         myTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastTime))
 
@@ -191,7 +194,8 @@ class moduleRules:
         
         msgLog = (f"{indent}Last link {action[3]}@{action[2]}: {myLastLink}")
         apiSrc.setPosts()
-        # print(f"{indent}Last link: {lastLink}")
+        print(f"{indent}Last link: {lastLink}")
+        return
         if ((src[0] in ['gmail', 'cache'])
                 or (src[3] == 'favs')):
             i = 1
