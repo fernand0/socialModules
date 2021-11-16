@@ -17,9 +17,9 @@ class moduleRules:
 
     def readConfigSrc(self, indent, src, more):
         msgLog = f"Src: Src {src}"
-        logMsg(msgLog, 2, 1)
+        logMsg(msgLog, 2, 0)
         msgLog = f"More: Src {more}"
-        logMsg(msgLog, 1, 1)
+        logMsg(msgLog, 1, 0)
         if src[0] == 'cache':
             if src[2].count('@')>1:
                 parts = src[2].split('@')
@@ -136,7 +136,7 @@ class moduleRules:
         sys.path.append(path)
         from configMod import logMsg
 
-        indent = f" {name}->({action[3]}@{action[2]})] -- "+" "
+        indent = f" {name}->({action[3]}@{action[2]})] -> "+" "
         # The ']' is opened in executeRules TODO
 
         msgLog = (f"{indent}Sleeping to launch all processes")
@@ -195,7 +195,7 @@ class moduleRules:
         
         msgLog = (f"{indent}Last link {action[3]}@{action[2]}: {myLastLink}")
         apiSrc.setPosts()
-        print(f"{indent}Last link: {lastLink}")
+        # print(f"{indent}Last link: {lastLink}")
         if ((src[0] in ['gmail', 'cache'])
                 or (src[3] == 'favs')):
             i = 1
@@ -240,15 +240,6 @@ class moduleRules:
                     f"Dst time: {apiDst.getTime()}")
             logMsg(msgLog, 2, 0)
             hours = float(apiDst.getTime())*60*60
-
-        # print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastTime)))
-        # print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(tNow)))
-        # print(f"{type(tNow)} {type(diffTime)}")
-        # print(f"{diffTime}")
-        # print(f"{diffTime/(60*60)}")
-        # print(f"{hours}")
-        # print(f"{diffTime>hours}")
-        # return
 
         numAvailable = 0
         if (num > 0) and (noWait or (diffTime>hours)): 
