@@ -60,9 +60,10 @@ class moduleCache(Content,Queue):
         url = self.getUrl()
         if hasattr(self, "socialNetwork"):
             service = self.socialNetwork
+            nick = self.nick
         else: 
             service = self.getService()
-        nick = self.getUser()
+            nick = self.getUser()
         logging.debug(f"Url: {url} service {service} nick {nick}")
         fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
         logging.debug("File: %s" % fileNameQ)
@@ -198,7 +199,7 @@ class moduleCache(Content,Queue):
 
     def updatePostsCache(self):
         fileNameQ = fileNamePath(self.url, 
-                (self.service, self.user)) + ".queue"
+                (self.socialNetwork, self.nick)) + ".queue"
 
         with open(fileNameQ, 'wb') as f: 
             posts = self.getPosts()
@@ -238,10 +239,10 @@ class moduleCache(Content,Queue):
         return(title)
 
     def getPostLink(self, post):
+        link = ''
         if post:
             link = post[1]
-            return (link)
-        return(None)
+        return (link)
 
     def getPostContentHtml(self, post):
         content = ''

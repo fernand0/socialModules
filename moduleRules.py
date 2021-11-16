@@ -21,18 +21,19 @@ class moduleRules:
         msgLog = f"More: Src {more}"
         logMsg(msgLog, 1, 1)
         if src[0] == 'cache':
-            # if src[2].count('@')>1:
-            #     parts = src[2].split('@')
-            #     sN = parts[0]
-            #     nick = '@'.join(parts[1:])
-            # else:
-            #    sN, nick = src[2].split('@')
-            sN = more['service']
-            nick = more['url']
-            apiSrc = getApi(src[0], (sN, nick))
+            if src[2].count('@')>1:
+                parts = src[2].split('@')
+                sN = parts[0]
+                nick = '@'.join(parts[1:])
+            else:
+               sN, nick = src[2].split('@')
+            sNN = more['service']
+            nickN = more['url']
+            apiSrc = getApi(src[0], (sNN, nickN))
+            apiSrc.socialNetwork = sN
+            apiSrc.nick = nick
         else:
             apiSrc = getApi(src[0], src[2])
-
 
         for option in more:
             if option == 'posts':
@@ -66,15 +67,16 @@ class moduleRules:
         nick = action[3]
         socialNetwork = (profile, nick)
         msgLog = (f"{indent}socialNetwork: {socialNetwork}")
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, 1)
         msgLog = (f"{indent}Action: {action}")
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, 1)
         msgLog = (f"{indent}More: Dst {more}")
-        logMsg(msgLog, 1, 0)
-
+        logMsg(msgLog, 1, 1)
 
         if action[0] == "cache": 
             apiDst = getApi("cache", (action[1], socialNetwork))
+            apiDst.socialNetwork = action[2]
+            apiDst.nick = action[3]
         else: 
             apiDst = getApi(profile, nick) 
 
@@ -170,7 +172,6 @@ class moduleRules:
         logMsg(msgLog, 1, 1)
 
         apiSrc.setLastLink(apiDst)
-        return
 
         myLastLink = apiSrc.getLastLinkPublished()
         lastTime = apiSrc.getLastTimePublished()
@@ -195,7 +196,6 @@ class moduleRules:
         msgLog = (f"{indent}Last link {action[3]}@{action[2]}: {myLastLink}")
         apiSrc.setPosts()
         print(f"{indent}Last link: {lastLink}")
-        return
         if ((src[0] in ['gmail', 'cache'])
                 or (src[3] == 'favs')):
             i = 1
@@ -290,8 +290,11 @@ class moduleRules:
 
             # The source of data can have changes while we were waiting
             apiSrc.setPosts()
+            print(apiSrc.getPosts())
 
+            print(num,i)
             listPosts = apiSrc.getNumPostsData(num, i, lastLink)
+            print(listPosts)
             listPosts2 = apiSrc.getNumNextPost(num)
 
             if listPosts and listPosts[0][1]: 
@@ -494,15 +497,15 @@ class moduleRules:
                     logMsg(msgLog, 1, 1)
 
                 if ((not simmulate) 
-                    and (not res or res 
-                             and ('Status is a duplicate.' in res) 
-                             and ('You have already retweeted' in res) 
-                             or not ('Fail!' in res))):
+                    and (not res or (res 
+                             and (('Status is a duplicate.' in res) 
+                             or ('You have already retweeted' in res) 
+                             or not ('Fail!' in res))))):
                     try:
                         cmdPost = getattr(apiSrc, postaction)
-                        msgLog = (f"[indent]Post Action {postaction} "
+                        msgLog = (f"{indent}Post Action {postaction} "
                                   f"command {cmdPost}")
-                        logMsg(msgLog, 1, 0)
+                        logMsg(msgLog, 1, 1)
                         res = cmdPost(i - 1)
                         msgLog = (f"{indent}End {postaction}, reply: {res}")
                         logMsg(msgLog, 1, 1)

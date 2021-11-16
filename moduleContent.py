@@ -594,9 +594,13 @@ class Content:
             if i < 0:
                 break
             post = self.getPost(i)
+            print("p",post)
             if post:
                 contentHtml = self.getPostContentHtml(post)
-                if contentHtml:
+                print("c",contentHtml)
+                if contentHtml.startswith('http'):
+                    (theContent, theSummaryLinks) = ("", "") 
+                else:
                     soup = BeautifulSoup(contentHtml,'lxml')
                     if hasattr(self, 'getLinksToAvoid') and self.getLinksToAvoid():
                         (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinksToAvoid())
@@ -611,19 +615,45 @@ class Content:
                             theContent = ''
                         logging.debug("theC %s"% theContent)
                     # theSummaryLinks = theContent + '\n' + theSummaryLinks
-                else:
-                    (theContent, theSummaryLinks) = ("", "") 
 
+                field0 =self.getPostTitle(post)
+                print(field0)
+                import time
+                time.sleep(1)
+                field1 = self.getPostLink(post) 
+                print(field1)
+                time.sleep(1)
+                field2 = self.getPostContentLink(post)
+                print(field2)
+                time.sleep(1)
+                field3 = self.getPostImage(post)
+                print(field3)
+                time.sleep(1)
+                field4 =self.getPostContent(post)
+                print(field4)
+                time.sleep(1)
+                field5 = self.getPostContentHtml(post)
+                print(field5)
+                time.sleep(1)
+                field6 =f"{theContent}\n{theSummaryLinks}"
+                print(field6)
+                time.sleep(1)
+                field7 = self.getPostImagesTags(post)
+                print(field7)
+                time.sleep(1)
+                field8 = self.getPostImagesCode(post)
+                print(field8)
+                time.sleep(1)
                 postData = (
-                    self.getPostTitle(post),            #0
-                    self.getPostLink(post),             #1
-                    self.getPostContentLink(post),      #2
-                    self.getPostImage(post),            #3
-                    self.getPostContent(post),          #4
-                    self.getPostContentHtml(post),      #5
-                    f"{theContent}\n{theSummaryLinks}", #6
-                    self.getPostImagesTags(post),       #7
-                    self.getPostImagesCode(post)        #8
+                    field0,            #0
+                    field1,             #1
+                    field2,      #2
+                    field3,            #3
+                    field4,          #4
+                    field5,      #5
+                    field6, #6
+                    field7,       #7
+                    field8        #8
                     )
                 if postData:
                     listPosts.append(postData)
@@ -763,11 +793,11 @@ class Content:
         return result
 
     def delete(self, j):
-        logging.debug(f"Deleting Pos: {j}")
+        print(f"Deleting Pos: {j}")
         post = self.getPost(j)
-        logging.debug(f"Deleting Pos Id: {post}")
+        print(f"Deleting Pos Id: {post}")
         idPost = self.getPostId(self.getPost(j))
-        logging.debug(f"Deleting Pos Id: {idPost}")
+        print(f"Deleting Pos Id: {idPost}")
         result = self.deletePostId(idPost)
         return result
 
@@ -1006,8 +1036,12 @@ class Content:
     def extractPostLinks(self, post, linksToAvoid=""):
         links = []
         if post:
-            soup = BeautifulSoup(self.getPostContentHtml(post), 'lxml')
-            links = self.extractLinks(soup, linksToAvoid)
+            content = self.getPostContentHtml(post)
+            if content.startswith('http'):
+                links = []
+            else:
+                soup = BeautifulSoup(content, 'lxml')
+                links = self.extractLinks(soup, linksToAvoid)
         return  links
 
     def extractLinks(self, soup, linksToAvoid=""):
@@ -1079,7 +1113,7 @@ class Content:
     def getPostContent(self, post):
         res = ''
         summary = self.getPostContentHtml(post)
-        if summary:
+        if not summary.startswith('http'):
             soup = BeautifulSoup(summary, 'lxml')
             res = soup.get_text()
         return  res
