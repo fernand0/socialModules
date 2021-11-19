@@ -238,7 +238,7 @@ class Content:
             service = self.service.lower()
             nick = self.getUser()
             fileName = (f"{fileNamePath(url, (service, nick))}.last")
-        print(f"File: {fileName}")
+        # print(f"File: {fileName}")
 
         lastTime = ''
         linkLast = ''
@@ -292,7 +292,6 @@ class Content:
                 pickle.dump((tNow, tSleep), f) 
         else:
             print(f"Not implemented!")
-        return fileNameNext
 
     def setNumPosts(self, numPosts):
         self.numPosts = numPosts
@@ -597,7 +596,6 @@ class Content:
             print("p",post)
             if post:
                 contentHtml = self.getPostContentHtml(post)
-                print("c",contentHtml)
                 if contentHtml.startswith('http'):
                     (theContent, theSummaryLinks) = ("", "") 
                 else:

@@ -369,47 +369,8 @@ def main():
         print(f"{img.getPostTitle(img.getNextPost()[0])}")
 
     
-    return 
-    accounts = ["Blog21"] #, "Blog20"]
-    for acc in accounts:
-        print("Account: {}".format(acc))
-        img = moduleImgur.moduleImgur()
-        section = acc
-        url = config.get(acc, 'url')
-        img.setUrl(url)
-        name = url.split('/')[-1]
-        img.setClient(name)
-        if 'posts' in config[acc]:
-            print("si")
-            img.setPostsType(config.get(acc, 'posts'))
-        #img.setPostsType('posts')
-        print(img.getPostsType())
-        img.setPosts()
-        # lastLink, lastTime = checkLastLink(img.getUrl(), socialNetwork)
-        for i, p in enumerate(img.getPosts()):
-            link = img.getPostLink(p)
-            print(i, img.getPostTitle(p), img.getPostLink(p))
-        socialNetwork = ('wordpress','avecesunafoto')
-        lastLink, lastTime = checkLastLink(img.getUrl(), socialNetwork)
-        print(lastLink)
-        # i = img.getLinkPosition(lastLink)
-        # print(f"i: {i}")
-        # print(img.getNumPostsData(1,i, lastLink))
-        # print(img.obtainPostData(i))
-        # p = img.getPost(i)
-        # print(i, img.getPostTitle(p), img.getPostLink(p))
-        # # print(img.editApiTitle(p, 'No se su nombre'))
-
-        selection = input("Which one? ")
-        print(selection)
-
-    pos = int(selection)
-
-    post = img.getImages(pos)
-    print(f"Post: {post}")
 
     publishCache = False
-    publishWordpress = True
     if publishCache:
         listPosts = img.getNumPostsData(1, pos, '')
         print(listPosts)
@@ -426,6 +387,7 @@ def main():
         cache.addPosts(listPosts)
 
 
+    publishWordpress = True
     # Testing Wordpress publishing
     img.setSocialNetworks(config)
     print(img.getSocialNetworks())
@@ -433,12 +395,20 @@ def main():
     nick = 'avecesunafoto'
     socialNetwork = (service, nick) #img.getSocialNetworks()[service])
 
+    img.setPostsType('posts')
+    img.setPosts()
+
+    for i, post in enumerate(img.getPosts()[:6]):
+        print(f"{i}) {img.getPostTitle(post)}")
+    pos = int(input("Position? "))+1
+
     if publishWordpress:
         listPosts = img.getNumPostsData(1, pos, '')
+        print(listPosts[0])
         post = listPosts[0]
         title = post[0]
-        postWP = post[9]
-        tags = post[8]
+        postWP = post[-1]
+        tags = post[-2]
         print(title)
         print(postWP)
         print(tags)

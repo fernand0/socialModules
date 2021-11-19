@@ -67,11 +67,11 @@ class moduleRules:
         nick = action[3]
         socialNetwork = (profile, nick)
         msgLog = (f"{indent}socialNetwork: {socialNetwork}")
-        logMsg(msgLog, 2, 1)
+        logMsg(msgLog, 2, 0)
         msgLog = (f"{indent}Action: {action}")
-        logMsg(msgLog, 1, 1)
+        logMsg(msgLog, 1, 0)
         msgLog = (f"{indent}More: Dst {more}")
-        logMsg(msgLog, 1, 1)
+        logMsg(msgLog, 1, 0)
 
         if action[0] == "cache": 
             apiDst = getApi("cache", (action[1], socialNetwork))
@@ -136,7 +136,7 @@ class moduleRules:
         sys.path.append(path)
         from configMod import logMsg
 
-        indent = f" {name}->({action[3]}@{action[2]})] -> "+" "
+        indent = f"    {name}->({action[3]}@{action[2]})] -> "+" "
         # The ']' is opened in executeRules TODO
 
         msgLog = (f"{indent}Sleeping to launch all processes")
@@ -169,7 +169,7 @@ class moduleRules:
 
         num = apiDst.getMax()
         msgLog = (f"{indent}num: {num}")
-        logMsg(msgLog, 1, 1)
+        logMsg(msgLog, 1, 0)
 
         apiSrc.setLastLink(apiDst)
 
@@ -233,7 +233,7 @@ class moduleRules:
             self.testDifferPosts(apiSrc, lastLink, listPosts)
             return
 
-        if num>0:
+        if (num > 0):
             tNow = time.time()
             diffTime = tNow - lastTime
             msgLog = (f"{indent}Src time: {apiSrc.getTime()} "
@@ -241,286 +241,256 @@ class moduleRules:
             logMsg(msgLog, 2, 0)
             hours = float(apiDst.getTime())*60*60
 
-        numAvailable = 0
-        if (num > 0) and (noWait or (diffTime>hours)): 
-            tSleep = random.random()*float(timeSlots)*60
+            numAvailable = 0
 
-            if ((i>0) and (action[0] not in ['cache'])):
-                #and (src[2] != f"{action[2]}@{action[3]}")): 
-                apiSrc.setNextTime(tNow, tSleep, apiDst)
-                fileNameNext = setNextTime(apiDst, socialNetwork, 
-                        tNow, tSleep)
-                with open(fileNameNext,'wb') as f: 
-                    pickle.dump((tNow,tSleep), f)
-                msgLog = (f"{indent}apiSrc: {apiSrc} apiDst: {apiDst}")
-                logMsg(msgLog, 1, 0)
+            if (noWait or (diffTime>hours)): 
+                tSleep = random.random()*float(timeSlots)*60
 
-                text = (f"{indent}Source: {more['url']} ({src[3]}) -> " 
-                        f"\n{indent}Source: {src[2]} ({src[3]}) -> " 
-                        f"Action: {msgAction})")
-                if numAvailable: 
-                    msgLog = (f"{msgLog}\n{indent}Available: "
-                            f"{numAvailable}")
+                if ((i>0) and (action[0] not in ['cache'])):
+                    #and (src[2] != f"{action[2]}@{action[3]}")): 
+                    apiSrc.setNextTime(tNow, tSleep, apiDst)
+                    fileNameNext = setNextTime(apiDst, socialNetwork, 
+                            tNow, tSleep)
+                    with open(fileNameNext,'wb') as f: 
+                        pickle.dump((tNow,tSleep), f)
+                    msgLog = (f"{indent}apiSrc: {apiSrc} apiDst: {apiDst}")
+                    logMsg(msgLog, 1, 0)
+
+                    text = (f"{indent}Source: {more['url']} ({src[3]}) -> " 
+                            f"\n{indent}Source: {src[2]} ({src[3]}) -> " 
+                            f"Action: {msgAction})")
+                    if numAvailable: 
+                        msgLog = (f"{msgLog}\n{indent}Available: "
+                                f"{numAvailable}")
+                        logMsg(text, 1, 0)
+                    msgLog = (f"{indent}{fileNameNext}")
                     logMsg(text, 1, 0)
-                msgLog = (f"{indent}{fileNameNext}")
-                logMsg(text, 1, 0)
 
-            if (tSleep>0.0):
-                msgLog= f"{indent}Waiting {tSleep/60:2.2f} minutes" 
-            else:
-                tSleep = 2.0
-                msgLog= f"{indent}No Waiting"
-            msgLog = f"{msgLog} for action: {msgAction}"
-            logMsg(msgLog, 1, 1)
-
-            time.sleep(tSleep)
-
-            msgLog = (f"{indent}Go!\n"
-                    f"{indent}└-> Action: {msgAction}")
-            logMsg(msgLog, 1, 1)
-
-            # The source of data can have changes while we were waiting
-            apiSrc.setPosts()
-            print(apiSrc.getPosts())
-
-            print(num,i)
-            listPosts = apiSrc.getNumPostsData(num, i, lastLink)
-            print(listPosts)
-            listPosts2 = apiSrc.getNumNextPost(num)
-
-            if listPosts and listPosts[0][1]: 
-                if listPosts2:
-                    if (listPosts == listPosts2):
-                        print("{indent}Equal listPosts")
-                    else:
-                        print(f"{indent}Differ listPosts:\n"
-                              f"{listPosts}\n"
-                              f"{listPosts2}\n")
+                if (tSleep>0.0):
+                    msgLog= f"{indent}Waiting {tSleep/60:2.2f} minutes" 
                 else:
-                    print(f"{indent}No listPosts2")
-                msgLog = f"{indent}Would schedule in {msgAction} ..."
+                    tSleep = 2.0
+                    msgLog= f"{indent}No Waiting"
+
+                msgLog = f"{msgLog} for action: {msgAction}"
                 logMsg(msgLog, 1, 1)
-                indent = f"{indent} "
-                msgLog = (f"{indent}listPosts: {listPosts}")
-                logMsg(msgLog, 2, 0)
-                [ logMsg(f"{indent}- {post[0][:200]}", 1, 1) 
-                            for post in listPosts2
-                ]
-                [ logMsg(f"{indent}- {post[0][:200]}", 1, 1) 
-                            for post in listPosts 
-                ]
-                logMsg(f"{indent}Next post: {nextPost}", 2, 0)
-                # npost = apiSrc.getNextPost()[0]
-                # #logMsg(f"npost {npost}")
-                # if npost:
-                #     ntitle = apiSrc.getPostTitle(npost)
-                #     logMsg(f"{indent}Title Next post: {ntitle}", 1, 1)
-                #     nlink = apiSrc.getPostLink(npost)
-                #     logMsg(f"{indent}Link Next post: {nlink}", 1, 1)
-                #     try:
-                #         extract = apiSrc.extractPostLinks(npost)
-                #     except:
-                #         logMsg(f"{indent}Fail extract!")
-                #         extract = ('','')
-                #     nsummary = f"{extract[0]}\n{extract[1]} "
-                #     #logMsg(f"First link Next post: {apiSrc.getPostContentLink(apiSrc.getNextPost())}", 1, 1)
-                # else:
-                #     logMsg(f"{indent}No npost")
-                #     ntitle = ''
-                #     nsummary = ''
-                #     nlink = ''
-                #     extract = ('','')
 
-                indent = f"{indent[:-1]}"
+                time.sleep(tSleep)
 
-                # Only the last one.
-                title = listPosts[-1][0]
-                # if (title != ntitle):
-                #     print(f"{indent}Differ: t {title} - {ntitle}")
-                link = listPosts[-1][1]
-                # if (link != nlink):
-                #     print(f"{indent}Differ: l {link} - {nlink}")
-                llink = ''
-                firstLink = listPosts[-1][2]
-                summaryLinks = listPosts[-1][6]
-                # if (summaryLinks != extract[0]):
-                #     print(f"{indent}Differ: s {summaryLinks} - {extract[0]}")
-                # if (firstLink != extract[1]):
-                #     print(f"{indent}Differ: f {firstLink} - {extract[1]}")
-                comment = listPosts[-1][-1]
-                tags = listPosts[-1][-2]
-                # ntags = apiSrc.getPostImagesTags(npost)
-                # if (tags != ntags):
-                #     print(f"{indent}Differ: ta {tags} - {ntags}")
+                msgLog = (f"{indent}Go!\n"
+                          f"{indent}└-> Action: {msgAction}")
+                logMsg(msgLog, 1, 1)
 
-                if profile in ['telegram', 'facebook']: 
-                    comment = summaryLinks 
-                elif profile not in 'wordpress':
-                    comment = ''
-                if profile == 'pocket': 
-                    if firstLink: 
-                        link, llink = firstLink, link
+                # The source of data can have changes while we were waiting
+                apiSrc.setPosts()
 
-                msgLog = (f"{indent}title: {title}")
-                logMsg(msgLog, 2, 0)
-                msgLog = (f"{indent}link: {link}")
-                logMsg(msgLog, 2, 0)
-                msgLog = (f"{indent}i: {i}")
-                logMsg(msgLog, 2, 0)
+                listPosts = apiSrc.getNumPostsData(num, i, lastLink)
+                print(listPosts)
+                listPosts2 = apiSrc.getNumNextPost(num)
 
-                if tags: 
-                    msgLog = (f"{indent}Tags {tags}")
+                if listPosts and listPosts[0][1]: 
+                    # if listPosts2:
+                    #     if (listPosts == listPosts2):
+                    #         print("{indent}Equal listPosts")
+                    #     else:
+                    #         print(f"{indent}Differ listPosts:\n"
+                    #               f"{listPosts}\n"
+                    #               f"{listPosts2}\n")
+                    # else:
+                    #     print(f"{indent}No listPosts2")
+                    msgLog = f"{indent}Would schedule in {msgAction} ..."
+                    logMsg(msgLog, 1, 1)
+                    indent = f"{indent} "
+                    msgLog = (f"{indent}listPosts: {listPosts}")
                     logMsg(msgLog, 2, 0)
+                    [ logMsg(f"{indent}- {post[0][:200]}", 1, 1) 
+                                for post in listPosts2
+                    ]
+                    [ logMsg(f"{indent}- {post[0][:200]}", 1, 1) 
+                                for post in listPosts 
+                    ]
+                    logMsg(f"{indent}Next post: {nextPost}", 2, 0)
 
-                msgLog = (f"{indent}I'll publish: {title} - {link}")
-                logMsg(msgLog, 1, 1)
-
-                if not simmulate:
-                    if action[0] == "cache": 
-                        apiDst.setPosts()
-                        res = apiDst.addPosts(listPosts)
-                        res = apiDst.publishPost('', '', '', 
-                                more = (apiSrc, listPosts2))
-                    elif ((action[2] == "twitter") 
-                            and (src[0] == 'twitter')): 
-                        # Is this the correct place?
-                        idPost = link.split('/')[-1]
-                        msgLog = (f"{indent}I'll publish: {title} "
-                                  "- {link}")
-                        logMsg(msgLog, 1, 1)
-                        msgLog = (f"{indent}I'll publish: {title} "
-                                  f"- {link} - {idPost}")
-                        logMsg(msgLog, 1, 1)
-                        res = apiDst.publishApiRT((title, link, 
-                                                   comment, 
-                                                   {'idPost' : idPost}))
-                        link =  listPosts[-1][1]
-                    elif ((action[2] == "twitter") 
-                            and (action[1] == 'rt')): 
-                        msgLog = (f"{indent}Fail! Nothing to be done")
-                        logMsg(msgLog, 1, 1)
-                        res = "Fail! Nothing to be done"
-                    else: 
-                        res = None
-                        if hasattr(apiDst, 'service'):
-                            clsService = getModule(apiDst.service)
-                            if hasattr(apiDst, "publishPost"):
-                                if profile in ['tumblr']: 
-                                    # For the cache we use the origin's
-                                    # url but sometimes we need the url
-                                    # of the service
-                                    apiDst.setUrl(
-                                        f"https://{apiDst.user}.tumblr.com/")
-                                    res = apiDst.publishPost(title, 
-                                            link, comment)
-                                elif profile in ['wordpress']: 
-                                    res = apiDst.publishPost(title, 
-                                                             link, 
-                                                             comment, 
-                                                             tags=tags)
-                                    if '401' in res:
-                                        res = f"Fail! {res}"
-                                else: 
-                                    if not tags: 
-                                        tags = (apiSrc, listPosts2)
-                                    res = apiDst.publishPost(title, 
-                                                             link, 
-                                                             comment, 
-                                                             tags=tags)
-                            else: 
-                                res = apiDst.publish(i) 
                     indent = f"{indent[:-1]}"
 
-                    if ((not res) or (res and 
-                        (('You have already retweeted' in res) or 
-                         ('Status is a duplicate.' in res) or 
-                            not ('Fail!' in res)))):
-                        msgLog = (f"{indent}End publish, reply: {res}")
-                        logMsg(msgLog, 1, 1)
+                    # Only the last one.
+                    title = listPosts[-1][0]
+                    link = listPosts[-1][1]
+                    llink = ''
+                    firstLink = listPosts[-1][2]
+                    summaryLinks = listPosts[-1][6]
+                    comment = listPosts[-1][-1]
+                    tags = listPosts[-1][-2]
 
-                        if llink:
-                            link = llink
-                        if link and (src[0] not in ['cache']):  
-                            if isinstance(lastLink, list):
-                                link = "\n".join(
-                                    [
-                                        "{}".format(post[1])
-                                        for post in reversed(listPosts)
-                                    ]
-                                )
-                                link = link + "\n" + "\n".join(lastLink)
-                            logging.info(f"Link: {link}")
-                            try:
-                                logging.info(f"self Link: {apiDst.lastLink}")
-                            except:
-                                logging.info(f"self Link: ")
-                            updateLastLink(apiDst.getUrl(), 
-                                            link, socialNetwork)
-                            apiSrc.updateLastLink(apiDst, link)
-                        elif link and (src[0] in ['cache']):  
-                            apiSrc.updateLastLink(apiDst, link)
-                    else:
-                        if res.find('Status is a duplicate')>=0:
-                            msgLog = (f"{indent}End publish, "
-                                      f"reply: {res}")
+                    if tags: 
+                        msgLog = (f"{indent}Tags {tags}")
+                        logMsg(msgLog, 2, 0)
+
+                    if profile in ['telegram', 'facebook']: 
+                        comment = summaryLinks 
+                    elif profile not in 'wordpress':
+                        comment = ''
+                    if profile == 'pocket': 
+                        if firstLink: 
+                            link, llink = firstLink, link
+
+                    msgLog = (f"{indent}title: {title}")
+                    logMsg(msgLog, 2, 0)
+                    msgLog = (f"{indent}link: {link}")
+                    logMsg(msgLog, 2, 0)
+                    msgLog = (f"{indent}i: {i}")
+                    logMsg(msgLog, 2, 0)
+
+                    msgLog = (f"{indent}I'll publish: {title} - {link}")
+                    logMsg(msgLog, 1, 1)
+
+                    if not simmulate:
+                        if action[0] == "cache": 
+                            apiDst.setPosts()
+                            res = apiDst.addPosts(listPosts)
+                            res = apiDst.publishPost('', '', '', 
+                                    more = (apiSrc, listPosts2))
+                        elif ((action[2] == "twitter") 
+                                and (src[0] == 'twitter')): 
+                            # Is this the correct place?
+                            idPost = link.split('/')[-1]
+                            msgLog = (f"{indent}I'll publish: {title} "
+                                      "- {link}")
+                            logMsg(msgLog, 1, 1)
+                            msgLog = (f"{indent}I'll publish: {title} "
+                                      f"- {link} - {idPost}")
+                            logMsg(msgLog, 1, 1)
+                            res = apiDst.publishApiRT((title, link, 
+                                                       comment, 
+                                                       {'idPost' : idPost}))
+                            link =  listPosts[-1][1]
+                        elif ((action[2] == "twitter") 
+                                and (action[1] == 'rt')): 
+                            msgLog = (f"{indent}Fail! Nothing to be done")
+                            logMsg(msgLog, 1, 1)
+                            res = "Fail! Nothing to be done"
+                        else: 
+                            res = None
+                            if hasattr(apiDst, 'service'):
+                                clsService = getModule(apiDst.service)
+                                if hasattr(apiDst, "publishPost"):
+                                    if profile in ['tumblr']: 
+                                        # For the cache we use the origin's
+                                        # url but sometimes we need the url
+                                        # of the service
+                                        apiDst.setUrl(
+                                            f"https://{apiDst.user}.tumblr.com/")
+                                        res = apiDst.publishPost(title, 
+                                                link, comment)
+                                    elif profile in ['wordpress']: 
+                                        res = apiDst.publishPost(title, 
+                                                                 link, 
+                                                                 comment, 
+                                                                 tags=tags)
+                                        if '401' in res:
+                                            res = f"Fail! {res}"
+                                    else: 
+                                        if not tags: 
+                                            tags = (apiSrc, listPosts2)
+                                        res = apiDst.publishPost(title, 
+                                                                 link, 
+                                                                 comment, 
+                                                                 tags=tags)
+                                else: 
+                                    res = apiDst.publish(i) 
+                        indent = f"{indent[:-1]}"
+
+                        if ((not res) or (res and 
+                            (('You have already retweeted' in res) or 
+                             ('Status is a duplicate.' in res) or 
+                                not ('Fail!' in res)))):
+                            msgLog = (f"{indent}End publish, reply: {res}")
+                            logMsg(msgLog, 1, 1)
+
+                            if llink:
+                                link = llink
+                            if link and (src[0] not in ['cache']):  
+                                if isinstance(lastLink, list):
+                                    link = "\n".join(
+                                        [
+                                            "{}".format(post[1])
+                                            for post in reversed(listPosts)
+                                        ]
+                                    )
+                                    link = link + "\n" + "\n".join(lastLink)
+                                logging.info(f"Link: {link}")
+                                try:
+                                    logging.info(f"self Link: {apiDst.lastLink}")
+                                except:
+                                    logging.info(f"self Link: ")
+                                updateLastLink(apiDst.getUrl(), 
+                                                link, socialNetwork)
+                                apiSrc.updateLastLink(apiDst, link)
+                            elif link and (src[0] in ['cache']):  
+                                apiSrc.updateLastLink(apiDst, link)
                         else:
-                            msgLog = (f"{indent}End publish, "
-                                      f"reply: {res}")
+                            if res.find('Status is a duplicate')>=0:
+                                msgLog = (f"{indent}End publish, "
+                                          f"reply: {res}")
+                            else:
+                                msgLog = (f"{indent}End publish, "
+                                          f"reply: {res}")
+                            logMsg(msgLog, 1, 1)
+                    else:
+                        msgLog = (f"{indent}This is a simmulation")
                         logMsg(msgLog, 1, 1)
+                        msgLog = (f"{indent}I'd record link: {link}")
+                        logMsg(msgLog, 1, 1)
+                        fN = fileNamePath(apiDst.getUrl(), socialNetwork)
+                        msgLog = (f"{indent}in file ", f"{fN}.last")
+                        logMsg(msgLog, 1, 1)
+                        msgLog = (f"{indent}in file ", 
+                                  f"{apiSrc.fileNameBase(apiDst)}.last")
+                        logMsg(msgLog, 1, 1)
+                        # apiSrc.updateLastLink(apiDst, link)
+
+                    postaction = apiSrc.getPostAction()
+                    if (not postaction) and (src[0] in ["cache"]):
+                        postaction = "delete"
+                    if postaction:
+                        msgLog = (f"{indent} Post Action {postaction}")
+                        logMsg(msgLog, 1, 1)
+
+                    if ((not simmulate) 
+                        and (not res or (res 
+                                 and (('Status is a duplicate.' in res) 
+                                 or ('You have already retweeted' in res) 
+                                 or not ('Fail!' in res))))):
+                        try:
+                            cmdPost = getattr(apiSrc, postaction)
+                            msgLog = (f"{indent}Post Action {postaction} "
+                                      f"command {cmdPost}")
+                            logMsg(msgLog, 1, 1)
+                            res = cmdPost(i - 1)
+                            msgLog = (f"{indent}End {postaction}, reply: {res}")
+                            logMsg(msgLog, 1, 1)
+                        except:
+                            msgLog = (f"{indent}No postaction or wrong one")
+                            logMsg(msgLog, 1, 1)
+                    
+                    msgLog = (f"{indent}Available {len(apiSrc.getPosts())-1}")
+                    logMsg(msgLog, 1, 1)
                 else:
-                    msgLog = (f"{indent}This is a simmulation")
+                    msgLog = f"{indent}Empty listPosts or some problem {listPosts}"
+                    # Sometimes the module (moduleGmail) returns a list of None
+                    # values
                     logMsg(msgLog, 1, 1)
-                    msgLog = (f"{indent}I'd record link: {link}")
-                    logMsg(msgLog, 1, 1)
-                    fN = fileNamePath(apiDst.getUrl(), socialNetwork)
-                    msgLog = (f"{indent}in file ", f"{fN}.last")
-                    logMsg(msgLog, 1, 1)
-                    msgLog = (f"{indent}in file ", 
-                              f"{apiSrc.fileNameBase(apiDst)}.last")
-                    logMsg(msgLog, 1, 1)
-                    # apiSrc.updateLastLink(apiDst, link)
-
-                postaction = apiSrc.getPostAction()
-                if (not postaction) and (src[0] in ["cache"]):
-                    postaction = "delete"
-                if postaction:
-                    msgLog = (f"{indent} Post Action {postaction}")
-                    logMsg(msgLog, 1, 1)
-
-                if ((not simmulate) 
-                    and (not res or (res 
-                             and (('Status is a duplicate.' in res) 
-                             or ('You have already retweeted' in res) 
-                             or not ('Fail!' in res))))):
-                    try:
-                        cmdPost = getattr(apiSrc, postaction)
-                        msgLog = (f"{indent}Post Action {postaction} "
-                                  f"command {cmdPost}")
-                        logMsg(msgLog, 1, 1)
-                        res = cmdPost(i - 1)
-                        msgLog = (f"{indent}End {postaction}, reply: {res}")
-                        logMsg(msgLog, 1, 1)
-                    except:
-                        msgLog = (f"{indent}No postaction or wrong one")
-                        logMsg(msgLog, 1, 1)
-                
-                msgLog = (f"{indent}Available {len(apiSrc.getPosts())-1}")
-                logMsg(msgLog, 1, 1)
-            else:
-                msgLog = f"{indent}Empty listPosts or some problem {listPosts}"
-                # Sometimes the module (moduleGmail) returns a list of None
-                # values
-                logMsg(msgLog, 1, 1)
-        else:
-            if (num<=0):
-                msgLog = (f"{indent}No posts available")
-                logMsg(msgLog, 1, 1)
             elif (diffTime<=hours):
                 msgLog = (f"{indent}Not enough time passed. "
                           f"We will wait at least " 
                           f"{(hours-diffTime)/(60*60):2.2f} hours.")
                 logMsg(msgLog, 1, 1)
  
+        else:
+            if (num<=0):
+                msgLog = (f"{indent}No posts available")
+                logMsg(msgLog, 1, 1)
+
         return textEnd
 
     def hasSetMethods(self, service):
