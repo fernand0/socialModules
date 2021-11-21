@@ -98,9 +98,12 @@ class moduleFacebook(Content,Queue):
                 logging.info("     Link: {}".format(res))
         return(res)
 
-    def publishApiPost(self, *postData):
-        post, link, comment, plus = postData
-        post = self.addComment(post, comment)
+    def publishApiPost(self, *args, **kwargs):
+        if len(args) == 3:
+            post, link, comment = args
+            plus = kwargs
+            post = self.addComment(post, comment)
+
 
         if not self.page:
             self.setPage(self.user)

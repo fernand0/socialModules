@@ -52,7 +52,7 @@ class moduleTelegram(Content):
                 meMySelf = bot.getMe()
             except:
                 logging.warning("Telegram authentication failed!")
-                logging.warning("Unexpected error:", sys.exc_info()[0])
+                # logging.warning("Unexpected error:", sys.exc_info())
         except:
             logging.warning("Account not configured")
             bot = None
@@ -74,60 +74,66 @@ class moduleTelegram(Content):
         else:
             return(self.report('Telegram', post, sys.exc_info()))
 
+    # def publishApiPost(self, *args, **kwargs):
+    #     title, link, comment = args
+    #     more = kwargs
+    #     print("...",title, link, comment, more)
+
+    #     bot = self.getClient()
+    #     content = comment
+    #     links = ""
+    #     channel = self.user
+
+    #     from html.parser import HTMLParser
+    #     h = HTMLParser()
+    #     title = h.unescape(title)
+    #     content = content.replace('<', '&lt;')
+    #     text = ('<a href="'+link+'">'
+    #             + title + "</a>\n" + content + '\n\n' + links)
+    #     textToPublish2 = ""
+    #     if len(text) < 4090:
+    #         textToPublish = text
+    #         links = ""
+    #     else:
+    #         text = '<a href="'+link+'">'+title + "</a>\n" + content
+    #         textToPublish = text[:4080] + ' ...'
+    #         textToPublish2 = '... ' + text[4081:]
+
+    #     logging.debug("Publishing (text to )" + textToPublish)
+    #     logging.debug("Publishing (text to 2)" + textToPublish2)
 
 
-    def publishApiPost(self, postData):
-        post, link, comment, plus = postData
+    #     try:
+    #         bot.sendMessage('@'+channel, textToPublish, parse_mode='HTML')
+    #     except:
+    #         return(self.report('Telegram', textToPublish,
+    #             link, sys.exc_info()))
 
-        bot = self.getClient()
-        title = post
-        content = comment
-        links = ""
-        channel = self.user
+    #     if textToPublish2:
+    #         try:
+    #             bot.sendMessage('@'+channel, textToPublish2[:4090],
+    #                             parse_mode='HTML')
+    #         except:
+    #             bot.sendMessage('@'+channel, "Text is longer",
+    #                             parse_mode='HTML')
+    #     if links:
+    #         bot.sendMessage('@'+channel, links, parse_mode='HTML')
 
-        from html.parser import HTMLParser
-        h = HTMLParser()
-        title = h.unescape(title)
-        content = content.replace('<', '&lt;')
-        text = ('<a href="'+link+'">'
-                + title + "</a>\n" + content + '\n\n' + links)
-        textToPublish2 = ""
-        if len(text) < 4090:
-            textToPublish = text
-            links = ""
-        else:
-            text = '<a href="'+link+'">'+title + "</a>\n" + content
-            textToPublish = text[:4080] + ' ...'
-            textToPublish2 = '... ' + text[4081:]
-
-        logging.debug("Publishing (text to )" + textToPublish)
-        logging.debug("Publishing (text to 2)" + textToPublish2)
-
-
-        try:
-            bot.sendMessage('@'+channel, textToPublish, parse_mode='HTML')
-        except:
-            return(self.report('Telegram', textToPublish,
-                link, sys.exc_info()))
-
-        if textToPublish2:
-            try:
-                bot.sendMessage('@'+channel, textToPublish2[:4090],
-                                parse_mode='HTML')
-            except:
-                bot.sendMessage('@'+channel, "Text is longer",
-                                parse_mode='HTML')
-        if links:
-            bot.sendMessage('@'+channel, links, parse_mode='HTML')
-
-    def publishApiPost(self, postData):
-        post, link, comment, more = postData
+    def publishApiPost(self, *args): #, **kwargs):
+        title, link, comment, more = args
         logging.info("    Publishing in Telegram...")
-        bot = self.client
-        title = post
-        content = comment
+        bot = self.getClient()
+        if 'post' in more:
+            contentHtml = more['api'].getPostContentHtml(more['post'])
+            print(f"contentHtml: {contentHtml}")
+            soup = BeautifulSoup(contentHtml,'lxml')
+            (theContent, theSummaryLinks) = more['api'].extractLinks(soup, "")
+            content = f"{theContent}\n{theSummaryLinks}"
+        else:
+            content = comment
         links = ""
         channel = self.user
+        print(f"content: {content}")
 
         logging.info(f"{self.service}: Title: {title} Link: {link}")
         text = ('<a href="'+link+'">' + title+ "</a>\n")
@@ -151,6 +157,7 @@ class moduleTelegram(Content):
             logging.info("Publishing (text to 2)" + textToPublish2)
 
         if textToPublish:
+            print(f"text: {textToPublish}")
             try:
                 bot.sendMessage('@'+channel, textToPublish, parse_mode='HTML')
             except:
@@ -189,8 +196,14 @@ def main():
     tel.setClient('testFernand0')
     # tel.setChannel('testFernand0')
 
-    res = tel.publishImage("Prueba imagen", "/tmp/prueba.png")
+    testingImage = False
+    if testingImage:
+        res = tel.publishImage("Prueba imagen", "/tmp/prueba.png")
 
+    testingPost = True
+    if testingPost:
+        more = {'api': 'lala', 'post': 'lele'}
+        res = tel.publishPost("Prueba imagen", "/tmp/prueba.png", '', more) 
     # print("Testing posts")
     # tel.setPosts()
 

@@ -69,8 +69,9 @@ class moduleMastodon(Content, Queue):
         print(f"res: {res}")
         return res
 
-    def publishApiPost(self, postData):
-        post, link, comment, plus = postData
+    def publishApiPost(self, *args, **kwargs):
+        post, link, comment = args
+        plus = kwargs
         post = self.addComment(post, comment)
 
         res = 'Fail!'

@@ -742,15 +742,15 @@ class Content:
             return self.report(self.service, post, image, sys.exc_info())
 
     def publishPost(self, *args, **more):
-        print("publishPost")
+        print(f"publishPost")
 
         if len(args) == 3:
-            post = args[0]
+            title = args[0]
             link = args[1]
             comment = args[2]
-
-            logging.info(f"    Publishing post {post} in {self.service}: {link}")
-            print(f"    Publishing in {self.service}: {post}")
+            logging.info(f"    Publishing post {title} in {self.service}: "
+                         f"{link}")
+            print(f"    Publishing in {self.service}: {title}")
             print(f"    Publishing in {self.service}: {link}")
             print(f"    Publishing in {self.service}: {comment}")
             print(f"    Publishing in {self.service}: {more}")
@@ -758,31 +758,38 @@ class Content:
             if 'tags' in more:
                 print(f"    Publishing in {self.service}: {type(more['tags'])}")
 
-            reply = 'Fail!'
-            try:
-                if (hasattr(self, 'getPostsType')
-                        and (self.getPostsType())
-                        and (hasattr(self,
-                            f"publishApi{self.getPostsType().capitalize()}"))):
-                    method = getattr(self,
-                            f"publishApi{self.getPostsType().capitalize()}")
-                    reply = method((post, link, comment, more))
-                else:
-                    reply = self.publishApiPost(post, link, comment, more)
-                return self.processReply(reply)
-            except:
-                return self.report(self.service, post, link, sys.exc_info())
         elif len(args) == 2:
             apiSrc= args[0]
             listPosts = args[1]
             logging.info(f"    Publishing posts {listPosts} in {self.service}")
             print(f"    Publishing in {self.service}: {listPosts}")
-
-            return
+            for post in listPosts:
+                title = apiSrc.getPostTitle(post)
+                link = apiSrc.getPostLink(post)
+                comment = ''
+                more = {'api': apiSrc, 'post': post}
+                print(f"Title: {title}")
+                print(f"Link: {link}")
         else:
-            post = ''
+            title = ''
             link = ''
             comment = ''
+
+        reply = 'Fail!'
+        try:
+            if (hasattr(self, 'getPostsType')
+                    and (self.getPostsType())
+                    and (hasattr(self,
+                        f"publishApi{self.getPostsType().capitalize()}"))):
+                method = getattr(self,
+                        f"publishApi{self.getPostsType().capitalize()}")
+                reply = method(title, link, comment, more)
+            else:
+                print(f"t: {title},l: {link}, c: {comment}, m: {more}")
+                reply = self.publishApiPost(title, link, comment, more)
+            return self.processReply(reply)
+        except:
+            return self.report(self.service, title, link, sys.exc_info())
 
 
     def deletePostId(self, idPost):

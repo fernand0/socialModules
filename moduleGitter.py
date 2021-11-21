@@ -65,14 +65,15 @@ class moduleGitter(Content,Queue):
 
     def setApiPosts(self):
         if not self.channel:
+            # FIXME
             self.setChannel('fernand0errbot/links')
         posts = []
         try:
-            history = self.getClient().messages.list(self.getChannel())
-            posts = history
+            if self.getClient():
+                history = self.getClient().messages.list(self.getChannel())
+                posts = history
         except:
             logging.warning(self.report(self.service, "", "", sys.exc_info()))
-            posts = []
 
         return posts
 
@@ -341,8 +342,8 @@ def main():
     site.setUrl(url)
     site.setClient(url)
 
-    print(site.getClient().check_auth()[0])
-    # theChannel = site.getChanId(CHANNEL)
+    print(site.getClient().check_auth()) #[0])
+    # theChannel = site.getChanId(CHANNEL)  
     # print("the Channel %s" % theChannel)
 
     CHANNEL = 'fernand0errbot/links'
