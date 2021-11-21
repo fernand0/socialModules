@@ -35,7 +35,7 @@ class Content:
         self.xmlrpc = None
         self.search = None
         self.api = {}
-        self.lastLinkPublished = None 
+        self.lastLinkPublished = None
         self.numPosts = 0
         self.user = None
         self.client = None
@@ -135,7 +135,7 @@ class Content:
                     self, f"setApi{self.getPostsType().capitalize()}"
                 )
         else:
-            cmd = getattr(self, "setApiPosts") 
+            cmd = getattr(self, "setApiPosts")
 
         logging.debug(f"Cmd: {cmd}")
         posts = cmd()
@@ -175,27 +175,27 @@ class Content:
             typeDst = 'posts'
 
         fileName = (f"{nameSrc}_{typeSrc}_"
-                    f"{src.getUser()}_{src.getService()}__" 
+                    f"{src.getUser()}_{src.getService()}__"
                     f"{nameDst}_{typeDst}_"
                     f"{dst.getUser()}_{dst.getService()}")
-        fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}") 
+        fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
         return fileName
 
     def updateLastLink(self, dst, link):
         fileName = f"{self.fileNameBase(dst)}.last"
         # print(f"fil: {fileName} {fileName1}")
-        with open(fileName, "w") as f: 
-            if isinstance(link, bytes): 
+        with open(fileName, "w") as f:
+            if isinstance(link, bytes):
                 f.write(link.decode())
-            elif isinstance(link, str): 
+            elif isinstance(link, str):
                 f.write(link)
             else:
                 f.write(link[0])
 
-    def getLastLinkNew(self, dst):        
+    def getLastLinkNew(self, dst):
         return self.lastLinkPublished
 
-    def getLastLink(self):        
+    def getLastLink(self):
         url = self.getUrl()
         service = self.service.lower()
         nick = self.getUser()
@@ -211,18 +211,18 @@ class Content:
         if service in ['html']:
             linkLast = ''
         elif os.path.isfile(fileName):
-            with open(fileName, "rb") as f: 
+            with open(fileName, "rb") as f:
                 linkLast = f.read().decode().split()  # Last published
         else:
             # File does not exist, we need to create it.
             # Should we create it here? It is a reading function!!
             with open(fileName, "wb") as f:
                 logging.warning("File %s does not exist. Creating it."
-                        % fileName) 
-                linkLast = ''  
+                        % fileName)
+                linkLast = ''
                 # None published, or non-existent file
         lastLink = ''
-        if len(linkLast) == 1: 
+        if len(linkLast) == 1:
             logging.info(f"linkLast len 1 {linkLast}")
             lastLink = linkLast[0]
         else:
@@ -246,17 +246,17 @@ class Content:
             logMsg("No directory {} exists".format(os.path.dirname(fileName)),
                     1, 1)
         if os.path.isfile(fileName):
-            with open(fileName, "rb") as f: 
+            with open(fileName, "rb") as f:
                 linkLast = f.read().decode().split()  # Last published
             lastTime = os.path.getctime(fileName)
-        
+
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime
 
     def getLastTime(self, other = None):
         lastTime = 0.0
         myLastLink = ""
-        # You always need to check lastLink? 
+        # You always need to check lastLink?
         # Example: gmail, Twitter
         if other:
             fileName = self.fileNameBase(other)
@@ -288,8 +288,8 @@ class Content:
         fileNameNext = ''
         if dst:
             fileNameNext = f"{self.fileNameBase(dst)}.timeNext"
-            with open(fileNameNext,'wb') as f: 
-                pickle.dump((tNow, tSleep), f) 
+            with open(fileNameNext,'wb') as f:
+                pickle.dump((tNow, tSleep), f)
         else:
             print(f"Not implemented!")
 
@@ -422,7 +422,7 @@ class Content:
         if res:
             for iimg in res:
                 print(iimg)
-                       
+
                 if iimg[2]:
                     description = iimg[2]
                 else:
@@ -431,7 +431,7 @@ class Content:
                 if description:
                     import string
 
-                    if (iimg[1] and iimg[1].endswith(" ") 
+                    if (iimg[1] and iimg[1].endswith(" ")
                             or iimg[1].endswith("\xa0")):
                         # \xa0 is actually non-breaking space in Latin1 (ISO
                         # 8859-1), also chr(160).
@@ -452,19 +452,19 @@ class Content:
                                   f"wp-image-3306' src='{iimg[0]}' "
                                   f"alt='{title} {description}' "
                                   f"width='776' height='1035' />")
- 
+
                     if title[-1] in string.punctuation:
                         text = (
                             '{}\n<p><h4>{}</h4></p><p><a href="{}">'
                             #'<img class="alignnone size-full '
-                            #'wp-image-3306" src="{}" 
+                            #'wp-image-3306" src="{}"
                             '{} </a></p>'.format( text, description, url, srcTxt)
                             )
                     else:
                         text = (
                             '{}\n<p><h4>{}</h4></p><p><a href="{}">'
                             #'<img class="alignnone size-full '
-                            #'wp-image-3306" src="{}" 
+                            #'wp-image-3306" src="{}"
                             '{} /></a></p>'.format( text, description, url, srcTxt)
                             )
                 else:
@@ -481,7 +481,7 @@ class Content:
                                   f"width='776' height='1035' /></a>")
                     text = (
                         '{}\n<p>'#<img class="alignnone '
-                        #'size-full wp-image-3306" src="{}" 
+                        #'size-full wp-image-3306" src="{}"
                         '{} '
                         #'alt="{} {}"'
                         #'width="776" height="1035" />
@@ -497,7 +497,7 @@ class Content:
         text = ""
         for iimg in res:
             print(iimg)
-                   
+
             if iimg[2]:
                 description = iimg[2]
             else:
@@ -506,7 +506,7 @@ class Content:
             if description:
                 import string
 
-                if (iimg[1] and iimg[1].endswith(" ") 
+                if (iimg[1] and iimg[1].endswith(" ")
                         or iimg[1].endswith("\xa0")):
                     # \xa0 is actually non-breaking space in Latin1 (ISO
                     # 8859-1), also chr(160).
@@ -527,19 +527,19 @@ class Content:
                               f"wp-image-3306' src='{iimg[0]}' "
                               f"alt='{title} {description}' "
                               f"width='776' height='1035' />")
- 
+
                 if title[-1] in string.punctuation:
                     text = (
                         '{}\n<p><h4>{}</h4></p><p><a href="{}">'
                         #'<img class="alignnone size-full '
-                        #'wp-image-3306" src="{}" 
+                        #'wp-image-3306" src="{}"
                         '{} </a></p>'.format( text, description, url, srcTxt)
                         )
                 else:
                     text = (
                         '{}\n<p><h4>{}</h4></p><p><a href="{}">'
                         #'<img class="alignnone size-full '
-                        #'wp-image-3306" src="{}" 
+                        #'wp-image-3306" src="{}"
                         '{} /></a></p>'.format( text, description, url, srcTxt)
                         )
             else:
@@ -556,7 +556,7 @@ class Content:
                               f"width='776' height='1035' /></a>")
                 text = (
                     '{}\n<p>'#<img class="alignnone '
-                    #'size-full wp-image-3306" src="{}" 
+                    #'size-full wp-image-3306" src="{}"
                     '{} '
                     #'alt="{} {}"'
                     #'width="776" height="1035" />
@@ -575,7 +575,7 @@ class Content:
                 posLast = 1
             else:
                 lastLink = self.getLastLinkPublished()
-                print(f"lastLink: {lastLink}")
+                # print(f"lastLink: {lastLink}")
                 if lastLink:
                     posLast = self.getLinkPosition(lastLink)
                 else:
@@ -583,65 +583,62 @@ class Content:
 
         return posLast
 
-    def getNumNextPost(self, num):
+    def getNumNextPosts(self, num):
         listPosts = []
         posLast = self.getPosNextPost()
         i = posLast
         # print(f"iiii: {i}")
-        for j in range(num, 0, -1): 
+        for j in range(num, 0, -1):
             i = i - 1
             if i < 0:
                 break
             post = self.getPost(i)
-            print("p",post)
+            if post:
+                listPosts.append(post)
+
+        return listPosts
+
+    def getNumNextPost(self, num):
+        # To be abandonded? TODO
+        listPosts = []
+        posLast = self.getPosNextPost()
+        i = posLast
+        # print(f"iiii: {i}")
+        for j in range(num, 0, -1):
+            i = i - 1
+            if i < 0:
+                break
+            post = self.getPost(i)
+            # print("p",post)
             if post:
                 contentHtml = self.getPostContentHtml(post)
                 if contentHtml.startswith('http'):
-                    (theContent, theSummaryLinks) = ("", "") 
+                    (theContent, theSummaryLinks) = ("", "")
                 else:
                     soup = BeautifulSoup(contentHtml,'lxml')
                     if hasattr(self, 'getLinksToAvoid') and self.getLinksToAvoid():
                         (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinksToAvoid())
                         logging.debug("theC %s" % theContent)
-                        if theContent.startswith('Anuncios'): 
+                        if theContent.startswith('Anuncios'):
                             theContent = ''
                             logging.debug("theC %s"% theContent)
                     else:
-                        (theContent, theSummaryLinks) = self.extractLinks(soup, "") 
+                        (theContent, theSummaryLinks) = self.extractLinks(soup, "")
                         logging.debug("theC %s"% theContent)
-                        if theContent.startswith('Anuncios'): 
+                        if theContent.startswith('Anuncios'):
                             theContent = ''
                         logging.debug("theC %s"% theContent)
                     # theSummaryLinks = theContent + '\n' + theSummaryLinks
 
                 field0 =self.getPostTitle(post)
-                print(field0)
-                import time
-                time.sleep(1)
-                field1 = self.getPostLink(post) 
-                print(field1)
-                time.sleep(1)
+                field1 = self.getPostLink(post)
                 field2 = self.getPostContentLink(post)
-                print(field2)
-                time.sleep(1)
                 field3 = self.getPostImage(post)
-                print(field3)
-                time.sleep(1)
                 field4 =self.getPostContent(post)
-                print(field4)
-                time.sleep(1)
                 field5 = self.getPostContentHtml(post)
-                print(field5)
-                time.sleep(1)
                 field6 =f"{theContent}\n{theSummaryLinks}"
-                print(field6)
-                time.sleep(1)
                 field7 = self.getPostImagesTags(post)
-                print(field7)
-                time.sleep(1)
                 field8 = self.getPostImagesCode(post)
-                print(field8)
-                time.sleep(1)
                 postData = (
                     field0,            #0
                     field1,             #1
@@ -743,30 +740,50 @@ class Content:
             return self.processReply(reply)
         except:
             return self.report(self.service, post, image, sys.exc_info())
-       
-    def publishPost(self, post, link="", comment="", **more):
-        print("publishPost")
-        print(f"    Publishing in {self.service}: {post}")
-        print(f"    Publishing in {self.service}: {link}")
-        print(f"    Publishing in {self.service}: {comment}")
-        print(f"    Publishing in {self.service}: {more}")
-        if 'tags' in more:
-            print(f"    Publishing in {self.service}: {type(more['tags'])}")
 
-        reply = 'Fail!'
-        try:
-            if (hasattr(self, 'getPostsType') 
-                    and (self.getPostsType())
-                    and (hasattr(self, 
-                        f"publishApi{self.getPostsType().capitalize()}"))): 
-                method = getattr(self, 
-                        f"publishApi{self.getPostsType().capitalize()}")
-                reply = method((post, link, comment, more))
-            else:
-                reply = self.publishApiPost((post, link, comment, more))
-            return self.processReply(reply)
-        except:
-            return self.report(self.service, post, link, sys.exc_info())
+    def publishPost(self, *args, **more):
+        print("publishPost")
+
+        if len(args) == 3:
+            post = args[0]
+            link = args[1]
+            comment = args[2]
+
+            logging.info(f"    Publishing post {post} in {self.service}: {link}")
+            print(f"    Publishing in {self.service}: {post}")
+            print(f"    Publishing in {self.service}: {link}")
+            print(f"    Publishing in {self.service}: {comment}")
+            print(f"    Publishing in {self.service}: {more}")
+
+            if 'tags' in more:
+                print(f"    Publishing in {self.service}: {type(more['tags'])}")
+
+            reply = 'Fail!'
+            try:
+                if (hasattr(self, 'getPostsType')
+                        and (self.getPostsType())
+                        and (hasattr(self,
+                            f"publishApi{self.getPostsType().capitalize()}"))):
+                    method = getattr(self,
+                            f"publishApi{self.getPostsType().capitalize()}")
+                    reply = method((post, link, comment, more))
+                else:
+                    reply = self.publishApiPost(post, link, comment, more)
+                return self.processReply(reply)
+            except:
+                return self.report(self.service, post, link, sys.exc_info())
+        elif len(args) == 2:
+            apiSrc= args[0]
+            listPosts = args[1]
+            logging.info(f"    Publishing posts {listPosts} in {self.service}")
+            print(f"    Publishing in {self.service}: {listPosts}")
+
+            return
+        else:
+            post = ''
+            link = ''
+            comment = ''
+
 
     def deletePostId(self, idPost):
         logging.debug(f"Deleting: {idPost}")
@@ -866,7 +883,7 @@ class Content:
         self.lastLinkPublished[socialNetwork] = (lastLink, lastTime)
 
     def getLastLinkPublished(self):
-        if self.lastLinkPublished and (len(self.lastLinkPublished) == 1): 
+        if self.lastLinkPublished and (len(self.lastLinkPublished) == 1):
             logging.info(f"linkLast len 1 {self.lastLinkPublished}")
             lastLink = self.lastLinkPublished[0]
         else:
@@ -1152,7 +1169,7 @@ class Content:
         x = Content()
         res = x.getPostImages(post)
         tags = []
-        if res: 
+        if res:
             for iimg in res:
                 for tag in iimg[3]:
                     if tag not in tags:

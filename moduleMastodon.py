@@ -32,18 +32,22 @@ class moduleMastodon(Content, Queue):
             #self.user = self.user[:pos]
         else:
             self.base_url = 'https://mastodon.social'
-            
+
         logging.debug(f"Mastodon user:  {self.user} base: {self.base_url}")
         client = mastodon.Mastodon(access_token=keys[0],
                                    api_base_url=self.base_url)
         return client
 
     def setApiPosts(self):
-        posts = self.getClient().account_statuses(self.getClient().me())
+        posts = []
+        if self.getClient():
+           posts = self.getClient().account_statuses(self.getClient().me())
         return posts
 
     def setApiFavs(self):
-        posts = self.getClient().favourites()
+        posts = []
+        if self.getClient():
+            posts = self.getClient().favourites()
         return posts
 
     def processReply(self, reply):
@@ -52,7 +56,7 @@ class moduleMastodon(Content, Queue):
             res = self.getAttribute(reply, 'uri')
         return res
 
-    def publishApiImage(self, postData):
+    def publishApiImage(self, *postData):
         post, image, plus = postData
 
         res = 'Fail!'
@@ -64,7 +68,7 @@ class moduleMastodon(Content, Queue):
                     visibility='private')
         print(f"res: {res}")
         return res
- 
+
     def publishApiPost(self, postData):
         post, link, comment, plus = postData
         post = self.addComment(post, comment)
@@ -192,13 +196,14 @@ def main():
         mastodon.setClient('fernand0')
         mastodon.setPostsType('favs')
         mastodon.setPosts()
-        toot = mastodon.getPosts()[0]
-        toot = mastodon.getNextPost()
-        print(toot)
-        print(f" -Title {mastodon.getPostTitle(toot)}")
-        print(f" -Link {mastodon.getPostLink(toot)}")
-        print(f" -Content link {mastodon.getPostContentLink(toot)}")
-        print(f" -Post link {mastodon.extractPostLinks(toot)}")
+        if mastodon.getPosts():
+            toot = mastodon.getPosts()[0]
+            toot = mastodon.getNextPost()
+            print(toot)
+            print(f" -Title {mastodon.getPostTitle(toot)}")
+            print(f" -Link {mastodon.getPostLink(toot)}")
+            print(f" -Content link {mastodon.getPostContentLink(toot)}")
+            print(f" -Post link {mastodon.extractPostLinks(toot)}")
         sys.exit()
 
 

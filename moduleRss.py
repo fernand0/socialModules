@@ -25,7 +25,7 @@ class moduleRss(Content, Queue):
         super().__init__()
         self.service = None
         self.rssFeed = ''
- 
+
     def getRssFeed(self):
         return(self.rssFeed)
 
@@ -53,14 +53,14 @@ class moduleRss(Content, Queue):
         msgLog = "  Setting posts"
         logging.info(msgLog)
 
-        logging.debug(f"   Feed {self.rssFeed}") 
-        if self.rssFeed.find('http')>=0: 
+        logging.debug(f"   Feed {self.rssFeed}")
+        if self.rssFeed.find('http')>=0:
             urlRss = self.getRssFeed()
-        else: 
+        else:
             urlRss = urllib.parse.urljoin(self.url,self.getRssFeed())
         logging.debug("Rss: %s" % urlRss)
         self.posts = feedparser.parse(urlRss).entries
- 
+
     def getPostTitle(self, post):
         if 'title' in post:
             return(post['title'].replace('\n', ' '))
@@ -104,7 +104,7 @@ class moduleRss(Content, Queue):
     def getPostImagesCode(self, post):
         images = self.getPostImages(post)
         code = ""
-        print(f"Images: {images}")
+        # print(f"Images: {images}")
         for img in images:
             code = (f"{code}<br />\n"
                     f"{img['alt']}<br />\n"
@@ -121,8 +121,8 @@ class moduleRss(Content, Queue):
             # We need to delete before and after \n
             logging.debug(f"Node: {node}")
         return soup.get_text()
-        
-        
+
+
     def obtainPostData(self, i, debug=False):
         if not self.posts:
             self.setPosts()
@@ -161,7 +161,7 @@ class moduleRss(Content, Queue):
 
         link = soup.a
         if link is None:
-           firstLink = theLink 
+           firstLink = theLink
         else:
            firstLink = link['href']
            pos = firstLink.find('.')
@@ -175,7 +175,7 @@ class moduleRss(Content, Queue):
                theTitle = theTitle[pos - lenProt + 1:]
 
         code = soup.find_all('code')
-        for cod in code: 
+        for cod in code:
             cod.string = cod.string.replace('<','&lt;')
             cod.string = cod.string.replace('>','&gt;')
             cod = cod.string
@@ -185,27 +185,27 @@ class moduleRss(Content, Queue):
         if hasattr(self, 'getLinksToAvoid') and self.getLinksToAvoid():
             (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinksToAvoid())
             logging.debug("theC %s" % theContent)
-            if theContent.startswith('Anuncios'): 
+            if theContent.startswith('Anuncios'):
                 theContent = ''
             logging.debug("theC %s"% theContent)
         else:
-            (theContent, theSummaryLinks) = self.extractLinks(soup, "") 
+            (theContent, theSummaryLinks) = self.extractLinks(soup, "")
             logging.debug("theC %s"% theContent)
-            if theContent.startswith('Anuncios'): 
+            if theContent.startswith('Anuncios'):
                 theContent = ''
             logging.debug("theC %s"% theContent)
 
-        if 'media_content' in posts[i]: 
+        if 'media_content' in posts[i]:
             theImage = ''
             for media in posts[i]['media_content']:
-                if media['url'].find('avatar')<0: 
+                if media['url'].find('avatar')<0:
                     theImage = media['url']
         else:
             theImage = self.extractImage(soup)
         logging.debug("theImage %s"% theImage)
         theLinks = theSummaryLinks
         theSummaryLinks = theContent + '\n' + theLinks
-            
+
         logging.debug("=========")
         logging.debug("Results: ")
         logging.debug("=========")
@@ -228,22 +228,22 @@ class moduleRss(Content, Queue):
     #    logging.info("isForMe %s" % str(self.service))
     #    serviceName = self.service
     #    lookAt = []
-    #    if (serviceName[0] in args) or ('*' in args): 
+    #    if (serviceName[0] in args) or ('*' in args):
     #        if serviceName[0] + serviceName[-1] in args[:-1]:
     #            lookAt.append(serviceName)
     #    return lookAt
 
 
-def main(): 
+def main():
 
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO, 
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO,
             format='%(asctime)s %(message)s')
 
     import moduleRss
-     
+
     if os.path.exists(CONFIGDIR + '/.rssBlogs'):
         config = configparser.ConfigParser()
-        config.read(CONFIGDIR + '/.rssBlogs') 
+        config.read(CONFIGDIR + '/.rssBlogs')
     else:
         print("no")
 
@@ -274,7 +274,7 @@ def main():
             print(f" - {blog.getPostContent(post)}")
             print(f" - {blog.extractPostLinks(post)}")
 
-        continue 
+        continue
         for i, post in enumerate(blog.getPosts()):
             print(blog.getPosts()[i])
             (title, link, firstLink, image, summary, summaryHtml, summaryLinks, content , links, comment) = (blog.obtainPostData(i, False))
@@ -294,9 +294,9 @@ def main():
         url = config.get(section, "url")
         print("Url: %s"% url)
         blog.setUrl(url)
-        if 'rss' in config.options(section): 
+        if 'rss' in config.options(section):
             rssFeed = config.get(section, "rss")
-            print(rssFeed) 
+            print(rssFeed)
             blog.setRssFeed(rssFeed)
         optFields = ["linksToAvoid", "time", "buffer"]
         if ("linksToAvoid" in config.options(section)):
@@ -334,12 +334,12 @@ def main():
 
         for service in blog.getSocialNetworks():
             socialNetwork = (service, blog.getSocialNetworks()[service])
-            
+
             linkLast, lastTime = checkLastLink(blog.getUrl(), socialNetwork)
             print("linkLast {} {}".format(socialNetwork, linkLast))
             print(blog.getUrl()+blog.getRssFeed(),
                     blog.getLinkPosition(linkLast))
-        #if blog.getPosts(): 
+        #if blog.getPosts():
         #    print("description ->", blog.getPosts()[5]['description'])
         #for post in blog.getPosts():
         #    if "content" in post:

@@ -15,7 +15,7 @@ class modulePocket(Content,Queue):
         super().__init__()
         self.postaction='archive'
 
-    def getKeys(self, config): 
+    def getKeys(self, config):
         consumer_key = config.get("appKeys", "consumer_key")
         access_token = config.get("appKeys", "access_token")
 
@@ -35,16 +35,16 @@ class modulePocket(Content,Queue):
 
         return(posts[:100])
 
-    def processReply(self, reply): 
+    def processReply(self, reply):
         res = ''
-        if reply: 
+        if reply:
             idPost = self.getPostId(reply)
             title = self.getPostTitle(reply)
             res = f"{title} https://getpocket.com/read/{idPost}"
         logging.info(f"     Res: {res}")
         return(res)
 
-    def publishApiPost(self, postData):
+    def publishApiPost(self, *postData):
         logging.debug(f"postData: {postData} in {self}")
         post, link, comment, plus = postData
 
@@ -60,13 +60,13 @@ class modulePocket(Content,Queue):
         res = self.getClient().add(link)
         return self.processReply(res)
 
-    def publish(self, j): 
+    def publish(self, j):
         # This does not belong here
         logging.info("...Publishing %d"% j)
         #post = self.obtainPostData(j)
         #logging.info("Publishing %s"% post[0])
-        update = '' 
-        title = self.getTitle(j) 
+        update = ''
+        title = self.getTitle(j)
         logging.info("Title: %s" % str(title))
         url = self.getLink(j)
         logging.info("Url: %s" % str(url))
@@ -76,8 +76,8 @@ class modulePocket(Content,Queue):
             for profile in self.getSocialNetworks():
                 nick = self.getSocialNetworks()[profile]
                 logging.info("Social: {} Nick: {}".format(profile, nick))
-                if ((profile[0] in self.getProgram()) or 
-                        (profile in self.getProgram())): 
+                if ((profile[0] in self.getProgram()) or
+                        (profile in self.getProgram())):
                     logging.info("Social: {} Nick: {}".format(profile, nick))
                     lenMax = self.len(profile)
                     socialNetwork = (profile, nick)
@@ -102,37 +102,37 @@ class modulePocket(Content,Queue):
                 listPosts = [ post ]
                 socialNetwork = (profile, nick)
                 link = self.addNextPosts(listPosts, socialNetwork)
-                delayedBlogs.append((self, socialNetwork, 1, nowait, 0)) 
+                delayedBlogs.append((self, socialNetwork, 1, nowait, 0))
 
-                import concurrent.futures 
+                import concurrent.futures
                 import moduleSocial
                 import time
-                with concurrent.futures.ThreadPoolExecutor( 
-                        max_workers=len(delayedBlogs)) as executor: 
-                    delayedPosts = {executor.submit(moduleSocial.publishDelay, 
-                        *args): 
-                        args for args in delayedBlogs} 
-                    time.sleep(5) 
+                with concurrent.futures.ThreadPoolExecutor(
+                        max_workers=len(delayedBlogs)) as executor:
+                    delayedPosts = {executor.submit(moduleSocial.publishDelay,
+                        *args):
+                        args for args in delayedBlogs}
+                    time.sleep(5)
 
                     for future in concurrent.futures.as_completed(delayedPosts):
-                        dataBlog = delayedPosts[future] 
-                        try: 
-                            res = future.result() 
-                            if res: 
-                                print("  Published: %s"% str(res)) 
-                                if not dataBlog[0].getProgram(): 
-                                    posL = res.find('http') 
-                                    if posL>=0: 
-                                        link = res[posL:] 
-                                        if link: 
-                                            socialNetwork = dataBlog[1] 
+                        dataBlog = delayedPosts[future]
+                        try:
+                            res = future.result()
+                            if res:
+                                print("  Published: %s"% str(res))
+                                if not dataBlog[0].getProgram():
+                                    posL = res.find('http')
+                                    if posL>=0:
+                                        link = res[posL:]
+                                        if link:
+                                            socialNetwork = dataBlog[1]
                                             updateLastLink(dataBlog[0].getUrl(),
-                                                    link, socialNetwork) 
+                                                    link, socialNetwork)
 
-                        except Exception as exc: 
-                            print('{} generated an exception: {}'.format( 
+                        except Exception as exc:
+                            print('{} generated an exception: {}'.format(
                                 str(dataBlog), exc))
- 
+
     def archive(self, j):
         logging.info("Archiving %d"% j)
         client = self.client
@@ -179,15 +179,15 @@ class modulePocket(Content,Queue):
             title = post['resolved_title']
             if not title and ('given_title' in post):
                 title = post['given_title']
-        #elif 'item' in post: 
+        #elif 'item' in post:
         #    if 'title' in post['item']:
         #        title = (post['item']['title'])
-        if not title: 
+        if not title:
             title = self.getPostLink(post)
         return title
 
-    def getPostId(self, post): 
-        if 'item' in post: 
+    def getPostId(self, post):
+        if 'item' in post:
             if 'item_id' in post['item']:
                 return(post['item']['item_id'])
         else:
@@ -197,17 +197,17 @@ class modulePocket(Content,Queue):
         link = ''
         if 'resolved_url' in post:
             link = post['resolved_url']
-            if not link and 'given_url' in post: 
+            if not link and 'given_url' in post:
                 link = post['given_url']
         return link
 
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)
-        (theTitle, theLink, firstLink, theImage, theSummary, 
+        (theTitle, theLink, firstLink, theImage, theSummary,
                 content, theSummaryLinks, theContent, theLinks, comment) = (
-                        None, None, None, None, None, 
-                        None, None, None, None, None) 
+                        None, None, None, None, None,
+                        None, None, None, None, None)
 
         if i < len(self.getPosts()):
             theTitle = self.getTitle(i)
@@ -226,17 +226,17 @@ class modulePocket(Content,Queue):
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
 
-def main(): 
+def main():
 
-    logging.basicConfig(stream=sys.stdout, 
-            level=logging.INFO, 
+    logging.basicConfig(stream=sys.stdout,
+            level=logging.INFO,
             format='%(asctime)s %(message)s')
 
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs2')
 
     import modulePocket
-    
+
     p = modulePocket.modulePocket()
 
     p.setClient('ftricas')
@@ -255,13 +255,13 @@ def main():
     sys.exit()
     #i=7
     #print(i,p.getTitle(i))
-        
+
     p.setSocialNetworks(config)
     print(p.getSocialNetworks())
     p.publish(99)
 
     sys.exit()
-    
+
     p.publishPost('El Mundo Es Imperfecto', 'https://elmundoesimperfecto.com/', '')
 
 if __name__ == '__main__':

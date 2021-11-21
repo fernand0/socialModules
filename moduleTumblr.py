@@ -79,7 +79,7 @@ class moduleTumblr(Content, Queue):
             queue = self.getClient().queue(self.getUrl().split('/')[2])
             if 'posts' in queue:
                 posts = queue['posts']
-            
+
         return(posts)
 
     def getPostTitle(self, post):
@@ -122,7 +122,7 @@ class moduleTumblr(Content, Queue):
             res = f"{self.getUrl()}{reply['id']}"
         return res
 
-    def publishApiPost(self, postData):
+    def publishApiPost(self, *postData):
         logging.info(f"type: {self.getPostsType()}")
         try:
             if self.getPostsType() == 'posts':

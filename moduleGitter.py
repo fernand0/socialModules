@@ -45,10 +45,10 @@ class moduleGitter(Content,Queue):
         try:
             client = gitterpy.client.GitterClient(self.token)
         except:
-            logging.warning("Account not configured") 
-            if sys.exc_info()[0]: 
-                logging.warning("Unexpected error: {}".format( 
-                    sys.exc_info()[0])) 
+            logging.warning("Account not configured")
+            if sys.exc_info()[0]:
+                logging.warning("Unexpected error: {}".format(
+                    sys.exc_info()[0]))
                 logging.info(self.report(self.service, "", "", sys.exc_info()))
             print("Please, configure a {} Account".format(self.service))
             sys.exit(-1)
@@ -76,7 +76,7 @@ class moduleGitter(Content,Queue):
 
         return posts
 
-    def getIdPosition(self, idPost): 
+    def getIdPosition(self, idPost):
         posts = self.getPosts()
         if posts:
             for i, entry in enumerate(posts):
@@ -114,7 +114,7 @@ class moduleGitter(Content,Queue):
         else:
             return('')
 
-    def getPostId(self, post): 
+    def getPostId(self, post):
         idPost = -1
         if 'id' in post:
             idPost = post['id']
@@ -132,19 +132,19 @@ class moduleGitter(Content,Queue):
         logging.info("Result: {}".format(str(result)))
         return result
 
-    def deletePost(self, idPost, idChannel): 
+    def deletePost(self, idPost, idChannel):
         #theChannel or the name of the channel?
         logging.info("Deleting id %s from %s" % (idPost, idChannel))
-        
+
         try:
-            result = self.deleteGitter(idPost, idChannel) 
+            result = self.deleteGitter(idPost, idChannel)
         except:
-            logging.info(self.report('Gitter', 
+            logging.info(self.report('Gitter',
                             "Error deleting", "", sys.exc_info()))
             result= ""
         logging.debug(result)
         return(result)
-    
+
     def getChanId(self, name):
         logging.debug("getChanId %s"% self.service)
 
@@ -157,7 +157,7 @@ class moduleGitter(Content,Queue):
     def extractDataMessage(self, i):
         logging.info(f"extract gitt {i}")
         logging.info("Extract Service %s"% self.service)
-        (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None) 
+        (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None)
 
         if i < len(self.getPosts()):
             post = self.getPosts()[i]
@@ -203,7 +203,7 @@ class moduleGitter(Content,Queue):
     #    if theLink.find('tumblr')>0:
     #        theTitle = post['text']
     #    firstLink = theLink
-    #    if 'text' in post: 
+    #    if 'text' in post:
     #        content = post['text']
     #    else:
     #        content = theLink
@@ -218,9 +218,9 @@ class moduleGitter(Content,Queue):
     #        logging.debug("Fail image %s", post)
     #        theImage = ''
 
-    #    if 'original_url' in post: 
+    #    if 'original_url' in post:
     #        theLink = post['original_url']
-    #    elif url: 
+    #    elif url:
     #        theLink = url
     #    else:
     #        theLink = self.getPostLink(post)
@@ -236,13 +236,13 @@ class moduleGitter(Content,Queue):
     #    if not content.startswith('http'):
     #        soup = BeautifulSoup(content, 'lxml')
     #        link = soup.a
-    #        if link: 
+    #        if link:
     #            firstLink = link.get('href')
     #            if firstLink:
-    #                if firstLink[0] != 'h': 
+    #                if firstLink[0] != 'h':
     #                    firstLink = theLink
 
-    #    if not firstLink: 
+    #    if not firstLink:
     #        firstLink = theLink
 
     #    if 'image_url' in post:
@@ -251,14 +251,14 @@ class moduleGitter(Content,Queue):
     #        theImage = None
     #    theLinks = theSummaryLinks
     #    theSummaryLinks = theContent + theLinks
-    #    
+    #
     #    theContent = ""
     #    theSummaryLinks = ""
     #    #if self.getLinksToAvoid():
     #    #    (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinkstoavoid())
     #    #else:
-    #    #    (theContent, theSummaryLinks) = self.extractLinks(soup, "") 
-    #        
+    #    #    (theContent, theSummaryLinks) = self.extractLinks(soup, "")
+    #
     #    if 'image_url' in post:
     #        theImage = post['image_url']
     #    else:
@@ -292,8 +292,8 @@ class moduleGitter(Content,Queue):
            logging.info(reply['id'])
            reply = reply['id']
         return reply
- 
-    def publishApiPost(self, postData): 
+
+    def publishApiPost(self, *postData):
         post, link, comment, plus = postData
         chan = self.getChannel()
         print(f"Chan: {chan}")
@@ -305,7 +305,7 @@ class moduleGitter(Content,Queue):
             self.setPosts(channel)
         msgs = {}
         for msg in self.getPosts():
-            if msg['text'].find('Hello')>=0: 
+            if msg['text'].find('Hello')>=0:
                 posN = msg['text'].find('Name:')+6
                 posFN = msg['text'].find('"',posN)
                 posI = msg['text'].find('IP:')+4
@@ -317,7 +317,7 @@ class moduleGitter(Content,Queue):
                 if name not in msgs:
                     theTime = msg['sent'][:10]
                     msgs[name] = (ip, command, theTime)
-        theBots = [] 
+        theBots = []
         for name in msgs:
             a, b, c = msgs[name]
             theBots.append("{2} [{1}] {0} {3}".format(a,b,c,name))
@@ -325,8 +325,8 @@ class moduleGitter(Content,Queue):
 
 def main():
 
-    logging.basicConfig(stream=sys.stdout, 
-            level=logging.INFO, 
+    logging.basicConfig(stream=sys.stdout,
+            level=logging.INFO,
             format='%(asctime)s %(message)s')
 
 
@@ -334,7 +334,7 @@ def main():
 
     site = moduleGitter.moduleGitter()
 
-    CHANNEL = 'fernand0errbot/tavern-of-the-bots' 
+    CHANNEL = 'fernand0errbot/tavern-of-the-bots'
 
     url = "https://gitter.im/fernand0errbot/tavern-of-the-bots"
 
@@ -342,10 +342,10 @@ def main():
     site.setClient(url)
 
     print(site.getClient().check_auth()[0])
-    # theChannel = site.getChanId(CHANNEL)  
+    # theChannel = site.getChanId(CHANNEL)
     # print("the Channel %s" % theChannel)
 
-    CHANNEL = 'fernand0errbot/links' 
+    CHANNEL = 'fernand0errbot/links'
     site.setChannel(CHANNEL)
 
     testingSlack = False
@@ -412,7 +412,7 @@ def main():
 
     sys.exit()
 
-    print(CHANNEL) 
+    print(CHANNEL)
     site.deletePost(site.getPostId(post), site.getChanId(CHANNEL))
     rep = site.publishPost(CHANNEL, 'helloo')
     print(rep)
@@ -446,13 +446,13 @@ def main():
 
     site.setSocialNetworks(config)
 
-    if ('buffer' in config.options(section)): 
+    if ('buffer' in config.options(section)):
         site.setBufferapp(config.get(section, "buffer"))
 
-    if ('cache' in config.options(section)): 
+    if ('cache' in config.options(section)):
         site.setProgram(config.get(section, "cache"))
 
-    theChannel = site.getChanId("links")  
+    theChannel = site.getChanId("links")
 
     i = 0
     listLinks = ""
@@ -460,7 +460,7 @@ def main():
     lastUrl = ''
     for i, post in enumerate(site.getPosts()):
         url = site.getLink(i)
-        if urllib.parse.urlparse(url).netloc == lastUrl: 
+        if urllib.parse.urlparse(url).netloc == lastUrl:
             listLinks = listLinks + "%d>> %s\n" % (i, url)
         else:
             listLinks = listLinks + "%d) %s\n" % (i, url)
@@ -502,11 +502,11 @@ def main():
                 if profile[0] in site.getProgram():
                     lenMax = site.len(profile)
                     print("   getProgram %s" % profile)
- 
+
                     socialNetwork = (profile,site.getSocialNetworks()[profile])
 
                     listP = site.cache[socialNetwork].getPosts()
-                    #site.cache[socialNetwork].posts = site.cache[socialNetwork].posts[:8]  
+                    #site.cache[socialNetwork].posts = site.cache[socialNetwork].posts[:8]
                     #listP = site.cache[socialNetwork].getPosts()
                     #for i,l in enumerate(listP):
                     #    print(i, l)

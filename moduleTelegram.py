@@ -64,7 +64,7 @@ class moduleTelegram(Content):
     def setChannel(self, channel):
         self.channel = channel
 
-    def publishApiImage(self, postData):
+    def publishApiImage(self, *postData):
         post, image, plus = postData
 
         bot = self.getClient()
@@ -107,7 +107,7 @@ class moduleTelegram(Content):
         try:
             bot.sendMessage('@'+channel, textToPublish, parse_mode='HTML')
         except:
-            return(self.report('Telegram', textToPublish, 
+            return(self.report('Telegram', textToPublish,
                 link, sys.exc_info()))
 
         if textToPublish2:
@@ -120,7 +120,8 @@ class moduleTelegram(Content):
         if links:
             bot.sendMessage('@'+channel, links, parse_mode='HTML')
 
-    def publishPost(self, post, link, comment, **more):
+    def publishApiPost(self, postData):
+        post, link, comment, more = postData
         logging.info("    Publishing in Telegram...")
         bot = self.client
         title = post

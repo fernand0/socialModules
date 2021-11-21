@@ -130,7 +130,7 @@ class moduleSlack(Content, Queue):
         #    res = "Fail!"
         #return res
 
-    def publishApiPost(self, postData):
+    def publishApiPost(self, *postData):
         post, link, comment, plus = postData
         chan = self.getChannel()
         if not chan:
@@ -574,7 +574,7 @@ def main():
     if testingDelete:
         # print("Testing posting and deleting")
         res = site.publishPost(
-            "FOSDEM 2022 - FOSDEM 2022 will be online", 
+            "FOSDEM 2022 - FOSDEM 2022 will be online",
             "https://fosdem.org/2022/news/2021-10-22-fosdem-online-2022/", ""
         )
         print("res", res)

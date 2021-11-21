@@ -152,7 +152,8 @@ class moduleImgur(Content, Queue):
         return (theTitle,  theLink, theLink, theId,
                 '', '', '', theTags, thePost)
 
-    def publishPost(self, post, idPost, comment='', **more):
+    def publishApiPost(self, *postData):
+        post, idPost, comment, more = postData
         # This method publishes (as public post) some gallery that is in draft
         # mode
         logging.info("     Publishing in: {}".format(self.service))
@@ -368,7 +369,7 @@ def main():
         print(listPosts2)
         print(f"{img.getPostTitle(img.getNextPost()[0])}")
 
-    
+
 
     publishCache = False
     if publishCache:
@@ -378,9 +379,9 @@ def main():
 
         import moduleCache
         cache = moduleCache.moduleCache()
-        # cache.setClient(('https://imgur.com/user/ftricas', 
+        # cache.setClient(('https://imgur.com/user/ftricas',
         #                 ('wordpress', 'avecesunafoto')))
-        cache.setClient(('https://imgur.com/user/ftricas', 
+        cache.setClient(('https://imgur.com/user/ftricas',
                         ('imgur', 'ftricas')))
         cache.setPosts()
         print(cache.getPosts())
@@ -418,7 +419,7 @@ def main():
         wp.setClient('avecesunafoto')
 
         print(wp.publishPost(title, '', postWP, tags=tags))
- 
+
     sys.exit()
     for service in img.getSocialNetworks():
         socialNetwork = (service, img.getSocialNetworks()[service])

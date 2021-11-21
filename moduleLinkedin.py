@@ -20,16 +20,16 @@ class moduleLinkedin(Content):
         super().__init__()
 
     def getKeys(self, config):
-        CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY") 
-        CONSUMER_SECRET = config.get("Linkedin", "CONSUMER_SECRET") 
-        ACCESS_TOKEN = config.get("Linkedin", "ACCESS_TOKEN") 
+        CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY")
+        CONSUMER_SECRET = config.get("Linkedin", "CONSUMER_SECRET")
+        ACCESS_TOKEN = config.get("Linkedin", "ACCESS_TOKEN")
         URN = config.get("Linkedin", "URN")
 
         return (CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, URN)
 
     def initApi(self, keys):
         self.URN = keys[3]
-        client = linkedin.LinkedInApplication(token=keys[2]) 
+        client = linkedin.LinkedInApplication(token=keys[2])
         return client
 
     def authorize(self):
@@ -39,9 +39,9 @@ class moduleLinkedin(Content):
             configLinkedin = CONFIGDIR + '/.rssLinkedin'
             config.read(configLinkedin)
             keys = self.getKeys(config)
-            self.CONSUMER_KEY = keys[0] 
+            self.CONSUMER_KEY = keys[0]
             self.CONSUMER_SECRET = keys[1]
-            self.state = config.get("Linkedin", 'state') 
+            self.state = config.get("Linkedin", 'state')
 
             payload = {'response_type':'code',
                     'client_id': self.CONSUMER_KEY,
@@ -50,12 +50,12 @@ class moduleLinkedin(Content):
                     'state':self.state,
                     'scope': 'r_liteprofile r_emailaddress w_member_social' }
             print('https://www.linkedin.com/oauth/v2/authorization?'
-                    + urllib.parse.urlencode(payload)) 
+                    + urllib.parse.urlencode(payload))
 
-            resUrl = input("Copy and paste the url in a browser and write here the access token ") 
-            splitUrl = urllib.parse.urlsplit(resUrl) 
+            resUrl = input("Copy and paste the url in a browser and write here the access token ")
+            splitUrl = urllib.parse.urlsplit(resUrl)
             result = urllib.parse.parse_qsl(splitUrl.query)
-            access_token = result[0][1] 
+            access_token = result[0][1]
             url = 'https://www.linkedin.com/oauth/v2/accessToken'
             payload = {'grant_type':'authorization_code',
                     'code':access_token,
@@ -72,11 +72,11 @@ class moduleLinkedin(Content):
 
             sys.exit()
         except:
-            print("Some problem") 
+            print("Some problem")
 
     def setApiPosts(self):
         urn = self.URN
-        author = f"urn:li:person:{urn}"        
+        author = f"urn:li:person:{urn}"
         author = urllib.parse.quote(author)
         posts = []
         #posts =  self.getClient().get_posts(urn=self.URN)
@@ -110,19 +110,19 @@ class moduleLinkedin(Content):
 
         return reply
 
-    def publishApiPost(self, postData):
+    def publishApiPost(self, *postData):
         post, link, comment, plus = postData
         logging.info(f"publishApi ")
         try:
             res = self.getClient().submit_share(comment=comment, title=post,
-                description=None, submitted_url=link, submitted_image_url=None, 
+                description=None, submitted_url=link, submitted_image_url=None,
                 urn=self.URN, visibility_code='anyone')
         except:
             logging.info(f"Exception {sys.exc_info()}")
             res = self.report('Linkedin', post, link, sys.exc_info())
         return res
- 
-    def deleteApiPosts(self, idPost): 
+
+    def deleteApiPosts(self, idPost):
         result = self.getClient().delete_post(idPost,urn=self.URN)
         logging.info(f"Res: {result}")
         return(result)
@@ -134,8 +134,8 @@ class moduleLinkedin(Content):
 
 def main():
 
-    logging.basicConfig(stream=sys.stdout, 
-            level=logging.INFO, 
+    logging.basicConfig(stream=sys.stdout,
+            level=logging.INFO,
             format='%(asctime)s %(message)s')
 
     import moduleLinkedin
@@ -145,7 +145,7 @@ def main():
     ln.setClient('fernand0')
     try:
         print(ln.getClient().get_profile())
-    except: 
+    except:
         ln.authorize()
 
 
@@ -160,7 +160,7 @@ def main():
     for post in ln.getPosts():
         print(post)
 
-        
+
     sys.exit()
 
     import moduleSlack
@@ -178,8 +178,8 @@ def main():
     SLACKCREDENTIALS = os.path.expanduser(CONFIGDIR + '/.rssSlack')
     site.setSlackClient(SLACKCREDENTIALS)
 
-    CHANNEL = 'links' 
-    theChannel = site.getChanId(CHANNEL)  
+    CHANNEL = 'links'
+    theChannel = site.getChanId(CHANNEL)
     print("the Channel %s" % theChannel)
     site.setPosts()
     post = site.getNumPostsData(1,len(site.getPosts()))[0]

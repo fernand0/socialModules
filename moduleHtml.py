@@ -345,8 +345,9 @@ class moduleHtml(Content, Queue):
             comment,
         )
 
-    def publishPost(self, title, url, comment = None, **more):
-        return self.click(url)
+    def publishApiPost(self, *postData):
+        post, link, comment, plus = postData
+        return self.click(link)
 
     def click(self, url):
         headers = {

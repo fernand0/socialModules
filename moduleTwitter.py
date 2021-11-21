@@ -19,14 +19,14 @@ class moduleTwitter(Content,Queue):
     def __init__(self):
         super().__init__()
 
-    def getKeys(self, config): 
-        try: 
-            CONSUMER_KEY = config.get(self.user, "CONSUMER_KEY") 
-        except: 
+    def getKeys(self, config):
+        try:
+            CONSUMER_KEY = config.get(self.user, "CONSUMER_KEY")
+        except:
             CONSUMER_KEY = config.get("appKeys", "CONSUMER_KEY")
-        try: 
+        try:
             CONSUMER_SECRET = config.get(self.user, "CONSUMER_SECRET")
-        except: 
+        except:
             CONSUMER_SECRET = config.get("appKeys", "CONSUMER_SECRET")
         TOKEN_KEY = config.get(self.user, "TOKEN_KEY")
         TOKEN_SECRET = config.get(self.user, "TOKEN_SECRET")
@@ -44,15 +44,15 @@ class moduleTwitter(Content,Queue):
         #posts = self.getClient().statuses.user_timeline(_id='fernand0')
         return posts
 
-    def setApiFavs(self): 
-        posts = self.getClient().favorites.list(tweet_mode='extended') 
+    def setApiFavs(self):
+        posts = self.getClient().favorites.list(tweet_mode='extended')
         #count=100)
         # https://stackoverflow.com/questions/38717816/twitter-api-text-field-value-is-truncated
         return posts
 
-    def processReply(self, reply): 
+    def processReply(self, reply):
         res = ''
-        if reply: 
+        if reply:
             if not ('Fail!' in reply):
                 idPost = self.getPostId(reply)
                 title = self.getAttribute(reply, 'title')
@@ -61,26 +61,26 @@ class moduleTwitter(Content,Queue):
                 res = reply
         return(res)
 
-    def publishApiImage(self, postData): 
+    def publishApiImage(self, *postData):
         logging.debug(f"{postData} Len: {len(postData)}")
         if len(postData) == 3:
             post, imageName, more = postData
             if imageName:
                 with open(imageName, "rb") as imagefile:
                         imagedata = imagefile.read()
-    
+
                 try:
-                    t_upload = Twitter(domain='upload.twitter.com', 
+                    t_upload = Twitter(domain='upload.twitter.com',
                                     auth=self.authentication)
                     id_img1 = t_upload.media.upload(media=imagedata)["media_id_string"]
                     if 'alt' in more:
-                        t_upload.media.metadata.create(_json={ "media_id": id_img1, 
+                        t_upload.media.metadata.create(_json={ "media_id": id_img1,
                             "alt_text": { "text": more['alt'] }
 })
-                    res = self.getClient().statuses.update(status=post, 
+                    res = self.getClient().statuses.update(status=post,
                         media_ids=id_img1)
-                except twitter.api.TwitterHTTPError as twittererror:        
-                    for error in twittererror.response_data.get("errors", []): 
+                except twitter.api.TwitterHTTPError as twittererror:
+                    for error in twittererror.response_data.get("errors", []):
                         logging.info("      Error code: %s" % error.get("code", None))
                     res = self.report('Twitter', post, imageName, sys.exc_info())
             else:
@@ -91,10 +91,10 @@ class moduleTwitter(Content,Queue):
             logging.debug(res)
         return res
 
-    # def publishApiPosts(self, postData): 
+    # def publishApiPosts(self, postData):
     #     return self.publishApiPost(postData)
 
-    def publishApiRT(self, postData): 
+    def publishApiRT(self, *postData):
         post, link, comment, plus = postData
         idPost = plus['idPost']
 
@@ -103,14 +103,14 @@ class moduleTwitter(Content,Queue):
         try:
             res = self.getClient().statuses.retweet._id(_id=idPost)
             #         result = t.statuses.retweet._id(_id=tweet['id'])
-        except twitter.api.TwitterHTTPError as twittererror:        
-            for error in twittererror.response_data.get("errors", []): 
+        except twitter.api.TwitterHTTPError as twittererror:
+            for error in twittererror.response_data.get("errors", []):
                 logging.info("      Error code: %s" % error.get("code", None))
             res = self.report('Twitter', post, link, sys.exc_info())
 
         return res
 
-    def publishApiPost(self, postData): 
+    def publishApiPost(self, *postData):
         post, link, comment, plus = postData
         post, link, comment, plus = postData
         post = self.addComment(post, comment)
@@ -128,19 +128,19 @@ class moduleTwitter(Content,Queue):
         res = 'Fail!'
         try:
             res = self.getClient().statuses.update(status=post)
-        except twitter.api.TwitterHTTPError as twittererror:        
-            for error in twittererror.response_data.get("errors", []): 
+        except twitter.api.TwitterHTTPError as twittererror:
+            for error in twittererror.response_data.get("errors", []):
                 logging.info("      Error code: %s" % error.get("code", None))
             res = self.report('Twitter', post, link, sys.exc_info())
 
         return res
 
-    def deleteApiPosts(self, idPost): 
+    def deleteApiPosts(self, idPost):
         result = self.getClient().statuses.destroy(_id=idPost)
         logging.debug(f"Res: {result}")
         return(result)
 
-    def deleteApiFavs(self, idPost): 
+    def deleteApiFavs(self, idPost):
         logging.info("Deleting: {}".format(str(idPost)))
         result = self.getClient().favorites.destroy(_id=idPost)
         logging.debug(f"Res: {result}")
@@ -193,23 +193,23 @@ class moduleTwitter(Content,Queue):
 
     def getPostContentLink(self, post):
         result = ''
-        if ('urls' in post['entities']): 
+        if ('urls' in post['entities']):
             if post['entities']['urls']:
                 if 'expanded_url' in post['entities']['urls'][0]:
                     result = post['entities']['urls'][0]['expanded_url']
-        elif ('url' in post['user']['entities']['url'] 
-            and (post['user']['entities']['url']['urls'])): 
+        elif ('url' in post['user']['entities']['url']
+            and (post['user']['entities']['url']['urls'])):
             result = post['user']['entities']['url']['urls'][0]['expanded_url']
-        elif ('media' in post['entities']): 
-            if (post['entities']['media']): 
+        elif ('media' in post['entities']):
+            if (post['entities']['media']):
                 result = post['entities']['media'][0]['expanded_url']
         return result
 
     def extractDataMessage(self, i):
-        (theTitle, theLink, firstLink, theImage, theSummary, 
+        (theTitle, theLink, firstLink, theImage, theSummary,
                 content, theSummaryLinks, theContent, theLinks, comment) = (
-                        None, None, None, None, None, 
-                        None, None, None, None, None) 
+                        None, None, None, None, None,
+                        None, None, None, None, None)
 
         if i < len(self.getPosts()):
             post = self.getPost(i)
@@ -221,7 +221,7 @@ class moduleTwitter(Content,Queue):
             theId = self.getPostId(post)
 
             theLinks = [ firstLink, ]
-            content = None 
+            content = None
             theContent = theTitle
 
             theImage = None
@@ -237,15 +237,15 @@ class moduleTwitter(Content,Queue):
         try:
             res = self.client.search.tweets(q=text)
 
-            if res: 
+            if res:
                 logging.debug("Res: %s" % res)
                 return(res)
-        except:        
+        except:
             return(self.report('Twitter', text, sys.exc_info()))
 
 def main():
 
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, 
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
     import moduleTwitter
@@ -271,14 +271,14 @@ def main():
     testingRT = False
     if testingRT:
         print("Testing RT")
-        tw1 = moduleTwitter.moduleTwitter() 
+        tw1 = moduleTwitter.moduleTwitter()
         tw1.setClient('reflexioneseir')
         tw1.setPosts()
         tweet = tw1.getPosts()[10]
         idPost = tweet['id']
         title = tw1.getPostTitle(tweet)
         link = tw1.getPostLink(tweet)
-        tw.publishApiRT((title, link, '', {'idPost' : idPost}))
+        tw.publishApiRT(title, link, '', {'idPost' : idPost})
 
         sys.exit()
 
@@ -287,7 +287,7 @@ def main():
     if testingSearch:
         myLastLink = 'https://twitter.com/reflexioneseir/status/1235128399452164096'
         myLastLink = 'http://fernand0.blogalia.com//historias/78135'
-        tw1 = moduleTwitter.moduleTwitter() 
+        tw1 = moduleTwitter.moduleTwitter()
         tw1.setClient('reflexioneseir')
         tw1.setPostsType('posts')
         tw1.setPosts()
@@ -324,7 +324,7 @@ def main():
     #tw.setFriends()
     #sys.exit()
 
-    # res = tw.publishImage("Prueba imagen", "/tmp/2021-06-25_image.png", 
+    # res = tw.publishImage("Prueba imagen", "/tmp/2021-06-25_image.png",
     #        alt= "Imagen con alt")
     #print("Testing posting and deleting")
     # res = tw.publishPost("Prueba borrando 7", "http://elmundoesimperfecto.com/", '')
@@ -341,7 +341,7 @@ def main():
     # tw.setPosts()
 
     print("Testing title and link")
-    
+
     for i, post in enumerate(tw.getPosts()):
         title = tw.getPostTitle(post)
         link = tw.getPostLink(post)
@@ -394,7 +394,7 @@ def main():
 
     res = tw.search('url:fernand0')
 
-    for tt in res['statuses']: 
+    for tt in res['statuses']:
         #print(tt)
         print('- @{0} {1} https://twitter.com/{0}/status/{2}'.format(tt['user']['name'], tt['text'], tt['id_str']))
     sys.exit()

@@ -20,30 +20,30 @@ class moduleMedium(Content,Queue):
         logging.info("     Connecting Medium")
         self.service = 'Medium'
         try:
-            config = configparser.ConfigParser() 
-            config.read(CONFIGDIR + '/.rssMedium') 
+            config = configparser.ConfigParser()
+            config.read(CONFIGDIR + '/.rssMedium')
             application_id = config.get("appKeys","ClientID")
             application_secret = config.get("appKeys","ClientSecret")
-            
-            
-            try: 
-                client = Client(application_id = application_id, 
+
+
+            try:
+                client = Client(application_id = application_id,
                         application_secret = application_secret)
 
                 try:
                     client.access_token = config.get(channel,"access_token")
                 except:
                     client.access_token = config.get("appKeys","access_token")
-                # client.access_token = config.get("appKeys","access_token") 
+                # client.access_token = config.get("appKeys","access_token")
                 # Get profile details of the user identified by the access
-                # token.  
+                # token.
                 userRaw = client.get_current_user()
                 user = userRaw['username']
-            except: 
-                logging.warning("Medium authentication failed!") 
+            except:
+                logging.warning("Medium authentication failed!")
                 logging.warning("Unexpected error:", sys.exc_info()[0])
-        except: 
-            logging.warning("Account not configured") 
+        except:
+            logging.warning("Account not configured")
             client = None
             userRaw = None
             user = None
@@ -71,7 +71,8 @@ class moduleMedium(Content,Queue):
         for post in content.getPosts():
             self.posts.append(post)
 
-    def publishPost(self, post, link, comment, **more):
+    def publishApiPost(self, postData):
+        post, link, comment, more = postData
         logging.info("    Publishing in {} ...".format(self.service))
         client = self.client
         user = self.getUserRaw()
@@ -90,13 +91,13 @@ class moduleMedium(Content,Queue):
             res = client.create_post(user_id=user["id"], title=title,
                 content="<h4>"+title+"</h4><br />"+textOrig+content,
                 canonical_url = link, content_format="html",
-                publish_status="public")#"public") #draft") 
+                publish_status="public")#"public") #draft")
             logging.debug("Res: %s" % res)
             return(res)
         except:
             return(self.report('Medium', post, link, sys.exc_info()))
 
-    def publishApiImage(self, postData): 
+    def publishApiImage(self, *postData):
         logging.debug(f"{postData} Len: {len(postData)}")
         client = self.client
         if len(postData) == 3:
@@ -104,13 +105,13 @@ class moduleMedium(Content,Queue):
             if imageName:
                 # with open(imageName, "rb") as imagefile:
                 #         imagedata = imagefile.read()
-    
+
                 try:
                     myImage = client.upload_image(imageName, 'image/png')
                     myImageUrl =  myImage['url']
-                    res = self.publishPost(post, '', 
+                    res = self.publishPost(post, '',
                            f"{more['content']}\n<br/>\n"
-                           f'<figure>\n<img src="{myImageUrl}">\n</figure>') 
+                           f'<figure>\n<img src="{myImageUrl}">\n</figure>')
                     print(res)
                 except:
                     res = self.report('Medium', post, imageName, sys.exc_info())

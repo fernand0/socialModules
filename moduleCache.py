@@ -22,7 +22,7 @@ from moduleQueue import *
 from moduleContent import *
 
 class moduleCache(Content,Queue):
-    
+
     def __init__(self):
         super().__init__()
         self.service = 'Cache'
@@ -43,36 +43,36 @@ class moduleCache(Content,Queue):
                 self.url = param[0]
             else:
                 self.socialNetwork = param[0]
-                self.service = param[0] 
+                self.service = param[0]
             self.user = param[1]
             if self.user.find('\n')>=0:
                 self.user = None
-        else: 
+        else:
             self.url = param[0]
-            self.service = param[1][0] 
+            self.service = param[1][0]
             self.user = param[1][1]
 
-    def setApiDrafts(self):        
+    def setApiDrafts(self):
         # Every cache is the same, even the origin are drafts ??
         return(self.setApiPosts())
 
-    def setApiPosts(self):        
+    def setApiPosts(self):
         url = self.getUrl()
         if hasattr(self, "socialNetwork"):
             service = self.socialNetwork
             nick = self.nick
-        else: 
+        else:
             service = self.getService()
             nick = self.getUser()
         logging.debug(f"Url: {url} service {service} nick {nick}")
         fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
         logging.debug("File: %s" % fileNameQ)
         try:
-            with open(fileNameQ,'rb') as f: 
-                try: 
-                    listP = pickle.load(f) 
-                except: 
-                    listP = [] 
+            with open(fileNameQ,'rb') as f:
+                try:
+                    listP = pickle.load(f)
+                except:
+                    listP = []
         except:
             listP = []
 
@@ -86,10 +86,10 @@ class moduleCache(Content,Queue):
         if hasattr(self, "max"): # and self.max:
             maxVal = int(self.max)
         self.setPosts()
-        lenMax = len(self.getPosts()) 
+        lenMax = len(self.getPosts())
         num = 1
-        if maxVal > 1: 
-            num = maxVal - lenMax 
+        if maxVal > 1:
+            num = maxVal - lenMax
         if num < 0:
             num = 0
         return num
@@ -113,7 +113,7 @@ class moduleCache(Content,Queue):
         self.setProfile(self.service)
         profile = self.getProfile()
         logging.debug("Profile %s" % profile)
-    
+
         profile.id = profile['id']
         profile.profile_id = profile['service_id']
         schedules = profile.schedules
@@ -137,7 +137,7 @@ class moduleCache(Content,Queue):
        myTimes = self.schedules[0].hour
        print("sched", self.schedules[0].render())
        for time in times:
-           print(time) 
+           print(time)
            hour = time.split(':')[0]
            if int(hour) not in myTimes:
                myTimesS = str(myTimes)
@@ -146,8 +146,8 @@ class moduleCache(Content,Queue):
                self.schedules[0].hour.also.on(str(hour))
            self.crontab.write()
 
-    def delSchedules(self, times): 
-        myTimes = self.schedules[0].hour 
+    def delSchedules(self, times):
+        myTimes = self.schedules[0].hour
         timesI = []
         for time in times:
             timesI.append(int(time.split(':')[0]))
@@ -159,7 +159,7 @@ class moduleCache(Content,Queue):
             print("time",time)
             if time not in timesI:
                 myNewTimes.append(time)
-                
+
         print("myN",myNewTimes)
         self.schedules[0].hour.clear()
         for time in myNewTimes:
@@ -188,7 +188,7 @@ class moduleCache(Content,Queue):
 
     def updatePosts(self, src):
         fileNameQ = f"{src.fileNameBase(self)}.queue"
-        with open(fileNameQ, 'wb') as f: 
+        with open(fileNameQ, 'wb') as f:
             posts = self.getPosts2()
             pickle.dump(posts, f)
 
@@ -198,10 +198,10 @@ class moduleCache(Content,Queue):
         return 'Ok'
 
     def updatePostsCache(self):
-        fileNameQ = fileNamePath(self.url, 
+        fileNameQ = fileNamePath(self.url,
                 (self.socialNetwork, self.nick)) + ".queue"
 
-        with open(fileNameQ, 'wb') as f: 
+        with open(fileNameQ, 'wb') as f:
             posts = self.getPosts()
             pickle.dump(posts, f)
 
@@ -212,7 +212,7 @@ class moduleCache(Content,Queue):
 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)
-        (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None) 
+        (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None)
 
         if i < len(self.getPosts()):
             messageRaw = self.getPosts()[i]
@@ -284,8 +284,8 @@ class moduleCache(Content,Queue):
             post = (textS[0], 'http'+textS[1], '','','','','','','','')
             self.assignPosts(posts[:j] + [ post ] + posts[j:])
             self.updatePostsCache()
-    
-    def publishApiPost(self, postData): 
+
+    def publishApiPost(self, *postData):
         post, link, comment, plus = postData
         posts = self.getPosts2()
         for post in plus['more'][1]:
@@ -306,7 +306,7 @@ class moduleCache(Content,Queue):
         logging.info("Publishing title: %s" % title)
         logging.info("Social network: %s Nick: %s" % (self.service, self.nick))
         posts = self.getPosts()
-        if (not isinstance(update, str) 
+        if (not isinstance(update, str)
                 or (isinstance(update, str) and update[:4] != "Fail")):
             self.assignPosts(posts[:j] + posts[j+1:])
             logging.debug("Updating %s" % posts)
@@ -319,7 +319,7 @@ class moduleCache(Content,Queue):
                 update = update[1]['id']
                 # link: https://www.facebook.com/[name]/posts/[second part of id]
         logging.info("Update before return %s"% update)
-        return(update) 
+        return(update)
 
     def delete(self, j):
         # Not sure
@@ -364,11 +364,11 @@ class moduleCache(Content,Queue):
         self.updatePostsCache()
         logging.info("Moved %s"% post[0])
         return("%s"% post[0])
- 
+
 def main():
 
-    logging.basicConfig(stream=sys.stdout, 
-            level=logging.INFO, 
+    logging.basicConfig(stream=sys.stdout,
+            level=logging.INFO,
             format='%(asctime)s %(message)s')
 
     import moduleCache
@@ -390,7 +390,7 @@ def main():
     print(f"url: {url} social network: {sN} nick: {nick}")
     fNP = f"{DATADIR}/{fN}"
     import time
-    fileT = time.strftime("%Y-%m-%d %H:%M:%S", 
+    fileT = time.strftime("%Y-%m-%d %H:%M:%S",
             time.localtime(os.path.getmtime(fNP)))
     print(f"File name: {fNP} Date: {fileT}")
 
@@ -398,15 +398,15 @@ def main():
 
 
 
-    if action.upper()in ['S','T']: 
+    if action.upper()in ['S','T']:
         url = f"https://{url}/"
 
         site = moduleCache.moduleCache()
         site.setClient((url, (sN, nick)))
         site.setPosts()
-        if action.upper() == 'T': 
+        if action.upper() == 'T':
             [ print(f"- {post[0]}") for post in site.getPosts() ]
-        else: 
+        else:
             print(site.getPosts())
     elif action.upper() in ['D']:
         fileDelete = f"{fNP}"
@@ -414,12 +414,12 @@ def main():
         os.remove(fileDelete)
 
 
-    return 
+    return
 
     try:
-        config = configparser.ConfigParser() 
+        config = configparser.ConfigParser()
         config.read(CONFIGDIR + '/.rssBlogs')
-        
+
         section = "Blog7"
         url = config.get(section, 'url')
         cache = config[section]['cache']
@@ -439,12 +439,12 @@ def main():
             return
             site.posts = posts
             #site.updatePostsCache()
-                
+
             print(checkLastLink(url, (sN, nick)))
-        
+
     except:
         cache = moduleCache.moduleCache()
-        cache.setClient(('http://fernand0-errbot.slack.com/', 
+        cache.setClient(('http://fernand0-errbot.slack.com/',
                 ('twitter', 'fernand0')))
         cache.setPosts()
         print(len(cache.getPosts()))
@@ -494,7 +494,7 @@ def main():
     #print('edit F0', blog.cache.editPost('F0', 'Así es Guestboard, un "Slack" para la organización de eventos.'))
     #print('publish T0', blog.cache.publishPost('T0'))
     #ca.movePost('T4 T3')
-    #ca.editPost('T4', "My Stepdad's Huge Dataset.") 
+    #ca.editPost('T4', "My Stepdad's Huge Dataset.")
     #ca.editPost('F5', "¡Sumate al datatón y a WiDS 2019! - lanacion.com")
     sys.exit()
     print(ca.editPost('F1', 'Alternative Names for the Tampon Tax - The Belladonna Comedy'))

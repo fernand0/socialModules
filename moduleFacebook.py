@@ -13,10 +13,10 @@ from configMod import *
 from moduleContent import *
 from moduleQueue import *
 
-# We are using facebook-sdk 
+# We are using facebook-sdk
 # You can find the way to obtain tokens and so on at:
 # https://facebook-sdk.readthedocs.io/
-# 
+#
 # Config file
 # [Facebook]
 # oauth_access_token: #<- We only need this one
@@ -30,32 +30,32 @@ class moduleFacebook(Content,Queue):
         super().__init__()
         self.page = None
 
-    def getKeys(self, config): 
+    def getKeys(self, config):
         oauth_access_token = config.get(self.service, "oauth_access_token")
         return ((oauth_access_token,))
 
     def initApi(self, keys):
-        graph = facebook.GraphAPI(keys[0], version='3.0') 
-        return graph 
+        graph = facebook.GraphAPI(keys[0], version='3.0')
+        return graph
 
     def getPage(self):
         return self.page
 
     def setPage(self, facebookAC='me'):
-        perms = ['publish_actions','manage_pages','publish_pages'] 
-        pages = self.getClient().get_connections("me", "accounts") 
+        perms = ['publish_actions','manage_pages','publish_pages']
+        pages = self.getClient().get_connections("me", "accounts")
         self.pages = pages
 
-        # Publishing as me 
-        self.page = facebookAC 
+        # Publishing as me
+        self.page = facebookAC
 
-        if (facebookAC != 'me'): 
-            for i in range(len(pages['data'])): 
+        if (facebookAC != 'me'):
+            for i in range(len(pages['data'])):
                 logging.debug("    Page: %s %s" % (
-                    pages['data'][i]['name'], facebookAC)) 
-                if (pages['data'][i]['name'] == facebookAC): 
-                    logging.info("     Selected... %s" % pages['data'][i]['name']) 
-                    graph2 = facebook.GraphAPI(pages['data'][i]['access_token']) 
+                    pages['data'][i]['name'], facebookAC))
+                if (pages['data'][i]['name'] == facebookAC):
+                    logging.info("     Selected... %s" % pages['data'][i]['name'])
+                    graph2 = facebook.GraphAPI(pages['data'][i]['access_token'])
                     self.page = graph2
                     self.pageId = pages['data'][i]['id']
                     break
@@ -66,11 +66,11 @@ class moduleFacebook(Content,Queue):
 
         posts = []
         postsF = self.getPage().get_connections(
-                self.pageId, connection_name='posts') 
-        if 'data' in postsF: 
-            for post in postsF['data']: 
-                postt = self.page.get_connections(post['id'], 
-                        connection_name='attachments') 
+                self.pageId, connection_name='posts')
+        if 'data' in postsF:
+            for post in postsF['data']:
+                postt = self.page.get_connections(post['id'],
+                        connection_name='attachments')
                 if 'data' in postt:
                     # We need to merge the two dictionaries to have the id and
                     # the other data
@@ -84,21 +84,21 @@ class moduleFacebook(Content,Queue):
         #for post in self.getPosts():
         #    (page, idPost) = post['id'].split('_')
         #    url = 'https://facebook.com/' + page + '/posts/' + idPost
-        #    outputData[serviceName]['sent'].append((post['message'], url, 
+        #    outputData[serviceName]['sent'].append((post['message'], url,
         #            '', post['created_time'], '','','','',''))
 
         #self.postsFormatted = outputData
 
-    def processReply(self, reply): 
+    def processReply(self, reply):
         res = reply
-        if reply: 
-            logging.debug("Res: %s" % reply) 
-            if 'id' in reply: 
+        if reply:
+            logging.debug("Res: %s" % reply)
+            if 'id' in reply:
                 res = 'https://www.facebook.com/{}'.format(reply['id'])
-                logging.info("     Link: {}".format(res)) 
+                logging.info("     Link: {}".format(res))
         return(res)
- 
-    def publishApiPost(self, postData):
+
+    def publishApiPost(self, *postData):
         post, link, comment, plus = postData
         post = self.addComment(post, comment)
 
@@ -110,7 +110,7 @@ class moduleFacebook(Content,Queue):
             res = self.page.put_object('me', "feed", message=post, link=link)
         return self.processReply(res)
 
-    def publishApiImage(self, postData): 
+    def publishApiImage(self, postData):
         res = 'Fail!'
         logging.debug(f"{postData} Len: {len(postData)}")
         if len(postData) == 3:
@@ -118,10 +118,10 @@ class moduleFacebook(Content,Queue):
             yield(f" publishing api {post} - {imageName} - {more}")
             with open(imageName, "rb") as imagefile:
                     imagedata = imagefile.read()
-    
+
             try:
                 if 'alt' in more:
-                    res = self.page.put_photo(imagedata, message=post, 
+                    res = self.page.put_photo(imagedata, message=post,
                         alt_text_custom = more['alt'])
                 else:
                     res = self.page.put_photo(imagedata, message=post)
@@ -131,7 +131,7 @@ class moduleFacebook(Content,Queue):
             logging.debug(f" not published")
         return res
 
-    def deleteApiPosts(self, idPost): 
+    def deleteApiPosts(self, idPost):
         result = self.page.delete_object(idPost)
         logging.info(f"Res: {result}")
         return(result)
@@ -173,8 +173,8 @@ class moduleFacebook(Content,Queue):
 
 def main():
 
-    logging.basicConfig(stream=sys.stdout, 
-            level=logging.INFO, 
+    logging.basicConfig(stream=sys.stdout,
+            level=logging.INFO,
             format='%(asctime)s %(message)s')
 
     import moduleFacebook
@@ -193,7 +193,7 @@ def main():
     #print("id",idPost)
     #input('Delete? ')
     #fc.deletePostId(idPost)
-    #sys.exit() 
+    #sys.exit()
     fc.setPostsType('posts')
     fc.setPosts()
     for i, post in enumerate(fc.getPosts()):
@@ -226,14 +226,14 @@ def main():
     sys.exit()
 
     print("Testing title and link")
-    
+
     for post in fc.getPosts():
         print(post)
         title = fc.getPostTitle(post)
         link = fc.getPostLink(post)
         print("Title: {}\nLink: {}\n".format(title,link))
 
- 
+
     sys.exit()
 
 

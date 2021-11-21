@@ -41,10 +41,10 @@ class moduleRules:
             else:
                 nameMethod = f"set{option.capitalize()}"
 
-            if  nameMethod in apiSrc.__dir__(): 
-                # setCache ¿?  
-                # url, time, max, posts, 
-                cmd = getattr(apiSrc, nameMethod) 
+            if  nameMethod in apiSrc.__dir__():
+                # setCache ¿?
+                # url, time, max, posts,
+                cmd = getattr(apiSrc, nameMethod)
                 if inspect.ismethod(cmd):
                     cmd(more[option])
             else:
@@ -73,12 +73,12 @@ class moduleRules:
         msgLog = (f"{indent}More: Dst {more}")
         logMsg(msgLog, 1, 0)
 
-        if action[0] == "cache": 
+        if action[0] == "cache":
             apiDst = getApi("cache", (action[1], socialNetwork))
             apiDst.socialNetwork = action[2]
             apiDst.nick = action[3]
-        else: 
-            apiDst = getApi(profile, nick) 
+        else:
+            apiDst = getApi(profile, nick)
 
         apiDst.setUser(nick)
         apiDst.setPostsType('posts')
@@ -95,13 +95,13 @@ class moduleRules:
 
         apiDst.setMax(mmax)
 
-        if 'time' in more: 
+        if 'time' in more:
             apiDst.setTime(more['time'])
 
         return apiDst
 
     def testDifferPosts(self, apiSrc, lastLink, listPosts):
-        i = 1 
+        i = 1
         num = 1
         listPosts = apiSrc.getNumPostsData(num, i, lastLink)
         if len(apiSrc.getPosts()) > 0:
@@ -129,9 +129,218 @@ class moduleRules:
         else:
             print(f"{indent}No listPosts2")
 
+    def executeAction(self, src, more, action,
+                    noWait, timeSlots, simmulate, name=""):
 
-    def executeAction(self, src, more, action, 
-                    noWait, timeSlots, simmulate, name=""): 
+        sys.path.append(path)
+        from configMod import logMsg
+
+        indent = f"    {name}->({action[3]}@{action[2]})] -> "+" "
+        # The ']' is opened in executeRules FIXME
+
+        msgLog = (f"{indent}Sleeping to launch all processes")
+        logMsg(msgLog, 1, 0)
+        # 'Cometic' waiting to allow all the processes to be launched.
+        time.sleep(1)
+
+        msgAction = (f"{action[0]} {action[3]}@{action[2]} "
+                     f"({action[1]})")
+        msgLog = (f"{indent}Source: {src[2]} ({src[3]}) -> "
+                f"Action: {msgAction})")
+
+        logMsg(msgLog, 1, 0)
+        textEnd = (f"{msgLog}")
+
+        # Destination
+
+        apiSrc = self.readConfigSrc(indent, src, more)
+        apiSrc.setPosts()
+
+        apiDst = self.readConfigDst(indent, action, more)
+        apiDst.setUrl(apiSrc.getUrl())
+
+        indent = f"{indent} "
+
+        apiSrc.setLastLink(apiDst)
+
+        lastLink = apiSrc.getLastLinkPublished()
+        lastTime = apiSrc.getLastTimePublished()
+
+        if lastLink:
+            msgLog = (f"{indent}Last link: {lastLink}")
+            logMsg(msgLog, 1, 1)
+
+        lastTime = time.time()
+        if lastTime:
+            myTime = time.strftime("%Y-%m-%d %H:%M:%S",
+                                    time.localtime(lastTime))
+
+            msgLog = (f"{indent}Last time: {myTime}")
+            logMsg(msgLog, 1, 1)
+
+        num = apiDst.getMax()
+        msgLog = (f"{indent}num: {num}")
+        logMsg(msgLog, 1, 0)
+
+        listPosts = []
+
+        testDiffer = False
+
+        if testDiffer:
+            self.testDifferPosts(apiSrc, lastLink, listPosts)
+            return
+
+        if (num > 0):
+            tNow = time.time()
+            print(f"{indent}lll: lastTime")
+            diffTime = tNow - lastTime
+            msgLog = (f"{indent}Src time: {apiSrc.getTime()} "
+                      f"Dst time: {apiDst.getTime()}")
+            logMsg(msgLog, 2, 0)
+            hours = float(apiDst.getTime())*60*60
+
+            numAvailable = 0
+
+            if (noWait or (diffTime>hours)):
+                tSleep = random.random()*float(timeSlots)*60
+
+                apiSrc.setNextTime(tNow, tSleep, apiDst)
+
+                if (tSleep>0.0):
+                    msgLog= f"{indent}Waiting {tSleep/60:2.2f} minutes"
+                else:
+                    tSleep = 2.0
+                    msgLog= f"{indent}No Waiting"
+
+                msgLog = f"{msgLog} for action: {msgAction}"
+                logMsg(msgLog, 1, 1)
+
+                time.sleep(tSleep)
+
+                msgLog = (f"{indent}Go!\n"
+                          f"{indent}└-> Action: {msgAction}")
+                logMsg(msgLog, 1, 1)
+
+                # The source of data can have changes while we were waiting
+                apiSrc.setPosts()
+
+                listPosts = apiSrc.getNumNextPosts(num)
+
+                if listPosts:
+                    msgLog = f"{indent}Would schedule in {msgAction} ..."
+                    logMsg(msgLog, 1, 1)
+                    indent = f"{indent} "
+                    msgLog = (f"{indent}listPosts: {listPosts}")
+                    logMsg(msgLog, 2, 0)
+                    [ logMsg(f"{indent}- {apiSrc.getPostTitle(post)}", 1, 1)
+                                for post in listPosts
+                    ]
+
+
+                    indent = f"{indent[:-1]}"
+
+                    if not simmulate:
+                        apiDst.publishPost(apiSrc, listPosts)
+
+                        return
+                        indent = f"{indent[:-1]}"
+                        return
+                        if ((not res) or (res and
+                            (('You have already retweeted' in res) or
+                             ('Status is a duplicate.' in res) or
+                                not ('Fail!' in res)))):
+                            msgLog = (f"{indent}End publish, reply: {res}")
+                            logMsg(msgLog, 1, 1)
+
+                            if llink:
+                                link = llink
+                            if link and (src[0] not in ['cache']):
+                                if isinstance(lastLink, list):
+                                    link = "\n".join(
+                                        [
+                                            "{}".format(post[1])
+                                            for post in reversed(listPosts)
+                                        ]
+                                    )
+                                    link = link + "\n" + "\n".join(lastLink)
+                                logging.info(f"Link: {link}")
+                                try:
+                                    logging.info(f"self Link: {apiDst.lastLink}")
+                                except:
+                                    logging.info(f"self Link: ")
+                                updateLastLink(apiDst.getUrl(),
+                                                link, socialNetwork)
+                                apiSrc.updateLastLink(apiDst, link)
+                            elif link and (src[0] in ['cache']):
+                                apiSrc.updateLastLink(apiDst, link)
+                        else:
+                            if res.find('Status is a duplicate')>=0:
+                                msgLog = (f"{indent}End publish, "
+                                          f"reply: {res}")
+                            else:
+                                msgLog = (f"{indent}End publish, "
+                                          f"reply: {res}")
+                            logMsg(msgLog, 1, 1)
+                    else:
+                        msgLog = (f"{indent}This is a simmulation")
+                        logMsg(msgLog, 1, 1)
+                        msgLog = (f"{indent}I'd record link: {link}")
+                        logMsg(msgLog, 1, 1)
+                        fN = fileNamePath(apiDst.getUrl(), socialNetwork)
+                        msgLog = (f"{indent}in file ", f"{fN}.last")
+                        logMsg(msgLog, 1, 1)
+                        msgLog = (f"{indent}in file ",
+                                  f"{apiSrc.fileNameBase(apiDst)}.last")
+                        logMsg(msgLog, 1, 1)
+                        # apiSrc.updateLastLink(apiDst, link)
+
+                    postaction = apiSrc.getPostAction()
+                    if (not postaction) and (src[0] in ["cache"]):
+                        postaction = "delete"
+                    if postaction:
+                        msgLog = (f"{indent} Post Action {postaction}")
+                        logMsg(msgLog, 1, 1)
+
+                    if ((not simmulate)
+                        and (not res or (res
+                                 and (('Status is a duplicate.' in res)
+                                 or ('You have already retweeted' in res)
+                                 or not ('Fail!' in res))))):
+                        try:
+                            cmdPost = getattr(apiSrc, postaction)
+                            msgLog = (f"{indent}Post Action {postaction} "
+                                      f"command {cmdPost}")
+                            logMsg(msgLog, 1, 1)
+                            res = cmdPost(i - 1)
+                            msgLog = (f"{indent}End {postaction}, reply: {res}")
+                            logMsg(msgLog, 1, 1)
+                        except:
+                            msgLog = (f"{indent}No postaction or wrong one")
+                            logMsg(msgLog, 1, 1)
+
+                    msgLog = (f"{indent}Available {len(apiSrc.getPosts())-1}")
+                    logMsg(msgLog, 1, 1)
+                else:
+                    msgLog = f"{indent}Empty listPosts or some problem {listPosts}"
+                    # Sometimes the module (moduleGmail) returns a list of None
+                    # values
+                    logMsg(msgLog, 1, 1)
+            elif (diffTime<=hours):
+                msgLog = (f"{indent}Not enough time passed. "
+                          f"We will wait at least "
+                          f"{(hours-diffTime)/(60*60):2.2f} hours.")
+                logMsg(msgLog, 1, 1)
+
+        else:
+            if (num<=0):
+                msgLog = (f"{indent}No posts available")
+                logMsg(msgLog, 1, 1)
+
+        return textEnd
+
+
+    def executeActionOld(self, src, more, action,
+                    noWait, timeSlots, simmulate, name=""):
 
         sys.path.append(path)
         from configMod import logMsg
@@ -192,7 +401,7 @@ class moduleRules:
         myTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastTime))
 
         lastLink = myLastLink
-        
+
         msgLog = (f"{indent}Last link {action[3]}@{action[2]}: {myLastLink}")
         apiSrc.setPosts()
         # print(f"{indent}Last link: {lastLink}")
@@ -243,23 +452,23 @@ class moduleRules:
 
             numAvailable = 0
 
-            if (noWait or (diffTime>hours)): 
+            if (noWait or (diffTime>hours)):
                 tSleep = random.random()*float(timeSlots)*60
 
                 if ((i>0) and (action[0] not in ['cache'])):
-                    #and (src[2] != f"{action[2]}@{action[3]}")): 
+                    #and (src[2] != f"{action[2]}@{action[3]}")):
                     apiSrc.setNextTime(tNow, tSleep, apiDst)
-                    fileNameNext = setNextTime(apiDst, socialNetwork, 
+                    fileNameNext = setNextTime(apiDst, socialNetwork,
                             tNow, tSleep)
-                    with open(fileNameNext,'wb') as f: 
+                    with open(fileNameNext,'wb') as f:
                         pickle.dump((tNow,tSleep), f)
                     msgLog = (f"{indent}apiSrc: {apiSrc} apiDst: {apiDst}")
                     logMsg(msgLog, 1, 0)
 
-                    text = (f"{indent}Source: {more['url']} ({src[3]}) -> " 
-                            f"\n{indent}Source: {src[2]} ({src[3]}) -> " 
+                    text = (f"{indent}Source: {more['url']} ({src[3]}) -> "
+                            f"\n{indent}Source: {src[2]} ({src[3]}) -> "
                             f"Action: {msgAction})")
-                    if numAvailable: 
+                    if numAvailable:
                         msgLog = (f"{msgLog}\n{indent}Available: "
                                 f"{numAvailable}")
                         logMsg(text, 1, 0)
@@ -267,7 +476,7 @@ class moduleRules:
                     logMsg(text, 1, 0)
 
                 if (tSleep>0.0):
-                    msgLog= f"{indent}Waiting {tSleep/60:2.2f} minutes" 
+                    msgLog= f"{indent}Waiting {tSleep/60:2.2f} minutes"
                 else:
                     tSleep = 2.0
                     msgLog= f"{indent}No Waiting"
@@ -285,10 +494,10 @@ class moduleRules:
                 apiSrc.setPosts()
 
                 listPosts = apiSrc.getNumPostsData(num, i, lastLink)
-                print(listPosts)
+                # print(listPosts)
                 listPosts2 = apiSrc.getNumNextPost(num)
 
-                if listPosts and listPosts[0][1]: 
+                if listPosts and listPosts[0][1]:
                     # if listPosts2:
                     #     if (listPosts == listPosts2):
                     #         print("{indent}Equal listPosts")
@@ -303,11 +512,11 @@ class moduleRules:
                     indent = f"{indent} "
                     msgLog = (f"{indent}listPosts: {listPosts}")
                     logMsg(msgLog, 2, 0)
-                    [ logMsg(f"{indent}- {post[0][:200]}", 1, 1) 
+                    [ logMsg(f"{indent}- {post[0][:200]}", 1, 1)
                                 for post in listPosts2
                     ]
-                    [ logMsg(f"{indent}- {post[0][:200]}", 1, 1) 
-                                for post in listPosts 
+                    [ logMsg(f"{indent}- {post[0][:200]}", 1, 1)
+                                for post in listPosts
                     ]
                     logMsg(f"{indent}Next post: {nextPost}", 2, 0)
 
@@ -322,16 +531,16 @@ class moduleRules:
                     comment = listPosts[-1][-1]
                     tags = listPosts[-1][-2]
 
-                    if tags: 
+                    if tags:
                         msgLog = (f"{indent}Tags {tags}")
                         logMsg(msgLog, 2, 0)
 
-                    if profile in ['telegram', 'facebook']: 
-                        comment = summaryLinks 
+                    if profile in ['telegram', 'facebook']:
+                        comment = summaryLinks
                     elif profile not in 'wordpress':
                         comment = ''
-                    if profile == 'pocket': 
-                        if firstLink: 
+                    if profile == 'pocket':
+                        if firstLink:
                             link, llink = firstLink, link
 
                     msgLog = (f"{indent}title: {title}")
@@ -345,13 +554,13 @@ class moduleRules:
                     logMsg(msgLog, 1, 1)
 
                     if not simmulate:
-                        if action[0] == "cache": 
+                        if action[0] == "cache":
                             apiDst.setPosts()
                             res = apiDst.addPosts(listPosts)
-                            res = apiDst.publishPost('', '', '', 
+                            res = apiDst.publishPost('', '', '',
                                     more = (apiSrc, listPosts2))
-                        elif ((action[2] == "twitter") 
-                                and (src[0] == 'twitter')): 
+                        elif ((action[2] == "twitter")
+                                and (src[0] == 'twitter')):
                             # Is this the correct place?
                             idPost = link.split('/')[-1]
                             msgLog = (f"{indent}I'll publish: {title} "
@@ -360,56 +569,56 @@ class moduleRules:
                             msgLog = (f"{indent}I'll publish: {title} "
                                       f"- {link} - {idPost}")
                             logMsg(msgLog, 1, 1)
-                            res = apiDst.publishApiRT((title, link, 
-                                                       comment, 
+                            res = apiDst.publishApiRT((title, link,
+                                                       comment,
                                                        {'idPost' : idPost}))
                             link =  listPosts[-1][1]
-                        elif ((action[2] == "twitter") 
-                                and (action[1] == 'rt')): 
+                        elif ((action[2] == "twitter")
+                                and (action[1] == 'rt')):
                             msgLog = (f"{indent}Fail! Nothing to be done")
                             logMsg(msgLog, 1, 1)
                             res = "Fail! Nothing to be done"
-                        else: 
+                        else:
                             res = None
                             if hasattr(apiDst, 'service'):
                                 clsService = getModule(apiDst.service)
                                 if hasattr(apiDst, "publishPost"):
-                                    if profile in ['tumblr']: 
+                                    if profile in ['tumblr']:
                                         # For the cache we use the origin's
                                         # url but sometimes we need the url
                                         # of the service
                                         apiDst.setUrl(
                                             f"https://{apiDst.user}.tumblr.com/")
-                                        res = apiDst.publishPost(title, 
+                                        res = apiDst.publishPost(title,
                                                 link, comment)
-                                    elif profile in ['wordpress']: 
-                                        res = apiDst.publishPost(title, 
-                                                                 link, 
-                                                                 comment, 
+                                    elif profile in ['wordpress']:
+                                        res = apiDst.publishPost(title,
+                                                                 link,
+                                                                 comment,
                                                                  tags=tags)
                                         if '401' in res:
                                             res = f"Fail! {res}"
-                                    else: 
-                                        if not tags: 
+                                    else:
+                                        if not tags:
                                             tags = (apiSrc, listPosts2)
-                                        res = apiDst.publishPost(title, 
-                                                                 link, 
-                                                                 comment, 
+                                        res = apiDst.publishPost(title,
+                                                                 link,
+                                                                 comment,
                                                                  tags=tags)
-                                else: 
-                                    res = apiDst.publish(i) 
+                                else:
+                                    res = apiDst.publish(i)
                         indent = f"{indent[:-1]}"
-
-                        if ((not res) or (res and 
-                            (('You have already retweeted' in res) or 
-                             ('Status is a duplicate.' in res) or 
+                        return
+                        if ((not res) or (res and
+                            (('You have already retweeted' in res) or
+                             ('Status is a duplicate.' in res) or
                                 not ('Fail!' in res)))):
                             msgLog = (f"{indent}End publish, reply: {res}")
                             logMsg(msgLog, 1, 1)
 
                             if llink:
                                 link = llink
-                            if link and (src[0] not in ['cache']):  
+                            if link and (src[0] not in ['cache']):
                                 if isinstance(lastLink, list):
                                     link = "\n".join(
                                         [
@@ -423,10 +632,10 @@ class moduleRules:
                                     logging.info(f"self Link: {apiDst.lastLink}")
                                 except:
                                     logging.info(f"self Link: ")
-                                updateLastLink(apiDst.getUrl(), 
+                                updateLastLink(apiDst.getUrl(),
                                                 link, socialNetwork)
                                 apiSrc.updateLastLink(apiDst, link)
-                            elif link and (src[0] in ['cache']):  
+                            elif link and (src[0] in ['cache']):
                                 apiSrc.updateLastLink(apiDst, link)
                         else:
                             if res.find('Status is a duplicate')>=0:
@@ -444,7 +653,7 @@ class moduleRules:
                         fN = fileNamePath(apiDst.getUrl(), socialNetwork)
                         msgLog = (f"{indent}in file ", f"{fN}.last")
                         logMsg(msgLog, 1, 1)
-                        msgLog = (f"{indent}in file ", 
+                        msgLog = (f"{indent}in file ",
                                   f"{apiSrc.fileNameBase(apiDst)}.last")
                         logMsg(msgLog, 1, 1)
                         # apiSrc.updateLastLink(apiDst, link)
@@ -456,10 +665,10 @@ class moduleRules:
                         msgLog = (f"{indent} Post Action {postaction}")
                         logMsg(msgLog, 1, 1)
 
-                    if ((not simmulate) 
-                        and (not res or (res 
-                                 and (('Status is a duplicate.' in res) 
-                                 or ('You have already retweeted' in res) 
+                    if ((not simmulate)
+                        and (not res or (res
+                                 and (('Status is a duplicate.' in res)
+                                 or ('You have already retweeted' in res)
                                  or not ('Fail!' in res))))):
                         try:
                             cmdPost = getattr(apiSrc, postaction)
@@ -472,7 +681,7 @@ class moduleRules:
                         except:
                             msgLog = (f"{indent}No postaction or wrong one")
                             logMsg(msgLog, 1, 1)
-                    
+
                     msgLog = (f"{indent}Available {len(apiSrc.getPosts())-1}")
                     logMsg(msgLog, 1, 1)
                 else:
@@ -482,10 +691,10 @@ class moduleRules:
                     logMsg(msgLog, 1, 1)
             elif (diffTime<=hours):
                 msgLog = (f"{indent}Not enough time passed. "
-                          f"We will wait at least " 
+                          f"We will wait at least "
                           f"{(hours-diffTime)/(60*60):2.2f} hours.")
                 logMsg(msgLog, 1, 1)
- 
+
         else:
             if (num<=0):
                 msgLog = (f"{indent}No posts available")
@@ -544,7 +753,7 @@ class moduleRules:
                     if not (toAppend in methods):
                         methods.append(toAppend)
         return methods
-    
+
     def getServices(self):
         modulesFiles = os.listdir(path)
         modules = {"special": ["cache", "direct"], "regular": []}
@@ -589,7 +798,7 @@ class moduleRules:
                 rss = config.get(section, "rss")
                 msgLog = (f"Service: rss -> {rss}")
                 logMsg(msgLog, 2, 0)
-                toAppend = ("rss", "set", 
+                toAppend = ("rss", "set",
                             urllib.parse.urljoin(url, rss), "posts")
                 srcs.append(toAppend)
                 more.append(moreS)
@@ -623,15 +832,15 @@ class moduleRules:
                             elif ('twitter' in url):
                                 nick = url.split("/")[-1]
 
-                            if 'posts' in moreS: 
-                                if moreS['posts'] == method[1]: 
+                            if 'posts' in moreS:
+                                if moreS['posts'] == method[1]:
                                    toAppend = (service, "set", nick, method[1])
                             else:
                                toAppend = (service, "set", nick, method[1])
                             msgLog = (f"toAppend: {toAppend}")
                             logMsg(msgLog, 2, 0)
                             if not (toAppend in srcs):
-                                if (('posts' in moreS) 
+                                if (('posts' in moreS)
                                     and (moreS['posts'] == method[1])):
                                     srcs.append(toAppend)
                                     more.append(moreS)
@@ -732,7 +941,7 @@ class moduleRules:
                             if not (toAppend in dsts):
                                 dsts.append(toAppend)
                             if toAppend:
-                                if hasSpecial: 
+                                if hasSpecial:
                                     msgLog = (f"hasSpecial: {fromSrv}---")
                                     logMsg(msgLog, 2, 0)
                                     msgLog = (f"hasSpecial: {toAppend}---")
@@ -791,7 +1000,7 @@ class moduleRules:
         # Now we can add the sources not added.
 
         for src in srcsA:
-            if not src in srcs: 
+            if not src in srcs:
                 msgLog = (f"Adding implicit {src}")
                 logMsg(msgLog, 2, 0)
                 srcs.append(src)
@@ -813,10 +1022,10 @@ class moduleRules:
                         more.append({})
             elif dst[0] == "cache":
                 if len(dst)>4 :
-                    toAppend = (dst[0], "set", (dst[1], (dst[2], dst[3])), 
+                    toAppend = (dst[0], "set", (dst[1], (dst[2], dst[3])),
                                 "posts", dst[4], 1)
                 else:
-                    toAppend = (dst[0], "set", (dst[1], (dst[2], dst[3])), 
+                    toAppend = (dst[0], "set", (dst[1], (dst[2], dst[3])),
                                 "posts", 0, 1)
                 if not (toAppend[:4] in srcs):
                         srcs.append(toAppend[:4])
@@ -833,11 +1042,11 @@ class moduleRules:
                 available[iniK] = {"name": src[0], "data": [], "social": []}
                 available[iniK]["data"] = [{'src': src[1:], 'more': more[i]}]
             else:
-                available[iniK]["data"].append({'src': src[1:], 
+                available[iniK]["data"].append({'src': src[1:],
                                                 'more': more[i]})
             # srcC = (src[0], "set", src[1], src[2])
             # if srcC not in ruls:
-            #     ruls[srcC] = 
+            #     ruls[srcC] =
 
         myList = []
         for elem in available:
@@ -907,7 +1116,7 @@ class moduleRules:
 
         import concurrent.futures
 
-        delayedPosts = [] 
+        delayedPosts = []
         # import pprint
         # pprint.pprint(self.rules)
         # textEnd = ""
@@ -936,7 +1145,7 @@ class moduleRules:
                 textEnd = (f"Source: {name} {src[2]} {src[3]}")
                 # print(text)
                 actions = self.rules[src]
-                for k, action in enumerate(actions): 
+                for k, action in enumerate(actions):
                     if (select and (select.lower() != f"{src[0].lower()}{i}")):
                         actionMsg = f"Skip."
                     else:
@@ -954,7 +1163,7 @@ class moduleRules:
                     noWait = args.noWait
 
                     # Is this the correct place?
-                    if ((action[0] in 'cache') or 
+                    if ((action[0] in 'cache') or
                         ((action[0] == 'direct') and (action[2] == 'pocket'))
                         ):
                         # We will always load new items in the cache
@@ -962,28 +1171,28 @@ class moduleRules:
                         noWait=True
 
                     threads = threads + 1
-                    delayedPosts.append(pool.submit(self.executeAction, 
-                                        src, more, action, 
-                                        noWait, 
-                                        timeSlots, 
+                    delayedPosts.append(pool.submit(self.executeAction,
+                                        src, more, action,
+                                        noWait,
+                                        timeSlots,
                                         args.simmulate,
                                         nameA))
                 i = i + 1
 
             messages = []
             for future in concurrent.futures.as_completed(delayedPosts):
-                try: 
-                    res = future.result() 
-                    msgLog = (f"End Delay: {res}") 
+                try:
+                    res = future.result()
+                    msgLog = (f"End Delay: {res}")
                     logMsg(msgLog, 1, 1)
-                    if res: 
-                        messages.append( 
-                                f"  Published in: {future}\n{res} " 
+                    if res:
+                        messages.append(
+                                f"  Published in: {future}\n{res} "
                                 )
-                except Exception as exc: 
+                except Exception as exc:
                 #else:
                     msgLog = (f"{future} generated an exception: {exc} "
-                                 f"Src: {src}. Action: {action}") 
+                                 f"Src: {src}. Action: {action}")
                     logMsg(msgLog, 1, 1)
                     msgLog = (f"{sys.exc_info()}")
                     logMsg(msgLog, 1, 1)
@@ -991,18 +1200,18 @@ class moduleRules:
                     msgLog = (f"{traceback.print_exc()}")
                     logMsg(msgLog, 1, 1)
 
- 
+
         msgLog = (f"End Execute rules with {threads} threads.")
         logMsg(msgLog, 1, 2)
 
-        return 
+        return
 
 
 def main():
 
     logging.basicConfig(
         filename=LOGDIR + "/rssSocial.log",
-        level=logging.INFO, 
+        level=logging.INFO,
         format="%(asctime)s [%(filename).12s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
@@ -1012,7 +1221,7 @@ def main():
 
     rules = moduleRules()
     srcs, dsts, ruls, impRuls = rules.checkRules()
-    
+
 
     rules.printList(srcs, "Sources")
     rules.printList(dsts, "Destinations")
