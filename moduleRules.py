@@ -403,6 +403,7 @@ class moduleRules:
                         if ((not res) or (res and 
                             (('You have already retweeted' in res) or 
                              ('Status is a duplicate.' in res) or 
+                             ('Image already in gallery' in res) or 
                                 not ('Fail!' in res)))):
                             msgLog = (f"{indent}End publish, reply: {res}")
                             logMsg(msgLog, 1, 1)
@@ -460,6 +461,7 @@ class moduleRules:
                         and (not res or (res 
                                  and (('Status is a duplicate.' in res) 
                                  or ('You have already retweeted' in res) 
+                                 or ('Image already in gallery' in res)
                                  or not ('Fail!' in res))))):
                         try:
                             cmdPost = getattr(apiSrc, postaction)

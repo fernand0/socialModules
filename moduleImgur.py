@@ -348,18 +348,35 @@ def main():
 
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs')
+    img = moduleImgur.moduleImgur()
+    acc = "Blog20"
+    url = config.get(acc, 'url')
+    img.setUrl(url)
+    name = url.split('/')[-1]
+    img.setClient(name)
 
-    testingDrafts = True
-    if testingDrafts:
-        img = moduleImgur.moduleImgur()
-        acc = "Blog20"
-        url = config.get(acc, 'url')
-        img.setUrl(url)
-        name = url.split('/')[-1]
-        img.setClient(name)
-        img.setPostsType(config.get(acc, 'posts'))
+    testingPublish = True
+    if testingPublish:
+        img.setPostsType('posts')
         img.setPosts()
-        lastLink = 'https://imgur.com/a/q5zyNtS'
+        for i, post in enumerate(img.getPosts()[:7]):
+            print(f"{i}) {img.getPostTitle(post)}")
+        pos = int(input("Position? "))
+        print(f"Publish? {img.getPostTitle(img.getPosts()[pos])} ")
+        print(f"Publish? {img.getPostId(img.getPosts()[pos])} ")
+        res = img.publishApiPost((img.getPostTitle(img.getPosts()[pos]),
+            img.getPostLink(img.getPosts()[pos]),'',''))
+
+        if 'Image already in gallery' in res:
+            print("sí")
+
+        
+
+        return
+
+    testingDrafts = False
+    if testingDrafts:
+        lastLink = 'https://imgur.com/a/OqbcZhu'
         img.lastLinkPublished = lastLink
         i = img.getLinkPosition(lastLink)
         num = 1
@@ -370,7 +387,6 @@ def main():
         print(f"{img.getPostTitle(img.getNextPost()[0])}")
 
     
-
     publishCache = False
     if publishCache:
         listPosts = img.getNumPostsData(1, pos, '')
