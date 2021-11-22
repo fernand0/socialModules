@@ -783,10 +783,10 @@ class Content:
                         f"publishApi{self.getPostsType().capitalize()}"))):
                 method = getattr(self,
                         f"publishApi{self.getPostsType().capitalize()}")
-                reply = method(title, link, comment, more)
+                reply = method(title, link, comment, api=apiSrc, post=post)
             else:
                 print(f"t: {title},l: {link}, c: {comment}, m: {more}")
-                reply = self.publishApiPost(title, link, comment, more)
+                reply = self.publishApiPost(title, link, comment, api=apiSrc, post=post)
             return self.processReply(reply)
         except:
             return self.report(self.service, title, link, sys.exc_info())

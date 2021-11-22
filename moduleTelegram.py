@@ -119,13 +119,12 @@ class moduleTelegram(Content):
     #     if links:
     #         bot.sendMessage('@'+channel, links, parse_mode='HTML')
 
-    def publishApiPost(self, *args): #, **kwargs):
-        title, link, comment, more = args
-        logging.info("    Publishing in Telegram...")
+    def publishApiPost(self, *args, **kwargs):
+        title, link, comment = args
+        more = kwargs
         bot = self.getClient()
         if 'post' in more:
             contentHtml = more['api'].getPostContentHtml(more['post'])
-            print(f"contentHtml: {contentHtml}")
             soup = BeautifulSoup(contentHtml,'lxml')
             (theContent, theSummaryLinks) = more['api'].extractLinks(soup, "")
             content = f"{theContent}\n{theSummaryLinks}"
@@ -133,8 +132,7 @@ class moduleTelegram(Content):
             content = comment
         links = ""
         channel = self.user
-        print(f"content: {content}")
-
+        return
         logging.info(f"{self.service}: Title: {title} Link: {link}")
         text = ('<a href="'+link+'">' + title+ "</a>\n")
         textToPublish = text
@@ -157,7 +155,6 @@ class moduleTelegram(Content):
             logging.info("Publishing (text to 2)" + textToPublish2)
 
         if textToPublish:
-            print(f"text: {textToPublish}")
             try:
                 bot.sendMessage('@'+channel, textToPublish, parse_mode='HTML')
             except:
