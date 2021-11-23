@@ -64,8 +64,9 @@ class moduleTelegram(Content):
     def setChannel(self, channel):
         self.channel = channel
 
-    def publishApiImage(self, *postData):
-        post, image, plus = postData
+    def publishApiImage(self, *args, **kwargs):
+        post, image = args
+        more = kwargs
 
         bot = self.getClient()
         channel = self.user
@@ -74,65 +75,23 @@ class moduleTelegram(Content):
         else:
             return(self.report('Telegram', post, sys.exc_info()))
 
-    # def publishApiPost(self, *args, **kwargs):
-    #     title, link, comment = args
-    #     more = kwargs
-    #     print("...",title, link, comment, more)
-
-    #     bot = self.getClient()
-    #     content = comment
-    #     links = ""
-    #     channel = self.user
-
-    #     from html.parser import HTMLParser
-    #     h = HTMLParser()
-    #     title = h.unescape(title)
-    #     content = content.replace('<', '&lt;')
-    #     text = ('<a href="'+link+'">'
-    #             + title + "</a>\n" + content + '\n\n' + links)
-    #     textToPublish2 = ""
-    #     if len(text) < 4090:
-    #         textToPublish = text
-    #         links = ""
-    #     else:
-    #         text = '<a href="'+link+'">'+title + "</a>\n" + content
-    #         textToPublish = text[:4080] + ' ...'
-    #         textToPublish2 = '... ' + text[4081:]
-
-    #     logging.debug("Publishing (text to )" + textToPublish)
-    #     logging.debug("Publishing (text to 2)" + textToPublish2)
-
-
-    #     try:
-    #         bot.sendMessage('@'+channel, textToPublish, parse_mode='HTML')
-    #     except:
-    #         return(self.report('Telegram', textToPublish,
-    #             link, sys.exc_info()))
-
-    #     if textToPublish2:
-    #         try:
-    #             bot.sendMessage('@'+channel, textToPublish2[:4090],
-    #                             parse_mode='HTML')
-    #         except:
-    #             bot.sendMessage('@'+channel, "Text is longer",
-    #                             parse_mode='HTML')
-    #     if links:
-    #         bot.sendMessage('@'+channel, links, parse_mode='HTML')
-
-    def publishApiPost(self, *args, **kwargs):
+     def publishApiPost(self, *args, **kwargs):
         title, link, comment = args
         more = kwargs
         bot = self.getClient()
         if 'post' in more:
-            contentHtml = more['api'].getPostContentHtml(more['post'])
-            soup = BeautifulSoup(contentHtml,'lxml')
-            (theContent, theSummaryLinks) = more['api'].extractLinks(soup, "")
-            content = f"{theContent}\n{theSummaryLinks}"
+            post = more['post']
+            content = ''
+            if post:
+                contentHtml = more['api'].getPostContentHtml(more['post'])
+                soup = BeautifulSoup(contentHtml,'lxml')
+                (theContent, theSummaryLinks) = more['api'].extractLinks(soup, "")
+                content = f"{theContent}\n{theSummaryLinks}"
         else:
             content = comment
         links = ""
         channel = self.user
-        return
+
         logging.info(f"{self.service}: Title: {title} Link: {link}")
         text = ('<a href="'+link+'">' + title+ "</a>\n")
         textToPublish = text
@@ -159,15 +118,15 @@ class moduleTelegram(Content):
                 bot.sendMessage('@'+channel, textToPublish, parse_mode='HTML')
             except:
                 return(self.report('Telegram', textToPublish,
-                                   link, sys.exc_info()))
+                    link, sys.exc_info()))
 
             if textToPublish2:
                 try:
                     bot.sendMessage('@'+channel, textToPublish2[:4090],
-                                    parse_mode='HTML')
+                            parse_mode='HTML')
                 except:
                     bot.sendMessage('@'+channel, "Text is longer",
-                                    parse_mode='HTML')
+                            parse_mode='HTML')
             if links:
                 bot.sendMessage('@'+channel, links, parse_mode='HTML')
 
@@ -184,7 +143,7 @@ class moduleTelegram(Content):
 def main():
 
     logging.basicConfig(stream=sys.stdout, level=logging.INFO,
-                        format='%(asctime)s %(message)s')
+            format='%(asctime)s %(message)s')
 
     import moduleTelegram
 
@@ -193,14 +152,16 @@ def main():
     tel.setClient('testFernand0')
     # tel.setChannel('testFernand0')
 
-    testingImage = False
+    testingImage = True
     if testingImage:
         res = tel.publishImage("Prueba imagen", "/tmp/prueba.png")
+        return
 
-    testingPost = True
+    testingPost = False
     if testingPost:
-        more = {'api': 'lala', 'post': 'lele'}
-        res = tel.publishPost("Prueba imagen", "/tmp/prueba.png", '', more) 
+        res = tel.publishPost("Prueba texto", "https://t.me/testFernand0", '')
+                #api = 'lala' , post = 'lele')
+        return
     # print("Testing posts")
     # tel.setPosts()
 

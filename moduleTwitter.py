@@ -55,16 +55,17 @@ class moduleTwitter(Content,Queue):
         if reply:
             if not ('Fail!' in reply):
                 idPost = self.getPostId(reply)
-                title = self.getAttribute(reply, 'title')
+                title = reply.get('title')
                 res = f"{title} https://twitter.com/{self.user}/status/{idPost}"
             else:
                 res = reply
         return(res)
 
-    def publishApiImage(self, *postData):
-        logging.debug(f"{postData} Len: {len(postData)}")
-        if len(postData) == 3:
-            post, imageName, more = postData
+    def publishApiImage(self, *args, **kwargs):
+        logging.debug(f"{args} Len: {len(args)}")
+        if len(args) == 2:
+            post, imageName = args
+            more = kwargs
             if imageName:
                 with open(imageName, "rb") as imagefile:
                         imagedata = imagefile.read()
@@ -94,9 +95,11 @@ class moduleTwitter(Content,Queue):
     # def publishApiPosts(self, postData):
     #     return self.publishApiPost(postData)
 
-    def publishApiRT(self, *postData):
-        post, link, comment, plus = postData
-        idPost = plus['idPost']
+    def publishApiRT(self, *args, **kwargs):
+        post, link, comment = args
+        more = kwargs
+        tweet = more['post']
+        idPost = self.getPostId(tweet)
 
         logging.debug("     Retweeting: %s" % post)
         res = 'Fail!'
@@ -151,32 +154,30 @@ class moduleTwitter(Content,Queue):
             # It is the tweet URL
             idPost = post
         else:
-            idPost = self.getAttribute(post, 'id')
+            idPost = post.get('id')
         return  idPost
 
     def getPostApiSource(self, post):
-        source = self.getAttribute(post, 'source')
+        source = post.get('source')
         return source
 
     def getPostApiDate(self, post):
-        date = self.getAttribute(post, 'created_at')
+        date = post.get('created_at')
         return date
 
     def getUrlId(self, post):
         return (post.split('/')[-1])
 
     def getPostTitle(self, post):
-        title = ""
-        if 'text' in post:
-            title = self.getAttribute(post, 'text')
-        elif 'full_text' in post:
-            title = self.getAttribute(post, 'full_text')
+        title = post.get('text')
+        if not title:
+            title = post.get('full_text')
         # if 'http' in title:
             # title = title.split('http')[0]
         return title
 
     def getPostUrl(self, post):
-        idPost = self.getAttribute(post, 'id_str')
+        idPost = post.get('id_str')
         return f'https://twitter.com/{self.user}/status/{idPost}'
 
     def getPostLink(self, post):
@@ -188,7 +189,7 @@ class moduleTwitter(Content,Queue):
     def getPostContent(self, post):
         result = ''
         if 'full_text' in post:
-            result = self.getAttribute(post, 'full_text')
+            result = post.get('full_text')
         return result
 
     def getPostContentLink(self, post):
@@ -253,20 +254,37 @@ def main():
 
     tw.setClient('fernand0Test')
 
-    testingFav = True
+    testingFav = False
     if testingFav:
         print("Testing Fav")
         tw.setClient('fernand0')
         tw.setPostsType('favs')
         tw.setPosts()
         tweet = tw.getPosts()[0]
-        tweet = tw.getNextPost()
+        tweet = tw.getNextPost()[0]
         print(tweet)
         print(f" -Title {tw.getPostTitle(tweet)}")
         print(f" -Link {tw.getPostLink(tweet)}")
         print(f" -Content link {tw.getPostContentLink(tweet)}")
         print(f" -Post link {tw.extractPostLinks(tweet)}")
         sys.exit()
+
+    testingPost = False
+    if testingPost:
+        print("Testing Post")
+        title = "Test"
+        link = "https://twitter.com/fernand0Test"
+        tw.publishPost(title, link, '')
+        return
+
+    testingPostImages = True
+    if testingPostImages:
+        image = '/tmp/E8dCZoWWQAgDWqX.png'
+        title = 'Prueba imagen'
+        tw.publishImage(title, image)
+
+
+        return
 
     testingRT = False
     if testingRT:
@@ -275,10 +293,10 @@ def main():
         tw1.setClient('reflexioneseir')
         tw1.setPosts()
         tweet = tw1.getPosts()[10]
-        idPost = tweet['id']
+        idPost = tw1.getPostId(tweet)
         title = tw1.getPostTitle(tweet)
         link = tw1.getPostLink(tweet)
-        tw.publishApiRT(title, link, '', {'idPost' : idPost})
+        tw.publishApiRT(title, link, '', post = tweet)
 
         sys.exit()
 

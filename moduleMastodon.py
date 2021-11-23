@@ -56,8 +56,9 @@ class moduleMastodon(Content, Queue):
             res = self.getAttribute(reply, 'uri')
         return res
 
-    def publishApiImage(self, *postData):
-        post, image, plus = postData
+    def publishApiImage(self, *args, **kwargs):
+        post, image = args
+        more = kwargs
 
         res = 'Fail!'
         if True:
@@ -112,12 +113,18 @@ class moduleMastodon(Content, Queue):
         # import pprint
         # print(f"post: {post}")
         # pprint.pprint(post)
-        if 'card' in post and post['card'] and 'title' in post['card']:
-            result = self.getAttribute(post['card'], 'title')
-        elif 'content' in post:
-            result = self.getAttribute(post, 'content').replace('\n', ' ')
-        elif 'card' in post and post['card']:
-            result = self.getAttribute(post['card'], 'title')
+        card = post.get('card')
+        if card:
+            result = card.get('title')
+        if not result:
+            result = post.get('content')
+
+        # if 'card' in post and post['card'] and 'title' in post['card']:
+        #     result = self.getAttribute(post['card'], 'title')
+        # elif 'content' in post:
+        #     result = self.getAttribute(post, 'content').replace('\n', ' ')
+        # elif 'card' in post and post['card']:
+        #     result = self.getAttribute(post['card'], 'title')
         return result
 
     def getPostUrl(self, post):
@@ -191,7 +198,7 @@ def main():
 
     mastodon = moduleMastodon.moduleMastodon()
     mastodon.setClient('@fernand0Test@fosstodon.org')
-    testingFav = True
+    testingFav = False
     if testingFav:
         print("Testing Fav")
         mastodon.setClient('fernand0')
@@ -199,13 +206,33 @@ def main():
         mastodon.setPosts()
         if mastodon.getPosts():
             toot = mastodon.getPosts()[0]
-            toot = mastodon.getNextPost()
+            toot = mastodon.getNextPost()[0]
             print(toot)
             print(f" -Title {mastodon.getPostTitle(toot)}")
             print(f" -Link {mastodon.getPostLink(toot)}")
             print(f" -Content link {mastodon.getPostContentLink(toot)}")
             print(f" -Post link {mastodon.extractPostLinks(toot)}")
-        sys.exit()
+        return
+
+    mastodon.setClient('@fernand0Test@fosstodon.org')
+
+    testingPost = False
+    if testingPost:
+        print("Testing Post")
+        title = "Test"
+        link = "https://twitter.com/fernand0Test"
+        mastodon.publishApiPost(title, link, '')
+        return
+
+    testingPostImages = True
+    if testingPostImages:
+        image = '/tmp/E8dCZoWWQAgDWqX.png'
+        title = 'Prueba imagen'
+        mastodon.publishApiImage(title, image)
+
+
+        return
+
 
 
     print("Testing posting and deleting")

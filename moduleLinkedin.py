@@ -9,6 +9,7 @@ import urllib.parse
 from html.parser import HTMLParser
 import oauth2 as oauth
 from linkedin_v2 import linkedin
+# git@github.com:fernand0/python-linkedin-v2.git
 
 from configMod import *
 from moduleContent import *
@@ -110,17 +111,38 @@ class moduleLinkedin(Content):
 
         return reply
 
+    def publishApiImage(self, *args, **kwargs):
+        # Does not work?
+        res = ''
+        if len(args) == 2:
+            title, imageName = args
+            more = kwargs
+            if imageName:
+                with open(imageName, "rb") as imagefile:
+                        imagedata = imagefile.read()
+
+                try:
+                    res = self.getClient().submit_share(comment=None,
+                            title=title, description=None,
+                            submitted_url=None, submitted_image_url=imageName,
+                    urn=self.URN, visibility_code='anyone')
+                except:
+                    logging.info(f"Exception {sys.exc_info()}")
+                    res = self.report('Linkedin', title, link, sys.exc_info())
+        return res
+
+
     def publishApiPost(self, *args, **kwargs):
         title, link, comment = args
         more = kwargs
         logging.info(f"publishApi ")
         try:
-            res = self.getClient().submit_share(comment=comment, title=post,
+            res = self.getClient().submit_share(comment=comment, title=title,
                 description=None, submitted_url=link, submitted_image_url=None,
                 urn=self.URN, visibility_code='anyone')
         except:
             logging.info(f"Exception {sys.exc_info()}")
-            res = self.report('Linkedin', post, link, sys.exc_info())
+            res = self.report('Linkedin', title, link, sys.exc_info())
         return res
 
     def deleteApiPosts(self, idPost):
@@ -150,16 +172,30 @@ def main():
         ln.authorize()
 
 
-    print("ll",ln.publishPost("A ver otro", "https://www.linkedin.com/in/fernand0/",''))
+    testingPost = False
+    if testingPost:
+        print("ll", ln.publishPost("A ver otro", "https://www.linkedin.com/in/fernand0/",''))
+        return
     #sys.exit()
     # print(ln.deleteApiPosts('6764243697006727168'))
-    sys.exit()
+    #sys.exit()
 
-    print("Testing posts")
-    ln.setPostsType('posts')
-    ln.setPosts()
-    for post in ln.getPosts():
-        print(post)
+    testingPostImages = True
+    if testingPostImages:
+        image = '/tmp/E8dCZoWWQAgDWqX.png'
+        title = 'Prueba imagen'
+        ln.publishImage(title, image)
+        return
+
+
+    testingPosts = False
+    if testingPosts:
+        print("Testing posts")
+        ln.setPostsType('posts')
+        ln.setPosts()
+        for post in ln.getPosts():
+            print(post)
+        return
 
 
     sys.exit()

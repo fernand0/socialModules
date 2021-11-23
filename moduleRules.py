@@ -244,7 +244,6 @@ class moduleRules:
 
                         return
                         indent = f"{indent[:-1]}"
-                        return
                         if ((not res) or (res and
                             (('You have already retweeted' in res) or
                              ('Status is a duplicate.' in res) or

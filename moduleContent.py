@@ -733,16 +733,21 @@ class Content:
 
         return post
 
-    def publishImage(self, post, image, **more):
+    def publishImage(self, *args, **kwargs):
+        post, image = args
+        more = kwargs
         logging.info(f"    Publishing image {image} in {self.service}: {post}")
         try:
-            reply = self.publishApiImage((post, image, more))
+            reply = self.publishApiImage(post, image, **more)
             return self.processReply(reply)
         except:
             return self.report(self.service, post, image, sys.exc_info())
 
     def publishPost(self, *args, **more):
         print(f"publishPost")
+        apiSrc = ''
+        post = ''
+        nameMethod = 'Post'
 
         if len(args) == 3:
             title = args[0]
@@ -781,15 +786,15 @@ class Content:
                     and (self.getPostsType())
                     and (hasattr(self,
                         f"publishApi{self.getPostsType().capitalize()}"))):
-                method = getattr(self,
-                        f"publishApi{self.getPostsType().capitalize()}")
-                reply = method(title, link, comment, api=apiSrc, post=post)
-            else:
-                print(f"t: {title},l: {link}, c: {comment}, m: {more}")
-                reply = self.publishApiPost(title, link, comment, api=apiSrc, post=post)
-            return self.processReply(reply)
+                nameMethod = self.getPostsType().capitalize()
+
+            method = getattr(self, f"publishApi{nameMethod}")
+            reply = method(title, link, comment, api=apiSrc, post=post)
+            reply =  self.processReply(reply)
         except:
-            return self.report(self.service, title, link, sys.exc_info())
+            reply = self.report(self.service, title, link, sys.exc_info())
+
+        return reply
 
 
     def deletePostId(self, idPost):
