@@ -130,8 +130,9 @@ class moduleSlack(Content, Queue):
         #    res = "Fail!"
         #return res
 
-    def publishApiPost(self, *postData):
-        post, link, comment, plus = postData
+    def publishApiPost(self, *args, **kwargs):
+        title, link, comment = args
+        more = kwargs
         chan = self.getChannel()
         if not chan:
             self.setChannel()

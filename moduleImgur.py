@@ -152,8 +152,9 @@ class moduleImgur(Content, Queue):
         return (theTitle,  theLink, theLink, theId,
                 '', '', '', theTags, thePost)
 
-    def publishApiPost(self, *postData):
-        post, idPost, comment, more = postData
+    def publishApiPost(self, *args, **kwargs):
+        post, idPost, comment = args
+        more = kwargs
         # This method publishes (as public post) some gallery that is in draft
         # mode
         logging.info("     Publishing in: {}".format(self.service))

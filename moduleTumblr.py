@@ -122,15 +122,17 @@ class moduleTumblr(Content, Queue):
             res = f"{self.getUrl()}{reply['id']}"
         return res
 
-    def publishApiPost(self, *postData):
+    def publishApiPost(self, *args, **kwargs):
+        title, link, comment = args
+        more = kwargs
         logging.info(f"type: {self.getPostsType()}")
         try:
             if self.getPostsType() == 'posts':
                 res = self.getClient().create_link(self.getBlogName(),
                                                    state='queue',
-                                                   title=postData[0],
-                                                   url=postData[1],
-                                                   description=postData[2])
+                                                   title=title,
+                                                   url=link,
+                                                   description=comment)
             elif self.getPostsType() == 'queue':
                 idPost = postData[1].split('/')[-2]
                 logging.debug(f"idPost {idPost}")
@@ -138,9 +140,9 @@ class moduleTumblr(Content, Queue):
             else:
                 res = self.getClient().create_link(self.getBlogName(),
                                                    state='queue',
-                                                   title=postData[0],
-                                                   url=postData[1],
-                                                   description=postData[2])
+                                                   title=title,
+                                                   url=link,
+                                                   description=comment)
         except ConnectionError as connectionError:
             logging.info(f"Connection error in {self.service}")
             res = self.report('Tumblr', post, link, sys.exc_info())

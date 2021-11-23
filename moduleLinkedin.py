@@ -110,8 +110,9 @@ class moduleLinkedin(Content):
 
         return reply
 
-    def publishApiPost(self, *postData):
-        post, link, comment, plus = postData
+    def publishApiPost(self, *args, **kwargs):
+        title, link, comment = args
+        more = kwargs
         logging.info(f"publishApi ")
         try:
             res = self.getClient().submit_share(comment=comment, title=post,

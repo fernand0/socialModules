@@ -99,10 +99,9 @@ class moduleFacebook(Content,Queue):
         return(res)
 
     def publishApiPost(self, *args, **kwargs):
-        if len(args) == 3:
-            post, link, comment = args
-            plus = kwargs
-            post = self.addComment(post, comment)
+        post, link, comment = args
+        plus = kwargs
+        post = self.addComment(post, comment)
 
 
         if not self.page:

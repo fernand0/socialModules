@@ -294,8 +294,9 @@ class moduleGitter(Content,Queue):
            reply = reply['id']
         return reply
 
-    def publishApiPost(self, *postData):
-        post, link, comment, plus = postData
+    def publishApiPost(self, *args, **kwargs):
+        title, link, comment = args
+        more = kwargs
         chan = self.getChannel()
         print(f"Chan: {chan}")
         result = self.getClient().messages.send(chan, f"{post} {link}")

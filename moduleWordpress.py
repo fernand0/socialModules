@@ -194,7 +194,9 @@ class moduleWordpress(Content,Queue):
             res = "Fail! Failed authentication."
         return res
 
-    def publishApiPost(self, *postData):
+    def publishApiPost(self, *args, **kwargs):
+        title, link, comment = args
+        more = kwargs
         if len(postData)>3:
            tags = postData[3]
            idTags = self.checkTags(tags)
@@ -202,9 +204,6 @@ class moduleWordpress(Content,Queue):
            idTags = ','.join(str(v) for v in idTags)
         else:
            idTags = ""
-        title = postData[0]
-        link = postData[1]
-        comment = postData[2]
         payload = {"title":title,
                  "content":comment,
                  "status":'publish',

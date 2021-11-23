@@ -44,9 +44,10 @@ class modulePocket(Content,Queue):
         logging.info(f"     Res: {res}")
         return(res)
 
-    def publishApiPost(self, *postData):
+    def publishApiPost(self, *args, *kwargs):
+        post, link, comment = args
+        more = kwargs
         logging.debug(f"postData: {postData} in {self}")
-        post, link, comment, plus = postData
 
         # This belongs here?
         if not link.startswith('http'):

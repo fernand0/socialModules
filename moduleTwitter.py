@@ -112,7 +112,7 @@ class moduleTwitter(Content,Queue):
 
     def publishApiPost(self, *args, **kwargs):
         post, link, comment = args
-        plus = kwargs
+        more = kwargs
         post = self.addComment(post, comment)
 
         # post = post[:(240 - (len(link) + 1))]

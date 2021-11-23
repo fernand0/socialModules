@@ -285,8 +285,9 @@ class moduleCache(Content,Queue):
             self.assignPosts(posts[:j] + [ post ] + posts[j:])
             self.updatePostsCache()
 
-    def publishApiPost(self, *postData):
-        post, link, comment, plus = postData
+    def publishApiPost(self, *args, **kwargs):
+        title, link, comment = args
+        more = kwargs
         posts = self.getPosts2()
         for post in plus['more'][1]:
             posts.append(post)

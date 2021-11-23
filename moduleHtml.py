@@ -345,8 +345,9 @@ class moduleHtml(Content, Queue):
             comment,
         )
 
-    def publishApiPost(self, *postData):
-        post, link, comment, plus = postData
+    def publishApiPost(self, *args, **kwargs):
+        title, link, comment = args
+        more = kwargs
         return self.click(link)
 
     def click(self, url):
