@@ -71,7 +71,7 @@ class moduleMedium(Content,Queue):
         for post in content.getPosts():
             self.posts.append(post)
 
-    def publishApiPost(self, *args, *kwargs):
+    def publishApiPost(self, *args, **kwargs):
         post, link, comment = args
         more = kwargs
         logging.info("    Publishing in {} ...".format(self.service))

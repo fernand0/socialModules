@@ -75,7 +75,7 @@ class moduleTelegram(Content):
         else:
             return(self.report('Telegram', post, sys.exc_info()))
 
-     def publishApiPost(self, *args, **kwargs):
+    def publishApiPost(self, *args, **kwargs):
         title, link, comment = args
         more = kwargs
         bot = self.getClient()

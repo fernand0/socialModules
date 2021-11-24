@@ -44,7 +44,7 @@ class modulePocket(Content,Queue):
         logging.info(f"     Res: {res}")
         return(res)
 
-    def publishApiPost(self, *args, *kwargs):
+    def publishApiPost(self, *args, **kwargs):
         post, link, comment = args
         more = kwargs
         logging.debug(f"postData: {postData} in {self}")

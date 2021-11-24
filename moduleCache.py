@@ -78,9 +78,6 @@ class moduleCache(Content,Queue):
 
         return(listP)
 
-    #def getMax(self):
-    #    return self.availableSlots()
-
     def getMax(self):
         maxVal = 0
         if hasattr(self, "max"): # and self.max:
@@ -288,11 +285,11 @@ class moduleCache(Content,Queue):
     def publishApiPost(self, *args, **kwargs):
         title, link, comment = args
         more = kwargs
+        print(f"more: {more}")
         posts = self.getPosts2()
-        for post in plus['more'][1]:
-            posts.append(post)
+        posts.append(more['post'])
         self.assignPosts(posts)
-        self.updatePosts(plus['more'][0])
+        self.updatePosts(more['api'])
 
     def publish(self, j):
         logging.info(">>>Publishing %d"% j)

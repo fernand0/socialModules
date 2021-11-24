@@ -157,7 +157,7 @@ class moduleRules:
         apiSrc.setPosts()
 
         apiDst = self.readConfigDst(indent, action, more)
-        apiDst.setUrl(apiSrc.getUrl())
+        apiDst.setUrl(apiSrc.getUrl())        
 
         indent = f"{indent} "
 
@@ -179,8 +179,10 @@ class moduleRules:
             logMsg(msgLog, 1, 1)
 
         num = apiDst.getMax()
+        num = 1
+        
         msgLog = (f"{indent}num: {num}")
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, 1)
 
         listPosts = []
 
@@ -192,7 +194,6 @@ class moduleRules:
 
         if (num > 0):
             tNow = time.time()
-            print(f"{indent}lll: lastTime")
             diffTime = tNow - lastTime
             msgLog = (f"{indent}Src time: {apiSrc.getTime()} "
                       f"Dst time: {apiDst.getTime()}")
@@ -236,14 +237,16 @@ class moduleRules:
                                 for post in listPosts
                     ]
 
-
                     indent = f"{indent[:-1]}"
 
                     if not simmulate:
-                        apiDst.publishPost(apiSrc, listPosts)
+                        res = apiDst.publishPost(apiSrc, listPosts)
 
                         return
+                        apiSrc.updateLastLink(apiDst, link)
+
                         indent = f"{indent[:-1]}"
+
                         if ((not res) or (res and
                             (('You have already retweeted' in res) or
                              ('Status is a duplicate.' in res) or

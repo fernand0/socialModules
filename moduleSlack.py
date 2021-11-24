@@ -570,6 +570,7 @@ def main():
         image = site.getPostImage(post)
         print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
         print(f"{i}) Content: {summary} {image}\n")
+    return
 
     testingDelete = False
     if testingDelete:
@@ -623,6 +624,9 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    sys.exit()
+
     print("Set Client")
     site.setClient("fernand0-errbot")
     print("sc", site.getClient())

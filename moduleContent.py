@@ -762,19 +762,17 @@ class Content:
 
             if 'tags' in more:
                 print(f"    Publishing in {self.service}: {type(more['tags'])}")
-
         elif len(args) == 2:
             apiSrc= args[0]
             listPosts = args[1]
             logging.info(f"    Publishing posts {listPosts} in {self.service}")
-            print(f"    Publishing in {self.service}: {listPosts}")
+            print(f"    Publishing posts {listPosts} in {self.service}")
             for post in listPosts:
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
                 comment = ''
                 more = {'api': apiSrc, 'post': post}
-                print(f"Title: {title}")
-                print(f"Link: {link}")
+                print(f"Title: {title}\nLink: {link}")
         else:
             title = ''
             link = ''
@@ -790,7 +788,7 @@ class Content:
 
             method = getattr(self, f"publishApi{nameMethod}")
             reply = method(title, link, comment, api=apiSrc, post=post)
-            reply =  self.processReply(reply)
+            reply = self.processReply(reply)
         except:
             reply = self.report(self.service, title, link, sys.exc_info())
 
