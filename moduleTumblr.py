@@ -203,18 +203,35 @@ def main():
     t = moduleTumblr.moduleTumblr()
 
     t.setClient('fernand0')
-    t.setPostsType('posts')
-    t.setPosts()
-    print(t.getPosts())
-    sys.exit()
 
-    t.setPostsType('queue')
+    testingPosts = False
+    if testingPosts:
+        print("Testing posts")
+        t.setPosts()
+        print(t.getPosts())
+        for i, post in enumerate(t.getPosts()):
+            print(f"{i}) {t.getPostTitle(post)}")
+        return
 
-    t.setPosts()
-    i = 0
-    print(t.getPosts())
-    for i, p in enumerate(t.getPosts()):
-        print(i, t.getPostTitle(p), t.getPostLink(p))
+    testingQueue = False
+    if testingQueue:
+        print("Testing queue")
+        t.setPostsType('queue')
+        t.setPosts()
+        i = 0
+        print(t.getPosts())
+        for i, p in enumerate(t.getPosts()):
+            print(i, t.getPostTitle(p), t.getPostLink(p))
+        return
+
+    testingPost = True
+    if testingPost:
+        t.setPostsType('posts')
+        print("Testing posting in queue")
+        t.publishPost('Prueba', 'https://fernand0.tumblr.com/', '')
+        return
+
+
     print(len(t.getPosts()))
     print(t.getPostTitle(t.getPosts()[i]))
     print(t.getPostLink(t.getPosts()[i]))
