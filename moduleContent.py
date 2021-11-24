@@ -182,8 +182,9 @@ class Content:
         return fileName
 
     def updateLastLink(self, dst, link):
+        if isinstance(link, list):
+            link = self.getPostLink(link[-1])
         fileName = f"{self.fileNameBase(dst)}.last"
-        # print(f"fil: {fileName} {fileName1}")
         with open(fileName, "w") as f:
             if isinstance(link, bytes):
                 f.write(link.decode())
@@ -793,7 +794,6 @@ class Content:
             reply = self.report(self.service, title, link, sys.exc_info())
 
         return reply
-
 
     def deletePostId(self, idPost):
         logging.debug(f"Deleting: {idPost}")

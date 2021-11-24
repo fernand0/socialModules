@@ -170,7 +170,6 @@ class moduleRules:
             msgLog = (f"{indent}Last link: {lastLink}")
             logMsg(msgLog, 1, 1)
 
-        lastTime = time.time()
         if lastTime:
             myTime = time.strftime("%Y-%m-%d %H:%M:%S",
                                     time.localtime(lastTime))
@@ -194,11 +193,17 @@ class moduleRules:
 
         if (num > 0):
             tNow = time.time()
-            diffTime = tNow - lastTime
+            hours = float(apiDst.getTime())*60*60
+
+            if lastTime:
+                diffTime = tNow - lastTime
+            else:
+                # If there is no lasTime, we will publish
+                diffTime = hours + 1
+
             msgLog = (f"{indent}Src time: {apiSrc.getTime()} "
                       f"Dst time: {apiDst.getTime()}")
             logMsg(msgLog, 2, 0)
-            hours = float(apiDst.getTime())*60*60
 
             numAvailable = 0
 
@@ -237,13 +242,17 @@ class moduleRules:
                                 for post in listPosts
                     ]
 
+
                     indent = f"{indent[:-1]}"
 
                     if not simmulate:
                         res = apiDst.publishPost(apiSrc, listPosts)
 
                         return
-                        apiSrc.updateLastLink(apiDst, link)
+                        if ((not res) or ('SAVELINK' in res) 
+                                or not ('Fail!' in res)):
+                            apiSrc.updateLastLink(apiDst, listPosts)
+                        return
 
                         indent = f"{indent[:-1]}"
 
