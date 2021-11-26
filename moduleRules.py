@@ -247,77 +247,14 @@ class moduleRules:
 
                     if not simmulate:
                         res = apiDst.publishPost(apiSrc, listPosts)
-
-                        return
                         if ((not res) or ('SAVELINK' in res) 
                                 or not ('Fail!' in res)):
                             apiSrc.updateLastLink(apiDst, listPosts)
-                        return
+                            postaction = apiSrc.getPostAction()
+                            if postaction:
+                                msgLog = (f"{indent} Post Action {postaction}")
+                                logMsg(msgLog, 1, 1)
 
-                        indent = f"{indent[:-1]}"
-
-                        if ((not res) or (res and
-                            (('You have already retweeted' in res) or
-                             ('Status is a duplicate.' in res) or
-                                not ('Fail!' in res)))):
-                            msgLog = (f"{indent}End publish, reply: {res}")
-                            logMsg(msgLog, 1, 1)
-
-                            if llink:
-                                link = llink
-                            if link and (src[0] not in ['cache']):
-                                if isinstance(lastLink, list):
-                                    link = "\n".join(
-                                        [
-                                            "{}".format(post[1])
-                                            for post in reversed(listPosts)
-                                        ]
-                                    )
-                                    link = link + "\n" + "\n".join(lastLink)
-                                logging.info(f"Link: {link}")
-                                try:
-                                    logging.info(f"self Link: {apiDst.lastLink}")
-                                except:
-                                    logging.info(f"self Link: ")
-                                updateLastLink(apiDst.getUrl(),
-                                                link, socialNetwork)
-                                apiSrc.updateLastLink(apiDst, link)
-                            elif link and (src[0] in ['cache']):
-                                apiSrc.updateLastLink(apiDst, link)
-                        else:
-                            if res.find('Status is a duplicate')>=0:
-                                msgLog = (f"{indent}End publish, "
-                                          f"reply: {res}")
-                            else:
-                                msgLog = (f"{indent}End publish, "
-                                          f"reply: {res}")
-                            logMsg(msgLog, 1, 1)
-                    else:
-                        msgLog = (f"{indent}This is a simmulation")
-                        logMsg(msgLog, 1, 1)
-                        msgLog = (f"{indent}I'd record link: {link}")
-                        logMsg(msgLog, 1, 1)
-                        fN = fileNamePath(apiDst.getUrl(), socialNetwork)
-                        msgLog = (f"{indent}in file ", f"{fN}.last")
-                        logMsg(msgLog, 1, 1)
-                        msgLog = (f"{indent}in file ",
-                                  f"{apiSrc.fileNameBase(apiDst)}.last")
-                        logMsg(msgLog, 1, 1)
-                        # apiSrc.updateLastLink(apiDst, link)
-
-                    postaction = apiSrc.getPostAction()
-                    if (not postaction) and (src[0] in ["cache"]):
-                        postaction = "delete"
-                    if postaction:
-                        msgLog = (f"{indent} Post Action {postaction}")
-                        logMsg(msgLog, 1, 1)
-
-                    if ((not simmulate)
-                        and (not res or (res
-                                 and (('Status is a duplicate.' in res)
-                                 or ('You have already retweeted' in res)
-                                 or not ('Fail!' in res))))):
-                        try:
                             cmdPost = getattr(apiSrc, postaction)
                             msgLog = (f"{indent}Post Action {postaction} "
                                       f"command {cmdPost}")
@@ -325,12 +262,49 @@ class moduleRules:
                             res = cmdPost(i - 1)
                             msgLog = (f"{indent}End {postaction}, reply: {res}")
                             logMsg(msgLog, 1, 1)
-                        except:
-                            msgLog = (f"{indent}No postaction or wrong one")
-                            logMsg(msgLog, 1, 1)
 
-                    msgLog = (f"{indent}Available {len(apiSrc.getPosts())-1}")
-                    logMsg(msgLog, 1, 1)
+                        else:
+                            msgLog = (f"{indent}End publish, reply: {res}")
+                            logMsg(msgLog, 1, 1)  
+                    else:
+                        msgLog = (f"{indent}This is a simmulation")
+                        logMsg(msgLog, 1, 1)
+                        if link:
+                            msgLog = (f"{indent}I'd record link: {link}")
+                            logMsg(msgLog, 1, 1)
+                            fN = fileNamePath(apiDst.getUrl(), socialNetwork)
+                            msgLog = (f"{indent}in file ", f"{fN}.last")
+                            logMsg(msgLog, 1, 1)
+                            msgLog = (f"{indent}in file ",
+                                      f"{apiSrc.fileNameBase(apiDst)}.last")
+                            logMsg(msgLog, 1, 1)
+                    
+                    return
+
+                    # postaction = apiSrc.getPostAction()
+                    # if (not postaction) and (src[0] in ["cache"]):
+                    #     postaction = "delete"
+                    # if postaction:
+                    #     msgLog = (f"{indent} Post Action {postaction}")
+                    #     logMsg(msgLog, 1, 1)
+                    # if ((not simmulate)
+                    #     and (not res or (res
+                    #              and (('Status is a duplicate.' in res)
+                    #              or ('You have already retweeted' in res)
+                    #              or not ('Fail!' in res))))):
+                    #     try:
+                    #         cmdPost = getattr(apiSrc, postaction)
+                    #         msgLog = (f"{indent}Post Action {postaction} "
+                    #                   f"command {cmdPost}")
+                    #         logMsg(msgLog, 1, 1)
+                    #         res = cmdPost(i - 1)
+                    #         msgLog = (f"{indent}End {postaction}, reply: {res}")
+                    #         logMsg(msgLog, 1, 1)
+                    #     except:
+                    #         msgLog = (f"{indent}No postaction or wrong one")
+                    #         logMsg(msgLog, 1, 1)
+                    # Available {len(apiSrc.getPosts())-1}")
+                    # logMsg(msgLog, 1, 1)
                 else:
                     msgLog = f"{indent}Empty listPosts or some problem {listPosts}"
                     # Sometimes the module (moduleGmail) returns a list of None

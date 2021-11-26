@@ -325,11 +325,11 @@ class Content:
         self.postaction = action
 
     def getPostAction(self):
+        postaction = "delete"
         if hasattr(self, "postaction"):
-            return self.postaction
-        else:
-            return ""
-
+            postaction = self.postaction
+        return postaction
+        
     def getPostContentHtml(self, post):
         return ""
 
