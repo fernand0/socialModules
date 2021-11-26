@@ -184,6 +184,7 @@ class moduleRules:
         logMsg(msgLog, 1, 1)
 
         listPosts = []
+        link = ''
 
         testDiffer = False
 
