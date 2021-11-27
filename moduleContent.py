@@ -164,7 +164,17 @@ class Content:
         nameDst = type(dst).__name__
         if 'module' in nameDst:
             nameDst = nameDst[len('module'):]
-        logMsg(f"type s -> {nameSrc} {nameDst}", 2, 0)
+            logMsg(f"type s -> {nameSrc} {nameDst}", 2, 0)
+            userD = dst.getUser()
+            serviceD = dst.getService()
+            user = src.getUser()
+            service = src.getService()
+        else:
+            user = src.getUrl()
+            service = self.service
+            userD = dst[0]
+            serviceD = dst[1]
+            nameDst = serviceD.capitalize()
 
         if hasattr(src, 'getPostsType'):
             typeSrc = src.getPostsType()
@@ -176,15 +186,14 @@ class Content:
         else:
             typeDst = 'posts'
 
-        user = src.getUser()
         # print(f"user: {user}")
         # if not user:
         #     user = dst.getUrl()
         # print(f"user: {user}")
         fileName = (f"{nameSrc}_{typeSrc}_"
-                    f"{user}_{src.getService()}__"
+                    f"{user}_{service}__"
                     f"{nameDst}_{typeDst}_"
-                    f"{dst.getUser()}_{dst.getService()}")
+                    f"{userD}_{serviceD}")
         fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
         return fileName
 

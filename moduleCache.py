@@ -44,9 +44,17 @@ class moduleCache(Content,Queue):
             if param[0].find('http')>= 0:
                 self.url = param[0]
             else:
-                self.socialNetwork = param[0]
-                self.service = param[0]
-            self.user = param[1]
+                self.url = param[1]
+                pos = param[2].find('@')
+                self.socialNetwork = param[2][:pos]
+                self.user = param[2][pos+1:]
+
+                # self.socialNetwork = param[0]
+                # self.service = param[0]
+            print(f"url: {self.url} s: {self.socialNetwork} n: {self.user} ss: {self.service}")
+            self.fileName = self.fileNameBase((self.user, self.socialNetwork))
+            print(f"fffNNN: {self.fileName}")
+            #self.user = param[1]
             if self.user.find('\n')>=0:
                 self.user = None
         elif hasattr(param[0], 'getUrl'):

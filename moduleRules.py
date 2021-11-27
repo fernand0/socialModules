@@ -17,10 +17,11 @@ class moduleRules:
 
     def readConfigSrc(self, indent, src, more):
         msgLog = f"Src: Src {src}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, 1)
         msgLog = f"More: Src {more}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, 1)
         if src[0] == 'cache':
+            print(f"src... {src}")
             if src[2].count('@')>1:
                 parts = src[2].split('@')
                 sN = parts[0]
@@ -29,7 +30,8 @@ class moduleRules:
                sN, nick = src[2].split('@')
             sNN = more['service']
             nickN = more['url']
-            apiSrc = getApi(src[0], (sNN, nickN))
+            print(f"...{(src[0], (sNN, nickN))}")
+            apiSrc = getApi(src[0], (sNN, nickN, src[2]))
             apiSrc.socialNetwork = sN
             apiSrc.nick = nick
         else:
@@ -167,7 +169,7 @@ class moduleRules:
         
         apiDst.setPosts()
         print(f"aaa-> {apiDst.getPosts()}")
-        return
+        
 
         indent = f"{indent} "
 
@@ -188,7 +190,7 @@ class moduleRules:
             logMsg(msgLog, 1, 1)
 
         num = apiDst.getMax()
-        num = 1
+        
         
         msgLog = (f"{indent}num: {num}")
         logMsg(msgLog, 1, 1)
