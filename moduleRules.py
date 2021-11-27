@@ -165,7 +165,9 @@ class moduleRules:
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
         apiDst.setUrl(apiSrc.getUrl())        
         
-
+        apiDst.setPosts()
+        print(f"aaa-> {apiDst.getPosts()}")
+        return
 
         indent = f"{indent} "
 

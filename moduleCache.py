@@ -67,18 +67,24 @@ class moduleCache(Content,Queue):
     def setApiPosts(self):
         fileNameQ = ''
         url = self.getUrl()
-        if hasattr(self, "socialNetwork"):
+        service = self.getService()
+        nick = self.getNick()
+        
+        if hasattr(self, 'fileName'):
+            fileNameQ = self.fileName
+        elif hasattr(self, "socialNetwork"):
             service = self.socialNetwork
             nick = self.nick
-        elif hasattr(self, 'fileName'):
-            fileNameQ = self.fileName
         else:
             service = self.getService()
             nick = self.getUser()
         logging.debug(f"Url: {url} service {service} nick {nick}")
         if not fileNameQ:
             fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
+        else:
+            fileNameQ = fileNameQ+".queue"
         logging.debug("File: %s" % fileNameQ)
+        print(f"ffff: {fileNameQ}")
         try:
             with open(fileNameQ,'rb') as f:
                 try:
