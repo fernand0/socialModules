@@ -62,7 +62,7 @@ class moduleRules:
 
         return apiSrc
 
-    def readConfigDst(self, indent, action, more):
+    def readConfigDst(self, indent, action, more, apiSrc):
         profile = action[2]
         nick = action[3]
         socialNetwork = (profile, nick)
@@ -74,7 +74,9 @@ class moduleRules:
         logMsg(msgLog, 1, 0)
 
         if action[0] == "cache":
-            apiDst = getApi("cache", (action[1], socialNetwork))
+            print(f"api: {apiSrc.getService()}")
+            print(f"param: {(action[1], socialNetwork)}")
+            apiDst = getApi("cache", (apiSrc, socialNetwork))
             apiDst.socialNetwork = action[2]
             apiDst.nick = action[3]
         else:
@@ -155,9 +157,15 @@ class moduleRules:
 
         apiSrc = self.readConfigSrc(indent, src, more)
         apiSrc.setPosts()
+        
 
-        apiDst = self.readConfigDst(indent, action, more)
+        print(f"apiSrc: {apiSrc}")
+        print(f"action: {action}")
+        print(f"more {more}")
+        apiDst = self.readConfigDst(indent, action, more, apiSrc)
         apiDst.setUrl(apiSrc.getUrl())        
+        
+
 
         indent = f"{indent} "
 

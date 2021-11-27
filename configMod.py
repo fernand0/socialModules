@@ -170,6 +170,7 @@ def getModule(profile):
     return api
 
 def getApi(profile, nick):
+    print(f"prof: {profile} - {nick}")
     api = getModule(profile)
     api.setClient(nick)
 

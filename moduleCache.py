@@ -34,6 +34,8 @@ class moduleCache(Content,Queue):
     def setClient(self, param):
         logging.info(f"    Connecting Cache {self.service}: {param}")
         self.postsType = 'posts'
+        print(f"param: {param}")
+        print(f"param: {type(param[0])}")
         if isinstance(param, str):
             self.url = param
             self.user = param
@@ -47,6 +49,12 @@ class moduleCache(Content,Queue):
             self.user = param[1]
             if self.user.find('\n')>=0:
                 self.user = None
+        elif hasattr(param[0], 'getUrl'):
+            print(f"aaaa: {param[0].getUrl()}")
+            self.user = param[1][1]
+            self.service = param[1][0]
+            self.fileName = param[0].fileNameBase(self)
+            print(f"file: {self.fileName}")
         else:
             self.url = param[0]
             self.service = param[1][0]
@@ -57,15 +65,19 @@ class moduleCache(Content,Queue):
         return(self.setApiPosts())
 
     def setApiPosts(self):
+        fileNameQ = ''
         url = self.getUrl()
         if hasattr(self, "socialNetwork"):
             service = self.socialNetwork
             nick = self.nick
+        elif hasattr(self, 'fileName'):
+            fileNameQ = self.fileName
         else:
             service = self.getService()
             nick = self.getUser()
         logging.debug(f"Url: {url} service {service} nick {nick}")
-        fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
+        if not fileNameQ:
+            fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
         logging.debug("File: %s" % fileNameQ)
         try:
             with open(fileNameQ,'rb') as f:
@@ -288,7 +300,9 @@ class moduleCache(Content,Queue):
         more = kwargs
         print(f"more: {more}")
         posts = self.getPosts2()
+        print(f"posts: {posts}")
         posts.append(more['post'])
+        print(f"postss: {posts}")
         self.assignPosts(posts)
         self.updatePosts(more['api'])
 
@@ -396,12 +410,10 @@ def main():
         import importlib
         importlib.import_module(myModule)
         mod = sys.modules.get(myModule)
-        print(f"mod: {mod}")
-        apiCmd = mod and getattr(mod, '__init__')
-        print(f"apiCmd: {apiCmd}")
-        apiCmd()
-        apiCmd = getattr(mod, 'setClient')
-        api = apiCmd()
+        cls = getattr(mod, myModule)
+        api = cls()
+
+        apiCmd = getattr(api, 'getPostTitle')
 
 
     print(f"url: {url} social network: {sN} nick: {nick}")
@@ -429,7 +441,7 @@ def main():
             posts = listP
 
         if action.upper() == 'T':
-            [ print(f"- {site.getPostTitle(post)}") for post in posts ]
+            [ print(f"- {apiCmd(post)}") for post in posts ]
         else:
             print(posts)
     elif action.upper() in ['D']:

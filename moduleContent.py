@@ -48,6 +48,8 @@ class Content:
     def setClient(self, account):
         logging.info(f"    Connecting {self.service}: {account}")
 
+        print(f"acc: {account}")
+        print(f"tt: {type(account[1])}")
         if isinstance(account, str):
             self.user = account
         elif isinstance(account[1], str) and (account[1].find('@') > 0):
@@ -174,8 +176,13 @@ class Content:
         else:
             typeDst = 'posts'
 
+        user = src.getUser()
+        # print(f"user: {user}")
+        # if not user:
+        #     user = dst.getUrl()
+        # print(f"user: {user}")
         fileName = (f"{nameSrc}_{typeSrc}_"
-                    f"{src.getUser()}_{src.getService()}__"
+                    f"{user}_{src.getService()}__"
                     f"{nameDst}_{typeDst}_"
                     f"{dst.getUser()}_{dst.getService()}")
         fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
@@ -790,7 +797,12 @@ class Content:
                 nameMethod = self.getPostsType().capitalize()
 
             method = getattr(self, f"publishApi{nameMethod}")
-            reply = method(title, link, comment, api=apiSrc, post=post)
+            if listPosts:
+                for post in listPosts:
+                    reply = method(title, link, comment, api=apiSrc, post=post)
+            else:
+                reply = method(title, link, comment, api=apiSrc, post=post)
+
             reply = self.processReply(reply)
         except:
             reply = self.report(self.service, title, link, sys.exc_info())
