@@ -329,7 +329,7 @@ class Content:
         if hasattr(self, "postaction"):
             postaction = self.postaction
         return postaction
-        
+
     def getPostContentHtml(self, post):
         return ""
 
@@ -750,24 +750,18 @@ class Content:
         post = ''
         nameMethod = 'Post'
 
+
         if len(args) == 3:
             title = args[0]
             link = args[1]
             comment = args[2]
             logging.info(f"    Publishing post {title} in {self.service}: "
                          f"{link}")
-            print(f"    Publishing in {self.service}: {title}")
-            print(f"    Publishing in {self.service}: {link}")
-            print(f"    Publishing in {self.service}: {comment}")
-            print(f"    Publishing in {self.service}: {more}")
-
-            if 'tags' in more:
-                print(f"    Publishing in {self.service}: {type(more['tags'])}")
         elif len(args) == 2:
             apiSrc= args[0]
             listPosts = args[1]
-            logging.info(f"    Publishing posts {listPosts} in {self.service}")
-            print(f"    Publishing posts {listPosts} in {self.service}")
+            logging.info(f"    Publishing in {self.service}: posts {listPosts}")
+            print(f"    Publishing in {self.service}: posts {listPosts}")
             for post in listPosts:
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
@@ -778,6 +772,14 @@ class Content:
             title = ''
             link = ''
             comment = ''
+
+        print(f"    Publishing in {self.service}: {title}")
+        print(f"    Publishing in {self.service}:  {link}")
+        print(f"    Publishing in {self.service}: {comment}")
+        if more:
+            print(f"    Publishing in {self.service}: {more}")
+            if 'tags' in more:
+                print(f"    Publishing in {self.service}: {type(more['tags'])}")
 
         reply = 'Fail!'
         try:

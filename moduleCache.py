@@ -231,6 +231,7 @@ class moduleCache(Content,Queue):
 
     def getPostTitle(self, post):
         title = ''
+        print(post)
         if post:
             title = post[0]
         return(title)
@@ -366,7 +367,7 @@ class moduleCache(Content,Queue):
 def main():
 
     logging.basicConfig(stream=sys.stdout,
-            level=logging.INFO,
+            level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
     import moduleCache
@@ -382,8 +383,26 @@ def main():
     sel = input('Select one ')
 
     fN = queues[int(sel)]
-    url, sN, nick = fN.split('_')
-    nick = nick[:-len('.queue')]
+    try:
+        url, sN, nick = fN.split('_')
+        nick = nick[:-len('.queue')]
+    except:
+        url = ''
+        sN = ''
+        nick = ''
+        sN = fN.split('_')[0]
+        myModule = f"module{sN.capitalize()}"
+        print(f"{myModule}")
+        import importlib
+        importlib.import_module(myModule)
+        mod = sys.modules.get(myModule)
+        print(f"mod: {mod}")
+        apiCmd = mod and getattr(mod, '__init__')
+        print(f"apiCmd: {apiCmd}")
+        apiCmd()
+        apiCmd = getattr(mod, 'setClient')
+        api = apiCmd()
+
 
     print(f"url: {url} social network: {sN} nick: {nick}")
     fNP = f"{DATADIR}/{fN}"
@@ -394,18 +413,25 @@ def main():
 
     action = input(f"Actions: (D)elete, (S)how (T)itles ")
 
-
-
     if action.upper()in ['S','T']:
         url = f"https://{url}/"
 
         site = moduleCache.moduleCache()
         site.setClient((url, (sN, nick)))
         site.setPosts()
+        posts = site.getPosts()
+        if not posts:
+            with open(fNP,'rb') as f:
+                try:
+                    listP = pickle.load(f)
+                except:
+                    listP = []
+            posts = listP
+
         if action.upper() == 'T':
-            [ print(f"- {post[0]}") for post in site.getPosts() ]
+            [ print(f"- {site.getPostTitle(post)}") for post in posts ]
         else:
-            print(site.getPosts())
+            print(posts)
     elif action.upper() in ['D']:
         fileDelete = f"{fNP}"
         ok = input(f"I'll delete {fileDelete} ")

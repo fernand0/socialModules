@@ -256,14 +256,13 @@ class moduleRules:
                                 msgLog = (f"{indent} Post Action {postaction}")
                                 logMsg(msgLog, 1, 1)
 
-                            cmdPost = getattr(apiSrc, postaction)
-                            msgLog = (f"{indent}Post Action {postaction} "
+                                cmdPost = getattr(apiSrc, postaction)
+                                msgLog = (f"{indent}Post Action {postaction} "
                                       f"command {cmdPost}")
-                            logMsg(msgLog, 1, 1)
-                            res = cmdPost(i - 1)
-                            msgLog = (f"{indent}End {postaction}, reply: {res}")
-                            logMsg(msgLog, 1, 1)
-
+                                logMsg(msgLog, 1, 1)
+                                res = cmdPost(i - 1)
+                                msgLog = (f"{indent}End {postaction}, reply: {res}")
+                                logMsg(msgLog, 1, 1)
                         else:
                             msgLog = (f"{indent}End publish, reply: {res}")
                             logMsg(msgLog, 1, 1)  
