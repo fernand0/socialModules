@@ -31,11 +31,40 @@ class moduleCache(Content,Queue):
         #self.url = url
         #self.socialNetwork = (socialNetwork, nick)
 
+    def fileNameBase(self, dst):
+        src = self
+        print(f"src: {self}")
+        print(F"dst: {dst}")
+        print(f"{self.getUrl()}, {self.getService()}, {self.getUser()}")
+        nameSrc = 'Cache'
+        typeSrc = typeDst = 'posts'
+        if isinstance(dst, tuple):
+            user = self.getUrl()
+            service = self.getService().capitalize()
+            nameDst = dst[1]
+            userD = dst[0]
+            serviceD = dst[1].capitalize()
+        elif isinstance(self, moduleCache):
+            print(f"{dst.getUrl()}, {dst.getService()}, {dst.getUser()}")
+            user = dst.getUser()
+            service = dst.getService().capitalize()
+            userD = self.getUser()
+            serviceD = self.getService()
+            nameDst = self.getService().capitalize()
+
+        fileName = (f"{nameSrc}_{typeSrc}_"
+                    f"{user}_{service}__"
+                    f"{nameDst}_{typeDst}_"
+                    f"{userD}_{serviceD}")
+        fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
+        self.fileName = fileName
+        print(f"fileName: {fileName}")
+        return fileName
+
     def setClient(self, param):
         logging.info(f"    Connecting Cache {self.service}: {param}")
         self.postsType = 'posts'
         print(f"param: {param}")
-        print(f"param: {type(param[0])}")
         if isinstance(param, str):
             self.url = param
             self.user = param
@@ -45,24 +74,31 @@ class moduleCache(Content,Queue):
                 self.url = param[0]
             else:
                 self.url = param[1]
+                print(f"u: {self.url}")
                 pos = param[2].find('@')
-                self.socialNetwork = param[2][:pos]
+                self.socialNetwork = param[2][:pos].capitalize()
                 self.user = param[2][pos+1:]
+                self.service = param[0]
 
                 # self.socialNetwork = param[0]
                 # self.service = param[0]
-            print(f"url: {self.url} s: {self.socialNetwork} n: {self.user} ss: {self.service}")
+            if hasattr(self, 'fileName'):
+                print(f"self.fileName {self.fileName}")
             self.fileName = self.fileNameBase((self.user, self.socialNetwork))
-            print(f"fffNNN: {self.fileName}")
+            print(f"self {self}")
+            if hasattr(self, 'fileName'):
+                print(f"self.fileName {self.fileName}")
+
             #self.user = param[1]
             if self.user.find('\n')>=0:
                 self.user = None
         elif hasattr(param[0], 'getUrl'):
-            print(f"aaaa: {param[0].getUrl()}")
+            #self.url = param[0].getUrl()
             self.user = param[1][1]
             self.service = param[1][0]
-            self.fileName = param[0].fileNameBase(self)
-            print(f"file: {self.fileName}")
+            self.fileName = self.fileNameBase(param[0])
+            print(f"ff: {self.fileName}")
+
         else:
             self.url = param[0]
             self.service = param[1][0]
@@ -77,7 +113,7 @@ class moduleCache(Content,Queue):
         url = self.getUrl()
         service = self.getService()
         nick = self.getNick()
-        
+
         if hasattr(self, 'fileName'):
             fileNameQ = self.fileName
         elif hasattr(self, "socialNetwork"):
@@ -91,8 +127,9 @@ class moduleCache(Content,Queue):
             fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
         else:
             fileNameQ = fileNameQ+".queue"
+        print(f"fileNameQ: {fileNameQ}")
+
         logging.debug("File: %s" % fileNameQ)
-        print(f"ffff: {fileNameQ}")
         try:
             with open(fileNameQ,'rb') as f:
                 try:
@@ -210,7 +247,12 @@ class moduleCache(Content,Queue):
         return(link)
 
     def updatePosts(self, src):
-        fileNameQ = f"{src.fileNameBase(self)}.queue"
+        if self.fileName:
+            fileName = self.fileName
+        else:
+            fileName = self.fileNameBase(self)
+        fileNameQ = f"{fileName}.queue"
+        print(f"ffff: {fileNameQ}")
         with open(fileNameQ, 'wb') as f:
             posts = self.getPosts2()
             pickle.dump(posts, f)

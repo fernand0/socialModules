@@ -766,7 +766,6 @@ class Content:
         post = ''
         nameMethod = 'Post'
 
-
         if len(args) == 3:
             title = args[0]
             link = args[1]

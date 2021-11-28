@@ -159,17 +159,16 @@ class moduleRules:
 
         apiSrc = self.readConfigSrc(indent, src, more)
         apiSrc.setPosts()
-        
 
-        print(f"apiSrc: {apiSrc}")
-        print(f"action: {action}")
-        print(f"more {more}")
+
+        # print(f"apiSrc: {apiSrc}")
+        # print(f"action: {action}")
+        # print(f"more {more}")
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
-        apiDst.setUrl(apiSrc.getUrl())        
-        
+        apiDst.setUrl(apiSrc.getUrl())
+
         apiDst.setPosts()
-        print(f"aaa-> {apiDst.getPosts()}")
-        
+
 
         indent = f"{indent} "
 
@@ -190,8 +189,8 @@ class moduleRules:
             logMsg(msgLog, 1, 1)
 
         num = apiDst.getMax()
-        
-        
+
+
         msgLog = (f"{indent}num: {num}")
         logMsg(msgLog, 1, 1)
 
@@ -242,8 +241,11 @@ class moduleRules:
 
                 # The source of data can have changes while we were waiting
                 apiSrc.setPosts()
+                print(f"getPosts: {apiSrc.getPosts()}")
 
                 listPosts = apiSrc.getNumNextPosts(num)
+                print(f"listPosts: {listPosts}")
+                return
 
                 if listPosts:
                     msgLog = f"{indent}Would schedule in {msgAction} ..."
@@ -260,7 +262,7 @@ class moduleRules:
 
                     if not simmulate:
                         res = apiDst.publishPost(apiSrc, listPosts)
-                        if ((not res) or ('SAVELINK' in res) 
+                        if ((not res) or ('SAVELINK' in res)
                                 or not ('Fail!' in res)):
                             apiSrc.updateLastLink(apiDst, listPosts)
                             postaction = apiSrc.getPostAction()
@@ -277,7 +279,7 @@ class moduleRules:
                                 logMsg(msgLog, 1, 1)
                         else:
                             msgLog = (f"{indent}End publish, reply: {res}")
-                            logMsg(msgLog, 1, 1)  
+                            logMsg(msgLog, 1, 1)
                     else:
                         msgLog = (f"{indent}This is a simmulation")
                         logMsg(msgLog, 1, 1)
@@ -290,7 +292,7 @@ class moduleRules:
                             msgLog = (f"{indent}in file ",
                                       f"{apiSrc.fileNameBase(apiDst)}.last")
                             logMsg(msgLog, 1, 1)
-                    
+
                     return
 
                     # postaction = apiSrc.getPostAction()
@@ -378,6 +380,7 @@ class moduleRules:
         logMsg(msgLog, 1, 0)
 
         apiSrc.setLastLink(apiDst)
+
 
         myLastLink = apiSrc.getLastLinkPublished()
         lastTime = apiSrc.getLastTimePublished()
