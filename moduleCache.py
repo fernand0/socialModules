@@ -32,6 +32,8 @@ class moduleCache(Content,Queue):
         #self.socialNetwork = (socialNetwork, nick)
 
     def fileNameBase(self, dst):
+        if hasattr(self, 'fileName') and self.fileName:
+            return self.fileName
         src = self
         print(f"src: {self}")
         print(F"dst: {dst}")
@@ -43,7 +45,7 @@ class moduleCache(Content,Queue):
             service = self.getService().capitalize()
             nameDst = dst[1]
             userD = dst[0]
-            serviceD = dst[1].capitalize()
+            serviceD = dst[1][0].lower()+dst[1][1:]
         elif isinstance(self, moduleCache):
             print(f"{dst.getUrl()}, {dst.getService()}, {dst.getUser()}")
             user = dst.getUser()
@@ -65,6 +67,7 @@ class moduleCache(Content,Queue):
         logging.info(f"    Connecting Cache {self.service}: {param}")
         self.postsType = 'posts'
         print(f"param: {param}")
+        self.auxClass = param[0]
         if isinstance(param, str):
             self.url = param
             self.user = param
@@ -299,15 +302,37 @@ class moduleCache(Content,Queue):
 
     def getPostTitle(self, post):
         title = ''
-        print(post)
+        print(f"hasatt: {hasattr(self, 'auxClass')}")
         if post:
-            title = post[0]
+            if hasattr(self, 'auxClass'):
+                myModule = f"module{self.auxClass.capitalize()}"
+                import importlib
+                importlib.import_module(myModule)
+                mod = sys.modules.get(myModule)
+                cls = getattr(mod, myModule)
+                api = cls()
+
+                apiCmd = getattr(api, 'getPostTitle')
+                title  = apiCmd(post)
+            else:
+                title = post[0]
         return(title)
 
     def getPostLink(self, post):
         link = ''
         if post:
-            link = post[1]
+            if hasattr(self, 'auxClass'):
+                myModule = f"module{self.auxClass.capitalize()}"
+                import importlib
+                importlib.import_module(myModule)
+                mod = sys.modules.get(myModule)
+                cls = getattr(mod, myModule)
+                api = cls()
+
+                apiCmd = getattr(api, 'getPostLink')
+                link = apiCmd(post)
+            else: 
+                link = post[1]
         return (link)
 
     def getPostContentHtml(self, post):
@@ -460,7 +485,8 @@ def main():
         url = ''
         sN = ''
         nick = ''
-        sN = fN.split('_')[0]
+        sN = fN.split('__')[0]
+        sN = sN.split('_')[-1]
         myModule = f"module{sN.capitalize()}"
         print(f"{myModule}")
         import importlib

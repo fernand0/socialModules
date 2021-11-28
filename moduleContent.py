@@ -772,17 +772,18 @@ class Content:
             comment = args[2]
             logging.info(f"    Publishing post {title} in {self.service}: "
                          f"{link}")
-        elif len(args) == 2:
-            apiSrc= args[0]
-            listPosts = args[1]
+        elif len(args) == 1:
+            # apiSrc= args[0]
+            listPosts = args#[1]
             logging.info(f"    Publishing in {self.service}: posts {listPosts}")
             print(f"    Publishing in {self.service}: posts {listPosts}")
             for post in listPosts:
-                title = apiSrc.getPostTitle(post)
-                link = apiSrc.getPostLink(post)
+                title = self.getPostTitle(post)
+                link = self.getPostLink(post)
                 comment = ''
-                more = {'api': apiSrc, 'post': post}
+                #more = {'api': apiSrc, 'post': post}
                 print(f"Title: {title}\nLink: {link}")
+            return
         else:
             title = ''
             link = ''

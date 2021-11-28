@@ -69,11 +69,11 @@ class moduleRules:
         nick = action[3]
         socialNetwork = (profile, nick)
         msgLog = (f"{indent}socialNetwork: {socialNetwork}")
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, 1)
         msgLog = (f"{indent}Action: {action}")
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, 1)
         msgLog = (f"{indent}More: Dst {more}")
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, 1)
 
         if action[0] == "cache":
             print(f"api: {apiSrc.getService()}")
@@ -84,6 +84,8 @@ class moduleRules:
         else:
             apiDst = getApi(profile, nick)
 
+        if 'service' in more:
+            apiDst.auxClass = more['service'] 
         apiDst.setUser(nick)
         apiDst.setPostsType('posts')
 
@@ -160,7 +162,6 @@ class moduleRules:
         apiSrc = self.readConfigSrc(indent, src, more)
         apiSrc.setPosts()
 
-
         # print(f"apiSrc: {apiSrc}")
         # print(f"action: {action}")
         # print(f"more {more}")
@@ -168,7 +169,6 @@ class moduleRules:
         apiDst.setUrl(apiSrc.getUrl())
 
         apiDst.setPosts()
-
 
         indent = f"{indent} "
 
@@ -241,11 +241,8 @@ class moduleRules:
 
                 # The source of data can have changes while we were waiting
                 apiSrc.setPosts()
-                print(f"getPosts: {apiSrc.getPosts()}")
 
                 listPosts = apiSrc.getNumNextPosts(num)
-                print(f"listPosts: {listPosts}")
-                return
 
                 if listPosts:
                     msgLog = f"{indent}Would schedule in {msgAction} ..."
@@ -261,7 +258,7 @@ class moduleRules:
                     indent = f"{indent[:-1]}"
 
                     if not simmulate:
-                        res = apiDst.publishPost(apiSrc, listPosts)
+                        res = apiDst.publishPost(listPosts)
                         if ((not res) or ('SAVELINK' in res)
                                 or not ('Fail!' in res)):
                             apiSrc.updateLastLink(apiDst, listPosts)
