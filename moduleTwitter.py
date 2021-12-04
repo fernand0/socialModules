@@ -95,8 +95,6 @@ class moduleTwitter(Content,Queue):
             logging.debug(res)
         return res
 
-    # def publishApiPosts(self, postData):
-    #     return self.publishApiPost(postData)
 
     def publishApiRT(self, *args, **kwargs):
         post, link, comment = args
@@ -117,6 +115,7 @@ class moduleTwitter(Content,Queue):
         return res
 
     def publishApiPost(self, *args, **kwargs):
+        print(f"args: {args}")
         post, link, comment = args
         more = kwargs
         post = self.addComment(post, comment)

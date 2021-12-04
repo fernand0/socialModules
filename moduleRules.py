@@ -85,7 +85,7 @@ class moduleRules:
             apiDst = getApi(profile, nick)
 
         if 'service' in more:
-            apiDst.auxClass = more['service'] 
+            apiDst.auxClass = more['service']
         apiDst.setUser(nick)
         apiDst.setPostsType('posts')
 
@@ -134,6 +134,68 @@ class moduleRules:
                             print(f"{j})")
         else:
             print(f"{indent}No listPosts2")
+
+    def executePublishAction(self, indent, msgAction,
+                            apiSrc, apiDst, simmulate):
+        res = ''
+        
+        msgLog = (f"{indent}Go!\n"
+                  f"{indent}└-> Action: {msgAction}")
+        logMsg(msgLog, 1, 1)
+
+        # The source of data can have changes while we were waiting
+        apiSrc.setPosts()
+        post = apiSrc.getNextPost()
+        
+        if post:
+            msgLog = f"{indent}Would schedule in {msgAction} ..."
+            logMsg(msgLog, 1, 1)
+            indent = f"{indent} "
+            logMsg(msgLog, 2, 0)
+            logMsg(f"{indent}- {apiSrc.getPostTitle(post)}", 1, 1)
+        else:
+            msgLog = f"{indent}No post to schedule in {msgAction}"
+            logMsg(msgLog, 1, 1)
+
+        indent = f"{indent[:-1]}"
+
+        if not simmulate:
+            res = apiDst.publishNextPost(apiSrc)
+            print(f"{indent}res: {res}")
+            if ((not res) or ('SAVELINK' in res)
+                    or not ('Fail!' in res)):
+                apiSrc.updateLastLink(apiDst, '')
+                postaction = apiSrc.getPostAction()
+                if postaction:
+                    msgLog = (f"{indent} Post Action {postaction}")
+                    logMsg(msgLog, 1, 1)
+
+                    cmdPost = getattr(apiSrc, f"{postaction}NextPost")
+                    msgLog = (f"{indent}Post Action {postaction} "
+                          f"command {cmdPost}")
+                    logMsg(msgLog, 1, 1)
+                    res = cmdPost()
+                    msgLog = (f"{indent}End {postaction}, reply: {res}")
+                    logMsg(msgLog, 1, 1)
+
+            msgLog = (f"{indent}End publish, reply: {res}")
+            logMsg(msgLog, 1, 1)
+        else:
+            msgLog = (f"{indent}This is a simmulation")
+            logMsg(msgLog, 1, 1)
+            link = apiSrc.getPostLink(apiSrc.getNextPost())
+            if link:
+                msgLog = (f"{indent}I'd record link: {link}")
+                logMsg(msgLog, 1, 1)
+                # fN = fileNamePath(apiDst.getUrl(), socialNetwork)
+                # msgLog = (f"{indent}in file ", f"{fN}.last")
+                logMsg(msgLog, 1, 1)
+                msgLog = (f"{indent}in file ",
+                          f"{apiSrc.fileNameBase(apiDst)}.last")
+                logMsg(msgLog, 1, 1)
+
+        return res
+
 
     def executeAction(self, src, more, action,
                     noWait, timeSlots, simmulate, name=""):
@@ -233,94 +295,14 @@ class moduleRules:
                 msgLog = f"{msgLog} for action: {msgAction}"
                 logMsg(msgLog, 1, 1)
 
-                time.sleep(tSleep)
+                for i in range(num):
+                    time.sleep(tSleep)
+                    self.executePublishAction(indent, msgAction, apiSrc,
+                                                apiDst, simmulate)
 
-                msgLog = (f"{indent}Go!\n"
-                          f"{indent}└-> Action: {msgAction}")
-                logMsg(msgLog, 1, 1)
-
-                # The source of data can have changes while we were waiting
-                apiSrc.setPosts()
-
-                listPosts = apiSrc.getNumNextPosts(num)
-
-                if listPosts:
-                    msgLog = f"{indent}Would schedule in {msgAction} ..."
-                    logMsg(msgLog, 1, 1)
-                    indent = f"{indent} "
-                    msgLog = (f"{indent}listPosts: {listPosts}")
-                    logMsg(msgLog, 2, 0)
-                    [ logMsg(f"{indent}- {apiSrc.getPostTitle(post)}", 1, 1)
-                                for post in listPosts
-                    ]
+ 
 
 
-                    indent = f"{indent[:-1]}"
-
-                    if not simmulate:
-                        res = apiDst.publishPost(listPosts)
-                        if ((not res) or ('SAVELINK' in res)
-                                or not ('Fail!' in res)):
-                            apiSrc.updateLastLink(apiDst, listPosts)
-                            postaction = apiSrc.getPostAction()
-                            if postaction:
-                                msgLog = (f"{indent} Post Action {postaction}")
-                                logMsg(msgLog, 1, 1)
-
-                                cmdPost = getattr(apiSrc, postaction)
-                                msgLog = (f"{indent}Post Action {postaction} "
-                                      f"command {cmdPost}")
-                                logMsg(msgLog, 1, 1)
-                                res = cmdPost(i - 1)
-                                msgLog = (f"{indent}End {postaction}, reply: {res}")
-                                logMsg(msgLog, 1, 1)
-                        else:
-                            msgLog = (f"{indent}End publish, reply: {res}")
-                            logMsg(msgLog, 1, 1)
-                    else:
-                        msgLog = (f"{indent}This is a simmulation")
-                        logMsg(msgLog, 1, 1)
-                        if link:
-                            msgLog = (f"{indent}I'd record link: {link}")
-                            logMsg(msgLog, 1, 1)
-                            fN = fileNamePath(apiDst.getUrl(), socialNetwork)
-                            msgLog = (f"{indent}in file ", f"{fN}.last")
-                            logMsg(msgLog, 1, 1)
-                            msgLog = (f"{indent}in file ",
-                                      f"{apiSrc.fileNameBase(apiDst)}.last")
-                            logMsg(msgLog, 1, 1)
-
-                    return
-
-                    # postaction = apiSrc.getPostAction()
-                    # if (not postaction) and (src[0] in ["cache"]):
-                    #     postaction = "delete"
-                    # if postaction:
-                    #     msgLog = (f"{indent} Post Action {postaction}")
-                    #     logMsg(msgLog, 1, 1)
-                    # if ((not simmulate)
-                    #     and (not res or (res
-                    #              and (('Status is a duplicate.' in res)
-                    #              or ('You have already retweeted' in res)
-                    #              or not ('Fail!' in res))))):
-                    #     try:
-                    #         cmdPost = getattr(apiSrc, postaction)
-                    #         msgLog = (f"{indent}Post Action {postaction} "
-                    #                   f"command {cmdPost}")
-                    #         logMsg(msgLog, 1, 1)
-                    #         res = cmdPost(i - 1)
-                    #         msgLog = (f"{indent}End {postaction}, reply: {res}")
-                    #         logMsg(msgLog, 1, 1)
-                    #     except:
-                    #         msgLog = (f"{indent}No postaction or wrong one")
-                    #         logMsg(msgLog, 1, 1)
-                    # Available {len(apiSrc.getPosts())-1}")
-                    # logMsg(msgLog, 1, 1)
-                else:
-                    msgLog = f"{indent}Empty listPosts or some problem {listPosts}"
-                    # Sometimes the module (moduleGmail) returns a list of None
-                    # values
-                    logMsg(msgLog, 1, 1)
             elif (diffTime<=hours):
                 msgLog = (f"{indent}Not enough time passed. "
                           f"We will wait at least "

@@ -218,6 +218,7 @@ class moduleSlack(Content, Queue):
 
 
     def getPostLink(self, post):
+        link = ''
         if "attachments" in post:
             link = post["attachments"][0]["original_url"]
         else:

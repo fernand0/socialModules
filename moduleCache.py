@@ -302,7 +302,6 @@ class moduleCache(Content,Queue):
 
     def getPostTitle(self, post):
         title = ''
-        print(f"hasatt: {hasattr(self, 'auxClass')}")
         if post:
             if hasattr(self, 'auxClass'):
                 myModule = f"module{self.auxClass.capitalize()}"
@@ -311,10 +310,10 @@ class moduleCache(Content,Queue):
                 mod = sys.modules.get(myModule)
                 cls = getattr(mod, myModule)
                 api = cls()
-
                 apiCmd = getattr(api, 'getPostTitle')
                 title  = apiCmd(post)
             else:
+                # Old style
                 title = post[0]
         return(title)
 
@@ -328,10 +327,11 @@ class moduleCache(Content,Queue):
                 mod = sys.modules.get(myModule)
                 cls = getattr(mod, myModule)
                 api = cls()
-
+                print(f"api: {api}")
                 apiCmd = getattr(api, 'getPostLink')
                 link = apiCmd(post)
-            else: 
+                print(f"link: {link}")
+            else:
                 link = post[1]
         return (link)
 
@@ -376,16 +376,38 @@ class moduleCache(Content,Queue):
             self.assignPosts(posts[:j] + [ post ] + posts[j:])
             self.updatePostsCache()
 
+    def publishNextPost(self, apiSrc):
+        reply = ''
+        logging.info(f"    Publishing next post from {apiSrc} in {self.service}")
+        try:
+            post = apiSrc.getNextPost()
+            if post:
+                res = self.publishApiPost(api=self, post=post)
+                reply = self.processReply(res)
+            else:
+                reply = "Fail! No posts available"
+        except:
+            reply = self.report(self.service, apiSrc, sys.exc_info())
+
+        return reply
+
     def publishApiPost(self, *args, **kwargs):
-        title, link, comment = args
-        more = kwargs
-        print(f"more: {more}")
+        print(f"->publishApiPost: *{args}*")
+        if args and len(args)==3:
+            title, link, comment = args
+        if kwargs:
+            more = kwargs
+        # print(f"more: {more}")
         posts = self.getPosts2()
-        print(f"posts: {posts}")
         posts.append(more['post'])
-        print(f"postss: {posts}")
         self.assignPosts(posts)
         self.updatePosts(more['api'])
+        return "OK. Published!"
+
+    def deleteApiNextPost(self):
+        i = 0
+        self.deleteApi(i)
+        return f"OK. Deleted post {i}"
 
     def publish(self, j):
         logging.info(">>>Publishing %d"% j)
@@ -421,13 +443,14 @@ class moduleCache(Content,Queue):
 
     def deleteApi(self, j):
         logging.info(f"Deleting: {j}")
-        post = self.obtainPostData(j)
         posts = self.getPosts()
         posts = posts[:j] + posts[j+1:]
         self.assignPosts(posts)
+        # FIXME: Using two cache files, for compatibiiity with old version
         self.updatePostsCache()
+        self.updatePosts('srcNotUsed')
 
-        return("%s"% post[0])
+        return(f"Deleted: {j}")
 
     def obtainPostData(self, i, debug=False):
         if not self.posts:

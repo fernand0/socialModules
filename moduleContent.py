@@ -48,8 +48,8 @@ class Content:
     def setClient(self, account):
         logging.info(f"    Connecting {self.service}: {account}")
 
-        print(f"acc: {account}")
-        print(f"tt: {type(account[1])}")
+        # print(f"acc: {account}")
+        # print(f"tt: {type(account[1])}")
         if isinstance(account, str):
             self.user = account
         elif isinstance(account[1], str) and (account[1].find('@') > 0):
@@ -198,8 +198,15 @@ class Content:
         return fileName
 
     def updateLastLink(self, dst, link):
-        if isinstance(link, list):
+        if link and isinstance(link, list):
+            #FIXME: This will be removed
             link = self.getPostLink(link[-1])
+        elif not link:
+            post = self.getNextPost()
+            link = self.getPostLink(post)
+        msgLog = f"Updating last link {link} in {self.service}"
+        logMsg(msgLog, 1, 1)
+
         fileName = f"{self.fileNameBase(dst)}.last"
         with open(fileName, "w") as f:
             if isinstance(link, bytes):
@@ -209,6 +216,9 @@ class Content:
             else:
                 f.write(link[0])
 
+        self.setLastLink(dst)
+        
+        
     def getLastLinkNew(self, dst):
         return self.lastLinkPublished
 
@@ -414,6 +424,7 @@ class Content:
     def getPost(self, i):
         post = None
         posts = self.getPosts()
+        # print(f"posts: {posts}")
         if posts and (i >= 0) and (i < len(posts)):
             post = posts[i]
         return post
@@ -676,7 +687,7 @@ class Content:
         posLast = self.getPosNextPost()
         post = self.getPost(posLast - 1)
 
-        return [ post ]
+        return post
 
     def getTitle(self, i):
         title = ""
@@ -759,6 +770,35 @@ class Content:
             return self.processReply(reply)
         except:
             return self.report(self.service, post, image, sys.exc_info())
+
+    def deleteNextPost(self):
+        reply = ''
+        logging.info(f"    Deleting next post from {self} in {self.service}")
+        try:
+            reply = self.deleteApiNextPost()
+            reply = self.processReply(reply)
+        except:
+            reply = self.report(self.service, self, sys.exc_info())
+        return reply
+
+    def publishNextPost(self, apiSrc):
+        reply = ''
+        logging.info(f"    Publishing next post from {apiSrc} in {self.service}")
+        try:
+            post = apiSrc.getNextPost()
+            if post:
+                logging.info(f"Publishing: {post}")
+                title = apiSrc.getPostTitle(post)
+                link = apiSrc.getPostLink(post)
+                comment= ''
+                res = self.publishApiPost(title, link, comment)
+                reply = self.processReply(res)
+            else:
+                reply = "Fail! No posts available"
+        except:
+            reply = self.report(self.service, apiSrc, sys.exc_info())
+
+        return reply
 
     def publishPost(self, *args, **more):
         print(f"publishPost")
