@@ -791,7 +791,15 @@ class Content:
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
                 comment= ''
-                res = self.publishApiPost(title, link, comment)
+                nameMethod = 'Post'
+                if (hasattr(self, 'getPostsType')
+                    and (self.getPostsType())
+                    and (hasattr(self,
+                        f"publishApi{self.getPostsType().capitalize()}"))):
+                    nameMethod = self.getPostsType().capitalize()
+
+                method = getattr(self, f"publishApi{nameMethod}")
+                res = method(title, link, comment)
                 reply = self.processReply(res)
             else:
                 reply = "Fail! No posts available"
@@ -1010,9 +1018,7 @@ class Content:
         self.max = maxVal
 
     def getMax(self):
-        maxVal = None
-        if hasattr(self, "max"): # and self.max:
-            maxVal = int(self.max)
+        maxVal = 1
         return maxVal
 
     # def getCache(self):

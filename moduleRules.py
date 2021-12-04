@@ -864,7 +864,7 @@ class moduleRules:
                             logMsg(msgLog, 2, 0)
                             if service == "direct":
                                 url = "posts"
-                            toAppend = (service, url, val, nick, timeW, bufferMax)
+                            toAppend = (service, url, val, nick) #, timeW, bufferMax)
                             msgLog = (f"Service special toAppend: {toAppend} ")
                             logMsg(msgLog, 2, 0)
                             msgLog = (f"Service special from: {fromSrv} ")
@@ -912,9 +912,9 @@ class moduleRules:
                                     "direct",
                                     mmethod,
                                     service,
-                                    config.get(section, service),
-                                    timeW,
-                                    bufferMax,
+                                    config.get(section, service) #,
+                                    # timeW,
+                                    # bufferMax,
                                     )
 
                             if not (toAppend in dsts):
@@ -993,7 +993,7 @@ class moduleRules:
                 for method in methods:
                     msgLog = (f"cache dst {dst}")
                     logMsg(msgLog, 2, 0)
-                    toAppend = (service, "set", dst[3], method[1], dst[4])
+                    toAppend = (service, "set", dst[3], method[1])#, dst[4])
                     msgLog = (f"toAppend src {toAppend}")
                     logMsg(msgLog, 2, 0)
                     if not (toAppend[:4] in srcs):
@@ -1124,6 +1124,7 @@ class moduleRules:
                 textEnd = (f"Source: {name} {src[2]} {src[3]}")
                 # print(text)
                 actions = self.rules[src]
+
                 for k, action in enumerate(actions):
                     if (select and (select.lower() != f"{src[0].lower()}{i}")):
                         actionMsg = f"Skip."

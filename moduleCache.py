@@ -377,6 +377,8 @@ class moduleCache(Content,Queue):
             self.updatePostsCache()
 
     def publishNextPost(self, apiSrc):
+        # We just store the post, we need more information than the title,
+        # link and so on.
         reply = ''
         logging.info(f"    Publishing next post from {apiSrc} in {self.service}")
         try:
