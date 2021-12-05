@@ -115,9 +115,10 @@ class moduleTwitter(Content,Queue):
         return res
 
     def publishApiPost(self, *args, **kwargs):
-        print(f"args: {args}")
-        post, link, comment = args
-        more = kwargs
+        if args and len(args) == 3:
+            post, link, comment = args
+        if kwargs:
+            more = kwargs
         post = self.addComment(post, comment)
 
         # post = post[:(240 - (len(link) + 1))]

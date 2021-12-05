@@ -259,8 +259,8 @@ class moduleRules:
             return
 
         apiDst.setPosts()
-        print(apiDst.getPosts())
-        return
+        #FIXME: Is it always needed? Only in caches?
+        
 
         indent = f"{indent} "
 
