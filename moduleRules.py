@@ -138,7 +138,7 @@ class moduleRules:
     def executePublishAction(self, indent, msgAction,
                             apiSrc, apiDst, simmulate):
         res = ''
-        
+
         msgLog = (f"{indent}Go!\n"
                   f"{indent}└-> Action: {msgAction}")
         logMsg(msgLog, 1, 1)
@@ -146,7 +146,7 @@ class moduleRules:
         # The source of data can have changes while we were waiting
         apiSrc.setPosts()
         post = apiSrc.getNextPost()
-        
+
         if post:
             msgLog = f"{indent}Would schedule in {msgAction} ..."
             logMsg(msgLog, 1, 1)
@@ -228,12 +228,23 @@ class moduleRules:
         # Destination
 
         apiSrc = self.readConfigSrc(indent, src, more)
+        if not apiSrc.getClient():
+            msgLog = (f"{indent}Error. No client for {src[2]} ({src[3]})")
+            logMsg(msgLog, 1, 1)
+            return f"End: {msgLog}"
+
         apiSrc.setPosts()
+
 
         # print(f"apiSrc: {apiSrc}")
         # print(f"action: {action}")
         # print(f"more {more}")
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
+        if not apiDst.getClient():
+            msgLog = (f"{indent}Error. No client for {action[2]}")
+            logMsg(msgLog, 1, 1)
+            return f"End: {msgLog}"
+
         apiDst.setUrl(apiSrc.getUrl())
 
         # print(f"{indent}action: {action}")
@@ -248,6 +259,8 @@ class moduleRules:
             return
 
         apiDst.setPosts()
+        print(apiDst.getPosts())
+        return
 
         indent = f"{indent} "
 
@@ -317,7 +330,7 @@ class moduleRules:
                     self.executePublishAction(indent, msgAction, apiSrc,
                                                 apiDst, simmulate)
 
- 
+
 
 
             elif (diffTime<=hours):
@@ -362,6 +375,7 @@ class moduleRules:
         apiDst = self.readConfigDst(indent, action, more)
         apiDst.setUrl(apiSrc.getUrl())
 
+        return
         # getSocialNetwork() ?
         profile = action[2]
         nick = action[3]

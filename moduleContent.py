@@ -130,6 +130,7 @@ class Content:
         if hasattr(self, "getPostsType") and self.getPostsType():
             typePosts = self.getPostsType()
             if typePosts == "cache":
+                # FIXME: cache??
                 cmd = getattr(self, "setApiCache")
             else:
                 logging.debug(f"setApi{typePosts}")
@@ -139,7 +140,7 @@ class Content:
         else:
             cmd = getattr(self, "setApiPosts")
 
-        logging.debug(f"Cmd: {cmd}")
+        logging.info(f"Cmd: {cmd}")
         posts = cmd()
         #logging.info(f"Posts: {posts}")
         self.assignPosts(posts)
