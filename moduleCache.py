@@ -35,9 +35,9 @@ class moduleCache(Content,Queue):
         if hasattr(self, 'fileName') and self.fileName:
             return self.fileName
         src = self
-        print(f"src: {self}")
-        print(F"dst: {dst}")
-        print(f"{self.getUrl()}, {self.getService()}, {self.getUser()}")
+        # print(f"src: {self}")
+        # print(F"dst: {dst}")
+        # print(f"{self.getUrl()}, {self.getService()}, {self.getUser()}")
         nameSrc = 'Cache'
         typeSrc = typeDst = 'posts'
         if isinstance(dst, tuple):
@@ -47,7 +47,7 @@ class moduleCache(Content,Queue):
             userD = dst[0]
             serviceD = dst[1][0].lower()+dst[1][1:]
         elif isinstance(self, moduleCache):
-            print(f"{dst.getUrl()}, {dst.getService()}, {dst.getUser()}")
+            # print(f"{dst.getUrl()}, {dst.getService()}, {dst.getUser()}")
             user = dst.getUser()
             service = dst.getService().capitalize()
             userD = self.getUser()
@@ -60,13 +60,13 @@ class moduleCache(Content,Queue):
                     f"{userD}_{serviceD}")
         fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
         self.fileName = fileName
-        print(f"fileName: {fileName}")
+        # print(f"fileName: {fileName}")
         return fileName
 
     def setClient(self, param):
         logging.info(f"    Connecting Cache {self.service}: {param}")
         self.postsType = 'posts'
-        print(f"param: {param}")
+        # print(f"param: {param}")
         self.auxClass = param[0]
         if isinstance(param, str):
             self.url = param
@@ -77,7 +77,7 @@ class moduleCache(Content,Queue):
                 self.url = param[0]
             else:
                 self.url = param[1]
-                print(f"u: {self.url}")
+                # print(f"u: {self.url}")
                 pos = param[2].find('@')
                 self.socialNetwork = param[2][:pos].capitalize()
                 self.user = param[2][pos+1:]
@@ -100,7 +100,7 @@ class moduleCache(Content,Queue):
             self.user = param[1][1]
             self.service = param[1][0]
             self.fileName = self.fileNameBase(param[0])
-            print(f"ff: {self.fileName}")
+            # print(f"ff: {self.fileName}")
 
         else:
             self.url = param[0]
@@ -130,7 +130,7 @@ class moduleCache(Content,Queue):
             fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
         else:
             fileNameQ = fileNameQ+".queue"
-        print(f"fileNameQ: {fileNameQ}")
+        # print(f"fileNameQ: {fileNameQ}")
 
         logging.debug("File: %s" % fileNameQ)
         try:
@@ -255,7 +255,7 @@ class moduleCache(Content,Queue):
         else:
             fileName = self.fileNameBase(self)
         fileNameQ = f"{fileName}.queue"
-        print(f"ffff: {fileNameQ}")
+
         with open(fileNameQ, 'wb') as f:
             posts = self.getPosts2()
             pickle.dump(posts, f)
@@ -327,10 +327,8 @@ class moduleCache(Content,Queue):
                 mod = sys.modules.get(myModule)
                 cls = getattr(mod, myModule)
                 api = cls()
-                print(f"api: {api}")
                 apiCmd = getattr(api, 'getPostLink')
                 link = apiCmd(post)
-                print(f"link: {link}")
             else:
                 link = post[1]
         return (link)
@@ -547,10 +545,12 @@ def main():
                     listP = []
             posts = listP
 
+        print()
         if action.upper() == 'T':
-            [ print(f"- {apiCmd(post)}") for post in posts ]
+            [ print(f"{i}) {apiCmd(post)}") for i, post in enumerate(posts) ]
         else:
             print(posts)
+        print()
     elif action.upper() in ['D']:
         fileDelete = f"{fNP}"
         ok = input(f"I'll delete {fileDelete} ")

@@ -69,15 +69,15 @@ class moduleRules:
         nick = action[3]
         socialNetwork = (profile, nick)
         msgLog = (f"{indent}socialNetwork: {socialNetwork}")
-        logMsg(msgLog, 2, 1)
+        logMsg(msgLog, 2, 0)
         msgLog = (f"{indent}Action: {action}")
-        logMsg(msgLog, 1, 1)
+        logMsg(msgLog, 1, 0)
         msgLog = (f"{indent}More: Dst {more}")
-        logMsg(msgLog, 1, 1)
+        logMsg(msgLog, 1, 0)
 
         if action[0] == "cache":
-            print(f"api: {apiSrc.getService()}")
-            print(f"param: {(action[1], socialNetwork)}")
+            # print(f"api: {apiSrc.getService()}")
+            # print(f"param: {(action[1], socialNetwork)}")
             apiDst = getApi("cache", (apiSrc, socialNetwork))
             apiDst.socialNetwork = action[2]
             apiDst.nick = action[3]
@@ -159,42 +159,48 @@ class moduleRules:
 
         indent = f"{indent[:-1]}"
 
+        resMsg = ''
         if not simmulate:
             res = apiDst.publishNextPost(apiSrc)
-            print(f"{indent}res: {res}")
+            resMsg = f"Publish: {res}\n"
+            # print(f"{indent}res: {res}")
             if ((not res) or ('SAVELINK' in res)
                     or not ('Fail!' in res)):
-                apiSrc.updateLastLink(apiDst, '')
+                resUpdate = apiSrc.updateLastLink(apiDst, '')
+                resMsg += f"Update: {resUpdate}\n"
                 postaction = apiSrc.getPostAction()
                 if postaction:
-                    msgLog = (f"{indent} Post Action {postaction}")
+                    msgLog = (f"{indent}Post Action {postaction}")
                     logMsg(msgLog, 1, 1)
 
                     cmdPost = getattr(apiSrc, f"{postaction}NextPost")
-                    msgLog = (f"{indent}Post Action {postaction} "
-                          f"command {cmdPost}")
+                    msgLog = (f"{indent}Post Action command {cmdPost}")
                     logMsg(msgLog, 1, 1)
-                    res = cmdPost()
-                    msgLog = (f"{indent}End {postaction}, reply: {res}")
+                    resPost = cmdPost()
+                    msgLog = (f"{indent}End {postaction}, reply: {resPost}")
                     logMsg(msgLog, 1, 1)
+                    resMsg += f"Post Action: {resPost}\n"
 
-            msgLog = (f"{indent}End publish, reply: {res}")
+            msgLog = (f"{indent}End publish, reply: {resMsg}")
             logMsg(msgLog, 1, 1)
         else:
             msgLog = (f"{indent}This is a simmulation")
             logMsg(msgLog, 1, 1)
+            resMsg = f"Simulate: {msgLog}\n"
             link = apiSrc.getPostLink(apiSrc.getNextPost())
             if link:
                 msgLog = (f"{indent}I'd record link: {link}")
                 logMsg(msgLog, 1, 1)
+                resMsg += f"{msgLog}\n"
                 # fN = fileNamePath(apiDst.getUrl(), socialNetwork)
                 # msgLog = (f"{indent}in file ", f"{fN}.last")
                 logMsg(msgLog, 1, 1)
                 msgLog = (f"{indent}in file ",
                           f"{apiSrc.fileNameBase(apiDst)}.last")
                 logMsg(msgLog, 1, 1)
+                resMsg += f"{msgLog}\n"
 
-        return res
+        return resMsg
 
 
     def executeAction(self, src, more, action,
@@ -229,6 +235,17 @@ class moduleRules:
         # print(f"more {more}")
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
         apiDst.setUrl(apiSrc.getUrl())
+
+        # print(f"{indent}action: {action}")
+        # print(f"-->{indent}apiDst: {apiDst.getPostsType()} {action[1]}")
+        # print(f"-->{indent}apiDst: {apiDst.getPostsType()[:-1]} {action[1]}")
+
+        print(f"-->{indent}apiDst: {apiDst.getPostsType()} {action[1]}")
+        if ((apiDst.getPostsType() != action[1])
+            and (apiDst.getPostsType()[:-1] != action[1])
+            and (action[0] != 'cache')):
+            # FIXME: Can we do better?
+            return
 
         apiDst.setPosts()
 

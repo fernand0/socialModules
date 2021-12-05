@@ -204,7 +204,8 @@ class Content:
         elif not link:
             post = self.getNextPost()
             link = self.getPostLink(post)
-        msgLog = f"Updating last link {link} in {self.service}"
+        msgUpdate = f"last link {link} in {self.service}"
+        msgLog = f"Updating {msgUpdate}"
         logMsg(msgLog, 1, 1)
 
         fileName = f"{self.fileNameBase(dst)}.last"
@@ -217,7 +218,8 @@ class Content:
                 f.write(link[0])
 
         self.setLastLink(dst)
-        
+
+        return f"Updated {msgUpdate}"
         
     def getLastLinkNew(self, dst):
         return self.lastLinkPublished
@@ -770,6 +772,9 @@ class Content:
             return self.processReply(reply)
         except:
             return self.report(self.service, post, image, sys.exc_info())
+
+    def deleteApiNextPost(self):
+        pass
 
     def deleteNextPost(self):
         reply = ''
