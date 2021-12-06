@@ -97,10 +97,13 @@ class moduleTwitter(Content,Queue):
 
 
     def publishApiRT(self, *args, **kwargs):
-        post, link, comment = args
-        more = kwargs
-        tweet = more['post']
-        idPost = self.getPostId(tweet)
+        if args and len(args) == 3:
+            post, link, comment = args
+            idPost = link.split('/')[-1]
+        if kwargs:
+            more = kwargs
+            tweet = more['post']
+            idPost = self.getPostId(tweet)
 
         logging.debug("     Retweeting: %s" % post)
         res = 'Fail!'
@@ -121,23 +124,28 @@ class moduleTwitter(Content,Queue):
             more = kwargs
         post = self.addComment(post, comment)
 
-        # post = post[:(240 - (len(link) + 1))]
-        if link:
-            post = post[:(240 - (23 + 1))]
-            post = post+" " + link
-        # https://help.twitter.com/en/using-twitter/how-to-tweet-a-link
-        # A URL of any length will be altered to 23 characters, even if the
-        # link itself is less than 23 characters long. Your character count
-        # will reflect this.
-
-        logging.debug("     Publishing: %s" % post)
         res = 'Fail!'
-        try:
-            res = self.getClient().statuses.update(status=post)
-        except twitter.api.TwitterHTTPError as twittererror:
-            for error in twittererror.response_data.get("errors", []):
-                logging.info("      Error code: %s" % error.get("code", None))
-            res = self.report('Twitter', post, link, sys.exc_info())
+        # post = post[:(240 - (len(link) + 1))]
+        if link and ('twitter' in link):
+            # If the link is a tweet, we will retweet.
+            res = self.publishApiRT(post, link, comment)
+        else:
+            if link:
+                post = post[:(240 - (23 + 1))]
+                post = post+" " + link
+
+            # https://help.twitter.com/en/using-twitter/how-to-tweet-a-link
+            # A URL of any length will be altered to 23 characters, even if the
+            # link itself is less than 23 characters long. Your character count
+            # will reflect this.
+
+            logging.debug("     Publishing: %s" % post)
+            try:
+                res = self.getClient().statuses.update(status=post)
+            except twitter.api.TwitterHTTPError as twittererror:
+                for error in twittererror.response_data.get("errors", []):
+                    logging.info("      Error code: %s" % error.get("code", None))
+                res = self.report('Twitter', post, link, sys.exc_info())
 
         return res
 
@@ -184,7 +192,11 @@ class moduleTwitter(Content,Queue):
         return f'https://twitter.com/{self.user}/status/{idPost}'
 
     def getPostLink(self, post):
-        return self.getPostUrl(post)
+        if self.getPostsType() == 'favs':
+            content, link = self.extractPostLinks(post)
+        else:
+            link = self.getPostUrl(post)
+        return link
 
     def extractPostLinks(self, post, linksToAvoid=""):
         return (self.getPostContent(post), self.getPostContentLink(post))
@@ -257,7 +269,7 @@ def main():
 
     tw.setClient('fernand0Test')
 
-    testingFav = False
+    testingFav = True
     if testingFav:
         print("Testing Fav")
         tw.setClient('fernand0')

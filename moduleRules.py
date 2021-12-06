@@ -251,7 +251,7 @@ class moduleRules:
         # print(f"-->{indent}apiDst: {apiDst.getPostsType()} {action[1]}")
         # print(f"-->{indent}apiDst: {apiDst.getPostsType()[:-1]} {action[1]}")
 
-        print(f"-->{indent}apiDst: {apiDst.getPostsType()} {action[1]}")
+        # print(f"-->{indent}apiDst: {apiDst.getPostsType()} {action[1]}")
         if ((apiDst.getPostsType() != action[1])
             and (apiDst.getPostsType()[:-1] != action[1])
             and (action[0] != 'cache')):

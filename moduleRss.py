@@ -47,6 +47,7 @@ class moduleRss(Content, Queue):
         else:
             self.user = feed
         logging.debug("The Feed %s" % str(self.rssFeed))
+        self.client = 'client'
         self.service = 'Rss'
 
     def setPosts(self):

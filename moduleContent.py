@@ -427,7 +427,6 @@ class Content:
     def getPost(self, i):
         post = None
         posts = self.getPosts()
-        # print(f"posts: {posts}")
         if posts and (i >= 0) and (i < len(posts)):
             post = posts[i]
         return post
@@ -781,15 +780,29 @@ class Content:
         reply = ''
         logging.info(f"    Deleting next post from {self} in {self.service}")
         try:
-            reply = self.deleteApiNextPost()
-            reply = self.processReply(reply)
+            post = self.getNextPost()
+            if post: 
+                logging.info(f"Publishing: {post}")
+                idPost = self.getPostId(post)
+                if (hasattr(self, 'getPostsType')
+                    and (self.getPostsType())
+                    and (hasattr(self,
+                            f"deleteApi{self.getPostsType().capitalize()}"))):
+                    nameMethod = self.getPostsType().capitalize()
+
+                method = getattr(self, f"deleteApi{nameMethod}")
+                res = method(idPost)
+                reply = self.processReply(res)
+            else:
+                reply = "Fail! No posts available"
         except:
             reply = self.report(self.service, self, sys.exc_info())
         return reply
 
     def publishNextPost(self, apiSrc):
         reply = ''
-        logging.info(f"    Publishing next post from {apiSrc} in {self.service}")
+        logging.info(f"    Publishing next post from {apiSrc} in "
+                    f"{self.service}")
         try:
             post = apiSrc.getNextPost()
             if post:
