@@ -59,7 +59,7 @@ class moduleTwitter(Content,Queue):
                 res = f"{title} https://twitter.com/{self.user}/status/{idPost}"
             else:
                 res = reply
-                if (('You have already retweeted' in res) or 
+                if (('You have already retweeted' in res) or
                         ('Status is a duplicate.' in res)):
                     res = res + ' SAVELINK'
         return(res)
@@ -122,6 +122,7 @@ class moduleTwitter(Content,Queue):
             post, link, comment = args
         if kwargs:
             more = kwargs
+            # FIXME: We need to do something here
         post = self.addComment(post, comment)
 
         res = 'Fail!'

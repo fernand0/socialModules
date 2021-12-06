@@ -75,25 +75,48 @@ class moduleTelegram(Content):
         else:
             return(self.report('Telegram', post, sys.exc_info()))
 
+    def publishNextPost(self, apiSrc):
+        # We just store the post, we need more information than the title,
+        # link and so on.
+        reply = ''
+        logging.info(f"    Publishing next post from {apiSrc} in "
+                    f"{self.service}")
+        try:
+            post = apiSrc.getNextPost()
+            if post:
+                res = self.publishApiPost(api=apiSrc, post=post)
+                reply = self.processReply(res)
+            else:
+                reply = "Fail! No posts available"
+        except:
+            reply = self.report(self.service, apiSrc, sys.exc_info())
+
+        return reply
+
     def publishApiPost(self, *args, **kwargs):
-        title, link, comment = args
-        more = kwargs
-        bot = self.getClient()
-        if 'post' in more:
-            post = more['post']
+        if args and len(args) == 3:
+            title, link, comment = args
+        if kwargs:
+            more = kwargs
+            post = more.get('post', '')
+            api = more.get('api', '')
+            title = api.getPostTitle(post)
+            link = api.getPostLink(post)
             content = ''
             if post:
-                contentHtml = more['api'].getPostContentHtml(more['post'])
+                contentHtml = api.getPostContentHtml(post)
                 soup = BeautifulSoup(contentHtml,'lxml')
-                (theContent, theSummaryLinks) = more['api'].extractLinks(soup, "")
+                (theContent, theSummaryLinks) = api.extractLinks(soup, "")
                 content = f"{theContent}\n{theSummaryLinks}"
-        else:
-            content = comment
+
+        bot = self.getClient()
+
         links = ""
         channel = self.user
 
         logging.info(f"{self.service}: Title: {title} Link: {link}")
         text = ('<a href="'+link+'">' + title+ "</a>\n")
+        #FIXME: This code needs improvement
         textToPublish = text
         textToPublish2 = ""
         from html.parser import HTMLParser

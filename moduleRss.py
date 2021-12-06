@@ -80,7 +80,7 @@ class moduleRss(Content, Queue):
             # WordPress
             summary = post.get('content', [{}])[0].get('value')
         elif 'summary' in post:
-            summary = self.getAttribute(post, 'summary')
+            summary = post.get('summary', '')
         return summary
 
     def getPostContentLink(self, post):

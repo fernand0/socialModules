@@ -1219,14 +1219,17 @@ class Content:
         # print("----Unexpected error: %s"% data[2])
 
     def getPostTitle(self, post):
-        return None
+        return ""
 
     def getPostDate(self, post):
-        return None
+        return ""
 
     def getPostLink(self, post):
         return ""
 
+    def getPostId(self, post):
+        return ""
+        
     def getPostContent(self, post):
         res = ''
         summary = self.getPostContentHtml(post)
