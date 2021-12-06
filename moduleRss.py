@@ -63,11 +63,16 @@ class moduleRss(Content, Queue):
         self.posts = feedparser.parse(urlRss).entries
 
     def getPostTitle(self, post):
-        if 'title' in post:
-            return(post['title'].replace('\n', ' '))
+        title = ''
+        if post:
+            title = post.get('title', '').replace('\n',' ')
+        return title
 
     def getPostLink(self, post):
-        return post.get('link','')
+        link = ''
+        if post:
+            link = post.get('link', '')
+        return link
 
     def getPostContentHtml(self, post):
         summary = ""

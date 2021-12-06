@@ -257,7 +257,7 @@ class moduleRules:
             and (action[0] != 'cache')):
             # FIXME: Can we do better?
             return
-
+        
         apiDst.setPosts()
         #FIXME: Is it always needed? Only in caches?
         

@@ -115,6 +115,9 @@ class Content:
 
         # return result
 
+    def setApiPosts(self):
+        pass
+
     def setPosts(self):
         nick = self.getNick()
         logging.debug(f"nick: {nick}")
@@ -407,9 +410,10 @@ class Content:
     def assignPosts(self, posts):
         self.posts = []
         self.posts2 = []
-        for post in posts:
-            self.posts.append(post)
-            self.posts2.append(post)
+        if posts:
+            for post in posts:
+                self.posts.append(post)
+                self.posts2.append(post)
 
     def getPosts2(self):
         posts = None
