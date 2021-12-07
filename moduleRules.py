@@ -34,6 +34,7 @@ class moduleRules:
             apiSrc = getApi(src[0], (sNN, nickN, src[2]))
             apiSrc.socialNetwork = sN
             apiSrc.nick = nick
+            apiSrc.postaction = 'delete'
         else:
             apiSrc = getApi(src[0], src[2])
 
@@ -294,8 +295,6 @@ class moduleRules:
         if testDiffer:
             self.testDifferPosts(apiSrc, lastLink, listPosts)
             return
-
-
 
         if (num > 0):
             tNow = time.time()

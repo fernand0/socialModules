@@ -140,6 +140,25 @@ class moduleTumblr(Content, Queue):
 
         return reply
 
+    def publishNextPost(self, apiSrc):
+        # We just store the post, we need more information than the title,
+        # link and so on.
+        reply = ''
+        logging.info(f"    Publishing next post from {apiSrc} in "
+                    f"{self.service}")
+        try:
+            post = apiSrc.getNextPost()
+            if post:
+                res = self.publishApiPost(api=apiSrc, post=post)
+                reply = self.processReply(res)
+            else:
+                reply = "Fail! No posts available"
+        except:
+            reply = self.report(self.service, apiSrc, sys.exc_info())
+
+        return reply
+
+
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
             title, link, comment = args
@@ -152,11 +171,12 @@ class moduleTumblr(Content, Queue):
             api = more.get('api', '')
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
+            comment = ''
             idPost = api.getPostId(post)
 
         try:
             if api.getPostsType() == 'posts':
-                res = self.getClient().create_link(self.getBlogName(),
+                res = self.getClient().create_link(self.getUser(),
                                                    state='queue',
                                                    title=title,
                                                    url=link,

@@ -105,6 +105,7 @@ class moduleCache(Content,Queue):
             self.url = param[0]
             self.service = param[1][0]
             self.user = param[1][1]
+        self.client = self.service
 
     def setApiDrafts(self):
         # Every cache is the same, even the origin are drafts ??
@@ -377,9 +378,11 @@ class moduleCache(Content,Queue):
         # We just store the post, we need more information than the title,
         # link and so on.
         reply = ''
-        logging.info(f"    Publishing next post from {apiSrc} in {self.service}")
+        logging.info(f"    Publishing next post from {apiSrc} "
+                    f"in {self.service}")
         try:
             post = apiSrc.getNextPost()
+            print(f"posttt: {post}")
             if post:
                 res = self.publishApiPost(api=self, post=post)
                 reply = self.processReply(res)
@@ -402,6 +405,16 @@ class moduleCache(Content,Queue):
         self.assignPosts(posts)
         self.updatePosts(more['api'])
         return "OK. Published!"
+
+    def getPostId(self, post):
+        link = self.getPostLink(post)
+        idPost = self.getLinkPosition(link)
+        return idPost
+
+    def deleteApiPosts(self, idPost):
+        # FIXME ??
+        self.deleteApi(idPost)
+        return f"OK. Deleted post {idPost}"
 
     def deleteApiNextPost(self):
         i = 0
