@@ -95,7 +95,6 @@ class moduleTwitter(Content,Queue):
             logging.debug(res)
         return res
 
-
     def publishApiRT(self, *args, **kwargs):
         if args and len(args) == 3:
             post, link, comment = args

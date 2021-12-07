@@ -603,7 +603,7 @@ class Content:
         posLast = -1
 
         if posts and (len(posts) > 0):
-            if self.getPostsType() == 'favs':
+            if self.getPostsType() in ['favs', 'queue']:
                 # This is not the correct condition, it should be independent
                 # of social network
                 posLast = 1

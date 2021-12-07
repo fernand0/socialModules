@@ -122,19 +122,46 @@ class moduleTumblr(Content, Queue):
             res = f"{self.getUrl()}{reply['id']}"
         return res
 
-    def publishApiPost(self, *args, **kwargs):
-        title, link, comment = args
-        more = kwargs
-        logging.info(f"type: {self.getPostsType()}")
+    def publishNextPost(self, apiSrc):
+        # We just store the post, we need more information than the title,
+        # link and so on.
+        reply = ''
+        logging.info(f"    Publishing next post from {apiSrc} in "
+                    f"{self.service}")
         try:
-            if self.getPostsType() == 'posts':
+            post = apiSrc.getNextPost()
+            if post:
+                res = self.publishApiPost(api=apiSrc, post=post)
+                reply = self.processReply(res)
+            else:
+                reply = "Fail! No posts available"
+        except:
+            reply = self.report(self.service, apiSrc, sys.exc_info())
+
+        return reply
+
+    def publishApiPost(self, *args, **kwargs):
+        if args and len(args) == 3:
+            title, link, comment = args
+            api = self
+            # Will always work?
+            idPost = link.split('/')[-2]
+        if kwargs:
+            more = kwargs
+            post = more.get('post', '')
+            api = more.get('api', '')
+            title = api.getPostTitle(post)
+            link = api.getPostLink(post)
+            idPost = api.getPostId(post)
+
+        try:
+            if api.getPostsType() == 'posts':
                 res = self.getClient().create_link(self.getBlogName(),
                                                    state='queue',
                                                    title=title,
                                                    url=link,
                                                    description=comment)
-            elif self.getPostsType() == 'queue':
-                idPost = postData[1].split('/')[-2]
+            elif api.getPostsType() == 'queue':
                 logging.debug(f"idPost {idPost}")
                 res = self.editApiStateId(idPost, 'published')
             else:
@@ -213,7 +240,7 @@ def main():
             print(f"{i}) {t.getPostTitle(post)}")
         return
 
-    testingQueue = False
+    testingQueue = True
     if testingQueue:
         print("Testing queue")
         t.setPostsType('queue')

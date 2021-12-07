@@ -295,6 +295,9 @@ class moduleRules:
             self.testDifferPosts(apiSrc, lastLink, listPosts)
             return
 
+        print(f"===> {apiSrc.getHold()}")
+        return
+
         if (num > 0):
             tNow = time.time()
             hours = float(apiDst.getTime())*60*60
