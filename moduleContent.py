@@ -46,7 +46,7 @@ class Content:
         self.hold = None
 
     def setClient(self, account):
-        logging.info(f"    Connecting {self.service}: {account}")
+        print(f"    Connecting {self.service}: {account}")
 
         # print(f"acc: {account}")
         # print(f"tt: {type(account[1])}")
@@ -224,7 +224,7 @@ class Content:
         self.setLastLink(dst)
 
         return f"Updated {msgUpdate}"
-        
+
     def getLastLinkNew(self, dst):
         return self.lastLinkPublished
 
@@ -785,7 +785,7 @@ class Content:
         logging.info(f"    Deleting next post from {self} in {self.service}")
         try:
             post = self.getNextPost()
-            if post: 
+            if post:
                 logging.info(f"Publishing: {post}")
                 idPost = self.getPostId(post)
                 if (hasattr(self, 'getPostsType')
@@ -1229,7 +1229,7 @@ class Content:
 
     def getPostId(self, post):
         return ""
-        
+
     def getPostContent(self, post):
         res = ''
         summary = self.getPostContentHtml(post)

@@ -257,10 +257,10 @@ class moduleRules:
             and (action[0] != 'cache')):
             # FIXME: Can we do better?
             return
-        
+
         apiDst.setPosts()
         #FIXME: Is it always needed? Only in caches?
-        
+
 
         indent = f"{indent} "
 
@@ -295,8 +295,7 @@ class moduleRules:
             self.testDifferPosts(apiSrc, lastLink, listPosts)
             return
 
-        print(f"===> {apiSrc.getHold()}")
-        return
+
 
         if (num > 0):
             tNow = time.time()
@@ -375,10 +374,11 @@ class moduleRules:
         # Destination
 
         apiSrc = self.readConfigSrc(indent, src, more)
+        if (apiSrc.getHold() == 'yes'):
+            return "OK. In hold"
         apiDst = self.readConfigDst(indent, action, more)
         apiDst.setUrl(apiSrc.getUrl())
 
-        return
         # getSocialNetwork() ?
         profile = action[2]
         nick = action[3]
