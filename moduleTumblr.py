@@ -82,6 +82,14 @@ class moduleTumblr(Content, Queue):
 
         return(posts)
 
+    def getPostAction(self):
+        # We won't delete posts from tumblr
+        postaction = ""
+        if hasattr(self, "postaction"):
+            postaction = self.postaction
+        return postaction
+
+
     def getPostTitle(self, post):
         logging.debug(f"getPostTitle {post}")
         title = ""

@@ -788,11 +788,6 @@ class Content:
             if post:
                 logging.info(f"Deleting: {post}")
                 idPost = self.getPostId(post)
-                print(f"aaaa: {post}")
-                print(f"aaaa: {self}")
-                print(f"aaaa: {hasattr(self, 'getPostsType')}")
-                print(f"aaaa: {self.getPostsType()}")
-                print(f"aaaa: {idPost}")
                 if (hasattr(self, 'getPostsType')
                     and (self.getPostsType())
                     and (hasattr(self,
