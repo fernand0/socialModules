@@ -152,6 +152,20 @@ class moduleImgur(Content, Queue):
         return (theTitle,  theLink, theLink, theId,
                 '', '', '', theTags, thePost)
 
+    def processReply(self, reply):
+        res = ''
+        if reply:
+            if not ('Fail!' in reply):
+                idPost = self.getPostId(reply)
+                # title = reply.get('title')
+                res = f"Published {reply}"
+            else:
+                res = reply
+                if ('Image already in gallery.' in res):
+                    res = res + ' SAVELINK'
+        return(res)
+
+
     def publishApiPost(self, *args, **kwargs):
         post, idPost, comment = args
         more = kwargs
@@ -161,6 +175,7 @@ class moduleImgur(Content, Queue):
         logging.info("      {}".format(str(post)))
         api = self.getClient()
         idPost = idPost.split('/')[-1]
+        # idPost = self.getPostId(post)
         try:
             res = api.share_on_imgur(idPost, post, terms=0)
             logging.info(f"      Res: {res}")

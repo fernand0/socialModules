@@ -196,7 +196,7 @@ class moduleRules:
                 # fN = fileNamePath(apiDst.getUrl(), socialNetwork)
                 # msgLog = (f"{indent}in file ", f"{fN}.last")
                 logMsg(msgLog, 1, 1)
-                msgLog = (f"{indent}in file ",
+                msgLog = (f"{indent}in file "
                           f"{apiSrc.fileNameBase(apiDst)}.last")
                 logMsg(msgLog, 1, 1)
                 resMsg += f"{msgLog}\n"

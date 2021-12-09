@@ -794,13 +794,14 @@ class Content:
                             f"deleteApi{self.getPostsType().capitalize()}"))):
                     nameMethod = self.getPostsType().capitalize()
 
-                method = getattr(self, f"deleteApi{nameMethod}")
-                res = method(idPost)
-                reply = self.processReply(res)
+                    method = getattr(self, f"deleteApi{nameMethod}")
+                    print(f"aaa: {method}")
+                    res = method(idPost)
+                    reply = self.processReply(res)
             else:
                 reply = "Fail! No posts available"
         except:
-            reply = self.report(self.service, self, sys.exc_info())
+            reply = self.report(self.service, post, idPost, sys.exc_info())
         return reply
 
     def publishNextPost(self, apiSrc):
@@ -815,13 +816,14 @@ class Content:
                 link = apiSrc.getPostLink(post)
                 comment= ''
                 nameMethod = 'Post'
-                if (hasattr(self, 'getPostsType')
-                    and (self.getPostsType())
+                if (hasattr(apiSrc, 'getPostsType')
+                    and (apiSrc.getPostsType())
                     and (hasattr(self,
-                        f"publishApi{self.getPostsType().capitalize()}"))):
+                        f"publishApi{apiSrc.getPostsType().capitalize()}"))):
                     nameMethod = self.getPostsType().capitalize()
 
                 method = getattr(self, f"publishApi{nameMethod}")
+                print(method)
                 res = method(title, link, comment)
                 reply = self.processReply(res)
             else:

@@ -411,6 +411,12 @@ class moduleCache(Content,Queue):
         idPost = self.getLinkPosition(link)
         return idPost
 
+    def deleteApiDrafts(self, idPost):
+        # In caches drafts == posts
+        # There is a problem because the origin is a draft in some cases and
+        # posts in others. #FIXME ?
+        return self.deleteApiPosts(idPost)
+
     def deleteApiPosts(self, idPost):
         # FIXME ??
         self.deleteApi(idPost)
@@ -456,6 +462,7 @@ class moduleCache(Content,Queue):
     def deleteApi(self, j):
         logging.info(f"Deleting: {j}")
         posts = self.getPosts()
+        print(f"aaa: {posts}")
         posts = posts[:j] + posts[j+1:]
         self.assignPosts(posts)
         # FIXME: Using two cache files, for compatibiiity with old version
