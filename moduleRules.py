@@ -200,6 +200,11 @@ class moduleRules:
                           f"{apiSrc.fileNameBase(apiDst)}.last")
                 logMsg(msgLog, 1, 1)
                 resMsg += f"{msgLog}\n"
+        if postaction == 'delete':
+            msgLog = (f"{indent}Available {len(apiSrc.getPosts())-1}")
+        else:
+            msgLog = (f"{indent}Available {len(apiSrc.getPosts())}")
+        logMsg(msgLog, 1, 1)
 
         return resMsg
 

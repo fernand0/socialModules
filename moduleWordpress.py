@@ -41,6 +41,8 @@ class moduleWordpress(Content,Queue):
         self.headers = {'Authorization':'Bearer '+self.access_token}
         self.my_site="{}.wordpress.com".format(self.user)
 
+        return 'client'
+
     #def setClient(self, user):
     #    logging.info(f"     Connecting Wordpress {user}")
     #    if isinstance(user, str):
@@ -194,16 +196,37 @@ class moduleWordpress(Content,Queue):
             res = "Fail! Failed authentication."
         return res
 
+    def publishNextPost(self, apiSrc):
+        # We just store the post, we need more information than the title,
+        # link and so on.
+        reply = ''
+        logging.info(f"    Publishing next post from {apiSrc} in "
+                    f"{self.service}")
+        try:
+            post = apiSrc.getNextPost()
+            if post:
+                res = self.publishApiPost(api=apiSrc, post=post)
+                reply = self.processReply(res)
+            else:
+                reply = "Fail! No posts available"
+        except:
+            reply = self.report(self.service, apiSrc, sys.exc_info())
+
+        return reply
+
     def publishApiPost(self, *args, **kwargs):
-        title, link, comment = args
-        more = kwargs
-        if len(postData)>3:
-           tags = postData[3]
-           idTags = self.checkTags(tags)
-           logging.info("     Tags: {idTags}")
-           idTags = ','.join(str(v) for v in idTags)
+        if args and len(args)>3:
+            tags = postData[3]
+            idTags = self.checkTags(tags)
+            logging.info("     Tags: {idTags}")
+            idTags = ','.join(str(v) for v in idTags)
         else:
-           idTags = ""
+            idTags = ""
+        if args and len(args) >=3:
+            title, link, comment, more = args
+        if kwargs:
+            more = kwargs
+
         payload = {"title":title,
                  "content":comment,
                  "status":'publish',
@@ -375,7 +398,9 @@ def main():
     wp.setClient('avecesunafoto')
     print("aaaa")
     wp.setPostsType('posts')
-    res = wp.setPosts()
+    wp.setPosts()
+    res = wp.getPosts()
+    print(f"Res: {res}")
     if ((res == None) or (res[:4] == 'Fail')):
         wp.authorize()
     res = wp.getPosts()

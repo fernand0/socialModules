@@ -823,7 +823,7 @@ class Content:
                     nameMethod = self.getPostsType().capitalize()
 
                 method = getattr(self, f"publishApi{nameMethod}")
-                print(method)
+                return
                 res = method(title, link, comment)
                 reply = self.processReply(res)
             else:
