@@ -525,8 +525,10 @@ class Content:
 
 
     def getImagesCode(self, i):
+        # FIXME: use some template system.
         res = self.getImages(i)
         # print(self.getPosts()[i])
+        print(f"imagesCode: {res}")
         url = self.getPostLink(self.getPosts()[i])
         text = ""
         for iimg in res:

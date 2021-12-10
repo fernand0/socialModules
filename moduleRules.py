@@ -161,6 +161,7 @@ class moduleRules:
         indent = f"{indent[:-1]}"
 
         resMsg = ''
+        postaction = ''
         if not simmulate:
             res = apiDst.publishNextPost(apiSrc)
             resMsg = f"Publish: {res}\n"

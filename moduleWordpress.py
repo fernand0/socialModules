@@ -215,21 +215,35 @@ class moduleWordpress(Content,Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
+        tags = []
         if args and len(args)>3:
             tags = postData[3]
+        if args and len(args) >=3:
+            title, link, comment, more = args
+        if kwargs:
+            more = kwargs
+            post = more.get('post', '')
+            api = more.get('api', '')
+            title = api.getPostTitle(post)
+            link = api.getPostLink(post)
+            pos = api.getLinkPosition(link)
+            comment = api.getImagesCode(pos)
+            tags = api.getImagesTags(pos)
+
+        if tags:
             idTags = self.checkTags(tags)
             logging.info("     Tags: {idTags}")
             idTags = ','.join(str(v) for v in idTags)
         else:
             idTags = ""
-        if args and len(args) >=3:
-            title, link, comment, more = args
-        if kwargs:
-            more = kwargs
+        print(f"title: {title}")
+        print(f"link: {link}")
+        print(f"content: {comment}")
+        print(f"tags: {tags}")
 
         payload = {"title":title,
                  "content":comment,
-                 "status":'publish',
+                 "status":'draft',
                  # One of: publish, future, draft, pending, private
                  'tags':idTags}
         res = requests.post(self.api_base2
@@ -401,7 +415,7 @@ def main():
     wp.setPosts()
     res = wp.getPosts()
     print(f"Res: {res}")
-    if ((res == None) or (res[:4] == 'Fail')):
+    if ((not res) or (res[:4] == 'Fail')):
         wp.authorize()
     res = wp.getPosts()
 

@@ -365,7 +365,7 @@ def main():
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs')
 
-    testingDrafts = True
+    testingDrafts = False
     if testingDrafts:
         img = moduleImgur.moduleImgur()
         acc = "Blog20"
@@ -406,6 +406,14 @@ def main():
 
     publishWordpress = True
     # Testing Wordpress publishing
+    img = moduleImgur.moduleImgur()
+    acc = "Blog20"
+    url = config.get(acc, 'url')
+    img.setUrl(url)
+    name = url.split('/')[-1]
+    img.setClient(name)
+    img.setPostsType(config.get(acc, 'posts'))
+    img.setPosts()
     img.setSocialNetworks(config)
     print(img.getSocialNetworks())
     service = 'wordpress'
