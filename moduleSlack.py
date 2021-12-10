@@ -87,6 +87,7 @@ class moduleSlack(Content, Queue):
 
     def setApiPosts(self):
         if not self.channel:
+            # FIXME
             # Can we improve this in mosuleSlack and moduleFacebook?
             self.setChannel('links')
         posts = []
@@ -101,26 +102,6 @@ class moduleSlack(Content, Queue):
 
         logging.debug(f"Posts: {posts}")
         return posts
-
-    # def setPosts(self, channel="links"):
-    #     logging.info(" Setting posts")
-    #     self.posts = []
-    #     theChannel = self.getChanId(channel)
-    #     try:
-    #         self.getClient().token = self.slack_token
-    #         data = {"count": 1000, "channel": theChannel}
-    #         history = self.getClient().api_call("conversations.history",
-    #                                             data=data)
-    #         try:
-    #             self.posts = history["messages"]
-    #         except:
-    #             self.posts = []
-    #     except:
-    #         logging.warning(self.report(self.service, "",
-    #                         "", sys.exc_info()))
-    #         self.posts = []
-
-    #     logging.info(" Set posts")
 
     def processReply(self, reply):
         return reply.get('ok','Fail!')
@@ -215,7 +196,6 @@ class moduleSlack(Content, Queue):
         else:
             text = post.get('text', '')
         return text
-
 
     def getPostLink(self, post):
         link = ''
