@@ -175,9 +175,9 @@ class moduleGmail(Content,Queue):
     def getListLabel(self, label):
         api = self.getClient()
         list_labels = [ label, ]
-        print(list_labels)
+        # print(list_labels)
         response = api.users().messages().list(userId='me', 
-                                               q='before:2021/4/1 is:unread',
+                                               q='before:2021/6/1 is:unread',
                                                labelIds=list_labels).execute()
         return(response)
 

@@ -35,7 +35,7 @@ class moduleFacebook(Content,Queue):
         return ((oauth_access_token,))
 
     def initApi(self, keys):
-        graph = facebook.GraphAPI(keys[0], version='3.0') 
+        graph = facebook.GraphAPI(keys[0], version='8.0') 
         return graph 
 
     def getPage(self):
@@ -181,6 +181,9 @@ def main():
     fc = moduleFacebook.moduleFacebook()
 
     fc.setClient('me')
+    fb = fc.getClient()
+    print(fb.get_permissions('me'))
+
     fc.setPage('Fernand0Test')
 
     res = fc.publishImage("prueba imagen", "/tmp/2021-06-26_image.png", alt="Imagen con alt")

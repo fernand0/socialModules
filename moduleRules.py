@@ -285,7 +285,7 @@ class moduleRules:
                 apiSrc.setPosts()
 
                 listPosts = apiSrc.getNumPostsData(num, i, lastLink)
-                print(listPosts)
+                # print(listPosts)
                 listPosts2 = apiSrc.getNumNextPost(num)
 
                 if listPosts and listPosts[0][1]: 
@@ -401,10 +401,7 @@ class moduleRules:
                         indent = f"{indent[:-1]}"
 
                         if ((not res) or (res and 
-                            (('You have already retweeted' in res) or 
-                             ('Status is a duplicate.' in res) or 
-                             ('Image already in gallery' in res) or 
-                                not ('Fail!' in res)))):
+                            (('SAVELINK' in res) or not ('Fail!' in res)))):
                             msgLog = (f"{indent}End publish, reply: {res}")
                             logMsg(msgLog, 1, 1)
 
@@ -678,7 +675,7 @@ class moduleRules:
                             logMsg(msgLog, 2, 0)
                             if service == "direct":
                                 url = "posts"
-                            toAppend = (service, url, val, nick, timeW, bufferMax)
+                            toAppend = (service, url, val, nick) #, timeW, bufferMax)
                             msgLog = (f"Service special toAppend: {toAppend} ")
                             logMsg(msgLog, 2, 0)
                             msgLog = (f"Service special from: {fromSrv} ")
@@ -726,9 +723,9 @@ class moduleRules:
                                     "direct",
                                     mmethod,
                                     service,
-                                    config.get(section, service),
-                                    timeW,
-                                    bufferMax,
+                                    config.get(section, service) #,
+                                    # timeW,
+                                    # bufferMax,
                                     )
 
                             if not (toAppend in dsts):
@@ -807,7 +804,7 @@ class moduleRules:
                 for method in methods:
                     msgLog = (f"cache dst {dst}")
                     logMsg(msgLog, 2, 0)
-                    toAppend = (service, "set", dst[3], method[1], dst[4])
+                    toAppend = (service, "set", dst[3], method[1])#, dst[4])
                     msgLog = (f"toAppend src {toAppend}")
                     logMsg(msgLog, 2, 0)
                     if not (toAppend[:4] in srcs):
@@ -952,6 +949,9 @@ class moduleRules:
                     # The '[' is closed in executeAction TODO
                     if actionMsg == "Skip.":
                         continue
+
+                    # print(f"Action: {actions}")
+                    # return
                     timeSlots = args.timeSlots
                     noWait = args.noWait
 

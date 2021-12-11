@@ -9,6 +9,7 @@ import urllib.parse
 from html.parser import HTMLParser
 import oauth2 as oauth
 from linkedin_v2 import linkedin
+# git@github.com:fernand0/python-linkedin-v2.git  
 
 from configMod import *
 from moduleContent import *

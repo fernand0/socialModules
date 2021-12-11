@@ -575,7 +575,7 @@ class Content:
                 posLast = 1
             else:
                 lastLink = self.getLastLinkPublished()
-                print(f"lastLink: {lastLink}")
+                # print(f"lastLink: {lastLink}")
                 if lastLink:
                     posLast = self.getLinkPosition(lastLink)
                 else:
