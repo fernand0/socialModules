@@ -825,7 +825,6 @@ class Content:
                     nameMethod = self.getPostsType().capitalize()
 
                 method = getattr(self, f"publishApi{nameMethod}")
-                return
                 res = method(title, link, comment)
                 reply = self.processReply(res)
             else:
@@ -1110,6 +1109,25 @@ class Content:
         else:
             return None
 
+    def getIdPosition(self, idPost):
+        #FIXME equal to getLinkPosition?
+        posts = self.getPosts()
+        if posts:
+            pos = len(posts)
+            if not idPost:
+                logging.debug(self.getPosts())
+                return len(self.getPosts())
+            for i, entry in enumerate(posts):
+                idEntry = self.getPostId(entry)
+                if idPost == idEntry:
+                    # When there are duplicates (there shouldn't be) it returns
+                    # the last one
+                    pos = i
+                    # print(url[:lenCmp],linkS[:lenCmp])
+        else:
+            pos = -1
+        return pos
+
     def getLinkPosition(self, link):
         posts = self.getPosts()
         if posts:
@@ -1212,11 +1230,11 @@ class Content:
 
     def report(self, profile, post, link, data):
         logging.warning("%s failed!" % profile)
-        logging.warning("Post %s %s" % (post[:80], link))
+        logging.warning("Post %s %s" % (post, link))
         logging.warning("Unexpected error: %s" % data[0])
         logging.warning("Unexpected error: %s" % data[1])
         print("%s posting failed!" % profile)
-        print("Post %s %s" % (post[:80], link))
+        print("Post %s %s" % (post, link))
         print("Unexpected error: %s" % data[0])
         print("Unexpected error: %s" % data[1])
         return "Fail! %s" % data[1]

@@ -189,18 +189,20 @@ class moduleRules:
             msgLog = (f"{indent}This is a simmulation")
             logMsg(msgLog, 1, 1)
             resMsg = f"Simulate: {msgLog}\n"
-            link = apiSrc.getPostLink(apiSrc.getNextPost())
-            if link:
-                msgLog = (f"{indent}I'd record link: {link}")
-                logMsg(msgLog, 1, 1)
-                resMsg += f"{msgLog}\n"
-                # fN = fileNamePath(apiDst.getUrl(), socialNetwork)
-                # msgLog = (f"{indent}in file ", f"{fN}.last")
-                logMsg(msgLog, 1, 1)
-                msgLog = (f"{indent}in file "
-                          f"{apiSrc.fileNameBase(apiDst)}.last")
-                logMsg(msgLog, 1, 1)
-                resMsg += f"{msgLog}\n"
+            post = apiSrc.getNextPost()
+            if post:
+                link = apiSrc.getPostLink(post)
+                if link:
+                    msgLog = (f"{indent}I'd record link: {link}")
+                    logMsg(msgLog, 1, 1)
+                    resMsg += f"{msgLog}\n"
+                    # fN = fileNamePath(apiDst.getUrl(), socialNetwork)
+                    # msgLog = (f"{indent}in file ", f"{fN}.last")
+                    logMsg(msgLog, 1, 1)
+                    msgLog = (f"{indent}in file "
+                              f"{apiSrc.fileNameBase(apiDst)}.last")
+                    logMsg(msgLog, 1, 1)
+                    resMsg += f"{msgLog}\n"
         if postaction == 'delete':
             msgLog = (f"{indent}Available {len(apiSrc.getPosts())-1}")
         else:

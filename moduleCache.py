@@ -157,6 +157,7 @@ class moduleCache(Content,Queue):
             num = 0
         return num
 
+
     def getPosNextPost(self):
         # cache always shows the first item
         # Some standard contition?
@@ -164,7 +165,6 @@ class moduleCache(Content,Queue):
         posLast = 1
 
         return posLast
-
 
     def getHoursSchedules(self, command=None):
         return self.schedules[0].hour.render()
@@ -407,8 +407,21 @@ class moduleCache(Content,Queue):
         return "OK. Published!"
 
     def getPostId(self, post):
-        link = self.getPostLink(post)
-        idPost = self.getLinkPosition(link)
+        idPost = ''
+        if post:
+            if hasattr(self, 'auxClass'):
+                myModule = f"module{self.auxClass.capitalize()}"
+                import importlib
+                importlib.import_module(myModule)
+                mod = sys.modules.get(myModule)
+                cls = getattr(mod, myModule)
+                api = cls()
+                apiCmd = getattr(api, 'getPostId')
+                idPost  = apiCmd(post)
+            else:
+                # Old style 
+                link = self.getPostLink(post) 
+                idPost = self.getLinkPosition(link)
         return idPost
 
     def deleteApiDrafts(self, idPost):
@@ -419,6 +432,11 @@ class moduleCache(Content,Queue):
 
     def deleteApiPosts(self, idPost):
         # FIXME ??
+        if isinstance(idPost, str):
+            # FIXME
+            idPost = self.getIdPosition(idPost)
+            
+        print(f"id: {idPost}")
         self.deleteApi(idPost)
         return f"OK. Deleted post {idPost}"
 
@@ -462,7 +480,7 @@ class moduleCache(Content,Queue):
     def deleteApi(self, j):
         logging.info(f"Deleting: {j}")
         posts = self.getPosts()
-        print(f"aaa: {posts}")
+        print(f"ccc: {posts}")
         posts = posts[:j] + posts[j+1:]
         self.assignPosts(posts)
         # FIXME: Using two cache files, for compatibiiity with old version
@@ -511,7 +529,7 @@ def main():
 
     queues = []
     for fN in os.listdir(f"{DATADIR}"):
-        if fN.find('queue')>=0:
+        if (fN[0].isupper() and fN.find('queue')>=0):
             queues.append(fN)
 
     for i, fN in enumerate(queues):

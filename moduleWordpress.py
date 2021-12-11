@@ -243,7 +243,7 @@ class moduleWordpress(Content,Queue):
 
         payload = {"title":title,
                  "content":comment,
-                 "status":'draft',
+                 "status":'publish',
                  # One of: publish, future, draft, pending, private
                  'tags':idTags}
         res = requests.post(self.api_base2

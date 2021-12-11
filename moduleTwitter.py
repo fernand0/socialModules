@@ -188,7 +188,7 @@ class moduleTwitter(Content,Queue):
         return title
 
     def getPostUrl(self, post):
-        idPost = post.get('id_str')
+        idPost = post.get('id_str', '')
         return f'https://twitter.com/{self.user}/status/{idPost}'
 
     def getPostLink(self, post):
@@ -219,6 +219,8 @@ class moduleTwitter(Content,Queue):
         elif ('media' in post['entities']):
             if (post['entities']['media']):
                 result = post['entities']['media'][0]['expanded_url']
+        if not result:
+            result = self.getPostUrl(post)
         return result
 
     def extractDataMessage(self, i):

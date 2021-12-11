@@ -165,16 +165,42 @@ class moduleImgur(Content, Queue):
                     res = res + ' SAVELINK'
         return(res)
 
+    def publishNextPost(self, apiSrc):
+        # We just store the post, we need more information than the title,
+        # link and so on.
+        reply = ''
+        logging.info(f"    Publishing next post from {apiSrc} in "
+                    f"{self.service}")
+        try:
+            post = apiSrc.getNextPost()
+            if post:
+                res = self.publishApiPost(api=apiSrc, post=post)
+                reply = self.processReply(res)
+            else:
+                reply = "Fail! No posts available"
+        except:
+            reply = self.report(self.service, apiSrc, sys.exc_info())
+
+        return reply
 
     def publishApiPost(self, *args, **kwargs):
-        post, idPost, comment = args
-        more = kwargs
+        if args and len(args) == 3:
+            post, idPost, comment = args
+        if kwargs:
+            more = kwargs
+            post = more.get('post', '')
+            api = more.get('api', '')
+            title = api.getPostTitle(post)
+            idPost = api.getPostId(post)
+        print(f"post: {post}")
+        print(f"api: {api}")
+        # print(f"api: {api.auxClass}")
+        print(f"tit: {title} id: {idPost}")
         # This method publishes (as public post) some gallery that is in draft
         # mode
         logging.info("     Publishing in: {}".format(self.service))
         logging.info("      {}".format(str(post)))
         api = self.getClient()
-        idPost = idPost.split('/')[-1]
         # idPost = self.getPostId(post)
         try:
             res = api.share_on_imgur(idPost, post, terms=0)
