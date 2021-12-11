@@ -1231,6 +1231,9 @@ class Content:
     def getPostLink(self, post):
         return ""
 
+    def getPostUrl(self, post):
+        return ""
+        
     def getPostId(self, post):
         return ""
 

@@ -111,11 +111,11 @@ class moduleGitter(Content,Queue):
                 link = text[pos:]
         return link
 
-    def getPostUrl(self, post):
-        return (f"https://api.gitter.im/v1/rooms/{roomId}/chatMessages/"
-                f"{self.getPostId(post)}")
-        # https://developer.gitter.im/docs/messages-resource
-        #idChannel
+    # def getPostUrl(self, post):
+    #     return (f"https://api.gitter.im/v1/rooms/{roomId}/chatMessages/"
+    #             f"{self.getPostId(post)}")
+    #     # https://developer.gitter.im/docs/messages-resource
+    #     #idChannel
 
     def getPostId(self, post):
         idPost = -1
