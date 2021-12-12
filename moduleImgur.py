@@ -185,7 +185,7 @@ class moduleImgur(Content, Queue):
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
-            post, idPost, comment = args
+            title, idPost, comment = args
         if kwargs:
             more = kwargs
             post = more.get('post', '')
@@ -203,7 +203,7 @@ class moduleImgur(Content, Queue):
         api = self.getClient()
         # idPost = self.getPostId(post)
         try:
-            res = api.share_on_imgur(idPost, post, terms=0)
+            res = api.share_on_imgur(idPost, title, terms=0)
             logging.info(f"      Res: {res}")
             if res:
                 return(OK)

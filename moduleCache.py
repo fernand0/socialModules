@@ -89,9 +89,9 @@ class moduleCache(Content,Queue):
             if hasattr(self, 'fileName'):
                 print(f"self.fileName {self.fileName}")
             self.fileName = self.fileNameBase((self.user, self.socialNetwork))
-            print(f"self {self}")
+            logging.debug(f"self {self}")
             if hasattr(self, 'fileName'):
-                print(f"self.fileName {self.fileName}")
+                logging.info(f"self.fileName {self.fileName}")
 
             #self.user = param[1]
             if self.user.find('\n')>=0:
