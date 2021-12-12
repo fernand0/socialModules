@@ -814,6 +814,7 @@ class Content:
             post = apiSrc.getNextPost()
             if post:
                 logging.info(f"Publishing: {post}")
+                print(f"Publishing: {post}")
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
                 comment= ''
@@ -839,7 +840,7 @@ class Content:
         apiSrc = ''
         post = ''
         nameMethod = 'Post'
-
+        listPosts = []
         if len(args) == 3:
             title = args[0]
             link = args[1]
@@ -884,7 +885,10 @@ class Content:
                 for post in listPosts:
                     reply = method(title, link, comment, api=apiSrc, post=post)
             else:
-                reply = method(title, link, comment, api=apiSrc, post=post)
+                if apiSrc and post:
+                    reply = method(title, link, comment, api=apiSrc, post=post)
+                else:
+                    reply = method(title, link, comment)
 
             reply = self.processReply(reply)
         except:

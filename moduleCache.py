@@ -73,6 +73,7 @@ class moduleCache(Content,Queue):
             self.user = param
             logging.warning("This is not possible!")
         elif isinstance(param[1], str):
+            logging.info(f"    Connecting Cache {self.service}: {param[0]}")
             if param[0].find('http')>= 0:
                 self.url = param[0]
             else:

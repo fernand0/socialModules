@@ -94,6 +94,7 @@ class moduleTelegram(Content):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
+        content = ''
         if args and len(args) == 3:
             title, link, comment = args
         if kwargs:
@@ -102,7 +103,6 @@ class moduleTelegram(Content):
             api = more.get('api', '')
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
-            content = ''
             if post:
                 contentHtml = api.getPostContentHtml(post)
                 soup = BeautifulSoup(contentHtml,'lxml')

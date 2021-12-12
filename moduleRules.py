@@ -237,6 +237,8 @@ class moduleRules:
         # Destination
 
         apiSrc = self.readConfigSrc(indent, src, more)
+        if (apiSrc.getHold() == 'yes'):
+            return "OK. In hold"
         if not apiSrc.getClient():
             msgLog = (f"{indent}Error. No client for {src[2]} ({src[3]})")
             logMsg(msgLog, 1, 1)
