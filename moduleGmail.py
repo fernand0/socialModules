@@ -108,7 +108,7 @@ class moduleGmail(Content,Queue):
         creds = None
 
         if os.path.exists(fileTokenStore): 
-            print(f"filetokenstore: {fileTokenStore}")
+            logging.debug(f"filetokenstore: {fileTokenStore}")
             with open(fileTokenStore, 'rb') as token: 
                 logging.debug("Opening {}".format(fileTokenStore))
                 creds = pickle.load(token)

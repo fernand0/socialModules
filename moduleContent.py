@@ -921,9 +921,7 @@ class Content:
     def delete(self, j):
         print(f"Deleting Pos: {j}")
         post = self.getPost(j)
-        print(f"Deleting Pos Id: {post}")
         idPost = self.getPostId(self.getPost(j))
-        print(f"Deleting Pos Id: {idPost}")
         result = self.deletePostId(idPost)
         return result
 

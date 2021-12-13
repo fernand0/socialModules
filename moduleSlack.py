@@ -119,7 +119,7 @@ class moduleSlack(Content, Queue):
             self.setChannel()
             chan = self.getChannel()
         self.getClient().token = self.user_slack_token
-        data = {"channel": chan, "text": f"{post} {link}"}
+        data = {"channel": chan, "text": f"{title} {link}"}
         result = self.getClient().api_call("chat.postMessage", data=data)  # ,
         self.getClient().token = self.slack_token
         return result
@@ -176,7 +176,10 @@ class moduleSlack(Content, Queue):
                     title = title + titleParts[1].split("<")[0]
             else:
                 pos = text.find("<")
-                title = text[:pos]
+                if pos>=0:
+                    title = text[:pos]
+                else:
+                    title = text
             return title
         else:
             return "No title"
@@ -535,23 +538,57 @@ def main():
     # print("---")
     # print(site.getSocialNetworks())
 
-    print("Testing posts")
-    site.setPostsType("posts")
-    site.setPosts()
+    testingPublishing = False
+    if testingPublishing:
+        links  = [
+                'https://www.johndcook.com/blog/2021/12/11/fraud-sloppiness-and-statistics/',
+                'https://nadh.in/blog/open-source-is-not-broken/',
+                'https://medium.com/geekculture/madridss-modular-metro-733abaaaf429',
+                'https://blog.filippo.io/professional-maintainers/',
+                'https://christine.website/blog/open-source-broken-2021-12-11',
+                'https://solar.lowtechmagazine.com/power.html',
+                'https://nakedsecurity.sophos.com/2021/12/13/log4shell-explained-how-it-works-why-you-need-to-know-and-how-to-fix-it/',
+                'https://vaceituno.medium.com/must-read-books-for-cybersecurity-professionals-486f81075c83'
+                'https://georgecouros.ca/blog/archives/13412', 
+                'https://ariadne.space/2021/12/11/to-secure-the-supply-chain-you-must-properly-fund-it/',
+                'https://aws.amazon.com/message/12721/',
+                ]
+        site.setChannel('links')
+        for link in links:
+            site.publishPost('', link, '')
+        return
 
-    print("Testing title and link")
+    testingPosts = True
+    if testingPosts:
+        print("Testing posts")
+        site.setPostsType("posts")
+        site.setPosts()
 
-    for i, post in enumerate(site.getPosts()):
-        print(f"Post: {post}")
-        title = site.getPostTitle(post)
-        link = site.getPostLink(post)
-        url = site.getPostUrl(post)
-        theId = site.getPostId(post)
-        summary = site.getPostContentHtml(post)
-        image = site.getPostImage(post)
-        print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
-        print(f"{i}) Content: {summary} {image}\n")
-    return
+        print("Testing title and link")
+
+        for i, post in enumerate(site.getPosts()):
+            print(f"Post: {post}")
+            title = site.getPostTitle(post)
+            link = site.getPostLink(post)
+            url = site.getPostUrl(post)
+            theId = site.getPostId(post)
+            summary = site.getPostContentHtml(post)
+            image = site.getPostImage(post)
+            print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
+            print(f"{i}) Content: {summary} {image}\n")
+            return
+        return
+
+    testingDeleteLast = False
+    if testingDeleteLast:
+        site.setPostsType("posts")
+        site.setPosts()
+        print(f"Testing delete last")
+        post = site.getPosts()[0]
+        input(f"Delete {site.getPostTitle(post)}? ")
+        site.delete(0)
+        return
+        
 
     testingDelete = False
     if testingDelete:
