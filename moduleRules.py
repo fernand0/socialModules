@@ -59,8 +59,6 @@ class moduleRules:
         if not apiSrc.getPostsType():
             apiSrc.setPostsType('posts')
 
-        # apiSrc.setPosts()
-
         return apiSrc
 
     def readConfigDst(self, indent, action, more, apiSrc):
@@ -236,14 +234,13 @@ class moduleRules:
 
         apiSrc = self.readConfigSrc(indent, src, more)
         if (apiSrc.getHold() == 'yes'):
-            return "OK. In hold"
+            return f"{indent} In hold"
         if not apiSrc.getClient():
             msgLog = (f"{indent}Error. No client for {src[2]} ({src[3]})")
             logMsg(msgLog, 1, 1)
             return f"End: {msgLog}"
 
         apiSrc.setPosts()
-
 
         # print(f"apiSrc: {apiSrc}")
         # print(f"action: {action}")

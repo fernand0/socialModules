@@ -80,8 +80,8 @@ class moduleLinkedin(Content):
         author = f"urn:li:person:{urn}"
         author = urllib.parse.quote(author)
         posts = []
-        #posts =  self.getClient().get_posts(urn=self.URN)
-        print(posts)
+        # posts =  self.getClient().get_posts(urn=self.URN)
+        # print(posts)
         #url = 'https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List({})&sortBy=LAST_MODIFIED'.format(author)
 
         #access_token = self.client.authentication.token.access_token
@@ -90,7 +90,7 @@ class moduleLinkedin(Content):
         #   'Authorization': f'Bearer {access_token}'}
 
         #posts = requests.get(url,headers=headers,data={'q':author})
-        print(posts)
+        # print(posts)
         return posts
 
     def processReply(self, reply):

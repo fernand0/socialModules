@@ -176,7 +176,7 @@ class moduleGmail(Content,Queue):
     def getListLabel(self, label):
         api = self.getClient()
         list_labels = [ label, ]
-        print(list_labels)
+        logging.info(list_labels)
         response = api.users().messages().list(userId='me', 
                                                q='before:2021/4/1 is:unread',
                                                labelIds=list_labels).execute()
@@ -186,8 +186,8 @@ class moduleGmail(Content,Queue):
         api = self.getClient()
         list_labels = {'removeLabelIds': [oldLabelId, ], 
                 'addLabelIds': [labelId, ]}
-        print(list_labels)
-        print(message)
+        logging.info(list_labels)
+        # print(message)
         
         message = api.users().messages().modify(userId='me', id=message['id'],
                                                 body=list_labels).execute()

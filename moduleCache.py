@@ -383,7 +383,6 @@ class moduleCache(Content,Queue):
                     f"in {self.service}")
         try:
             post = apiSrc.getNextPost()
-            print(f"posttt: {post}")
             if post:
                 res = self.publishApiPost(api=self, post=post)
                 reply = self.processReply(res)
@@ -481,7 +480,6 @@ class moduleCache(Content,Queue):
     def deleteApi(self, j):
         logging.info(f"Deleting: {j}")
         posts = self.getPosts()
-        print(f"ccc: {posts}")
         posts = posts[:j] + posts[j+1:]
         self.assignPosts(posts)
         # FIXME: Using two cache files, for compatibiiity with old version

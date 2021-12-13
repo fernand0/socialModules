@@ -814,7 +814,6 @@ class Content:
             post = apiSrc.getNextPost()
             if post:
                 logging.info(f"Publishing: {post}")
-                print(f"Publishing: {post}")
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
                 comment= ''
