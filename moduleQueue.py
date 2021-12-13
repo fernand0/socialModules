@@ -106,18 +106,14 @@ class Queue:
         logging.info("Reply: %s"%reply)
         return(reply)
 
+    #FIXME should we put here related commands or move this one to moduleContent?
     def show(self, j):
         if j < len(self.getPosts()):
             logging.info("To show post %d" % j)
 
-            try:
-                (title, link, firstLink, image, summary, summaryHtml, 
-                    summaryLinks, content, links, 
-                    comment) = self.obtainPostData(j)
-            except:
-                (title, link, firstLink, image, summary, summaryHtml, 
-                    summaryLinks, content, #links, 
-                    comment) = self.obtainPostData(j)
+            post = self.getPosts()[j]
+            title = self.getPostTitle(post)
+            link = self.getPostLink(post)
 
             reply = ''
             logging.info("title %s"%title)
