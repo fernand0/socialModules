@@ -267,10 +267,28 @@ class moduleCache(Content,Queue):
         return 'Ok'
 
     def updatePostsCache(self):
-        fileNameQ = fileNamePath(self.url,
-                (self.socialNetwork, self.nick)) + ".queue"
+        # fileNameQ = fileNamePath(self.url,
+        #         (self.socialNetwork, self.nick)) + ".queue"
+        fileNameQ = ''
+        url = self.getUrl()
+        service = self.getService()
+        nick = self.getNick()
 
-        with open(fileNameQ, 'wb') as f:
+        if hasattr(self, 'fileName'):
+            fileNameQ = self.fileName
+        elif hasattr(self, "socialNetwork"):
+            service = self.socialNetwork
+            nick = self.nick
+        else:
+            service = self.getService()
+            nick = self.getUser()
+
+        logging.debug(f"Url: {url} service {service} nick {nick}")
+        print(f"fileNameQ: {fileNameQ}")
+
+        logging.debug("File: %s" % fileNameQ)
+
+        with open(fileNameQ+'.queue', 'wb') as f:
             posts = self.getPosts()
             pickle.dump(posts, f)
 
@@ -301,8 +319,7 @@ class moduleCache(Content,Queue):
 
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
-    def getPostTitle(self, post):
-        title = ''
+    def setPostTitle(self, post, newTitle):
         if post:
             if hasattr(self, 'auxClass'):
                 myModule = f"module{self.auxClass.capitalize()}"
@@ -311,6 +328,27 @@ class moduleCache(Content,Queue):
                 mod = sys.modules.get(myModule)
                 cls = getattr(mod, myModule)
                 api = cls()
+                apiCmd = getattr(api, 'setPostTitle')
+                post  = apiCmd(post, newTitle)
+            # else:
+            #     # Old style
+            #     title = post[0]
+            return post
+ 
+    def getPostTitle(self, post):
+        title = ''
+        if post:
+            if hasattr(self, 'auxClass'):
+                print(f"auxClass type: {type(self.auxClass)}")
+                if isinstance(self.auxClass, str):
+                    myModule = f"module{self.auxClass.capitalize()}"
+                    import importlib
+                    importlib.import_module(myModule)
+                    mod = sys.modules.get(myModule)
+                    cls = getattr(mod, myModule)
+                    api = cls()
+                else:
+                    api = self.auxClass
                 apiCmd = getattr(api, 'getPostTitle')
                 title  = apiCmd(post)
             else:
@@ -322,12 +360,15 @@ class moduleCache(Content,Queue):
         link = ''
         if post:
             if hasattr(self, 'auxClass'):
-                myModule = f"module{self.auxClass.capitalize()}"
-                import importlib
-                importlib.import_module(myModule)
-                mod = sys.modules.get(myModule)
-                cls = getattr(mod, myModule)
-                api = cls()
+                if isinstance(self.auxClass, str):
+                    myModule = f"module{self.auxClass.capitalize()}"
+                    import importlib
+                    importlib.import_module(myModule)
+                    mod = sys.modules.get(myModule)
+                    cls = getattr(mod, myModule)
+                    api = cls()
+                else:
+                    api = self.auxClass
                 apiCmd = getattr(api, 'getPostLink')
                 link = apiCmd(post)
             else:
@@ -336,8 +377,18 @@ class moduleCache(Content,Queue):
 
     def getPostContentHtml(self, post):
         content = ''
-        if post:
-            content = post[4]
+        if post: 
+            if hasattr(self, 'auxClass'):
+                myModule = f"module{self.auxClass.capitalize()}"
+                import importlib
+                importlib.import_module(myModule)
+                mod = sys.modules.get(myModule)
+                cls = getattr(mod, myModule)
+                api = cls()
+                apiCmd = getattr(api, 'getPostContentHtml')
+                content  = apiCmd(post)
+            else:
+                content = post[4]
         return content
 
     def editApiLink(self, post, newLink=''):
@@ -357,10 +408,13 @@ class moduleCache(Content,Queue):
         oldTitle = self.getPostTitle(post)
         if not newTitle:
             newTitle = self.reorderTitle(oldTitle)
-        post = (newTitle,) + post[1:]
-        posts = self.getPosts()
-        posts[idPost] = post
-        self.assignPosts(posts)
+        self.setPostTitle(post, newTitle)
+        logging.info(f"New post: {post}")
+        logging.info(f"New post: {self.getPost(idPost)}")
+        # post = (newTitle,) + post[1:]
+        # posts = self.getPosts()
+        # posts[idPost] = post
+        # self.assignPosts(posts)
         self.updatePostsCache()
         return(idPost)
 
@@ -394,7 +448,7 @@ class moduleCache(Content,Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        print(f"->publishApiPost: *{args}*")
+        #print(f"->publishApiPost: *{args}*")
         if args and len(args)==3:
             title, link, comment = args
         if kwargs:
@@ -445,7 +499,7 @@ class moduleCache(Content,Queue):
         self.deleteApi(i)
         return f"OK. Deleted post {i}"
 
-    def publish(self, j):
+    def publishh(self, j):
         logging.info(">>>Publishing %d"% j)
         post = self.obtainPostData(j)
         logging.info(">>>Publishing {post[0]} in {self.service} user {self.nick}")
@@ -524,76 +578,174 @@ def main():
             level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
-    import moduleCache
+    testingFiles = True
+    if testingFiles:
+        import moduleCache
+    
+        queues = []
+        for fN in os.listdir(f"{DATADIR}"):
+            if (fN[0].isupper() and fN.find('queue')>=0):
+                queues.append(fN)
+    
+        for i, fN in enumerate(queues):
+            print(f"{i}) {fN}")
+    
+        sel = input('Select one ')
+    
+        fN = queues[int(sel)]
+        try:
+            url, sN, nick = fN.split('_')
+            nick = nick[:-len('.queue')]
+        except:
+            url = ''
+            sN = ''
+            nick = ''
+            sN = fN.split('__')[0]
+            sN = sN.split('_')[-1]
+            myModule = f"module{sN.capitalize()}"
+            print(f"{myModule}")
+            import importlib
+            importlib.import_module(myModule)
+            mod = sys.modules.get(myModule)
+            cls = getattr(mod, myModule)
+            api = cls()
+    
+            apiCmd = getattr(api, 'getPostTitle')
 
-    queues = []
-    for fN in os.listdir(f"{DATADIR}"):
-        if (fN[0].isupper() and fN.find('queue')>=0):
-            queues.append(fN)
+        print(f"url: {url} social network: {sN} nick: {nick}")
+        fNP = f"{DATADIR}/{fN}"
+        import time
+        fileT = time.strftime("%Y-%m-%d %H:%M:%S",
+                time.localtime(os.path.getmtime(fNP)))
+        print(f"File name: {fNP} Date: {fileT}")
 
-    for i, fN in enumerate(queues):
-        print(f"{i}) {fN}")
+        action = input(f"Actions: (D)elete, (S)how (T)itles ")
 
-    sel = input('Select one ')
+        if action.upper()in ['S','T']:
+            url = f"https://{url}/"
 
-    fN = queues[int(sel)]
-    try:
-        url, sN, nick = fN.split('_')
-        nick = nick[:-len('.queue')]
-    except:
-        url = ''
-        sN = ''
-        nick = ''
-        sN = fN.split('__')[0]
-        sN = sN.split('_')[-1]
-        myModule = f"module{sN.capitalize()}"
-        print(f"{myModule}")
-        import importlib
-        importlib.import_module(myModule)
-        mod = sys.modules.get(myModule)
-        cls = getattr(mod, myModule)
-        api = cls()
+            site = moduleCache.moduleCache()
+            site.setClient((url, (sN, nick)))
+            site.setPosts()
+            posts = site.getPosts()
+            if not posts:
+                with open(fNP,'rb') as f:
+                    try:
+                        listP = pickle.load(f)
+                    except:
+                        listP = []
+                posts = listP
 
-        apiCmd = getattr(api, 'getPostTitle')
+            print()
+            if action.upper() == 'T':
+                [ print(f"{i}) {apiCmd(post)}") for i, post in enumerate(posts) ]
+            else:
+                print(posts)
+            print()
+        elif action.upper() in ['D']:
+            fileDelete = f"{fNP}"
+            ok = input(f"I'll delete {fileDelete} ")
+            os.remove(fileDelete)
+        return
 
+    dataSources = {'S0': {'sn':'slack', 
+                            'nick':'http://fernand0-errbot.slack.com/'},
+                   'G0': {'sn':'gitter', 
+                            'nick':'https://gitter.im/fernand0errbot/'},
+        }
+ 
+    dataCaches = {'S0': {'sn':'slack', 'nick':'http://fernand0-errbot.slack.com/'},
+                  'H0': {'sn':'linkedin', 'nick':'Fernando Tricas'},
+                  'H1': {'sn':'twitter', 'nick':'fernand0'},
+                  'H2': {'sn':'facebook', 'nick':'Enlaces de fernand0'},
+                  'H3': {'sn':'mastodon', 'nick':'@fernand0@mastodon.social'},
+                  'H4': {'sn':'tumblr', 'nick':'fernand0'},
+                  'H5': {'sn':'imgur', 'nick':'ftricas'},
+                  'H6': {'sn':'twitter', 'nick':'fernand0Test'},
+                  'H7': {'sn':'facebook', 'nick':'Fernand0Test'},
+                  'H8': {'sn':'telegram', 'nick':'testFernand0'},
+                  }
 
-    print(f"url: {url} social network: {sN} nick: {nick}")
-    fNP = f"{DATADIR}/{fN}"
-    import time
-    fileT = time.strftime("%Y-%m-%d %H:%M:%S",
-            time.localtime(os.path.getmtime(fNP)))
-    print(f"File name: {fNP} Date: {fileT}")
-
-    action = input(f"Actions: (D)elete, (S)how (T)itles ")
-
-    if action.upper()in ['S','T']:
-        url = f"https://{url}/"
-
-        site = moduleCache.moduleCache()
-        site.setClient((url, (sN, nick)))
+    testingPublishPos = False
+    if testingPublishPos:
+        url = 'http://fernand0-errbot.slack.com/'
+        cache = input("Which source? ").capitalize()
+        nickDst = dataSources[cache]['nick']
+        snDst = dataSources[cache]['sn']
+        site = getApi(snDst, nickDst)
         site.setPosts()
+        [ print(f"{i}) {site.getPostTitle(post)}") 
+                for i, post in enumerate(site.getPosts()) ]
+        pos = int(input("Which post? "))
+        for cache in dataCaches.keys():
+            print(f"Cache: {cache}) - {dataCaches[cache]}")
+            reply = input("Publish? ")
+            if reply != 'y':
+                continue
+            nickDst = dataCaches[cache]['nick']
+            snDst = dataCaches[cache]['sn']
+            siteDst = getApi('cache', (site, (snDst, nickDst)))
+            siteDst.socialNetwork = snDst
+            siteDst.nick = nickDst
+            siteDst.setPostsType('posts')
+            siteDst.setPosts()
+            siteDst.publishPosPost(site, pos)
+        return
+
+    testingEditPos = True
+
+    if testingEditPos:
+        cache = input("Which cache? ").capitalize()
+        url = 'http://fernand0-errbot.slack.com/'
+        nickDst = dataCaches[cache]['nick']
+        snDst = dataCaches[cache]['sn']
+        print(nickDst,snDst)
+        url = 'http://fernand0-errbot.slack.com/'
+        siteDst = getApi(snDst, nickDst)
+        if hasattr(siteDst, 'setPage'):
+            siteDst.setPage(nickDst)
+        site = getApi('cache', ('slack', url, f"{snDst}@{nickDst}"))
+        site.socialNetwork = snDst
+        site.nick = nickDst
+        site.setPostsType('posts')
+        site.auxClass = 'slack'
+        site.setPosts()
+
+        [ print(f"{i}) {site.getPostTitle(post)}") 
+                for i, post in enumerate(site.getPosts()) ]
+        pos = int(input("Which post? "))
+        post = site.getPost(pos)
+        print(post)
+        newTitle = input("New title? ")
+        newPost = site.editApiTitle(post, newTitle)
         posts = site.getPosts()
-        if not posts:
-            with open(fNP,'rb') as f:
-                try:
-                    listP = pickle.load(f)
-                except:
-                    listP = []
-            posts = listP
+        posts[pos] = newPost
+        print(f"new: {newPost}")
+        site.assignPosts(posts)
+        print(site.updatePostsCache())
 
-        print()
-        if action.upper() == 'T':
-            [ print(f"{i}) {apiCmd(post)}") for i, post in enumerate(posts) ]
-        else:
-            print(posts)
-        print()
-    elif action.upper() in ['D']:
-        fileDelete = f"{fNP}"
-        ok = input(f"I'll delete {fileDelete} ")
-        os.remove(fileDelete)
+        return
 
 
-    return
+    testingPublishPos = True
+
+    if testingPublishPos:
+        snDst = 'facebook'
+        nickDst = 'Enlaces de fernand0'
+        url = 'http://fernand0-errbot.slack.com/'
+        siteDst = getApi(snDst, nickDst)
+        siteDst.setPage(nickDst)
+        site = getApi('cache', ('slack', url, f"{snDst}@{nickDst}"))
+        site.socialNetwork = snDst
+        site.nick = nickDst
+        site.setPostsType('posts')
+        site.auxClass = 'slack'
+        site.setPosts()
+        pos = int(input("Which post? "))
+        print(siteDst.publishPosPost(site, pos))
+
+        return
+
 
     try:
         config = configparser.ConfigParser()

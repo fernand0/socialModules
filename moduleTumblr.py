@@ -204,7 +204,7 @@ class moduleTumblr(Content, Queue):
 
         return(res)
 
-    def publish(self, j):
+    def publishh(self, j):
         # This is not publishing but changing state -> editing
         logging.info(f"Publishing {j}")
         logging.info(f"servicename {self.service}")

@@ -97,6 +97,9 @@ class moduleImgur(Content, Queue):
         # 'ids' parameter is optional but in the Python package check for it
         return self.getClient().update_album(idPost, fields)
 
+    def setPostTitle(self, post, newTitle):
+        post.title = newTitle
+
     def getPostTitle(self, post):
         return post.title
 
@@ -156,7 +159,8 @@ class moduleImgur(Content, Queue):
         res = ''
         if reply:
             if not ('Fail!' in reply):
-                idPost = self.getPostId(reply)
+                logging.info(f"Reply: {reply}")
+                # idPost = reply.get('id','')
                 # title = reply.get('title')
                 res = f"Published {reply}"
             else:
@@ -212,51 +216,6 @@ class moduleImgur(Content, Queue):
             return(self.report('Imgur', post, idPost, sys.exc_info()))
 
         return(FAIL)
-
-    # def publish(self, j):
-    #     logging.info(f"Publishing {j}")
-    #     logging.info(f"servicename {self.service}")
-    #     (title, link, firstLink, image, summary, summaryHtml,
-    #      summaryLinks, content, links, comment) = self.obtainPostData(j)
-    #     logging.info(f"Publishing {title} {link}")
-    #     idPost = link
-    #     logging.info(f"Publishing {title} {idPost}")
-    #     logging.info(f"Publishing getP {self.getProgram()}")
-
-    #     if self.getProgram():
-    #         logging.info("getProgram")
-    #         for profile in self.getSocialNetworks():
-    #             nick = self.getSocialNetworks()[profile]
-    #             logging.info(f"Social: {profile} Nick: {nick}")
-    #             if ((profile[0] in self.getProgram()) or
-    #                     (profile in self.getProgram())):
-    #                 logging.info(f"Social: {profile} Nick: {nick}")
-    #                 lenMax = self.len(profile)
-    #                 socialNetwork = (profile, nick)
-
-    #                 listP = self.cache[socialNetwork].setPosts()
-    #                 listP = self.cache[socialNetwork].getPosts()
-    #                 listPsts = self.obtainPostData(j)
-    #                 listP = listP + [listPsts]
-    #                 self.cache[socialNetwork].posts = listP
-    #                 update = (update
-    #                           + self.cache[socialNetwork].updatePostsCache())
-    #                 logging.info(f"Update: {update}")
-    #                 update = update + '\n'
-    #         return update
-    #     else:
-    #         api = self.getClient()
-    #         try:
-    #             res = api.share_on_imgur(idPost, title, terms=0)
-    #             logging.info("Res: %s" % res)
-    #             return(res)
-    #         except:
-    #             post = title
-    #             link = idPost
-    #             logging.info(self.report('Imgur', post,
-    #                                      link, sys.exc_info()))
-    #             return(FAIL)
-    #     return("%s"% title)
 
     def delete(self, j):
         logging.info(f"Deleting {j}")
@@ -391,7 +350,7 @@ def main():
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs')
 
-    testingDrafts = False
+    testingDrafts = True
     if testingDrafts:
         img = moduleImgur.moduleImgur()
         acc = "Blog20"
@@ -409,7 +368,9 @@ def main():
         print(listPosts)
         listPosts2 = img.getNumNextPost(1)
         print(listPosts2)
-        print(f"{img.getPostTitle(img.getNextPost()[0])}")
+        print(f"post: {img.getNextPost()}")
+        print(f"Title: {img.getPostTitle(img.getNextPost())}")
+        return
 
 
 

@@ -28,18 +28,36 @@ class moduleTwitter(Content,Queue):
             CONSUMER_SECRET = config.get(self.user, "CONSUMER_SECRET")
         except:
             CONSUMER_SECRET = config.get("appKeys", "CONSUMER_SECRET")
+        try:
+            BEARER_TOKEN = config.get(self.user, "BEARER_TOKEN")
+        except:
+            BEARER_TOKEN = ""
+
         TOKEN_KEY = config.get(self.user, "TOKEN_KEY")
         TOKEN_SECRET = config.get(self.user, "TOKEN_SECRET")
-        return(CONSUMER_KEY, CONSUMER_SECRET, TOKEN_KEY, TOKEN_SECRET)
+        return (CONSUMER_KEY, CONSUMER_SECRET, TOKEN_KEY, TOKEN_SECRET, BEARER_TOKEN)
 
     def initApi(self, keys):
         # self.service = 'twitter'
         self.url = f"https://twitter.com/{self.user}"
-        self.authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
+        # if keys[4]:
+        #     logging.info(f"Bearer")
+        #     self.authentication = OAuth2(keys[0], keys[1], keys[4])
+        # else:
+        if True:
+            logging.info(f"Oauth")
+            self.authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
         client = Twitter(auth=self.authentication)
+        # print(f"user: {self.user}")
+        # print(f"client: {client}")
+        # print(f"client: {dir(client)}")
+        # print(f"statuses: {dir(client.statuses)}")
+        # print(f"Posting: {client.statuses.update(status='Prueba')}")
+        # print(f"statuses: {client.statuses.home_timeline()}")
         return client
 
     def setApiPosts(self):
+        # posts = self.getClient().getStatuses(count=100)
         posts = self.getClient().statuses.user_timeline(count=100)
         #posts = self.getClient().statuses.user_timeline(_id='fernand0')
         return posts
@@ -102,50 +120,61 @@ class moduleTwitter(Content,Queue):
         if kwargs:
             more = kwargs
             tweet = more['post']
+            link = self.getPostLink(tweet)
             idPost = self.getPostId(tweet)
 
         logging.debug("     Retweeting: %s" % post)
         res = 'Fail!'
-        try:
-            res = self.getClient().statuses.retweet._id(_id=idPost)
-            #         result = t.statuses.retweet._id(_id=tweet['id'])
-        except twitter.api.TwitterHTTPError as twittererror:
-            for error in twittererror.response_data.get("errors", []):
-                logging.info("      Error code: %s" % error.get("code", None))
-            res = self.report('Twitter', post, link, sys.exc_info())
+        if 'twitter' in link:
+            try:
+                res = self.getClient().statuses.retweet._id(_id=idPost)
+                #         result = t.statuses.retweet._id(_id=tweet['id'])
+            except twitter.api.TwitterHTTPError as twittererror:
+                for error in twittererror.response_data.get("errors", []):
+                    logging.info("      Error code: %s" % error.get("code", None))
+                res = self.report('Twitter', post, link, sys.exc_info())
+        else:
+            res = "Fail! Link {link} is not a tweet"
 
         return res
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
-            post, link, comment = args
+            title, link, comment = args
         if kwargs:
             more = kwargs
             # FIXME: We need to do something here
-        post = self.addComment(post, comment)
+            post = more.get('post', '')
+            api = more.get('api', '')
+            title = self.getPostTitle(post)
+            link = self.getPostLink(post)
+            comment = self.getComment(title)
 
+        title = self.addComment(title, comment)
+        
         res = 'Fail!'
         # post = post[:(240 - (len(link) + 1))]
         if link and ('twitter' in link):
             # If the link is a tweet, we will retweet.
-            res = self.publishApiRT(post, link, comment)
+            res = self.publishApiRT(title, link, comment)
         else:
             if link:
-                post = post[:(240 - (23 + 1))]
-                post = post+" " + link
+                title = title[:(240 - (23 + 1))]
+                title = title+" " + link
 
             # https://help.twitter.com/en/using-twitter/how-to-tweet-a-link
             # A URL of any length will be altered to 23 characters, even if the
             # link itself is less than 23 characters long. Your character count
             # will reflect this.
 
-            logging.debug("     Publishing: %s" % post)
+            logging.debug("     Publishing: %s" % title)
             try:
-                res = self.getClient().statuses.update(status=post)
+                res = self.getClient().statuses.update(status=title)
             except twitter.api.TwitterHTTPError as twittererror:
                 for error in twittererror.response_data.get("errors", []):
                     logging.info("      Error code: %s" % error.get("code", None))
-                res = self.report('Twitter', post, link, sys.exc_info())
+                res = self.report('Twitter', title, link, sys.exc_info())
+                res = f"Fail! {res}"
 
         return res
 
@@ -267,13 +296,28 @@ def main():
             format='%(asctime)s %(message)s')
 
     import moduleTwitter
-    tw = moduleTwitter.moduleTwitter()
 
-    tw.setClient('fernand0Test')
+    testingPosts = True
+    if testingPosts:
+        print("Testing Posts")
+        tw = moduleTwitter.moduleTwitter()
+        tw.setClient('fernand0')
+        tw.setPostsType('posts')
+        tw.setPosts()
+        tweet = tw.getPosts()[0]
+        tweet = tw.getNextPost()
+        print(tweet)
+        print(f" -Title {tw.getPostTitle(tweet)}")
+        print(f" -Link {tw.getPostLink(tweet)}")
+        print(f" -Content link {tw.getPostContentLink(tweet)}")
+        print(f" -Post link {tw.extractPostLinks(tweet)}")
+        return
 
-    testingFav = True
+
+    testingFav = False
     if testingFav:
         print("Testing Fav")
+        tw = moduleTwitter.moduleTwitter()
         tw.setClient('fernand0')
         tw.setPostsType('favs')
         tw.setPosts()
@@ -284,23 +328,23 @@ def main():
         print(f" -Link {tw.getPostLink(tweet)}")
         print(f" -Content link {tw.getPostContentLink(tweet)}")
         print(f" -Post link {tw.extractPostLinks(tweet)}")
-        sys.exit()
+        return
 
-    testingPost = False
+    testingPost = True
     if testingPost:
         print("Testing Post")
+        tw = moduleTwitter.moduleTwitter()
+        tw.setClient('fernand0Test')
         title = "Test"
         link = "https://twitter.com/fernand0Test"
         tw.publishPost(title, link, '')
         return
 
-    testingPostImages = True
+    testingPostImages = False
     if testingPostImages:
         image = '/tmp/E8dCZoWWQAgDWqX.png'
         title = 'Prueba imagen'
         tw.publishImage(title, image)
-
-
         return
 
     testingRT = False

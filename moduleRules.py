@@ -132,17 +132,20 @@ class moduleRules:
         else:
             print(f"{indent}No listPosts2")
 
-    def executePublishAction(self, indent, msgAction,
-                            apiSrc, apiDst, simmulate):
+    def executePublishAction(self, indent, msgAction, apiSrc, apiDst, 
+                            simmulate, nextPost=True, pos=-1):
         res = ''
 
-        msgLog = (f"{indent}Go!\n"
-                  f"{indent}└-> Action: {msgAction}")
+        msgLog = (f"{indent}Go! Action: {msgAction}")
         logMsg(msgLog, 1, 1)
 
         # The source of data can have changes while we were waiting
         apiSrc.setPosts()
-        post = apiSrc.getNextPost()
+        if nextPost:
+            # FIXME is  this needed?
+            post = apiSrc.getNextPost()
+        else:
+            post = apiSrc.getPost(pos)
 
         if post:
             msgLog = f"{indent}Would schedule in {msgAction} ..."
@@ -159,13 +162,17 @@ class moduleRules:
         resMsg = ''
         postaction = ''
         if not simmulate:
-            res = apiDst.publishNextPost(apiSrc)
+            if nextPost:
+                res = apiDst.publishNextPost(apiSrc)
+            else:
+                res = apiDst.publishPosPost(apiSrc, pos)
             resMsg = f"Publish: {res}\n"
             # print(f"{indent}res: {res}")
-            if ((not res) or ('SAVELINK' in res)
-                    or not ('Fail!' in res)):
+            if (nextPost and 
+                    ((not res) or ('SAVELINK' in res) or not ('Fail!' in res))):
                 resUpdate = apiSrc.updateLastLink(apiDst, '')
-                resMsg += f"Update: {resUpdate}\n"
+                resMsg += f"Update: {resUpdate}"
+            if ((not res) or ('SAVELINK' in res) or not ('Fail!' in res)):
                 postaction = apiSrc.getPostAction()
                 if postaction:
                     msgLog = (f"{indent}Post Action {postaction}")
@@ -194,7 +201,7 @@ class moduleRules:
                     resMsg += f"{msgLog}\n"
                     # fN = fileNamePath(apiDst.getUrl(), socialNetwork)
                     # msgLog = (f"{indent}in file ", f"{fN}.last")
-                    logMsg(msgLog, 1, 1)
+                    # logMsg(msgLog, 1, 1)
                     msgLog = (f"{indent}in file "
                               f"{apiSrc.fileNameBase(apiDst)}.last")
                     logMsg(msgLog, 1, 1)
@@ -209,7 +216,8 @@ class moduleRules:
 
 
     def executeAction(self, src, more, action,
-                    noWait, timeSlots, simmulate, name=""):
+                    noWait, timeSlots, simmulate, name="",
+                    nextPost = True, pos = -1, delete=False):
 
         sys.path.append(path)
         from configMod import logMsg
@@ -234,7 +242,10 @@ class moduleRules:
 
         apiSrc = self.readConfigSrc(indent, src, more)
         if (apiSrc.getHold() == 'yes'):
-            return f"{indent} In hold"
+            time.sleep(1)
+            msgHold = f"{indent} In hold"
+            logging.info(msgHold)
+            return msgHold
         if not apiSrc.getClient():
             msgLog = (f"{indent}Error. No client for {src[2]} ({src[3]})")
             logMsg(msgLog, 1, 1)
@@ -262,11 +273,10 @@ class moduleRules:
             and (apiDst.getPostsType()[:-1] != action[1])
             and (action[0] != 'cache')):
             # FIXME: Can we do better?
-            return
+            return f"{indent}{action}"
 
         apiDst.setPosts()
         #FIXME: Is it always needed? Only in caches?
-
 
         indent = f"{indent} "
 
@@ -275,21 +285,24 @@ class moduleRules:
         lastLink = apiSrc.getLastLinkPublished()
         lastTime = apiSrc.getLastTimePublished()
 
+        time.sleep(1)
         if lastLink:
-            msgLog = (f"{indent}Last link: {lastLink}")
-            logMsg(msgLog, 1, 1)
+            msgLog = (f"Last link: {lastLink} ")
+            logMsg(f"{indent}{msgLog}", 1, 1)
 
+        msgLog = ''
         if lastTime:
             myTime = time.strftime("%Y-%m-%d %H:%M:%S",
                                     time.localtime(lastTime))
 
-            msgLog = (f"{indent}Last time: {myTime}")
-            logMsg(msgLog, 1, 1)
+            msgLog = (f"{msgLog}Last time: {myTime}")
 
-        num = apiDst.getMax()
+        if nextPost:
+            num = apiDst.getMax()
+        else:
+            num = 1
 
-
-        msgLog = (f"{indent}num: {num}")
+        msgLog = (f"{indent}{msgLog} Num: {num}")
         logMsg(msgLog, 1, 1)
 
         listPosts = []
@@ -320,7 +333,8 @@ class moduleRules:
             if (noWait or (diffTime>hours)):
                 tSleep = random.random()*float(timeSlots)*60
 
-                apiSrc.setNextTime(tNow, tSleep, apiDst)
+                if num>0:
+                    apiSrc.setNextTime(tNow, tSleep, apiDst)
 
                 if (tSleep>0.0):
                     msgLog= f"{indent}Waiting {tSleep/60:2.2f} minutes"
@@ -333,17 +347,22 @@ class moduleRules:
 
                 for i in range(num):
                     time.sleep(tSleep)
-                    self.executePublishAction(indent, msgAction, apiSrc,
+                    if nextPost:
+                        self.executePublishAction(indent, msgAction, apiSrc,
                                                 apiDst, simmulate)
-
+                    else:
+                        self.executePublishAction(indent, msgAction, apiSrc,
+                                                apiDst, simmulate, 
+                                                nextPost, pos)
 
 
 
             elif (diffTime<=hours):
-                msgLog = (f"{indent}Not enough time passed. "
+                msgLog = (f"Not enough time passed. "
                           f"We will wait at least "
                           f"{(hours-diffTime)/(60*60):2.2f} hours.")
-                logMsg(msgLog, 1, 1)
+                # logMsg(msgLog, 1, 1)
+                textEnd = f"{textEnd}{msgLog}"
 
         else:
             if (num<=0):
@@ -503,8 +522,8 @@ class moduleRules:
 
                 time.sleep(tSleep)
 
-                msgLog = (f"{indent}Go!\n"
-                          f"{indent}└-> Action: {msgAction}")
+                msgLog = (f"{indent}Go! "
+                          f"Action: {msgAction}")
                 logMsg(msgLog, 1, 1)
 
                 # The source of data can have changes while we were waiting
@@ -1168,7 +1187,7 @@ class moduleRules:
                         actionMsg = f"Skip."
                     else:
                         actionMsg = (f"Scheduling...")
-                    nameA = f"{name} {actionMsg} ({action[1]})"
+                    nameA = f"{name} {actionMsg} "
                     msgLog = (f"{nameA} {text} Action {k}:"
                               f" {action[3]}@{action[2]} ({action[1]})")
                     textEnd = f"{textEnd}\n{msgLog}"

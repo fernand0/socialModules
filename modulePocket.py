@@ -65,7 +65,7 @@ class modulePocket(Content,Queue):
         res = self.getClient().add(link)
         return self.processReply(res)
 
-    def publish(self, j):
+    def publishh(self, j):
         # This does not belong here
         logging.info("...Publishing %d"% j)
         #post = self.obtainPostData(j)

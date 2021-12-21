@@ -61,22 +61,22 @@ class Queue:
         return (self.extractDataMessage(i))
 
     def selectAndExecute(self, command, args):
-        logging.info("Selecting %s" % args)
-        print("Selecting %s" % args)
+        # FIXME Does this go here?
+        logging.info(f"Selecting {command} with {args} in {self.getService()}")
         argsCont = ''
         pos = args.find(' ')
         j = -1
         if pos > 0: 
             argsIni = args[:pos]
             argsCont = args[pos+1:]
-            logging.info("Args {}-{}".format(argsIni, argsCont))
+            logging.debug(f"Args {argsIni}-{argsCont}")
             if (argsCont and len(argsCont)>1): 
                 if argsCont[0].isdigit() and (argsCont[1] == ' '): 
                     j = int(argsCont[0])
                     argsCont = argsCont[2:]
         else: 
             argsIni = args
-            logging.info("Args {}".format(argsIni))
+            logging.info(f"Args {argsIni}")
 
         pos = argsIni.find('*')
         if pos == 0: 
@@ -88,11 +88,12 @@ class Queue:
 
         reply = ""
 
-        logging.info("Service %s", self.service)
         if len(argsIni) > 2:
             j = int(argsIni[2:]) 
-        logging.info(f"Argscont {argsCont} j {j}")
+        logging.debug(f"Argscont {argsCont} j {j}")
+        logging.debug(f"Self: {self}")
         cmd = getattr(self, command)
+        logging.debug(f"Cmd: {cmd}")
         if (j>=0):
             logging.info("Command %s %d"% (command, j))
             if argsCont:
@@ -103,10 +104,11 @@ class Queue:
             logging.info("Missing argument %s %d"% (command, j))
             reply = "Missing argument"
 
-        logging.info("Reply: %s"%reply)
+        logging.info(f"Reply: {reply}")
         return(reply)
 
-    #FIXME should we put here related commands or move this one to moduleContent?
+    #FIXME should we put here related commands or move this one to
+    # moduleContent?  
     def show(self, j):
         if j < len(self.getPosts()):
             logging.info("To show post %d" % j)
@@ -114,6 +116,7 @@ class Queue:
             post = self.getPosts()[j]
             title = self.getPostTitle(post)
             link = self.getPostLink(post)
+            content = ''
 
             reply = ''
             logging.info("title %s"%title)
@@ -129,6 +132,132 @@ class Queue:
             reply = ''
 
         return(reply)
+
+    def publish(self, j):
+        """A command to publish some update"""
+        logging.info(f"To publish post {j}")
+        if j < len(self.getPosts()):
+            post = self.getPost(j)
+            logging.debug(f"Post: {post}")
+            client = self.client
+            logging.debug(f"Clients: {client}")
+            #available = self.available
+            rules = self.rules
+            logging.debug(f"Rules: {rules}")
+
+            logging.info(f"Publishing {args}")
+            RES = ""
+
+            logging.debug(f"Avail: {available}")
+            dst = (
+                available[args[0].lower()]["name"],
+                "set",
+                available[args[0].lower()]["data"][int(args[1])]['src'][1],
+                available[args[0].lower()]["data"][int(args[1])]['src'][2],
+            )
+            src = (dst[0], dst[2])
+            logging.info(f"Src: {src}")
+            logging.info(f"Dst: {dst}")
+            logging.debug(f"Rules: {rules}")
+
+        return post
+
+        # clients = self.clients
+        # logging.debug(f"Clients: {clients}")
+        # available = self.available
+        # rules = self.rules
+
+        # logging.info(f"Publishing {args}")
+        # yield (f"Publishing {args}")
+        # res = ""
+
+        # # yield(f"Avail: {available}")
+        # logging.debug(f"Avail: {available}")
+        # dst = (
+        #     available[args[0].lower()]["name"],
+        #     "set",
+        #     available[args[0].lower()]["data"][int(args[1])]['src'][1],
+        #     available[args[0].lower()]["data"][int(args[1])]['src'][2],
+        # )
+        # src = (dst[0], dst[2])
+        # # yield(f"Src: {src}")
+        # # yield(f"Dst: {dst}")
+        # logging.info(f"Src: {src}")
+        # logging.info(f"Dst: {dst}")
+        # logging.debug(f"Rules: {rules}")
+        # if isinstance(dst[2], tuple):
+        #     nickSn = f"{dst[2][1][0]}@{dst[2][1][1]}"
+        #     dst2 = dst[:2]+ (nickSn,)+('posts', )
+        # else:
+        #     dst2 = dst
+        # logging.debug(f"Dst2: {dst2}")
+        # actions = rules[dst2]
+        # apiSrc = getApi(src[0], src[1])
+        # # yield apiSrc
+        # apiSrc.setPostsType(dst[3])
+        # apiSrc.setPosts()
+        # j = int(args[2:])
+        # post = apiSrc.getPost(j)
+        # title = apiSrc.getPostTitle(post)
+        # link = apiSrc.getPostLink(post)
+        # logging.debug(f"Title: {title}")
+        # logging.debug(f"Link: {link}")
+        # logging.debug(f"Actions: {actions}")
+
+        # published = False
+        # for i, action in enumerate(actions):
+        #     if post: 
+        #         logging.info(f"Action {i}: {action} with post: {post}")
+        #     if action[0] == "cache":
+        #         apiDst = getApi("cache", (src[1], (action[2], action[3])))
+        #         # FIXME
+        #         apiDst.socialNetwork=action[2]
+        #         apiDst.nick=action[3]
+        #         res = apiDst.addPosts(
+        #             [
+        #                 apiSrc.obtainPostData(j),
+        #             ]
+        #         )
+        #     else:
+        #         apiDst = getApi(action[2], action[3])
+        #         apiDst.setPostsType(action[1])
+        #         if 'tumblr' in dst2[0]:
+        #             # Dirty trick. The publishing method checks data which
+        #             # comes from source. Not OK
+        #             apiDst.setPostsType('queue')
+        #         elif 'gmail' in dst2[0]:
+        #             # Needs some working
+        #             apiDst.setPostsType('drafts')
+        #         yield (f"I'll publish {title} - {link} ({action[1]})")
+        #         if not published:
+        #             if hasattr(apiDst, "publishApiPost"):
+        #                 res = apiDst.publishPost(title, link, "")
+        #             else:
+        #                 res = apiDst.publish(j)
+        #             if not ('Fail' in res):
+        #                 published = True
+        #         else:
+        #             res = "Other action published before"
+        #         # res = apiDst.publishPost(title, link, '')
+        #     yield (f"Published, reply: {res}")
+
+        # postaction = apiSrc.getPostAction()
+        # if (not postaction) and (src[0] in ["cache","slack"]):
+        #     # Different from batch process because we do not want the item to
+        #     # reappear in scheduled sending. There can be problems if the link
+        #     # is in some cache.
+        #     postaction = "delete"
+        # logging.debug(f"Post Action {postaction}")
+        # try:
+        #     cmdPost = getattr(apiSrc, postaction)
+        #     yield (f"Post Action: {postaction}")
+        #     res = cmdPost(j)
+        #     yield (f"End {postaction}, reply: {res}")
+        # except:
+        #     res = "No postaction or wrong one"
+        #     yield (res)
+        # yield end()
+
 
     
     #######################################################

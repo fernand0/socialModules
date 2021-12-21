@@ -86,17 +86,6 @@ def main():
 
     rul = None
 
-
-    # rul = ('tumblr', 'set', 'fernand0', 'queue')
-    # rul = ('slack', 'set', 'http://fernand0-errbot.slack.com/', 'posts')
-    # rul = ('slack', 'set', 'http://fernand0-errbot.slack.com/', 'posts')
-    # rul = ('pocket', 'set', '@ftricas', 'posts')
-    # rul = ('cache',  'set',
-    #         ('http://fernand0-errbot.slack.com/', ('tumblr', 'fernand0')),
-    #         'posts')
-    # rul = ('cache',  'set',
-    #         ('http://fernand0-errbot.slack.com/', ('twitter', 'fernand0')),
-    #         'posts')
     if rul:
         apiSrc = getApi(rul[0], rul[2])
         apiSrc.setPostsType(rul[3])

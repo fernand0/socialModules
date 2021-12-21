@@ -112,8 +112,10 @@ class moduleSlack(Content, Queue):
         #return res
 
     def publishApiPost(self, *args, **kwargs):
-        title, link, comment = args
-        more = kwargs
+        if args and len(args) == 3:
+            title, link, comment = args
+        if kwargs:
+            more = kwargs
         chan = self.getChannel()
         if not chan:
             self.setChannel()
@@ -161,6 +163,31 @@ class moduleSlack(Content, Queue):
 
     def getPostId(self, post):
         return (post.get('ts',''))
+
+    def setPostTitle(self, post, newTitle):
+        if ("attachments" in post) and ("title" in post["attachments"][0]):
+            post["attachments"][0]["title"] = newTitle
+        elif "text" in post:
+            text = post["text"]
+            if text.startswith("<"):
+                title = text.split("|")[1]
+                titleParts = title.split(">")
+                title = newTitle
+                if (len(titleParts) > 1) and (titleParts[1].find("<") >= 0):
+                    # There is a link
+                    title = title + ' ' + titleParts[1].split("<")[0]
+            else:
+                pos = text.find("<")
+                if pos>=0:
+                    title = newTitle + ' ' + text[pos:]
+                else:
+                    title = newTitle
+
+            post["text"] = title
+        else:
+            return "No title"
+
+        return post
 
     def getPostTitle(self, post):
         if ("attachments" in post) and ("title" in post["attachments"][0]):
@@ -218,7 +245,7 @@ class moduleSlack(Content, Queue):
     def getPostImage(self, post):
         return post.get('attachments',[{}])[0].get('image_url', '')
 
-    def publish(self, j):
+    def publishh(self, j):
         logging.info("Publishing %d" % j)
         post = self.obtainPostData(j)
         logging.info("Publishing %s" % post[0])

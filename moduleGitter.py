@@ -91,16 +91,22 @@ class moduleGitter(Content,Queue):
     def getPostContentHtml(self, post):
         return post.get('html', '')
 
-    def getPostTitle(self, post):
+    def setPostTitle(self, post, newTitle):
         if 'text' in post:
-            text = post['text']
-            pos = text.rfind('http')
+            pos = post['text'].rfind('http')
+            title = newTitle 
             if pos>=0:
-                return(text[:pos])
-            else:
-                return(text)
-        else:
-            return("")
+                title = title + ' ' + post['text'][pos:]
+            post['text'] = title
+
+    def getPostTitle(self, post):
+        title = ''
+        if 'text' in post:
+            title = post['text']
+            pos = title.rfind('http')
+            if pos>=0:
+                title = title[:pos]
+            return title
 
     def getPostLink(self, post):
         link = ''
@@ -118,6 +124,7 @@ class moduleGitter(Content,Queue):
     #     #idChannel
 
     def getPostId(self, post):
+        logging.info(f"Id: {post}")
         idPost = -1
         if 'id' in post:
             idPost = post['id']
@@ -127,17 +134,34 @@ class moduleGitter(Content,Queue):
         # This does not belong here
         # '/v1/rooms/:roomId/chatMessages/:chatMessageId"
         api_meth  = self.getClient().get_and_update_msg_url(idChannel, idPost)
+        # call = f"https://api.gitter.im/v1/{api_meth}"
         #api_meth = 'rooms/{}/chatMessages/{}'.format(room_id, idPost)
-        print(f"api {api_meth}")
+        logging.info(f"api {api_meth}")
         #result = self.getClient().put(api_meth,data={'text':''})
+        result = self.getClient().messages.get_message(idChannel, idPost)
+        logging.info(f"Result1: {result}")
+        result = self.getClient().get(api_meth)
+        logging.info(f"Result1: {result}")
         result = self.getClient().delete(api_meth)
-        print(f"Result: {result}")
+        logging.info(f"Result: {result}")
         logging.info("Result: {}".format(str(result)))
         return result
+
+    def deleteApiPosts(self, idPost):
+        theChan = self.getChannel()
+        # idChannel = self.getChanId(theChan)
+        logging.info(f"Chan: {theChan}")
+        idChannel = theChan
+        res = self.deletePost(idPost, idChannel)
+        return res
 
     def deletePost(self, idPost, idChannel):
         #theChannel or the name of the channel?
         logging.info("Deleting id %s from %s" % (idPost, idChannel))
+
+        logging.info(f"Chan: {idChannel}")
+        # idChannel = self.getChanId(idChannel)
+        # logging.info(f"Chan: {idChannel}")
 
         try:
             result = self.deleteGitter(idPost, idChannel)
@@ -193,8 +217,8 @@ class moduleGitter(Content,Queue):
         title, link, comment = args
         more = kwargs
         chan = self.getChannel()
-        print(f"Chan: {chan}")
-        result = self.getClient().messages.send(chan, f"{post} {link}")
+        logging.info(f"Chan: {chan}")
+        result = self.getClient().messages.send(chan, f"{title} {link}")
         return(result)
 
     def getBots(self, channel='tavern-of-the-bots'):
@@ -226,8 +250,37 @@ def main():
             level=logging.INFO,
             format='%(asctime)s %(message)s')
 
-
     import moduleGitter
+
+    testingDelete = True
+
+    if testingDelete:
+        CHANNEL = 'Fernando Tricas García'
+        CHANNEL = 'fernand0errbot/links'
+        url = "https://gitter.im/fernand0errbot/fernand0"
+
+        site = moduleGitter.moduleGitter()
+
+        site.setUrl(url)
+        site.setClient(url)
+        site.setChannel(CHANNEL)
+
+        print(site.getClient().check_auth())
+        site.setPosts()
+
+        [ print(f"{i}) {site.getPostTitle(post)}") 
+                for i, post in enumerate(site.getPosts()) ]
+        reply = input("Delete? ")
+        if reply == 'y':
+            posts = site.getPosts()
+            posts.reverse()
+            for post in posts:
+                print(f"Deleting: {site.getPostTitle(post)}")
+                site.deletePost(site.getPostId(post), site.getChannel())
+                return
+
+        return
+
 
     site = moduleGitter.moduleGitter()
 

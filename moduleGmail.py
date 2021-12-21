@@ -178,7 +178,7 @@ class moduleGmail(Content,Queue):
         list_labels = [ label, ]
         logging.info(list_labels)
         response = api.users().messages().list(userId='me', 
-                                               q='before:2021/4/1 is:unread',
+                                               q='before:2021/6/1 is:unread',
                                                labelIds=list_labels).execute()
         return(response)
 
@@ -569,7 +569,7 @@ class moduleGmail(Content,Queue):
     def publishPost(self, j):
         return self.publish(self, j)
 
-    def publish(self, j):
+    def publishh(self, j):
         logging.info("Publishing %d"% j)                
         logging.info("servicename %s" %self.service)
         logging.info(f"type {self.getPostsType()}")

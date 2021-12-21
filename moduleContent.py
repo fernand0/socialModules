@@ -46,8 +46,7 @@ class Content:
         self.hold = None
 
     def setClient(self, account):
-        print(f"    Connecting {self.service}: {account}")
-
+        logging.info(f"    Connecting {self.service}: {account}")
         # print(f"acc: {account}")
         # print(f"tt: {type(account[1])}")
         if isinstance(account, str):
@@ -66,7 +65,7 @@ class Content:
             config = configparser.RawConfigParser()
             config.read(f"{CONFIGDIR}/.rss{self.service}")
             keys = self.getKeys(config)
-            logging.debug(f"keys {keys}")
+            # logging.debug(f"keys {keys}")
 
             try:
                 client = self.initApi(keys)
@@ -210,7 +209,7 @@ class Content:
             link = self.getPostLink(post)
         msgUpdate = f"last link {link} in {self.service}"
         msgLog = f"Updating {msgUpdate}"
-        logMsg(msgLog, 1, 1)
+        logMsg(msgLog, 1, 0)
 
         fileName = f"{self.fileNameBase(dst)}.last"
         with open(fileName, "w") as f:
@@ -806,6 +805,36 @@ class Content:
             reply = self.report(self.service, post, idPost, sys.exc_info())
         return reply
 
+    def publishPosPost(self, apiSrc, pos):
+        reply = ''
+        logging.info(f"    Publishing post in pos {pos} from {apiSrc} in "
+                    f"{self.service}")
+        try:
+            post = apiSrc.getPost(pos)
+            if post:
+                logging.info(f"Publishing: {post}")
+                # title = apiSrc.getPostTitle(post)
+                # link = apiSrc.getPostLink(post)
+
+                # comment= ''
+                nameMethod = 'Post'
+                # if (hasattr(apiSrc, 'getPostsType')
+                #     and (apiSrc.getPostsType())
+                #     and (hasattr(self,
+                #         f"publishApi{apiSrc.getPostsType().capitalize()}"))):
+                #     nameMethod = self.getPostsType().capitalize()
+
+                method = getattr(self, f"publish{nameMethod}")
+                # print(f"method: {method}")
+                res = method(api=apiSrc, post=post)
+                reply = self.processReply(res)
+            else:
+                reply = "Fail! No posts available"
+        except:
+            reply = self.report(self.service, apiSrc, '', sys.exc_info())
+
+        return reply
+
     def publishNextPost(self, apiSrc):
         reply = ''
         logging.info(f"    Publishing next post from {apiSrc} in "
@@ -830,13 +859,12 @@ class Content:
             else:
                 reply = "Fail! No posts available"
         except:
-            reply = self.report(self.service, apiSrc, sys.exc_info())
+            reply = self.report(self.service, apiSrc, method, sys.exc_info())
 
         return reply
 
     def publishPost(self, *args, **more):
-        print(f"publishPost")
-        apiSrc = ''
+        api = ''
         post = ''
         nameMethod = 'Post'
         listPosts = []
@@ -845,7 +873,7 @@ class Content:
             link = args[1]
             comment = args[2]
             logging.info(f"    Publishing post {title} in {self.service}: "
-                         f"{link}")
+                    f"{link} with comment: {comment}")
         elif len(args) == 1:
             # apiSrc= args[0]
             listPosts = args#[1]
@@ -862,17 +890,22 @@ class Content:
             title = ''
             link = ''
             comment = ''
+        if more:
+            print(f"    Publishing in {self.service}: {more}")
+            # if 'tags' in more:
+            #     print(f"    Publishing in {self.service}: {type(more['tags'])}")
+
+            post = more.get('post', '')
+            api = more.get('api', '')
+            title = api.getPostTitle(post)
+            link = api.getPostLink(post)
 
         print(f"    Publishing in {self.service}: {title}")
         print(f"    Publishing in {self.service}:  {link}")
         print(f"    Publishing in {self.service}: {comment}")
-        if more:
-            print(f"    Publishing in {self.service}: {more}")
-            if 'tags' in more:
-                print(f"    Publishing in {self.service}: {type(more['tags'])}")
-
         reply = 'Fail!'
         try:
+            nameMethod = 'Post'
             if (hasattr(self, 'getPostsType')
                     and (self.getPostsType())
                     and (hasattr(self,
@@ -880,12 +913,13 @@ class Content:
                 nameMethod = self.getPostsType().capitalize()
 
             method = getattr(self, f"publishApi{nameMethod}")
+
             if listPosts:
                 for post in listPosts:
-                    reply = method(title, link, comment, api=apiSrc, post=post)
+                    reply = method(title, link, comment, api=api, post=post)
             else:
-                if apiSrc and post:
-                    reply = method(title, link, comment, api=apiSrc, post=post)
+                if api and post:
+                    reply = method(title, link, comment, api=api, post=post)
                 else:
                     reply = method(title, link, comment)
 
@@ -956,6 +990,7 @@ class Content:
             return update
 
     def edit(self, j, newTitle):
+        logging.debug(f"Do edit {j} - {newTitle}")
         update = self.do_edit(j, newTitle=newTitle)
         return update
 

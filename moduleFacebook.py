@@ -99,17 +99,25 @@ class moduleFacebook(Content,Queue):
         return(res)
 
     def publishApiPost(self, *args, **kwargs):
-        post, link, comment = args
+        title, link, comment = args
         plus = kwargs
-        post = self.addComment(post, comment)
+        if plus:
+            apiSrc = plus['api']
+            post = plus['post']
+            title = apiSrc.getPostTitle(post)
+            link = apiSrc.getPostLink(post)
+            comment = ''
 
+        post = self.addComment(title, comment)
 
         if not self.page:
             self.setPage(self.user)
 
+        print(f"... {self.page} .... {self.user}")
+
         res = "Fail!"
         if (not isinstance(self.page, str)):
-            res = self.page.put_object('me', "feed", message=post, link=link)
+            res = self.page.put_object('me', "feed", message=title, link=link)
         return self.processReply(res)
 
     def publishApiImage(self, postData):

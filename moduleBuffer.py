@@ -382,7 +382,7 @@ class moduleBuffer(Content,Queue):
 
         return(update)
 
-    def publish(self, j):
+    def publishh(self, j):
         logging.info("Publishing %d"% j)
         post = self.obtainPostData(j)
         logging.info("Publishing %s"% post[0])
