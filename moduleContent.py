@@ -21,6 +21,7 @@ class Content:
     def __init__(self):
         self.url = ""
         self.name = ""
+        self.nick = ""
         self.Id = 0
         self.socialNetworks = {}
         self.linksToAvoid = ""
@@ -80,6 +81,12 @@ class Content:
         self.client = client
 
     def getService(self):
+        if hasattr(self, 'auxClass'):
+            return self.auxClass
+        else:
+            return self.service
+
+    def getService(self):
         if hasattr(self, "service"):
             return self.service
         else:
@@ -94,11 +101,18 @@ class Content:
             user = self.user
         return user
 
+    def getName(self):
+        name = ''
+        if hasattr(self, 'name'):
+            name = getattr('name') #, '')
+        return name
+
     def getNick(self):
-        if hasattr(self, "nick"):
-            return self.nick
+        if hasattr(self, 'nick'):
+            nick = getattr(self, 'nick')#, '')
         else:
-            return ""
+            nick = ''
+        return nick
 
     def getAttribute(self, post, selector):
         try:
@@ -169,7 +183,7 @@ class Content:
             nameDst = nameDst[len('module'):]
             logMsg(f"type s -> {nameSrc} {nameDst}", 2, 0)
             userD = dst.getUser()
-            serviceD = dst.getService()
+            serviceD = dst.socialNetwork
             user = src.getUser()
             service = src.getService()
         else:
@@ -212,6 +226,7 @@ class Content:
         logMsg(msgLog, 1, 0)
 
         fileName = f"{self.fileNameBase(dst)}.last"
+        print(f"fileNameeee last: {fileName}")
         with open(fileName, "w") as f:
             if isinstance(link, bytes):
                 f.write(link.decode())
@@ -263,14 +278,21 @@ class Content:
         return lastLink
 
     def setLastLink(self, dst = None):
-        if dst:
-            fileName = f"{self.fileNameBase(dst)}.last"
+        if hasattr(self, 'fileName') and self.fileName:
+            fileName = f"{self.fileName}.last"
+            print("siiiii")
         else:
-            url = self.getUrl()
-            service = self.service.lower()
-            nick = self.getUser()
-            fileName = (f"{fileNamePath(url, (service, nick))}.last")
-        # print(f"File: {fileName}")
+            print("noooooooo")
+            if dst:
+                self.fileName = self.fileNameBase(dst) 
+                fileName = f"{self.fileName}.last"
+                print(f"fileNameeee: {fileName}")
+            else:
+                url = self.getUrl()
+                service = self.service.lower()
+                nick = self.getUser()
+                fileName = (f"{fileNamePath(url, (service, nick))}.last")
+            # print(f"File: {fileName}")
 
         lastTime = ''
         linkLast = ''
@@ -315,6 +337,15 @@ class Content:
 
         logMsg(f"myLastLink: {myLastLink} {lastTime}",2 , 0)
         return myLastLink, lastTime
+
+    def setNextAvailableTime(self, tNow, tSleep, dst = None):
+        fileNameNext = ''
+        if dst:
+            fileNameNext = f"{self.fileNameBase(dst)}.timeAvailable"
+            with open(fileNameNext,'wb') as f:
+                pickle.dump((tNow, tSleep), f)
+        else:
+            print(f"Not implemented!")
 
     def setNextTime(self, tNow, tSleep, dst = None):
         fileNameNext = ''
@@ -797,6 +828,7 @@ class Content:
 
                     method = getattr(self, f"deleteApi{nameMethod}")
                     print(f"aaa: {method}")
+                    print(f"aaa id: {idPost}")
                     res = method(idPost)
                     reply = self.processReply(res)
             else:
@@ -1265,16 +1297,21 @@ class Content:
         return (soup.get_text().strip("\n"), theSummaryLinks)
 
     def report(self, profile, post, link, data):
-        logging.warning("%s failed!" % profile)
-        logging.warning("Post %s %s" % (post, link))
-        logging.warning("Unexpected error: %s" % data[0])
-        logging.warning("Unexpected error: %s" % data[1])
-        print("%s posting failed!" % profile)
-        print("Post %s %s" % (post, link))
-        print("Unexpected error: %s" % data[0])
-        print("Unexpected error: %s" % data[1])
-        return "Fail! %s" % data[1]
+        logging.warning(f"{profile} failed!")
+        logging.warning(f"Post: {post}, {link}")
+        logging.warning(f"Data: {data}")
+        logging.warning(f"Unexpected error: {data[0]}")
+        logging.warning(f"Unexpected error: {data[1]}")
+        print(f"{profile} failed!")
+        print(f"Post: {post}, {link}")
+        print(f"Data: {data}")
+        print(f"Unexpected error: {data[0]}")
+        print(f"Unexpected error: {data[1]}")
+        return f"Fail! {data[1]}"
         # print("----Unexpected error: %s"% data[2])
+
+    def getPostComment(self, post):
+        return ""
 
     def getPostTitle(self, post):
         return ""

@@ -31,28 +31,41 @@ class moduleCache(Content,Queue):
         #self.url = url
         #self.socialNetwork = (socialNetwork, nick)
 
+    def getService(self):
+        if hasattr(self, 'auxClass'):
+            return self.auxClass
+        else:
+            return self.service
+
     def fileNameBase(self, dst):
+        print(f"dst: {dst}")
         if hasattr(self, 'fileName') and self.fileName:
             return self.fileName
         src = self
         # print(f"src: {self}")
-        # print(F"dst: {dst}")
         # print(f"{self.getUrl()}, {self.getService()}, {self.getUser()}")
         nameSrc = 'Cache'
         typeSrc = typeDst = 'posts'
         if isinstance(dst, tuple):
             user = self.getUrl()
-            service = self.getService().capitalize()
-            nameDst = dst[1]
-            userD = dst[0]
-            serviceD = dst[1][0].lower()+dst[1][1:]
+            service = dst[0][0].capitalize() #self.getService().capitalize()
+            pos = dst[1].find('@')
+            userD = dst[1][pos+1:]
+            serviceD = dst[1][:pos]
+            nameDst = dst[1][:pos].capitalize()
         elif isinstance(self, moduleCache):
-            # print(f"{dst.getUrl()}, {dst.getService()}, {dst.getUser()}")
+            print(f"dstUrllll: {dst.getUrl()}, {dst.getService()}, {dst.getUser()}")
+            print(f"srcUrllll: {src.getUrl()}, {src.getService()}, {src.getUser()}")
+            print(f"dstUrllll: {src.getSocialNetwork()}")
             user = dst.getUser()
             service = dst.getService().capitalize()
-            userD = self.getUser()
-            serviceD = self.getService()
-            nameDst = self.getService().capitalize()
+            pos = src.getUser().find('@')
+            userD = src.nick
+            # userD = self.getUser()
+            #serviceD = dst.service
+            serviceD = src.socialNetwork
+            # nameDst = self.getService().capitalize()
+            nameDst = serviceD.capitalize()
 
         fileName = (f"{nameSrc}_{typeSrc}_"
                     f"{user}_{service}__"
@@ -60,53 +73,64 @@ class moduleCache(Content,Queue):
                     f"{userD}_{serviceD}")
         fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
         self.fileName = fileName
-        # print(f"fileName: {fileName}")
+        print(f"fffffileName: {fileName}")
         return fileName
 
     def setClient(self, param):
         logging.info(f"    Connecting Cache {self.service}: {param}")
         self.postsType = 'posts'
-        # print(f"param: {param}")
-        self.auxClass = param[0]
-        if isinstance(param, str):
-            self.url = param
-            self.user = param
-            logging.warning("This is not possible!")
-        elif isinstance(param[1], str):
-            logging.info(f"    Connecting Cache {self.service}: {param[0]}")
-            if param[0].find('http')>= 0:
-                self.url = param[0]
-            else:
-                self.url = param[1]
-                # print(f"u: {self.url}")
-                pos = param[2].find('@')
-                self.socialNetwork = param[2][:pos].capitalize()
-                self.user = param[2][pos+1:]
-                self.service = param[0]
-
-                # self.socialNetwork = param[0]
-                # self.service = param[0]
-            if hasattr(self, 'fileName'):
-                print(f"self.fileName {self.fileName}")
-            self.fileName = self.fileNameBase((self.user, self.socialNetwork))
-            logging.debug(f"self {self}")
-            if hasattr(self, 'fileName'):
-                logging.info(f"self.fileName {self.fileName}")
-
-            #self.user = param[1]
-            if self.user.find('\n')>=0:
-                self.user = None
-        elif hasattr(param[0], 'getUrl'):
-            #self.url = param[0].getUrl()
-            self.user = param[1][1]
-            self.service = param[1][0]
-            self.fileName = self.fileNameBase(param[0])
-            # print(f"ff: {self.fileName}")
-        else:
-            self.url = param[0]
-            self.service = param[1][0]
-            self.user = param[1][1]
+        print(f"param: {param}")
+        self.url = param[0][1]
+        pos = param[1].find('@')
+        self.socialNetwork = param[1][:pos].capitalize() #param[0][0]
+        self.user = param[1][pos+1:]
+        self.nick = param[1][pos+1:]
+        self.auxClass = param[0][0]
         self.client = self.service
+        #self.fileName = self.fileNameBase((self.user, self.socialNetwork))
+        
+        if hasattr(self, 'fileName'):
+            logging.info(f"self.fileName {self.fileName}")
+            print(f"self.fileName {self.fileName}")
+        # if isinstance(param, str):
+        #     self.url = param
+        #     self.user = param
+        #     logging.warning("This is not possible!")
+        # elif isinstance(param[1], str):
+        #     logging.info(f"    Connecting Cache {self.service}: {param[0]}")
+        #     if param[0].find('http')>= 0:
+        #         self.url = param[0]
+        #     else:
+        #         self.url = param[1]
+        #         # print(f"u: {self.url}")
+        #         pos = param[2].find('@')
+        #         self.socialNetwork = param[2][:pos].capitalize()
+        #         self.user = param[2][pos+1:]
+        #         self.service = param[0]
+
+        #         # self.socialNetwork = param[0]
+        #         # self.service = param[0]
+        #     if hasattr(self, 'fileName'):
+        #         print(f"self.fileName {self.fileName}")
+        #     self.fileName = self.fileNameBase((self.user, self.socialNetwork))
+        #     logging.debug(f"self {self}")
+        #     if hasattr(self, 'fileName'):
+        #         logging.info(f"self.fileName {self.fileName}")
+
+        #     #self.user = param[1]
+        #     if self.user.find('\n')>=0:
+        #         self.user = None
+        # elif hasattr(param[0], 'getUrl'):
+        #     #self.url = param[0].getUrl()
+        #     self.user = param[1][1]
+        #     self.service = param[1][0]
+        #     self.fileName = self.fileNameBase(param[0])
+        #     # print(f"ff: {self.fileName}")
+        # else:
+        #     self.url = param[0]
+        #     self.service = param[1][0]
+        #     self.user = param[1][1]
+        # self.client = self.service
 
     def setApiDrafts(self):
         # Every cache is the same, even the origin are drafts ??
@@ -127,8 +151,11 @@ class moduleCache(Content,Queue):
             service = self.getService()
             nick = self.getUser()
         logging.debug(f"Url: {url} service {service} nick {nick}")
+        print(f"Url: {url} service {service} nick {nick}")
         if not fileNameQ:
-            fileNameQ = fileNamePath(url, (service, nick)) + ".queue"
+            self.fileName = self.fileNameBase((service, nick))
+            print(f"fileNameeee {self.fileName}")
+            fileNameQ = self.fileName+".queue" #fileNamePath(url, (service, nick)) + ".queue"
         else:
             fileNameQ = fileNameQ+".queue"
         # print(f"fileNameQ: {fileNameQ}")
@@ -143,6 +170,7 @@ class moduleCache(Content,Queue):
         except:
             listP = []
 
+        print(f"listPPPP: {listP}")
         return(listP)
 
     def getMax(self):
@@ -164,7 +192,6 @@ class moduleCache(Content,Queue):
         # Some standard contition?
 
         posLast = 1
-
         return posLast
 
     def getHoursSchedules(self, command=None):
@@ -443,7 +470,7 @@ class moduleCache(Content,Queue):
             else:
                 reply = "Fail! No posts available"
         except:
-            reply = self.report(self.service, apiSrc, sys.exc_info())
+            reply = self.report(self.service, apiSrc, post, sys.exc_info())
 
         return reply
 

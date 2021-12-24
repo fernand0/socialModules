@@ -140,21 +140,26 @@ class moduleTwitter(Content,Queue):
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
+            logging.info(f"Tittt: args: {args}")
             title, link, comment = args
         if kwargs:
+            logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             # FIXME: We need to do something here
             post = more.get('post', '')
             api = more.get('api', '')
-            title = self.getPostTitle(post)
-            link = self.getPostLink(post)
-            comment = self.getComment(title)
+            title = api.getPostTitle(post)
+            link = api.getPostLink(post)
+            comment = api.getPostComment(title)
 
         title = self.addComment(title, comment)
         
+        logging.info(f"Tittt: {title} {link} {comment}")
+        logging.info(f"Tittt: {link and ('twitter' in link)}")
         res = 'Fail!'
         # post = post[:(240 - (len(link) + 1))]
         if link and ('twitter' in link):
+            logging.debug("     Retweeting: %s" % title)
             # If the link is a tweet, we will retweet.
             res = self.publishApiRT(title, link, comment)
         else:
@@ -169,6 +174,8 @@ class moduleTwitter(Content,Queue):
 
             logging.debug("     Publishing: %s" % title)
             try:
+                logging.info(f"Tittt: {title} {link} {comment}")
+                # return "Fail!"
                 res = self.getClient().statuses.update(status=title)
             except twitter.api.TwitterHTTPError as twittererror:
                 for error in twittererror.response_data.get("errors", []):
@@ -209,6 +216,7 @@ class moduleTwitter(Content,Queue):
         return (post.split('/')[-1])
 
     def getPostTitle(self, post):
+        logging.info(f"Postttt: {post}")
         title = post.get('text')
         if not title:
             title = post.get('full_text')
@@ -301,7 +309,7 @@ def main():
     if testingPosts:
         print("Testing Posts")
         tw = moduleTwitter.moduleTwitter()
-        tw.setClient('fernand0')
+        tw.setClient('fernand0Test')
         tw.setPostsType('posts')
         tw.setPosts()
         tweet = tw.getPosts()[0]

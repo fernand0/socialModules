@@ -17,21 +17,31 @@ class moduleRules:
 
     def readConfigSrc(self, indent, src, more):
         msgLog = f"Src: Src {src}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, 1)
         msgLog = f"More: Src {more}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, 1)
         if src[0] == 'cache':
-            if src[2].count('@')>1:
-                parts = src[2].split('@')
-                sN = parts[0]
-                nick = '@'.join(parts[1:])
-            else:
-               sN, nick = src[2].split('@')
-            sNN = more['service']
-            nickN = more['url']
-            apiSrc = getApi(src[0], (sNN, nickN, src[2]))
-            apiSrc.socialNetwork = sN
-            apiSrc.nick = nick
+            # if src[2].count('@')>1:
+            #     parts = src[2].split('@')
+            #     sN = parts[0]
+            #     nick = '@'.join(parts[1:])
+            # else:
+            #    sN, nick = src[2].split('@')
+            # sNN = more['service']
+            # nickN = more['url']
+            # msgLog = f"Src: (getApi) {(src[0], (sNN, nickN, src[2]))}"
+            # logMsg(msgLog, 2, 1)
+            # apiSrc = getApi(src[0], (sNN, nickN, src[2]))
+            # if src != (src[0], (sNN, nickN), src[2]):
+            #     msgLog = f"Differ!"
+            #     logMsg(msgLog, 2, 1)
+            apiSrc = getApi(src[0], src[1:])
+            apiSrc.fileName = apiSrc.fileNameBase(src[1:])
+            print(f"ffffileNameeee: {apiSrc.auxClass}")
+            # apiSrc.setPosts()
+            # print(f"Postsss: {apiSrc.getPosts()}")
+            # apiSrc.socialNetwork = sN
+            # apiSrc.nick = nick
             apiSrc.postaction = 'delete'
         else:
             apiSrc = getApi(src[0], src[2])
@@ -59,6 +69,8 @@ class moduleRules:
         if not apiSrc.getPostsType():
             apiSrc.setPostsType('posts')
 
+        # apiSrc.setPosts()
+        # print(f"Postsss: {apiSrc.getPosts()}")
         return apiSrc
 
     def readConfigDst(self, indent, action, more, apiSrc):
@@ -75,14 +87,18 @@ class moduleRules:
         if action[0] == "cache":
             # print(f"api: {apiSrc.getService()}")
             # print(f"param: {(action[1], socialNetwork)}")
-            apiDst = getApi("cache", (apiSrc, socialNetwork))
+            print(f"Dst: {action}")
+            apiDst = getApi("cache", ((more['service'],  action[1]), 
+                f"{action[2]}@{action[3]}", 'posts'))
             apiDst.socialNetwork = action[2]
             apiDst.nick = action[3]
+            apiDst.fileName = apiDst.fileNameBase(apiSrc)
+            print(f"ffffileNameeee: {apiDst.fileName}")
         else:
             apiDst = getApi(profile, nick)
 
-        if 'service' in more:
-            apiDst.auxClass = more['service']
+        # if 'service' in more:
+        #     apiDst.auxClass = more['service']
         apiDst.setUser(nick)
         apiDst.setPostsType('posts')
 
@@ -185,6 +201,9 @@ class moduleRules:
                     msgLog = (f"{indent}End {postaction}, reply: {resPost}")
                     logMsg(msgLog, 1, 1)
                     resMsg += f"Post Action: {resPost}\n"
+                else:
+                    msgLog = (f"{indent}No Post Action")
+                    logMsg(msgLog, 1, 1)
 
             msgLog = (f"{indent}End publish, reply: {resMsg}")
             logMsg(msgLog, 1, 1)
@@ -214,7 +233,6 @@ class moduleRules:
 
         return resMsg
 
-
     def executeAction(self, src, more, action,
                     noWait, timeSlots, simmulate, name="",
                     nextPost = True, pos = -1, delete=False):
@@ -232,15 +250,23 @@ class moduleRules:
 
         msgAction = (f"{action[0]} {action[3]}@{action[2]} "
                      f"({action[1]})")
-        msgLog = (f"{indent}Source: {src[2]} ({src[3]}) -> "
+        # Destination
+
+        apiSrc = self.readConfigSrc(indent, src, more)
+
+        if apiSrc.getName(): 
+            msgLog = (f"{indent}Source: {apiSrc.getName()} ({src[3]}) -> "
+                f"Action: {msgAction})")
+        else:
+            msgLog = (f"{indent}Source: {src[2]} ({src[3]}) -> "
                 f"Action: {msgAction})")
 
         logMsg(msgLog, 1, 0)
         textEnd = (f"{msgLog}")
 
-        # Destination
-
-        apiSrc = self.readConfigSrc(indent, src, more)
+        # print(f"Srcccc: {src}")
+        # print(f"Srcccc: {apiSrc.getNick()}")
+        # return
         if (apiSrc.getHold() == 'yes'):
             time.sleep(1)
             msgHold = f"{indent} In hold"
@@ -252,6 +278,7 @@ class moduleRules:
             return f"End: {msgLog}"
 
         apiSrc.setPosts()
+        print(f"apiSrcccc: {apiSrc.getPosts()}")
 
         # print(f"apiSrc: {apiSrc}")
         # print(f"action: {action}")
@@ -276,6 +303,7 @@ class moduleRules:
             return f"{indent}{action}"
 
         apiDst.setPosts()
+        print(f"Posttttts: {apiDst.getPosts()}")
         #FIXME: Is it always needed? Only in caches?
 
         indent = f"{indent} "
@@ -335,6 +363,8 @@ class moduleRules:
 
                 if num>0:
                     apiSrc.setNextTime(tNow, tSleep, apiDst)
+                else:
+                    apiSrc.setNextAvailableTime(tNow, tSleep, apiDst)
 
                 if (tSleep>0.0):
                     msgLog= f"{indent}Waiting {tSleep/60:2.2f} minutes"
@@ -362,7 +392,7 @@ class moduleRules:
                           f"We will wait at least "
                           f"{(hours-diffTime)/(60*60):2.2f} hours.")
                 # logMsg(msgLog, 1, 1)
-                textEnd = f"{textEnd}{msgLog}"
+                textEnd = f"{textEnd} {msgLog}"
 
         else:
             if (num<=0):
@@ -618,7 +648,7 @@ class moduleRules:
                                     nickSn = f"{toAppend[2]}@{toAppend[3]}"
                                     fromSrvSp = (
                                             "cache",
-                                            "set",
+                                            (fromSrv[0], fromSrv[2]),
                                             nickSn,
                                             "posts",
                                             )
@@ -703,10 +733,14 @@ class moduleRules:
         available = {}
         myKeys = {}
         myIniKeys = []
-        for i, src in enumerate(srcs):
+        # for i, src in enumerate(srcs):
+        for i, src in enumerate(ruls.keys()):
+            logging.info(f"i,srcccc: {src}")
             if not src:
                 continue
             iniK, nameK = self.getIniKey(src[0], myKeys, myIniKeys)
+            logging.info(f"Srcccccc: {src}")
+            logging.info(f"Srcccccc1: {src[1:]}")
             if not (iniK in available):
                 available[iniK] = {"name": src[0], "data": [], "social": []}
                 available[iniK]["data"] = [{'src': src[1:], 'more': more[i]}]
@@ -807,12 +841,22 @@ class moduleRules:
                     # f"  More: empty")
                     more = None
 
-                if src[0] in ['cache']:
-                    text = (f"Source: {more['url']} ({src[3]})")
+                if src[0] in ['cache', 'gitter', 'gmail']:
+                    srcName = more['url']
+                    # FIXME 
+                    if 'slack' in srcName:
+                        srcName = f"Slack({srcName.split('/')[2].split('.')[0]})"
+                    elif 'gitter' in srcName:
+                        srcName = f"Gitter({srcName.split('/')[-2]})"
+                    elif 'imgur' in srcName:
+                        srcName = f"Imgur({srcName.split('/')[-1]})"
+                    elif '.com' in srcName:
+                        srcName = f"Gmail({srcName.split('.')[0]})"
+                    text = (f"Source: {srcName} ({src[3]})")
                 else:
                     text = (f"Source: {src[2]} ({src[3]})")
                 textEnd = (f"Source: {name} {src[2]} {src[3]}")
-                # print(text)
+
                 actions = self.rules[src]
 
                 for k, action in enumerate(actions):
@@ -821,11 +865,17 @@ class moduleRules:
                     else:
                         actionMsg = (f"Scheduling...")
                     nameA = f"{name} {actionMsg} "
+                    if action[1].startswith('http'):
+                        # FIXME
+                        theAction = 'posts'
+                    else:
+                        theAction = action[1]
+
                     msgLog = (f"{nameA} {text} Action {k}:"
-                              f" {action[3]}@{action[2]} ({action[1]})")
+                              f" {action[3]}@{action[2]} ({theAction})")
                     textEnd = f"{textEnd}\n{msgLog}"
                     logMsg(msgLog, 1, 1)
-                    nameA = f"{name} [({action[1]})"
+                    nameA = f"{name} [({theAction})"
                     # The '[' is closed in executeAction TODO
                     if actionMsg == "Skip.":
                         continue

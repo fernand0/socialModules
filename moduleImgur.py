@@ -350,7 +350,7 @@ def main():
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs')
 
-    testingDrafts = True
+    testingDrafts = False
     if testingDrafts:
         img = moduleImgur.moduleImgur()
         acc = "Blog20"
@@ -374,21 +374,43 @@ def main():
 
 
 
-    publishCache = False
+    publishCache = True
     if publishCache:
-        listPosts = img.getNumPostsData(1, pos, '')
-        print(listPosts)
+        img = moduleImgur.moduleImgur()
+        acc = "Blog20"
+        url = config.get(acc, 'url')
+        img.setUrl(url)
+        name = url.split('/')[-1]
+        img.setClient(name)
+        img.setPostsType(config.get(acc, 'posts'))
+        img.setPosts()
+        for i, post in enumerate(img.getPosts()):
+            print(f"{i}) {img.getPostTitle(post)}")
+        pos = int(input("Which post? "))
+        post = img.getPost(pos)
+        print(f"Post: {post}")
+        print(f"Title: {img.getPostTitle(post)}")
         input("Add? ")
 
         import moduleCache
         cache = moduleCache.moduleCache()
         # cache.setClient(('https://imgur.com/user/ftricas',
         #                 ('wordpress', 'avecesunafoto')))
-        cache.setClient(('https://imgur.com/user/ftricas',
-                        ('imgur', 'ftricas')))
+        # cache.setClient(('https://imgur.com/user/ftricas',
+        #                 ('imgur', 'ftricas')))
+        cache.setClient((('imgur', 'https://imgur.com/user/ftricas'), 
+                'imgur@ftricas', 'posts'))
+        cache.socialNetwork = 'imgur'
+        cache.nick = 'ftricas'
+        img.socialNetwork = 'imgur'
+        img.nick = 'ftricas'
+        img.user = 'https://imgur.com/user/ftricas'
+        cache.fileName = cache.fileNameBase(img)
+        cache.setPostsType('posts')
         cache.setPosts()
         print(cache.getPosts())
-        cache.addPosts(listPosts)
+        cache.publishPost(api=img, post=post)
+        return
 
 
     publishWordpress = True

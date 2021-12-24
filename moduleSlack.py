@@ -34,7 +34,11 @@ class moduleSlack(Content, Queue):
         return (slack_token, user_slack_token)
 
     def initApi(self, keys):
-        logging.info(f"user {self.user}")
+        logging.info(f"User: {self.user}")
+        if self.user and self.user.find('/')>=0:
+            self.name = self.user.split('/')[2].split('.')[0]
+        else:
+            self.name = self.user
         if self.user.find('@')>=0:
             channel, user = self.user.split('@')
             self.user = user
@@ -564,6 +568,22 @@ def main():
     # print(site.getSocialNetworks())
     # print("---")
     # print(site.getSocialNetworks())
+
+    testingInit = True
+    if testingInit:
+        import moduleRules
+        src = ('slack', 'set', 'http://fernand0-errbot.slack.com/', 'posts')
+        rules = moduleRules.moduleRules()
+        more = {}
+        indent = ''
+        apiSrc = rules.readConfigSrc(indent, src, more)
+        logging.info(f"User: {apiSrc.getUser()}")
+        logging.info(f"Name: {apiSrc.getName()}")
+        logging.info(f"Nick: {apiSrc.getNick()}")
+        return
+
+
+
 
     testingPublishing = False
     if testingPublishing:
