@@ -183,7 +183,10 @@ class Content:
             nameDst = nameDst[len('module'):]
             logMsg(f"type s -> {nameSrc} {nameDst}", 2, 0)
             userD = dst.getUser()
-            serviceD = dst.socialNetwork
+            if hasattr(dst, 'socialNetwork'):
+                serviceD = dst.socialNetwork
+            else:
+                serviceD = nameDst
             user = src.getUser()
             service = src.getService()
         else:
