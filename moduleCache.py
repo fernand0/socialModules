@@ -38,33 +38,25 @@ class moduleCache(Content,Queue):
             return self.service
 
     def fileNameBase(self, dst):
-        print(f"dst: {dst}")
+        logging.debug(f"dst: {dst}")
         if hasattr(self, 'fileName') and self.fileName:
             return self.fileName
         src = self
-        # print(f"src: {self}")
-        # print(f"{self.getUrl()}, {self.getService()}, {self.getUser()}")
         nameSrc = 'Cache'
         typeSrc = typeDst = 'posts'
         if isinstance(dst, tuple):
             user = self.getUrl()
-            service = dst[0][0].capitalize() #self.getService().capitalize()
+            service = dst[0][0].capitalize()
             pos = dst[1].find('@')
             userD = dst[1][pos+1:]
             serviceD = dst[1][:pos]
             nameDst = dst[1][:pos].capitalize()
         elif isinstance(self, moduleCache):
-            print(f"dstUrllll: {dst.getUrl()}, {dst.getService()}, {dst.getUser()}")
-            print(f"srcUrllll: {src.getUrl()}, {src.getService()}, {src.getUser()}")
-            print(f"dstUrllll: {src.getSocialNetwork()}")
             user = dst.getUser()
             service = dst.getService().capitalize()
             pos = src.getUser().find('@')
             userD = src.nick
-            # userD = self.getUser()
-            #serviceD = dst.service
             serviceD = src.socialNetwork
-            # nameDst = self.getService().capitalize()
             nameDst = serviceD.capitalize()
 
         fileName = (f"{nameSrc}_{typeSrc}_"
@@ -73,13 +65,11 @@ class moduleCache(Content,Queue):
                     f"{userD}_{serviceD}")
         fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
         self.fileName = fileName
-        print(f"fffffileName: {fileName}")
         return fileName
 
     def setClient(self, param):
         logging.info(f"    Connecting Cache {self.service}: {param}")
         self.postsType = 'posts'
-        print(f"param: {param}")
         self.url = param[0][1]
         pos = param[1].find('@')
         self.socialNetwork = param[1][:pos].capitalize() #param[0][0]
@@ -151,14 +141,11 @@ class moduleCache(Content,Queue):
             service = self.getService()
             nick = self.getUser()
         logging.debug(f"Url: {url} service {service} nick {nick}")
-        print(f"Url: {url} service {service} nick {nick}")
         if not fileNameQ:
             self.fileName = self.fileNameBase((service, nick))
-            print(f"fileNameeee {self.fileName}")
-            fileNameQ = self.fileName+".queue" #fileNamePath(url, (service, nick)) + ".queue"
+            fileNameQ = self.fileName+".queue" 
         else:
             fileNameQ = fileNameQ+".queue"
-        # print(f"fileNameQ: {fileNameQ}")
 
         logging.debug("File: %s" % fileNameQ)
         try:
@@ -170,7 +157,6 @@ class moduleCache(Content,Queue):
         except:
             listP = []
 
-        print(f"listPPPP: {listP}")
         return(listP)
 
     def getMax(self):
@@ -311,8 +297,6 @@ class moduleCache(Content,Queue):
             nick = self.getUser()
 
         logging.debug(f"Url: {url} service {service} nick {nick}")
-        print(f"fileNameQ: {fileNameQ}")
-
         logging.debug("File: %s" % fileNameQ)
 
         with open(fileNameQ+'.queue', 'wb') as f:

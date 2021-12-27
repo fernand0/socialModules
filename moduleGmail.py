@@ -39,8 +39,8 @@ class moduleGmail(Content,Queue):
 
     def __init__(self):
         super().__init__()
-        Content().__init__()
-        Queue().__init__()
+        # Content().__init__()
+        # Queue().__init__()
         self.service = "Gmail"
         self.nick = None
         self.scopes = ['https://mail.google.com/']
@@ -322,8 +322,11 @@ class moduleGmail(Content,Queue):
                 if 'data' in part['body']:
                     mes  = mes + str(base64.urlsafe_b64decode(part['body']['data']))
                 else: 
-                    for pp in part['parts']:
-                        mes  = mes + str(base64.urlsafe_b64decode(pp['body']['data']))
+                    if 'parts' in part:
+                        for pp in part['parts']:
+                            mes  = mes + str(base64.urlsafe_b64decode(pp['body']['data']))
+                    else:
+                        mes = mes + str(base64.urlsafe_b64decode(pp['body']['data']))
         else:
             mes  = str(base64.urlsafe_b64decode(message['payload']['body']['data']))
         return(mes)
@@ -456,13 +459,15 @@ class moduleGmail(Content,Queue):
                 return(head['value'])
 
     def getPostId(self, message):
+        # print(f"Message: {message}")
+        # print(f"Message: {'list' in message}")
         if isinstance(message, str):
             idPost = message
-        elif 'list' in message:
-            message = message['list']
+        elif 'meta' in message:
+            message = message['meta']
             idPost = message['id']
         elif isinstance(message, tuple):
-            logging.debug(message)
+            # logging.debug(message)
             idPost = message
 
         return(idPost)
@@ -566,8 +571,35 @@ class moduleGmail(Content,Queue):
         update = "Changed "+title+" with "+newTitle
         return(update)
 
-    def publishPost(self, j):
-        return self.publish(self, j)
+    def publishApiPost(self, *args, **kwargs):
+        if args and len(args) == 3:
+            logging.info(f"Tittt: args: {args}")
+            title, link, comment = args
+        if kwargs:
+            logging.info(f"Tittt: kwargs: {kwargs}")
+            more = kwargs
+            # FIXME: We need to do something here
+            post = more.get('post', '')
+            api = more.get('api', '')
+            logging.info(f"Post: {post}")
+            idPost = api.getPostId(post)
+            logging.info(f"Postt: {post['meta']}")
+            # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]
+            idPost = post['list']['id'] #[1:-1]
+            logging.info(f"Post id: {idPost}")
+        res = 'Fail!'
+        try:
+            # credentials = self.authorize()
+            res = api.getClient().users().drafts().send(userId='me', 
+                       body={'id': str(idPost)}).execute()
+            logging.info("Res: %s" % res)
+        except:
+            return(self.report('Gmail', idPost, '', sys.exc_info()))
+
+        return(f"Res: {res}")
+ 
+    # def publishPost(self, j):
+    #     return self.publish(self, j)
 
     def publishh(self, j):
         logging.info("Publishing %d"% j)                
@@ -759,6 +791,31 @@ def main():
             level=logging.DEBUG, 
             format='%(asctime)s %(message)s')
 
+    import moduleRules
+    rules = moduleRules.moduleRules()
+    rules.checkRules()
+
+    testingDrafts = True
+    if testingDrafts:
+        for key in rules.rules.keys():
+            if ((key[0] == 'gmail') 
+                    and ('ftricas' in key[2])
+                    and (key[3] == 'drafts')):
+                print(f"SKey: {key}\n"
+                      f"SRule: {rules.rules[key]}\n"
+                      f"SMore: {rules.more[key]}")
+                apiSrc = rules.readConfigSrc("", key, rules.more[key])
+                apiSrc.setPosts()
+                post = apiSrc.getNextPost()
+                print(f"titleeeee: {apiSrc.getPostTitle(post)}")
+                print(f"linkkkkk: {apiSrc.getPostLink(post)}")
+                for i, post in enumerate(apiSrc.getPosts()):
+                    print(f"{i}) {apiSrc.getPostTitle(post)}")
+                    print(f"{i}) {apiSrc.getPostLink(post)}")
+                    # print(f"{i}) {apiSrc.getPostLinks(post)}")
+
+        return
+
     import moduleGmail
 
     # instantiate the api object 
@@ -766,7 +823,7 @@ def main():
     config = configparser.ConfigParser() 
     config.read(CONFIGDIR + '/.rssBlogs')
 
-    accounts = ['Blog13','Blog14','Blog15','Blog24']
+    accounts = ['Blog35'] #'Blog13','Blog14','Blog15','Blog24']
     # [Blog15]
     # url:test@gmail.com
     # Gmail:test@gmail.com

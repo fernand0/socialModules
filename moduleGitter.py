@@ -252,7 +252,7 @@ def main():
 
     import moduleGitter
 
-    testingDelete = True
+    testingDelete = False
 
     if testingDelete:
         CHANNEL = 'Fernando Tricas García'
@@ -281,41 +281,14 @@ def main():
 
         return
 
-
     site = moduleGitter.moduleGitter()
-
     CHANNEL = 'fernand0errbot/tavern-of-the-bots'
-
     url = "https://gitter.im/fernand0errbot/tavern-of-the-bots"
-
     site.setUrl(url)
     site.setClient(url)
-
     print(site.getClient().check_auth()) #[0])
-    # theChannel = site.getChanId(CHANNEL)  
-    # print("the Channel %s" % theChannel)
-
     CHANNEL = 'fernand0errbot/links'
     site.setChannel(CHANNEL)
-
-    print("Testing posts")
-    site.setPostsType("posts")
-    site.setPosts()
-
-    print("Testing title and link")
-
-    for i, post in enumerate(site.getPosts()):
-        print(f"Post: {post}")
-        title = site.getPostTitle(post)
-        link = site.getPostLink(post)
-        url = site.getPostUrl(post)
-        theId = site.getPostId(post)
-        summary = site.getPostContentHtml(post)
-        image = site.getPostImage(post)
-        print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
-        print(f"{i}) Content: {summary} {image}\n")
-    return
-
 
     testingSlack = False
 
@@ -354,7 +327,7 @@ def main():
             site.deletePost(site.getPostId(post), site.getChannel())
         sys.exit()
 
-    testingPostDelete = False
+    testingPostDelete = True
     if testingPostDelete:
         rep = site.publishPost(CHANNEL, 'helloo')
 
@@ -369,7 +342,7 @@ def main():
         print(site.getLinkPosition(link))
         input("Delete? ")
         site.deletePost(site.getPostId(post), CHANNEL)
-        sys.exit()
+        return
 
     site.setPosts()
     post = site.getPosts()[-1]
@@ -495,6 +468,25 @@ def main():
 
     site.deletePost(site.getId(j), theChannel)
     #print(outputData['Slack']['pending'][elem][8])
+
+    print("Testing posts")
+    site.setPostsType("posts")
+    site.setPosts()
+
+    print("Testing title and link")
+
+    for i, post in enumerate(site.getPosts()):
+        print(f"Post: {post}")
+        title = site.getPostTitle(post)
+        link = site.getPostLink(post)
+        url = site.getPostUrl(post)
+        theId = site.getPostId(post)
+        summary = site.getPostContentHtml(post)
+        image = site.getPostImage(post)
+        print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
+        print(f"{i}) Content: {summary} {image}\n")
+    return
+
 
 if __name__ == '__main__':
     main()

@@ -19,6 +19,7 @@ from configMod import *
 class Content:
 
     def __init__(self):
+        logging.debug(f"Initializing")
         self.url = ""
         self.name = ""
         self.nick = ""
@@ -42,7 +43,6 @@ class Content:
         self.client = None
         ser = self.__class__.__name__
         self.service = self.__class__.__name__[6:]
-        logging.debug(f"Setting service {self.service}")
         # They start with module
         self.hold = None
 
@@ -229,7 +229,6 @@ class Content:
         logMsg(msgLog, 1, 0)
 
         fileName = f"{self.fileNameBase(dst)}.last"
-        print(f"fileNameeee last: {fileName}")
         with open(fileName, "w") as f:
             if isinstance(link, bytes):
                 f.write(link.decode())
@@ -283,19 +282,15 @@ class Content:
     def setLastLink(self, dst = None):
         if hasattr(self, 'fileName') and self.fileName:
             fileName = f"{self.fileName}.last"
-            print("siiiii")
         else:
-            print("noooooooo")
             if dst:
                 self.fileName = self.fileNameBase(dst) 
                 fileName = f"{self.fileName}.last"
-                print(f"fileNameeee: {fileName}")
             else:
                 url = self.getUrl()
                 service = self.service.lower()
                 nick = self.getUser()
                 fileName = (f"{fileNamePath(url, (service, nick))}.last")
-            # print(f"File: {fileName}")
 
         lastTime = ''
         linkLast = ''
@@ -860,7 +855,7 @@ class Content:
                 #     nameMethod = self.getPostsType().capitalize()
 
                 method = getattr(self, f"publish{nameMethod}")
-                # print(f"method: {method}")
+                logging.info(f"method: {method}")
                 res = method(api=apiSrc, post=post)
                 reply = self.processReply(res)
             else:
@@ -894,7 +889,7 @@ class Content:
             else:
                 reply = "Fail! No posts available"
         except:
-            reply = self.report(self.service, apiSrc, method, sys.exc_info())
+            reply = self.report(self.service, apiSrc, post, sys.exc_info())
 
         return reply
 

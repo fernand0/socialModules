@@ -118,7 +118,6 @@ class moduleImdb(Content,Queue):
         if not useCache:
             self.posts.sort()
 
-
     def getPostTitle(self, post):
         logging.debug("getPostTitle {}".format(post))
         if post:

@@ -166,6 +166,7 @@ def getModule(profile):
     logging.debug(f"Module {serviceName}")
     mod = importlib.import_module('module' + serviceName)
     cls = getattr(mod, 'module' + serviceName)
+    logging.debug(f"Class: {cls}")
     api = cls()
     return api
 
