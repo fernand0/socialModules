@@ -581,7 +581,7 @@ class moduleRules:
                     resPost = cmdPost()
                     msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
                     logMsg(msgLog, 1, 1)
-                    resMsg += f"Post Action: {resPost}\n"
+                    resMsg += f"Post Action: {resPost}"
                 else:
                     msgLog = (f"{indent}No Post Action")
                     logMsg(msgLog, 1, 1)
@@ -741,7 +741,12 @@ class moduleRules:
             if (noWait or (diffTime>hours)):
                 tSleep = random.random()*float(timeSlots)*60
 
-                if num>0:
+                if nextPost:
+                    post = apiSrc.getNextPost()
+                else:
+                    post = apiSrc.getPost(pos)
+
+                if post:
                     apiSrc.setNextTime(tNow, tSleep, apiDst)
                 else:
                     apiSrc.setNextAvailableTime(tNow, tSleep, apiDst)
