@@ -299,8 +299,10 @@ def main():
             theId = apiSrc.getPostId(post)
             summary = apiSrc.getPostContentHtml(post)
             image = apiSrc.getPostImage(post)
-            print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
-            print(f"{i}) Content: {summary} {image}\n")
+            print(f"{i}) Title: {title}\n"
+                  f"Link: {link}\n"
+                  f"Url: {url}\nId: {theId}\n"
+                  f"Content: {summary} {image}")
 
         if input("All? (y/n) ") == 'y':
             for channel in apiSrc.getChannels():

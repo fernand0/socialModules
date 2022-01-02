@@ -49,6 +49,11 @@ class moduleSlack(Content, Queue):
         self.user_slack_token = keys[1]
         return client
 
+    def getChannels(self):
+        response = self.getClient().conversations_list()
+        conversations = response.get("channels", '')
+        return conversations
+
     def setChannel(self, channel=''):
         # setPage in Facebook
         if not channel:
@@ -196,12 +201,15 @@ class moduleSlack(Content, Queue):
         return post
 
     def getPostTitle(self, post):
+        print(f"Post: {post}")
         if ("attachments" in post) and ("title" in post["attachments"][0]):
             return post["attachments"][0]["title"]
         elif "text" in post:
             text = post["text"]
             if text.startswith("<"):
-                title = text.split("|")[1]
+                title = text 
+                if text.find("|")>=0:
+                    title = text.split("|")[1]
                 titleParts = title.split(">")
                 title = titleParts[0]
                 if (len(titleParts) > 1) and (titleParts[1].find("<") >= 0):
@@ -543,36 +551,35 @@ class moduleSlack(Content, Queue):
 
 def main():
 
-    logging.basicConfig(
-        stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s"
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format="%(asctime)s %(message)s"
     )
 
     import moduleSlack
 
-    site = moduleSlack.moduleSlack()
-    # CHANNEL = "tavern-of-the-bots"
+    import moduleRules
+    rules = moduleRules.moduleRules()
+    rules.checkRules()
 
-    try:
-        # My own config settings
-        config = configparser.ConfigParser()
-        config.read(CONFIGDIR + "/.rssBlogs")
+    # Example:
+    # 
+    # src: ('slack', 'set', 'http://fernand0-errbot.slack.com/', 'posts')
+    #
+    # More: {'url': 'http://fernand0-errbot.slack.com/', 'service': 'slack', 'cache': 'linkedin\ntwitter\nfacebook\nmastodon\ntumblr', 'twitter': 'fernand0Test', 'facebook': 'Fernand0Test', 'mastodon': '@fernand0@mastodon.social', 'linkedin': 'Fernando Tricas', 'tumblr': 'fernand0', 'buffermax': '9'}
+    # It can be empty: {}
+    
+    indent = ""
+    for src in rules.rules.keys():
+        if src[0] == 'slack':
+            print(f"Src: {src}")
+            more = rules.more[src]
+            break
+    apiSrc = rules.readConfigSrc(indent, src, more)
 
-        section = "Blog7"
-        url = config.get(section, "url")
-        site.setSocialNetworks(config)
-        print(f"social: {site.getSocialNetworks()}")
-    except:
-        url = "http://fernand0-errbot.slack.com/"
-    site.setClient(url)
-    site.setChannel("links")
+    apiSrc.setChannel("links")
 
-    # site.setSocialNetworks(socialNetworks)
-    # print("---")
-    # print(site.getSocialNetworks())
-    # print("---")
-    # print(site.getSocialNetworks())
-
-    testingInit = True
+    testingInit = False
     if testingInit:
         import moduleRules
         src = ('slack', 'set', 'http://fernand0-errbot.slack.com/', 'posts')
@@ -584,9 +591,6 @@ def main():
         logging.info(f"Name: {apiSrc.getName()}")
         logging.info(f"Nick: {apiSrc.getNick()}")
         return
-
-
-
 
     testingPublishing = False
     if testingPublishing:
@@ -611,22 +615,39 @@ def main():
     testingPosts = True
     if testingPosts:
         print("Testing posts")
-        site.setPostsType("posts")
-        site.setPosts()
+        apiSrc.setPostsType("posts")
+        apiSrc.setChannel('links')
+        apiSrc.setPosts()
 
         print("Testing title and link")
 
-        for i, post in enumerate(site.getPosts()):
-            print(f"Post: {post}")
-            title = site.getPostTitle(post)
-            link = site.getPostLink(post)
-            url = site.getPostUrl(post)
-            theId = site.getPostId(post)
-            summary = site.getPostContentHtml(post)
-            image = site.getPostImage(post)
-            print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
-            print(f"{i}) Content: {summary} {image}\n")
-            return
+        for i, post in enumerate(apiSrc.getPosts()):
+            # print(f"Post: {post}")
+            title = apiSrc.getPostTitle(post)
+            link = apiSrc.getPostLink(post)
+            url = apiSrc.getPostUrl(post)
+            theId = apiSrc.getPostId(post)
+            summary = apiSrc.getPostContentHtml(post)
+            image = apiSrc.getPostImage(post)
+            print(f"{i}) Title: {title}\n"
+                  f"Link: {link}\n"
+                  f"Url: {url}\nId: {theId}\n"
+                  f"Content: {summary} {image}")
+
+        if input("All? (y/n) ") == 'y':
+            print(f"Channels: {apiSrc.getChannels()}")
+            for channel in apiSrc.getChannels():
+                print(f"Name: {channel['name']}")
+                apiSrc.setChannel(channel['name'])
+                apiSrc.setPosts()
+                for i, post in enumerate(apiSrc.getPosts()):
+                    print(f"{i}) Title: {apiSrc.getPostTitle(post)}\n"
+                          f"Link: {apiSrc.getPostLink(post)}\n")
+                input("More? (any key to continue) ")
+
+        return
+
+
         return
 
     testingDeleteLast = False
