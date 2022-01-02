@@ -34,7 +34,7 @@ class moduleSlack(Content, Queue):
         return (slack_token, user_slack_token)
 
     def initApi(self, keys):
-        logging.info(f"User: {self.user}")
+        logging.info("     Connecting {}".format(self.service))
         if self.user and self.user.find('/')>=0:
             self.name = self.user.split('/')[2].split('.')[0]
         else:
@@ -49,8 +49,10 @@ class moduleSlack(Content, Queue):
         self.user_slack_token = keys[1]
         return client
 
-    def setChannel(self, channel="links"):
+    def setChannel(self, channel=''):
         # setPage in Facebook
+        if not channel:
+            channel = self.getChannels()[0].get('name','')
         theChannel = self.getChanId(channel)
         self.channel = theChannel
 
@@ -496,6 +498,7 @@ class moduleSlack(Content, Queue):
     #     return result
 
     def getBots(self, channel="tavern-of-the-bots"):
+        # FIXME: this does not belong here
         if not self.posts:
             oldChan = self.getChannel()
             self.setChannel(channel)

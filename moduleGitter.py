@@ -146,32 +146,30 @@ class moduleGitter(Content,Queue):
         # idChannel = self.getChanId(theChan)
         logging.info(f"Chan: {theChan}")
         idChannel = theChan
-        res = self.deletePost(idPost, idChannel)
+        res = self.deleteGitter(idPost, idChannel)
         return res
 
-    def deletePost(self, idPost, idChannel):
-        #theChannel or the name of the channel?
-        logging.info("Deleting id %s from %s" % (idPost, idChannel))
-
-        logging.info(f"Chan: {idChannel}")
-        # idChannel = self.getChanId(idChannel)
-        # logging.info(f"Chan: {idChannel}")
-
-        try:
-            result = self.deleteGitter(idPost, idChannel)
-        except:
-            logging.info(self.report('Gitter',
-                            "Error deleting", "", sys.exc_info()))
-            result= ""
-        logging.debug(result)
-        return(result)
+    # def deletePost(self, idPost, idChannel):
+    #     #theChannel or the name of the channel?
+    #     logging.info("Deleting id %s from %s" % (idPost, idChannel))
+    #     logging.info(f"Chan: {idChannel}")
+    #     # idChannel = self.getChanId(idChannel)
+    #     # logging.info(f"Chan: {idChannel}")
+    #     try:
+    #         result = self.deleteGitter(idPost, idChannel)
+    #     except:
+    #         logging.info(self.report('Gitter',
+    #                         "Error deleting", "", sys.exc_info()))
+    #         result= ""
+    #     logging.debug(result)
+    #     return(result)
 
     def getChanId(self, name):
         logging.debug("getChanId %s"% self.service)
 
         chanList = self.getClient().rooms.rooms_list
         for channel in chanList:
-            if channel['name'].endswith(name):
+            if channel.get('name', '').endswith(name):
                 return(channel['id'])
         return(None)
 
@@ -202,20 +200,27 @@ class moduleGitter(Content,Queue):
 
     def processReply(self, reply):
         logging.info(reply)
-        if 'id' in reply:
-           logging.info(reply['id'])
-           reply = reply['id']
+        reply = reply.get('id', '')
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        title, link, comment = args
-        more = kwargs
+        if args and len(args) == 3:
+            title, link, comment = args
+        if kwargs:
+            more = kwargs
+
+            post = more.get('post', '')
+            api = more.get('api', '')
+            title = api.getPostTitle(post)
+            link = api.getPostLink(post)
+            comment = api.getPostComment(title)
+
         chan = self.getChannel()
-        logging.info(f"Chan: {chan}")
         result = self.getClient().messages.send(chan, f"{title} {link}")
         return(result)
 
     def getBots(self, channel='tavern-of-the-bots'):
+        # FIXME: this does not belong here
         if not self.posts:
             self.setPosts(channel)
         msgs = {}
@@ -253,6 +258,8 @@ def main():
     # Example:
     # src: ('gitter', 'set', 'https://gitter.im/fernand0errbot/', 'posts')
     # more: {'url': 'https://gitter.im/fernand0errbot/', 'service': 'gitter', 'cache': 'twitter\nfacebook\ntelegram', 'twitter': 'fernand0Test', 'facebook': 'Fernand0Test', 'telegram': 'testFernand0', 'buffermax': '9'}
+    # Not needed, it can be {}
+
     indent = ""
     for src in rules.rules.keys():
         if src[0] == 'gitter':
@@ -307,7 +314,6 @@ def main():
 
         return
 
-
     testingDelete = True
     if testingDelete:
         print(f"Channels")
@@ -326,17 +332,9 @@ def main():
 
         return
 
-    site = moduleGitter.moduleGitter()
-    CHANNEL = 'fernand0errbot/tavern-of-the-bots'
-    url = "https://gitter.im/fernand0errbot/tavern-of-the-bots"
-    site.setUrl(url)
-    site.setClient(url)
-    print(site.getClient().check_auth()) #[0])
-    CHANNEL = 'fernand0errbot/links'
-    site.setChannel(CHANNEL)
+    return 
 
     testingSlack = False
-
     if testingSlack:
         import moduleSlack
 
