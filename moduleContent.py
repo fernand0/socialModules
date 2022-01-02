@@ -284,7 +284,7 @@ class Content:
             fileName = f"{self.fileName}.last"
         else:
             if dst:
-                self.fileName = self.fileNameBase(dst) 
+                self.fileName = self.fileNameBase(dst)
                 fileName = f"{self.fileName}.last"
             else:
                 url = self.getUrl()
@@ -1186,8 +1186,8 @@ class Content:
             for i, entry in enumerate(posts):
                 idEntry = self.getPostId(entry)
                 if idPost == idEntry:
-                    # When there are duplicates (there shouldn't be) it returns
-                    # the last one
+                    # When there are duplicates (there shouldn't be) it
+                    # returns the last one
                     pos = i
                     # print(url[:lenCmp],linkS[:lenCmp])
         else:
@@ -1322,7 +1322,7 @@ class Content:
 
     def getPostUrl(self, post):
         return ""
-        
+
     def getPostId(self, post):
         return ""
 

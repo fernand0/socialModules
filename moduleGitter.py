@@ -39,7 +39,6 @@ class moduleGitter(Content,Queue):
 
     def initApi(self, keys):
         self.token = keys[0]
-        # https://api.slack.com/authentication/basics
         logging.info("     Connecting {}".format(self.service))
         try:
             client = gitterpy.client.GitterClient(self.token)
@@ -55,8 +54,15 @@ class moduleGitter(Content,Queue):
             client = slack.WebClient(token=self.slack_token)
         return client
 
-    def setChannel(self, channel="links"):
+    def getChannels(self):
+        return self.getClient().rooms.rooms_list
+
+    def setChannel(self, channel=''):
+        if not channel:
+            # The first one
+            channel = self.getChannels()[0].get('name','')
         # setPage in Facebook
+        # We should follow more the model there
         self.channel = channel
 
     def getChannel(self):
@@ -64,8 +70,9 @@ class moduleGitter(Content,Queue):
 
     def setApiPosts(self):
         if not self.channel:
-            # FIXME
-            self.setChannel('fernand0errbot/links')
+            # It will set the owner channel by default
+            logginf.info(f"No channel defined, setting the first one (if any)")
+            self.setChannel()
         posts = []
         try:
             if self.getClient():
@@ -76,74 +83,61 @@ class moduleGitter(Content,Queue):
 
         return posts
 
-    def getIdPosition(self, idPost):
-        posts = self.getPosts()
-        if posts:
-            for i, entry in enumerate(posts):
-                idS = idPost
-                myIdPost = self.getPostId(entry)
-                if idS == myIdPost:
-                    pos = i
-            return (pos)
-        else:
-            return -1
+    # Duplicate code? Available in moduleContent
+    # def getIdPosition(self, idPost):
+    #     posts = self.getPosts()
+    #     if posts:
+    #         for i, entry in enumerate(posts):
+    #             idS = idPost
+    #             myIdPost = self.getPostId(entry)
+    #             if idS == myIdPost:
+    #                 pos = i
+    #         return (pos)
+    #     else:
+    #         return -1
 
     def getPostContentHtml(self, post):
         return post.get('html', '')
 
     def setPostTitle(self, post, newTitle):
-        if 'text' in post:
-            pos = post['text'].rfind('http')
-            title = newTitle 
-            if pos>=0:
-                title = title + ' ' + post['text'][pos:]
+        # Only in local memory
+        pos = post.get('text','').rfind('http')
+        title = newTitle
+        if pos>=0:
+            title = f"{title} {post.get('text','')[pos:]}"
             post['text'] = title
 
     def getPostTitle(self, post):
-        title = ''
-        if 'text' in post:
-            title = post['text']
-            pos = title.rfind('http')
-            if pos>=0:
-                title = title[:pos]
-            return title
+        title = post.get('text', '')
+        pos = title.rfind('http')
+        if pos>=0:
+            title = title[:pos]
+        return title
 
     def getPostLink(self, post):
         link = ''
-        if 'text' in post:
-            text = post['text']
-            pos = text.rfind('http')
-            if pos>=0:
-                link = text[pos:]
+        text = post.get('text','')
+        pos = text.rfind('http')
+        if pos>=0:
+            link = text[pos:]
         return link
 
-    # def getPostUrl(self, post):
-    #     return (f"https://api.gitter.im/v1/rooms/{roomId}/chatMessages/"
-    #             f"{self.getPostId(post)}")
-    #     # https://developer.gitter.im/docs/messages-resource
-    #     #idChannel
-
     def getPostId(self, post):
-        logging.info(f"Id: {post}")
-        idPost = -1
-        if 'id' in post:
-            idPost = post['id']
+        idPost = post.get('id','')
         return (idPost)
+
+    def deleteApiPosts(self, idPost):
+        result = self.deteleGitter(idPost, self.getChannel())
+        logging.info(f"Res: {result}")
+        return(result)
 
     def deleteGitter(self, idPost, idChannel):
         # This does not belong here
         # '/v1/rooms/:roomId/chatMessages/:chatMessageId"
-        api_meth  = self.getClient().get_and_update_msg_url(idChannel, idPost)
         # call = f"https://api.gitter.im/v1/{api_meth}"
         #api_meth = 'rooms/{}/chatMessages/{}'.format(room_id, idPost)
-        logging.info(f"api {api_meth}")
-        #result = self.getClient().put(api_meth,data={'text':''})
-        result = self.getClient().messages.get_message(idChannel, idPost)
-        logging.info(f"Result1: {result}")
-        result = self.getClient().get(api_meth)
-        logging.info(f"Result1: {result}")
+        api_meth  = self.getClient().get_and_update_msg_url(idChannel, idPost)
         result = self.getClient().delete(api_meth)
-        logging.info(f"Result: {result}")
         logging.info("Result: {}".format(str(result)))
         return result
 
@@ -205,7 +199,7 @@ class moduleGitter(Content,Queue):
         print (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
-    
+
     def processReply(self, reply):
         logging.info(reply)
         if 'id' in reply:
@@ -252,32 +246,83 @@ def main():
 
     import moduleGitter
 
-    testingDelete = False
+    import moduleRules
+    rules = moduleRules.moduleRules()
+    rules.checkRules()
 
+    # Example:
+    # src: ('gitter', 'set', 'https://gitter.im/fernand0errbot/', 'posts')
+    # more: {'url': 'https://gitter.im/fernand0errbot/', 'service': 'gitter', 'cache': 'twitter\nfacebook\ntelegram', 'twitter': 'fernand0Test', 'facebook': 'Fernand0Test', 'telegram': 'testFernand0', 'buffermax': '9'}
+    indent = ""
+    for src in rules.rules.keys():
+        if src[0] == 'gitter':
+            more = rules.more[src]
+            break
+    apiSrc = rules.readConfigSrc(indent, src, more)
+
+    apiSrc.setUser(apiSrc.getClient().auth.get_my_id['name'])
+
+    testingSetTitle = False
+    if testingSetTitle:
+        apiSrc.setPostsType("posts")
+        apiSrc.setChannel('fernand0errbot/links')
+        apiSrc.setPosts()
+        if apiSrc.getPosts():
+            print(f"Title: {apiSrc.getPostTitle(apiSrc.getPost(0))}")
+            newTitle = input(f"New title? ")
+            apiSrc.setPostTitle(apiSrc.getPost(0), newTitle)
+            print(f"Title: {apiSrc.getPostTitle(apiSrc.getPost(0))}")
+
+        return
+
+    testingPosts = False
+    if testingPosts:
+        print("Testing posts")
+        apiSrc.setPostsType("posts")
+        apiSrc.setChannel('fernand0errbot/links')
+        apiSrc.setPosts()
+
+        print("Testing title and link")
+
+        for i, post in enumerate(apiSrc.getPosts()):
+            print(f"Post: {post}")
+            title = apiSrc.getPostTitle(post)
+            link = apiSrc.getPostLink(post)
+            url = apiSrc.getPostUrl(post)
+            theId = apiSrc.getPostId(post)
+            summary = apiSrc.getPostContentHtml(post)
+            image = apiSrc.getPostImage(post)
+            print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
+            print(f"{i}) Content: {summary} {image}\n")
+
+        if input("All? (y/n) ") == 'y':
+            for channel in apiSrc.getChannels():
+                print(f"Name: {channel['name']}")
+                apiSrc.setChannel(channel['name'])
+                apiSrc.setPosts()
+                for i, post in enumerate(apiSrc.getPosts()):
+                    print(f"{i}) Title: {apiSrc.getPostTitle(post)}\n"
+                          f"Link: {apiSrc.getPostLink(post)}\n")
+                input("More? (any key to continue) ")
+
+        return
+
+
+    testingDelete = True
     if testingDelete:
-        CHANNEL = 'Fernando Tricas García'
-        CHANNEL = 'fernand0errbot/links'
-        url = "https://gitter.im/fernand0errbot/fernand0"
+        print(f"Channels")
+        [ print(f"{i}) {channel.get('name','')}")
+            for i, channel in enumerate(apiSrc.getChannels()) ]
+        pos = input("Which channel (number)? ")
+        apiSrc.setChannel(apiSrc.getChannels()[int(pos)].get('name',''))
 
-        site = moduleGitter.moduleGitter()
+        apiSrc.setPosts()
 
-        site.setUrl(url)
-        site.setClient(url)
-        site.setChannel(CHANNEL)
-
-        print(site.getClient().check_auth())
-        site.setPosts()
-
-        [ print(f"{i}) {site.getPostTitle(post)}") 
-                for i, post in enumerate(site.getPosts()) ]
-        reply = input("Delete? ")
-        if reply == 'y':
-            posts = site.getPosts()
-            posts.reverse()
-            for post in posts:
-                print(f"Deleting: {site.getPostTitle(post)}")
-                site.deletePost(site.getPostId(post), site.getChannel())
-                return
+        [ print(f"{i}) {apiSrc.getPostTitle(post)}")
+                for i, post in enumerate(apiSrc.getPosts()) ]
+        pos = input("Which post to delete? ")
+        post = apiSrc.getPost(int(pos))
+        apiSrc.deletePost(post)
 
         return
 
@@ -468,24 +513,6 @@ def main():
 
     site.deletePost(site.getId(j), theChannel)
     #print(outputData['Slack']['pending'][elem][8])
-
-    print("Testing posts")
-    site.setPostsType("posts")
-    site.setPosts()
-
-    print("Testing title and link")
-
-    for i, post in enumerate(site.getPosts()):
-        print(f"Post: {post}")
-        title = site.getPostTitle(post)
-        link = site.getPostLink(post)
-        url = site.getPostUrl(post)
-        theId = site.getPostId(post)
-        summary = site.getPostContentHtml(post)
-        image = site.getPostImage(post)
-        print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
-        print(f"{i}) Content: {summary} {image}\n")
-    return
 
 
 if __name__ == '__main__':

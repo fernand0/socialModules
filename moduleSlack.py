@@ -596,7 +596,7 @@ def main():
                 'https://solar.lowtechmagazine.com/power.html',
                 'https://nakedsecurity.sophos.com/2021/12/13/log4shell-explained-how-it-works-why-you-need-to-know-and-how-to-fix-it/',
                 'https://vaceituno.medium.com/must-read-books-for-cybersecurity-professionals-486f81075c83'
-                'https://georgecouros.ca/blog/archives/13412', 
+                'https://georgecouros.ca/blog/archives/13412',
                 'https://ariadne.space/2021/12/11/to-secure-the-supply-chain-you-must-properly-fund-it/',
                 'https://aws.amazon.com/message/12721/',
                 ]
@@ -635,7 +635,7 @@ def main():
         input(f"Delete {site.getPostTitle(post)}? ")
         site.delete(0)
         return
-        
+
 
     testingDelete = False
     if testingDelete:
