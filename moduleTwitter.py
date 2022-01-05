@@ -158,7 +158,7 @@ class moduleTwitter(Content,Queue):
         logging.info(f"Tittt: {link and ('twitter' in link)}")
         res = 'Fail!'
         # post = post[:(240 - (len(link) + 1))]
-        if link and ('twitter.com' in link):
+        if (link and ('twitter.com' in link) and ('status' in link)):
             logging.debug("     Retweeting: %s" % title)
             # If the link is a tweet, we will retweet.
             res = self.publishApiRT(title, link, comment)
