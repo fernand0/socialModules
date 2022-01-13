@@ -540,8 +540,9 @@ class moduleSlack(Content, Queue):
 
 def main():
 
-    logging.basicConfig(
-        stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s"
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format="%(asctime)s %(message)s"
     )
 
     import moduleSlack

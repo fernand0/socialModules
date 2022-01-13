@@ -116,18 +116,16 @@ class Queue:
             post = self.getPosts()[j]
             title = self.getPostTitle(post)
             link = self.getPostLink(post)
-            content = ''
+            content = self.getPostContent(post)
 
             reply = ''
             logging.info("title %s"%title)
-            if title and link:
-                reply = reply + title + ' ' + link
-            elif title and content:
-                reply = reply + title + ' ' + content
-            elif link:
-                reply = reply +' '+link 
-            elif title:
-                reply = reply +' '+title 
+            if title:
+                reply = reply + ' ' + title 
+            if content:
+                reply = reply + ' ' + content
+            if link: 
+                reply = reply + '\n' + link 
         else:
             reply = ''
 

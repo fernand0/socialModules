@@ -54,6 +54,7 @@ class moduleImdb(Content,Queue):
 
     def setInfoData(self): 
         # This does not belong here it is the source of the data
+        posts = []
         self.data = []
         logging.info("Reading data...") 
         if os.path.exists(self.fileTV): 
@@ -88,77 +89,160 @@ class moduleImdb(Content,Queue):
                         horaIni = data['data'][i]['PROGRAMAS'][j]['HORA_INICIO']
                         horaFin = data['data'][i]['PROGRAMAS'][j]['HORA_FIN'] 
                         self.data.append((horaIni,horaFin, title, '-', cadName, genero)) 
+                        # FIXME: ¿Todos o sólo estos?
+                        posts.append(data['data'][i]['PROGRAMAS'][j])
+                        posts[-1]['CADENA'] = cadName
+        return posts
 
     def setPosts(self):
         logging.info(" Setting posts")
 
-        self.setInfoData() 
+        posts = self.setInfoData() 
+        # print(f"Posts: {posts}")
 
         hh = time.strftime('%H:00') 
         firstPost = True
         useCache = False
-        for post in self.data: 
-            if (hh <= post[0]): 
-                res = self.setPostMoreData(post)
-                logging.debug("More data: {}".format(str(res)))
-                if res: 
-                    post = post[:3] + (res[0], ) + post[4:] + res[1:]
-                else:
-                    post = post[:3] + ('-', ) + post[4:] 
-                #if firstPost and self.posts and (self.posts[0][2] != post [2]): 
-                if firstPost: # and (self.posts and self.posts[0][2] != post [2]): 
-                    # We have old data
-                    self.posts = []
-                    firstPost = False
-                    useCache = False
-                if not useCache:
-                    self.posts.append(post) 
-                    logging.info("Post more {}".format(str(post)))
-
-        if not useCache:
-            self.posts.sort()
+        j = 0
+        for i, post in enumerate(posts): 
+            print(f"Postt: {post}")
+            if ((hh <= self.getPostTimeIni(post)) 
+                    and (post['GENERO'] == 'Cine')):
+                print(f"Postd: {self.data[j]}")
+                res = self.setPostMoreDataNew(post)
+                print(f"Post: {post}")
+                j = j + 1
+        self.posts = sorted(posts, key = lambda d: d['HORA_INICIO'])
 
     def getPostTitle(self, post):
         logging.debug("getPostTitle {}".format(post))
-        if post:
-            return(post[2])
+        if isinstance(post, tuple):
+            if post:
+                return(post[2])
+            else:
+                return("")
         else:
-            return("")
+            return post.get('TITULO','')
 
     def getPostLink(self, post):
+        if isinstance(post, dict):
+            return post.get('URL', '')
         return ""
 
     def getPostCode(self, post):
+        if isinstance(post, dict):
+            return post.get('CADENA', '')
         if post:
             return(post[4])
         else:
             return("")
 
-    def getPostLine(self, post): 
-        logging.info("Post line {}".format(post))
-        line = '> [{}] - ({}) {}-{}: {}'.format(post[3], post[4], 
-                post[0], post[1], post[2])
-        logging.info("Post line formatted {}".format(line))
+    def getPostContent(self, post):
+        content = (
+                  f"({self.getPostDate(post)}) {self.getPostCode(post)} "
+                  f"[{self.getPostAvg(post)}] "
+                  f"{self.getPostTimeIni(post)}-{self.getPostTimeEnd(post)} "
+                  f"\n{self.getPostPlot(post)}\n "
+                  f" {self.getPostStars(post)}" )
+        return content
 
-        return line
+    def getPostLine(self, post): 
+        if post['GENERO'] == 'Cine':
+            logging.info("Post line {}".format(post))
+            line = (f"> [{self.getPostAvg(post)}] - "
+                   f"({self.getPostCode(post)}) "
+                   f"{self.getPostTimeIni(post)}-{self.getPostTimeEnd(post)}:"
+                   f"{self.getPostTitle(post)}")
+            logging.info("Post line formatted {}".format(line))
+
+            return line
 
     def getPostAvg(self, post):
+        if isinstance(post, dict):
+            if 'RESULT' in post:
+                return post.get('RESULT')[0].get('vote_average', '')
+            else:
+                return ''
         if post:
             return(post[3])
         else:
             return("")
 
     def getPostTimeIni(self, post):
+        if isinstance(post, dict):
+            return post.get('HORA_INICIO', '')
         if post:
             return(post[0])
         else:
             return("")
 
+    def getPostDate(self, post):
+        if isinstance(post, dict):
+            if 'RESULT' in post:
+                return post.get('RESULT')[0].get('release_date', '')
+            else:
+                return ''
+        if post:
+            return(post[8])
+        else:
+            return("")
+
+    def getPostPlot(self, post):
+        if isinstance(post, dict):
+            if 'RESULT' in post:
+                return post.get('RESULT')[0].get('overview', '')
+            else:
+                return ''
+        if post:
+            return(post[7])
+        else:
+            return("")
+
+    def getPostStars(self, post):
+        if isinstance(post, dict):
+            if 'movie' in post:
+                data = post.get('movie')
+                director = ''
+                if 'crew' in data['credits']:
+                    for cred in data['credits']['crew']:
+                        if cred['department'] == 'Directing':
+                            director = cred['name']
+                            break
+                cast = []
+                if 'credits' in data:
+                    for name in data['credits']['cast'][:4]: 
+                        cast.append(name['name'])
+                return f"[{director}] {', '.join(cast)}"
+            else:
+                return ''
+        if post:
+            return(post[9])
+        else:
+            return("")
+
+    def setPostMoreDataNew(self, post):
+        postMore = None 
+        mySearch = self.getClient().Search() 
+        title = self.getPostTitle(post)
+        print (f"Title: {title}")
+        response = mySearch.movie(query=title) 
+        print (f"ResSearch: {response}")
+        if len(mySearch.results) > 0: 
+            movie = tmdb.Movies(mySearch.results[0]['id']) 
+            print(f"Movie ({mySearch.results[0]['id']}): {movie.keywords()}")
+            movieData = {}
+            movieData['info'] = movie.info()
+            movieData['credits'] = movie.credits()
+
+            post.update({'RESULT': mySearch.results})
+            post.update({'movie': movieData})
+ 
     def setPostMoreData(self, post):
         postMore = None 
         mySearch = self.getClient().Search() 
         title = self.getPostTitle(post)
         response = mySearch.movie(query=title) 
+        print (f"ResSearch: {response}")
         if len(mySearch.results) > 0: 
             average = mySearch.results[0]['vote_average'] 
             overview = mySearch.results[0]['overview'] 
@@ -195,12 +279,19 @@ class moduleImdb(Content,Queue):
         return(postMore)
 
     def getPostTimeEnd(self, post):
+        if isinstance(post, dict):
+            return post.get('HORA_FIN', '')
         if post:
             return(post[1])
         else:
             return("")
 
     def getPostId(self, post):
+        if isinstance(post, dict):
+            if 'RESULT' in post:
+                return post.get('RESULT')[0].get('id', '')
+            else:
+                return ''
         idPost = -1
         if hasattr(self, 'ts'):
             idPost = post['ts']
@@ -235,11 +326,63 @@ def main():
             level=logging.DEBUG, 
             format='%(asctime)s %(message)s')
 
-    config = configparser.ConfigParser()
-    config.read(CONFIGDIR+'/.rssBlogs')
 
-    url = config.get('Blog23', 'url')
-    import moduleImdb
+    import moduleRules
+    rules = moduleRules.moduleRules()
+    rules.checkRules()
+
+    # Example:
+    # 
+    # Src: ('imdb', 'set', 'http://www.movistarplus.es/programacion-tv/?v=json', 'posts')
+    # 
+    # More: {'url': 'http://www.movistarplus.es/programacion-tv/?v=json', 'service': 'imdb', 'imdb': 'fernand0', 'posts': 'posts', 'search': 'http://www.movistarplus.es/programacion-tv/{}/?v=json', 'direct': 'gmail', 'gmail': 'fernand0+tv@elmundoesimperfecto.com', 'hold': 'yes'}
+
+    MODULE = 'imdb'
+
+    indent = ""
+    for src in rules.rules.keys():
+        if src[0] == MODULE:
+            print(f"Src: {src}")
+            more = rules.more[src]
+            break
+    apiSrc = rules.readConfigSrc(indent, src, more)
+
+    testingPosts = True
+    if testingPosts:
+        print("Testing posts")
+        apiSrc.setPostsType("posts")
+        apiSrc.setPosts()
+
+        print("Testing title and link")
+
+        for i, post in enumerate(apiSrc.getPosts()):
+            if post['GENERO'] == 'Cine':
+                print(f"Post: {post}")
+                title = apiSrc.getPostTitle(post)
+                link = apiSrc.getPostLink(post)
+                print(f"DAte: ({apiSrc.getPostDate(post)})")
+                print(f"Code: {apiSrc.getPostCode(post)} ")
+                print(f"Avg: [{apiSrc.getPostAvg(post)}] ")
+                print(f"Ini-fin: {apiSrc.getPostTimeIni(post)}-{apiSrc.getPostTimeEnd(post)} ")
+                print(f"plot: {apiSrc.getPostPlot(post)}\n ")
+                print(f"Stars: {apiSrc.getPostStars(post)}" )
+ 
+                url = apiSrc.getPostUrl(post)
+                theId = apiSrc.getPostId(post)
+                summary = apiSrc.getPostContent(post)
+                image = apiSrc.getPostImage(post)
+                print(f"{i}) Title: {title}\n"
+                      f"Link: {link}\n"
+                      f"Url: {url}\nId: {theId}\n"
+                      f"Content: {summary} {image}")
+                if ('Molly' in title):
+                    return
+
+        return
+
+
+
+    return
 
     site = moduleImdb.moduleImdb()
     site.setClient((url, None))
