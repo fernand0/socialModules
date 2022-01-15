@@ -203,7 +203,7 @@ class moduleImdb(Content,Queue):
             if 'movie' in post:
                 data = post.get('movie')
                 director = ''
-                if 'crew' in data['credits']:
+                if data and ('crew' in data['credits']):
                     for cred in data['credits']['crew']:
                         if cred['department'] == 'Directing':
                             director = cred['name']
@@ -224,18 +224,35 @@ class moduleImdb(Content,Queue):
         postMore = None 
         mySearch = self.getClient().Search() 
         title = self.getPostTitle(post)
+        print(f"Post: {post}")
         print (f"Title: {title}")
-        response = mySearch.movie(query=title) 
-        print (f"ResSearch: {response}")
-        if len(mySearch.results) > 0: 
-            movie = tmdb.Movies(mySearch.results[0]['id']) 
-            print(f"Movie ({mySearch.results[0]['id']}): {movie.keywords()}")
-            movieData = {}
-            movieData['info'] = movie.info()
-            movieData['credits'] = movie.credits()
+        import hashlib
+        m = hashlib.md5()
+        m.update(title.encode())
+        titleHash = m.hexdigest()
+        print(f"Hash: {titleHash}")
+        fileNameHash = f"/tmp/movies/{titleHash}"
+        movieData = {}
+        dataUpdate = {}
+        if os.path.exists(fileNameHash):
+            with open(fileNameHash, 'r') as fHash:
+                data = fHash.read()
+                if data:
+                    dataUpdate = json.loads(data)
+        else:
+            response = mySearch.movie(query=title) 
+            print (f"ResSearch: {response}")
+            if len(mySearch.results) > 0: 
+                movie = tmdb.Movies(mySearch.results[0]['id']) 
+                print(f"Movie ({mySearch.results[0]['id']}): {movie.keywords()}")
+                movieData['info'] = movie.info()
+                movieData['credits'] = movie.credits()
+                dataUpdate.update({'RESULT': mySearch.results})
+                dataUpdate.update({'movie': movieData})
+                with open(fileNameHash, 'w') as fHash:
+                    fHash.write(json.dumps(dataUpdate))
 
-            post.update({'RESULT': mySearch.results})
-            post.update({'movie': movieData})
+        post.update(dataUpdate)
  
     def setPostMoreData(self, post):
         postMore = None 
