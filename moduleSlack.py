@@ -116,11 +116,6 @@ class moduleSlack(Content, Queue):
 
     def processReply(self, reply):
         return reply.get('ok','Fail!')
-        #if self.getAttribute(reply, "ok"):
-        #    res = self.getAttribute(reply, "ts")
-        #else:
-        #    res = "Fail!"
-        #return res
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
