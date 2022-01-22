@@ -18,13 +18,16 @@ class moduleMedium(Content,Queue):
 
     def setClient(self, channel):
         logging.info("     Connecting Medium")
+        logging.info(f"     Connecting Medium {channel}")
         self.service = 'Medium'
+        client = None
+        userRaw = None
+        user = None
         try:
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssMedium')
             application_id = config.get("appKeys","ClientID")
             application_secret = config.get("appKeys","ClientSecret")
-
 
             try:
                 client = Client(application_id = application_id,
@@ -41,12 +44,9 @@ class moduleMedium(Content,Queue):
                 user = userRaw['username']
             except:
                 logging.warning("Medium authentication failed!")
-                logging.warning("Unexpected error:", sys.exc_info()[0])
+                logging.warning("Unexpected error:", sys.exc_info())
         except:
             logging.warning("Account not configured")
-            client = None
-            userRaw = None
-            user = None
 
         self.client = client
         self.user = user
@@ -132,10 +132,14 @@ class moduleMedium(Content,Queue):
         return(post['link'])
 
 def main():
+
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.DEBUG, 
+            format='%(asctime)s %(message)s')
+
     import moduleMedium
 
-
-    testingBotElectrico = True
+    testingBotElectrico = False
     if testingBotElectrico:
         url = 'https://medium.com/@botElectrico'
         tel = moduleMedium.moduleMedium()
@@ -145,33 +149,23 @@ def main():
                 '/tmp/2021-11-01_image.png',
                 content = "Evolución precio para el día 2021-11-01")
 
-    return
-    config = configparser.ConfigParser()
-    config.read(CONFIGDIR + '/.rssBlogs')
+        return
 
-    section = 'Blog2'
-    url = config.get(section, "url")
-    rssFeed = config.get(section, "rssFeed")
-    logging.info(" Blog RSS: %s"% rssFeed)
-    import moduleRss
-    blog = moduleRss.moduleRss()
-    # It does not preserve case
-    blog.setRssFeed(rssFeed)
-    blog.setUrl(url)
-    blog.setPosts()
-    post = blog.obtainPostData(1)
+    testingPosts = True
+    if testingPosts:
+        config = configparser.ConfigParser()
+        config.read(CONFIGDIR + '/.rssBlogs')
 
-    tel = moduleMedium.moduleMedium()
+        tel = moduleMedium.moduleMedium()
 
-    tel.setClient('fernand0')
+        tel.setClient('fernand0')
 
-    tel.setPosts()
-    title = post[0]
-    link = post[1]
-    content = post[7]
-    links = post[8]
-    tel.publishPost(title,link,content)
+        tel.setPosts()
+        for i, post in enumerate(tel.getPosts()):
+            print(f"{i}) {tel.getPostTitle(post)} {tel.getPostLink(post)}")
+        return
 
+ 
 
 if __name__ == '__main__':
     main()

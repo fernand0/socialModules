@@ -176,7 +176,10 @@ class moduleSlack(Content, Queue):
         elif "text" in post:
             text = post["text"]
             if text.startswith("<"):
-                title = text.split("|")[1]
+                if "|" in text:
+                    title = text.split("|")[1]
+                else:
+                    title = text
                 titleParts = title.split(">")
                 title = newTitle
                 if (len(titleParts) > 1) and (titleParts[1].find("<") >= 0):
@@ -189,7 +192,10 @@ class moduleSlack(Content, Queue):
                 else:
                     title = newTitle
 
-            post["text"] = title
+            # Last space
+            posSpace = text.rfind(' ')
+            post["text"] = title + text[posSpace:]
+            print(f"Title: {post['text']}")
         else:
             return "No title"
 
@@ -202,9 +208,10 @@ class moduleSlack(Content, Queue):
         elif "text" in post:
             text = post["text"]
             if text.startswith("<"):
-                title = text 
-                if text.find("|")>=0:
+                if "|" in text:
                     title = text.split("|")[1]
+                else:
+                    title = text
                 titleParts = title.split(">")
                 title = titleParts[0]
                 if (len(titleParts) > 1) and (titleParts[1].find("<") >= 0):
@@ -607,7 +614,21 @@ def main():
             site.publishPost('', link, '')
         return
 
-    testingPosts = True
+    testingEditTitle = True
+    if testingEditTitle:
+        print("Testing edit posts")
+        site.setPostsType("posts")
+        site.setPosts()
+        print(site.getPostTitle(site.getPosts()[0]))
+        print(site.getPostLink(site.getPosts()[0]))
+        input("Edit? ")
+        site.setPostTitle(site.getPosts()[0], "prueba")
+        print(site.getPostTitle(site.getPosts()[0]))
+        print(site.getPostLink(site.getPosts()[0]))
+        return
+
+
+    testingPosts = False
     if testingPosts:
         print("Testing posts")
         apiSrc.setPostsType("posts")
@@ -642,9 +663,6 @@ def main():
 
         return
 
-
-        return
-
     testingDeleteLast = False
     if testingDeleteLast:
         site.setPostsType("posts")
@@ -654,8 +672,7 @@ def main():
         input(f"Delete {site.getPostTitle(post)}? ")
         site.delete(0)
         return
-
-
+        
     testingDelete = False
     if testingDelete:
         # print("Testing posting and deleting")

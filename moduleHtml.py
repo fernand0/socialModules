@@ -178,7 +178,8 @@ class moduleHtml(Content, Queue):
 
         theTitle = doc_title
 
-        myText = doc.summary()
+        # myText = doc.summary()
+        myText = doc.content()
         for a, b in replaceChars:
             myText = myText.replace(a, b)
             theTitle = theTitle.replace(a, b)
