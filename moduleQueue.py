@@ -107,6 +107,12 @@ class Queue:
         logging.info(f"Reply: {reply}")
         return(reply)
 
+    def showR(self, j):
+        if j < len(self.getPosts()):
+            post = self.getPosts()[j]
+            reply = f"Post: {post}"
+        return reply
+
     #FIXME should we put here related commands or move this one to
     # moduleContent?  
     def show(self, j):
@@ -117,6 +123,8 @@ class Queue:
             title = self.getPostTitle(post)
             link = self.getPostLink(post)
             content = self.getPostContent(post)
+            if (title == content):
+                content = ''
 
             reply = ''
             logging.info("title %s"%title)

@@ -231,9 +231,15 @@ class moduleImdb(Content,Queue):
         m.update(title.encode())
         titleHash = m.hexdigest()
         print(f"Hash: {titleHash}")
-        fileNameHash = f"/tmp/movies/{titleHash}"
+        fileNamePath = "/tmp/movies"
+        fileNameHash = f"{fileNamePath}/{titleHash}"
         movieData = {}
         dataUpdate = {}
+        if not os.path.exists(fileNamePath):
+            try:
+                os.mkdir(fileNamePath)
+            except OSError:
+                print ("Creation of the directory %s failed" % path)
         if os.path.exists(fileNameHash):
             with open(fileNameHash, 'r') as fHash:
                 data = fHash.read()
@@ -249,8 +255,9 @@ class moduleImdb(Content,Queue):
                 movieData['credits'] = movie.credits()
                 dataUpdate.update({'RESULT': mySearch.results})
                 dataUpdate.update({'movie': movieData})
-                with open(fileNameHash, 'w') as fHash:
-                    fHash.write(json.dumps(dataUpdate))
+                if os.path.exists(fileNameHash):
+                    with open(fileNameHash, 'w') as fHash:
+                        fHash.write(json.dumps(dataUpdate))
 
         post.update(dataUpdate)
  

@@ -174,7 +174,10 @@ class moduleSlack(Content, Queue):
         elif "text" in post:
             text = post["text"]
             if text.startswith("<"):
-                title = text.split("|")[1]
+                if "|" in text:
+                    title = text.split("|")[1]
+                else:
+                    title = text
                 titleParts = title.split(">")
                 title = newTitle
                 if (len(titleParts) > 1) and (titleParts[1].find("<") >= 0):
@@ -187,7 +190,10 @@ class moduleSlack(Content, Queue):
                 else:
                     title = newTitle
 
-            post["text"] = title
+            # Last space
+            posSpace = text.rfind(' ')
+            post["text"] = title + text[posSpace:]
+            print(f"Title: {post['text']}")
         else:
             return "No title"
 
@@ -199,7 +205,10 @@ class moduleSlack(Content, Queue):
         elif "text" in post:
             text = post["text"]
             if text.startswith("<"):
-                title = text.split("|")[1]
+                if "|" in text:
+                    title = text.split("|")[1]
+                else:
+                    title = text
                 titleParts = title.split(">")
                 title = titleParts[0]
                 if (len(titleParts) > 1) and (titleParts[1].find("<") >= 0):
@@ -570,7 +579,7 @@ def main():
     # print("---")
     # print(site.getSocialNetworks())
 
-    testingInit = True
+    testingInit = False
     if testingInit:
         import moduleRules
         src = ('slack', 'set', 'http://fernand0-errbot.slack.com/', 'posts')
@@ -606,7 +615,21 @@ def main():
             site.publishPost('', link, '')
         return
 
-    testingPosts = True
+    testingEditTitle = True
+    if testingEditTitle:
+        print("Testing edit posts")
+        site.setPostsType("posts")
+        site.setPosts()
+        print(site.getPostTitle(site.getPosts()[0]))
+        print(site.getPostLink(site.getPosts()[0]))
+        input("Edit? ")
+        site.setPostTitle(site.getPosts()[0], "prueba")
+        print(site.getPostTitle(site.getPosts()[0]))
+        print(site.getPostLink(site.getPosts()[0]))
+        return
+
+
+    testingPosts = False
     if testingPosts:
         print("Testing posts")
         site.setPostsType("posts")
@@ -624,7 +647,6 @@ def main():
             image = site.getPostImage(post)
             print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
             print(f"{i}) Content: {summary} {image}\n")
-            return
         return
 
     testingDeleteLast = False
@@ -637,7 +659,6 @@ def main():
         site.delete(0)
         return
         
-
     testingDelete = False
     if testingDelete:
         # print("Testing posting and deleting")
