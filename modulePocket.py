@@ -32,7 +32,7 @@ class modulePocket(Content,Queue):
             dictPosts = self.client.retrieve()
             dictPosts = dictPosts['list']
         except PocketException as exc:
-            logging.warning(f"{self.service} generated an exception: {exc}")
+            logging.warning(f"setApiPosts generated an exception: {exc}")
             dictposts = []
         for post in dictPosts:
             posts.append(dictPosts[post])
@@ -66,7 +66,12 @@ class modulePocket(Content,Queue):
             if pos >=0:
                 # Sometimes there are two links or something after the link
                 link=link[:pos]
-        res = self.getClient().add(link)
+        try:
+            res = self.getClient().add(link)
+        except PocketException as exc:
+            logging.warning(f"publishApiPosts generated an exception: {exc}")
+            res = "Fail!"
+
         return self.processReply(res)
 
     def publishh(self, j):
