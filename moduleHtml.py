@@ -163,6 +163,8 @@ class moduleHtml(Content, Queue):
             ("👍", "(ok)"),
             ("🙀", "(oh)"),
             ("🚀", "(despegar)"),
+            ("\\n",""),
+            ("\\t",""),
         ]
 
         from readability import Document
@@ -180,6 +182,7 @@ class moduleHtml(Content, Queue):
 
         # myText = doc.summary()
         myText = doc.content()
+
         for a, b in replaceChars:
             myText = myText.replace(a, b)
             theTitle = theTitle.replace(a, b)
