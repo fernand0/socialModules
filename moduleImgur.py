@@ -40,12 +40,12 @@ class moduleImgur(Content, Queue):
 
         return client
 
-    def setApiCache(self):
-        import moduleCache
-        cache = moduleCache.moduleCache()
-        cache.setClient((self.url, (self.service, self.user, 'posts')))
-        cache.setPosts()
-        return cache.getPosts()
+    # def setApiCache(self):
+    #     import moduleCache
+    #     cache = moduleCache.moduleCache()
+    #     cache.setClient((self.url, (self.service, self.user, 'posts')))
+    #     cache.setPosts()
+    #     return cache.getPosts()
 
     def setApiPosts(self):
         posts = []
@@ -131,35 +131,35 @@ class moduleImgur(Content, Queue):
             return post.link
 
     def getPostImage(self, post):
-        # Need rethinking
+        # FIXME. Need rethinking
         return self.getPostId(post)
 
     def getPostId(self, post):
         return post.id
 
-    def extractDataMessage(self, i):
-        posts = self.getPosts()
-        if i < len(posts):
-            if self.getPostsType() == 'cache':
-                # Dirty?
-                post = posts[0]
-                return post
-            else:
-                post = posts[i]
-                logging.debug(f"Post: {post}")
-                theTitle = self.getPostTitle(post)
-                theLink = self.getPostLink(post)
-                theId = self.getPostId(post)
-                thePost = self.getImagesCode(i)
-                theTags = self.getImagesTags(i)
-        else:
-            theTitle = ''
-            theLink = ''
-            thePost = ''
-            theTags = ''
+    # def extractDataMessage(self, i):
+    #     posts = self.getPosts()
+    #     if i < len(posts):
+    #         if self.getPostsType() == 'cache':
+    #             # Dirty?
+    #             post = posts[0]
+    #             return post
+    #         else:
+    #             post = posts[i]
+    #             logging.debug(f"Post: {post}")
+    #             theTitle = self.getPostTitle(post)
+    #             theLink = self.getPostLink(post)
+    #             theId = self.getPostId(post)
+    #             thePost = self.getImagesCode(i)
+    #             theTags = self.getImagesTags(i)
+    #     else:
+    #         theTitle = ''
+    #         theLink = ''
+    #         thePost = ''
+    #         theTags = ''
 
-        return (theTitle,  theLink, theLink, theId,
-                '', '', '', theTags, thePost)
+    #     return (theTitle,  theLink, theLink, theId,
+    #             '', '', '', theTags, thePost)
 
     def processReply(self, reply):
         res = ''
@@ -280,41 +280,41 @@ class moduleImgur(Content, Queue):
             res.append((urlImg, title, description, tags))
         return res
 
-    def extractImagesOld(self, post):
-        theTitle = self.getPostTitle(post)
-        theLink = self.getPostLink(post)
-        page = urlopen(theLink).read()
-        soup = BeautifulSoup(page, 'lxml')
+    # def extractImagesOld(self, post):
+    #     theTitle = self.getPostTitle(post)
+    #     theLink = self.getPostLink(post)
+    #     page = urlopen(theLink).read()
+    #     soup = BeautifulSoup(page, 'lxml')
 
-        res = []
-        script = soup.find_all('script')
-        pos = script[9].text.find('image')
-        pos = script[9].text.find('{', pos + 1)
-        pos2 = script[9].text.find('\n', pos + 1)
-        data = json.loads(script[9].text[pos:pos2-1])
-        import pprint
-        pprint.pprint(data)
-        sys.exit()
-        title = data['title']
-        for img in data['album_images']['images']:
-            urlImg = 'https://i.imgur.com/{}.jpg'.format(img['hash'])
-            if 'description' in img:
-                titleImg = img['description']
-                if titleImg:
-                    description = titleImg.split('#')
-                    description, tags = description[0], description[1:]
-                    aTags = []
-                    while tags:
-                        aTag = tags.pop().strip()
-                        aTags.append(aTag)
-                    tags = aTags
-                else:
-                    description = ""
-                    tags = []
-            else:
-                titleImg = ""
-            res.append((urlImg, title, description, tags))
-        return res
+    #     res = []
+    #     script = soup.find_all('script')
+    #     pos = script[9].text.find('image')
+    #     pos = script[9].text.find('{', pos + 1)
+    #     pos2 = script[9].text.find('\n', pos + 1)
+    #     data = json.loads(script[9].text[pos:pos2-1])
+    #     import pprint
+    #     pprint.pprint(data)
+    #     sys.exit()
+    #     title = data['title']
+    #     for img in data['album_images']['images']:
+    #         urlImg = 'https://i.imgur.com/{}.jpg'.format(img['hash'])
+    #         if 'description' in img:
+    #             titleImg = img['description']
+    #             if titleImg:
+    #                 description = titleImg.split('#')
+    #                 description, tags = description[0], description[1:]
+    #                 aTags = []
+    #                 while tags:
+    #                     aTag = tags.pop().strip()
+    #                     aTags.append(aTag)
+    #                 tags = aTags
+    #             else:
+    #                 description = ""
+    #                 tags = []
+    #         else:
+    #             titleImg = ""
+    #         res.append((urlImg, title, description, tags))
+    #     return res
 
     def getNumPostsData(self, num, i, lastLink):
         listPosts = []

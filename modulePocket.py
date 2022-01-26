@@ -28,8 +28,12 @@ class modulePocket(Content,Queue):
 
     def setApiPosts(self):
         posts = []
-        dictPosts = self.client.retrieve()
-        dictPosts = dictPosts['list']
+        try:
+            dictPosts = self.client.retrieve()
+            dictPosts = dictPosts['list']
+        except PocketException as exc:
+            logging.warning(f"{self.service} generated an exception: {exc}")
+            dictposts = []
         for post in dictPosts:
             posts.append(dictPosts[post])
 
