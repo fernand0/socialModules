@@ -63,35 +63,6 @@ class moduleGmail(Content,Queue):
                         credentials=creds, cache_discovery=False)
         return service
 
-    #def setClient(self, Acc):
-    #    logging.info("     Connecting GMail %s"%str(Acc))
-   
-    #    api = {}
-    #
-    #    self.service = 'gmail'
-    #    if type(Acc) == str: 
-    #        self.user = Acc
-    #        #self.name = 'GMail_{}'.format(Acc)
-    #    elif isinstance(Acc, tuple):
-    #        if (len(Acc) > 1) and isinstance(Acc[1], tuple):
-    #            self.user = Acc[0]
-    #            #self.setPostsType(Acc[1][2])
-    #        elif len(Acc)>1:
-    #            self.user = Acc[1]
-    #            #if len(Acc)>2:
-    #            #    self.setPostsType(Acc[2]) 
-    #        #self.name = 'GMail_{}'.format(Acc[0]) 
-
-    #    try:
-    #        creds = self.authorize()
-    #        service = build('gmail', 'v1', 
-    #                credentials=creds, cache_discovery=False)
-    #        self.client = service
-    #    except:
-    #        logging.warning("Problem with authorization")
-    #        logging.warning("Unexpected error:", sys.exc_info()[0])
-    #        return("Fail")
-
     def authorize(self):
         # based on Code from
         # https://github.com/gsuitedevs/python-samples/blob/aacc00657392a7119808b989167130b664be5c27/gmail/quickstart/quickstart.py
@@ -252,52 +223,6 @@ class moduleGmail(Content,Queue):
         posts = self.processPosts(posts, label, mode)
         return posts
 
-    #def setPosts(self, label=None, mode=''): 
-    #    logging.info("  Setting posts")
-    #    api = self.getClient()
-
-    #    self.posts = []
-    #    self.drafts = []
-    #    try: 
-    #        if hasattr(self, 'getPostsType'): 
-    #            typePosts = self.getPostsType()
-    #            logging.info("  Setting posts type {}".format(typePosts))
-    #        elif label == 'drafts': 
-    #            typePosts = 'drafts' 
-    #        else: 
-    #            typePosts = 'messages' 
-    #        if typePosts == 'drafts':
-    #            posts = api.users().drafts().list(userId='me').execute() 
-    #        else:
-    #            posts = api.users().messages().list(userId='me').execute()
-    #    #except client.HttpAccessTokenRefreshError: 
-    #    #    return "Fail"
-    #    except: 
-    #        logging.warning("GMail failed!") 
-    #        logging.warning("Unexpected error:", sys.exc_info()[0]) 
-    #        return("Fail")
-
-    #    logging.debug("--setPosts %s" % posts)
-    #    #print("--setPosts %s" % posts)
-
-    #    for post in posts[typePosts]: 
-    #       if mode != 'raw':
-    #           meta = self.getMessageMeta(post['id'],typePosts)
-    #           message = {}
-    #           message['list'] = post
-    #           message['meta'] = meta
-    #       else:
-    #               raw = self.getMessageRaw(post['id'],typePosts)
-    #               message = {}
-    #               message['list'] = post
-    #               message['meta'] = ''
-    #               message['raw'] = raw
-
-    #       self.posts.insert(0, message) 
-
-    #    logging.debug("posts {}".format(str(self.posts)))
-    #    return "OK"
-
     def confName(self, acc):
         theName = os.path.expanduser(CONFIGDIR + '/' + '.' 
                 + acc[0]+ '_' 
@@ -423,10 +348,12 @@ class moduleGmail(Content,Queue):
     def getPostLink(self, post):
         # fromP = self.getHeader(post, 'From')
         # snippet = self.getHeader(post, 'snippet')
+        theLink = ''
         if post:
-            theLink = self.getPostLinks(post)[0]
-        else:
-            theLink = ""
+            logging.info(f"Post: {post}")
+            links = self.getPostLinks(post)
+            if links:
+                theLink = links[0]
 
         # result = f"From: {fromP}\nText: {snipP}"
         result = theLink
@@ -504,42 +431,42 @@ class moduleGmail(Content,Queue):
     
         return(labelId)
 
-    def extractDataMessage(self, i):
-        logging.info("Service %s"% self.service)
-        posts = self.getPosts()
-        if posts:
-            message = posts[i]
-            logging.debug("Message %s"% message)
+    # def extractDataMessage(self, i):
+    #     logging.info("Service %s"% self.service)
+    #     posts = self.getPosts()
+    #     if posts:
+    #         message = posts[i]
+    #         logging.debug("Message %s"% message)
 
-            theTitle = self.getHeader(message, 'Subject')
-            if theTitle == None:
-                theTitle = self.getHeader(message, 'subject')
-            snippet = self.getHeader(message, 'snippet')
+    #         theTitle = self.getHeader(message, 'Subject')
+    #         if theTitle == None:
+    #             theTitle = self.getHeader(message, 'subject')
+    #         snippet = self.getHeader(message, 'snippet')
 
-            theLink = None
-            if snippet:
-                posIni = snippet.find('http')
-                posFin = snippet.find(' ', posIni)
-                posSignature = snippet.find('-- ')
-                if posIni < posSignature: 
-                    theLink = snippet[posIni:posFin]
-            theLinks = self.getPostLinks(message)
-            theSummaryLinks = self.getPostLinksWithText(message)
-            content = None
-            theContent = None
-            #date = int(self.getHeader(message, 'internalDate'))/1000
-            #firstLink = '{}'.format(datetime.datetime.fromtimestamp(date)) # Bad!
-            firstLink = None
-            theImage = None
-            theSummary = snippet
+    #         theLink = None
+    #         if snippet:
+    #             posIni = snippet.find('http')
+    #             posFin = snippet.find(' ', posIni)
+    #             posSignature = snippet.find('-- ')
+    #             if posIni < posSignature: 
+    #                 theLink = snippet[posIni:posFin]
+    #         theLinks = self.getPostLinks(message)
+    #         theSummaryLinks = self.getPostLinksWithText(message)
+    #         content = None
+    #         theContent = None
+    #         #date = int(self.getHeader(message, 'internalDate'))/1000
+    #         #firstLink = '{}'.format(datetime.datetime.fromtimestamp(date)) # Bad!
+    #         firstLink = None
+    #         theImage = None
+    #         theSummary = snippet
 
-            # theSummaryLinks = message
-            comment = self.getPostId(message) 
+    #         # theSummaryLinks = message
+    #         comment = self.getPostId(message) 
 
-            theLink = theLinks[0]
-            return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks)
-        else:
-            return (None, None, None, None, None, None, None, None, None, None)
+    #         theLink = theLinks[0]
+    #         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks)
+    #     else:
+    #         return (None, None, None, None, None, None, None, None, None, None)
 
     def editl(self, j, newTitle):
         return('Not implemented!')
@@ -598,30 +525,6 @@ class moduleGmail(Content,Queue):
 
         return(f"Res: {res}")
  
-    # def publishPost(self, j):
-    #     return self.publish(self, j)
-
-    def publishh(self, j):
-        logging.info("Publishing %d"% j)                
-        logging.info("servicename %s" %self.service)
-        logging.info(f"type {self.getPostsType()}")
-        logging.info(f"Before post {self.getPosts()}")
-        if not self.getPosts():
-            self.setPosts()
-        logging.info("post %s" %self.getPosts())
-        idPost = self.getPosts()[j]['list']['id'] #thePost[-1]
-        title = self.getHeader(self.getPosts()[j]['meta'], 'Subject')
-        
-        api = self.getClient()
-        try:
-            res = api.users().drafts().send(userId='me', 
-                       body={ 'id': idPost}).execute()
-            logging.info("Res: %s" % res)
-        except:
-            return(self.report('Gmail', idPost, '', sys.exc_info()))
-
-        return("%s"% title)
-
     def trash(self, j, typePost='drafts'):
         logging.info("Trashing %d"% j)
 

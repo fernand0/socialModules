@@ -330,6 +330,22 @@ class moduleCache(Content,Queue):
 
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
+    def setPostLink(self, post, newLink):
+        if post:
+            if hasattr(self, 'auxClass'):
+                myModule = f"module{self.auxClass.capitalize()}"
+                import importlib
+                importlib.import_module(myModule)
+                mod = sys.modules.get(myModule)
+                cls = getattr(mod, myModule)
+                api = cls()
+                apiCmd = getattr(api, 'setPostLink')
+                post  = apiCmd(post, newLink)
+            # else:
+            #     # Old style
+            #     title = post[0]
+            return post
+ 
     def setPostTitle(self, post, newTitle):
         if post:
             if hasattr(self, 'auxClass'):
@@ -404,10 +420,19 @@ class moduleCache(Content,Queue):
 
     def editApiLink(self, post, newLink=''):
         oldLink = self.getPostLink(post)
+        if hasattr(self, 'auxClass'): 
+            myModule = f"module{self.auxClass.capitalize()}"
+            import importlib
+            importlib.import_module(myModule)
+            mod = sys.modules.get(myModule)
+            cls = getattr(mod, myModule)
+            api = cls()
+            apiCmd = getattr(api, 'editApiLink')
+            content  = apiCmd(post, newLink)
+        else:
+            post = post[:1] + ( newLink, ) + post[2:]
         idPost = self.getLinkPosition(oldLink)
-        post = post[:1] + ( newLink, ) + post[2:]
         posts = self.getPosts()
-        posts[idPost] = post
         self.assignPosts(posts)
         self.updatePostsCache()
         return(idPost)
@@ -593,6 +618,10 @@ def main():
     if testingFiles:
         import moduleCache
     
+        import moduleRules
+        rules = moduleRules.moduleRules()
+        rules.checkRules()
+
         queues = []
         for fN in os.listdir(f"{DATADIR}"):
             if (fN[0].isupper() and fN.find('queue')>=0):
@@ -636,8 +665,16 @@ def main():
             url = f"https://{url}/"
 
             site = moduleCache.moduleCache()
-            site.setClient((url, (sN, nick)))
-            site.setPosts()
+            print(f"File: {fNP}")
+            service = fNP.split('__')[0].split('_')[-1].lower()
+            url = fNP.split('__')[0].split('_')[2].replace('---','://').replace('-','/')
+            user = url.split('/')[-1]
+
+            indent = ""
+            src = ('cache', (service, url), f"{service}@{user}", 'posts')
+            more = {}
+            apiSrc = rules.readConfigSrc(indent, src, more)
+            apiSrc.setPosts()
             posts = site.getPosts()
             if not posts:
                 with open(fNP,'rb') as f:

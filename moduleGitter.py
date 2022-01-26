@@ -71,7 +71,7 @@ class moduleGitter(Content,Queue):
     def setApiPosts(self):
         if not self.channel:
             # It will set the owner channel by default
-            logginf.info(f"No channel defined, setting the first one (if any)")
+            logging.info(f"No channel defined, setting the first one (if any)")
             self.setChannel()
         posts = []
         try:

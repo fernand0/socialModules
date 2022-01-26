@@ -118,6 +118,12 @@ class moduleImgur(Content, Queue):
     #     else:
     #         return Content.getLinkPosition(self, link)
 
+    def editApiLink(self, post, newLink):
+        post.link = newLink
+
+    def setPostLink(self, post, newLink):
+        post.link = newLink
+
     def getPostLink(self, post):
         if self.getPostsType() == 'cache':
             return post[1]
@@ -347,8 +353,31 @@ def main():
 
     import moduleImgur
 
-    config = configparser.ConfigParser()
-    config.read(CONFIGDIR + '/.rssBlogs')
+    import moduleRules
+    rules = moduleRules.moduleRules()
+    rules.checkRules()
+
+    # Example:
+    # 
+    # src: ('imgur', 'set', 'https://imgur.com/user/ftricas', 'drafts')
+    # 
+    # More: Src {'url': 'https://imgur.com/user/ftricas', 'service': 'imgur', 'posts': 'drafts', 'cache': 'imgur', 'imgur': 'ftricas', 'time': '23.1', 'max': '1'}
+    print(rules.rules.keys())
+
+    indent = ""
+    for src in rules.rules.keys():
+        if src[0] == 'imgur':
+            print(f"Src: {src}")
+            more = rules.more[src]
+            break
+    apiSrc = rules.readConfigSrc(indent, src, more)
+
+    testingEditLink = True
+    if testingEditLink:
+        apiSrc.setPosts()
+        print(f"Posts: {apiSrc.getPosts()}")
+
+        return
 
     testingDrafts = False
     if testingDrafts:
@@ -373,8 +402,7 @@ def main():
         return
 
 
-
-    publishCache = True
+    publishCache = False
     if publishCache:
         img = moduleImgur.moduleImgur()
         acc = "Blog20"
