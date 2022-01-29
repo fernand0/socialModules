@@ -173,29 +173,29 @@ class moduleGitter(Content,Queue):
                 return(channel['id'])
         return(None)
 
-    def extractDataMessage(self, i):
-        logging.info(f"extract gitt {i}")
-        logging.info("Extract Service %s"% self.service)
-        (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None)
+    # def extractDataMessage(self, i):
+    #     logging.info(f"extract gitt {i}")
+    #     logging.info("Extract Service %s"% self.service)
+    #     (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None)
 
-        if i < len(self.getPosts()):
-            post = self.getPosts()[i]
-            theTitle = self.getPostTitle(post)
-            theLink = self.getPostLink(post)
-            print("The title: {theTitle}")
+    #     if i < len(self.getPosts()):
+    #         post = self.getPosts()[i]
+    #         theTitle = self.getPostTitle(post)
+    #         theLink = self.getPostLink(post)
+    #         print("The title: {theTitle}")
 
-            theLinks = ''
-            content = ''
-            theContent = ''
-            firstLink = theLink
-            theImage = ''
-            theSummary = ''
+    #         theLinks = ''
+    #         content = ''
+    #         theContent = ''
+    #         firstLink = theLink
+    #         theImage = ''
+    #         theSummary = ''
 
-            theSummaryLinks = ''
-            comment = ''
+    #         theSummaryLinks = ''
+    #         comment = ''
 
-        print (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
-        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+    #     print (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+    #     return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
 
     def processReply(self, reply):
