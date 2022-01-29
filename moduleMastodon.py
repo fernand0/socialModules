@@ -159,34 +159,34 @@ class moduleMastodon(Content, Queue):
                 link = self.getAttribute(post, 'uri')
         return link
 
-    def extractDataMessage(self, i):
-        logging.info(f"Service {self.service}")
-        (theTitle, theLink, firstLink, theImage, theSummary,
-         content, theSummaryLinks, theContent, theLinks, comment) = (
-                        None, None, None, None, None,
-                        None, None, None, None, None)
+    # def extractDataMessage(self, i):
+    #     logging.info(f"Service {self.service}")
+    #     (theTitle, theLink, firstLink, theImage, theSummary,
+    #      content, theSummaryLinks, theContent, theLinks, comment) = (
+    #                     None, None, None, None, None,
+    #                     None, None, None, None, None)
 
-        if i < len(self.getPosts()):
-            post = self.getPost(i)
-            theTitle = self.getPostTitle(post)
-            theLink = self.getPostUrl(post)
-            firstLink = self.getPostContentLink(post)
-            theId = self.getPostId(post)
+    #     if i < len(self.getPosts()):
+    #         post = self.getPost(i)
+    #         theTitle = self.getPostTitle(post)
+    #         theLink = self.getPostUrl(post)
+    #         firstLink = self.getPostContentLink(post)
+    #         theId = self.getPostId(post)
 
-            theLinks = [firstLink, ]
-            content = None
-            theContent = None
-            if 'card' in post and post['card']:
-                theContent = self.getAttribute(post['card'], 'description')
+    #         theLinks = [firstLink, ]
+    #         content = None
+    #         theContent = None
+    #         if 'card' in post and post['card']:
+    #             theContent = self.getAttribute(post['card'], 'description')
 
-            theImage = None
-            theSummary = None
+    #         theImage = None
+    #         theSummary = None
 
-            theSummaryLinks = None
-            comment = theId
+    #         theSummaryLinks = None
+    #         comment = theId
 
-        return (theTitle, theLink, firstLink, theImage, theSummary,
-                content, theSummaryLinks, theContent, theLinks, comment)
+    #     return (theTitle, theLink, firstLink, theImage, theSummary,
+    #             content, theSummaryLinks, theContent, theLinks, comment)
 
     def search(self, text):
         pass
