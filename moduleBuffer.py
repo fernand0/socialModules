@@ -251,33 +251,33 @@ class moduleBuffer(Content,Queue):
 
         return(linkAdded)
 
-    def extractDataMessage(self, i):
-        logging.info("Service %s"% self.service)
-        messageRaw = self.getPosts()[i]
+    # def extractDataMessage(self, i):
+    #     logging.info("Service %s"% self.service)
+    #     messageRaw = self.getPosts()[i]
 
-        theTitle = messageRaw['text']
-        theLink = ''
-        content = ''
-        if 'media' in messageRaw:
-            if ('expanded_link' in messageRaw['media']):
-                theLink = messageRaw['media']['expanded_link']
-            elif 'link' in messageRaw['media']:
-                theLink = messageRaw['media']['link']
-            else:
-                theLink = ''
-            if ('description' in messageRaw['media']): 
-                content = messageRaw['media']['description']
+    #     theTitle = messageRaw['text']
+    #     theLink = ''
+    #     content = ''
+    #     if 'media' in messageRaw:
+    #         if ('expanded_link' in messageRaw['media']):
+    #             theLink = messageRaw['media']['expanded_link']
+    #         elif 'link' in messageRaw['media']:
+    #             theLink = messageRaw['media']['link']
+    #         else:
+    #             theLink = ''
+    #         if ('description' in messageRaw['media']): 
+    #             content = messageRaw['media']['description']
 
-        theLinks = None
-        theContent = content
-        firstLink = theLink
-        theImage = None
-        theSummary = content
+    #     theLinks = None
+    #     theContent = content
+    #     firstLink = theLink
+    #     theImage = None
+    #     theSummary = content
 
-        theSummaryLinks = content
-        comment = None
+    #     theSummaryLinks = content
+    #     comment = None
 
-        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+    #     return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
     def getTitle(self, i):
         if i < len(self.getPosts()): 
@@ -382,21 +382,21 @@ class moduleBuffer(Content,Queue):
 
         return(update)
 
-    def publishh(self, j):
-        logging.info("Publishing %d"% j)
-        post = self.obtainPostData(j)
-        logging.info("Publishing %s"% post[0])
-        profile = self.getProfile() 
-        update = Update(api=self.client, id=profile.updates.pending[j]['id']) 
-        res = update.publish()
-        logging.info("Update before return %s"% res)
-        if res:
-            if 'message' in res: 
-                return(res['message'])
-            else:
-                return(res)
-        else:
-            return("Published!")
+    # def publishh(self, j):
+    #     logging.info("Publishing %d"% j)
+    #     post = self.obtainPostData(j)
+    #     logging.info("Publishing %s"% post[0])
+    #     profile = self.getProfile() 
+    #     update = Update(api=self.client, id=profile.updates.pending[j]['id']) 
+    #     res = update.publish()
+    #     logging.info("Update before return %s"% res)
+    #     if res:
+    #         if 'message' in res: 
+    #             return(res['message'])
+    #         else:
+    #             return(res)
+    #     else:
+    #         return("Published!")
     
     def delete(self, j):
         logging.info("Deleting %d"% j)
