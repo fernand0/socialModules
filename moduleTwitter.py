@@ -260,32 +260,32 @@ class moduleTwitter(Content,Queue):
             result = self.getPostUrl(post)
         return result
 
-    def extractDataMessage(self, i):
-        (theTitle, theLink, firstLink, theImage, theSummary,
-                content, theSummaryLinks, theContent, theLinks, comment) = (
-                        None, None, None, None, None,
-                        None, None, None, None, None)
+    # def extractDataMessage(self, i):
+    #     (theTitle, theLink, firstLink, theImage, theSummary,
+    #             content, theSummaryLinks, theContent, theLinks, comment) = (
+    #                     None, None, None, None, None,
+    #                     None, None, None, None, None)
 
-        if i < len(self.getPosts()):
-            post = self.getPost(i)
-            #import pprint
-            #pprint.pprint(post)
-            theTitle = self.getPostTitle(post)
-            theLink = self.getPostUrl(post)
-            firstLink = self.getPostContentLink(post)
-            theId = self.getPostId(post)
+    #     if i < len(self.getPosts()):
+    #         post = self.getPost(i)
+    #         #import pprint
+    #         #pprint.pprint(post)
+    #         theTitle = self.getPostTitle(post)
+    #         theLink = self.getPostUrl(post)
+    #         firstLink = self.getPostContentLink(post)
+    #         theId = self.getPostId(post)
 
-            theLinks = [ firstLink, ]
-            content = None
-            theContent = theTitle
+    #         theLinks = [ firstLink, ]
+    #         content = None
+    #         theContent = theTitle
 
-            theImage = None
-            theSummary = None
+    #         theImage = None
+    #         theSummary = None
 
-            theSummaryLinks = None
-            comment = theId
+    #         theSummaryLinks = None
+    #         comment = theId
 
-        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+    #     return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
     def search(self, text):
         logging.debug("     Searching in Twitter...")

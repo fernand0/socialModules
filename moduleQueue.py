@@ -39,26 +39,26 @@ class Queue:
             newTitle = oldTitle
         return(newTitle)
 
-    def extractDataMessage(self, i):
-        logging.info("extract queue")
-        if hasattr(self, 'getPostsType'):
-            if self.getPostsType() == 'drafts':
-                posts = self.getDrafts()
-            else:
-                posts = self.getPosts()
-        if i < len(posts):
-            post = posts[i]
-            logging.info("Post: %s"% post)
-            theTitle = self.getPostTitle(post)
-            theLink = self.getPostLink(post)
-        else:
-            theTitle = None
-            theLink = None
-        return (theTitle, theLink, None, None, None, None, None, None, None, None)
+    #  def extractDataMessage(self, i):
+    #      logging.info("extract queue")
+    #      if hasattr(self, 'getPostsType'):
+    #          if self.getPostsType() == 'drafts':
+    #              posts = self.getDrafts()
+    #          else:
+    #              posts = self.getPosts()
+    #      if i < len(posts):
+    #          post = posts[i]
+    #          logging.info("Post: %s"% post)
+    #          theTitle = self.getPostTitle(post)
+    #          theLink = self.getPostLink(post)
+    #      else:
+    #          theTitle = None
+    #          theLink = None
+    #      return (theTitle, theLink, None, None, None, None, None, None, None, None)
 
-    def obtainPostData(self, i, debug=False):
-        logging.info("Obtain post data Service %s"% self.service)
-        return (self.extractDataMessage(i))
+    # def obtainPostData(self, i, debug=False):
+    #     logging.info("Obtain post data Service %s"% self.service)
+    #     return (self.extractDataMessage(i))
 
     def selectAndExecute(self, command, args):
         # FIXME Does this go here?
