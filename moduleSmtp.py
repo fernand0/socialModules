@@ -53,6 +53,14 @@ class moduleSmtp(Content):
             return('Fail')
 
 def main():
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.DEBUG, 
+            format='%(asctime)s %(message)s')
+
+    import moduleRules
+    rules = moduleRules.moduleRules()
+    rules.checkRules()
+
 
     import moduleSmtp
 

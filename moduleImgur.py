@@ -101,6 +101,7 @@ class moduleImgur(Content, Queue):
         post.title = newTitle
 
     def getPostTitle(self, post):
+        print(f"Post: {post}")
         return post.title
 
     def getPostContentHtml(self, post):
@@ -135,6 +136,7 @@ class moduleImgur(Content, Queue):
         return self.getPostId(post)
 
     def getPostId(self, post):
+        print(f"Post: {post}")
         return post.id
 
     # def extractDataMessage(self, i):
@@ -372,33 +374,27 @@ def main():
             break
     apiSrc = rules.readConfigSrc(indent, src, more)
 
-    testingEditLink = True
+    testingEditLink = False
     if testingEditLink:
         apiSrc.setPosts()
         print(f"Posts: {apiSrc.getPosts()}")
 
         return
 
-    testingDrafts = False
+    testingDrafts = True
     if testingDrafts:
-        img = moduleImgur.moduleImgur()
-        acc = "Blog20"
-        url = config.get(acc, 'url')
-        img.setUrl(url)
-        name = url.split('/')[-1]
-        img.setClient(name)
-        img.setPostsType(config.get(acc, 'posts'))
-        img.setPosts()
+        apiSrc.setPosts()
         lastLink = 'https://imgur.com/a/q5zyNtS'
-        img.lastLinkPublished = lastLink
-        i = img.getLinkPosition(lastLink)
-        num = 1
-        listPosts = img.getNumPostsData(num, i, lastLink)
+        # img.lastLinkPublished = lastLink
+        # i = img.getLinkPosition(lastLink)
+        # num = 1
+        listPosts = apiSrc.getPosts()
         print(listPosts)
-        listPosts2 = img.getNumNextPost(1)
+        listPosts2 = apiSrc.getNumNextPost(1)
         print(listPosts2)
-        print(f"post: {img.getNextPost()}")
-        print(f"Title: {img.getPostTitle(img.getNextPost())}")
+        print(f"post: {apiSrc.getNextPost()}")
+        print(f"Title: {apiSrc.getPostTitle(apiSrc.getNextPost())}")
+        print(f"Id: {apiSrc.getPostId(apiSrc.getNextPost())}")
         return
 
 

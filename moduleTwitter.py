@@ -58,7 +58,13 @@ class moduleTwitter(Content,Queue):
 
     def setApiPosts(self):
         # posts = self.getClient().getStatuses(count=100)
-        posts = self.getClient().statuses.user_timeline(count=100)
+        try:
+            posts = self.getClient().statuses.user_timeline(count=100)
+        except twitter.api.TwitterHTTPError as twittererror:
+            for error in twittererror.response_data.get("errors", []):
+                logging.info(f"      Error code: "
+                             f"{error.get('code', None)}")
+            posts = []
         #posts = self.getClient().statuses.user_timeline(_id='fernand0')
         return posts
 
@@ -103,7 +109,8 @@ class moduleTwitter(Content,Queue):
                         media_ids=id_img1)
                 except twitter.api.TwitterHTTPError as twittererror:
                     for error in twittererror.response_data.get("errors", []):
-                        logging.info("      Error code: %s" % error.get("code", None))
+                        logging.info(f"      Error code: "
+                                     f"{error.get('code', None)}")
                     res = self.report('Twitter', post, imageName, sys.exc_info())
             else:
                 logging.info(f"No image available")

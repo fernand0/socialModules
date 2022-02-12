@@ -115,7 +115,11 @@ class moduleSlack(Content, Queue):
         return posts
 
     def processReply(self, reply):
-        return reply.get('ok','Fail!')
+        # FIXME: Being careful with publishPost, publishPosPost, publishNextPost, publishApiPost
+        res = reply
+        if isinstance(reply, dict):
+           res = reply.get('ok','Fail!')
+        return res
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:

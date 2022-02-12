@@ -172,7 +172,6 @@ class moduleCache(Content,Queue):
             num = 0
         return num
 
-
     def getPosNextPost(self):
         # cache always shows the first item
         # Some standard contition?

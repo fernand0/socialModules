@@ -7,7 +7,6 @@ import sys
 import time
 import urllib.parse
 
-
 path = f"{os.path.expanduser('~')}/usr/src/socialModules"
 sys.path.append(path)
 
@@ -575,10 +574,15 @@ class moduleRules:
                     msgLog = (f"{indent}Post Action {postaction}")
                     logMsg(msgLog, 1, 1)
 
-                    cmdPost = getattr(apiSrc, f"{postaction}NextPost")
+                    if nextPost:
+                        cmdPost = getattr(apiSrc, f"{postaction}NextPost")
+                        resPost = cmdPost()
+                    else:
+                        cmdPost = getattr(apiSrc, f"{postaction}")
+                        resPost = cmdPost(pos)
+                        # FIXME inconsistent
                     msgLog = (f"{indent}Post Action command {cmdPost}")
                     logMsg(msgLog, 1, 1)
-                    resPost = cmdPost()
                     msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
                     logMsg(msgLog, 1, 1)
                     resMsg += f"Post Action: {resPost}"
@@ -715,12 +719,6 @@ class moduleRules:
 
         listPosts = []
         link = ''
-
-        testDiffer = False
-
-        if testDiffer:
-            self.testDifferPosts(apiSrc, lastLink, listPosts)
-            return
 
         if (num > 0):
             tNow = time.time()

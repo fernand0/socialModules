@@ -72,7 +72,7 @@ class modulePocket(Content,Queue):
             logging.warning(f"publishApiPosts generated an exception: {exc}")
             res = "Fail!"
 
-        return self.processReply(res)
+        return res
 
     # def publishh(self, j):
     #     # This does not belong here
@@ -152,10 +152,12 @@ class modulePocket(Content,Queue):
         client = self.client
         post = self.getPost(j)
         title = self.getPostTitle(post)
-        logging.info("Post {}".format(str(post)))
-        logging.info("Title {}".format(title))
+        idPost = self.getPostId(post)
+        logging.info(f"Post {post}")
+        logging.info(f"Title {title}")
+        logging.info(f"Id {idPost}")
         try:
-            res = client.archive(int(self.getPostId(post)))
+            res = client.archive(int(idPost))
             res = client.commit()
             logging.info("Post id res {}".format(str(res)))
             logging.info("Post id res {}".format(str(res["action_results"])))
@@ -201,11 +203,8 @@ class modulePocket(Content,Queue):
         return title
 
     def getPostId(self, post):
-        if 'item' in post:
-            if 'item_id' in post['item']:
-                return(post['item']['item_id'])
-        else:
-            return ''
+        idPost = post.get('item_id','')
+        return idPost
 
     def getPostLink(self, post):
         link = ''
