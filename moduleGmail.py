@@ -120,12 +120,24 @@ class moduleGmail(Content,Queue):
         return(api.users().labels().create(userId='me', 
                 body=label_object).execute())
 
+    def deleteLabel(self, labelName):
+        api = self.getClient()
+        label_id = self.getLabelId(labelName)
+        return(api.users().labels().delete(userId='me', id=label_id).execute())
+
     def updateLabel(self, label_id, labelName):
         api = self.getClient()
         label_object = {'messageListVisibility': 'show', 
                 'name': labelName, 'labelListVisibility': 'labelShowIfUnread'}
         return(api.users().labels().update(userId='me', id=label_id,
                 body=label_object).execute())
+
+    def listFolders(self):
+        self.setLabels()
+        return self.getLabels()
+
+    def getChannelName(self, channel):
+        return channel.get('name', '')
 
     def setLabels(self):
         api = self.getClient()
@@ -149,7 +161,7 @@ class moduleGmail(Content,Queue):
         list_labels = [ label, ]
         logging.info(list_labels)
         response = api.users().messages().list(userId='me', 
-                                               q='before:2021/6/1 is:unread',
+                                               #q='before:2021/6/1 is:unread',
                                                labelIds=list_labels).execute()
         return(response)
 
@@ -170,9 +182,11 @@ class moduleGmail(Content,Queue):
     def processPosts(self, posts, label, mode):
         pPosts = []
         typePosts = self.getPostsType()
-        if typePosts == 'search':
+        if typePosts in ['search', 'posts']:
             typePosts = 'messages'
-        if typePosts in posts:
+        #if typePosts in posts:
+        #for post in posts['messages']: #[typePosts]: 
+        if posts['resultSizeEstimate'] > 0:
             for post in posts[typePosts]: 
                 if mode != 'raw':
                    meta = self.getMessageMeta(post['id'],typePosts)
@@ -187,8 +201,6 @@ class moduleGmail(Content,Queue):
                    message['raw'] = raw
 
                 pPosts.insert(0, message) 
-        else:
-            pPosts = []
         return pPosts
 
     def setApiSearch(self, label=None, mode=''): 
@@ -215,11 +227,23 @@ class moduleGmail(Content,Queue):
         posts = self.processPosts(posts, label, mode)
         return posts
 
+    def setChannel(self, channel=''):
+        self.channel = channel
+
+    def getChannel(self):
+        return self.channel
+
     def setApiPosts(self, label=None, mode=''): 
+        label = ''
+        if (not label) and hasattr(self, 'channel'):
+            label = self.getChannel()
         return self.setApiMessages(label, mode)
 
     def setApiMessages(self, label=None, mode=''): 
-        posts = self.getClient().users().messages().list(userId='me').execute()
+        if label:
+            posts = self.getListLabel(label['id'])
+        else:
+            posts = self.getClient().users().messages().list(userId='me').execute()
         posts = self.processPosts(posts, label, mode)
         return posts
 
@@ -262,6 +286,18 @@ class moduleGmail(Content,Queue):
         # print(message)
         # print(message['message'])
         return message
+
+    def getMessageFull(self, msgId, typePost='drafts'): 
+        api = self.getClient()
+        if typePost == 'drafts': 
+            message = api.users().drafts().get(userId="me", 
+                id=msgId, format='full').execute()['message']
+        else:
+            message = api.users().messages().get(userId="me", 
+                id=msgId, format='full').execute()
+
+        return message
+
 
     def getMessageRaw(self, msgId, typePost='drafts'): 
         api = self.getClient()
@@ -369,8 +405,10 @@ class moduleGmail(Content,Queue):
     def getPostDate(self, post):
         logging.debug(post)
         if post:
-            date = int(self.getHeader(post,'internalDate'))/1000
-            date = '{}'.format(datetime.datetime.fromtimestamp(date)) # Bad!
+            date = self.getHeader(post,'internalDate')
+            # date = int(self.getHeader(post,'internalDate'))/1000
+            # print(f"Dateeeee: {date}")
+            # date = '{}'.format(datetime.datetime.fromtimestamp(date)) # Bad!
             return (date)
         return(None)
 
@@ -418,6 +456,13 @@ class moduleGmail(Content,Queue):
         api = self.getClient()
         results = api.users().labels().list(userId='me').execute() 
         return(results['labels'])
+
+    def nameFolder(self, label):
+        return self.getLabelName(label)
+
+    def getLabelName(self, label):
+        api = self.getClient()
+        return label['name']
 
     def getLabelId(self, name):
         api = self.getClient()
@@ -546,6 +591,9 @@ class moduleGmail(Content,Queue):
         return result
 
     def deleteApiMessages(self, idPost): 
+        return self.deleteApiPost(idPost)
+
+    def deleteApiPosts(self, idPost): 
         return self.deleteApiPost(idPost)
 
     def deleteApiPost(self, idPost): 

@@ -273,7 +273,7 @@ class moduleRules:
                                             ruls[fromSrvSp].append(toAppend)
                                             msgLog = (f"2 added: {toAppend} "
                                                       f"in {fromSrvSp} ")
-                                            logMsg(msgLog, 1, 0)
+                                            logMsg(msgLog, 2, 0)
                                     else:
                                         ruls[fromSrvSp] = []
                                         ruls[fromSrvSp].append(toAppend)
@@ -285,7 +285,7 @@ class moduleRules:
                                             msgLog = (f"2.1 added: {toAppend} "
                                                       f"in {fromSrvSp} "
                                                       f"with no url")
-                                        logMsg(msgLog, 1, 0)
+                                        logMsg(msgLog, 2, 0)
                                 else:
                                     msgLog = (f"From {fromSrv}")
                                     logMsg(msgLog, 2, 0)
@@ -386,6 +386,22 @@ class moduleRules:
         self.more = mor
 
         return (srcs, dsts, ruls, impRuls)
+
+    def selectRule(self, selector, selector2 = ""):
+        indent = ""
+        srcR = None
+
+        for src in self.rules.keys():
+            if src[0] == selector:
+                logging.debug(f"- Src: {src}")
+                more = self.more[src]
+                srcR = src
+                if not selector2:
+                    break
+                else:
+                    if (selector2 in src[2]):
+                        break
+        return (srcR, more)
 
     def printList(self, myList, title):
         print(f"{title}:")
@@ -745,9 +761,14 @@ class moduleRules:
                     post = apiSrc.getPost(pos)
 
                 if post:
+                    msgLog = (f"{indent} Post {post}")
                     apiSrc.setNextTime(tNow, tSleep, apiDst)
                 else:
+                    msgLog = (f"{indent} No post")
                     apiSrc.setNextAvailableTime(tNow, tSleep, apiDst)
+                logMsg(msgLog, 1, 1)
+                # apiSrc.setNextTime(tNow, tSleep, apiDst)
+                # return
 
                 if (tSleep>0.0):
                     msgLog= f"{indent}Waiting {tSleep/60:2.2f} minutes"

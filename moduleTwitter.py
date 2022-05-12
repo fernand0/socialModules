@@ -38,22 +38,10 @@ class moduleTwitter(Content,Queue):
         return (CONSUMER_KEY, CONSUMER_SECRET, TOKEN_KEY, TOKEN_SECRET, BEARER_TOKEN)
 
     def initApi(self, keys):
-        # self.service = 'twitter'
         self.url = f"https://twitter.com/{self.user}"
-        # if keys[4]:
-        #     logging.info(f"Bearer")
-        #     self.authentication = OAuth2(keys[0], keys[1], keys[4])
-        # else:
-        if True:
-            logging.info(f"Oauth")
-            self.authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
+        logging.info(f"Oauth")
+        self.authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
         client = Twitter(auth=self.authentication)
-        # print(f"user: {self.user}")
-        # print(f"client: {client}")
-        # print(f"client: {dir(client)}")
-        # print(f"statuses: {dir(client.statuses)}")
-        # print(f"Posting: {client.statuses.update(status='Prueba')}")
-        # print(f"statuses: {client.statuses.home_timeline()}")
         return client
 
     def setApiPosts(self):
@@ -307,25 +295,30 @@ class moduleTwitter(Content,Queue):
 
 def main():
 
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO,
             format='%(asctime)s %(message)s')
 
-    import moduleTwitter
+    import moduleRules
+    rules = moduleRules.moduleRules()
+    rules.checkRules()
+    src, more = rules.selectRule('twitter', 'kk')
+    print(f"Src: {src}")
+    print(f"More: {more}")
+    indent = ""
+    apiSrc = rules.readConfigSrc(indent, src, more)
 
     testingPosts = True
     if testingPosts:
         print("Testing Posts")
-        tw = moduleTwitter.moduleTwitter()
-        tw.setClient('fernand0Test')
-        tw.setPostsType('posts')
-        tw.setPosts()
-        tweet = tw.getPosts()[0]
-        tweet = tw.getNextPost()
+        apiSrc.setPostsType('posts')
+        apiSrc.setPosts()
+        tweet = apiSrc.getPosts()[0]
+        tweet = apiSrc.getNextPost()
         print(tweet)
-        print(f" -Title {tw.getPostTitle(tweet)}")
-        print(f" -Link {tw.getPostLink(tweet)}")
-        print(f" -Content link {tw.getPostContentLink(tweet)}")
-        print(f" -Post link {tw.extractPostLinks(tweet)}")
+        print(f" -Title {apiSrc.getPostTitle(tweet)}")
+        print(f" -Link {apiSrc.getPostLink(tweet)}")
+        print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
+        print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
         return
 
 

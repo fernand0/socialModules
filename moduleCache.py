@@ -593,7 +593,7 @@ class moduleCache(Content,Queue):
         logging.info("Moving %d to %d"% (j, k))
         posts = self.getPosts()
         post = posts[j]
-        logging.info("Moving %s"% post[0])
+        logging.info("Moving %s"% self.getPostTitle(post))
         if j > k:
             for i in range(j-1,k-1,-1):
                 posts[i+1] = posts[i]
@@ -604,8 +604,8 @@ class moduleCache(Content,Queue):
         posts[k] = post
         self.assignPosts(posts)
         self.updatePostsCache()
-        logging.info("Moved %s"% post[0])
-        return("%s"% post[0])
+        logging.info("Moved %s"% self.getPostTitle(post))
+        return("%s"% self.getPostTitle(post))
 
 def main():
 

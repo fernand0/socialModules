@@ -156,7 +156,7 @@ class Content:
         else:
             cmd = getattr(self, "setApiPosts")
 
-        logging.info(f"Cmd: {cmd}")
+        logging.debug(f"Cmd: {cmd}")
         posts = cmd()
         #logging.info(f"Posts: {posts}")
         self.assignPosts(posts)
@@ -352,7 +352,7 @@ class Content:
             with open(fileNameNext,'wb') as f:
                 pickle.dump((tNow, tSleep), f)
         else:
-            print(f"Not implemented!")
+            logging.info(f"Not implemented!")
 
     def setNumPosts(self, numPosts):
         self.numPosts = numPosts
@@ -854,7 +854,7 @@ class Content:
                 #         f"publishApi{apiSrc.getPostsType().capitalize()}"))):
                 #     nameMethod = self.getPostsType().capitalize()
 
-                method = getattr(self, f"publish{nameMethod}")
+                method = getattr(self, f"publishApi{nameMethod}")
                 logging.info(f"method: {method}")
                 res = method(api=apiSrc, post=post)
                 reply = self.processReply(res)

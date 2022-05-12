@@ -61,7 +61,6 @@ def main():
     rules = moduleRules.moduleRules()
     rules.checkRules()
 
-
     import moduleSmtp
 
     ig = moduleSmtp.moduleSmtp()
@@ -73,6 +72,9 @@ def main():
     req = requests.get(url)
     import time
     ig.publishPost(req.text, 'Test {}'.format(time.asctime()), 'fernand0@elmundoesimperfecto.com')
+    ig.publishPost(req.text, 'Test {}'.format(time.asctime()), 
+                        'fernand0elmundoesimperfecto.com',
+                        'fernand0movilizado@gmail.com')
     
 
 

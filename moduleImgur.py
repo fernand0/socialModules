@@ -381,7 +381,7 @@ def main():
 
         return
 
-    testingDrafts = True
+    testingDrafts = False
     if testingDrafts:
         apiSrc.setPosts()
         lastLink = 'https://imgur.com/a/q5zyNtS'
@@ -439,6 +439,26 @@ def main():
 
     publishWordpress = True
     # Testing Wordpress publishing
+    if publishWordpress:
+        apiSrc.setPostsType('posts')
+        apiSrc.setPosts()
+
+        for i, post in enumerate(apiSrc.getPosts()[:6]):
+            print(f"{i}) {apiSrc.getPostTitle(post)}")
+        pos = int(input("Position? "))
+        service = 'wordpress'
+        nick = 'avecesunafoto'
+        socialNetwork = (service, nick) #img.getSocialNetworks()[service])
+        for src in rules.rules.keys():
+            if (src[0] == 'imgur') and (rules.rules[src][0][2] == 'wordpress'):
+                action = rules.rules[src][0]
+                more = rules.more[src]
+                break
+
+        apiDst = rules.readConfigDst("", action, more, apiSrc)
+        rules.executePublishAction("", "", apiSrc, apiDst, False , False, pos)
+
+        return
     img = moduleImgur.moduleImgur()
     acc = "Blog20"
     url = config.get(acc, 'url')
@@ -449,6 +469,8 @@ def main():
     img.setPosts()
     img.setSocialNetworks(config)
     print(img.getSocialNetworks())
+
+    input("Go?")
     service = 'wordpress'
     nick = 'avecesunafoto'
     socialNetwork = (service, nick) #img.getSocialNetworks()[service])

@@ -185,7 +185,7 @@ class moduleSlack(Content, Queue):
         return post
 
     def getPostTitle(self, post):
-        print(f"Post: {post}")
+        # print(f"Post: {post}")
         if ("attachments" in post) and ("title" in post["attachments"][0]):
             return post["attachments"][0]["title"]
         elif "text" in post:
