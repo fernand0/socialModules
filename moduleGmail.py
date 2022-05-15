@@ -728,9 +728,9 @@ class moduleGmail(Content,Queue):
         # Undefined
         pass
     
-    def copyPost(self, log, pp, profiles, toCopy, toWhere):
-        # Undefined
-        pass
+    # def copyPost(self, log, pp, profiles, toCopy, toWhere):
+    #     # Undefined
+    #     pass
     
     def movePost(self, log, pp, profiles, toMove, toWhere):
         # Undefined

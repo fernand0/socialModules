@@ -311,37 +311,37 @@ class Queue:
         return(posts[serviceName]['pending'][i][0]+' '+ 
                   posts[serviceName]['pending'][j][0])
     
-    def copyPost(self, api, log, profiles, toCopy, toWhere):
-        logging.info(toCopy+' '+toWhere)
-    
-        profCop = toCopy[0]
-        ii = int(toCopy[1])
-    
-        j = 0
-        profWhe = ""
-        i = 0
-        while i < len(toWhere):
-            profWhe = profWhe + toWhere[i]
-            i = i + 1
-        
-        log.info(toCopy,"|",profCop, ii, profWhe)
-        for i in range(len(profiles)):
-            serviceName = profiles[i].formatted_service
-            log.info("ii: %s" %i)
-            updates = getattr(profiles[j].updates, 'pending')
-            update = updates[ii]
-            if ('media' in update): 
-                if ('expanded_link' in update.media):
-                    link = update.media.expanded_link
-                else:
-                    link = update.media.link
-            else:
-                link = ""
-           
-            if (serviceName[0] in profCop):
-                for j in range(len(profiles)): 
-                    serviceName = profiles[j].formatted_service 
-                    if (serviceName[0] in profWhe):
-                        profiles[j].updates.new(urllib.parse.quote(update.text + " " + link).encode('utf-8'))
-    
+    # def copyPost(self, api, log, profiles, toCopy, toWhere):
+    #     logging.info(toCopy+' '+toWhere)
+    # 
+    #     profCop = toCopy[0]
+    #     ii = int(toCopy[1])
+    # 
+    #     j = 0
+    #     profWhe = ""
+    #     i = 0
+    #     while i < len(toWhere):
+    #         profWhe = profWhe + toWhere[i]
+    #         i = i + 1
+    #     
+    #     log.info(toCopy,"|",profCop, ii, profWhe)
+    #     for i in range(len(profiles)):
+    #         serviceName = profiles[i].formatted_service
+    #         log.info("ii: %s" %i)
+    #         updates = getattr(profiles[j].updates, 'pending')
+    #         update = updates[ii]
+    #         if ('media' in update): 
+    #             if ('expanded_link' in update.media):
+    #                 link = update.media.expanded_link
+    #             else:
+    #                 link = update.media.link
+    #         else:
+    #             link = ""
+    #        
+    #         if (serviceName[0] in profCop):
+    #             for j in range(len(profiles)): 
+    #                 serviceName = profiles[j].formatted_service 
+    #                 if (serviceName[0] in profWhe):
+    #                     profiles[j].updates.new(urllib.parse.quote(update.text + " " + link).encode('utf-8'))
+    # 
 
