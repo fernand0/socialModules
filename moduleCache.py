@@ -244,6 +244,7 @@ class moduleCache(Content,Queue):
         self.crontab.write()
 
     def addPosts(self, listPosts):
+        # FIXME validate the type of date of the posts we are adding.
         link = ''
         if listPosts:
             if not self.getPosts():
