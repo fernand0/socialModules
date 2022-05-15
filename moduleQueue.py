@@ -64,25 +64,31 @@ class Queue:
         # FIXME Does this go here?
         logging.info(f"Selecting {command} with {args} in {self.getService()}")
         argsCont = ''
+        if not isinstance(args, str):
+            logging.info(f"Aaaaargs: {args}")
+            args,argsCont = args
+
         pos = args.find(' ')
         j = -1
         if pos > 0: 
             argsIni = args[:pos]
-            argsCont = args[pos+1:]
-            logging.debug(f"Args {argsIni}-{argsCont}")
-            if (argsCont and len(argsCont)>1): 
-                if argsCont[0].isdigit() and (argsCont[1] == ' '): 
-                    j = int(argsCont[0])
-                    argsCont = argsCont[2:]
+            if isinstance(argsCont, str):
+                argsCont = args[pos+1:]
+                logging.debug(f"Args {argsIni}-{argsCont}")
+                if (argsCont and len(argsCont)>1): 
+                    if argsCont[0].isdigit() and (argsCont[1] == ' '): 
+                        j = int(argsCont[0])
+                        argsCont = argsCont[2:]
         else: 
             argsIni = args
             logging.info(f"Args {argsIni}")
 
         pos = argsIni.find('*')
         if pos == 0: 
-            """ If the first character of the argument is a '*' the following
-            ones are the number. But we are supposing that they start at the
-            third character, so we move the string one character to the right
+            """ If the first character of the argument is a '*' the
+            following ones are the number. But we are supposing that they
+            start at the third character, so we move the string one
+            character to the right
             """
             argsIni=' {}'.format(argsIni)
 

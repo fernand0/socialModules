@@ -445,6 +445,7 @@ class moduleRules:
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
             apiSrc.postaction = 'delete'
         else:
+            logging.info(f"Src: {src}")
             apiSrc = getApi(src[0], src[2])
 
         for option in more:

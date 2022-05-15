@@ -16,6 +16,8 @@ from googleapiclient.discovery import build
 from googleapiclient import http
 from httplib2 import Http
 from oauth2client import file, client, tools
+from oauth2client.service_account import ServiceAccountCredentials
+
 
 from configMod import *
 from moduleContent import *
@@ -27,8 +29,7 @@ class moduleGcalendar(Content):
         self.service = "Gcalendar"
         self.nick = None
         self.scopes = ['https://www.googleapis.com/auth/calendar.readonly',
-                       'https://www.googleapis.com/auth/calendar',
-                       'https://www.googleapis.com/auth/calendar.events']
+                       'https://www.googleapis.com/auth/calendar']
 
     def API(self, Acc):
         # Back compatibility
@@ -40,11 +41,14 @@ class moduleGcalendar(Content):
     def initApi(self, keys):
         SCOPES = self.scopes
         creds = self.authorize()
-        if isinstance(creds, str) and ("Fail!" in creds):
-            service = None
-        else:
+        # logging.debug(f"Service: {creds}")
+        key_file_location='quickstart-1600773208720-a85935078a74.json'
+        # if isinstance(creds, str) and ("Fail!" in creds):
+        #     service = None
+        # else:
+        if True:
             service = build('calendar', 'v3', 
-                        credentials=creds, cache_discovery=False)
+                         credentials=creds) #, cache_discovery=False)
         return service
 
     def confTokenName(self, acc): 
@@ -92,6 +96,7 @@ class moduleGcalendar(Content):
     def authorize(self):
         # based on Code from
         # https://github.com/gsuitedevs/python-samples/blob/aacc00657392a7119808b989167130b664be5c27/gmail/quickstart/quickstart.py
+        # https://developers.google.com/analytics/devguides/config/mgmt/v3/quickstart/service-py?hl=es
 
         SCOPES = self.scopes
 
@@ -104,12 +109,12 @@ class moduleGcalendar(Content):
         fileTokenStore = self.confTokenName((self.server, self.nick)) 
         creds = None
 
-        logging.debug(f"filetokenstore: {fileTokenStore}")
-        if os.path.exists(fileTokenStore): 
-            logging.debug(f"filetokenstore: {fileTokenStore}")
-            with open(fileTokenStore, 'rb') as token: 
-                logging.debug("Opening {}".format(fileTokenStore))
-                creds = pickle.load(token)
+        #logging.debug(f"filetokenstore: {fileTokenStore}")
+        #if os.path.exists(fileTokenStore): 
+        #    logging.debug(f"filetokenstore: {fileTokenStore}")
+        #    with open(fileTokenStore, 'rb') as token: 
+        #        logging.debug("Opening {}".format(fileTokenStore))
+        #        creds = pickle.load(token)
 
 
         if not creds or not creds.valid: 
@@ -120,12 +125,15 @@ class moduleGcalendar(Content):
                 logging.info("Needs to re-authorize token GMail")
 
                 try:
-                    flow = InstalledAppFlow.from_client_secrets_file( 
-                        fileCredStore, SCOPES, 
-                        redirect_uri='urn:ietf:wg:oauth:2.0:oob')
-                    creds = flow.run_console(
-                            authorization_prompt_message='Please visit this URL: {url}', 
-                            success_message='The auth flow is complete; you may close this window.')
+                    key_file_location='/home/ftricas/.mySocial/config/quickstart-1600773208720-a85935078a74.json'
+                    creds = ServiceAccountCredentials.from_json_keyfile_name(
+                                        key_file_location, scopes=SCOPES)
+                    # flow = InstalledAppFlow.from_client_secrets_file( 
+                    #     fileCredStore, SCOPES, 
+                    #     redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+                    # creds = flow.run_console(
+                    #         authorization_prompt_message='Please visit this URL: {url}', 
+                    #         success_message='The auth flow is complete; you may close this window.')
                     # Save the credentials for the next run
                 except FileNotFoundError:
                     print("no")
@@ -135,11 +143,10 @@ class moduleGcalendar(Content):
                     print("Error de valor")
                     creds = 'Fail!'
         logging.debug("Storing creds")
-        with open(fileTokenStore, 'wb') as token:
-            pickle.dump(creds, token)
+        # with open(fileTokenStore, 'wb') as token:
+        #     pickle.dump(creds, token)
 
         return(creds)
-
 
     def setActive(self, idCal):
         self.active = idCal
@@ -233,8 +240,33 @@ def main():
                       f"SMore: {rules.more[key]}")
                 apiSrc = rules.readConfigSrc("", key, rules.more[key])
                 apiSrc.setCalendarList()
-                for i, cal in enumerate(calendar.getCalendarList()):
-                    print (f"{i}) {cal}")
+                print(f"List: {apiSrc.getCalendarList()}")
+                apiSrc.setActive('dpi6ce608h8j09ocolamshl8kk@group.calendar.google.com')
+                apiSrc.setActive('unizar.es_qg30e83ju3fp3l2clpom56kphg@group.calendar.google.com')
+                apiSrc.setPosts()
+                print("Citas:")
+                for i, event in enumerate(apiSrc.getPosts()):
+                    import datetime
+                    from dateutil import parser
+                    import pytz
+
+                    d1 = parser.parse(event['updated'])
+                    today = datetime.datetime.combine(datetime.date.today(), 
+                            datetime.datetime.min.time())
+                    today = pytz.utc.localize(today)
+
+                    # print(f"Hoy: {today}")
+
+                    # print (f"{event['created']} {event['updated']}")
+                    # print(f"{d1 - today}")
+                    if abs((d1 - today).days) < 3:
+                        import pprint
+                        pprint.pprint (f"{i}) {event}")
+                        print (f"{event['start']['dateTime']}")
+                        print (f"{event['summary']}")
+                        print (f"{event['description']}")
+                        print (f"{event['hangoutLink']}")
+
  
     return 
     calendar = moduleGcalendar()

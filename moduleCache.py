@@ -259,7 +259,7 @@ class moduleCache(Content,Queue):
             #for i,p in enumerate(posts):
             #    print(i, self.getPostTitle(p), self.getPostLink(p))
             self.updatePostsCache()
-        link = listPosts[-1][1]
+        link = self.getPostLink(listPosts[-1])
         return(link)
 
     def updatePosts(self, src):
@@ -587,6 +587,33 @@ class moduleCache(Content,Queue):
      #         return None
      #     post = posts[i]
      #     return post
+
+    def copy(self, j, dest):
+        logging.info(f"Copying {j} to {dest}")
+        posts = self.getPosts()
+        post = posts[j:j+1]
+        logging.info(f"Copying: {self.getPostTitle(post)}")
+        logging.info(f"Destination: {dest}")
+        logging.info(f"Posts: {posts}")
+        logging.info(f"Post: {post}")
+
+        #yield f"src: {src}"
+
+        return("%s"% dest.addPosts(post))
+
+        if j > k:
+            for i in range(j-1,k-1,-1):
+                posts[i+1] = posts[i]
+        elif j < k:
+            for i in range(j, k):
+                posts[i] = posts[i+1]
+
+        posts[k] = post
+        self.assignPosts(posts)
+        self.updatePostsCache()
+        logging.info("Moved %s"% self.getPostTitle(post))
+        return("%s"% self.getPostTitle(post))
+
 
     def move(self, j, dest):
         k = int(dest)
