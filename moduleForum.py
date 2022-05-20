@@ -61,6 +61,8 @@ class moduleForum(Content, Queue):
             self.idSeparator = config.get(self.url, "idSeparator")
             if "selectorby" in config[self.url]:
                 self.selectorby = config.get(self.url, "selectorby")
+            if "selectorlink" in config[self.url]:
+                self.selectorlink = config.get(self.url, "selectorlink")
             if "idWhere" in config[self.url]:
                 self.idWhere = config.get(self.url, "idWhere")
         except:
@@ -92,7 +94,6 @@ class moduleForum(Content, Queue):
             links = soup.find_all('a')
             for i, l in enumerate(links):
                 logging.debug(f"{i}) -> {l}")
-            logging.debug(f"l: {links}")
 
         logging.debug(f"Links: {links}")
         return links
@@ -164,6 +165,7 @@ class moduleForum(Content, Queue):
         except:
             forums = []
 
+        logging.debug(" Selected .... %s" % self.selected)
         logging.info(" Reading in .... %s" % self.url)
         listId = []
         posts = {}
@@ -173,7 +175,8 @@ class moduleForum(Content, Queue):
                 # It is inside some other tag
                 forum = forum.contents[0]
             text = forum.text
-            if text in self.selected:
+            logging.debug(f"Text: {text}")
+            if text.lower() in self.selected:
                 logging.debug(f"Forum: {forum}")
                 link = self.extractLink(forum)
                 logging.info(f"  - {text} {link}")
@@ -183,7 +186,13 @@ class moduleForum(Content, Queue):
                     linkF = self.extractLink(post)
                     logging.info(f"linkF {linkF}")
                     if linkF:
-                        idPost = self.extractId(linkF)
+                        if hasattr(self, 'selectorlink'):
+                            if not self.selectorlink in linkF:
+                                linkF = None
+                        if linkF:
+                            idPost = self.extractId(linkF)
+                        else:
+                            idPost = None
                         logging.info(f"idPost {idPost}")
                         if idPost and post.text:
                             if not idPost in listId:
@@ -231,7 +240,8 @@ class moduleForum(Content, Queue):
 def main():
 
     logging.basicConfig(
-        stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s"
+        stream=sys.stdout, level=logging.DEBUG, 
+        format="%(asctime)s %(message)s"
     )
 
     forums = [

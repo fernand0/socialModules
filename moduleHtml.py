@@ -9,6 +9,7 @@ import logging
 from bs4 import BeautifulSoup
 from bs4 import Tag
 from pdfrw import PdfReader
+import textract
 
 # https://github.com/fernand0/scripts/blob/master/moduleCache.py
 
@@ -108,7 +109,7 @@ class moduleHtml(Content, Queue):
 
         return url
 
-    def getPdfTitle(req):
+    def getPdfTitle(self, req):
         nameFile = "/tmp/kkkkk.pdf"
         with open(nameFile, "wb") as f:
             f.write(req.content)
@@ -125,7 +126,7 @@ class moduleHtml(Content, Queue):
 
         return title
 
-    def cleanDocument(self, text, theUrl):
+    def cleanDocument(self, text, theUrl, response):
         replaceChars = [
             ("“", '"'),
             ("”", '"'),
@@ -174,7 +175,7 @@ class moduleHtml(Content, Queue):
 
         if not doc_title or (doc_title == "[no-title]"):
             if theUrl.lower().endswith("pdf"):
-                title = getPdfTitle(response)
+                title = self.getPdfTitle(response)
                 print(title)
                 doc_title = "[PDF] " + title
 
