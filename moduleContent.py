@@ -5,7 +5,6 @@
 import configparser
 import html
 import logging
-import pickle
 import re
 import sys
 
@@ -1206,8 +1205,7 @@ class Content:
                 if isinstance(link, bytes):
                     linkS = linkS.decode()
                 url = self.getPostLink(entry)
-                # logging.debug("\n{}\n{}".format(url, linkS))
-                # print("{} {}".format(url, linkS))
+                logging.debug(f"\nUrl: {url} Link:{linkS}")
                 lenCmp = min(len(url), len(linkS))
                 if url[:lenCmp] == linkS[:lenCmp]:
                     # When there are duplicates (there shouldn't be) it returns
@@ -1295,16 +1293,15 @@ class Content:
         return (soup.get_text().strip("\n"), theSummaryLinks)
 
     def report(self, profile, post, link, data):
-        logging.warning(f"{profile} failed!")
-        logging.warning(f"Post: {post}, {link}")
-        logging.warning(f"Data: {data}")
-        logging.warning(f"Unexpected error: {data[0]}")
-        logging.warning(f"Unexpected error: {data[1]}")
-        print(f"{profile} failed!")
-        print(f"Post: {post}, {link}")
-        print(f"Data: {data}")
-        print(f"Unexpected error: {data[0]}")
-        print(f"Unexpected error: {data[1]}")
+        msg = (f"{profile} failed!",
+               f"Post: {post}, {link}",
+               f"Data: {data}",
+               f"Unexpected error: {data[0]}",
+               f"Unexpected error: {data[1]}")
+        for line in msg:
+            logging.warning(line)
+            print(line)
+            sys.stderr.write(line)
         return f"Fail! {data[1]}"
         # print("----Unexpected error: %s"% data[2])
 

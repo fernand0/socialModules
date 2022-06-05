@@ -190,8 +190,16 @@ class moduleHtml(Content, Queue):
 
         return (myText, theTitle)
 
+    def extractVideos(self, soup):
+        videos =  soup.find_all('video')
+        return videos
+
+    def extractImages(self, soup):
+        pageImages = soup.findAll("img")
+        return pageImages
+
     def extractImage(self, soup):
-        pageImage = soup.findAll("img")
+        pageImage = self.extractImages(soup)
         #  Only the first one
         if len(pageImage) > 0:
             imageLink = pageImage[0]["src"]

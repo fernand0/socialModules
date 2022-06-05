@@ -135,14 +135,25 @@ class moduleLinkedin(Content):
     def publishApiPost(self, *args, **kwargs):
         title, link, comment = args
         more = kwargs
-        logging.info(f"publishApi ")
+        logging.info(f"     Publishing: {title} - {link} - {comment}")
         try:
-            res = self.getClient().submit_share(comment=comment, title=title,
-                description=None, submitted_url=link, submitted_image_url=None,
-                urn=self.URN, visibility_code='anyone')
+            self.getClient().get_profile()
+            try:
+                res = self.getClient().submit_share(comment=comment, title=title,
+                                                    description=None, 
+                                                    submitted_url=link, 
+                                                    submitted_image_url=None, 
+                                                    urn=self.URN, 
+                                                    visibility_code='anyone')
+            except:
+                logging.info(f"Linkedin. Not authorized.")
+                logging.info(f"Exception {sys.exc_info()}")
+                res = self.report('Linkedin', title, link, sys.exc_info())
         except:
             logging.info(f"Exception {sys.exc_info()}")
             res = self.report('Linkedin', title, link, sys.exc_info())
+        if ('201'.encode() not in res):
+            res = f"Fail!\n{res}"
         return res
 
     def deleteApiPosts(self, idPost):
@@ -171,8 +182,7 @@ def main():
     except:
         ln.authorize()
 
-
-    testingPost = False
+    testingPost = True
     if testingPost:
         print("ll", ln.publishPost("A ver otro", "https://www.linkedin.com/in/fernand0/",''))
         return

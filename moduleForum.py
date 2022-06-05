@@ -176,7 +176,8 @@ class moduleForum(Content, Queue):
                 forum = forum.contents[0]
             text = forum.text
             logging.debug(f"Text: {text}")
-            if text.lower() in self.selected:
+            if ((text.lower() in self.selected)
+                    or (text in self.selected)):
                 logging.debug(f"Forum: {forum}")
                 link = self.extractLink(forum)
                 logging.info(f"  - {text} {link}")
@@ -187,6 +188,7 @@ class moduleForum(Content, Queue):
                     logging.info(f"linkF {linkF}")
                     if linkF:
                         if hasattr(self, 'selectorlink'):
+                            logging.info(f"Selectorrrr: {self.selectorlink}")
                             if not self.selectorlink in linkF:
                                 linkF = None
                         if linkF:
@@ -245,16 +247,14 @@ def main():
     )
 
     forums = [
-            'https://garden.org/forums/'
-            ]
-
-    #     'http://www.agaveville.org/index.php'
-    #     "https://www.cactuseros.com/foro/index.php",
-    #     'https://cactuspro.com/forum/',
-    #     "https://mammillaria.forumotion.net/",
-    #     "http://foro.infojardin.com/",
-    #     "https://cactiguide.com/forum/",
-    # ]
+         'https://cactuspro.com/forum/',
+         "http://foro.infojardin.com/",
+         'https://garden.org/forums/'
+         'http://www.agaveville.org/index.php'
+         "https://www.cactuseros.com/foro/index.php",
+         "https://mammillaria.forumotion.net/",
+         "https://cactiguide.com/forum/",
+     ]
     for forumData in forums:
         forum = moduleForum()
         forum.setClient(forumData)
