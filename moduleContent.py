@@ -66,7 +66,7 @@ class Content:
             config = configparser.RawConfigParser()
             config.read(f"{CONFIGDIR}/.rss{self.service}")
             keys = self.getKeys(config)
-            # logging.debug(f"keys {keys}")
+            logging.debug(f"keys {keys}")
 
             try:
                 client = self.initApi(keys)

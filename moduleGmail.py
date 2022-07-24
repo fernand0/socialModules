@@ -63,35 +63,6 @@ class moduleGmail(Content,Queue):
                         credentials=creds, cache_discovery=False)
         return service
 
-    #def setClient(self, Acc):
-    #    logging.info("     Connecting GMail %s"%str(Acc))
-   
-    #    api = {}
-    #
-    #    self.service = 'gmail'
-    #    if type(Acc) == str: 
-    #        self.user = Acc
-    #        #self.name = 'GMail_{}'.format(Acc)
-    #    elif isinstance(Acc, tuple):
-    #        if (len(Acc) > 1) and isinstance(Acc[1], tuple):
-    #            self.user = Acc[0]
-    #            #self.setPostsType(Acc[1][2])
-    #        elif len(Acc)>1:
-    #            self.user = Acc[1]
-    #            #if len(Acc)>2:
-    #            #    self.setPostsType(Acc[2]) 
-    #        #self.name = 'GMail_{}'.format(Acc[0]) 
-
-    #    try:
-    #        creds = self.authorize()
-    #        service = build('gmail', 'v1', 
-    #                credentials=creds, cache_discovery=False)
-    #        self.client = service
-    #    except:
-    #        logging.warning("Problem with authorization")
-    #        logging.warning("Unexpected error:", sys.exc_info()[0])
-    #        return("Fail")
-
     def authorize(self):
         # based on Code from
         # https://github.com/gsuitedevs/python-samples/blob/aacc00657392a7119808b989167130b664be5c27/gmail/quickstart/quickstart.py
@@ -199,7 +170,8 @@ class moduleGmail(Content,Queue):
     def processPosts(self, posts, label, mode):
         pPosts = []
         typePosts = self.getPostsType()
-        if typePosts == 'search':
+        print(f"In processPosts, typePosts: {typePosts}")
+        if typePosts in ['search', 'posts']:
             typePosts = 'messages'
         if typePosts in posts:
             for post in posts[typePosts]: 
@@ -263,52 +235,6 @@ class moduleGmail(Content,Queue):
         posts = self.getClient().users().messages().list(userId='me').execute()
         posts = self.processPosts(posts, label, mode)
         return posts
-
-    #def setPosts(self, label=None, mode=''): 
-    #    logging.info("  Setting posts")
-    #    api = self.getClient()
-
-    #    self.posts = []
-    #    self.drafts = []
-    #    try: 
-    #        if hasattr(self, 'getPostsType'): 
-    #            typePosts = self.getPostsType()
-    #            logging.info("  Setting posts type {}".format(typePosts))
-    #        elif label == 'drafts': 
-    #            typePosts = 'drafts' 
-    #        else: 
-    #            typePosts = 'messages' 
-    #        if typePosts == 'drafts':
-    #            posts = api.users().drafts().list(userId='me').execute() 
-    #        else:
-    #            posts = api.users().messages().list(userId='me').execute()
-    #    #except client.HttpAccessTokenRefreshError: 
-    #    #    return "Fail"
-    #    except: 
-    #        logging.warning("GMail failed!") 
-    #        logging.warning("Unexpected error:", sys.exc_info()[0]) 
-    #        return("Fail")
-
-    #    logging.debug("--setPosts %s" % posts)
-    #    #print("--setPosts %s" % posts)
-
-    #    for post in posts[typePosts]: 
-    #       if mode != 'raw':
-    #           meta = self.getMessageMeta(post['id'],typePosts)
-    #           message = {}
-    #           message['list'] = post
-    #           message['meta'] = meta
-    #       else:
-    #               raw = self.getMessageRaw(post['id'],typePosts)
-    #               message = {}
-    #               message['list'] = post
-    #               message['meta'] = ''
-    #               message['raw'] = raw
-
-    #       self.posts.insert(0, message) 
-
-    #    logging.debug("posts {}".format(str(self.posts)))
-    #    return "OK"
 
     def confName(self, acc):
         theName = os.path.expanduser(CONFIGDIR + '/' + '.' 
@@ -440,7 +366,9 @@ class moduleGmail(Content,Queue):
         # fromP = self.getHeader(post, 'From')
         # snippet = self.getHeader(post, 'snippet')
         if post:
-            theLink = self.getPostLinks(post)[0]
+            theLink = self.getPostLinks(post)
+            if theLink:
+                theLink = theLink[0]
         else:
             theLink = ""
 
@@ -853,6 +781,8 @@ def main():
                     print(f"{i}) Link: {apiSrc.getPostLink(post)}")
                     print(f"Post: {post}")
                     print(f"Meta: {apiSrc.getMessageMeta(post['list']['id'],'messages')}")
+                return
+            print("end")
         return
  
     import moduleGmail
