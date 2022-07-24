@@ -271,7 +271,7 @@ class moduleCache(Content,Queue):
         fileNameQ = f"{fileName}.queue"
 
         with open(fileNameQ, 'wb') as f:
-            posts = self.getPosts2()
+            posts = self.getPosts()
             pickle.dump(posts, f)
 
         logging.debug("Writing in %s" % fileNameQ)
@@ -465,7 +465,8 @@ class moduleCache(Content,Queue):
         if kwargs:
             more = kwargs
         # print(f"more: {more}")
-        posts = self.getPosts2()
+        posts = self.getPosts()
+        logging.debug(f"Cache posts publishApi: {posts}")
         posts.append(more['post'])
         self.assignPosts(posts)
         self.updatePosts(more['api'])
@@ -549,7 +550,7 @@ class moduleCache(Content,Queue):
         self.assignPosts(posts)
         # FIXME: Using two cache files, for compatibiiity with old version
         self.updatePostsCache()
-        self.updatePosts('srcNotUsed')
+        #self.updatePosts('srcNotUsed')
 
         return(f"Deleted: {j}")
 

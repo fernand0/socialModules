@@ -61,7 +61,7 @@ class Queue:
         return (self.extractDataMessage(i))
 
     def selectAndExecute(self, command, args):
-        # FIXME Does this go here?
+        # FIXME Does this belong here?
         logging.info(f"Selecting {command} with {args} in {self.getService()}")
         argsCont = ''
         pos = args.find(' ')

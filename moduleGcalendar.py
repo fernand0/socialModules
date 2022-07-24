@@ -94,6 +94,7 @@ class moduleGcalendar(Content):
         events_result = api.events().list(calendarId=self.active,
             timeMin=theDate, maxResults=10, singleEvents=True,
             orderBy='startTime').execute() 
+        logging.debug(f"Events: {events_result}")
         self.posts = events_result.get('items',[])
 
         return("orig. "+date+" Translated." + theDate)
@@ -138,7 +139,62 @@ class moduleGcalendar(Content):
 
 
 def main():
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.INFO, 
+            format='%(asctime)s %(message)s')
 
+    import moduleRules
+    rules = moduleRules.moduleRules()
+    rules.checkRules()
+
+    testingList = True
+    if testingList:
+        for key in rules.rules.keys():
+            if (key[0] == 'gcalendar'):
+                print(f"SKey: {key}\n"
+                      f"SRule: {rules.rules[key]}\n"
+                      f"SMore: {rules.more[key]}")
+                apiSrc = rules.readConfigSrc("", key, rules.more[key])
+                print(f"Api: {apiSrc.nick}")
+                apiSrc.setCalendarList()
+                print(f"List: {apiSrc.getCalendarList()}")
+                apiSrc.setActive('dpi6ce608h8j09ocolamshl8kk@group.calendar.google.com')
+                apiSrc.setActive('unizar.es_qg30e83ju3fp3l2clpom56kphg@group.calendar.google.com')
+                apiSrc.setActive('ftricas@unizar.eS')
+                apiSrc.setPosts()
+                print("Citas:")
+                for i, event in enumerate(apiSrc.getPosts()):
+                    import datetime
+                    from dateutil import parser
+                    import pytz
+
+                    d1 = parser.parse(event['updated'])
+                    today = datetime.datetime.combine(datetime.date.today(), 
+                            datetime.datetime.min.time())
+                    today = pytz.utc.localize(today)
+
+                    # print(f"Hoy: {today}")
+
+                    # print (f"{event['created']} {event['updated']}")
+                    # print(f"{d1 - today}")
+                    if abs((d1 - today).days) < 7:
+                        logging.debug(f"{i}) {event}")
+                        start = event.get('start').get('dateTime', event.get('start').get('date'))
+                        print (f"Start: {start}")
+                        end = event.get('end').get('dateTime', event.get('end').get('date'))
+                        print (f"End: {end}")
+                        summary = event.get('summary','')
+                        if summary:
+                            print (f"Summary: {summary}")
+                        description = event.get('description','')
+                        if description:
+                            print (f"Description: {description}")
+                        meet = event.get('hangoutLink','')
+                        if meet:
+                            print (f"Meet link: {meet}")
+
+ 
+    return 
     calendar = moduleGcalendar()
     calendar.setClient('ACC0')
     calendar.setCalendarList()

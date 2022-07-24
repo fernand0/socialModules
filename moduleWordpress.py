@@ -192,8 +192,8 @@ class moduleWordpress(Content,Queue):
                 resJ['generated_slug'])
         else:
             tres = type(res)
-            logging.info(f"Res: {res} type {tres}")
-            res = "Fail! Failed authentication."
+            res = self.report(self.service, apiSrc, 
+                    f"Res: {res} Fail! Failed authentication.")
         return res
 
     def publishNextPost(self, apiSrc):
@@ -229,6 +229,7 @@ class moduleWordpress(Content,Queue):
             pos = api.getLinkPosition(link)
             comment = api.getImagesCode(pos)
             tags = api.getImagesTags(pos)
+            print(f"Comment: {comment}")
 
         if tags:
             idTags = self.checkTags(tags)
@@ -410,7 +411,6 @@ def main():
 
     wp = moduleWordpress.moduleWordpress()
     wp.setClient('avecesunafoto')
-    print("aaaa")
     wp.setPostsType('posts')
     wp.setPosts()
     res = wp.getPosts()

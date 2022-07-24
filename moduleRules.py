@@ -388,6 +388,29 @@ class moduleRules:
 
         return (srcs, dsts, ruls, impRuls)
 
+<<<<<<< Updated upstream
+=======
+    def selectRule(self, selector, selector2 = "", selector3 = ""):
+        indent = ""
+        srcR = None
+
+        for src in self.rules.keys():
+            if src[0] == selector:
+                logging.debug(f"- Src: {src}")
+                logging.debug(f"Selectors: {selector} {selector2} {selector3}")
+                more = self.more[src]
+                srcR = src
+                if not selector2:
+                    break
+                else:
+                    if (selector2 == src[2]):
+                        if not selector3:
+                            break
+                        elif  (selector3 in src[3]):
+                            break
+        return (srcR, more)
+
+>>>>>>> Stashed changes
     def printList(self, myList, title):
         print(f"{title}:")
         for i, element in enumerate(myList):
@@ -569,7 +592,8 @@ class moduleRules:
                     ((not res) or ('SAVELINK' in res) or not ('Fail!' in res))):
                 resUpdate = apiSrc.updateLastLink(apiDst, '')
                 resMsg += f"Update: {resUpdate}"
-            if ((not res) or ('SAVELINK' in res) or not ('Fail!' in res)):
+            if ((not res) or ('SAVELINK' in res) or not ('Fail!' in res)
+                    or not( 'Duplicate' in res)):
                 postaction = apiSrc.getPostAction()
                 if postaction:
                     msgLog = (f"{indent}Post Action {postaction}")

@@ -99,13 +99,15 @@ class moduleFacebook(Content,Queue):
         return(res)
 
     def publishApiPost(self, *args, **kwargs):
-        title, link, comment = args
-        plus = kwargs
-        if plus:
-            apiSrc = plus['api']
-            post = plus['post']
-            title = apiSrc.getPostTitle(post)
-            link = apiSrc.getPostLink(post)
+        # FIXME: manage in an homogeneous way
+        if args and len(args) == 3:
+            title, link, comment = args
+        if kwargs:
+            more = kwargs
+            post = more.get('post', '')
+            api = more.get('api', '')
+            title = api.getPostTitle(post)
+            link = api.getPostLink(post)
             comment = ''
 
         post = self.addComment(title, comment)

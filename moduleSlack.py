@@ -614,7 +614,7 @@ def main():
             site.publishPost('', link, '')
         return
 
-    testingEditTitle = True
+    testingEditTitle = False
     if testingEditTitle:
         print("Testing edit posts")
         site.setPostsType("posts")
@@ -659,6 +659,7 @@ def main():
                 for i, post in enumerate(apiSrc.getPosts()):
                     print(f"{i}) Title: {apiSrc.getPostTitle(post)}\n"
                           f"Link: {apiSrc.getPostLink(post)}\n")
+                print(f"Name: {channel['name']}")
                 input("More? (any key to continue) ")
 
         return
@@ -697,17 +698,67 @@ def main():
         print(f"Content: {site.getPostContentHtml(post)}\n")
         input("Delete?")
         site.delete(i)
-    sys.exit()
+        return
 
-    for i, post in enumerate(site.getPosts()):
-        title = site.getPostTitle(post)
-        link = site.getPostLink(post)
-        url = site.getPostUrl(post)
-        print("Title: {}\nTuit: {}\nLink: {}\n".format(title, link, url))
-        input("Delete?")
-        print("Deleted https://twitter.com/i/status/{}".format(site.delete(i)))
+    myChan = None
+    channels = []
+    testingChannels = True
+    if testingChannels:
+        for i, chan in enumerate(apiSrc.getChannels()):
+            channels.append(chan.get('name',''))
+            print(f"{i}) Chan: {chan.get('name','')}")
 
-        time.sleep(5)
+
+        select = input("Which one? ")
+        if select.isdigit():
+            channels = [ channels[int(select)], ]
+
+    testingDelete = True
+    if testingDelete:
+        for chan in channels:
+            apiSrc.setChannel(chan)
+
+            apiSrc.setPosts()
+
+            [ print(f"{i}) {apiSrc.getPostTitle(post)}")
+                    for i, post in enumerate(apiSrc.getPosts()) ]
+            pos = input("Which post to delete (a for all)? ")
+            if pos.isdigit():
+                post = apiSrc.getPost(int(pos))
+                apiSrc.deletePost(post)
+            else:
+                for pos, post in enumerate(apiSrc.getPosts()):
+                    apiSrc.deletePost(post)
+
+        return
+
+    testingCleaning = False
+    if testingCleaning:
+        apiSrc.setPostsType("posts")
+        apiSrc.setChannel('tavern-of-the-bots')
+        apiSrc.setPosts()
+        ipList = {}
+        for i, post in enumerate(apiSrc.getPosts()):
+            title = apiSrc.getPostTitle(post)
+            link = apiSrc.getPostLink(post)
+            url = apiSrc.getPostUrl(post)
+            print("Title: {}\nTuit: {}\nLink: {}\n".format(title, link, url))
+            # if 'Rep' in link:
+            # if 'foto' in link:
+            # if '"args": ""' in link:
+            if 'Hello' in title:
+                posIni = title.find('IP')+4
+                posFin = title.find(' ', posIni) - 1
+                if title[posIni:posFin] not in ipList:
+                    print(title[posIni:posFin])
+                    ipList[title[posIni:posFin]] = 1
+                    print(ipList)
+                else:
+                    print(f"{link[posIni:posFin]}")
+                    input("Delete? ")
+                    print(f"Deleted {apiSrc.delete(i)}")
+
+            # time.sleep(5)
 
     sys.exit()
 

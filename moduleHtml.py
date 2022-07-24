@@ -97,11 +97,14 @@ class moduleHtml(Content, Queue):
             "fbclid",  # Links from Facebook
             "fsrc",  # Links from The Economist
             "mbid",  # arstechnica
+            "utm_source",  # arstechnica
         ]
 
         for cleanTxt in cleaning:
             logging.info(cleanTxt)
             posUrl = url.find("?" + cleanTxt)
+            if posUrl < 0:
+                posUrl = url.find("&" + cleanTxt)
             if posUrl > 0:
                 url = url[:posUrl]
                 return url
@@ -349,7 +352,10 @@ class moduleHtml(Content, Queue):
     def publishApiPost(self, *args, **kwargs):
         title, link, comment = args
         more = kwargs
-        return self.click(link)
+        res = ''
+        if link:
+            res = self.click(link)
+        return res
 
     def click(self, url):
         headers = {
@@ -358,9 +364,10 @@ class moduleHtml(Content, Queue):
             " Safari/537.36"
         }
         logging.debug(f"url: {url}")
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            logging.info(response.text)
+        if url:
+            response = requests.get(url, headers=headers)
+            if response.status_code != 200:
+                logging.info(response.text)
         return "Click OK"
 
 

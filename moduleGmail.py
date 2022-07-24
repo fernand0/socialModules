@@ -204,16 +204,28 @@ class moduleGmail(Content,Queue):
         if typePosts in posts:
             for post in posts[typePosts]: 
                 if mode != 'raw':
-                   meta = self.getMessageMeta(post['id'],typePosts)
-                   message = {}
-                   message['list'] = post
-                   message['meta'] = meta
-                else:
-                   raw = self.getMessageRaw(post['id'],typePosts)
-                   message = {}
-                   message['list'] = post
-                   message['meta'] = ''
-                   message['raw'] = raw
+                    logging.info(f"Post: {post}") 
+                    logging.info(f"Id: {post['id']}") 
+                    logging.info(f"TypePosts: {typePosts}")
+                    if 'id' in post:
+                        theId = post.get('id','')
+                    elif 'list' in post:
+                        logging.info(f"List: ")
+                        theId = post.get('list','').get('id','')
+                    else:
+                        logging.info(f"eeeeeelse: ")
+                        theId = None
+
+                    meta = self.getMessageMeta(theId, typePosts) 
+                    message = {} 
+                    message['list'] = post 
+                    message['meta'] = meta
+                else: 
+                    raw = self.getMessageRaw(post['id'],typePosts) 
+                    message = {} 
+                    message['list'] = post 
+                    message['meta'] = '' 
+                    message['raw'] = raw
 
                 pPosts.insert(0, message) 
         else:
@@ -324,9 +336,10 @@ class moduleGmail(Content,Queue):
                 else: 
                     if 'parts' in part:
                         for pp in part['parts']:
-                            mes  = mes + str(base64.urlsafe_b64decode(pp['body']['data']))
+                            if ('body' in pp) and ('data' in pp['body']):
+                                mes  = mes + str(base64.urlsafe_b64decode(pp['body']['data']))
                     else:
-                        mes = mes + str(base64.urlsafe_b64decode(pp['body']['data']))
+                        mes = mes + str(base64.urlsafe_b64decode(part['body'].get('data','')))
         else:
             mes  = str(base64.urlsafe_b64decode(message['payload']['body']['data']))
         return(mes)
@@ -350,13 +363,16 @@ class moduleGmail(Content,Queue):
         return message
 
     def getMessageMeta(self, msgId, typePost='drafts'): 
-        api = self.getClient()
-        if typePost == 'drafts': 
-            message = api.users().drafts().get(userId="me", 
-                id=msgId, format='metadata').execute()['message']
-        else:
-            message = api.users().messages().get(userId="me", 
-                id=msgId, format='metadata').execute()
+        message = None
+        logging.info(f"Nick: {self.nick} Server: {self.server}")
+        if msgId:
+            api = self.getClient()
+            if typePost == 'drafts': 
+                message = api.users().drafts().get(userId="me", 
+                    id=msgId, format='metadata').execute()['message']
+            else:
+                message = api.users().messages().get(userId="me", 
+                    id=msgId, format='metadata').execute()
         return message
 
     def setHeader(self, message, header, value):
@@ -416,7 +432,7 @@ class moduleGmail(Content,Queue):
         links = []
         for element in res:
             link = element['href']
-            if not (link in links):
+            if (not (link in links) and not ('mailto' in link)):
                 links.append(link)
         return(links)
 
@@ -795,9 +811,10 @@ def main():
     rules = moduleRules.moduleRules()
     rules.checkRules()
 
-    testingDrafts = True
+    testingDrafts = False
     if testingDrafts:
         for key in rules.rules.keys():
+            logging.debug(f"Key: {key}")
             if ((key[0] == 'gmail') 
                     and ('ftricas' in key[2])
                     and (key[3] == 'drafts')):
@@ -816,6 +833,28 @@ def main():
 
         return
 
+    testingPosts = True
+    if testingPosts:
+        for key in rules.rules.keys():
+            print(f"Key: {key}")
+            if ((key[0] == 'gmail') 
+                    and ('ftricas' in key[2])
+                    and (key[3] == 'posts')):
+                print(f"SKey: {key}\n"
+                      f"SRule: {rules.rules[key]}\n"
+                      f"SMore: {rules.more[key]}")
+                apiSrc = rules.readConfigSrc("", key, rules.more[key])
+                apiSrc.setPosts()
+                post = apiSrc.getNextPost()
+                print(f"titleeeee: {apiSrc.getPostTitle(post)}")
+                print(f"linkkkkk: {apiSrc.getPostLink(post)}")
+                for i, post in enumerate(apiSrc.getPosts()):
+                    print(f"{i}) Asunto: {apiSrc.getPostTitle(post)}")
+                    print(f"{i}) Link: {apiSrc.getPostLink(post)}")
+                    print(f"Post: {post}")
+                    print(f"Meta: {apiSrc.getMessageMeta(post['list']['id'],'messages')}")
+        return
+ 
     import moduleGmail
 
     # instantiate the api object 

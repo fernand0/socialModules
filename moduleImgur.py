@@ -35,8 +35,12 @@ class moduleImgur(Content, Queue):
         access_token = keys[2]
         refresh_token = keys[3]
 
-        client = ImgurClient(client_id, client_secret,
+        try:
+            client = ImgurClient(client_id, client_secret,
                              access_token, refresh_token)
+        except:
+            client = None
+            reply = self.report(self.service, apiSrc, sys.exc_info())
 
         return client
 
@@ -60,7 +64,8 @@ class moduleImgur(Content, Queue):
 
         if client:
             for album in client.get_account_albums(user):
-                logging.debug(f"{time.ctime(album.datetime)} {album.title}")
+                logging.debug(f"Title: {time.ctime(album.datetime)} "
+                              f"{album.title}")
                 if album.in_gallery:
                     posts.append(album)
             else:
@@ -347,8 +352,33 @@ def main():
 
     import moduleImgur
 
-    config = configparser.ConfigParser()
-    config.read(CONFIGDIR + '/.rssBlogs')
+    import moduleRules
+    rules = moduleRules.moduleRules()
+    rules.checkRules()
+
+    # Example:
+    # 
+    # src: ('imgur', 'set', 'https://imgur.com/user/ftricas', 'drafts')
+    # 
+    # More: Src {'url': 'https://imgur.com/user/ftricas', 'service': 'imgur', 'posts': 'drafts', 'cache': 'imgur', 'imgur': 'ftricas', 'time': '23.1', 'max': '1'}
+    print(rules.rules.keys())
+
+    indent = ""
+    mySrc = None
+    for src in rules.rules.keys():
+        if src[0] == 'imgur':
+            print(f"Src: {src}")
+            more = rules.more[src]
+            mySrc = src
+            # break
+    apiSrc = rules.readConfigSrc(indent, mySrc, more)
+
+    testingEditLink = False
+    if testingEditLink:
+        apiSrc.setPosts()
+        print(f"Posts: {apiSrc.getPosts()}")
+
+        return
 
     testingDrafts = False
     if testingDrafts:
@@ -372,24 +402,15 @@ def main():
         print(f"Title: {img.getPostTitle(img.getNextPost())}")
         return
 
-
-
-    publishCache = True
+    publishCache = False
     if publishCache:
-        img = moduleImgur.moduleImgur()
-        acc = "Blog20"
-        url = config.get(acc, 'url')
-        img.setUrl(url)
-        name = url.split('/')[-1]
-        img.setClient(name)
-        img.setPostsType(config.get(acc, 'posts'))
-        img.setPosts()
-        for i, post in enumerate(img.getPosts()):
-            print(f"{i}) {img.getPostTitle(post)}")
+        apiSrc.setPosts()
+        for i, post in enumerate(apiSrc.getPosts()):
+            print(f"{i}) {apiSrc.getPostTitle(post)}")
         pos = int(input("Which post? "))
-        post = img.getPost(pos)
+        post = apiSrc.getPost(pos)
         print(f"Post: {post}")
-        print(f"Title: {img.getPostTitle(post)}")
+        print(f"Title: {apiSrc.getPostTitle(post)}")
         input("Add? ")
 
         import moduleCache
@@ -402,19 +423,38 @@ def main():
                 'imgur@ftricas', 'posts'))
         cache.socialNetwork = 'imgur'
         cache.nick = 'ftricas'
-        img.socialNetwork = 'imgur'
-        img.nick = 'ftricas'
-        img.user = 'https://imgur.com/user/ftricas'
-        cache.fileName = cache.fileNameBase(img)
+        apiSrc.socialNetwork = 'imgur'
+        apiSrc.nick = 'ftricas'
+        apiSrc.user = 'https://imgur.com/user/ftricas'
+        cache.fileName = cache.fileNameBase(apiSrc)
         cache.setPostsType('posts')
         cache.setPosts()
         print(cache.getPosts())
-        cache.publishPost(api=img, post=post)
+        cache.publishPost(api=apiSrc, post=post)
         return
-
 
     publishWordpress = True
     # Testing Wordpress publishing
+    if publishWordpress:
+        apiSrc.setPostsType('posts')
+        apiSrc.setPosts()
+
+        for i, post in enumerate(apiSrc.getPosts()[:25]):
+            print(f"{i}) {apiSrc.getPostTitle(post)}")
+        pos = int(input("Position? "))
+        service = 'wordpress'
+        nick = 'avecesunafoto'
+        socialNetwork = (service, nick) #img.getSocialNetworks()[service])
+        for src in rules.rules.keys():
+            if (src[0] == 'imgur') and (rules.rules[src][0][2] == 'wordpress'):
+                action = rules.rules[src][0]
+                more = rules.more[src]
+                break
+
+        apiDst = rules.readConfigDst("", action, more, apiSrc)
+        rules.executePublishAction("", "", apiSrc, apiDst, False , False, pos)
+
+        return
     img = moduleImgur.moduleImgur()
     acc = "Blog20"
     url = config.get(acc, 'url')

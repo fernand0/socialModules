@@ -78,12 +78,13 @@ class moduleForum(Content, Queue):
         selector = self.selector[idSelector]
         response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.content, features="lxml")
-        logging.debug(f"Soup: {soup}")
-        logging.debug(f"Selector: {selector}")
+        # logging.debug(f"Soup: {soup}")
+        # logging.debug(f"Selector: {selector}")
         if hasattr(self, "selectorby") and (self.selectorby == "a"):
             links = soup.find_all("a", {"class": selector})
         else:
             links = soup.find_all(class_=selector)
+        # logging.debug(f"Links: {links}")
         if len(links) < 10:
             links = None
         if not links:
@@ -93,7 +94,7 @@ class moduleForum(Content, Queue):
                 logging.debug(f"{i}) -> {l}")
             logging.debug(f"l: {links}")
 
-        logging.debug(f"Links: {links}")
+        # logging.debug(f"Links: {links}")
         return links
 
     def getClient(self):
@@ -206,7 +207,6 @@ class moduleForum(Content, Queue):
             pos = self.getLinkPosition(lastLink)
             logging.debug(f"Position: {pos} Len: {len(self.posts)}")
             # print(self.posts[pos][1])
-            # print('>>>',pos, len(self.posts))
             if pos == len(self.posts):  
                 # and (str(lastLink) != self.posts[pos][1]):
                 pos = 0

@@ -437,17 +437,17 @@ class Content:
 
     def assignPosts(self, posts):
         self.posts = []
-        self.posts2 = []
+        # self.posts2 = []
         if posts:
             for post in posts:
                 self.posts.append(post)
-                self.posts2.append(post)
+                # self.posts2.append(post)
 
-    def getPosts2(self):
-        posts = None
-        if hasattr(self, 'posts2'):
-            posts = self.posts2
-        return posts
+    # def getPosts2(self):
+    #     posts = None
+    #     if hasattr(self, 'posts2'):
+    #         posts = self.posts2
+    #     return posts
 
 
     def getPosts(self):
@@ -604,7 +604,7 @@ class Content:
                         '{}\n<p><h4>{}</h4></p><p><a href="{}">'
                         #'<img class="alignnone size-full '
                         #'wp-image-3306" src="{}"
-                        '{} /></a></p>'.format( text, description, url, srcTxt)
+                        '{}</a></p>'.format( text, description, url, srcTxt)
                         )
             else:
                 title = iimg[1]
@@ -812,11 +812,11 @@ class Content:
 
     def deleteNextPost(self):
         reply = ''
-        logging.info(f"    Deleting next post from {self} in {self.service}")
+        logging.info(f"    Deleting next post from {self.service}")
         try:
             post = self.getNextPost()
             if post:
-                logging.info(f"Deleting: {post}")
+                logging.info(f"Deleting: {self.getPostTitle(post)}")
                 idPost = self.getPostId(post)
                 if (hasattr(self, 'getPostsType')
                     and (self.getPostsType())
@@ -872,9 +872,10 @@ class Content:
         try:
             post = apiSrc.getNextPost()
             if post:
-                logging.info(f"Publishing: {post}")
+                logging.debug(f"Publishing: {post}")
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
+                logging.info(f"Publishing Title: {title} Link: {link}")
                 comment= ''
                 nameMethod = 'Post'
                 if (hasattr(apiSrc, 'getPostsType')
@@ -1337,6 +1338,9 @@ class Content:
     def extractImages(self, post):
         return None
 
+    def myElem(self, e):
+        return e[2]
+
     def getImages(self, i):
         posts = self.getPosts()
         res = None
@@ -1344,6 +1348,7 @@ class Content:
             post = posts[i]
             logging.debug("Post: %s" % post)
             res = self.extractImages(post)
+        # res.sort(key=self.myElem)
         return res
 
     def getTags(self, images):

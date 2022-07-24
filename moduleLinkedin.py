@@ -10,6 +10,8 @@ from html.parser import HTMLParser
 import oauth2 as oauth
 from linkedin_v2 import linkedin
 # git@github.com:fernand0/python-linkedin-v2.git
+# python setup.py install
+
 
 from configMod import *
 from moduleContent import *
@@ -133,6 +135,7 @@ class moduleLinkedin(Content):
 
 
     def publishApiPost(self, *args, **kwargs):
+<<<<<<< Updated upstream
         title, link, comment = args
         more = kwargs
         logging.info(f"publishApi ")
@@ -143,6 +146,42 @@ class moduleLinkedin(Content):
         except:
             logging.info(f"Exception {sys.exc_info()}")
             res = self.report('Linkedin', title, link, sys.exc_info())
+=======
+        if args and len(args) == 3:
+            title, link, comment = args
+        if kwargs:
+            more = kwargs
+            # FIXME: We need to do something here
+            post = more.get('post', '')
+            api = more.get('api', '')
+            title = api.getPostTitle(post)
+            link = api.getPostLink(post)
+            comment = api.getPostComment(title)
+
+        logging.info(f"     Publishing: {title} - {link} - {comment}")
+        try:
+            logging.debug(f"Profile: {self.getClient().get_profile()}")
+            logging.debug(f"Profile dir: {self.getClient().__dir__()}")
+            try:
+                res = self.getClient().submit_share(comment=comment, 
+                                                    title=title,
+                                                    description=None, 
+                                                    submitted_url=link, 
+                                                    submitted_image_url=None, 
+                                                    urn=self.URN, 
+                                                    visibility_code='anyone')
+            except:
+                logging.info(f"Linkedin. Not authorized.")
+                logging.info(f"Exception {sys.exc_info()}")
+                res = self.report('Linkedin', title, link, sys.exc_info())
+        except:
+            logging.info(f"Exception {sys.exc_info()}")
+            res = self.report('Linkedin', title, link, sys.exc_info())
+        logging.debug(f"Res: {res.status_code}")
+        logging.debug(f"Res: bool {res.status_code == 201}")
+        if (res.status_code != 201):
+             res = f"Fail!\n{res}"
+>>>>>>> Stashed changes
         return res
 
     def deleteApiPosts(self, idPost):
@@ -171,8 +210,14 @@ def main():
     except:
         ln.authorize()
 
+<<<<<<< Updated upstream
 
     testingPost = False
+=======
+    return
+
+    testingPost = True
+>>>>>>> Stashed changes
     if testingPost:
         print("ll", ln.publishPost("A ver otro", "https://www.linkedin.com/in/fernand0/",''))
         return
@@ -180,7 +225,7 @@ def main():
     # print(ln.deleteApiPosts('6764243697006727168'))
     #sys.exit()
 
-    testingPostImages = True
+    testingPostImages = False
     if testingPostImages:
         image = '/tmp/E8dCZoWWQAgDWqX.png'
         title = 'Prueba imagen'

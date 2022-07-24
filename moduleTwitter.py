@@ -140,10 +140,8 @@ class moduleTwitter(Content,Queue):
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
-            logging.info(f"Tittt: args: {args}")
             title, link, comment = args
         if kwargs:
-            logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             # FIXME: We need to do something here
             post = more.get('post', '')
@@ -154,8 +152,6 @@ class moduleTwitter(Content,Queue):
 
         title = self.addComment(title, comment)
         
-        logging.info(f"Tittt: {title} {link} {comment}")
-        logging.info(f"Tittt: {link and ('twitter' in link)}")
         res = 'Fail!'
         # post = post[:(240 - (len(link) + 1))]
         if (link and ('twitter.com' in link) and ('status' in link)):
@@ -174,7 +170,6 @@ class moduleTwitter(Content,Queue):
 
             logging.debug("     Publishing: %s" % title)
             try:
-                logging.info(f"Tittt: {title} {link} {comment}")
                 # return "Fail!"
                 res = self.getClient().statuses.update(status=title)
             except twitter.api.TwitterHTTPError as twittererror:
