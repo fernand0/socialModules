@@ -388,8 +388,6 @@ class moduleRules:
 
         return (srcs, dsts, ruls, impRuls)
 
-<<<<<<< Updated upstream
-=======
     def selectRule(self, selector, selector2 = "", selector3 = ""):
         indent = ""
         srcR = None
@@ -410,7 +408,6 @@ class moduleRules:
                             break
         return (srcR, more)
 
->>>>>>> Stashed changes
     def printList(self, myList, title):
         print(f"{title}:")
         for i, element in enumerate(myList):

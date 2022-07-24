@@ -135,18 +135,6 @@ class moduleLinkedin(Content):
 
 
     def publishApiPost(self, *args, **kwargs):
-<<<<<<< Updated upstream
-        title, link, comment = args
-        more = kwargs
-        logging.info(f"publishApi ")
-        try:
-            res = self.getClient().submit_share(comment=comment, title=title,
-                description=None, submitted_url=link, submitted_image_url=None,
-                urn=self.URN, visibility_code='anyone')
-        except:
-            logging.info(f"Exception {sys.exc_info()}")
-            res = self.report('Linkedin', title, link, sys.exc_info())
-=======
         if args and len(args) == 3:
             title, link, comment = args
         if kwargs:
@@ -181,7 +169,6 @@ class moduleLinkedin(Content):
         logging.debug(f"Res: bool {res.status_code == 201}")
         if (res.status_code != 201):
              res = f"Fail!\n{res}"
->>>>>>> Stashed changes
         return res
 
     def deleteApiPosts(self, idPost):
@@ -210,14 +197,9 @@ def main():
     except:
         ln.authorize()
 
-<<<<<<< Updated upstream
-
-    testingPost = False
-=======
     return
 
     testingPost = True
->>>>>>> Stashed changes
     if testingPost:
         print("ll", ln.publishPost("A ver otro", "https://www.linkedin.com/in/fernand0/",''))
         return
