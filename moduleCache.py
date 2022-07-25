@@ -172,7 +172,6 @@ class moduleCache(Content,Queue):
             num = 0
         return num
 
-
     def getPosNextPost(self):
         # cache always shows the first item
         # Some standard contition?
@@ -245,6 +244,7 @@ class moduleCache(Content,Queue):
         self.crontab.write()
 
     def addPosts(self, listPosts):
+        # FIXME validate the type of date of the posts we are adding.
         link = ''
         if listPosts:
             if not self.getPosts():
@@ -260,7 +260,7 @@ class moduleCache(Content,Queue):
             #for i,p in enumerate(posts):
             #    print(i, self.getPostTitle(p), self.getPostLink(p))
             self.updatePostsCache()
-        link = listPosts[-1][1]
+        link = self.getPostLink(listPosts[-1])
         return(link)
 
     def updatePosts(self, src):
@@ -271,7 +271,7 @@ class moduleCache(Content,Queue):
         fileNameQ = f"{fileName}.queue"
 
         with open(fileNameQ, 'wb') as f:
-            posts = self.getPosts()
+            posts = self.getPosts2()
             pickle.dump(posts, f)
 
         logging.debug("Writing in %s" % fileNameQ)
@@ -308,28 +308,44 @@ class moduleCache(Content,Queue):
 
         return 'Ok'
 
-    def extractDataMessage(self, i):
-        logging.info("Service %s"% self.service)
-        (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None)
+    # def extractDataMessage(self, i):
+    #     logging.info("Service %s"% self.service)
+    #     (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None)
 
-        if i < len(self.getPosts()):
-            messageRaw = self.getPosts()[i]
+    #     if i < len(self.getPosts()):
+    #         messageRaw = self.getPosts()[i]
 
-            theTitle = messageRaw[0]
-            theLink = messageRaw[1]
+    #         theTitle = messageRaw[0]
+    #         theLink = messageRaw[1]
 
-            theLinks = None
-            content = messageRaw[4]
-            theContent = None
-            firstLink = theLink
-            theImage = messageRaw[3]
-            theSummary = content
+    #         theLinks = None
+    #         content = messageRaw[4]
+    #         theContent = None
+    #         firstLink = theLink
+    #         theImage = messageRaw[3]
+    #         theSummary = content
 
-            theSummaryLinks = content
-            comment = None
+    #         theSummaryLinks = content
+    #         comment = None
 
-        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+    #     return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
+    def setPostLink(self, post, newLink):
+        if post:
+            if hasattr(self, 'auxClass'):
+                myModule = f"module{self.auxClass.capitalize()}"
+                import importlib
+                importlib.import_module(myModule)
+                mod = sys.modules.get(myModule)
+                cls = getattr(mod, myModule)
+                api = cls()
+                apiCmd = getattr(api, 'setPostLink')
+                post  = apiCmd(post, newLink)
+            # else:
+            #     # Old style
+            #     title = post[0]
+            return post
+ 
     def setPostTitle(self, post, newTitle):
         if post:
             if hasattr(self, 'auxClass'):
@@ -404,10 +420,19 @@ class moduleCache(Content,Queue):
 
     def editApiLink(self, post, newLink=''):
         oldLink = self.getPostLink(post)
+        if hasattr(self, 'auxClass'): 
+            myModule = f"module{self.auxClass.capitalize()}"
+            import importlib
+            importlib.import_module(myModule)
+            mod = sys.modules.get(myModule)
+            cls = getattr(mod, myModule)
+            api = cls()
+            apiCmd = getattr(api, 'editApiLink')
+            content  = apiCmd(post, newLink)
+        else:
+            post = post[:1] + ( newLink, ) + post[2:]
         idPost = self.getLinkPosition(oldLink)
-        post = post[:1] + ( newLink, ) + post[2:]
         posts = self.getPosts()
-        posts[idPost] = post
         self.assignPosts(posts)
         self.updatePostsCache()
         return(idPost)
@@ -465,8 +490,7 @@ class moduleCache(Content,Queue):
         if kwargs:
             more = kwargs
         # print(f"more: {more}")
-        posts = self.getPosts()
-        logging.debug(f"Cache posts publishApi: {posts}")
+        posts = self.getPosts2()
         posts.append(more['post'])
         self.assignPosts(posts)
         self.updatePosts(more['api'])
@@ -511,33 +535,33 @@ class moduleCache(Content,Queue):
         self.deleteApi(i)
         return f"OK. Deleted post {i}"
 
-    def publishh(self, j):
-        logging.info(">>>Publishing %d"% j)
-        post = self.obtainPostData(j)
-        logging.info(">>>Publishing {post[0]} in {self.service} user {self.nick}")
-        api = getApi(self.service, self.nick)
-        comment = ''
-        title = post[0]
-        link = post[1]
-        comment = ''
-        update = api.publishPost(title, link, comment)
-        logging.info("Publishing title: %s" % title)
-        logging.info("Social network: %s Nick: %s" % (self.service, self.nick))
-        posts = self.getPosts()
-        if (not isinstance(update, str)
-                or (isinstance(update, str) and update[:4] != "Fail")):
-            self.assignPosts(posts[:j] + posts[j+1:])
-            logging.debug("Updating %s" % posts)
-            self.updatePostsCache()
-            logging.debug("Update ... %s" % str(update))
-            if ((isinstance(update, str) and ('text' in update))
-                    or (isinstance(update, bytes) and (b'text' in update))):
-                update = update['text']
-            if type(update) == tuple:
-                update = update[1]['id']
-                # link: https://www.facebook.com/[name]/posts/[second part of id]
-        logging.info("Update before return %s"% update)
-        return(update)
+    # def publishh(self, j):
+    #     logging.info(">>>Publishing %d"% j)
+    #     post = self.obtainPostData(j)
+    #     logging.info(">>>Publishing {post[0]} in {self.service} user {self.nick}")
+    #     api = getApi(self.service, self.nick)
+    #     comment = ''
+    #     title = post[0]
+    #     link = post[1]
+    #     comment = ''
+    #     update = api.publishPost(title, link, comment)
+    #     logging.info("Publishing title: %s" % title)
+    #     logging.info("Social network: %s Nick: %s" % (self.service, self.nick))
+    #     posts = self.getPosts()
+    #     if (not isinstance(update, str)
+    #             or (isinstance(update, str) and update[:4] != "Fail")):
+    #         self.assignPosts(posts[:j] + posts[j+1:])
+    #         logging.debug("Updating %s" % posts)
+    #         self.updatePostsCache()
+    #         logging.debug("Update ... %s" % str(update))
+    #         if ((isinstance(update, str) and ('text' in update))
+    #                 or (isinstance(update, bytes) and (b'text' in update))):
+    #             update = update['text']
+    #         if type(update) == tuple:
+    #             update = update[1]['id']
+    #             # link: https://www.facebook.com/[name]/posts/[second part of id]
+    #     logging.info("Update before return %s"% update)
+    #     return(update)
 
     def delete(self, j):
         # Not sure
@@ -550,27 +574,34 @@ class moduleCache(Content,Queue):
         self.assignPosts(posts)
         # FIXME: Using two cache files, for compatibiiity with old version
         self.updatePostsCache()
-        #self.updatePosts('srcNotUsed')
+        self.updatePosts('srcNotUsed')
 
         return(f"Deleted: {j}")
 
-    def obtainPostData(self, i, debug=False):
-        if not self.posts:
-            self.setPosts()
+     # def obtainPostData(self, i, debug=False):
+     #     if not self.posts:
+     #         self.setPosts()
 
+     #     posts = self.getPosts()
+
+     #     if not posts:
+     #         return None
+     #     post = posts[i]
+     #     return post
+
+    def copy(self, j, dest):
+        logging.info(f"Copying {j} to {dest}")
         posts = self.getPosts()
+        post = posts[j:j+1]
+        logging.info(f"Copying: {self.getPostTitle(post)}")
+        logging.info(f"Destination: {dest}")
+        logging.info(f"Posts: {posts}")
+        logging.info(f"Post: {post}")
 
-        if not posts:
-            return None
-        post = posts[i]
-        return post
+        #yield f"src: {src}"
 
-    def move(self, j, dest):
-        k = int(dest)
-        logging.info("Moving %d to %d"% (j, k))
-        posts = self.getPosts()
-        post = posts[j]
-        logging.info("Moving %s"% post[0])
+        return("%s"% dest.addPosts(post))
+
         if j > k:
             for i in range(j-1,k-1,-1):
                 posts[i+1] = posts[i]
@@ -581,8 +612,28 @@ class moduleCache(Content,Queue):
         posts[k] = post
         self.assignPosts(posts)
         self.updatePostsCache()
-        logging.info("Moved %s"% post[0])
-        return("%s"% post[0])
+        logging.info("Moved %s"% self.getPostTitle(post))
+        return("%s"% self.getPostTitle(post))
+
+
+    def move(self, j, dest):
+        k = int(dest)
+        logging.info("Moving %d to %d"% (j, k))
+        posts = self.getPosts()
+        post = posts[j]
+        logging.info("Moving %s"% self.getPostTitle(post))
+        if j > k:
+            for i in range(j-1,k-1,-1):
+                posts[i+1] = posts[i]
+        elif j < k:
+            for i in range(j, k):
+                posts[i] = posts[i+1]
+
+        posts[k] = post
+        self.assignPosts(posts)
+        self.updatePostsCache()
+        logging.info("Moved %s"% self.getPostTitle(post))
+        return("%s"% self.getPostTitle(post))
 
 def main():
 
@@ -594,6 +645,10 @@ def main():
     if testingFiles:
         import moduleCache
     
+        import moduleRules
+        rules = moduleRules.moduleRules()
+        rules.checkRules()
+
         queues = []
         for fN in os.listdir(f"{DATADIR}"):
             if (fN[0].isupper() and fN.find('queue')>=0):
@@ -637,8 +692,16 @@ def main():
             url = f"https://{url}/"
 
             site = moduleCache.moduleCache()
-            site.setClient((url, (sN, nick)))
-            site.setPosts()
+            print(f"File: {fNP}")
+            service = fNP.split('__')[0].split('_')[-1].lower()
+            url = fNP.split('__')[0].split('_')[2].replace('---','://').replace('-','/')
+            user = url.split('/')[-1]
+
+            indent = ""
+            src = ('cache', (service, url), f"{service}@{user}", 'posts')
+            more = {}
+            apiSrc = rules.readConfigSrc(indent, src, more)
+            apiSrc.setPosts()
             posts = site.getPosts()
             if not posts:
                 with open(fNP,'rb') as f:
