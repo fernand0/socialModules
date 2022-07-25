@@ -61,6 +61,8 @@ class moduleForum(Content, Queue):
             self.idSeparator = config.get(self.url, "idSeparator")
             if "selectorby" in config[self.url]:
                 self.selectorby = config.get(self.url, "selectorby")
+            if "selectorlink" in config[self.url]:
+                self.selectorlink = config.get(self.url, "selectorlink")
             if "idWhere" in config[self.url]:
                 self.idWhere = config.get(self.url, "idWhere")
         except:
@@ -78,13 +80,13 @@ class moduleForum(Content, Queue):
         selector = self.selector[idSelector]
         response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.content, features="lxml")
-        # logging.debug(f"Soup: {soup}")
-        # logging.debug(f"Selector: {selector}")
+        logging.debug(f"Soup: {soup}")
+        logging.debug(f"Selector: {selector}")
         if hasattr(self, "selectorby") and (self.selectorby == "a"):
             links = soup.find_all("a", {"class": selector})
         else:
             links = soup.find_all(class_=selector)
-        # logging.debug(f"Links: {links}")
+        logging.debug(f"Links: {links}")
         if len(links) < 10:
             links = None
         if not links:
@@ -92,9 +94,8 @@ class moduleForum(Content, Queue):
             links = soup.find_all('a')
             for i, l in enumerate(links):
                 logging.debug(f"{i}) -> {l}")
-            logging.debug(f"l: {links}")
 
-        # logging.debug(f"Links: {links}")
+        logging.debug(f"Links: {links}")
         return links
 
     def getClient(self):
@@ -148,7 +149,10 @@ class moduleForum(Content, Queue):
             try: 
                 idPost = int(idPost)
             except:
-                idPost = int(idPost[1:])
+                try:
+                    idPost = int(idPost[1:])
+                except:
+                    idPost = [int(s) for s in idPost.split('/') if s.isdigit()][0]
 
         logging.debug(f"Id: {idPost}")
         return idPost
@@ -161,27 +165,37 @@ class moduleForum(Content, Queue):
         except:
             forums = []
 
+        logging.debug(" Selected .... %s" % self.selected)
         logging.info(" Reading in .... %s" % self.url)
         listId = []
         posts = {}
         for i, forum in enumerate(forums):
-            logging.debug("forum %s" % forum)
+            logging.debug("Forum html: %s" % forum)
             if forum.name != "a":
                 # It is inside some other tag
                 forum = forum.contents[0]
             text = forum.text
-            if text in self.selected:
+            logging.debug(f"Text: {text}")
+            if ((text.lower() in self.selected)
+                    or (text in self.selected)):
                 logging.debug(f"Forum: {forum}")
                 link = self.extractLink(forum)
-                logging.debug(f"  - {text} {link}")
+                logging.info(f"  - {text} {link}")
                 links = self.getLinks(link, 1)
                 for j, post in enumerate(links):
-                    logging.debug(f"Post {post}")
+                    logging.info(f"Post {post}")
                     linkF = self.extractLink(post)
-                    logging.debug(f"linkF {linkF}")
+                    logging.info(f"linkF {linkF}")
                     if linkF:
-                        idPost = self.extractId(linkF)
-                        logging.debug(f"idPost {idPost}")
+                        if hasattr(self, 'selectorlink'):
+                            logging.info(f"Selectorrrr: {self.selectorlink}")
+                            if not self.selectorlink in linkF:
+                                linkF = None
+                        if linkF:
+                            idPost = self.extractId(linkF)
+                        else:
+                            idPost = None
+                        logging.info(f"idPost {idPost}")
                         if idPost and post.text:
                             if not idPost in listId:
                                 listId.append(idPost)
@@ -207,6 +221,7 @@ class moduleForum(Content, Queue):
             pos = self.getLinkPosition(lastLink)
             logging.debug(f"Position: {pos} Len: {len(self.posts)}")
             # print(self.posts[pos][1])
+            # print('>>>',pos, len(self.posts))
             if pos == len(self.posts):  
                 # and (str(lastLink) != self.posts[pos][1]):
                 pos = 0
@@ -227,21 +242,27 @@ class moduleForum(Content, Queue):
 def main():
 
     logging.basicConfig(
-        stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s"
+        stream=sys.stdout, level=logging.DEBUG, 
+        format="%(asctime)s %(message)s"
     )
 
     forums = [
-        'https://cactuspro.com/forum/',
-        "https://mammillaria.forumotion.net/",
-        "https://www.cactuseros.com/foro/index.php",
-        "http://foro.infojardin.com/",
-        "https://cactiguide.com/forum/",
-    ]
+         'https://cactuspro.com/forum/',
+         "http://foro.infojardin.com/",
+         'https://garden.org/forums/'
+         'http://www.agaveville.org/index.php'
+         "https://www.cactuseros.com/foro/index.php",
+         "https://mammillaria.forumotion.net/",
+         "https://cactiguide.com/forum/",
+     ]
     for forumData in forums:
         forum = moduleForum()
         forum.setClient(forumData)
         forum.setPosts()
+        logging.info(f"Posts: {forum.getPosts()}")
+        return
         lastLink, lastTime = checkLastLink(forum.url)
+        logging.debug(f"Last: {lastLink} - {lastTime}")
         pos = forum.getLinkPosition(lastLink)
         logging.debug(f"Pos: {pos}")
 
