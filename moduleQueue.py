@@ -39,50 +39,56 @@ class Queue:
             newTitle = oldTitle
         return(newTitle)
 
-    def extractDataMessage(self, i):
-        logging.info("extract queue")
-        if hasattr(self, 'getPostsType'):
-            if self.getPostsType() == 'drafts':
-                posts = self.getDrafts()
-            else:
-                posts = self.getPosts()
-        if i < len(posts):
-            post = posts[i]
-            logging.info("Post: %s"% post)
-            theTitle = self.getPostTitle(post)
-            theLink = self.getPostLink(post)
-        else:
-            theTitle = None
-            theLink = None
-        return (theTitle, theLink, None, None, None, None, None, None, None, None)
+    #  def extractDataMessage(self, i):
+    #      logging.info("extract queue")
+    #      if hasattr(self, 'getPostsType'):
+    #          if self.getPostsType() == 'drafts':
+    #              posts = self.getDrafts()
+    #          else:
+    #              posts = self.getPosts()
+    #      if i < len(posts):
+    #          post = posts[i]
+    #          logging.info("Post: %s"% post)
+    #          theTitle = self.getPostTitle(post)
+    #          theLink = self.getPostLink(post)
+    #      else:
+    #          theTitle = None
+    #          theLink = None
+    #      return (theTitle, theLink, None, None, None, None, None, None, None, None)
 
-    def obtainPostData(self, i, debug=False):
-        logging.info("Obtain post data Service %s"% self.service)
-        return (self.extractDataMessage(i))
+    # def obtainPostData(self, i, debug=False):
+    #     logging.info("Obtain post data Service %s"% self.service)
+    #     return (self.extractDataMessage(i))
 
     def selectAndExecute(self, command, args):
         # FIXME Does this belong here?
         logging.info(f"Selecting {command} with {args} in {self.getService()}")
         argsCont = ''
+        if not isinstance(args, str):
+            logging.info(f"Aaaaargs: {args}")
+            args,argsCont = args
+
         pos = args.find(' ')
         j = -1
         if pos > 0: 
             argsIni = args[:pos]
-            argsCont = args[pos+1:]
-            logging.debug(f"Args {argsIni}-{argsCont}")
-            if (argsCont and len(argsCont)>1): 
-                if argsCont[0].isdigit() and (argsCont[1] == ' '): 
-                    j = int(argsCont[0])
-                    argsCont = argsCont[2:]
+            if isinstance(argsCont, str):
+                argsCont = args[pos+1:]
+                logging.debug(f"Args {argsIni}-{argsCont}")
+                if (argsCont and len(argsCont)>1): 
+                    if argsCont[0].isdigit() and (argsCont[1] == ' '): 
+                        j = int(argsCont[0])
+                        argsCont = argsCont[2:]
         else: 
             argsIni = args
             logging.info(f"Args {argsIni}")
 
         pos = argsIni.find('*')
         if pos == 0: 
-            """ If the first character of the argument is a '*' the following
-            ones are the number. But we are supposing that they start at the
-            third character, so we move the string one character to the right
+            """ If the first character of the argument is a '*' the
+            following ones are the number. But we are supposing that they
+            start at the third character, so we move the string one
+            character to the right
             """
             argsIni=' {}'.format(argsIni)
 
@@ -305,37 +311,37 @@ class Queue:
         return(posts[serviceName]['pending'][i][0]+' '+ 
                   posts[serviceName]['pending'][j][0])
     
-    def copyPost(self, api, log, profiles, toCopy, toWhere):
-        logging.info(toCopy+' '+toWhere)
-    
-        profCop = toCopy[0]
-        ii = int(toCopy[1])
-    
-        j = 0
-        profWhe = ""
-        i = 0
-        while i < len(toWhere):
-            profWhe = profWhe + toWhere[i]
-            i = i + 1
-        
-        log.info(toCopy,"|",profCop, ii, profWhe)
-        for i in range(len(profiles)):
-            serviceName = profiles[i].formatted_service
-            log.info("ii: %s" %i)
-            updates = getattr(profiles[j].updates, 'pending')
-            update = updates[ii]
-            if ('media' in update): 
-                if ('expanded_link' in update.media):
-                    link = update.media.expanded_link
-                else:
-                    link = update.media.link
-            else:
-                link = ""
-           
-            if (serviceName[0] in profCop):
-                for j in range(len(profiles)): 
-                    serviceName = profiles[j].formatted_service 
-                    if (serviceName[0] in profWhe):
-                        profiles[j].updates.new(urllib.parse.quote(update.text + " " + link).encode('utf-8'))
-    
+    # def copyPost(self, api, log, profiles, toCopy, toWhere):
+    #     logging.info(toCopy+' '+toWhere)
+    # 
+    #     profCop = toCopy[0]
+    #     ii = int(toCopy[1])
+    # 
+    #     j = 0
+    #     profWhe = ""
+    #     i = 0
+    #     while i < len(toWhere):
+    #         profWhe = profWhe + toWhere[i]
+    #         i = i + 1
+    #     
+    #     log.info(toCopy,"|",profCop, ii, profWhe)
+    #     for i in range(len(profiles)):
+    #         serviceName = profiles[i].formatted_service
+    #         log.info("ii: %s" %i)
+    #         updates = getattr(profiles[j].updates, 'pending')
+    #         update = updates[ii]
+    #         if ('media' in update): 
+    #             if ('expanded_link' in update.media):
+    #                 link = update.media.expanded_link
+    #             else:
+    #                 link = update.media.link
+    #         else:
+    #             link = ""
+    #        
+    #         if (serviceName[0] in profCop):
+    #             for j in range(len(profiles)): 
+    #                 serviceName = profiles[j].formatted_service 
+    #                 if (serviceName[0] in profWhe):
+    #                     profiles[j].updates.new(urllib.parse.quote(update.text + " " + link).encode('utf-8'))
+    # 
 

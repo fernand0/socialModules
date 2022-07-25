@@ -129,116 +129,106 @@ class moduleRss(Content, Queue):
         return soup.get_text()
 
 
-    def obtainPostData(self, i, debug=False):
-        if not self.posts:
-            self.setPosts()
+    # def obtainPostData(self, i, debug=False):
+    #     if not self.posts:
+    #         self.setPosts()
 
-        posts = self.getPosts()
-        if not posts:
-            return (None, None, None, None, None, None, None, None, None)
+    #     posts = self.getPosts()
+    #     if not posts:
+    #         return (None, None, None, None, None, None, None, None, None)
 
-        post = posts[i]
-        #print(post)
+    #     post = posts[i]
+    #     #print(post)
 
-        if 'summary' in post:
-            theSummary = post['summary']
-            content = theSummary
-        if 'content' in post:
-            content = post['content']
-            if isinstance(content, str):
-                if content.startswith('Anuncios'): content = ''
-        if 'description' in post:
-            theDescription = post['description']
-        theTitle = self.getPostTitle(post)
-        if 'link' in post:
-            theLink = post['link']
-        if ('comment' in post):
-            comment = post['comment']
-        else:
-            comment = ""#theSummary
+    #     if 'summary' in post:
+    #         theSummary = post['summary']
+    #         content = theSummary
+    #     if 'content' in post:
+    #         content = post['content']
+    #         if isinstance(content, str):
+    #             if content.startswith('Anuncios'): content = ''
+    #     if 'description' in post:
+    #         theDescription = post['description']
+    #     theTitle = self.getPostTitle(post)
+    #     if 'link' in post:
+    #         theLink = post['link']
+    #     if ('comment' in post):
+    #         comment = post['comment']
+    #     else:
+    #         comment = ""#theSummary
 
-        pos = theLink.find('?source=rss')
-        if pos >=0:
-            theLink = theLink[:pos]
+    #     pos = theLink.find('?source=rss')
+    #     if pos >=0:
+    #         theLink = theLink[:pos]
 
-        theSummaryLinks = ""
+    #     theSummaryLinks = ""
 
-        soup = BeautifulSoup(theDescription, 'lxml')
+    #     soup = BeautifulSoup(theDescription, 'lxml')
 
-        link = soup.a
-        if link is None:
-           firstLink = theLink
-        else:
-           firstLink = link['href']
-           pos = firstLink.find('.')
-           if firstLink.find('https')>=0:
-               lenProt = len('https://')
-           else:
-               lenProt = len('http://')
-           if (firstLink[lenProt:pos] == theTitle[:pos - lenProt]):
-               # A way to identify retumblings. They have the name of the
-               # tumblr at the beggining of the anchor text
-               theTitle = theTitle[pos - lenProt + 1:]
+    #     link = soup.a
+    #     if link is None:
+    #        firstLink = theLink
+    #     else:
+    #        firstLink = link['href']
+    #        pos = firstLink.find('.')
+    #        if firstLink.find('https')>=0:
+    #            lenProt = len('https://')
+    #        else:
+    #            lenProt = len('http://')
+    #        if (firstLink[lenProt:pos] == theTitle[:pos - lenProt]):
+    #            # A way to identify retumblings. They have the name of the
+    #            # tumblr at the beggining of the anchor text
+    #            theTitle = theTitle[pos - lenProt + 1:]
 
-        code = soup.find_all('code')
-        for cod in code:
-            cod.string = cod.string.replace('<','&lt;')
-            cod.string = cod.string.replace('>','&gt;')
-            cod = cod.string
-
-
-        theSummary = soup.get_text()
-        if hasattr(self, 'getLinksToAvoid') and self.getLinksToAvoid():
-            (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinksToAvoid())
-            logging.debug("theC %s" % theContent)
-            if theContent.startswith('Anuncios'):
-                theContent = ''
-            logging.debug("theC %s"% theContent)
-        else:
-            (theContent, theSummaryLinks) = self.extractLinks(soup, "")
-            logging.debug("theC %s"% theContent)
-            if theContent.startswith('Anuncios'):
-                theContent = ''
-            logging.debug("theC %s"% theContent)
-
-        if 'media_content' in posts[i]:
-            theImage = ''
-            for media in posts[i]['media_content']:
-                if media['url'].find('avatar')<0:
-                    theImage = media['url']
-        else:
-            theImage = self.extractImage(soup)
-        logging.debug("theImage %s"% theImage)
-        theLinks = theSummaryLinks
-        theSummaryLinks = theContent + '\n' + theLinks
-
-        logging.debug("=========")
-        logging.debug("Results: ")
-        logging.debug("=========")
-        logging.debug("Title:      %s"% theTitle)
-        logging.debug("Link:       %s"% theLink)
-        logging.debug("First Link: %s"% firstLink)
-        logging.debug("Summary:    %s"% content[:200])
-        logging.debug("Sum links:  %s"% theSummaryLinks)
-        logging.debug("the Links   %s"% theLinks)
-        logging.debug("Comment:    %s"% comment)
-        logging.debug("Image;      %s"% theImage)
-        logging.debug("Post        %s"% theTitle + " " + theLink)
-        logging.debug("==============================================")
-        logging.debug("")
+    #     code = soup.find_all('code')
+    #     for cod in code:
+    #         cod.string = cod.string.replace('<','&lt;')
+    #         cod.string = cod.string.replace('>','&gt;')
+    #         cod = cod.string
 
 
-        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks) #, comment)
+    #     theSummary = soup.get_text()
+    #     if hasattr(self, 'getLinksToAvoid') and self.getLinksToAvoid():
+    #         (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinksToAvoid())
+    #         logging.debug("theC %s" % theContent)
+    #         if theContent.startswith('Anuncios'):
+    #             theContent = ''
+    #         logging.debug("theC %s"% theContent)
+    #     else:
+    #         (theContent, theSummaryLinks) = self.extractLinks(soup, "")
+    #         logging.debug("theC %s"% theContent)
+    #         if theContent.startswith('Anuncios'):
+    #             theContent = ''
+    #         logging.debug("theC %s"% theContent)
 
-    #def isForMe(self, args):
-    #    logging.info("isForMe %s" % str(self.service))
-    #    serviceName = self.service
-    #    lookAt = []
-    #    if (serviceName[0] in args) or ('*' in args):
-    #        if serviceName[0] + serviceName[-1] in args[:-1]:
-    #            lookAt.append(serviceName)
-    #    return lookAt
+    #     if 'media_content' in posts[i]:
+    #         theImage = ''
+    #         for media in posts[i]['media_content']:
+    #             if media['url'].find('avatar')<0:
+    #                 theImage = media['url']
+    #     else:
+    #         theImage = self.extractImage(soup)
+    #     logging.debug("theImage %s"% theImage)
+    #     theLinks = theSummaryLinks
+    #     theSummaryLinks = theContent + '\n' + theLinks
 
+    #     logging.debug("=========")
+    #     logging.debug("Results: ")
+    #     logging.debug("=========")
+    #     logging.debug("Title:      %s"% theTitle)
+    #     logging.debug("Link:       %s"% theLink)
+    #     logging.debug("First Link: %s"% firstLink)
+    #     logging.debug("Summary:    %s"% content[:200])
+    #     logging.debug("Sum links:  %s"% theSummaryLinks)
+    #     logging.debug("the Links   %s"% theLinks)
+    #     logging.debug("Comment:    %s"% comment)
+    #     logging.debug("Image;      %s"% theImage)
+    #     logging.debug("Post        %s"% theTitle + " " + theLink)
+    #     logging.debug("==============================================")
+    #     logging.debug("")
+
+
+    #     return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks) #, comment)
 
 def main():
 

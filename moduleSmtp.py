@@ -53,6 +53,13 @@ class moduleSmtp(Content):
             return('Fail')
 
 def main():
+    logging.basicConfig(stream=sys.stdout, 
+            level=logging.DEBUG, 
+            format='%(asctime)s %(message)s')
+
+    import moduleRules
+    rules = moduleRules.moduleRules()
+    rules.checkRules()
 
     import moduleSmtp
 
@@ -65,6 +72,9 @@ def main():
     req = requests.get(url)
     import time
     ig.publishPost(req.text, 'Test {}'.format(time.asctime()), 'fernand0@elmundoesimperfecto.com')
+    ig.publishPost(req.text, 'Test {}'.format(time.asctime()), 
+                        'fernand0elmundoesimperfecto.com',
+                        'fernand0movilizado@gmail.com')
     
 
 

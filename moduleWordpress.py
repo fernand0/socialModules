@@ -254,52 +254,52 @@ class moduleWordpress(Content,Queue):
         print(f"Resss: {res}")
         return res
 
-    def publishPostt(self, post, link='', comment='', tags=[]):
-        logging.debug("     Publishing in Wordpress...")
-        title = post
-        res = None
-        try:
-            logging.info("     Publishing: %s %s" % (post,str(tags)))
-            print("     Publishing: %s %s" % (post,str(tags)))
-            # The tags must be checked/added previously
-            idTags = self.checkTags(tags)
-            logging.info("     Publishing: %s %s" % (post,str(idTags)))
-            print("     Publishing: %s %s" % (post,str(idTags)))
-            # They must be in a comma separated string
-            idTags = ','.join(str(v) for v in idTags)
-            print("co",comment)
-            payload = {"title":title,"content":comment,
-                    "status":'publish',
-                    # One of: publish, future, draft, pending, private
-                    'tags':idTags}
-            res = requests.post(self.api_base2
-                    + self.api_posts.format(self.my_site),
-                    headers = self.headers,
-                    data = payload)
-            print(res)
-            if res.ok:
-                logging.info("Res: %s" % res)
-                resJ = json.loads(res.text)
-                logging.debug("Res text: %s" % resJ)
-                logging.info("Res slug: %s" % resJ['generated_slug'])
-                return("{} - \n https://{}/{}".format(title,
-                    self.my_site,
-                    resJ['generated_slug']))
-            else:
-                tres = type(res)
-                logging.info(f"Res: {res} type {tres}")
-                print(f"Res: {res} type {tres}")
-                return("Fail!")
-        except KeyError:
-            logging.info("Fail!")
-            logging.info(self.report('KeyError Wordpress', post, link, sys.exc_info()))
-            return(self.report('Wordpress', post, link, sys.exc_info()))
-        except:
-            logging.info("Fail!")
-            logging.info(self.report('Wordpress', post, link, sys.exc_info()))
-            return(self.report('Wordpress', post, link, sys.exc_info()))
+    # def publishPostt(self, post, link='', comment='', tags=[]):
+    #     logging.debug("     Publishing in Wordpress...")
+    #     title = post
+    #     res = None
+    #     try:
+    #         logging.info("     Publishing: %s %s" % (post,str(tags)))
+    #         print("     Publishing: %s %s" % (post,str(tags)))
+    #         # The tags must be checked/added previously
+    #         idTags = self.checkTags(tags)
+    #         logging.info("     Publishing: %s %s" % (post,str(idTags)))
+    #         print("     Publishing: %s %s" % (post,str(idTags)))
+    #         # They must be in a comma separated string
+    #         idTags = ','.join(str(v) for v in idTags)
+    #         print("co",comment)
+    #         payload = {"title":title,"content":comment,
+    #                 "status":'publish',
+    #                 # One of: publish, future, draft, pending, private
+    #                 'tags':idTags}
+    #         res = requests.post(self.api_base2
+    #                 + self.api_posts.format(self.my_site),
+    #                 headers = self.headers,
+    #                 data = payload)
+    #         print(res)
+    #         if res.ok:
+    #             logging.info("Res: %s" % res)
+    #             resJ = json.loads(res.text)
+    #             logging.debug("Res text: %s" % resJ)
+    #             logging.info("Res slug: %s" % resJ['generated_slug'])
+    #             return("{} - \n https://{}/{}".format(title,
+    #                 self.my_site,
+    #                 resJ['generated_slug']))
+    #         else:
+    #             tres = type(res)
+    #             logging.info(f"Res: {res} type {tres}")
+    #             print(f"Res: {res} type {tres}")
+    #             return("Fail!")
+    #     except KeyError:
+    #         logging.info("Fail!")
+    #         logging.info(self.report('KeyError Wordpress', post, link, sys.exc_info()))
+    #         return(self.report('Wordpress', post, link, sys.exc_info()))
+    #     except:
+    #         logging.info("Fail!")
+    #         logging.info(self.report('Wordpress', post, link, sys.exc_info()))
+    #         return(self.report('Wordpress', post, link, sys.exc_info()))
 
-        return 'OK'
+    #     return 'OK'
 
     def getPostTitle(self, post):
         if 'title' in post:
@@ -335,71 +335,71 @@ class moduleWordpress(Content,Queue):
              res = []
         return res
 
-    def obtainPostData(self, i, debug=False):
-        if not self.posts:
-            self.setPosts()
+    # def obtainPostData(self, i, debug=False):
+    #     if not self.posts:
+    #         self.setPosts()
 
-        post = self.getPost(i)
+    #     post = self.getPost(i)
 
-        if post:
-            logging.debug("Post i: {}, {}".format(i,post))
+    #     if post:
+    #         logging.debug("Post i: {}, {}".format(i,post))
 
-            theTitle = self.getTitle(i)
-            theLink = self.getLink(i)
-            firstLink = theLink
-            if 'content' in post:
-                content = post['content']
-            else:
-                content = theLink
-            if 'excerpt' in post:
-                theSummary = post['excerpt']
-            else:
-                theSummary = content
-            theSummaryLinks = content
-            theImage=self.getImages(i)
+    #         theTitle = self.getTitle(i)
+    #         theLink = self.getLink(i)
+    #         firstLink = theLink
+    #         if 'content' in post:
+    #             content = post['content']
+    #         else:
+    #             content = theLink
+    #         if 'excerpt' in post:
+    #             theSummary = post['excerpt']
+    #         else:
+    #             theSummary = content
+    #         theSummaryLinks = content
+    #         theImage=self.getImages(i)
 
-            theContent=''
-            comment = ''
-            theSummaryLinks = ""
+    #         theContent=''
+    #         comment = ''
+    #         theSummaryLinks = ""
 
-            if not content.startswith('http'):
-                soup = BeautifulSoup(content, 'lxml')
-                link = soup.a
-                if link:
-                    firstLink = link.get('href')
-                    if firstLink:
-                        if firstLink[0] != 'h':
-                            firstLink = theLink
+    #         if not content.startswith('http'):
+    #             soup = BeautifulSoup(content, 'lxml')
+    #             link = soup.a
+    #             if link:
+    #                 firstLink = link.get('href')
+    #                 if firstLink:
+    #                     if firstLink[0] != 'h':
+    #                         firstLink = theLink
 
-            if not firstLink:
-                firstLink = theLink
+    #         if not firstLink:
+    #             firstLink = theLink
 
-            theLinks = theSummaryLinks
-            theSummaryLinks = theContent + theLinks
+    #         theLinks = theSummaryLinks
+    #         theSummaryLinks = theContent + theLinks
 
-            theContent = ""
-            theSummaryLinks = ""
+    #         theContent = ""
+    #         theSummaryLinks = ""
 
-            logging.debug("=========")
-            logging.debug("Results: ")
-            logging.debug("=========")
-            logging.debug("Title:     ", theTitle)
-            logging.debug("Link:      ", theLink)
-            logging.debug("First Link:", firstLink)
-            logging.debug("Summary:   ", content[:200])
-            logging.debug("Sum links: ", theSummaryLinks)
-            logging.debug("the Links"  , theLinks)
-            logging.debug("Comment:   ", comment)
-            logging.debug("Image;     ", theImage)
-            logging.debug("Post       ", theTitle + " " + theLink)
-            logging.debug("==============================================")
-            logging.debug("")
+    #         logging.debug("=========")
+    #         logging.debug("Results: ")
+    #         logging.debug("=========")
+    #         logging.debug("Title:     ", theTitle)
+    #         logging.debug("Link:      ", theLink)
+    #         logging.debug("First Link:", firstLink)
+    #         logging.debug("Summary:   ", content[:200])
+    #         logging.debug("Sum links: ", theSummaryLinks)
+    #         logging.debug("the Links"  , theLinks)
+    #         logging.debug("Comment:   ", comment)
+    #         logging.debug("Image;     ", theImage)
+    #         logging.debug("Post       ", theTitle + " " + theLink)
+    #         logging.debug("==============================================")
+    #         logging.debug("")
 
 
-            return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
-        else:
-            logging.info("No post")
-            return (None, None, None, None, None, None, None, None, None, None)
+    #         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+    #     else:
+    #         logging.info("No post")
+    #         return (None, None, None, None, None, None, None, None, None, None)
 
 def main():
 

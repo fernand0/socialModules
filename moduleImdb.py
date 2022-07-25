@@ -321,27 +321,27 @@ class moduleImdb(Content,Queue):
             idPost = post['ts']
         return(idPost)
 
-    def extractDataMessage(self, i):
-        logging.info("Service %s"% self.service)
-        (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None) 
+    # def extractDataMessage(self, i):
+    #     logging.info("Service %s"% self.service)
+    #     (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None) 
 
-        if i < len(self.getPosts()):
-            post = self.getPosts()[i]
-            logging.info("Post --- {}".format(str(post)))
-            theTitle = self.getPostTitle(post)
-            theLink = None #self.getPostLink(post)
-            code = self.getPostCode(post) 
-            average = self.getPostAvg(post) 
-            comment = '[{}] - ({}) {}-{}'.format(average, code, 
-                    self.getPostTimeIni(post),
-                    self.getPostTimeEnd(post))
-            theContent = ""
-            if len(post)>6 :
-                theContent = '\n{}\n{}\n{} ({})'.format(post[5+2], 
-                    post[5+4], post[5+1], post[5+3])
-            logging.info("Post content {}".format(theContent))
+    #     if i < len(self.getPosts()):
+    #         post = self.getPosts()[i]
+    #         logging.info("Post --- {}".format(str(post)))
+    #         theTitle = self.getPostTitle(post)
+    #         theLink = None #self.getPostLink(post)
+    #         code = self.getPostCode(post) 
+    #         average = self.getPostAvg(post) 
+    #         comment = '[{}] - ({}) {}-{}'.format(average, code, 
+    #                 self.getPostTimeIni(post),
+    #                 self.getPostTimeEnd(post))
+    #         theContent = ""
+    #         if len(post)>6 :
+    #             theContent = '\n{}\n{}\n{} ({})'.format(post[5+2], 
+    #                 post[5+4], post[5+1], post[5+3])
+    #         logging.info("Post content {}".format(theContent))
 
-        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+    #     return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
 
 def main():

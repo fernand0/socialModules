@@ -115,7 +115,11 @@ class moduleSlack(Content, Queue):
         return posts
 
     def processReply(self, reply):
-        return reply.get('ok','Fail!')
+        # FIXME: Being careful with publishPost, publishPosPost, publishNextPost, publishApiPost
+        res = reply
+        if isinstance(reply, dict):
+           res = reply.get('ok','Fail!')
+        return res
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
@@ -145,27 +149,6 @@ class moduleSlack(Content, Queue):
         )  # , channel=theChannel, ts=idPost)
 
         return result
-
-    # def deletePost(self, idPost, chan):
-    #     # theChannel or the name of the channel?
-    #     theChan = self.getChanId(chan)
-    #     logging.info("Deleting id %s from %s" % (idPost, theChan))
-
-    #     result = None
-
-    #     try:
-    #         self.getClient().token = self.user_slack_token
-    #         data = {"channel": theChan, "ts": idPost}
-    #         result = self.getClient().api_call(
-    #             "chat.delete", data=data
-    #         )  # , channel=theChannel, ts=idPost)
-    #     except:
-    #         logging.info(
-    #             self.report("Slack", "Error deleting", "", sys.exc_info())
-    #         )
-
-    #     logging.debug(result)
-    #     return result
 
     def getPostId(self, post):
         return (post.get('ts',''))
@@ -202,7 +185,7 @@ class moduleSlack(Content, Queue):
         return post
 
     def getPostTitle(self, post):
-        print(f"Post: {post}")
+        # print(f"Post: {post}")
         if ("attachments" in post) and ("title" in post["attachments"][0]):
             return post["attachments"][0]["title"]
         elif "text" in post:
@@ -261,66 +244,6 @@ class moduleSlack(Content, Queue):
     def getPostImage(self, post):
         return post.get('attachments',[{}])[0].get('image_url', '')
 
-    def publishh(self, j):
-        logging.info("Publishing %d" % j)
-        post = self.obtainPostData(j)
-        logging.info("Publishing %s" % post[0])
-        update = ""
-        title = self.getTitle(j)
-        url = self.getLink(j)
-        logging.info("Title: %s" % str(title))
-        logging.info("Url: %s" % str(url))
-        logging.info("getProgram: %s" % str(self.getProgram()))
-        logging.info("getSN %s" % str(self.getSocialNetworks()))
-        logging.info("self: %s" % str(self))
-
-        return str(self.getProgram())
-
-        if self.getProgram():
-            logging.info("getProgram")
-            for profile in self.getSocialNetworks():
-                nick = self.getSocialNetworks()[profile]
-                logging.info("Social: {} Nick: {}".format(profile, nick))
-                if (profile[0] in self.getProgram()) or (
-                    profile in self.getProgram()
-                ):
-                    logging.info("Social: {} Nick: {}".format(profile, nick))
-                    socialNetwork = (profile, nick)
-
-                    listP = self.cache[socialNetwork].setPosts()
-                    listP = self.cache[socialNetwork].getPosts()
-                    listPsts = self.obtainPostData(j)
-                    listP = listP + [listPsts]
-                    self.cache[socialNetwork].posts = listP
-                    update = (
-                        update + self.cache[socialNetwork].updatePostsCache()
-                    )
-                    logging.info("Uppdate: {}".format(update))
-                    update = update + "\n"
-
-        theChannel = "links"  # self.getChanId("links")
-        self.setChannel(theChannel)
-        res = self.deletePostId(self.getId(j))
-        logging.info("Res: %s" % str(res))
-        update = update + str(res["ok"])
-
-        logging.info("Publishing title: %s" % title)
-        logging.info("Update before return %s" % update)
-        return update
-
-    # def delete(self, j, theChannel=None):
-    #     logging.info("Deleting id %s" % j)
-    #     if not theChannel:
-    #         theChannel = self.getChanId("links")
-    #     idPost = self.getId(j)
-    #     # self.sc.token = self.user_slack_token
-    #     logging.info("Deleting id %s" % idPost)
-    #     data = {"channel": theChannel, "ts": idPost}
-    #     result = self.getClient().api_call("chat.delete", data=data)
-    #     # self.sc.token = self.slack_token
-    #     logging.info(result)
-    #     return result["ok"]
-
     def getChanId(self, name):
         logging.debug("getChanId %s" % self.service)
 
@@ -331,181 +254,6 @@ class moduleSlack(Content, Queue):
             if channel["name_normalized"] == name:
                 return channel["id"]
         return None
-
-    def extractDataMessage(self, i):
-        logging.info("Service %s" % self.service)
-        (
-            theTitle,
-            theLink,
-            firstLink,
-            theImage,
-            theSummary,
-            content,
-            theSummaryLinks,
-            theContent,
-            theLinks,
-            comment,
-        ) = (None, None, None, None, None, None, None, None, [], None)
-
-        if i < len(self.getPosts()):
-            post = self.getPost(i)
-            theTitle = self.getPostTitle(post)
-            theLink = self.getPostLinkl(post)
-
-            theLinks = []
-            content = None
-            theContent = None
-            firstLink = theLink
-            theImage = None
-            theSummary = None
-
-            theSummaryLinks = None
-            comment = None
-
-        return (
-            theTitle,
-            theLink,
-            firstLink,
-            theImage,
-            theSummary,
-            content,
-            theSummaryLinks,
-            theContent,
-            theLinks,
-            comment,
-        )
-
-    def obtainPostData(self, i, debug=False):
-        # This does not belong here
-        if not self.posts:
-            self.setPosts()
-
-        posts = self.getPosts()
-        if not posts:
-            return (None, None, None, None, None, None, None, None, None, None)
-
-        post = posts[i]
-        if "attachments" in post:
-            post = post["attachments"][0]
-
-        theContent = ""
-        url = ""
-        firstLink = ""
-        logging.debug("i %d", i)
-        logging.debug("post %s", post)
-
-        theTitle = self.getTitle(i)
-        theLink = self.getLink(i)
-        logging.debug(theTitle)
-        logging.debug(theLink)
-        if theLink.find("tumblr") > 0:
-            theTitle = post["text"]
-        firstLink = theLink
-        if "text" in post:
-            content = post["text"]
-        else:
-            content = theLink
-        theSummary = content
-        theSummaryLinks = content
-        if "image_url" in post:
-            theImage = post["image_url"]
-        elif "thumb_url" in post:
-            theImage = post["thumb_url"]
-        else:
-            logging.debug("Fail image")
-            logging.debug("Fail image %s", post)
-            theImage = ""
-
-        if "original_url" in post:
-            theLink = post["original_url"]
-        elif url:
-            theLink = url
-        else:
-            theLink = self.getPostLink(post)
-
-        if "comment" in post:
-            comment = post["comment"]
-        else:
-            comment = ""
-
-        # print("content", content)
-        theSummaryLinks = ""
-
-        if not content.startswith("http"):
-            soup = BeautifulSoup(content, "lxml")
-            link = soup.a
-            if link:
-                firstLink = link.get("href")
-                if firstLink:
-                    if firstLink[0] != "h":
-                        firstLink = theLink
-
-        if not firstLink:
-            firstLink = theLink
-
-        if "image_url" in post:
-            theImage = post["image_url"]
-        else:
-            theImage = None
-        theLinks = theSummaryLinks
-        theSummaryLinks = theContent + theLinks
-
-        theContent = ""
-        theSummaryLinks = ""
-
-        if "image_url" in post:
-            theImage = post["image_url"]
-        else:
-            theImage = ''
-        theLinks = theSummaryLinks
-        theSummaryLinks = theContent + theLinks
-
-        logging.debug("=========")
-        logging.debug("Results: ")
-        logging.debug("=========")
-        logging.debug(f"Title:     {theTitle}")
-        logging.debug(f"Link:      {theLink}")
-        logging.debug(f"First Link:{firstLink}")
-        logging.debug(f"Summary:   {content[:200]}")
-        logging.debug(f"Sum links: {theSummaryLinks}")
-        logging.debug(f"the Links  {theLinks}")
-        logging.debug(f"Comment:   {comment}")
-        logging.debug(f"Image;     {theImage}")
-        logging.debug(f"Post       {theTitle} {theLink}")
-        logging.debug("==============================================")
-        logging.debug("")
-
-        return (
-            theTitle,
-            theLink,
-            firstLink,
-            theImage,
-            theSummary,
-            content,
-            #theSummaryLinks,
-            '',
-            [],
-            comment,
-        )
-
-    # def publishPost(self, msg, link, chan="links"):
-    #     theChan = self.getChanId(chan)
-    #     logging.info(f"Publishing {msg} in {chan}")
-    #     try:
-    #         self.getClient().token = self.user_slack_token
-    #         data = {"channel": theChan, "text": f"{msg} {link}"}
-    #         result = self.getClient().api_call(
-    #             "chat.postMessage", data=data
-    #         )  # ,
-    #         self.getClient().token = self.slack_token
-    #     except:
-    #         logging.info(self.report("Slack", "", "", sys.exc_info()))
-    #         result = self.getClient().chat_postMessage(
-    #             channel=theChan, text=f"{msg} {link}"
-    #         )
-    #     logging.info(result["ok"])
-    #     logging.info("End publishing %s" % msg)
-    #     return result
 
     def getBots(self, channel="tavern-of-the-bots"):
         # FIXME: this does not belong here

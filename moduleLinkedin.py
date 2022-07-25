@@ -135,24 +135,13 @@ class moduleLinkedin(Content):
 
 
     def publishApiPost(self, *args, **kwargs):
-        if args and len(args) == 3:
-            title, link, comment = args
-        if kwargs:
-            more = kwargs
-            # FIXME: We need to do something here
-            post = more.get('post', '')
-            api = more.get('api', '')
-            title = api.getPostTitle(post)
-            link = api.getPostLink(post)
-            comment = api.getPostComment(title)
-
+        title, link, comment = args
+        more = kwargs
         logging.info(f"     Publishing: {title} - {link} - {comment}")
         try:
-            logging.debug(f"Profile: {self.getClient().get_profile()}")
-            logging.debug(f"Profile dir: {self.getClient().__dir__()}")
+            self.getClient().get_profile()
             try:
-                res = self.getClient().submit_share(comment=comment, 
-                                                    title=title,
+                res = self.getClient().submit_share(comment=comment, title=title,
                                                     description=None, 
                                                     submitted_url=link, 
                                                     submitted_image_url=None, 
@@ -165,10 +154,8 @@ class moduleLinkedin(Content):
         except:
             logging.info(f"Exception {sys.exc_info()}")
             res = self.report('Linkedin', title, link, sys.exc_info())
-        logging.debug(f"Res: {res.status_code}")
-        logging.debug(f"Res: bool {res.status_code == 201}")
-        if (res.status_code != 201):
-             res = f"Fail!\n{res}"
+        if ('201'.encode() not in res):
+            res = f"Fail!\n{res}"
         return res
 
     def deleteApiPosts(self, idPost):
@@ -196,8 +183,6 @@ def main():
         print(ln.getClient().get_profile())
     except:
         ln.authorize()
-
-    return
 
     testingPost = True
     if testingPost:

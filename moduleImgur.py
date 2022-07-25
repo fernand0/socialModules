@@ -44,12 +44,12 @@ class moduleImgur(Content, Queue):
 
         return client
 
-    def setApiCache(self):
-        import moduleCache
-        cache = moduleCache.moduleCache()
-        cache.setClient((self.url, (self.service, self.user, 'posts')))
-        cache.setPosts()
-        return cache.getPosts()
+    # def setApiCache(self):
+    #     import moduleCache
+    #     cache = moduleCache.moduleCache()
+    #     cache.setClient((self.url, (self.service, self.user, 'posts')))
+    #     cache.setPosts()
+    #     return cache.getPosts()
 
     def setApiPosts(self):
         posts = []
@@ -106,6 +106,7 @@ class moduleImgur(Content, Queue):
         post.title = newTitle
 
     def getPostTitle(self, post):
+        print(f"Post: {post}")
         return post.title
 
     def getPostContentHtml(self, post):
@@ -123,6 +124,12 @@ class moduleImgur(Content, Queue):
     #     else:
     #         return Content.getLinkPosition(self, link)
 
+    def editApiLink(self, post, newLink):
+        post.link = newLink
+
+    def setPostLink(self, post, newLink):
+        post.link = newLink
+
     def getPostLink(self, post):
         if self.getPostsType() == 'cache':
             return post[1]
@@ -130,35 +137,36 @@ class moduleImgur(Content, Queue):
             return post.link
 
     def getPostImage(self, post):
-        # Need rethinking
+        # FIXME. Need rethinking
         return self.getPostId(post)
 
     def getPostId(self, post):
+        print(f"Post: {post}")
         return post.id
 
-    def extractDataMessage(self, i):
-        posts = self.getPosts()
-        if i < len(posts):
-            if self.getPostsType() == 'cache':
-                # Dirty?
-                post = posts[0]
-                return post
-            else:
-                post = posts[i]
-                logging.debug(f"Post: {post}")
-                theTitle = self.getPostTitle(post)
-                theLink = self.getPostLink(post)
-                theId = self.getPostId(post)
-                thePost = self.getImagesCode(i)
-                theTags = self.getImagesTags(i)
-        else:
-            theTitle = ''
-            theLink = ''
-            thePost = ''
-            theTags = ''
+    # def extractDataMessage(self, i):
+    #     posts = self.getPosts()
+    #     if i < len(posts):
+    #         if self.getPostsType() == 'cache':
+    #             # Dirty?
+    #             post = posts[0]
+    #             return post
+    #         else:
+    #             post = posts[i]
+    #             logging.debug(f"Post: {post}")
+    #             theTitle = self.getPostTitle(post)
+    #             theLink = self.getPostLink(post)
+    #             theId = self.getPostId(post)
+    #             thePost = self.getImagesCode(i)
+    #             theTags = self.getImagesTags(i)
+    #     else:
+    #         theTitle = ''
+    #         theLink = ''
+    #         thePost = ''
+    #         theTags = ''
 
-        return (theTitle,  theLink, theLink, theId,
-                '', '', '', theTags, thePost)
+    #     return (theTitle,  theLink, theLink, theId,
+    #             '', '', '', theTags, thePost)
 
     def processReply(self, reply):
         res = ''
@@ -279,41 +287,41 @@ class moduleImgur(Content, Queue):
             res.append((urlImg, title, description, tags))
         return res
 
-    def extractImagesOld(self, post):
-        theTitle = self.getPostTitle(post)
-        theLink = self.getPostLink(post)
-        page = urlopen(theLink).read()
-        soup = BeautifulSoup(page, 'lxml')
+    # def extractImagesOld(self, post):
+    #     theTitle = self.getPostTitle(post)
+    #     theLink = self.getPostLink(post)
+    #     page = urlopen(theLink).read()
+    #     soup = BeautifulSoup(page, 'lxml')
 
-        res = []
-        script = soup.find_all('script')
-        pos = script[9].text.find('image')
-        pos = script[9].text.find('{', pos + 1)
-        pos2 = script[9].text.find('\n', pos + 1)
-        data = json.loads(script[9].text[pos:pos2-1])
-        import pprint
-        pprint.pprint(data)
-        sys.exit()
-        title = data['title']
-        for img in data['album_images']['images']:
-            urlImg = 'https://i.imgur.com/{}.jpg'.format(img['hash'])
-            if 'description' in img:
-                titleImg = img['description']
-                if titleImg:
-                    description = titleImg.split('#')
-                    description, tags = description[0], description[1:]
-                    aTags = []
-                    while tags:
-                        aTag = tags.pop().strip()
-                        aTags.append(aTag)
-                    tags = aTags
-                else:
-                    description = ""
-                    tags = []
-            else:
-                titleImg = ""
-            res.append((urlImg, title, description, tags))
-        return res
+    #     res = []
+    #     script = soup.find_all('script')
+    #     pos = script[9].text.find('image')
+    #     pos = script[9].text.find('{', pos + 1)
+    #     pos2 = script[9].text.find('\n', pos + 1)
+    #     data = json.loads(script[9].text[pos:pos2-1])
+    #     import pprint
+    #     pprint.pprint(data)
+    #     sys.exit()
+    #     title = data['title']
+    #     for img in data['album_images']['images']:
+    #         urlImg = 'https://i.imgur.com/{}.jpg'.format(img['hash'])
+    #         if 'description' in img:
+    #             titleImg = img['description']
+    #             if titleImg:
+    #                 description = titleImg.split('#')
+    #                 description, tags = description[0], description[1:]
+    #                 aTags = []
+    #                 while tags:
+    #                     aTag = tags.pop().strip()
+    #                     aTags.append(aTag)
+    #                 tags = aTags
+    #             else:
+    #                 description = ""
+    #                 tags = []
+    #         else:
+    #             titleImg = ""
+    #         res.append((urlImg, title, description, tags))
+    #     return res
 
     def getNumPostsData(self, num, i, lastLink):
         listPosts = []
@@ -382,24 +390,18 @@ def main():
 
     testingDrafts = False
     if testingDrafts:
-        img = moduleImgur.moduleImgur()
-        acc = "Blog20"
-        url = config.get(acc, 'url')
-        img.setUrl(url)
-        name = url.split('/')[-1]
-        img.setClient(name)
-        img.setPostsType(config.get(acc, 'posts'))
-        img.setPosts()
+        apiSrc.setPosts()
         lastLink = 'https://imgur.com/a/q5zyNtS'
-        img.lastLinkPublished = lastLink
-        i = img.getLinkPosition(lastLink)
-        num = 1
-        listPosts = img.getNumPostsData(num, i, lastLink)
+        # img.lastLinkPublished = lastLink
+        # i = img.getLinkPosition(lastLink)
+        # num = 1
+        listPosts = apiSrc.getPosts()
         print(listPosts)
-        listPosts2 = img.getNumNextPost(1)
+        listPosts2 = apiSrc.getNumNextPost(1)
         print(listPosts2)
-        print(f"post: {img.getNextPost()}")
-        print(f"Title: {img.getPostTitle(img.getNextPost())}")
+        print(f"post: {apiSrc.getNextPost()}")
+        print(f"Title: {apiSrc.getPostTitle(apiSrc.getNextPost())}")
+        print(f"Id: {apiSrc.getPostId(apiSrc.getNextPost())}")
         return
 
     publishCache = False
@@ -465,6 +467,8 @@ def main():
     img.setPosts()
     img.setSocialNetworks(config)
     print(img.getSocialNetworks())
+
+    input("Go?")
     service = 'wordpress'
     nick = 'avecesunafoto'
     socialNetwork = (service, nick) #img.getSocialNetworks()[service])

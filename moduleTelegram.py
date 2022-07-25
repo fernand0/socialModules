@@ -25,8 +25,11 @@ class moduleTelegram(Content):
     def initApi(self, keys):
         logging.info("     Connecting Telegram")
         TOKEN = keys[0]
+        logging.info("     token: {TOKEN}")
         try:
             bot = telepot.Bot(TOKEN)
+            logging.info("     token: {TOKEN}")
+            
             meMySelf = bot.getMe()
         except:
             logging.warning("Telegram authentication failed!")
@@ -37,7 +40,7 @@ class moduleTelegram(Content):
         return bot
 
     def setClient(self, channel):
-        logging.info("     Connecting Telegram")
+        logging.info(f"     Connecting Telegram, channel: {channel}")
         try:
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssTelegram')
@@ -46,10 +49,8 @@ class moduleTelegram(Content):
                 TOKEN = config.get(channel, "TOKEN")
             else:
                 TOKEN = config.get("Telegram", "TOKEN")
-
             try:
                 bot = telepot.Bot(TOKEN)
-                meMySelf = bot.getMe()
             except:
                 logging.warning("Telegram authentication failed!")
                 # logging.warning("Unexpected error:", sys.exc_info())
@@ -175,12 +176,12 @@ def main():
     tel.setClient('testFernand0')
     # tel.setChannel('testFernand0')
 
-    testingImage = True
+    testingImage = False
     if testingImage:
         res = tel.publishImage("Prueba imagen", "/tmp/prueba.png")
         return
 
-    testingPost = False
+    testingPost = True
     if testingPost:
         res = tel.publishPost("Prueba texto", "https://t.me/testFernand0", '')
                 #api = 'lala' , post = 'lele')

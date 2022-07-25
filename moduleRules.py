@@ -7,7 +7,6 @@ import sys
 import time
 import urllib.parse
 
-
 path = f"{os.path.expanduser('~')}/usr/src/socialModules"
 sys.path.append(path)
 
@@ -274,7 +273,7 @@ class moduleRules:
                                             ruls[fromSrvSp].append(toAppend)
                                             msgLog = (f"2 added: {toAppend} "
                                                       f"in {fromSrvSp} ")
-                                            logMsg(msgLog, 1, 0)
+                                            logMsg(msgLog, 2, 0)
                                     else:
                                         ruls[fromSrvSp] = []
                                         ruls[fromSrvSp].append(toAppend)
@@ -286,7 +285,7 @@ class moduleRules:
                                             msgLog = (f"2.1 added: {toAppend} "
                                                       f"in {fromSrvSp} "
                                                       f"with no url")
-                                        logMsg(msgLog, 1, 0)
+                                        logMsg(msgLog, 2, 0)
                                 else:
                                     msgLog = (f"From {fromSrv}")
                                     logMsg(msgLog, 2, 0)
@@ -450,6 +449,7 @@ class moduleRules:
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
             apiSrc.postaction = 'delete'
         else:
+            logging.info(f"Src: {src}")
             apiSrc = getApi(src[0], src[2])
 
         for option in more:
@@ -596,10 +596,15 @@ class moduleRules:
                     msgLog = (f"{indent}Post Action {postaction}")
                     logMsg(msgLog, 1, 1)
 
-                    cmdPost = getattr(apiSrc, f"{postaction}NextPost")
+                    if nextPost:
+                        cmdPost = getattr(apiSrc, f"{postaction}NextPost")
+                        resPost = cmdPost()
+                    else:
+                        cmdPost = getattr(apiSrc, f"{postaction}")
+                        resPost = cmdPost(pos)
+                        # FIXME inconsistent
                     msgLog = (f"{indent}Post Action command {cmdPost}")
                     logMsg(msgLog, 1, 1)
-                    resPost = cmdPost()
                     msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
                     logMsg(msgLog, 1, 1)
                     resMsg += f"Post Action: {resPost}"
@@ -737,12 +742,6 @@ class moduleRules:
         listPosts = []
         link = ''
 
-        testDiffer = False
-
-        if testDiffer:
-            self.testDifferPosts(apiSrc, lastLink, listPosts)
-            return
-
         if (num > 0):
             tNow = time.time()
             hours = float(apiDst.getTime())*60*60
@@ -768,9 +767,14 @@ class moduleRules:
                     post = apiSrc.getPost(pos)
 
                 if post:
+                    msgLog = (f"{indent} Post {post}")
                     apiSrc.setNextTime(tNow, tSleep, apiDst)
                 else:
+                    msgLog = (f"{indent} No post")
                     apiSrc.setNextAvailableTime(tNow, tSleep, apiDst)
+                logMsg(msgLog, 1, 1)
+                # apiSrc.setNextTime(tNow, tSleep, apiDst)
+                # return
 
                 if (tSleep>0.0):
                     msgLog= f"{indent}Waiting {tSleep/60:2.2f} minutes"

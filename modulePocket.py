@@ -28,8 +28,12 @@ class modulePocket(Content,Queue):
 
     def setApiPosts(self):
         posts = []
-        dictPosts = self.client.retrieve()
-        dictPosts = dictPosts['list']
+        try:
+            dictPosts = self.client.retrieve()
+            dictPosts = dictPosts['list']
+        except PocketException as exc:
+            logging.warning(f"setApiPosts generated an exception: {exc}")
+            dictposts = []
         for post in dictPosts:
             posts.append(dictPosts[post])
 
@@ -62,91 +66,98 @@ class modulePocket(Content,Queue):
             if pos >=0:
                 # Sometimes there are two links or something after the link
                 link=link[:pos]
-        res = self.getClient().add(link)
-        return self.processReply(res)
+        try:
+            res = self.getClient().add(link)
+        except PocketException as exc:
+            logging.warning(f"publishApiPosts generated an exception: {exc}")
+            res = "Fail!"
 
-    def publishh(self, j):
-        # This does not belong here
-        logging.info("...Publishing %d"% j)
-        #post = self.obtainPostData(j)
-        #logging.info("Publishing %s"% post[0])
-        update = ''
-        title = self.getTitle(j)
-        logging.info("Title: %s" % str(title))
-        url = self.getLink(j)
-        logging.info("Url: %s" % str(url))
+        return res
 
-        if self.getProgram():
-            logging.info("getProgram")
-            for profile in self.getSocialNetworks():
-                nick = self.getSocialNetworks()[profile]
-                logging.info("Social: {} Nick: {}".format(profile, nick))
-                if ((profile[0] in self.getProgram()) or
-                        (profile in self.getProgram())):
-                    logging.info("Social: {} Nick: {}".format(profile, nick))
-                    lenMax = self.len(profile)
-                    socialNetwork = (profile, nick)
+    # def publishh(self, j):
+    #     # This does not belong here
+    #     logging.info("...Publishing %d"% j)
+    #     #post = self.obtainPostData(j)
+    #     #logging.info("Publishing %s"% post[0])
+    #     update = ''
+    #     title = self.getTitle(j)
+    #     logging.info("Title: %s" % str(title))
+    #     url = self.getLink(j)
+    #     logging.info("Url: %s" % str(url))
 
-                    listP = self.cache[socialNetwork].setPosts()
-                    listP = self.cache[socialNetwork].getPosts()
-                    listPsts = self.obtainPostData(j)
-                    listP = listP + [listPsts]
-                    self.cache[socialNetwork].posts = listP
-                    update = update + self.cache[socialNetwork].updatePostsCache()
-                    logging.info("Uppdate: {}".format(update))
-                    update = update + '\n'
+    #     if self.getProgram():
+    #         logging.info("getProgram")
+    #         for profile in self.getSocialNetworks():
+    #             nick = self.getSocialNetworks()[profile]
+    #             logging.info("Social: {} Nick: {}".format(profile, nick))
+    #             if ((profile[0] in self.getProgram()) or
+    #                     (profile in self.getProgram())):
+    #                 logging.info("Social: {} Nick: {}".format(profile, nick))
+    #                 lenMax = self.len(profile)
+    #                 socialNetwork = (profile, nick)
 
-        if  not self.getProgram(): #not self.getBuffer() and
-            logging.info("Not getBuffer, getProgram {}".format(self.getSocialNetworks()))
-            return ""
-            delayedBlogs = []
-            nowait = True
-            for profile in self.getSocialNetworks():
-                nick = self.getSocialNetworks()[profile]
-                logging.info("Social: {} Nick: {}".format(profile, nick))
-                listPosts = [ post ]
-                socialNetwork = (profile, nick)
-                link = self.addNextPosts(listPosts, socialNetwork)
-                delayedBlogs.append((self, socialNetwork, 1, nowait, 0))
+    #                 listP = self.cache[socialNetwork].setPosts()
+    #                 listP = self.cache[socialNetwork].getPosts()
+    #                 listPsts = self.obtainPostData(j)
+    #                 listP = listP + [listPsts]
+    #                 self.cache[socialNetwork].posts = listP
+    #                 update = update + self.cache[socialNetwork].updatePostsCache()
+    #                 logging.info("Uppdate: {}".format(update))
+    #                 update = update + '\n'
 
-                import concurrent.futures
-                import moduleSocial
-                import time
-                with concurrent.futures.ThreadPoolExecutor(
-                        max_workers=len(delayedBlogs)) as executor:
-                    delayedPosts = {executor.submit(moduleSocial.publishDelay,
-                        *args):
-                        args for args in delayedBlogs}
-                    time.sleep(5)
+    #     if  not self.getProgram(): #not self.getBuffer() and
+    #         logging.info("Not getBuffer, getProgram {}".format(self.getSocialNetworks()))
+    #         return ""
+    #         delayedBlogs = []
+    #         nowait = True
+    #         for profile in self.getSocialNetworks():
+    #             nick = self.getSocialNetworks()[profile]
+    #             logging.info("Social: {} Nick: {}".format(profile, nick))
+    #             listPosts = [ post ]
+    #             socialNetwork = (profile, nick)
+    #             link = self.addNextPosts(listPosts, socialNetwork)
+    #             delayedBlogs.append((self, socialNetwork, 1, nowait, 0))
 
-                    for future in concurrent.futures.as_completed(delayedPosts):
-                        dataBlog = delayedPosts[future]
-                        try:
-                            res = future.result()
-                            if res:
-                                print("  Published: %s"% str(res))
-                                if not dataBlog[0].getProgram():
-                                    posL = res.find('http')
-                                    if posL>=0:
-                                        link = res[posL:]
-                                        if link:
-                                            socialNetwork = dataBlog[1]
-                                            updateLastLink(dataBlog[0].getUrl(),
-                                                    link, socialNetwork)
+    #             import concurrent.futures
+    #             import moduleSocial
+    #             import time
+    #             with concurrent.futures.ThreadPoolExecutor(
+    #                     max_workers=len(delayedBlogs)) as executor:
+    #                 delayedPosts = {executor.submit(moduleSocial.publishDelay,
+    #                     *args):
+    #                     args for args in delayedBlogs}
+    #                 time.sleep(5)
 
-                        except Exception as exc:
-                            print('{} generated an exception: {}'.format(
-                                str(dataBlog), exc))
+    #                 for future in concurrent.futures.as_completed(delayedPosts):
+    #                     dataBlog = delayedPosts[future]
+    #                     try:
+    #                         res = future.result()
+    #                         if res:
+    #                             print("  Published: %s"% str(res))
+    #                             if not dataBlog[0].getProgram():
+    #                                 posL = res.find('http')
+    #                                 if posL>=0:
+    #                                     link = res[posL:]
+    #                                     if link:
+    #                                         socialNetwork = dataBlog[1]
+    #                                         updateLastLink(dataBlog[0].getUrl(),
+    #                                                 link, socialNetwork)
+
+    #                     except Exception as exc:
+    #                         print('{} generated an exception: {}'.format(
+    #                             str(dataBlog), exc))
 
     def archive(self, j):
         logging.info("Archiving %d"% j)
         client = self.client
         post = self.getPost(j)
         title = self.getPostTitle(post)
-        logging.info("Post {}".format(str(post)))
-        logging.info("Title {}".format(title))
+        idPost = self.getPostId(post)
+        logging.info(f"Post {post}")
+        logging.info(f"Title {title}")
+        logging.info(f"Id {idPost}")
         try:
-            res = client.archive(int(self.getPostId(post)))
+            res = client.archive(int(idPost))
             res = client.commit()
             logging.info("Post id res {}".format(str(res)))
             logging.info("Post id res {}".format(str(res["action_results"])))
@@ -192,11 +203,8 @@ class modulePocket(Content,Queue):
         return title
 
     def getPostId(self, post):
-        if 'item' in post:
-            if 'item_id' in post['item']:
-                return(post['item']['item_id'])
-        else:
-            return ''
+        idPost = post.get('item_id','')
+        return idPost
 
     def getPostLink(self, post):
         link = ''
@@ -206,29 +214,28 @@ class modulePocket(Content,Queue):
                 link = post['given_url']
         return link
 
+    # def extractDataMessage(self, i):
+    #     logging.info("Service %s"% self.service)
+    #     (theTitle, theLink, firstLink, theImage, theSummary,
+    #             content, theSummaryLinks, theContent, theLinks, comment) = (
+    #                     None, None, None, None, None,
+    #                     None, None, None, None, None)
 
-    def extractDataMessage(self, i):
-        logging.info("Service %s"% self.service)
-        (theTitle, theLink, firstLink, theImage, theSummary,
-                content, theSummaryLinks, theContent, theLinks, comment) = (
-                        None, None, None, None, None,
-                        None, None, None, None, None)
+    #     if i < len(self.getPosts()):
+    #         theTitle = self.getTitle(i)
+    #         theLink = self.getLink(i)
 
-        if i < len(self.getPosts()):
-            theTitle = self.getTitle(i)
-            theLink = self.getLink(i)
+    #         theLinks = None
+    #         content = None
+    #         theContent = None
+    #         firstLink = theLink
+    #         theImage = None
+    #         theSummary = None
 
-            theLinks = None
-            content = None
-            theContent = None
-            firstLink = theLink
-            theImage = None
-            theSummary = None
+    #         theSummaryLinks = None
+    #         comment = None
 
-            theSummaryLinks = None
-            comment = None
-
-        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+    #     return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
 
 def main():
