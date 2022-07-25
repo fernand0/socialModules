@@ -71,7 +71,7 @@ class moduleGitter(Content,Queue):
     def setApiPosts(self):
         if not self.channel:
             # It will set the owner channel by default
-            logginf.info(f"No channel defined, setting the first one (if any)")
+            logging.info(f"No channel defined, setting the first one (if any)")
             self.setChannel()
         posts = []
         try:
@@ -127,7 +127,7 @@ class moduleGitter(Content,Queue):
         return (idPost)
 
     def deleteApiPosts(self, idPost):
-        result = self.deleteGitter(idPost, self.getChannel())
+        result = self.deteleGitter(idPost, self.getChannel())
         logging.info(f"Res: {result}")
         return(result)
 
@@ -137,10 +137,7 @@ class moduleGitter(Content,Queue):
         # call = f"https://api.gitter.im/v1/{api_meth}"
         #api_meth = 'rooms/{}/chatMessages/{}'.format(room_id, idPost)
         api_meth  = self.getClient().get_and_update_msg_url(idChannel, idPost)
-        try:
-            result = self.getClient().delete(api_meth)
-        except:
-            result = ""
+        result = self.getClient().delete(api_meth)
         logging.info("Result: {}".format(str(result)))
         return result
 
@@ -176,37 +173,34 @@ class moduleGitter(Content,Queue):
                 return(channel['id'])
         return(None)
 
-    def extractDataMessage(self, i):
-        logging.info(f"extract gitt {i}")
-        logging.info("Extract Service %s"% self.service)
-        (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None)
+    # def extractDataMessage(self, i):
+    #     logging.info(f"extract gitt {i}")
+    #     logging.info("Extract Service %s"% self.service)
+    #     (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None)
 
-        if i < len(self.getPosts()):
-            post = self.getPosts()[i]
-            theTitle = self.getPostTitle(post)
-            theLink = self.getPostLink(post)
-            print("The title: {theTitle}")
+    #     if i < len(self.getPosts()):
+    #         post = self.getPosts()[i]
+    #         theTitle = self.getPostTitle(post)
+    #         theLink = self.getPostLink(post)
+    #         print("The title: {theTitle}")
 
-            theLinks = ''
-            content = ''
-            theContent = ''
-            firstLink = theLink
-            theImage = ''
-            theSummary = ''
+    #         theLinks = ''
+    #         content = ''
+    #         theContent = ''
+    #         firstLink = theLink
+    #         theImage = ''
+    #         theSummary = ''
 
-            theSummaryLinks = ''
-            comment = ''
+    #         theSummaryLinks = ''
+    #         comment = ''
 
-        print (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
-        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+    #     print (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+    #     return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
 
     def processReply(self, reply):
         logging.info(reply)
-        if hasattr(reply, 'id'):
-            reply = reply.get('id', '')
-        else:
-            reply = ""
+        reply = reply.get('id', '')
         return reply
 
     def publishApiPost(self, *args, **kwargs):
@@ -288,74 +282,55 @@ def main():
 
         return
 
-    myChan = None
-    channels = []
-    testingChannels = True
-    if testingChannels:
-        for i, chan in enumerate(apiSrc.getChannels()):
-            channels.append(chan.get('name',''))
-            print(f"{i}) Chan: {chan.get('name','')}")
-
-
-        select = input("Which one? ")
-        if select.isdigit():
-            channels = [ channels[int(select)], ]
-
     testingPosts = False
     if testingPosts:
         print("Testing posts")
         apiSrc.setPostsType("posts")
-        if not channels:
-            channels = ['fernand0errbot/links']
+        apiSrc.setChannel('fernand0errbot/links')
+        apiSrc.setPosts()
 
-        for chan in channels:
-            print(f"Chan: {chan}")
-            apiSrc.setChannel(chan)
-            apiSrc.setPosts()
+        print("Testing title and link")
 
-            print("Testing title and link")
+        for i, post in enumerate(apiSrc.getPosts()):
+            print(f"Post: {post}")
+            title = apiSrc.getPostTitle(post)
+            link = apiSrc.getPostLink(post)
+            url = apiSrc.getPostUrl(post)
+            theId = apiSrc.getPostId(post)
+            summary = apiSrc.getPostContentHtml(post)
+            image = apiSrc.getPostImage(post)
+            print(f"{i}) Title: {title}\n"
+                  f"Link: {link}\n"
+                  f"Url: {url}\nId: {theId}\n"
+                  f"Content: {summary} {image}")
 
-            for i, post in enumerate(apiSrc.getPosts()):
-                print(f"Post: {post}")
-                title = apiSrc.getPostTitle(post)
-                link = apiSrc.getPostLink(post)
-                url = apiSrc.getPostUrl(post)
-                theId = apiSrc.getPostId(post)
-                summary = apiSrc.getPostContentHtml(post)
-                image = apiSrc.getPostImage(post)
-                print(f"{i}) Title: {title}\n"
-                      f"Link: {link}\n"
-                      f"Url: {url}\nId: {theId}\n"
-                      f"Content: {summary} {image}")
-
-            if input("All? (y/n) ") == 'y':
-                for channel in apiSrc.getChannels():
-                    print(f"Name: {channel['name']}")
-                    apiSrc.setChannel(channel['name'])
-                    apiSrc.setPosts()
-                    for i, post in enumerate(apiSrc.getPosts()):
-                        print(f"{i}) Title: {apiSrc.getPostTitle(post)}\n"
-                              f"Link: {apiSrc.getPostLink(post)}\n")
-                    input("More? (any key to continue) ")
+        if input("All? (y/n) ") == 'y':
+            for channel in apiSrc.getChannels():
+                print(f"Name: {channel['name']}")
+                apiSrc.setChannel(channel['name'])
+                apiSrc.setPosts()
+                for i, post in enumerate(apiSrc.getPosts()):
+                    print(f"{i}) Title: {apiSrc.getPostTitle(post)}\n"
+                          f"Link: {apiSrc.getPostLink(post)}\n")
+                input("More? (any key to continue) ")
 
         return
 
     testingDelete = True
     if testingDelete:
-        for chan in channels:
-            apiSrc.setChannel(chan)
+        print(f"Channels")
+        [ print(f"{i}) {channel.get('name','')}")
+            for i, channel in enumerate(apiSrc.getChannels()) ]
+        pos = input("Which channel (number)? ")
+        apiSrc.setChannel(apiSrc.getChannels()[int(pos)].get('name',''))
 
-            apiSrc.setPosts()
+        apiSrc.setPosts()
 
-            [ print(f"{i}) {apiSrc.getPostTitle(post)}")
-                    for i, post in enumerate(apiSrc.getPosts()) ]
-            pos = input("Which post to delete (a for all)? ")
-            if pos.isdigit():
-                post = apiSrc.getPost(int(pos))
-                apiSrc.deletePost(post)
-            else:
-                for pos, post in enumerate(apiSrc.getPosts()):
-                    apiSrc.deletePost(post)
+        [ print(f"{i}) {apiSrc.getPostTitle(post)}")
+                for i, post in enumerate(apiSrc.getPosts()) ]
+        pos = input("Which post to delete? ")
+        post = apiSrc.getPost(int(pos))
+        apiSrc.deletePost(post)
 
         return
 
@@ -397,7 +372,7 @@ def main():
             site.deletePost(site.getPostId(post), site.getChannel())
         sys.exit()
 
-    testingPostDelete = False
+    testingPostDelete = True
     if testingPostDelete:
         rep = site.publishPost(CHANNEL, 'helloo')
 
