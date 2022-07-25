@@ -120,12 +120,24 @@ class moduleGmail(Content,Queue):
         return(api.users().labels().create(userId='me', 
                 body=label_object).execute())
 
+    def deleteLabel(self, labelName):
+        api = self.getClient()
+        label_id = self.getLabelId(labelName)
+        return(api.users().labels().delete(userId='me', id=label_id).execute())
+
     def updateLabel(self, label_id, labelName):
         api = self.getClient()
         label_object = {'messageListVisibility': 'show', 
                 'name': labelName, 'labelListVisibility': 'labelShowIfUnread'}
         return(api.users().labels().update(userId='me', id=label_id,
                 body=label_object).execute())
+
+    def listFolders(self):
+        self.setLabels()
+        return self.getLabels()
+
+    def getChannelName(self, channel):
+        return channel.get('name', '')
 
     def setLabels(self):
         api = self.getClient()
@@ -149,7 +161,7 @@ class moduleGmail(Content,Queue):
         list_labels = [ label, ]
         logging.info(list_labels)
         response = api.users().messages().list(userId='me', 
-                                               q='before:2021/6/1 is:unread',
+                                               #q='before:2021/6/1 is:unread',
                                                labelIds=list_labels).execute()
         return(response)
 
@@ -170,38 +182,25 @@ class moduleGmail(Content,Queue):
     def processPosts(self, posts, label, mode):
         pPosts = []
         typePosts = self.getPostsType()
-        print(f"In processPosts, typePosts: {typePosts}")
         if typePosts in ['search', 'posts']:
             typePosts = 'messages'
-        if typePosts in posts:
+        #if typePosts in posts:
+        #for post in posts['messages']: #[typePosts]: 
+        if posts['resultSizeEstimate'] > 0:
             for post in posts[typePosts]: 
                 if mode != 'raw':
-                    logging.info(f"Post: {post}") 
-                    logging.info(f"Id: {post['id']}") 
-                    logging.info(f"TypePosts: {typePosts}")
-                    if 'id' in post:
-                        theId = post.get('id','')
-                    elif 'list' in post:
-                        logging.info(f"List: ")
-                        theId = post.get('list','').get('id','')
-                    else:
-                        logging.info(f"eeeeeelse: ")
-                        theId = None
-
-                    meta = self.getMessageMeta(theId, typePosts) 
-                    message = {} 
-                    message['list'] = post 
-                    message['meta'] = meta
-                else: 
-                    raw = self.getMessageRaw(post['id'],typePosts) 
-                    message = {} 
-                    message['list'] = post 
-                    message['meta'] = '' 
-                    message['raw'] = raw
+                   meta = self.getMessageMeta(post['id'],typePosts)
+                   message = {}
+                   message['list'] = post
+                   message['meta'] = meta
+                else:
+                   raw = self.getMessageRaw(post['id'],typePosts)
+                   message = {}
+                   message['list'] = post
+                   message['meta'] = ''
+                   message['raw'] = raw
 
                 pPosts.insert(0, message) 
-        else:
-            pPosts = []
         return pPosts
 
     def setApiSearch(self, label=None, mode=''): 
@@ -228,11 +227,23 @@ class moduleGmail(Content,Queue):
         posts = self.processPosts(posts, label, mode)
         return posts
 
+    def setChannel(self, channel=''):
+        self.channel = channel
+
+    def getChannel(self):
+        return self.channel
+
     def setApiPosts(self, label=None, mode=''): 
+        label = ''
+        if (not label) and hasattr(self, 'channel'):
+            label = self.getChannel()
         return self.setApiMessages(label, mode)
 
     def setApiMessages(self, label=None, mode=''): 
-        posts = self.getClient().users().messages().list(userId='me').execute()
+        if label:
+            posts = self.getListLabel(label['id'])
+        else:
+            posts = self.getClient().users().messages().list(userId='me').execute()
         posts = self.processPosts(posts, label, mode)
         return posts
 
@@ -262,10 +273,9 @@ class moduleGmail(Content,Queue):
                 else: 
                     if 'parts' in part:
                         for pp in part['parts']:
-                            if ('body' in pp) and ('data' in pp['body']):
-                                mes  = mes + str(base64.urlsafe_b64decode(pp['body']['data']))
+                            mes  = mes + str(base64.urlsafe_b64decode(pp['body']['data']))
                     else:
-                        mes = mes + str(base64.urlsafe_b64decode(part['body'].get('data','')))
+                        mes = mes + str(base64.urlsafe_b64decode(pp['body']['data']))
         else:
             mes  = str(base64.urlsafe_b64decode(message['payload']['body']['data']))
         return(mes)
@@ -276,6 +286,18 @@ class moduleGmail(Content,Queue):
         # print(message)
         # print(message['message'])
         return message
+
+    def getMessageFull(self, msgId, typePost='drafts'): 
+        api = self.getClient()
+        if typePost == 'drafts': 
+            message = api.users().drafts().get(userId="me", 
+                id=msgId, format='full').execute()['message']
+        else:
+            message = api.users().messages().get(userId="me", 
+                id=msgId, format='full').execute()
+
+        return message
+
 
     def getMessageRaw(self, msgId, typePost='drafts'): 
         api = self.getClient()
@@ -289,16 +311,13 @@ class moduleGmail(Content,Queue):
         return message
 
     def getMessageMeta(self, msgId, typePost='drafts'): 
-        message = None
-        logging.info(f"Nick: {self.nick} Server: {self.server}")
-        if msgId:
-            api = self.getClient()
-            if typePost == 'drafts': 
-                message = api.users().drafts().get(userId="me", 
-                    id=msgId, format='metadata').execute()['message']
-            else:
-                message = api.users().messages().get(userId="me", 
-                    id=msgId, format='metadata').execute()
+        api = self.getClient()
+        if typePost == 'drafts': 
+            message = api.users().drafts().get(userId="me", 
+                id=msgId, format='metadata').execute()['message']
+        else:
+            message = api.users().messages().get(userId="me", 
+                id=msgId, format='metadata').execute()
         return message
 
     def setHeader(self, message, header, value):
@@ -358,19 +377,19 @@ class moduleGmail(Content,Queue):
         links = []
         for element in res:
             link = element['href']
-            if (not (link in links) and not ('mailto' in link)):
+            if not (link in links):
                 links.append(link)
         return(links)
 
     def getPostLink(self, post):
         # fromP = self.getHeader(post, 'From')
         # snippet = self.getHeader(post, 'snippet')
+        theLink = ''
         if post:
-            theLink = self.getPostLinks(post)
-            if theLink:
-                theLink = theLink[0]
-        else:
-            theLink = ""
+            logging.info(f"Post: {post}")
+            links = self.getPostLinks(post)
+            if links:
+                theLink = links[0]
 
         # result = f"From: {fromP}\nText: {snipP}"
         result = theLink
@@ -386,8 +405,10 @@ class moduleGmail(Content,Queue):
     def getPostDate(self, post):
         logging.debug(post)
         if post:
-            date = int(self.getHeader(post,'internalDate'))/1000
-            date = '{}'.format(datetime.datetime.fromtimestamp(date)) # Bad!
+            date = self.getHeader(post,'internalDate')
+            # date = int(self.getHeader(post,'internalDate'))/1000
+            # print(f"Dateeeee: {date}")
+            # date = '{}'.format(datetime.datetime.fromtimestamp(date)) # Bad!
             return (date)
         return(None)
 
@@ -436,6 +457,13 @@ class moduleGmail(Content,Queue):
         results = api.users().labels().list(userId='me').execute() 
         return(results['labels'])
 
+    def nameFolder(self, label):
+        return self.getLabelName(label)
+
+    def getLabelName(self, label):
+        api = self.getClient()
+        return label['name']
+
     def getLabelId(self, name):
         api = self.getClient()
         results = self.getLabelList() 
@@ -448,42 +476,42 @@ class moduleGmail(Content,Queue):
     
         return(labelId)
 
-    def extractDataMessage(self, i):
-        logging.info("Service %s"% self.service)
-        posts = self.getPosts()
-        if posts:
-            message = posts[i]
-            logging.debug("Message %s"% message)
+    # def extractDataMessage(self, i):
+    #     logging.info("Service %s"% self.service)
+    #     posts = self.getPosts()
+    #     if posts:
+    #         message = posts[i]
+    #         logging.debug("Message %s"% message)
 
-            theTitle = self.getHeader(message, 'Subject')
-            if theTitle == None:
-                theTitle = self.getHeader(message, 'subject')
-            snippet = self.getHeader(message, 'snippet')
+    #         theTitle = self.getHeader(message, 'Subject')
+    #         if theTitle == None:
+    #             theTitle = self.getHeader(message, 'subject')
+    #         snippet = self.getHeader(message, 'snippet')
 
-            theLink = None
-            if snippet:
-                posIni = snippet.find('http')
-                posFin = snippet.find(' ', posIni)
-                posSignature = snippet.find('-- ')
-                if posIni < posSignature: 
-                    theLink = snippet[posIni:posFin]
-            theLinks = self.getPostLinks(message)
-            theSummaryLinks = self.getPostLinksWithText(message)
-            content = None
-            theContent = None
-            #date = int(self.getHeader(message, 'internalDate'))/1000
-            #firstLink = '{}'.format(datetime.datetime.fromtimestamp(date)) # Bad!
-            firstLink = None
-            theImage = None
-            theSummary = snippet
+    #         theLink = None
+    #         if snippet:
+    #             posIni = snippet.find('http')
+    #             posFin = snippet.find(' ', posIni)
+    #             posSignature = snippet.find('-- ')
+    #             if posIni < posSignature: 
+    #                 theLink = snippet[posIni:posFin]
+    #         theLinks = self.getPostLinks(message)
+    #         theSummaryLinks = self.getPostLinksWithText(message)
+    #         content = None
+    #         theContent = None
+    #         #date = int(self.getHeader(message, 'internalDate'))/1000
+    #         #firstLink = '{}'.format(datetime.datetime.fromtimestamp(date)) # Bad!
+    #         firstLink = None
+    #         theImage = None
+    #         theSummary = snippet
 
-            # theSummaryLinks = message
-            comment = self.getPostId(message) 
+    #         # theSummaryLinks = message
+    #         comment = self.getPostId(message) 
 
-            theLink = theLinks[0]
-            return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks)
-        else:
-            return (None, None, None, None, None, None, None, None, None, None)
+    #         theLink = theLinks[0]
+    #         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks)
+    #     else:
+    #         return (None, None, None, None, None, None, None, None, None, None)
 
     def editl(self, j, newTitle):
         return('Not implemented!')
@@ -542,30 +570,6 @@ class moduleGmail(Content,Queue):
 
         return(f"Res: {res}")
  
-    # def publishPost(self, j):
-    #     return self.publish(self, j)
-
-    def publishh(self, j):
-        logging.info("Publishing %d"% j)                
-        logging.info("servicename %s" %self.service)
-        logging.info(f"type {self.getPostsType()}")
-        logging.info(f"Before post {self.getPosts()}")
-        if not self.getPosts():
-            self.setPosts()
-        logging.info("post %s" %self.getPosts())
-        idPost = self.getPosts()[j]['list']['id'] #thePost[-1]
-        title = self.getHeader(self.getPosts()[j]['meta'], 'Subject')
-        
-        api = self.getClient()
-        try:
-            res = api.users().drafts().send(userId='me', 
-                       body={ 'id': idPost}).execute()
-            logging.info("Res: %s" % res)
-        except:
-            return(self.report('Gmail', idPost, '', sys.exc_info()))
-
-        return("%s"% title)
-
     def trash(self, j, typePost='drafts'):
         logging.info("Trashing %d"% j)
 
@@ -587,6 +591,9 @@ class moduleGmail(Content,Queue):
         return result
 
     def deleteApiMessages(self, idPost): 
+        return self.deleteApiPost(idPost)
+
+    def deleteApiPosts(self, idPost): 
         return self.deleteApiPost(idPost)
 
     def deleteApiPost(self, idPost): 
@@ -721,9 +728,9 @@ class moduleGmail(Content,Queue):
         # Undefined
         pass
     
-    def copyPost(self, log, pp, profiles, toCopy, toWhere):
-        # Undefined
-        pass
+    # def copyPost(self, log, pp, profiles, toCopy, toWhere):
+    #     # Undefined
+    #     pass
     
     def movePost(self, log, pp, profiles, toMove, toWhere):
         # Undefined
@@ -739,10 +746,9 @@ def main():
     rules = moduleRules.moduleRules()
     rules.checkRules()
 
-    testingDrafts = False
+    testingDrafts = True
     if testingDrafts:
         for key in rules.rules.keys():
-            logging.debug(f"Key: {key}")
             if ((key[0] == 'gmail') 
                     and ('ftricas' in key[2])
                     and (key[3] == 'drafts')):
@@ -761,30 +767,6 @@ def main():
 
         return
 
-    testingPosts = True
-    if testingPosts:
-        for key in rules.rules.keys():
-            print(f"Key: {key}")
-            if ((key[0] == 'gmail') 
-                    and ('ftricas' in key[2])
-                    and (key[3] == 'posts')):
-                print(f"SKey: {key}\n"
-                      f"SRule: {rules.rules[key]}\n"
-                      f"SMore: {rules.more[key]}")
-                apiSrc = rules.readConfigSrc("", key, rules.more[key])
-                apiSrc.setPosts()
-                post = apiSrc.getNextPost()
-                print(f"titleeeee: {apiSrc.getPostTitle(post)}")
-                print(f"linkkkkk: {apiSrc.getPostLink(post)}")
-                for i, post in enumerate(apiSrc.getPosts()):
-                    print(f"{i}) Asunto: {apiSrc.getPostTitle(post)}")
-                    print(f"{i}) Link: {apiSrc.getPostLink(post)}")
-                    print(f"Post: {post}")
-                    print(f"Meta: {apiSrc.getMessageMeta(post['list']['id'],'messages')}")
-                return
-            print("end")
-        return
- 
     import moduleGmail
 
     # instantiate the api object 
