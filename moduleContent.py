@@ -5,7 +5,6 @@
 import configparser
 import html
 import logging
-import pickle
 import re
 import sys
 
@@ -66,7 +65,7 @@ class Content:
             config = configparser.RawConfigParser()
             config.read(f"{CONFIGDIR}/.rss{self.service}")
             keys = self.getKeys(config)
-            logging.debug(f"keys {keys}")
+            # logging.debug(f"keys {keys}")
 
             try:
                 client = self.initApi(keys)
@@ -156,7 +155,7 @@ class Content:
         else:
             cmd = getattr(self, "setApiPosts")
 
-        logging.info(f"Cmd: {cmd}")
+        logging.debug(f"Cmd: {cmd}")
         posts = cmd()
         #logging.info(f"Posts: {posts}")
         self.assignPosts(posts)
@@ -353,7 +352,7 @@ class Content:
             with open(fileNameNext,'wb') as f:
                 pickle.dump((tNow, tSleep), f)
         else:
-            print(f"Not implemented!")
+            logging.info(f"Not implemented!")
 
     def setNumPosts(self, numPosts):
         self.numPosts = numPosts
@@ -438,17 +437,17 @@ class Content:
 
     def assignPosts(self, posts):
         self.posts = []
-        # self.posts2 = []
+        self.posts2 = []
         if posts:
             for post in posts:
                 self.posts.append(post)
-                # self.posts2.append(post)
+                self.posts2.append(post)
 
-    # def getPosts2(self):
-    #     posts = None
-    #     if hasattr(self, 'posts2'):
-    #         posts = self.posts2
-    #     return posts
+    def getPosts2(self):
+        posts = None
+        if hasattr(self, 'posts2'):
+            posts = self.posts2
+        return posts
 
 
     def getPosts(self):
@@ -605,7 +604,7 @@ class Content:
                         '{}\n<p><h4>{}</h4></p><p><a href="{}">'
                         #'<img class="alignnone size-full '
                         #'wp-image-3306" src="{}"
-                        '{}</a></p>'.format( text, description, url, srcTxt)
+                        '{} /></a></p>'.format( text, description, url, srcTxt)
                         )
             else:
                 title = iimg[1]
@@ -813,11 +812,11 @@ class Content:
 
     def deleteNextPost(self):
         reply = ''
-        logging.info(f"    Deleting next post from {self.service}")
+        logging.info(f"    Deleting next post from {self} in {self.service}")
         try:
             post = self.getNextPost()
             if post:
-                logging.info(f"Deleting: {self.getPostTitle(post)}")
+                logging.info(f"Deleting: {post}")
                 idPost = self.getPostId(post)
                 if (hasattr(self, 'getPostsType')
                     and (self.getPostsType())
@@ -855,7 +854,7 @@ class Content:
                 #         f"publishApi{apiSrc.getPostsType().capitalize()}"))):
                 #     nameMethod = self.getPostsType().capitalize()
 
-                method = getattr(self, f"publish{nameMethod}")
+                method = getattr(self, f"publishApi{nameMethod}")
                 logging.info(f"method: {method}")
                 res = method(api=apiSrc, post=post)
                 reply = self.processReply(res)
@@ -873,10 +872,9 @@ class Content:
         try:
             post = apiSrc.getNextPost()
             if post:
-                logging.debug(f"Publishing: {post}")
+                logging.info(f"Publishing: {post}")
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
-                logging.info(f"Publishing Title: {title} Link: {link}")
                 comment= ''
                 nameMethod = 'Post'
                 if (hasattr(apiSrc, 'getPostsType')
@@ -1208,8 +1206,7 @@ class Content:
                 if isinstance(link, bytes):
                     linkS = linkS.decode()
                 url = self.getPostLink(entry)
-                # logging.debug("\n{}\n{}".format(url, linkS))
-                # print("{} {}".format(url, linkS))
+                logging.debug(f"\nUrl: {url} Link:{linkS}")
                 lenCmp = min(len(url), len(linkS))
                 if url[:lenCmp] == linkS[:lenCmp]:
                     # When there are duplicates (there shouldn't be) it returns
@@ -1297,16 +1294,15 @@ class Content:
         return (soup.get_text().strip("\n"), theSummaryLinks)
 
     def report(self, profile, post, link, data):
-        logging.warning(f"{profile} failed!")
-        logging.warning(f"Post: {post}, {link}")
-        logging.warning(f"Data: {data}")
-        logging.warning(f"Unexpected error: {data[0]}")
-        logging.warning(f"Unexpected error: {data[1]}")
-        print(f"{profile} failed!")
-        print(f"Post: {post}, {link}")
-        print(f"Data: {data}")
-        print(f"Unexpected error: {data[0]}")
-        print(f"Unexpected error: {data[1]}")
+        msg = (f"{profile} failed!",
+               f"Post: {post}, {link}",
+               f"Data: {data}",
+               f"Unexpected error: {data[0]}",
+               f"Unexpected error: {data[1]}")
+        for line in msg:
+            logging.warning(line)
+            print(line)
+            sys.stderr.write(line)
         return f"Fail! {data[1]}"
         # print("----Unexpected error: %s"% data[2])
 
@@ -1339,9 +1335,6 @@ class Content:
     def extractImages(self, post):
         return None
 
-    def myElem(self, e):
-        return e[2]
-
     def getImages(self, i):
         posts = self.getPosts()
         res = None
@@ -1349,7 +1342,6 @@ class Content:
             post = posts[i]
             logging.debug("Post: %s" % post)
             res = self.extractImages(post)
-        # res.sort(key=self.myElem)
         return res
 
     def getTags(self, images):
