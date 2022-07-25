@@ -9,6 +9,7 @@ import logging
 from bs4 import BeautifulSoup
 from bs4 import Tag
 from pdfrw import PdfReader
+import textract
 
 # https://github.com/fernand0/scripts/blob/master/moduleCache.py
 
@@ -97,21 +98,18 @@ class moduleHtml(Content, Queue):
             "fbclid",  # Links from Facebook
             "fsrc",  # Links from The Economist
             "mbid",  # arstechnica
-            "utm_source",  # arstechnica
         ]
 
         for cleanTxt in cleaning:
             logging.info(cleanTxt)
             posUrl = url.find("?" + cleanTxt)
-            if posUrl < 0:
-                posUrl = url.find("&" + cleanTxt)
             if posUrl > 0:
                 url = url[:posUrl]
                 return url
 
         return url
 
-    def getPdfTitle(req):
+    def getPdfTitle(self, req):
         nameFile = "/tmp/kkkkk.pdf"
         with open(nameFile, "wb") as f:
             f.write(req.content)
@@ -128,7 +126,7 @@ class moduleHtml(Content, Queue):
 
         return title
 
-    def cleanDocument(self, text, theUrl):
+    def cleanDocument(self, text, theUrl, response):
         replaceChars = [
             ("“", '"'),
             ("”", '"'),
@@ -166,6 +164,8 @@ class moduleHtml(Content, Queue):
             ("👍", "(ok)"),
             ("🙀", "(oh)"),
             ("🚀", "(despegar)"),
+            ("\\n",""),
+            ("\\t",""),
         ]
 
         from readability import Document
@@ -175,7 +175,7 @@ class moduleHtml(Content, Queue):
 
         if not doc_title or (doc_title == "[no-title]"):
             if theUrl.lower().endswith("pdf"):
-                title = getPdfTitle(response)
+                title = self.getPdfTitle(response)
                 print(title)
                 doc_title = "[PDF] " + title
 
@@ -183,14 +183,23 @@ class moduleHtml(Content, Queue):
 
         # myText = doc.summary()
         myText = doc.content()
+
         for a, b in replaceChars:
             myText = myText.replace(a, b)
             theTitle = theTitle.replace(a, b)
 
         return (myText, theTitle)
 
+    def extractVideos(self, soup):
+        videos =  soup.find_all('video')
+        return videos
+
+    def extractImages(self, soup):
+        pageImages = soup.findAll("img")
+        return pageImages
+
     def extractImage(self, soup):
-        pageImage = soup.findAll("img")
+        pageImage = self.extractImages(soup)
         #  Only the first one
         if len(pageImage) > 0:
             imageLink = pageImage[0]["src"]
@@ -352,10 +361,7 @@ class moduleHtml(Content, Queue):
     def publishApiPost(self, *args, **kwargs):
         title, link, comment = args
         more = kwargs
-        res = ''
-        if link:
-            res = self.click(link)
-        return res
+        return self.click(link)
 
     def click(self, url):
         headers = {
@@ -364,10 +370,9 @@ class moduleHtml(Content, Queue):
             " Safari/537.36"
         }
         logging.debug(f"url: {url}")
-        if url:
-            response = requests.get(url, headers=headers)
-            if response.status_code != 200:
-                logging.info(response.text)
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            logging.info(response.text)
         return "Click OK"
 
 

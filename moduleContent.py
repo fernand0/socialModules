@@ -230,12 +230,13 @@ class Content:
 
         fileName = f"{self.fileNameBase(dst)}.last"
         with open(fileName, "w") as f:
-            if isinstance(link, bytes):
-                f.write(link.decode())
-            elif isinstance(link, str):
-                f.write(link)
-            else:
-                f.write(link[0])
+            if link:
+                if isinstance(link, bytes):
+                    f.write(link.decode())
+                elif isinstance(link, str):
+                    f.write(link)
+                else:
+                    f.write(link[0])
 
         self.setLastLink(dst)
 
