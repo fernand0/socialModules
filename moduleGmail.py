@@ -10,6 +10,11 @@ from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
 
+
+# from googleapiclient.discovery import build
+# from httplib2 import Http
+# from oauth2client import file, client, tools
+
 from bs4 import BeautifulSoup
 
 import configparser, os
@@ -59,8 +64,8 @@ class moduleGmail(Content,Queue):
         if isinstance(creds, str) and ("Fail!" in creds):
             service = None
         else:
-            service = build('gmail', 'v1',
-                        credentials=creds, cache_discovery=False)
+            service = build('gmail', 'v1', http=creds.authorize(Http()))
+                        # credentials=creds, cache_discovery=False)
         return service
 
     def authorize(self):
@@ -78,11 +83,14 @@ class moduleGmail(Content,Queue):
         fileTokenStore = self.confTokenName((self.server, self.nick))
         creds = None
 
+        store = file.Storage(fileTokenStore)
         if os.path.exists(fileTokenStore):
             logging.debug(f"filetokenstore: {fileTokenStore}")
-            creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+            # creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+            creds = store.get()
+            
 
-        if not creds or not creds.valid:
+        if not creds:
             if creds and creds.expired and creds.refresh_token:
                 logging.info("Needs to refresh token GMail")
                 creds.refresh(Request())
@@ -90,10 +98,18 @@ class moduleGmail(Content,Queue):
                 logging.info("Needs to re-authorize token GMail")
 
                 try:
-                    flow = InstalledAppFlow.from_client_secrets_file(
-                        fileCredStore, SCOPES)
+                    print(f"fileCred: {fileCredStore}")
+                    flow = client.flow_from_clientsecrets(fileCredStore, 
+                                                         SCOPES)
+                    creds = tools.run_flow(flow, store, 
+                           tools.argparser.parse_args(args=['--noauth_local_webserver']))
 
-                    creds = flow.run_local_server(port=0)
+                    # credentials = run_flow(flow, storage, args)
+
+                    # flow = InstalledAppFlow.from_client_secrets_file(
+                    #     fileCredStore, SCOPES)
+
+                    # creds = flow.run_local_server(port=0)
                     # creds = flow.run_console(
                     #         authorization_prompt_message='Please visit this URL: {url}',
                     #         success_message='The auth flow is complete; you may close this window.')
@@ -106,8 +122,8 @@ class moduleGmail(Content,Queue):
                     print("Error de valor")
                     creds = 'Fail!'
         logging.debug("Storing creds")
-        with open(fileTokenStore, 'wb') as token:
-            pickle.dump(creds, token)
+        # with open(fileTokenStore, 'wb') as token:
+        #     pickle.dump(creds, token)
 
         return(creds)
 
@@ -254,7 +270,7 @@ class moduleGmail(Content,Queue):
     def confTokenName(self, acc):
         theName = os.path.expanduser(CONFIGDIR + '/' + '.'
                 + acc[0]+ '_'
-                + acc[1]+ '.pickle')
+                + acc[1]+ '.token.json')
         return(theName)
 
     def getMessageId(self, idPost):
