@@ -84,11 +84,9 @@ class moduleGmail(Content,Queue):
         creds = None
 
         store = file.Storage(fileTokenStore)
-        if os.path.exists(fileTokenStore):
-            logging.debug(f"filetokenstore: {fileTokenStore}")
-            # creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-            creds = store.get()
-            
+        logging.debug(f"filetokenstore: {fileTokenStore}")
+        # creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+        creds = store.get()
 
         if not creds:
             if creds and creds.expired and creds.refresh_token:
