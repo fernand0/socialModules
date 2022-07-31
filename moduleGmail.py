@@ -10,7 +10,6 @@ from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
 
-
 # from googleapiclient.discovery import build
 # from httplib2 import Http
 # from oauth2client import file, client, tools
@@ -39,8 +38,9 @@ from email.parser import BytesParser
 from configMod import *
 from moduleContent import *
 from moduleQueue import *
+from moduleGoogle import *
 
-class moduleGmail(Content,Queue):
+class moduleGmail(Content,Queue,socialGoogle):
 
     def __init__(self):
         super().__init__()
@@ -51,12 +51,12 @@ class moduleGmail(Content,Queue):
         self.scopes = ['https://mail.google.com/']
         self.scopes = ['https://www.googleapis.com/auth/gmail.modify']
 
-    def API(self, Acc):
-        # Back compatibility
-        self.setClient(Acc)
+    # def API(self, Acc):
+    #     # Back compatibility
+    #     self.setClient(Acc)
 
-    def getKeys(key, config):
-        return (())
+    # def getKeys(key, config):
+    #     return (())
 
     def initApi(self, keys):
         SCOPES = self.scopes
@@ -68,62 +68,62 @@ class moduleGmail(Content,Queue):
                         # credentials=creds, cache_discovery=False)
         return service
 
-    def authorize(self):
-        # based on Code from
-        # https://github.com/gsuitedevs/python-samples/blob/aacc00657392a7119808b989167130b664be5c27/gmail/quickstart/quickstart.py
+    # def authorize(self):
+    #     # based on Code from
+    #     # https://github.com/gsuitedevs/python-samples/blob/aacc00657392a7119808b989167130b664be5c27/gmail/quickstart/quickstart.py
 
-        SCOPES = self.scopes
+    #     SCOPES = self.scopes
 
-        #logging.info(f"    Connecting {self.service}: {account}")
-        pos = self.user.rfind('@')
-        self.server = self.user[pos+1:]
-        self.nick = self.user[:pos]
+    #     #logging.info(f"    Connecting {self.service}: {account}")
+    #     pos = self.user.rfind('@')
+    #     self.server = self.user[pos+1:]
+    #     self.nick = self.user[:pos]
 
-        fileCredStore = self.confName((self.server, self.nick))
-        fileTokenStore = self.confTokenName((self.server, self.nick))
-        creds = None
+    #     fileCredStore = self.confName((self.server, self.nick))
+    #     fileTokenStore = self.confTokenName((self.server, self.nick))
+    #     creds = None
 
-        store = file.Storage(fileTokenStore)
-        logging.debug(f"filetokenstore: {fileTokenStore}")
-        # creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-        creds = store.get()
+    #     store = file.Storage(fileTokenStore)
+    #     logging.debug(f"filetokenstore: {fileTokenStore}")
+    #     # creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    #     creds = store.get()
 
-        if not creds:
-            if creds and creds.expired and creds.refresh_token:
-                logging.info("Needs to refresh token GMail")
-                creds.refresh(Request())
-            else:
-                logging.info("Needs to re-authorize token GMail")
+    #     if not creds:
+    #         if creds and creds.expired and creds.refresh_token:
+    #             logging.info("Needs to refresh token GMail")
+    #             creds.refresh(Request())
+    #         else:
+    #             logging.info("Needs to re-authorize token GMail")
 
-                try:
-                    print(f"fileCred: {fileCredStore}")
-                    flow = client.flow_from_clientsecrets(fileCredStore, 
-                                                         SCOPES)
-                    creds = tools.run_flow(flow, store, 
-                           tools.argparser.parse_args(args=['--noauth_local_webserver']))
+    #             try:
+    #                 print(f"fileCred: {fileCredStore}")
+    #                 flow = client.flow_from_clientsecrets(fileCredStore, 
+    #                                                      SCOPES)
+    #                 creds = tools.run_flow(flow, store, 
+    #                        tools.argparser.parse_args(args=['--noauth_local_webserver']))
 
-                    # credentials = run_flow(flow, storage, args)
+    #                 # credentials = run_flow(flow, storage, args)
 
-                    # flow = InstalledAppFlow.from_client_secrets_file(
-                    #     fileCredStore, SCOPES)
+    #                 # flow = InstalledAppFlow.from_client_secrets_file(
+    #                 #     fileCredStore, SCOPES)
 
-                    # creds = flow.run_local_server(port=0)
-                    # creds = flow.run_console(
-                    #         authorization_prompt_message='Please visit this URL: {url}',
-                    #         success_message='The auth flow is complete; you may close this window.')
-                    # Save the credentials for the next run
-                except FileNotFoundError:
-                    print("no")
-                    print(fileCredStore)
-                    sys.exit()
-                except ValueError:
-                    print("Error de valor")
-                    creds = 'Fail!'
-        logging.debug("Storing creds")
-        # with open(fileTokenStore, 'wb') as token:
-        #     pickle.dump(creds, token)
+    #                 # creds = flow.run_local_server(port=0)
+    #                 # creds = flow.run_console(
+    #                 #         authorization_prompt_message='Please visit this URL: {url}',
+    #                 #         success_message='The auth flow is complete; you may close this window.')
+    #                 # Save the credentials for the next run
+    #             except FileNotFoundError:
+    #                 print("no")
+    #                 print(fileCredStore)
+    #                 sys.exit()
+    #             except ValueError:
+    #                 print("Error de valor")
+    #                 creds = 'Fail!'
+    #     logging.debug("Storing creds")
+    #     # with open(fileTokenStore, 'wb') as token:
+    #     #     pickle.dump(creds, token)
 
-        return(creds)
+    #     return(creds)
 
     def createLabel(self, labelName):
         api = self.getClient()
@@ -255,21 +255,21 @@ class moduleGmail(Content,Queue):
         if label:
             posts = self.getListLabel(label['id'])
         else:
-            posts = self.getClient().users().messages().list(userId='me').execute()
+            posts = self.getClient().users().messages().list(userId='me', maxResults=150).execute()
         posts = self.processPosts(posts, label, mode)
         return posts
 
-    def confName(self, acc):
-        theName = os.path.expanduser(CONFIGDIR + '/' + '.'
-                + acc[0]+ '_'
-                + acc[1]+ '.json')
-        return(theName)
+    # def confName(self, acc):
+    #     theName = os.path.expanduser(CONFIGDIR + '/' + '.'
+    #             + acc[0]+ '_'
+    #             + acc[1]+ '.json')
+    #     return(theName)
 
-    def confTokenName(self, acc):
-        theName = os.path.expanduser(CONFIGDIR + '/' + '.'
-                + acc[0]+ '_'
-                + acc[1]+ '.token.json')
-        return(theName)
+    # def confTokenName(self, acc):
+    #     theName = os.path.expanduser(CONFIGDIR + '/' + '.'
+    #             + acc[0]+ '_'
+    #             + acc[1]+ '.token.json')
+    #     return(theName)
 
     def getMessageId(self, idPost):
         api = self.getClient()
@@ -277,17 +277,20 @@ class moduleGmail(Content,Queue):
         # import pprint
         # pprint.pprint(f"mes: {message}")
         mes = ""
-        if 'parts' in message['payload']:
+        if 'body' in message:
+            mes  = mes + str(base64.urlsafe_b64decode(message['body']))
+        elif 'parts' in message['payload']:
             for part in message['payload']['parts']:
                 logging.debug(f"Part: {part}")
                 if 'data' in part['body']:
                     mes  = mes + str(base64.urlsafe_b64decode(part['body']['data']))
-                else:
-                    if 'parts' in part:
+                elif 'parts' in part:
                         for pp in part['parts']:
-                            mes  = mes + str(base64.urlsafe_b64decode(pp['body']['data']))
-                    else:
-                        mes = mes + str(base64.urlsafe_b64decode(pp['body']['data']))
+                            if 'data' in pp['body']:
+                                mes  = mes + str(base64.urlsafe_b64decode(pp['body']['data']))
+                elif 'data' in part['body']: 
+                    print(f"Part body: {part['body']}")
+                    mes = mes + str(base64.urlsafe_b64decode(part['body']['data']))
         else:
             mes  = str(base64.urlsafe_b64decode(message['payload']['body']['data']))
         return(mes)
@@ -774,8 +777,8 @@ def main():
                 print(f"titleeeee: {apiSrc.getPostTitle(post)}")
                 print(f"linkkkkk: {apiSrc.getPostLink(post)}")
                 for i, post in enumerate(apiSrc.getPosts()):
-                    print(f"{i}) {apiSrc.getPostTitle(post)}")
-                    print(f"{i}) {apiSrc.getPostLink(post)}")
+                    print(f"{i}) Subject: {apiSrc.getPostTitle(post)}")
+                    print(f"{i}) Link: {apiSrc.getPostLink(post)}")
                     # print(f"{i}) {apiSrc.getPostLinks(post)}")
 
         return

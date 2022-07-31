@@ -361,7 +361,10 @@ class moduleHtml(Content, Queue):
     def publishApiPost(self, *args, **kwargs):
         title, link, comment = args
         more = kwargs
-        return self.click(link)
+        res = "No link!"
+        if link:
+            res = self.click(link)
+        return res
 
     def click(self, url):
         headers = {

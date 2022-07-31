@@ -889,7 +889,7 @@ class Content:
             else:
                 reply = "Fail! No posts available"
         except:
-            reply = self.report(self.service, apiSrc, post, '', sys.exc_info())
+            reply = self.report(self.service, apiSrc, post, sys.exc_info())
 
         return reply
 
