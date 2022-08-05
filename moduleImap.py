@@ -41,8 +41,8 @@ from apiclient.http import MediaIoBaseUpload
 from email.parser import BytesParser
 
 
-msgHeaders = ['List-Id', 'From', 'Sender', 'Subject', 'To', 
-              'X-Original-To', 'X-Envelope-From', 
+msgHeaders = ['List-Id', 'From', 'Sender', 'Subject', 'To',
+              'X-Original-To', 'X-Envelope-From',
               'X-Spam-Flag', 'X-Forward']
 headers = ["address", "header"]
 keyWords = {"address": ["From", "To"],
@@ -81,7 +81,7 @@ class moduleImap(Content, Queue):
         password = getpass.getpass()
         keyring.set_password(server, user, password)
         return(password)
-    
+
     def getPassword(self, server, user):
         # Deleting keyring.delete_password(server, user)
         #print("keyrings",keyring.backend.get_all_keyring())
@@ -158,48 +158,48 @@ class moduleImap(Content, Queue):
         if header.startswith('[') and header.endswith(']'):
             header = header[1:-1]
         return(header)
-    
+
     def headerToString(self, header):
         if not (header is None):
             headRes = ""
             for (headDec, enc) in decode_header(header):
                 # It is a list of coded and not coded strings
-                if (enc is None) or (enc == 'unknown-8bit'): 
+                if (enc is None) or (enc == 'unknown-8bit'):
                     enc = 'iso-8859-1'
                 if (not isinstance(headDec, str)):
                     headDec = headDec.decode(enc)
                 headRes = headRes + headDec
         else:
             headRes = ""
-    
+
         return headRes
-    
+
     def mailFolder(self, account, accountData, logging, res):
         # Apply rules to mailboxes
-    
+
         SERVER = account[0]
         USER = account[1]
         PASSWORD = getPassword(SERVER, USER)
-    
+
         srvMsg = SERVER.split('.')[0]
         usrMsg = USER.split('@')[0]
-        try: 
+        try:
             M = makeConnection(SERVER, USER, PASSWORD)
         except:
             logging.error("Error with %s - %s" % (USER,SERVER))
             sys.exit()
-            
-    
+
+
         for actions in accountData['RULES']:
             RULES = actions[0]
             INBOX = actions[1]
             FOLDER = actions[2]
-    
+
             if INBOX:
                M.select(INBOX)
             else:
                M.select()
-    
+
             i = 0
             total = 0
             msgs = ''
@@ -233,7 +233,7 @@ class moduleImap(Content, Queue):
                 else:
                     logging.debug("%s - No messages matching." % msgTxt)
                     msgTxt = "%s - No messages matching." % msgTxt
-    
+
                 if len(msgs)==0:
                     logging.debug("%s Nothing to do" % msgTxt)
                     msgTxt = "%s Nothing to do" % msgTxt
@@ -256,7 +256,7 @@ class moduleImap(Content, Queue):
                             status = result[0]
                     i = msgs.count(',') + 1
                     logging.debug("[%s,%s] *%s* Status: %s"% (SERVER,USER,msgs,status))
-    
+
                     if status == 'OK':
                         # If the list of messages is too long it won't work
                         flag = '\\Deleted'
@@ -277,41 +277,41 @@ class moduleImap(Content, Queue):
         M.close()
         M.logout()
         res.put(("ok", SERVER, USER, total))
-     
+
     def doFolderExist(self, folder, M):
         if not folder.startswith(('"', "'")):
             folderName = '"%s"'%folder
         else:
             folderName = folder
-    
+
         return (M.select(folderName))
-    
+
     def selectHeader(self):
         i = 1
         for j in headers:
             print(i, ") ", j, "(", keyWords[headers[i-1]], ")")
             i = i + 1
         return headers[int(input("Select header: ")) - 1]
-    
+
     def showMessagesList(self, M, folder, messages, startMsg):
         rows, columns = os.popen('stty size', 'r').read().split()
         numMsgs = 24
         if rows:
            numMsgs = int(rows) - 3
         if columns:
-           col = int(columns) 
-    
+           col = int(columns)
+
         msg_data = []
         msg_numbers = []
         j = 0
         print("%d messsages in folder: %s" % (len(messages), folder))
-        if startMsg == 0: 
+        if startMsg == 0:
             startMsg = len(messages) - numMsgs + 1
         else:
             # It will be a negative number, we'll use it a starting point
             # changing the sing
             startMsg = -startMsg - 1
-        
+
         if startMsg < 0:
             startMsg = 0
         for i in messages[startMsg:min(startMsg + numMsgs - 1, len(messages))]:
@@ -335,7 +335,7 @@ class moduleImap(Content, Queue):
                                      headSubjDec[:col - 20 - 5]))#[0][0][:40]))
                         j = j + 1
         return(msg_data, msg_numbers)
-     
+
     def selectMessageAndFolder(self, M):
         msg_number =""
         startMsg = 0
@@ -357,9 +357,9 @@ class moduleImap(Content, Queue):
                 msg_number = input("Which message? ([-] switches mode: [number] starting point [string] folder name 'x' exit) [+] to read the message [.] to select just *this* message [>] use this message to create a sieve filter\n")
                 if msg_number.isdigit():
                     startMsg = int(msg_number)
-                    if int(msg_number) > numMsgs: 
+                    if int(msg_number) > numMsgs:
                         msg_number=""
-                        continue 
+                        continue
                 elif (len(msg_number) > 0) and (msg_number[0] == '-'):
                     if msg_number[1:].isdigit():
                         startMsg = int(msg_number)
@@ -369,7 +369,7 @@ class moduleImap(Content, Queue):
                         folder = selectFolder(M, msg_number[1:])
                         startMsg = 0
                         #print("folder",folder)
-                        #folder = nameFolder(folder) 
+                        #folder = nameFolder(folder)
                 elif (len(msg_number) > 0) and (msg_number[0] == '+'):
                     if msg_number[1:].isdigit():
                         printMessage(M, msg_data[int(msg_number[1:])],int(rows),int(columns))
@@ -377,7 +377,7 @@ class moduleImap(Content, Queue):
                 elif (len(msg_number) > 0) and (msg_number[0] == '.'):
                     # Just *this* message
                     if msg_number[1:].isdigit():
-                        printMessage(M, msg_data[int(msg_number[1:])], 
+                        printMessage(M, msg_data[int(msg_number[1:])],
                                 0,int(columns), ['Subject'])
                         return(".",msg_data[int(msg_number[1:])], msg_numbers[int(msg_number[1:])])
                 elif (len(msg_number) > 0) and (msg_number[0] == '>'):
@@ -390,9 +390,9 @@ class moduleImap(Content, Queue):
                     startMsg = 0
             else:
                 return ("","")
-    
+
         return (folder, msg_data[int(msg_number)], msg_numbers[int(msg_number)])  # messages[-10+int(msg_number)-1]
-    
+
     def selectMessage(self, M):
         msg_number =""
         startMsg = 0
@@ -417,9 +417,9 @@ class moduleImap(Content, Queue):
                 msg_number = input("Which message? ")
             else:
                 return 0
-    
+
         return msg_data[int(msg_number)]  # messages[-10+int(msg_number)-1]
-    
+
     def selectHeaderAuto(self, M, msg):
         i = 1
         if 'List-Id' in msg:
@@ -431,7 +431,7 @@ class moduleImap(Content, Queue):
                 i = i + 1
             import locale
             header_num = input("Select header: ")
-    
+
             header = msgHeaders[int(header_num)-1]
             textHeader = msg[msgHeaders[int(header_num)-1]]
             pos = textHeader.find('<')
@@ -443,17 +443,17 @@ class moduleImap(Content, Queue):
                     textHeader = textHeader[pos+1:textHeader.find(']', pos + 1)]
                 else:
                     textHeader = textHeader
-    
+
             print("Filter: (header) ", header, ", (text) ", textHeader)
             filterCond = input("Text for selection (empty for all): ")
             # Trying to solve the problem with accents and so
             filterCond = filterCond#.decode('utf-8')
-    
+
             if not filterCond:
                 filterCond = textHeader
-    
+
         return (header, filterCond)
-    
+
     def selectHash(self, M, folder, hashSelect):
         M.select(folder)
         typ, data = M.search(None, 'ALL')
@@ -488,16 +488,16 @@ class moduleImap(Content, Queue):
                 dupHash.append(msgDigest)
             if (i % 10 == 0):
                 logging.debug("Counter %d" % i)
-    
+
         logging.debug("END\n\n%d messages have been selected\n" % i)
-    
+
         return msgs
-    
+
     def selectAllMessages(self, folder, M):
         msgs = ""
         #print("folder",folder)
         M.select(folder)
-        try: 
+        try:
             data = M.sort('ARRIVAL', 'UTF-8', 'ALL')
         except:
             data = M.search(None,'ALL')
@@ -506,7 +506,7 @@ class moduleImap(Content, Queue):
             return ",".join(messages)
         else:
             return None
-    
+
     def selectMessageSubject(self, folder, M, sbj, sens=0, partial=False):
         msg_number =""
         rows, columns = os.popen('stty size', 'r').read().split()
@@ -515,12 +515,12 @@ class moduleImap(Content, Queue):
         distMsgs = ""
         if rows:
            numMsgs = int(rows) - 3
-        try: 
+        try:
             M.select(folder)
             folderM = folder.split('/')[-1]
         except:
             return("","")
-            
+
         data = M.sort('ARRIVAL', 'UTF-8', 'ALL')
         sbjDec = stripRe(headerToString(sbj))
         if (data[0] == 'OK'):
@@ -570,7 +570,7 @@ class moduleImap(Content, Queue):
                         else:
                             dist = maxLen
                         #print("dist", dist)
-                     
+
                         if (dist < minLen/(4+sens)):
                             print("+", end = "", flush = True)
                             if msgs:
@@ -582,9 +582,9 @@ class moduleImap(Content, Queue):
                         else:
                             print(".", end ="", flush = True)
             print("")
-    
+
         return (msgs,distMsgs)
-    
+
     def selectMessagesNew(self, M):
         M.select()
         end = ""
@@ -602,7 +602,7 @@ class moduleImap(Content, Queue):
                     return(-1)
                 elif (folder != 'x'):
                     if (folder != "."):
-                        if msg: 
+                        if msg:
                             sbj = msg['Subject']
                             partial = False
                         else:
@@ -629,44 +629,44 @@ class moduleImap(Content, Queue):
                         isOk = ""
                         moreMessages = input("String in the folder ("+moreMessages+') ')
                         folderM = folder
-                    if listMsgs: 
+                    if listMsgs:
                         listMsgs = listMsgs + ',' + msgs
                     else:
                         listMsgs = msgs
-    
-                    if (isOk != '+') and (folder != '.'):   
-                       moreMessages = isOk    
+
+                    if (isOk != '+') and (folder != '.'):
+                       moreMessages = isOk
                     #elif (isOk == '+'):
-                    #   moreMessages = input("More messages? ")    
+                    #   moreMessages = input("More messages? ")
                 else:
                     end = 'x'
                     moreMessages = end
-    
+
            if listMsgs and not badSel:
                 printMessageHeaders(M, listMsgs)
                 if isOk:
-                    moreMessages = isOk    
+                    moreMessages = isOk
                 folder = selectFolder(M, moreMessages)
                 #print("Selected folder (before): ", folder)
-                #folder = nameFolder(folder) 
+                #folder = nameFolder(folder)
                 print("Selected folder (final): ", folder)
                 moveMails(M,listMsgs, folder)
-           elif badSel == "yes": 
+           elif badSel == "yes":
                listMsgs = ""
-    
+
         return(0)
-    
+
     def cleanHtml(self, html):
         soup = BeautifulSoup(html,'html.parser')
         for script in soup(["script", "style"]):
             script.extract()
         return(re.sub("\n\s*\n*", "\n", soup.get_text()))
-    
+
     def getMessageBody(self, msg):
         # http://blog.magiksys.net/parsing-email-using-python-content
         body = msg.get_body()
         try:
-           bodyTxt = body.get_content() 
+           bodyTxt = body.get_content()
            typeB = body.get_content_type()
            print(typeB)
            if (typeB == 'text/html'):
@@ -677,7 +677,7 @@ class moduleImap(Content, Queue):
                type=part.get_content_type()
                print(type)
                if type[:4] == 'text':
-                  bodyTxt = part.get_content() 
+                  bodyTxt = part.get_content()
                   if (type == 'text/html'):
                       bodyTxt = cleanHtml(bodyTxt)
                   return(bodyTxt)
@@ -686,17 +686,17 @@ class moduleImap(Content, Queue):
                   return(getMessageBody(part))
                else:
                   print("Not managed type: ", type)
-    
+
         return("")
-    
+
     def printMessage(self, M, msg, rows = 24, columns = 80, headers = ['From', 'To', 'Subject', 'Date']):
-        
-    
+
+
         for head in headers:
             print("%s: %s"% (head,headerToString(msg[head][:columns - len(head) - 2])))
-    
-        body = getMessageBody(msg)    
-    
+
+        body = getMessageBody(msg)
+
         count = 0
         for line in body.split('\n'):
             print(line[:columns])
@@ -704,8 +704,8 @@ class moduleImap(Content, Queue):
             if count > rows - len(headers) - 3:
                 break
         wait = input("Any key to follow")
-    
-    
+
+
     def createFolder(self, M, name, folder, search=True):
         exclude = ['Trash']
         if search:
@@ -713,14 +713,14 @@ class moduleImap(Content, Queue):
             folder = selectFolder(M, folder)
             print(folder)
         #folder  = nameFolder(folder)
-        if folder: 
-            if (folder[-1] == '"'): 
-                folder = folder[:-1]+'/'+name+'"' 
-            else: 
-                if (' ' in name): 
-                    folder = '"' + folder+'/'+name + '"' 
-                else: 
-                    folder = folder+'/'+name 
+        if folder:
+            if (folder[-1] == '"'):
+                folder = folder[:-1]+'/'+name+'"'
+            else:
+                if (' ' in name):
+                    folder = '"' + folder+'/'+name + '"'
+                else:
+                    folder = folder+'/'+name
         else:
             folder = name
         if folder not in exclude:
@@ -730,9 +730,9 @@ class moduleImap(Content, Queue):
             else:
                 print("Error creating "+folder+ " ")
                 print(typ, create_response)
-    
+
         return(folder)
-    
+
     def selectFolderOld(self, M, moreMessages = "", folderM=''):
         resp, data = M.list('""', '*')
         listFolders = ""
@@ -766,7 +766,7 @@ class moduleImap(Content, Queue):
                         break
                     else:
                         iFolder = (iFolder)
-    
+
                     if listFoldersS:
                         listFolders = listFoldersS
                 else:
@@ -788,11 +788,11 @@ class moduleImap(Content, Queue):
                 iFolder = nameFolder(data[int(iFolder)])
         print("ifolder", iFolder, iFolder.find('\n'))
         return(iFolder)
-    
+
     def listFolderNames(self, data, inNameFolder = ""):
         listFolders = ""
         i = 0
-        
+
         for name in data:
             if (type(name) == str): name = name.encode('ascii')
             #print(inNameFolder.isdigit(), (inNameFolder+") "), name.lower().find((inNameFolder+") ").encode('ascii').lower()))
@@ -807,9 +807,9 @@ class moduleImap(Content, Queue):
                 else:
                    listFolders = "%d) %s" % (i, self.nameFolder(name))
             i = i + 1
-    
+
         return(listFolders)
-    
+
     def listFolders(self):
         resp, data = self.getClient().list('""', '*')
         return data
@@ -833,9 +833,9 @@ class moduleImap(Content, Queue):
                 print(listFolders)
             print(len(listFolders))
             inNameFolder = input("Folder number [-cf] Create Folder // A string to select a smaller set of folders ")
-            
+
             if (len(inNameFolder) > 0) and (inNameFolder == '-cf'):
-                if newFolderName: 
+                if newFolderName:
                     nfn = newFolderName
                 else:
                     nfn = input("New folder name? (%s)" % folderM)
@@ -852,7 +852,7 @@ class moduleImap(Content, Queue):
                 listFolders = ""
             if (not listFolders):
                 listFolders = listAllFolders
-    
+
     def selectMessages(self, M):
         M.select()
         end = ""
@@ -866,36 +866,36 @@ class moduleImap(Content, Queue):
                  (folder, msg) = selectMessage(M)
                  sbj = msg['Subject']
                  (msgs, distMsgs, folderM) = selectMessageSubject(folder, M, sbj)
-    
+
                  printMessageHeaders(M, msgs)
-    
-                 if listMsgs: 
+
+                 if listMsgs:
                      listMsgs = listMsgs + ',' + msgs
                  else:
                      listMsgs = msgs
-    
+
                  moreMessages = input("More messages? ")
             print(listMsgs)
             syx.exit()
-    
+
             if listMsgs:
                  printMessageHeaders(M, listMsgs)
                  folder = selectFolder(M, moreMessages)
-                 #folder = nameFolder(folder) 
+                 #folder = nameFolder(folder)
                  print("Selected folder (final): ", folder)
                  moveMails(M,listMsgs, folder)
             end = input("More rules? (empty to continue) ")
-    
+
     def loadImapConfig(self):
         config = configparser.ConfigParser()
         config.read([os.path.expanduser('~/.IMAP.cfg')])
-     
+
         return(config, len(config.sections()))
-    
+
     def readImapConfig(self, config, confPos = 0):
         # sections=['IMAP6']
         sections=config.sections()
-    
+
         SERVER = config.get(sections[confPos], "server")
         USER = config.get(sections[confPos], "user")
         PASSWORD = getPassword(SERVER, USER)
@@ -912,16 +912,16 @@ class moduleImap(Content, Queue):
         else:
             FOLDER = ""
         return (SERVER, USER, PASSWORD, RULES, INBOX, FOLDER)
-    
+
     def makeConnection(self, SERVER, USER, PASSWORD):
         # IMAP client connection
         import ssl
         context = ssl.create_default_context() #ssl.PROTOCOL_TLSv1)
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
-    
-        #context.protocol = ssl.OP_NO_SSLv3 
-        try: 
+
+        #context.protocol = ssl.OP_NO_SSLv3
+        try:
             #M = imaplib.IMAP4_SSL(SERVER)
             M = imaplib.IMAP4(SERVER)
             M.starttls(ssl_context=context)
@@ -950,11 +950,11 @@ class moduleImap(Content, Queue):
                 PASSWORD= setPassword(SERVER, USER)
                 #res.put(("no", SERVER, USER))
                 #return 0
-    
+
         return M
-    
+
     def nameFolder(self, folder):
-        # This function has two modes of working: 
+        # This function has two modes of working:
         # The first one is when it receives a list of IMAP folders like:
         # b'(\\HasNoChildren) "/" Departamento/estudiantes' b'Departamento/estudiantes'
         #   01234567890123456789012
@@ -962,7 +962,7 @@ class moduleImap(Content, Queue):
         # The other one can be a number followed by a ) and the folder
         # 1) folderName
         # 2) "Folder name"
-    
+
         if type(folder) == bytes: folder = folder.decode()
         if folder and folder[0].isdigit():
            folder = folder[folder.find(') ')+2:]
@@ -970,74 +970,74 @@ class moduleImap(Content, Queue):
            folder = folder[folder.find('"/" ')+4:]
         elif "." in folder:
            folder = folder[folder.find('"." ')+4:]
-    
+
         return(folder)
-    
+
     def moveSent(self, M):
         msgs = selectAllMessages('Sent', M)
         if msgs:
             moveMails(M,  msgs, 'INBOX')
-    
+
     def copyMailsRemote(self, M, msgs, account, folder=None, delete=False):
-    
+
         # We start at the end because we can have accounts where the user
         # includes an @ (there can be two): user@host@mailhost
         pos = account.rfind('@')
-    
+
         SERVERD = account[pos+1:]
         USERD   = account[:pos]
         logging.info("Datos.... %s %s" %(SERVERD, USERD))
-    
+
         method = None
-    
+
         try:
             # First we try to see if there is a Gmail configuration
             config = configparser.ConfigParser()
             config.read(os.path.expanduser(CONFIGDIR+'/.oauthG.cfg'))
             for sect in config.sections():
-                if SERVERD == config[sect].get('server'): 
+                if SERVERD == config[sect].get('server'):
                     if USERD == config[sect].get('user'):
                         method = 'oauth'
                         acc = sect
                         break
-        except: 
+        except:
             logging.info("No oauth config!")
-    
-        if not method: 
-            PASSWORDD = getPassword(SERVERD, USERD) 
+
+        if not method:
+            PASSWORDD = getPassword(SERVERD, USERD)
             method = 'imap'
-        
+
         logging.info("Method %s" % method)
         if method == 'imap':
             MD = makeConnection(SERVERD, USERD, PASSWORDD)
-            if not folder: 
+            if not folder:
                 folder = 'INBOX'
                 MD.select('INBOX')
             else:
-                iFolder = createFolder(MD,folder,'', False) 
+                iFolder = createFolder(MD,folder,'', False)
                 MD.select(folder)
-        
+
             i = 0
             for msgId in msgs.split(','): #[40000:]: #[:25]:
                 print(msgId)
                 #print('.', end='')
                 logging.info("Message %s" % msgId)
-    
+
                 typ, data = M.fetch(msgId, '(FLAGS RFC822)')
                 flagsM = data[0][0]
                 print("flags",flagsM)
                 if not (b'Deleted' in flagsM):
                     M.store(msgId, "-FLAGS", "\\Seen")
-                    
-                    if (typ == 'OK'): 
+
+                    if (typ == 'OK'):
                         message = data[0][1]
                         logging.debug("Message %s", message)
-    
-                        flags = '' 
-            
+
+                        flags = ''
+
                         msg = email.message_from_bytes(message);
                         res = MD.append(folder,flags, None, message)
-                        
+
                         if res[0] == 'OK':
                             M.store(msgId, "+FLAGS", "\\Seen")
                 i = i + 1
@@ -1045,8 +1045,8 @@ class moduleImap(Content, Queue):
             MD.logout()
         else:
             service = moduleGmail.moduleGmail()
-            service.API(acc)    
-    
+            service.API(acc)
+
             i = 0
             lenM = len(msgs.split(','))
             for msgId in msgs.split(','): #[:25]:
@@ -1056,14 +1056,14 @@ class moduleImap(Content, Queue):
                 typ, data = M.fetch(msgId, '(FLAGS RFC822)')
                 flagsM = data[0][0]
                 M.store(msgId, "-FLAGS", "\\Seen")
-                
-                if (typ == 'OK'): 
+
+                if (typ == 'OK'):
                     print("flagsM %s" % flagsM)
                     if not (b'Deleted' in flagsM):
-    
+
                         message = data[0][1]
                         logging.debug("Message %s", message)
-    
+
                         rep = service.copyMessage(message, folder)
                         logging.info("Reply %s" %rep)
                         if rep != "Fail!":
@@ -1074,19 +1074,19 @@ class moduleImap(Content, Queue):
                 i = i + 1
                 if i%1000 == 0:
                     time.sleep(5)
-    
-    
+
+
         # We are returning a different code from 'OK' because we do not want to
         # delete these messages.
         if (i == len(msgs.split(','))):
            return('OKOK')
         else:
            return('OKNO')
-    
+
     def deleteLabel(self, folderName):
         M = self.getClient()
         return M.delete(folderName)
-        
+
     def deletePostId(self, idPost):
         return self.deleteApiPosts(idPost)
 
@@ -1113,7 +1113,7 @@ class moduleImap(Content, Queue):
         #print(f"Expunge: {M.expunge()}")
         # msgs contains the index of the message, we can retrieve/move them
         return res
-    
+
     def printMessageHeaders(self, M, msgs):
         if msgs:
             logging.info(msgs)
@@ -1129,24 +1129,24 @@ class moduleImap(Content, Queue):
             post = msg[1]
         else:
             post = msg
-        if post.is_multipart(): 
-            mail_content = '' 
-            for part in post.get_payload(): 
+        if post.is_multipart():
+            mail_content = ''
+            for part in post.get_payload():
                 print(f"type: {part.get_content_type()}")
-                if part.get_content_type() == 'text/html': 
-                    mail_content += part.get_payload() 
+                if part.get_content_type() == 'text/html':
+                    mail_content += part.get_payload()
                 elif part.get_content_type() == 'multipart/alternative':
-                    for subpart in part.get_payload(): 
+                    for subpart in part.get_payload():
                         # print(f"sub: *{subpart}*")
-                        if subpart and (subpart.get_content_charset() is None): 
-                            charset = chardet.detect(str(subpart))['encoding'] 
-                        else: 
-                            charset = subpart.get_content_charset() 
-                        if subpart.get_content_type() == 'text/plain': 
+                        if subpart and (subpart.get_content_charset() is None):
+                            charset = chardet.detect(str(subpart))['encoding']
+                        else:
+                            charset = subpart.get_content_charset()
+                        if subpart.get_content_type() == 'text/plain':
                             mail_content += str(subpart.get_payload(decode=True))
-                        if subpart.get_content_type() == 'text/html': 
-                            mail_content += str(subpart.get_payload(decode=True)) 
-        else: 
+                        if subpart.get_content_type() == 'text/html':
+                            mail_content += str(subpart.get_payload(decode=True))
+        else:
             mail_content = post.get_payload()
 
         # print(f"Mail: {mail_content}")
@@ -1155,12 +1155,12 @@ class moduleImap(Content, Queue):
 
     def getPostContent(self, msg):
         post = msg[1]
-        if post.is_multipart(): 
-            mail_content = '' 
-            for part in post.get_payload(): 
-                if part.get_content_type() == 'text/plain': 
-                    mail_content += part.get_payload() 
-        else: 
+        if post.is_multipart():
+            mail_content = ''
+            for part in post.get_payload():
+                if part.get_content_type() == 'text/plain':
+                    mail_content += part.get_payload()
+        else:
             mail_content = post.get_payload()
 
         return mail_content
@@ -1218,6 +1218,18 @@ class moduleImap(Content, Queue):
     def getPostId(self, msg):
         return msg[0]
 
+    def getPostAttachmentPdf(self, msg):
+        if msg.is_multipart():
+            for part in msg.get_payload():
+                if part.get_content_type() == 'application/pdf':
+                    fileName = part.get_filename()
+                    myFile = part.get_payload(decode=True)
+                    return (fileName, myFile)
+
+        return None
+
+
+
     def listMessages(self, M, folder):
         # List the headers of all e-mails in a folder
         posts = []
@@ -1229,7 +1241,7 @@ class moduleImap(Content, Queue):
                 data = M.search(None, '(UNSEEN)')
             except:
                 data = ('NO', [])
-        else: 
+        else:
             data = M.sort('ARRIVAL', 'UTF-8', 'NOT DELETED')
         logging.debug(f"Datos: {data}")
         # print(f"Datos: {data}")
@@ -1249,13 +1261,13 @@ class moduleImap(Content, Queue):
                             print(self.headerToString(headFrom),
                                   self.headerToString(headSubject),
                                   self.headerToString(headDate))
-            
+
         return posts
 
 def main():
 
-    logging.basicConfig(stream=sys.stdout, 
-            level=logging.WARNING, 
+    logging.basicConfig(stream=sys.stdout,
+            level=logging.WARNING,
             format='%(asctime)s %(message)s')
 
     import moduleImap
@@ -1265,7 +1277,7 @@ def main():
     rules.checkRules()
 
     # Example:
-    # 
+    #
     # ('imap', 'set', 'ftricas@elmundoesimperfecto.com', 'posts')
     #
     # More:  More: ('imap', 'set', 'ftricas@elmundoesimperfecto.com', 'posts')
@@ -1302,17 +1314,10 @@ def main():
         msg = apiSrc.getPosts()[int(select)][1]
         print(f"Msg: {msg}")
 
-        if msg.is_multipart(): 
-            for part in msg.get_payload():
-                if part.get_content_type() == 'application/pdf':
-                    print(f"Part: {part}")
-                    fileName = part.get_filename()
-                    print(f"file: {fileName}")
-                    myFile = part.get_payload(decode=True)
-                    print(f"File: {myFile}")
-                    with open(f"/tmp/{fileName}", 'wb') as f:
-                        f.write(myFile)
+        fileName, myFile = apiSrc.getPostAttachmentPdf(msg)
 
+        with open(f"/tmp/{fileName}", 'wb') as f:
+            f.write(myFile)
 
         return
 
@@ -1329,7 +1334,7 @@ def main():
         html.click(link)
         apiSrc.moveMails(apiSrc.getClient(), str(i+1).encode(), 'INBOX.Trash')
         return
-    
+
     testingNew = False
     if testingNew:
         channels = apiSrc.getChannels()
@@ -1383,8 +1388,8 @@ def main():
                 more = rules.more[src]
                 myRules.append((src, more))
                 # print(f"More: {src}")
-        source = input("Select source: ") 
-        destin = input("Select destination: ") 
+        source = input("Select source: ")
+        destin = input("Select destination: ")
         src = myRules[int(source) - 1][0]
         more = myRules[int(source) - 1][1]
         action = myRules[int(destin) - 1][0]
@@ -1435,7 +1440,7 @@ def main():
                 if (not sel) or (sel in nameF):
                     print(f"{i}) {nameF}")
 
-            sel = input("Selección? ") 
+            sel = input("Selección? ")
         if sel.isdigit():
             folderDst = foldersDst[int(sel)]
         # print(f"Folder dst: {folderSrc}")
@@ -1503,7 +1508,7 @@ def main():
     if testingSearch:
         for key in rules.rules.keys():
             print(f"Key: {key}")
-            if ((key[0] == 'imap') 
+            if ((key[0] == 'imap')
                     and ('ftricas' in key[2])
                     and (key[3] == 'search')):
                 print(f"SKey: {key}\n"
