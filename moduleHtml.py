@@ -373,9 +373,10 @@ class moduleHtml(Content, Queue):
             " Safari/537.36"
         }
         logging.debug(f"url: {url}")
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            logging.info(response.text)
+        if 'http' in url:
+            response = requests.get(url, headers=headers)
+            if response.status_code != 200:
+                logging.info(response.text)
         return "Click OK"
 
 

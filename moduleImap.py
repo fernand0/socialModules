@@ -1236,7 +1236,7 @@ class moduleImap(Content, Queue):
         if (data[0] == 'OK'):
             messages = data[1][0].decode("utf-8")
             if messages:
-                for i in messages.split(' ')[:50]: #[-40:]: #[-numMsgs:]:
+                for i in messages.split(' ')[:75]: #[-40:]: #[-numMsgs:]:
                     # typ, msg_data_fetch = M.fetch(i, '(BODY.PEEK[HEADER.FIELDS (SUBJECT FROM DATE 1.2)])')
                     typ, msg_data_fetch = M.fetch(i, '(BODY.PEEK[])')
                     for response_part in msg_data_fetch:
@@ -1288,6 +1288,31 @@ def main():
             # print(f"Post: {post}")
             print(f"Title: {apiSrc.getPostTitle(post)}")
             print(f"Link: {apiSrc.getPostLink(post)}")
+
+        return
+
+    testingAttachment = True
+    if testingAttachment:
+        apiSrc.setChannel('INBOX')
+        apiSrc.setPosts()
+        for i, post in enumerate(apiSrc.getPosts()):
+            print(f"{i}) {apiSrc.getPostTitle(post)}")
+        select = input("Which one? ")
+
+        msg = apiSrc.getPosts()[int(select)][1]
+        print(f"Msg: {msg}")
+
+        if msg.is_multipart(): 
+            for part in msg.get_payload():
+                if part.get_content_type() == 'application/pdf':
+                    print(f"Part: {part}")
+                    fileName = part.get_filename()
+                    print(f"file: {fileName}")
+                    myFile = part.get_payload(decode=True)
+                    print(f"File: {myFile}")
+                    with open(f"/tmp/{fileName}", 'wb') as f:
+                        f.write(myFile)
+
 
         return
 
@@ -1346,7 +1371,7 @@ def main():
 
         apiSrc.setPosts()
 
-    testingMoveMail = True
+    testingMoveMail = False
     if testingMoveMail:
         indent = ""
         i = 0
