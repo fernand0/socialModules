@@ -1226,7 +1226,7 @@ class moduleImap(Content, Queue):
                     myFile = part.get_payload(decode=True)
                     return (fileName, myFile)
 
-        return None
+        return None, None
 
 
 
