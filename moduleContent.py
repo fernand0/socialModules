@@ -876,6 +876,10 @@ class Content:
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
                 comment= ''
+                if hasattr(apiSrc, 'getPostApiDate'):
+                    # FIXME we should use the more general method for calling
+                    # publishing methods
+                    comment = apiSrc.getPostApiDate(post)
                 nameMethod = 'Post'
                 if (hasattr(apiSrc, 'getPostsType')
                     and (apiSrc.getPostsType())

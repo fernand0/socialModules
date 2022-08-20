@@ -56,18 +56,22 @@ class modulePocket(Content,Queue):
             more = kwargs
             print(f"postData: {more} in {self}")
 
+        tags = []
+        if comment:
+            tags = [comment, ]
         print(f"ll: {link}")
         # This belongs here?
         if not link.startswith('http'):
             logging.warning(f"Link that does not stat with < {link}")
             pos = link.find('http')
             link = link[pos:]
+
             pos = link.find(' ')
             if pos >=0:
                 # Sometimes there are two links or something after the link
                 link=link[:pos]
         try:
-            res = self.getClient().add(link)
+            res = self.getClient().add(link, tags=tags)
         except PocketException as exc:
             logging.warning(f"publishApiPosts generated an exception: {exc}")
             res = "Fail!"

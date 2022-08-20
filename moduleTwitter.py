@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import configparser
+import dateparser
+import dateutil
 import sys
 
 import twitter
@@ -307,35 +309,41 @@ def main():
     indent = ""
     apiSrc = rules.readConfigSrc(indent, src, more)
 
-    testingPosts = True
+    testingPosts = False
     if testingPosts:
-        print("Testing Posts")
-        apiSrc.setPostsType('posts')
-        apiSrc.setPosts()
-        tweet = apiSrc.getPosts()[0]
-        tweet = apiSrc.getNextPost()
-        print(tweet)
-        print(f" -Title {apiSrc.getPostTitle(tweet)}")
-        print(f" -Link {apiSrc.getPostLink(tweet)}")
-        print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
-        print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
+        for key in rules.rules.keys():
+            if ((key[0] == 'twitter')
+                    and ('fernand0' in key[2])
+                    and (key[3] == 'posts')):
+                print("Testing Posts")
+                apiSrc.setPosts()
+                tweet = apiSrc.getPosts()[0]
+                tweet = apiSrc.getNextPost()
+                print(f"Tweet: {tweet}")
+                print(f" -Title {apiSrc.getPostTitle(tweet)}")
+                print(f" -Link {apiSrc.getPostLink(tweet)}")
+                print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
+                print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
         return
 
 
-    testingFav = False
+    testingFav = True
     if testingFav:
-        print("Testing Fav")
-        tw = moduleTwitter.moduleTwitter()
-        tw.setClient('fernand0')
-        tw.setPostsType('favs')
-        tw.setPosts()
-        tweet = tw.getPosts()[0]
-        tweet = tw.getNextPost()[0]
-        print(tweet)
-        print(f" -Title {tw.getPostTitle(tweet)}")
-        print(f" -Link {tw.getPostLink(tweet)}")
-        print(f" -Content link {tw.getPostContentLink(tweet)}")
-        print(f" -Post link {tw.extractPostLinks(tweet)}")
+        for key in rules.rules.keys():
+            if ((key[0] == 'twitter')
+                    and ('fernand0' in key[2])
+                    and (key[3] == 'favs')):
+                apiSrc = rules.readConfigSrc("", key, rules.more[key])
+                apiSrc.setPosts()
+                print(len(apiSrc.getPosts()))
+                for i, tweet in enumerate(apiSrc.getPosts()):
+                    print(f" -Title {apiSrc.getPostTitle(tweet)}")
+                    print(f" -Link {apiSrc.getPostLink(tweet)}")
+                    print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
+                    print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
+                    print(f" -Created {tweet.get('created_at')}")
+                    parsedDate = dateutil.parser.parse(apiSrc.getPostApiDate(tweet))
+                    print(f" -Created {parsedDate.year}-{parsedDate.month}-{parsedDate.day}")
         return
 
     testingPost = True
