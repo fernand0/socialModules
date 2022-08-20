@@ -295,7 +295,7 @@ class moduleTwitter(Content,Queue):
 
 def main():
 
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
     import moduleRules
@@ -307,7 +307,7 @@ def main():
     indent = ""
     apiSrc = rules.readConfigSrc(indent, src, more)
 
-    testingPosts = True
+    testingPosts = False
     if testingPosts:
         print("Testing Posts")
         apiSrc.setPostsType('posts')
@@ -322,20 +322,24 @@ def main():
         return
 
 
-    testingFav = False
+    testingFav = True
     if testingFav:
         print("Testing Fav")
-        tw = moduleTwitter.moduleTwitter()
-        tw.setClient('fernand0')
-        tw.setPostsType('favs')
-        tw.setPosts()
-        tweet = tw.getPosts()[0]
-        tweet = tw.getNextPost()[0]
+        src, more = rules.selectRule('twitter', 'fernand0')
+        print(f"Src: {src}")
+        print(f"More: {more}")
+        indent = ""
+        apiSrc = rules.readConfigSrc(indent, src, more)
+        apiSrc.setPosts()
+        print(f"posts: {apiSrc.setPosts()}")
+
+        tweet = apiSrc.getPosts()[0]
+        tweet = apiSrc.getNextPost()[0]
         print(tweet)
-        print(f" -Title {tw.getPostTitle(tweet)}")
-        print(f" -Link {tw.getPostLink(tweet)}")
-        print(f" -Content link {tw.getPostContentLink(tweet)}")
-        print(f" -Post link {tw.extractPostLinks(tweet)}")
+        print(f" -Title {apiSrc.getPostTitle(tweet)}")
+        print(f" -Link {apiSrc.getPostLink(tweet)}")
+        print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
+        print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
         return
 
     testingPost = True
