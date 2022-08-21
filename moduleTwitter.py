@@ -8,15 +8,16 @@ import sys
 import twitter
 from twitter import *
 # pip install twitter
-#https://pypi.python.org/pypi/twitter
-#https://github.com/sixohsix/twitter/tree
-#http://mike.verdone.ca/twitter/
+# https://pypi.python.org/pypi/twitter
+# https://github.com/sixohsix/twitter/tree
+# http://mike.verdone.ca/twitter/
 
 from configMod import *
 from moduleContent import *
 from moduleQueue import *
 
-class moduleTwitter(Content,Queue):
+
+class moduleTwitter(Content, Queue):
 
     def __init__(self):
         super().__init__()
@@ -60,7 +61,7 @@ class moduleTwitter(Content,Queue):
 
     def setApiFavs(self):
         posts = self.getClient().favorites.list(tweet_mode='extended')
-        #count=100)
+        # count=100)
         # https://stackoverflow.com/questions/38717816/twitter-api-text-field-value-is-truncated
         return posts
 
@@ -76,7 +77,7 @@ class moduleTwitter(Content,Queue):
                 if (('You have already retweeted' in res) or
                         ('Status is a duplicate.' in res)):
                     res = res + ' SAVELINK'
-        return(res)
+        return (res)
 
     def publishApiImage(self, *args, **kwargs):
         logging.debug(f"{args} Len: {len(args)}")
@@ -85,23 +86,25 @@ class moduleTwitter(Content,Queue):
             more = kwargs
             if imageName:
                 with open(imageName, "rb") as imagefile:
-                        imagedata = imagefile.read()
+                    imagedata = imagefile.read()
 
                 try:
                     t_upload = Twitter(domain='upload.twitter.com',
-                                    auth=self.authentication)
-                    id_img1 = t_upload.media.upload(media=imagedata)["media_id_string"]
+                                       auth=self.authentication)
+                    id_img1 = t_upload.media.upload(media=imagedata)[
+                        "media_id_string"]
                     if 'alt' in more:
-                        t_upload.media.metadata.create(_json={ "media_id": id_img1,
-                            "alt_text": { "text": more['alt'] }
-})
+                        t_upload.media.metadata.create(_json={"media_id": id_img1,
+                                                              "alt_text": {"text": more['alt']}
+                                                              })
                     res = self.getClient().statuses.update(status=post,
-                        media_ids=id_img1)
+                                                           media_ids=id_img1)
                 except twitter.api.TwitterHTTPError as twittererror:
                     for error in twittererror.response_data.get("errors", []):
                         logging.info(f"      Error code: "
                                      f"{error.get('code', None)}")
-                    res = self.report('Twitter', post, imageName, sys.exc_info())
+                    res = self.report(
+                        'Twitter', post, imageName, sys.exc_info())
             else:
                 logging.info(f"No image available")
                 res = "Fail! No image available"
@@ -128,7 +131,8 @@ class moduleTwitter(Content,Queue):
                 #         result = t.statuses.retweet._id(_id=tweet['id'])
             except twitter.api.TwitterHTTPError as twittererror:
                 for error in twittererror.response_data.get("errors", []):
-                    logging.info("      Error code: %s" % error.get("code", None))
+                    logging.info("      Error code: %s" %
+                                 error.get("code", None))
                 res = self.report('Twitter', post, link, sys.exc_info())
         else:
             res = "Fail! Link {link} is not a tweet"
@@ -150,7 +154,7 @@ class moduleTwitter(Content,Queue):
             comment = api.getPostComment(title)
 
         title = self.addComment(title, comment)
-        
+
         logging.info(f"Tittt: {title} {link} {comment}")
         logging.info(f"Tittt: {link and ('twitter' in link)}")
         res = 'Fail!'
@@ -176,7 +180,8 @@ class moduleTwitter(Content,Queue):
                 res = self.getClient().statuses.update(status=title)
             except twitter.api.TwitterHTTPError as twittererror:
                 for error in twittererror.response_data.get("errors", []):
-                    logging.info("      Error code: %s" % error.get("code", None))
+                    logging.info("      Error code: %s" %
+                                 error.get("code", None))
                 res = self.report('Twitter', title, link, sys.exc_info())
                 res = f"Fail! {res}"
 
@@ -185,13 +190,13 @@ class moduleTwitter(Content,Queue):
     def deleteApiPosts(self, idPost):
         result = self.getClient().statuses.destroy(_id=idPost)
         logging.debug(f"Res: {result}")
-        return(result)
+        return (result)
 
     def deleteApiFavs(self, idPost):
         logging.info("Deleting: {}".format(str(idPost)))
         result = self.getClient().favorites.destroy(_id=idPost)
         logging.debug(f"Res: {result}")
-        return(result)
+        return (result)
 
     def getPostId(self, post):
         if isinstance(post, str) or isinstance(post, int):
@@ -199,7 +204,7 @@ class moduleTwitter(Content,Queue):
             idPost = post
         else:
             idPost = post.get('id')
-        return  idPost
+        return idPost
 
     def getPostApiSource(self, post):
         source = post.get('source')
@@ -247,12 +252,18 @@ class moduleTwitter(Content,Queue):
             if post['entities']['urls']:
                 if 'expanded_url' in post['entities']['urls'][0]:
                     result = post['entities']['urls'][0]['expanded_url']
+            elif ('full_text' in post) and ('http' in post['full_text']):
+                print("Sí")
+                pos = post['full_text'].find('http')
+                posF = post['full_text'].find(' ', pos + 1)
+                result = post['full_text'][pos:posF]
         elif ('url' in post['user']['entities']['url']
-            and (post['user']['entities']['url']['urls'])):
+              and (post['user']['entities']['url']['urls'])):
             result = post['user']['entities']['url']['urls'][0]['expanded_url']
         elif ('media' in post['entities']):
             if (post['entities']['media']):
                 result = post['entities']['media'][0]['expanded_url']
+
         if not result:
             result = self.getPostUrl(post)
         return result
@@ -291,14 +302,15 @@ class moduleTwitter(Content,Queue):
 
             if res:
                 logging.debug("Res: %s" % res)
-                return(res)
+                return (res)
         except:
-            return(self.report('Twitter', text, sys.exc_info()))
+            return (self.report('Twitter', text, sys.exc_info()))
+
 
 def main():
 
     logging.basicConfig(stream=sys.stdout, level=logging.INFO,
-            format='%(asctime)s %(message)s')
+                        format='%(asctime)s %(message)s')
 
     import moduleRules
     rules = moduleRules.moduleRules()
@@ -326,7 +338,6 @@ def main():
                 print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
         return
 
-
     testingFav = True
     if testingFav:
         for key in rules.rules.keys():
@@ -342,8 +353,10 @@ def main():
                     print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
                     print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
                     print(f" -Created {tweet.get('created_at')}")
-                    parsedDate = dateutil.parser.parse(apiSrc.getPostApiDate(tweet))
-                    print(f" -Created {parsedDate.year}-{parsedDate.month}-{parsedDate.day}")
+                    parsedDate = dateutil.parser.parse(
+                        apiSrc.getPostApiDate(tweet))
+                    print(
+                        f" -Created {parsedDate.year}-{parsedDate.month}-{parsedDate.day}")
         return
 
     testingPost = True
@@ -373,10 +386,9 @@ def main():
         idPost = tw1.getPostId(tweet)
         title = tw1.getPostTitle(tweet)
         link = tw1.getPostLink(tweet)
-        tw.publishApiRT(title, link, '', post = tweet)
+        tw.publishApiRT(title, link, '', post=tweet)
 
         sys.exit()
-
 
     testingSearch = False
     if testingSearch:
@@ -400,12 +412,14 @@ def main():
 
     print("Testing duplicate post")
 
-    res = tw.publishPost("Best Practices for Writing a Dockerfile", "https://blog.bitsrc.io/best-practices-for-writing-a-dockerfile-68893706c3", '')
+    res = tw.publishPost("Best Practices for Writing a Dockerfile",
+                         "https://blog.bitsrc.io/best-practices-for-writing-a-dockerfile-68893706c3", '')
     print(f"Res: {res}")
     print(f"End Res")
     print(res.find('Status is a duplicate'))
     input("Repeat?")
-    res = tw.publishPost("Best Practices for Writing a Dockerfile", "https://blog.bitsrc.io/best-practices-for-writing-a-dockerfile-68893706c3", '')
+    res = tw.publishPost("Best Practices for Writing a Dockerfile",
+                         "https://blog.bitsrc.io/best-practices-for-writing-a-dockerfile-68893706c3", '')
 
     sys.exit()
     # print("Testing bad link")
@@ -416,8 +430,8 @@ def main():
     # return
 
     #print("Testing followers")
-    #tw.setFriends()
-    #sys.exit()
+    # tw.setFriends()
+    # sys.exit()
 
     # res = tw.publishImage("Prueba imagen", "/tmp/2021-06-25_image.png",
     #        alt= "Imagen con alt")
@@ -429,7 +443,7 @@ def main():
     # input('Delete? ')
     # tw.deletePostId(idPost)
     # return
-    #sys.exit()
+    # sys.exit()
 
     # print("Testing posts")
     # tw.setPostsType('favs')
@@ -455,20 +469,18 @@ def main():
         title = tw.getPostTitle(post)
         link = tw.getPostLink(post)
         url = tw.getPostUrl(post)
-        print("Title: {}\nLink: {}\nUrl:{}\n".format(title,link,url))
+        print("Title: {}\nLink: {}\nUrl:{}\n".format(title, link, url))
     print(len(tw.getPosts()))
 
     sys.exit()
 
-
-
-    i=0
+    i = 0
     post = tw.getPost(i)
     title = tw.getPostTitle(post)
     link = tw.getPostLink(post)
     url = tw.getPostUrl(post)
     print(post)
-    print("Title: {}\nTuit: {}\nLink: {}\n".format(title,link,url))
+    print("Title: {}\nTuit: {}\nLink: {}\n".format(title, link, url))
     tw.deletePost(post)
     sys.exit()
 
@@ -476,25 +488,22 @@ def main():
         title = tw.getPostTitle(post)
         link = tw.getPostLink(post)
         url = tw.getPostUrl(post)
-        print("Title: {}\nTuit: {}\nLink: {}\n".format(title,link,url))
+        print("Title: {}\nTuit: {}\nLink: {}\n".format(title, link, url))
         input("Delete?")
         print("Deleted https://twitter.com/i/status/{}".format(tw.delete(i)))
         import time
         time.sleep(5)
-
-
-
 
     sys.exit()
 
     res = tw.search('url:fernand0')
 
     for tt in res['statuses']:
-        #print(tt)
-        print('- @{0} {1} https://twitter.com/{0}/status/{2}'.format(tt['user']['name'], tt['text'], tt['id_str']))
+        # print(tt)
+        print('- @{0} {1} https://twitter.com/{0}/status/{2}'.format(
+            tt['user']['name'], tt['text'], tt['id_str']))
     sys.exit()
 
 
 if __name__ == '__main__':
     main()
-
