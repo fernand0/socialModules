@@ -141,7 +141,8 @@ class moduleLinkedin(Content):
         try:
             self.getClient().get_profile()
             try:
-                res = self.getClient().submit_share(comment=comment, title=title,
+                res = self.getClient().submit_share(comment=comment, 
+                                                    title=title,
                                                     description=None, 
                                                     submitted_url=link, 
                                                     submitted_image_url=None, 
@@ -154,8 +155,13 @@ class moduleLinkedin(Content):
         except:
             logging.info(f"Exception {sys.exc_info()}")
             res = self.report('Linkedin', title, link, sys.exc_info())
-        if ('201'.encode() not in res):
-            res = f"Fail!\n{res}"
+
+        if isinstance(res, bytes) and ('201'.encode() not in res):
+            res = f"Fail!\n{res}" 
+        else:
+            code = res.status_code
+            if code and (code != 201):
+                res = f"Fail!\n{res}"
         return res
 
     def deleteApiPosts(self, idPost):
@@ -186,7 +192,7 @@ def main():
 
     testingPost = True
     if testingPost:
-        print("ll", ln.publishPost("A ver otro", "https://www.linkedin.com/in/fernand0/",''))
+        print("ll", ln.publishPost("A ver otro", "https://elmundoesimperfecto.com/",''))
         return
     #sys.exit()
     # print(ln.deleteApiPosts('6764243697006727168'))
