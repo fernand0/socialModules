@@ -686,9 +686,9 @@ def main():
                 time.localtime(os.path.getmtime(fNP)))
         print(f"File name: {fNP} Date: {fileT}")
 
-        action = input(f"Actions: (D)elete, (S)how (T)itles ")
+        action = input(f"Actions: (D)elete, (S)how (T)itles (L)inks ")
 
-        if action.upper()in ['S','T']:
+        if action.upper()in ['S','T', 'L']:
             url = f"https://{url}/"
 
             site = moduleCache.moduleCache()
@@ -713,6 +713,9 @@ def main():
 
             print()
             if action.upper() == 'T':
+                [ print(f"{i}) {apiCmd(post)}") for i, post in enumerate(posts) ]
+            elif action.upper() == 'L':
+                apiCmd = getattr(api, 'getPostLink')
                 [ print(f"{i}) {apiCmd(post)}") for i, post in enumerate(posts) ]
             else:
                 print(posts)
