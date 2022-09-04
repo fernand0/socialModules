@@ -63,6 +63,7 @@ class Content:
         logging.debug(f"Service: {self.service}")
         try:
             config = configparser.RawConfigParser()
+            logging.info(f"Service config: {self.service}")
             config.read(f"{CONFIGDIR}/.rss{self.service}")
             keys = self.getKeys(config)
             # logging.debug(f"keys {keys}")

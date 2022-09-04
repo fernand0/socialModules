@@ -192,7 +192,7 @@ class moduleWordpress(Content,Queue):
                 resJ['generated_slug'])
         else:
             tres = type(res)
-            res = self.report(self.service, apiSrc, 
+            res = self.report(self.service, self, 
                     f"Res: {res} Fail! Failed authentication.")
         return res
 

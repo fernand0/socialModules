@@ -80,7 +80,7 @@ class moduleRules:
 
         return modules
 
-    def checkRules(self):
+    def checkRules(self, select=None):
         msgLog = "Checking rules"
         logMsg(msgLog, 1, 2)
         config = configparser.ConfigParser()
@@ -100,6 +100,8 @@ class moduleRules:
         mor = {}
         impRuls = []
         for section in config.sections():
+            if select and (section != select):
+                continue
             url = config.get(section, "url")
             msgLog = f"Section: {section} Url: {url}"
             logMsg(msgLog, 1, 1)

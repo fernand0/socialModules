@@ -16,11 +16,56 @@ class modulePocket(Content,Queue):
         self.postaction='archive'
 
     def getKeys(self, config):
-        consumer_key = config.get("appKeys", "consumer_key")
-        access_token = config.get("appKeys", "access_token")
+        logging.debug(f"Nick: {self.user}")
+        consumer_key = config.get(self.user, "consumer_key")
+        try: 
+            access_token = config.get(self.user, "access_token")
+        except:
+            logging.info(f"Needs authorization")
+            self.authorize()
+            access_token = config.get(self.user, "access_token")
+        logging.debug(f"Consumer: {consumer_key}")
 
         return(consumer_key, access_token)
 
+    def authorize(self):
+        #url = f"https://getpocket.com/v3/oauth/request"
+        config = configparser.ConfigParser(interpolation=None)
+        fileConfig = f"{CONFIGDIR}/.rss{self.service}"
+        config.read(fileConfig)
+        name = self.user
+        try:
+            # Based on https://github.com/dogsheep/pocket-to-sqlite/blob/main/pocket_to_sqlite/cli.py
+            consumer_key = config.get(name, 'consumer_key')
+            response = requests.post( 
+                "https://getpocket.com/v3/oauth/request", 
+                { "consumer_key": consumer_key, 
+                  "redirect_uri": "https://getpocket.com/connected_applications", 
+                },
+            )
+            request_token = dict(urllib.parse.parse_qsl(response.text))["code"]
+            print("Visit this page and sign in with your Pocket account:\n")
+            print("https://getpocket.com/auth/authorize?request_token={}&redirect_uri={}\n".format(
+                request_token, "https://getpocket.com/connected_applications"
+                )
+            )
+            input("Once you have signed in there, hit <enter> to continue")
+            # Now exchange the request_token for an access_token
+            response2 = requests.post( 
+                   "https://getpocket.com/v3/oauth/authorize", 
+                   {"consumer_key": consumer_key, "code": request_token},
+            )
+            codes = dict(urllib.parse.parse_qsl(response2.text))
+            access_token = codes['access_token']
+            config.set(name, 'access_token', access_token)
+            #import shutil
+            shutil.copyfile(fileConfig, '{}.bak'.format(fileConfig))
+            with open(fileConfig, 'w') as configfile:
+                config.write(configfile)
+
+        except:
+            print(f"Something failed")
+ 
     def initApi(self, keys):
         consumer_key, access_token = keys
         client = Pocket(consumer_key=consumer_key, access_token=access_token)
@@ -245,9 +290,61 @@ class modulePocket(Content,Queue):
 def main():
 
     logging.basicConfig(stream=sys.stdout,
-            level=logging.INFO,
+            level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
+    import moduleRules
+    rules = moduleRules.moduleRules()
+    rules.checkRules('Blog43')
+
+    testingPosts = True
+    if testingPosts: 
+        for key in rules.rules.keys(): 
+            if ((key[0] == 'pocket')
+                    and (key[2] == 'fernand0kobo')): 
+                print(f"Key: {key}")
+
+                apiSrc = rules.readConfigSrc("", key, rules.more[key])
+
+                # config = configparser.ConfigParser(interpolation=None)
+                # fileConfig = f"{CONFIGDIR}/.rssPocket"
+                # config.read(fileConfig)
+
+                # name = "fernand0kobo"
+                # redirect_uri = config.get(name, 'redirect_uri')
+                # consumer_key = config.get(name, 'consumer_key')
+                # print(f"Cons: {consumer_key}")
+                
+                # # Based on https://github.com/dogsheep/pocket-to-sqlite/blob/main/pocket_to_sqlite/cli.py
+                # response = requests.post( 
+                #         "https://getpocket.com/v3/oauth/request", 
+                #         { "consumer_key": consumer_key, 
+                #           "redirect_uri": "https://getpocket.com/connected_applications", 
+                #         },
+                #     )
+                # request_token = dict(urllib.parse.parse_qsl(response.text))["code"]
+                # print("Visit this page and sign in with your Pocket account:\n")
+                # print("https://getpocket.com/auth/authorize?request_token={}&redirect_uri={}\n".format(
+                #     request_token, "https://getpocket.com/connected_applications"
+                #     )
+                # )
+                # input("Once you have signed in there, hit <enter> to continue")
+                # # Now exchange the request_token for an access_token
+                # response2 = requests.post( 
+                #        "https://getpocket.com/v3/oauth/authorize", 
+                #        {"consumer_key": consumer_key, "code": request_token},
+                # )
+                # print(f"res: {response2.text}")
+                # codes = dict(urllib.parse.parse_qsl(response2.text))
+
+                # print(codes)
+                # #codes["consumer_key"] = consumer_key
+                # #print(codes)
+                apiSrc.setPosts()
+                print(apiSrc.getPosts())
+
+    return
+ 
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs2')
 
@@ -255,7 +352,7 @@ def main():
 
     p = modulePocket.modulePocket()
 
-    p.setClient('ftricas')
+    p.setClient('fernand0')
     p.setPostsType('posts')
 
     p.setPosts()
