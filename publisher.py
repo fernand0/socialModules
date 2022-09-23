@@ -1,5 +1,4 @@
 import moduleRules
-
 from configMod import *
 
 

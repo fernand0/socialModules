@@ -5,15 +5,16 @@ import datetime
 import json
 import logging
 import os
-import requests
 import sys
 import time
 import urllib
 
+import requests
+import tmdbsimple as tmdb
+
 from moduleContent import *
 from moduleQueue import *
 
-import tmdbsimple as tmdb
 
 class moduleImdb(Content,Queue):
 

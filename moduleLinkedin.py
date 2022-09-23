@@ -2,19 +2,21 @@
 
 import configparser
 import json
-import requests
 import sys
 import urllib.parse
-
 from html.parser import HTMLParser
+
 import oauth2 as oauth
+import requests
 from linkedin_v2 import linkedin
+
+from configMod import *
+from moduleContent import *
+
 # git@github.com:fernand0/python-linkedin-v2.git
 # python setup.py install
 
 
-from configMod import *
-from moduleContent import *
 
 
 class moduleLinkedin(Content):

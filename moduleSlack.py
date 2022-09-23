@@ -2,20 +2,22 @@
 
 import configparser
 import logging
+import sys
+import time
 import urllib
+
+import click
+from bs4 import BeautifulSoup
 from slack_sdk import WebClient
+
+from moduleContent import *
+from moduleQueue import *
 
 # from slack_sdk.errors import SlackApiError
 
 # https://slack.dev/python-slack-sdk/v3-migration/
 
-import sys
-import time
-import click
-from bs4 import BeautifulSoup
 
-from moduleContent import *
-from moduleQueue import *
 
 
 class moduleSlack(Content, Queue):
@@ -306,9 +308,8 @@ def main():
             format="%(asctime)s %(message)s"
     )
 
-    import moduleSlack
-
     import moduleRules
+    import moduleSlack
     rules = moduleRules.moduleRules()
     rules.checkRules()
 

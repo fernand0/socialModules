@@ -1,20 +1,22 @@
 #!/usr/bin/env python
 
 import configparser
-import dateparser
-import dateutil
 import sys
 
+import dateparser
+import dateutil
 import twitter
 from twitter import *
+
+from configMod import *
+from moduleContent import *
+from moduleQueue import *
+
 # pip install twitter
 # https://pypi.python.org/pypi/twitter
 # https://github.com/sixohsix/twitter/tree
 # http://mike.verdone.ca/twitter/
 
-from configMod import *
-from moduleContent import *
-from moduleQueue import *
 
 
 class moduleTwitter(Content, Queue):

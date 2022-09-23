@@ -9,6 +9,7 @@ from configMod import *
 from moduleContent import *
 from moduleQueue import *
 
+
 class modulePocket(Content,Queue):
 
     def __init__(self):

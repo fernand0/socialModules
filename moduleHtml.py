@@ -2,20 +2,21 @@
 # using several generic APIs  (XML-RPC, blogger API, Metaweblog API, ...)
 
 import configparser
+import logging
 import time
 import urllib
-import requests
-import logging
-from bs4 import BeautifulSoup
-from bs4 import Tag
-from pdfrw import PdfReader
-import textract
 
-# https://github.com/fernand0/scripts/blob/master/moduleCache.py
+import requests
+import textract
+from bs4 import BeautifulSoup, Tag
+from pdfrw import PdfReader
 
 from configMod import *
 from moduleContent import *
 from moduleQueue import *
+
+# https://github.com/fernand0/scripts/blob/master/moduleCache.py
+
 
 
 class moduleHtml(Content, Queue):

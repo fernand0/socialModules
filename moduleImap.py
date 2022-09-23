@@ -2,44 +2,40 @@
 
 # We will have here the set of functions related to imap mail management
 
+import binascii
 import configparser
-import os
-import sys
-import logging
-import time
-import getpass
-import imaplib
 import email
 import email.policy
+import getpass
 import hashlib
-import binascii
-import distance
+import imaplib
 import io
-import keyring
-import re
-from email.header import Header
-from email.header import decode_header
-from bs4 import BeautifulSoup
-import moduleSieve
-import click
-
-import dateutil
-from dateutil.parser import parse
+import logging
+import os
 import pickle
-
+import re
 import ssl
+import sys
+import time
+from email.header import Header, decode_header
+from email.parser import BytesParser
 
+import click
+import dateutil
+import distance
+import keyring
+from apiclient.http import MediaIoBaseUpload
+from bs4 import BeautifulSoup
+from dateutil.parser import parse
+from googleapiclient.discovery import build
+from httplib2 import Http
+from oauth2client import client, file, tools
+
+import moduleGmail
+import moduleSieve
 from configMod import *
 from moduleContent import *
 from moduleQueue import *
-
-import moduleGmail
-from googleapiclient.discovery import build
-from httplib2 import Http
-from oauth2client import file, client, tools
-from apiclient.http import MediaIoBaseUpload
-from email.parser import BytesParser
-
 
 msgHeaders = ['List-Id', 'From', 'Sender', 'Subject', 'To',
               'X-Original-To', 'X-Envelope-From',
@@ -1271,7 +1267,6 @@ def main():
             format='%(asctime)s %(message)s')
 
     import moduleImap
-
     import moduleRules
     rules = moduleRules.moduleRules()
     rules.checkRules()

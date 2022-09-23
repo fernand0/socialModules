@@ -6,9 +6,9 @@ import time
 
 from imgurpython import ImgurClient
 
+from configMod import *
 from moduleContent import *
 from moduleQueue import *
-from configMod import *
 
 
 class moduleImgur(Content, Queue):

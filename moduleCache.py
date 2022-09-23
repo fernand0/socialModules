@@ -9,17 +9,20 @@
 # (https://github.com/fernand0/scripts/blob/master/moduleRss
 #  obtainPostData method.
 
-import configparser, os
-import pickle
-import logging
-import sys
+import configparser
 import importlib
+import logging
+import os
+import pickle
+import sys
+
 importlib.reload(sys)
 from crontab import CronTab
 
 from configMod import *
-from moduleQueue import *
 from moduleContent import *
+from moduleQueue import *
+
 
 class moduleCache(Content,Queue):
 
@@ -644,7 +647,6 @@ def main():
     testingFiles = True
     if testingFiles:
         import moduleCache
-    
         import moduleRules
         rules = moduleRules.moduleRules()
         rules.checkRules()

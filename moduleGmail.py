@@ -6,39 +6,42 @@
 
 # From: https://github.com/gsuitedevs/python-samples/blob/master/gmail/quickstart/quickstart.py
 from __future__ import print_function
+
+import base64
+import configparser
+import datetime
+import email
+import io
+import logging
+import os
+import pickle
+import sys
+from email.parser import BytesParser
+
+import googleapiclient
+from bs4 import BeautifulSoup
+from google.auth.transport.requests import Request
+from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from httplib2 import Http
-from oauth2client import file, client, tools
+from oauth2client import client, file, tools
+
+import moduleImap
+from configMod import *
+from moduleContent import *
+from moduleGoogle import *
+from moduleQueue import *
 
 # from googleapiclient.discovery import build
 # from httplib2 import Http
 # from oauth2client import file, client, tools
 
-from bs4 import BeautifulSoup
-
-import configparser, os
-import datetime
-import io
-import logging
-import pickle
-import sys
-
-import moduleImap
-
-import googleapiclient
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
 
 
-import base64
-import email
-from email.parser import BytesParser
 
-from configMod import *
-from moduleContent import *
-from moduleQueue import *
-from moduleGoogle import *
+
+
+
 
 class moduleGmail(Content,Queue,socialGoogle):
 

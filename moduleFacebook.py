@@ -2,12 +2,10 @@
 
 import configparser
 import sys
-
-from bs4 import BeautifulSoup
-from bs4 import Tag
 from html.parser import HTMLParser
 
 import facebook
+from bs4 import BeautifulSoup, Tag
 
 from configMod import *
 from moduleContent import *

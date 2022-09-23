@@ -2,11 +2,12 @@
 import logging
 import os
 import pickle
-import requests
 import shutil
-import urllib
-from PIL import Image
 import sys
+import urllib
+
+import requests
+from PIL import Image
 
 HOME = os.path.expanduser("~")
 LOGDIR = HOME + "/usr/var/log"
