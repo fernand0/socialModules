@@ -843,16 +843,8 @@ class Content:
             post = apiSrc.getPost(pos)
             if post:
                 logging.info(f"Publishing: {post}")
-                # title = apiSrc.getPostTitle(post)
-                # link = apiSrc.getPostLink(post)
 
-                # comment= ''
                 nameMethod = 'Post'
-                # if (hasattr(apiSrc, 'getPostsType')
-                #     and (apiSrc.getPostsType())
-                #     and (hasattr(self,
-                #         f"publishApi{apiSrc.getPostsType().capitalize()}"))):
-                #     nameMethod = self.getPostsType().capitalize()
 
                 method = getattr(self, f"publishApi{nameMethod}")
                 logging.info(f"method: {method}")
