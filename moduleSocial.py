@@ -78,10 +78,10 @@
 #
 
 import logging
+import pickle
 import random
 import sys
 import time
-import pickle
 
 from configMod import *
 
@@ -301,8 +301,8 @@ def cleanTags(soup):
 
 if __name__ == "__main__":
 
-    import moduleSocial
     import moduleRss
+    import moduleSocial
 
     blog = moduleRss.moduleRss()
     url = 'http://fernand0.tumblr.com/'

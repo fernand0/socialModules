@@ -7,10 +7,9 @@ import html
 import logging
 import re
 import sys
-
-from bs4 import BeautifulSoup
-from bs4 import Tag
 from html.parser import HTMLParser
+
+from bs4 import BeautifulSoup, Tag
 
 from configMod import *
 

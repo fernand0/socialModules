@@ -4,24 +4,25 @@
 # This module tries to replicate moduleCache and moduleBuffer but with mails
 # stored as Drafts in a Gmail account
 
-import configparser, os
+import configparser
 import datetime
-#from dateutil.parser import parse
-import dateparser
 import logging
+import os
 import sys
 
+#from dateutil.parser import parse
+import dateparser
 import googleapiclient
-from googleapiclient.discovery import build
 from googleapiclient import http
+from googleapiclient.discovery import build
 from httplib2 import Http
-from oauth2client import file, client, tools
+from oauth2client import client, file, tools
 from oauth2client.service_account import ServiceAccountCredentials
-
 
 from configMod import *
 from moduleContent import *
 from moduleGoogle import *
+
 
 class moduleGcalendar(Content,socialGoogle):    
     
@@ -249,8 +250,9 @@ def main():
                 print("Citas:")
                 for i, event in enumerate(apiSrc.getPosts()):
                     import datetime
-                    from dateutil import parser
+
                     import pytz
+                    from dateutil import parser
 
                     d1 = parser.parse(event['updated'])
                     today = datetime.datetime.combine(datetime.date.today(), 
@@ -264,6 +266,7 @@ def main():
                     # print(f"{d1 - today}")
                     if abs((d1 - today).days) < 7:
                         import pprint
+
                         # print (f"{i}) {event}")
                         description = event.get('description') 
                         if description:

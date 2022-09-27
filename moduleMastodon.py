@@ -3,14 +3,15 @@
 import logging
 import sys
 
-from bs4 import BeautifulSoup
-
 import mastodon
-# pip install Mastodon.py
+from bs4 import BeautifulSoup
 
 from configMod import *
 from moduleContent import *
 from moduleQueue import *
+
+# pip install Mastodon.py
+
 
 
 class moduleMastodon(Content, Queue):

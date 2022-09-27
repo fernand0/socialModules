@@ -15,22 +15,23 @@
 # And more thins. To be done.
 #
 
-import moduleRss
-import moduleSocial
-import moduleSlack
-import moduleForum
-import moduleGmail
-import moduleWordpress
-import moduleImgur
-import moduleImdb
-import modulePocket
-import moduleMastodon
-import moduleTwitter
-
 import configparser
 import logging
 import sys
 import time
+
+import moduleForum
+import moduleGmail
+import moduleImdb
+import moduleImgur
+import moduleMastodon
+import modulePocket
+import moduleRss
+import moduleSlack
+import moduleSocial
+import moduleTwitter
+import moduleWordpress
+from configMod import *
 
 # # sudo pip install buffpy version does not work
 # # Better use:
@@ -41,7 +42,6 @@ import time
 # from buffpy.managers.profiles import Profiles
 # from buffpy.managers.updates import Update
 
-from configMod import *
 
 
 def readConfig(checkBlog):

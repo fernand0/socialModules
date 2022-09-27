@@ -12,6 +12,7 @@ sys.path.append(path)
 
 from configMod import *
 
+
 class moduleRules:
 
     def hasSetMethods(self, service):

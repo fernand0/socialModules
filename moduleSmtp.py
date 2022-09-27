@@ -1,19 +1,18 @@
 #!/usr/bin/env python
 
 import configparser
-import os
 import logging
+import os
+import smtplib
 import sys
-
-from configMod import *
-from moduleContent import *
-
+from email import encoders
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
-from email import encoders
-import smtplib
+
+from configMod import *
+from moduleContent import *
 
 #import getpass
 #import keyring

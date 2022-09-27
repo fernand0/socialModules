@@ -9,6 +9,7 @@ from configMod import *
 from moduleContent import *
 from moduleQueue import *
 
+
 class modulePocket(Content,Queue):
 
     def __init__(self):
@@ -247,6 +248,12 @@ def main():
                         print(f"Title: {apiSrc.getPostTitle(post)}")
         return
 
+    PATH = '/tmp/kobo'
+    try:
+        os.mkdir(PATH)
+    except FileExistsError:
+        logging.info(f"Creation of the directory {PATH} failed. "
+                     f"It exists")
     testingPostsArticle = True
     if testingPostsArticle:
         for key in rules.rules.keys():
@@ -259,8 +266,9 @@ def main():
                 apiSrc.setPosts()
                 print(apiSrc.getPosts())
                 for pos, post in enumerate(apiSrc.getPosts()):
-                    if post['is_article'] == '0':
-                        title = apiSrc.getPostTitle(post)
+                    title = apiSrc.getPostTitle(post)
+                    print(f"Title: {title}")
+                    if ('is_article' in post) and post['is_article'] == '0':
                         link = apiSrc.getPostLink(post)
                         print(f"Title: {title}")
                         print(f"Link: {link}")
@@ -269,6 +277,8 @@ def main():
                         req = requests.get(link)
                         article = simple_json_from_html_string(req.text,
                                                                use_readability=True)
+                        if not article['content']:
+                            continue
                         from ebooklib import epub
                         book = epub.EpubBook()
 
@@ -283,7 +293,7 @@ def main():
                         book.add_item(epub.EpubNav())
                         book.spine = ['nav', c]
                         name = re.sub(r'[^a-zA-Z0-9]+', '-', title)
-                        epub.write_epub(f"/tmp/{post['time_added']}_{name}.epub",
+                        epub.write_epub(f"{PATH}/{post['time_added']}_{name}.epub",
                                         book, {})
                         input("Archive? ")
                         apiSrc.archiveId(idPost)

@@ -2,9 +2,10 @@
 # queues: local cache, buffer, Gmail, ... 
 
 import configparser
-import os
 import logging
+import os
 import re
+
 
 class Queue:
 
