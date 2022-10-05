@@ -137,8 +137,18 @@ class moduleLinkedin(Content):
 
 
     def publishApiPost(self, *args, **kwargs):
-        title, link, comment = args
-        more = kwargs
+        if args and len(args) == 3:
+            title, link, comment = args
+        if kwargs:
+            logging.info(f"Tittt: kwargs: {kwargs}")
+            more = kwargs
+            # FIXME: We need to do something here
+            post = more.get('post', '')
+            api = more.get('api', '')
+            title = api.getPostTitle(post)
+            link = api.getPostLink(post)
+            comment = api.getPostComment(title)
+
         logging.info(f"     Publishing: {title} - {link} - {comment}")
         try:
             self.getClient().get_profile()
@@ -155,6 +165,7 @@ class moduleLinkedin(Content):
                 logging.info(f"Exception {sys.exc_info()}")
                 res = self.report('Linkedin', title, link, sys.exc_info())
         except:
+            logging.info(f"Linkedin. Other problems.")
             logging.info(f"Exception {sys.exc_info()}")
             res = self.report('Linkedin', title, link, sys.exc_info())
 

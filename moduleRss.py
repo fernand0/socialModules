@@ -266,12 +266,12 @@ def main():
         print(len(blog.getPosts()))
         testingPost = True
         if testingPost:
-            post = blog.getPosts()[0]
-            print(post)
-            print(f" - {blog.getPostTitle(post)}")
-            print(f" - {blog.getPostLink(post)}")
-            print(f" - {blog.getPostContent(post)}")
-            print(f" - {blog.extractPostLinks(post)}")
+            for post in blog.getPosts():
+                print(post)
+                print(f" - {blog.getPostTitle(post)}")
+                print(f" - {blog.getPostLink(post)}")
+                print(f" - {blog.getPostContent(post)}")
+                print(f" - {blog.extractPostLinks(post)}")
 
         continue
         for i, post in enumerate(blog.getPosts()):

@@ -260,7 +260,7 @@ def main():
                 apiSrc.setPosts()
                 print(apiSrc.getPosts())
                 for pos, post in enumerate(apiSrc.getPosts()):
-                    if post['is_article'] == '0':
+                    if hasattr(post, 'is_article') and post['is_article'] == '0':
                         title = apiSrc.getPostTitle(post)
                         link = apiSrc.getPostLink(post)
                         print(f"Title: {title}")
