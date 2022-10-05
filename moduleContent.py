@@ -1290,15 +1290,16 @@ class Content:
         return (soup.get_text().strip("\n"), theSummaryLinks)
 
     def report(self, profile, post, link, data):
-        msg = (f"{profile} failed!\n",
-               f"Post: {post}, {link}\n",
-               f"Data: {data}\n",
-               f"Unexpected error: {data[0]}\n",
-               f"Unexpected error: {data[1]}\n")
+        msg = (f"{profile} failed!",
+               f"Post: {post}, {link}",
+               f"Data: {data}",
+               f"Unexpected error: {data[0]}",
+               f"Unexpected error: {data[1]}")
         for line in msg:
             logging.warning(line)
             print(line)
             sys.stderr.write(line)
+        print(f"End error")
         return f"Fail! {data[1]}"
         # print("----Unexpected error: %s"% data[2])
 

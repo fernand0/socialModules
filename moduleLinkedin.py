@@ -153,12 +153,12 @@ class moduleLinkedin(Content):
         try:
             self.getClient().get_profile()
             try:
-                res = self.getClient().submit_share(comment=comment, 
+                res = self.getClient().submit_share(comment=comment,
                                                     title=title,
-                                                    description=None, 
-                                                    submitted_url=link, 
-                                                    submitted_image_url=None, 
-                                                    urn=self.URN, 
+                                                    description=None,
+                                                    submitted_url=link,
+                                                    submitted_image_url=None,
+                                                    urn=self.URN,
                                                     visibility_code='anyone')
             except:
                 logging.info(f"Linkedin. Not authorized.")
@@ -170,7 +170,7 @@ class moduleLinkedin(Content):
             res = self.report('Linkedin', title, link, sys.exc_info())
 
         if isinstance(res, bytes) and ('201'.encode() not in res):
-            res = f"Fail!\n{res}" 
+            res = f"Fail!\n{res}"
         else:
             code = res.status_code
             if code and (code != 201):
