@@ -1299,7 +1299,6 @@ class Content:
             logging.warning(line)
             print(line)
             sys.stderr.write(line)
-        print(f"End error")
         return f"Fail! {data[1]}"
         # print("----Unexpected error: %s"% data[2])
 

@@ -169,11 +169,13 @@ class moduleTumblr(Content, Queue):
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
+            logging.info(f"Tittt: args: {args}")
             title, link, comment = args
             api = self
             # Will always work?
             idPost = link.split('/')[-2]
         if kwargs:
+            logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             post = more.get('post', '')
             api = more.get('api', '')
@@ -182,6 +184,8 @@ class moduleTumblr(Content, Queue):
             comment = ''
             idPost = api.getPostId(post)
 
+        logging.info(f"Type: {api.getPostsType()}")
+        logging.info(f"Id: {idPost}")
         try:
             if api.getPostsType() == 'posts':
                 res = self.getClient().create_link(self.getUser(),
@@ -202,7 +206,7 @@ class moduleTumblr(Content, Queue):
             logging.info(f"Connection error in {self.service}")
             res = self.report('Tumblr', post, link, sys.exc_info())
 
-        return(res)
+        return f"{self.processReply(res)}. Title: {title}. Link: {link}"
 
     def publishh(self, j):
         # This is not publishing but changing state -> editing

@@ -791,12 +791,13 @@ class moduleRules:
                 for i in range(num):
                     time.sleep(tSleep)
                     if nextPost:
-                        self.executePublishAction(indent, msgAction, apiSrc,
-                                                apiDst, simmulate)
+                        res = self.executePublishAction(indent, 
+                                msgAction, apiSrc, apiDst, simmulate)
                     else:
-                        self.executePublishAction(indent, msgAction, apiSrc,
-                                                apiDst, simmulate, 
-                                                nextPost, pos)
+                        res = self.executePublishAction(indent, 
+                                msgAction, apiSrc, apiDst, 
+                                simmulate, nextPost, pos)
+                        textEnd = f"{textEnd} {res}"
 
             elif (diffTime<=hours):
                 msgLog = (f"Not enough time passed. "
@@ -866,7 +867,7 @@ class moduleRules:
                     if (select and (select.lower() != f"{src[0].lower()}{i}")):
                         actionMsg = f"Skip."
                     else:
-                        actionMsg = (f"Scheduling...")
+                        actionMsg = (f"Scheduling.")
                     nameA = f"{name} {actionMsg} "
                     if action[1].startswith('http'):
                         # FIXME
