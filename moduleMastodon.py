@@ -72,9 +72,19 @@ class moduleMastodon(Content, Queue):
         return res
 
     def publishApiPost(self, *args, **kwargs):
-        post, link, comment = args
-        plus = kwargs
-        post = self.addComment(post, comment)
+        if args and len(args) == 3:
+            logging.info(f"Tittt: args: {args}")
+            post, link, comment = args
+        if kwargs:
+            logging.info(f"Tittt: kwargs: {kwargs}")
+            more = kwargs
+            post = more.get('post', '')
+            api = more.get('api', '')
+            title = api.getPostTitle(post)
+            link = api.getPostLink(post)
+            comment = ''
+
+        post = self.addComment(title, comment)
 
         res = 'Fail!'
         if True:
