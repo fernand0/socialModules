@@ -126,8 +126,11 @@ class moduleTumblr(Content, Queue):
         logging.info("Res: %s" % reply)
         res = reply
         if 'id' in reply:
-            logging.info("Res: %s" % reply['id'])
-            res = f"{self.getUrl()}{reply['id']}"
+            try:
+                logging.info(f"Res: {reply['id']}")
+                res = f"{self.getUrl()}{reply['id']}"
+            except:
+                logging.info(f"Temporal: error {reply}")
         return res
 
     def publishNextPost(self, apiSrc):
@@ -139,8 +142,7 @@ class moduleTumblr(Content, Queue):
         try:
             post = apiSrc.getNextPost()
             if post:
-                res = self.publishApiPost(api=apiSrc, post=post)
-                reply = self.processReply(res)
+                reply = self.publishApiPost(api=apiSrc, post=post)
             else:
                 reply = "Fail! No posts available"
         except:
@@ -157,12 +159,11 @@ class moduleTumblr(Content, Queue):
         try:
             post = apiSrc.getNextPost()
             if post:
-                res = self.publishApiPost(api=apiSrc, post=post)
-                reply = self.processReply(res)
+                reply = self.publishApiPost(api=apiSrc, post=post)
             else:
                 reply = "Fail! No posts available"
         except:
-            reply = self.report(self.service, apiSrc, sys.exc_info())
+            reply = self.report(self.service, post, apiSrc, sys.exc_info())
 
         return reply
 

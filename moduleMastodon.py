@@ -72,9 +72,10 @@ class moduleMastodon(Content, Queue):
         return res
 
     def publishApiPost(self, *args, **kwargs):
+        title = ''
         if args and len(args) == 3:
             logging.info(f"Tittt: args: {args}")
-            post, link, comment = args
+            title, link, comment = args
         if kwargs:
             logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs

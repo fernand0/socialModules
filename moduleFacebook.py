@@ -93,7 +93,7 @@ class moduleFacebook(Content,Queue):
             logging.debug("Res: %s" % reply)
             if 'id' in reply:
                 res = 'https://www.facebook.com/{}'.format(reply['id'])
-                logging.info("     Link: {}".format(res))
+                logging.info("     Link process reply: {res}")
         return(res)
 
     def publishApiPost(self, *args, **kwargs):
@@ -105,8 +105,11 @@ class moduleFacebook(Content,Queue):
             more = kwargs
             post = more.get('post', '')
             api = more.get('api', '')
+            logging.info(f"Api: {api}")
             title = api.getPostTitle(post)
+            logging.info(f"Title: {title}")
             link = api.getPostLink(post)
+            logging.info(f"Link: {link}")
             comment = ''
 
         post = self.addComment(title, comment)
@@ -114,14 +117,12 @@ class moduleFacebook(Content,Queue):
         if not self.page:
             self.setPage(self.user)
 
-        print(f"... {self.page} .... {self.user}")
-        logging.info(f"... {self.page} .... {self.user}")
+        # logging.debug(f"... {self.page} .... {self.user}")
 
         res = "Fail!"
         if (not isinstance(self.page, str)):
             res = self.page.put_object('me', "feed", message=title, link=link)
-        return f"Res: {self.processReply(res)}. Title: {title}. Link: {link}"
-        # FIXME: Are you sure?
+        return res
 
     def publishApiImage(self, postData):
         res = 'Fail!'

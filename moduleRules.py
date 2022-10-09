@@ -586,15 +586,18 @@ class moduleRules:
                 res = apiDst.publishNextPost(apiSrc)
             else:
                 res = apiDst.publishPosPost(apiSrc, pos)
+            logging.info(f"Res enddddd: {res}")
             resMsg = f"Publish: {res}. "
             # print(f"{indent}res: {res}")
             if (nextPost and 
                     ((not res) or ('SAVELINK' in res) or not ('Fail!' in res))):
                 resUpdate = apiSrc.updateLastLink(apiDst, '')
                 resMsg += f"Update: {resUpdate}"
+            logging.info("Not res: {not res} Fail: {not ('Fail!' in res)}")
             if ((not res) or ('SAVELINK' in res) or not ('Fail!' in res)
                     or not( 'Duplicate' in res)):
                 postaction = apiSrc.getPostAction()
+                logging.info("postAction: {postaction}")
                 if postaction:
                     msgLog = (f"{indent}Post Action {postaction}")
                     logMsg(msgLog, 1, 1)
