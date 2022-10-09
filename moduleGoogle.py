@@ -5,12 +5,13 @@
 
 # From: https://github.com/gsuitedevs/python-samples/blob/master/gmail/quickstart/quickstart.py
 from __future__ import print_function
-from googleapiclient.discovery import build
-from httplib2 import Http
-from oauth2client import file, client, tools
 
 import logging
 import os
+
+from googleapiclient.discovery import build
+from httplib2 import Http
+from oauth2client import client, file, tools
 
 from configMod import *
 

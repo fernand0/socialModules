@@ -7,10 +7,9 @@ import html
 import logging
 import re
 import sys
-
-from bs4 import BeautifulSoup
-from bs4 import Tag
 from html.parser import HTMLParser
+
+from bs4 import BeautifulSoup, Tag
 
 from configMod import *
 
@@ -63,6 +62,7 @@ class Content:
         logging.debug(f"Service: {self.service}")
         try:
             config = configparser.RawConfigParser()
+            logging.info(f"Service config: {self.service}")
             config.read(f"{CONFIGDIR}/.rss{self.service}")
             keys = self.getKeys(config)
             # logging.debug(f"keys {keys}")
@@ -843,16 +843,8 @@ class Content:
             post = apiSrc.getPost(pos)
             if post:
                 logging.info(f"Publishing: {post}")
-                # title = apiSrc.getPostTitle(post)
-                # link = apiSrc.getPostLink(post)
 
-                # comment= ''
                 nameMethod = 'Post'
-                # if (hasattr(apiSrc, 'getPostsType')
-                #     and (apiSrc.getPostsType())
-                #     and (hasattr(self,
-                #         f"publishApi{apiSrc.getPostsType().capitalize()}"))):
-                #     nameMethod = self.getPostsType().capitalize()
 
                 method = getattr(self, f"publishApi{nameMethod}")
                 logging.info(f"method: {method}")
@@ -876,6 +868,10 @@ class Content:
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
                 comment= ''
+                if hasattr(apiSrc, 'getPostApiDate'):
+                    # FIXME we should use the more general method for calling
+                    # publishing methods
+                    comment = apiSrc.getPostApiDate(post)
                 nameMethod = 'Post'
                 if (hasattr(apiSrc, 'getPostsType')
                     and (apiSrc.getPostsType())
@@ -1295,8 +1291,9 @@ class Content:
 
     def report(self, profile, post, link, data):
         msg = (f"{profile} failed!",
-               f"Post: {post}, {link}",
-               f"Data: {data}",
+               f"Post: {post}"
+               f"Link: {link}",
+               f"Data error: {data}",
                f"Unexpected error: {data[0]}",
                f"Unexpected error: {data[1]}")
         for line in msg:

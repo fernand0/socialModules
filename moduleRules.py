@@ -12,6 +12,7 @@ sys.path.append(path)
 
 from configMod import *
 
+
 class moduleRules:
 
     def hasSetMethods(self, service):
@@ -80,7 +81,7 @@ class moduleRules:
 
         return modules
 
-    def checkRules(self):
+    def checkRules(self, select=None):
         msgLog = "Checking rules"
         logMsg(msgLog, 1, 2)
         config = configparser.ConfigParser()
@@ -100,6 +101,8 @@ class moduleRules:
         mor = {}
         impRuls = []
         for section in config.sections():
+            if select and (section != select):
+                continue
             url = config.get(section, "url")
             msgLog = f"Section: {section} Url: {url}"
             logMsg(msgLog, 1, 1)
@@ -583,15 +586,18 @@ class moduleRules:
                 res = apiDst.publishNextPost(apiSrc)
             else:
                 res = apiDst.publishPosPost(apiSrc, pos)
+            logging.info(f"Res enddddd: {res}")
             resMsg = f"Publish: {res}. "
             # print(f"{indent}res: {res}")
             if (nextPost and 
                     ((not res) or ('SAVELINK' in res) or not ('Fail!' in res))):
                 resUpdate = apiSrc.updateLastLink(apiDst, '')
                 resMsg += f"Update: {resUpdate}"
+            logging.info("Not res: {not res} Fail: {not ('Fail!' in res)}")
             if ((not res) or ('SAVELINK' in res) or not ('Fail!' in res)
                     or not( 'Duplicate' in res)):
                 postaction = apiSrc.getPostAction()
+                logging.info("postAction: {postaction}")
                 if postaction:
                     msgLog = (f"{indent}Post Action {postaction}")
                     logMsg(msgLog, 1, 1)
@@ -788,12 +794,13 @@ class moduleRules:
                 for i in range(num):
                     time.sleep(tSleep)
                     if nextPost:
-                        self.executePublishAction(indent, msgAction, apiSrc,
-                                                apiDst, simmulate)
+                        res = self.executePublishAction(indent, 
+                                msgAction, apiSrc, apiDst, simmulate)
                     else:
-                        self.executePublishAction(indent, msgAction, apiSrc,
-                                                apiDst, simmulate, 
-                                                nextPost, pos)
+                        res = self.executePublishAction(indent, 
+                                msgAction, apiSrc, apiDst, 
+                                simmulate, nextPost, pos)
+                        textEnd = f"{textEnd} {res}"
 
             elif (diffTime<=hours):
                 msgLog = (f"Not enough time passed. "
@@ -863,7 +870,7 @@ class moduleRules:
                     if (select and (select.lower() != f"{src[0].lower()}{i}")):
                         actionMsg = f"Skip."
                     else:
-                        actionMsg = (f"Scheduling...")
+                        actionMsg = (f"Scheduling.")
                     nameA = f"{name} {actionMsg} "
                     if action[1].startswith('http'):
                         # FIXME
@@ -926,12 +933,53 @@ class moduleRules:
 
         return
 
+    def readArgs(self):
+
+        import argparse
+
+        parser = argparse.ArgumentParser(
+            description="Improving command line call", allow_abbrev=True
+        )
+        parser.add_argument(
+            "--timeSlots",
+            "-t",
+            default=50,  # 50 minutes
+            help=("How many time slots we will have for publishing "
+                 f"(in minutes)"),
+            )
+        parser.add_argument(
+            "checkBlog",
+            default="",
+            metavar="Blog",
+            type=str,
+            nargs="?",
+            help="you can select just a blog",
+        )
+        parser.add_argument(
+            "--simmulate",
+            "-s",
+            default=False,
+            action="store_true",
+            help="simulate which posts would be added",
+        )
+        parser.add_argument(
+            "--noWait",
+            "-n",
+            default=False,
+            action="store_true",
+            help="no wait for time restrictions",
+        )
+        args = parser.parse_args()
+
+        return args
+
 
 def main():
 
     logging.basicConfig(
-        #filename=LOGDIR + "/rssSocial.log",
-        stream=sys.stdout,
+        filename=LOGDIR + "/rssSocial.log",
+        # filename=LOGDIR + "/rssSocial.log",
+        # stream=sys.stdout,
         level=logging.INFO,
         format="%(asctime)s [%(filename).12s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
@@ -942,6 +990,13 @@ def main():
 
     rules = moduleRules()
     srcs, dsts, ruls, impRuls = rules.checkRules()
+
+    args = rules.readArgs()
+
+    rules.executeRules(args)
+
+    return
+
 
     rules.printList(srcs, "Sources")
     rules.printList(dsts, "Destinations")

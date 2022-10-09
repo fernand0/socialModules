@@ -1,19 +1,17 @@
 #!/usr/bin/env python
 
 import configparser
-import pickle
-import os
-import urllib
 import logging
-import gitterpy
-import gitterpy.client
-
+import os
+import pickle
 import sys
 import time
-import click
-import logging
-import requests
+import urllib
 
+import click
+import gitterpy
+import gitterpy.client
+import requests
 from bs4 import BeautifulSoup
 
 from moduleContent import *
@@ -250,7 +248,6 @@ def main():
             format='%(asctime)s %(message)s')
 
     import moduleGitter
-
     import moduleRules
     rules = moduleRules.moduleRules()
     rules.checkRules()

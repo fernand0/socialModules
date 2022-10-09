@@ -2,11 +2,12 @@
 import logging
 import os
 import pickle
-import requests
 import shutil
-import urllib
-from PIL import Image
 import sys
+import urllib
+
+import requests
+from PIL import Image
 
 HOME = os.path.expanduser("~")
 LOGDIR = HOME + "/usr/var/log"
@@ -108,7 +109,6 @@ def newUpdateLastLink(url, link, lastLink, socialNetwork=()):
 
     fileName = fileNamePath(url, socialNetwork) + ".last"
 
-    print(fileName)
     with open(fileName, "w") as f:
         if isinstance(link, bytes):
             f.write(link.decode())
@@ -120,6 +120,7 @@ def newUpdateLastLink(url, link, lastLink, socialNetwork=()):
 def updateLastLink(url, link, socialNetwork=()):
     logging.debug(f"Url: {url} Link: {link} SocialNetwork: {socialNetwork}")
     fileName = fileNamePath(url, socialNetwork) + ".last"
+    
 
     logging.debug(f"fileName: {fileName}")
     with open(fileName, "w") as f:

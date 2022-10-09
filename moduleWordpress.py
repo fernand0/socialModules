@@ -1,14 +1,16 @@
 import configparser
-import logging
-import requests
 import json
+import logging
 import sys
-from bs4 import BeautifulSoup
 import urllib
+
+import requests
+from bs4 import BeautifulSoup
 
 from configMod import *
 from moduleContent import *
 from moduleQueue import *
+
 
 class moduleWordpress(Content,Queue):
 
@@ -192,7 +194,7 @@ class moduleWordpress(Content,Queue):
                 resJ['generated_slug'])
         else:
             tres = type(res)
-            res = self.report(self.service, apiSrc, 
+            res = self.report(self.service, self, 
                     f"Res: {res} Fail! Failed authentication.")
         return res
 

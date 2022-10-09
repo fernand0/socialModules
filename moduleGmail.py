@@ -6,39 +6,42 @@
 
 # From: https://github.com/gsuitedevs/python-samples/blob/master/gmail/quickstart/quickstart.py
 from __future__ import print_function
+
+import base64
+import configparser
+import datetime
+import email
+import io
+import logging
+import os
+import pickle
+import sys
+from email.parser import BytesParser
+
+import googleapiclient
+from bs4 import BeautifulSoup
+from google.auth.transport.requests import Request
+from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from httplib2 import Http
-from oauth2client import file, client, tools
+from oauth2client import client, file, tools
+
+import moduleImap
+from configMod import *
+from moduleContent import *
+from moduleGoogle import *
+from moduleQueue import *
 
 # from googleapiclient.discovery import build
 # from httplib2 import Http
 # from oauth2client import file, client, tools
 
-from bs4 import BeautifulSoup
-
-import configparser, os
-import datetime
-import io
-import logging
-import pickle
-import sys
-
-import moduleImap
-
-import googleapiclient
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
 
 
-import base64
-import email
-from email.parser import BytesParser
 
-from configMod import *
-from moduleContent import *
-from moduleQueue import *
-from moduleGoogle import *
+
+
+
 
 class moduleGmail(Content,Queue,socialGoogle):
 
@@ -293,6 +296,10 @@ class moduleGmail(Content,Queue,socialGoogle):
                     mes = mes + str(base64.urlsafe_b64decode(part['body']['data']))
         else:
             mes  = str(base64.urlsafe_b64decode(message['payload']['body']['data']))
+        mes = mes.encode().decode('unicode_escape')
+        # The messages come with escape characters and some encoding
+        # FIXME Is this the correct place?
+
         return(mes)
 
     def getMessage(self, idPost):
@@ -403,6 +410,7 @@ class moduleGmail(Content,Queue,socialGoogle):
         if post:
             logging.info(f"Post: {post}")
             links = self.getPostLinks(post)
+            logging.info(f"Links: {links}")
             if links:
                 theLink = links[0]
 
@@ -490,43 +498,6 @@ class moduleGmail(Content,Queue,socialGoogle):
                 break
 
         return(labelId)
-
-    # def extractDataMessage(self, i):
-    #     logging.info("Service %s"% self.service)
-    #     posts = self.getPosts()
-    #     if posts:
-    #         message = posts[i]
-    #         logging.debug("Message %s"% message)
-
-    #         theTitle = self.getHeader(message, 'Subject')
-    #         if theTitle == None:
-    #             theTitle = self.getHeader(message, 'subject')
-    #         snippet = self.getHeader(message, 'snippet')
-
-    #         theLink = None
-    #         if snippet:
-    #             posIni = snippet.find('http')
-    #             posFin = snippet.find(' ', posIni)
-    #             posSignature = snippet.find('-- ')
-    #             if posIni < posSignature:
-    #                 theLink = snippet[posIni:posFin]
-    #         theLinks = self.getPostLinks(message)
-    #         theSummaryLinks = self.getPostLinksWithText(message)
-    #         content = None
-    #         theContent = None
-    #         #date = int(self.getHeader(message, 'internalDate'))/1000
-    #         #firstLink = '{}'.format(datetime.datetime.fromtimestamp(date)) # Bad!
-    #         firstLink = None
-    #         theImage = None
-    #         theSummary = snippet
-
-    #         # theSummaryLinks = message
-    #         comment = self.getPostId(message)
-
-    #         theLink = theLinks[0]
-    #         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks)
-    #     else:
-    #         return (None, None, None, None, None, None, None, None, None, None)
 
     def editl(self, j, newTitle):
         return('Not implemented!')
@@ -761,7 +732,35 @@ def main():
     rules = moduleRules.moduleRules()
     rules.checkRules()
 
-    testingDrafts = True
+    testingPostsLabel = True
+    if testingPostsLabel:
+        for key in rules.rules.keys():
+            print(f"Key: {key}")
+            if ((key[0] == 'gmail')
+                    and ('ftricas' in key[2])
+                    and (key[3] == 'posts')):
+                print(f"SKey: {key}\n"
+                      f"SRule: {rules.rules[key]}\n"
+                      f"SMore: {rules.more[key]}")
+                apiSrc = rules.readConfigSrc("", key, rules.more[key])
+                print(f"{apiSrc.listFolders()}")
+                print(f"{apiSrc.getLabels('Unizar/firma')}")
+                labelId = apiSrc.getLabels('Unizar/firma')[0]
+                apiSrc.assignPosts(apiSrc.setApiMessages(label=labelId))
+                for i, post in enumerate(apiSrc.getPosts()):
+                    title = apiSrc.getPostTitle(post)
+                    print(f"{i}) {title}")
+                    if '570281' in title:
+                        links = apiSrc.getPostLinks(post)
+                        theLink = links[0]
+                        print(f"link: {theLink}")
+                        import moduleHtml
+                        htm = moduleHtml.moduleHtml()
+                        htm.click(theLink)
+                        return
+
+ 
+    testingDrafts = False
     if testingDrafts:
         for key in rules.rules.keys():
             print(f"Key: {key}")

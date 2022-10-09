@@ -3,10 +3,11 @@
 # be used in other programs
 
 import configparser
-import os
 import logging
+import os
 
 from configMod import *
+
 
 class Publisher:
 

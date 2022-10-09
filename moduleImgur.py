@@ -6,9 +6,9 @@ import time
 
 from imgurpython import ImgurClient
 
+from configMod import *
 from moduleContent import *
 from moduleQueue import *
-from configMod import *
 
 
 class moduleImgur(Content, Queue):
@@ -43,13 +43,6 @@ class moduleImgur(Content, Queue):
             reply = self.report(self.service, apiSrc, sys.exc_info())
 
         return client
-
-    # def setApiCache(self):
-    #     import moduleCache
-    #     cache = moduleCache.moduleCache()
-    #     cache.setClient((self.url, (self.service, self.user, 'posts')))
-    #     cache.setPosts()
-    #     return cache.getPosts()
 
     def setApiPosts(self):
         posts = []
@@ -118,12 +111,6 @@ class moduleImgur(Content, Queue):
     def getPostContentLink(self, post):
         return post.link
 
-    # def getLinkPosition(self, link):
-    #     if self.getPostsType() == 'posts':
-    #         return len(self.getPosts())
-    #     else:
-    #         return Content.getLinkPosition(self, link)
-
     def editApiLink(self, post, newLink):
         post.link = newLink
 
@@ -143,30 +130,6 @@ class moduleImgur(Content, Queue):
     def getPostId(self, post):
         print(f"Post: {post}")
         return post.id
-
-    # def extractDataMessage(self, i):
-    #     posts = self.getPosts()
-    #     if i < len(posts):
-    #         if self.getPostsType() == 'cache':
-    #             # Dirty?
-    #             post = posts[0]
-    #             return post
-    #         else:
-    #             post = posts[i]
-    #             logging.debug(f"Post: {post}")
-    #             theTitle = self.getPostTitle(post)
-    #             theLink = self.getPostLink(post)
-    #             theId = self.getPostId(post)
-    #             thePost = self.getImagesCode(i)
-    #             theTags = self.getImagesTags(i)
-    #     else:
-    #         theTitle = ''
-    #         theLink = ''
-    #         thePost = ''
-    #         theTags = ''
-
-    #     return (theTitle,  theLink, theLink, theId,
-    #             '', '', '', theTags, thePost)
 
     def processReply(self, reply):
         res = ''
@@ -287,42 +250,6 @@ class moduleImgur(Content, Queue):
             res.append((urlImg, title, description, tags))
         return res
 
-    # def extractImagesOld(self, post):
-    #     theTitle = self.getPostTitle(post)
-    #     theLink = self.getPostLink(post)
-    #     page = urlopen(theLink).read()
-    #     soup = BeautifulSoup(page, 'lxml')
-
-    #     res = []
-    #     script = soup.find_all('script')
-    #     pos = script[9].text.find('image')
-    #     pos = script[9].text.find('{', pos + 1)
-    #     pos2 = script[9].text.find('\n', pos + 1)
-    #     data = json.loads(script[9].text[pos:pos2-1])
-    #     import pprint
-    #     pprint.pprint(data)
-    #     sys.exit()
-    #     title = data['title']
-    #     for img in data['album_images']['images']:
-    #         urlImg = 'https://i.imgur.com/{}.jpg'.format(img['hash'])
-    #         if 'description' in img:
-    #             titleImg = img['description']
-    #             if titleImg:
-    #                 description = titleImg.split('#')
-    #                 description, tags = description[0], description[1:]
-    #                 aTags = []
-    #                 while tags:
-    #                     aTag = tags.pop().strip()
-    #                     aTags.append(aTag)
-    #                 tags = aTags
-    #             else:
-    #                 description = ""
-    #                 tags = []
-    #         else:
-    #             titleImg = ""
-    #         res.append((urlImg, title, description, tags))
-    #     return res
-
     def getNumPostsData(self, num, i, lastLink):
         listPosts = []
         posts = self.getPosts()
@@ -358,7 +285,6 @@ def main():
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
                         format='%(asctime)s %(message)s')
 
-    import moduleImgur
 
     import moduleRules
     rules = moduleRules.moduleRules()
@@ -435,7 +361,21 @@ def main():
         cache.publishPost(api=apiSrc, post=post)
         return
 
-    publishWordpress = True
+    extractImages = True
+    if extractImages:
+        apiSrc.setPostsType('posts')
+        apiSrc.setPosts()
+
+        for i, post in enumerate(apiSrc.getPosts()[:25]):
+            print(f"{i}) {apiSrc.getPostTitle(post)}")
+        pos = int(input("Position? "))
+        res = apiSrc.extractImages(apiSrc.getPosts()[pos])
+        print(res)
+
+        return
+ 
+
+    publishWordpress = False
     # Testing Wordpress publishing
     if publishWordpress:
         apiSrc.setPostsType('posts')

@@ -2,12 +2,10 @@
 
 import configparser
 import sys
-
-from bs4 import BeautifulSoup
-from bs4 import Tag
 from html.parser import HTMLParser
 
 import facebook
+from bs4 import BeautifulSoup, Tag
 
 from configMod import *
 from moduleContent import *
@@ -95,17 +93,23 @@ class moduleFacebook(Content,Queue):
             logging.debug("Res: %s" % reply)
             if 'id' in reply:
                 res = 'https://www.facebook.com/{}'.format(reply['id'])
-                logging.info("     Link: {}".format(res))
+                logging.info("     Link process reply: {res}")
         return(res)
 
     def publishApiPost(self, *args, **kwargs):
-        title, link, comment = args
-        plus = kwargs
-        if plus:
-            apiSrc = plus['api']
-            post = plus['post']
-            title = apiSrc.getPostTitle(post)
-            link = apiSrc.getPostLink(post)
+        if args and len(args) == 3:
+            logging.info(f"Tittt: args: {args}")
+            title, link, comment = args
+        if kwargs:
+            logging.info(f"Tittt: kwargs: {kwargs}")
+            more = kwargs
+            post = more.get('post', '')
+            api = more.get('api', '')
+            logging.info(f"Api: {api}")
+            title = api.getPostTitle(post)
+            logging.info(f"Title: {title}")
+            link = api.getPostLink(post)
+            logging.info(f"Link: {link}")
             comment = ''
 
         post = self.addComment(title, comment)
@@ -113,12 +117,12 @@ class moduleFacebook(Content,Queue):
         if not self.page:
             self.setPage(self.user)
 
-        print(f"... {self.page} .... {self.user}")
+        # logging.debug(f"... {self.page} .... {self.user}")
 
         res = "Fail!"
         if (not isinstance(self.page, str)):
             res = self.page.put_object('me', "feed", message=title, link=link)
-        return self.processReply(res)
+        return res
 
     def publishApiImage(self, postData):
         res = 'Fail!'

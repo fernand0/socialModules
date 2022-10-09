@@ -1,12 +1,13 @@
-from bs4 import BeautifulSoup
 import configparser
 import logging
-import requests
 import time
 
+import requests
+from bs4 import BeautifulSoup
+
+from configMod import *
 from moduleContent import *
 from moduleQueue import *
-from configMod import *
 
 # This moule reads directly the HTML code
 #

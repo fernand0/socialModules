@@ -2,20 +2,21 @@
 # using several generic APIs  (XML-RPC, blogger API, Metaweblog API, ...)
 
 import configparser
+import logging
 import time
 import urllib
-import requests
-import logging
-from bs4 import BeautifulSoup
-from bs4 import Tag
-from pdfrw import PdfReader
-import textract
 
-# https://github.com/fernand0/scripts/blob/master/moduleCache.py
+import requests
+import textract
+from bs4 import BeautifulSoup, Tag
+from pdfrw import PdfReader
 
 from configMod import *
 from moduleContent import *
 from moduleQueue import *
+
+# https://github.com/fernand0/scripts/blob/master/moduleCache.py
+
 
 
 class moduleHtml(Content, Queue):
@@ -172,6 +173,9 @@ class moduleHtml(Content, Queue):
 
         doc = Document(text)
         doc_title = doc.title()
+        # from selectolax.parser import HTMLParser
+        # doc = HTMLParser(text)
+        # doc_title = doc.css_first('title').text()
 
         if not doc_title or (doc_title == "[no-title]"):
             if theUrl.lower().endswith("pdf"):
@@ -183,6 +187,7 @@ class moduleHtml(Content, Queue):
 
         # myText = doc.summary()
         myText = doc.content()
+        # myText = doc.text(separator='\n')
 
         for a, b in replaceChars:
             myText = myText.replace(a, b)
@@ -373,7 +378,8 @@ class moduleHtml(Content, Queue):
             " Safari/537.36"
         }
         logging.debug(f"url: {url}")
-        if 'http' in url:
+        if ('http://' in url) or ('https://' in url):
+            # Some people writes bad URLs in email
             response = requests.get(url, headers=headers)
             if response.status_code != 200:
                 logging.info(response.text)

@@ -3,21 +3,24 @@
 # using several generic APIs  (XML-RPC, blogger API, Metaweblog API, ...)
 
 import configparser
+import logging
 import os
+import pickle
 import time
 import urllib
-import requests
+
 import feedparser
-import pickle
-import logging
+import requests
 from bs4 import BeautifulSoup
 from pdfrw import PdfReader
-import moduleCache
-# https://github.com/fernand0/scripts/blob/master/moduleCache.py
 
+import moduleCache
 from configMod import *
 from moduleContent import *
 from moduleQueue import *
+
+# https://github.com/fernand0/scripts/blob/master/moduleCache.py
+
 
 class moduleRss(Content, Queue):
 
@@ -263,12 +266,12 @@ def main():
         print(len(blog.getPosts()))
         testingPost = True
         if testingPost:
-            post = blog.getPosts()[0]
-            print(post)
-            print(f" - {blog.getPostTitle(post)}")
-            print(f" - {blog.getPostLink(post)}")
-            print(f" - {blog.getPostContent(post)}")
-            print(f" - {blog.extractPostLinks(post)}")
+            for post in blog.getPosts():
+                print(post)
+                print(f" - {blog.getPostTitle(post)}")
+                print(f" - {blog.getPostLink(post)}")
+                print(f" - {blog.getPostContent(post)}")
+                print(f" - {blog.extractPostLinks(post)}")
 
         continue
         for i, post in enumerate(blog.getPosts()):

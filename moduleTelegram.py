@@ -2,8 +2,9 @@
 
 import configparser
 import logging
-import telepot
 import sys
+
+import telepot
 
 from configMod import *
 from moduleContent import *

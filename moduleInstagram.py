@@ -1,21 +1,22 @@
 #!/usr/bin/env python
 
 import configparser
-import os
+import getpass
 import logging
+import os
 import sys
+import urllib.parse
+
+import keyring
+import keyrings
+import requests
+from InstagramAPI import InstagramAPI
 
 from configMod import *
 from moduleContent import *
 
-from InstagramAPI import InstagramAPI
 # https://github.com/LevPasha/Instagram-API-python
 
-import getpass
-import keyring
-import keyrings
-import urllib.parse
-import requests
 
 class moduleInstagram(Content):
 

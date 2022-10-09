@@ -2,22 +2,24 @@
 # using several generic APIs  (XML-RPC, blogger API, Metaweblog API, ...)
 
 import configparser
-import xmlrpc.client
+import logging
 import os
+import pickle
 import time
 import urllib
+import xmlrpc.client
+
 import requests
-import pickle
-import logging
-from bs4 import BeautifulSoup
-from bs4 import Tag
+from bs4 import BeautifulSoup, Tag
 from pdfrw import PdfReader
+
 import moduleCache
+from configMod import *
 # https://github.com/fernand0/socialMeodules/blob/master/moduleCache.py
 from moduleContent import *
+
 # https://github.com/fernand0/socialMeodules/blob/master/moduleContent.py
 
-from configMod import *
 
 class moduleXmlrpc(Content):
 

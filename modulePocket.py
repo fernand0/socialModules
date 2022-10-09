@@ -9,6 +9,7 @@ from configMod import *
 from moduleContent import *
 from moduleQueue import *
 
+
 class modulePocket(Content,Queue):
 
     def __init__(self):
@@ -16,10 +17,57 @@ class modulePocket(Content,Queue):
         self.postaction='archive'
 
     def getKeys(self, config):
-        consumer_key = config.get("appKeys", "consumer_key")
-        access_token = config.get("appKeys", "access_token")
+        logging.info(f"Nick: {self.user}")
+        if self.user.startswith('@'):
+            self.user = self.user[1:]
+        consumer_key = config.get(self.user, "consumer_key")
+        try:
+            access_token = config.get(self.user, "access_token")
+        except:
+            logging.info(f"Needs authorization")
+            self.authorize()
+            access_token = config.get(self.user, "access_token")
+        logging.debug(f"Consumer: {consumer_key}")
 
         return(consumer_key, access_token)
+
+    def authorize(self):
+        #url = f"https://getpocket.com/v3/oauth/request"
+        config = configparser.ConfigParser(interpolation=None)
+        fileConfig = f"{CONFIGDIR}/.rss{self.service}"
+        config.read(fileConfig)
+        name = self.user
+        try:
+            # Based on https://github.com/dogsheep/pocket-to-sqlite/blob/main/pocket_to_sqlite/cli.py
+            consumer_key = config.get(name, 'consumer_key')
+            response = requests.post(
+                "https://getpocket.com/v3/oauth/request",
+                { "consumer_key": consumer_key,
+                  "redirect_uri": "https://getpocket.com/connected_applications",
+                },
+            )
+            request_token = dict(urllib.parse.parse_qsl(response.text))["code"]
+            print("Visit this page and sign in with your Pocket account:\n")
+            print("https://getpocket.com/auth/authorize?request_token={}&redirect_uri={}\n".format(
+                request_token, "https://getpocket.com/connected_applications"
+                )
+            )
+            input("Once you have signed in there, hit <enter> to continue")
+            # Now exchange the request_token for an access_token
+            response2 = requests.post(
+                   "https://getpocket.com/v3/oauth/authorize",
+                   {"consumer_key": consumer_key, "code": request_token},
+            )
+            codes = dict(urllib.parse.parse_qsl(response2.text))
+            access_token = codes['access_token']
+            config.set(name, 'access_token', access_token)
+            #import shutil
+            shutil.copyfile(fileConfig, '{}.bak'.format(fileConfig))
+            with open(fileConfig, 'w') as configfile:
+                config.write(configfile)
+
+        except:
+            print(f"Something failed")
 
     def initApi(self, keys):
         consumer_key, access_token = keys
@@ -56,120 +104,57 @@ class modulePocket(Content,Queue):
             more = kwargs
             print(f"postData: {more} in {self}")
 
+        tags = []
+        if comment:
+            tags = [comment, ]
         print(f"ll: {link}")
         # This belongs here?
         if not link.startswith('http'):
             logging.warning(f"Link that does not stat with < {link}")
             pos = link.find('http')
             link = link[pos:]
+
             pos = link.find(' ')
             if pos >=0:
                 # Sometimes there are two links or something after the link
                 link=link[:pos]
         try:
-            res = self.getClient().add(link)
+            res = self.getClient().add(link, tags=tags)
         except PocketException as exc:
             logging.warning(f"publishApiPosts generated an exception: {exc}")
             res = "Fail!"
 
         return res
 
-    # def publishh(self, j):
-    #     # This does not belong here
-    #     logging.info("...Publishing %d"% j)
-    #     #post = self.obtainPostData(j)
-    #     #logging.info("Publishing %s"% post[0])
-    #     update = ''
-    #     title = self.getTitle(j)
-    #     logging.info("Title: %s" % str(title))
-    #     url = self.getLink(j)
-    #     logging.info("Url: %s" % str(url))
-
-    #     if self.getProgram():
-    #         logging.info("getProgram")
-    #         for profile in self.getSocialNetworks():
-    #             nick = self.getSocialNetworks()[profile]
-    #             logging.info("Social: {} Nick: {}".format(profile, nick))
-    #             if ((profile[0] in self.getProgram()) or
-    #                     (profile in self.getProgram())):
-    #                 logging.info("Social: {} Nick: {}".format(profile, nick))
-    #                 lenMax = self.len(profile)
-    #                 socialNetwork = (profile, nick)
-
-    #                 listP = self.cache[socialNetwork].setPosts()
-    #                 listP = self.cache[socialNetwork].getPosts()
-    #                 listPsts = self.obtainPostData(j)
-    #                 listP = listP + [listPsts]
-    #                 self.cache[socialNetwork].posts = listP
-    #                 update = update + self.cache[socialNetwork].updatePostsCache()
-    #                 logging.info("Uppdate: {}".format(update))
-    #                 update = update + '\n'
-
-    #     if  not self.getProgram(): #not self.getBuffer() and
-    #         logging.info("Not getBuffer, getProgram {}".format(self.getSocialNetworks()))
-    #         return ""
-    #         delayedBlogs = []
-    #         nowait = True
-    #         for profile in self.getSocialNetworks():
-    #             nick = self.getSocialNetworks()[profile]
-    #             logging.info("Social: {} Nick: {}".format(profile, nick))
-    #             listPosts = [ post ]
-    #             socialNetwork = (profile, nick)
-    #             link = self.addNextPosts(listPosts, socialNetwork)
-    #             delayedBlogs.append((self, socialNetwork, 1, nowait, 0))
-
-    #             import concurrent.futures
-    #             import moduleSocial
-    #             import time
-    #             with concurrent.futures.ThreadPoolExecutor(
-    #                     max_workers=len(delayedBlogs)) as executor:
-    #                 delayedPosts = {executor.submit(moduleSocial.publishDelay,
-    #                     *args):
-    #                     args for args in delayedBlogs}
-    #                 time.sleep(5)
-
-    #                 for future in concurrent.futures.as_completed(delayedPosts):
-    #                     dataBlog = delayedPosts[future]
-    #                     try:
-    #                         res = future.result()
-    #                         if res:
-    #                             print("  Published: %s"% str(res))
-    #                             if not dataBlog[0].getProgram():
-    #                                 posL = res.find('http')
-    #                                 if posL>=0:
-    #                                     link = res[posL:]
-    #                                     if link:
-    #                                         socialNetwork = dataBlog[1]
-    #                                         updateLastLink(dataBlog[0].getUrl(),
-    #                                                 link, socialNetwork)
-
-    #                     except Exception as exc:
-    #                         print('{} generated an exception: {}'.format(
-    #                             str(dataBlog), exc))
-
-    def archive(self, j):
-        logging.info("Archiving %d"% j)
+    def archiveId(self, idPost):
         client = self.client
-        post = self.getPost(j)
-        title = self.getPostTitle(post)
-        idPost = self.getPostId(post)
-        logging.info(f"Post {post}")
-        logging.info(f"Title {title}")
-        logging.info(f"Id {idPost}")
         try:
             res = client.archive(int(idPost))
             res = client.commit()
             logging.info("Post id res {}".format(str(res)))
             logging.info("Post id res {}".format(str(res["action_results"])))
             if res['action_results']:
-                rep = f"Archived {title}"
-                self.posts = self.posts[:j] + self.posts[j+1:]
+                rep = f"Archived {idPost}"
             else:
                 rep = "Fail!"
         except:
             logging.warning("Archiving failed!")
             logging.warning("Unexpected error:", sys.exc_info()[0])
             rep = "Fail"
+
+        return rep
+
+    def archive(self, j):
+        logging.info("Archiving %d"% j)
+        post = self.getPost(j)
+        title = self.getPostTitle(post)
+        idPost = self.getPostId(post)
+        logging.info(f"Post {post}")
+        logging.info(f"Title {title}")
+        logging.info(f"Id {idPost}")
+        rep = self.archiveId(idPost)
+        if 'Archived' in posts:
+            self.posts = self.posts[:j] + self.posts[j+1:]
         return rep
 
     def delete(self, j):
@@ -241,8 +226,83 @@ class modulePocket(Content,Queue):
 def main():
 
     logging.basicConfig(stream=sys.stdout,
-            level=logging.INFO,
+            level=logging.DEBUG,
             format='%(asctime)s %(message)s')
+
+    import moduleRules
+    rules = moduleRules.moduleRules()
+    rules.checkRules('Blog43')
+
+    testingPosts = False
+    if testingPosts:
+        for key in rules.rules.keys():
+            if ((key[0] == 'pocket')
+                    and (key[2] == 'fernand0kobo')):
+                print(f"Key: {key}")
+
+                apiSrc = rules.readConfigSrc("", key, rules.more[key])
+
+                apiSrc.setPosts()
+                print(apiSrc.getPosts())
+                for post in apiSrc.getPosts():
+                        print(f"Title: {apiSrc.getPostTitle(post)}")
+        return
+
+    PATH = '/tmp/kobo'
+    try:
+        os.mkdir(PATH)
+    except FileExistsError:
+        logging.info(f"Creation of the directory {PATH} failed. "
+                     f"It exists")
+    testingPostsArticle = True
+    if testingPostsArticle:
+        for key in rules.rules.keys():
+            if ((key[0] == 'pocket')
+                    and (key[2] == 'fernand0kobo')):
+                print(f"Key: {key}")
+
+                apiSrc = rules.readConfigSrc("", key, rules.more[key])
+
+                apiSrc.setPosts()
+                print(apiSrc.getPosts())
+                for pos, post in enumerate(apiSrc.getPosts()):
+                    title = apiSrc.getPostTitle(post)
+                    print(f"Title: {title}")
+                    if ('is_article' in post) and post['is_article'] == '0':
+                        link = apiSrc.getPostLink(post)
+                        print(f"Title: {title}")
+                        print(f"Link: {link}")
+                        import requests
+                        from readabilipy import simple_json_from_html_string
+                        req = requests.get(link)
+                        article = simple_json_from_html_string(req.text,
+                                                               use_readability=True)
+                        if not article['content']:
+                            continue
+                        from ebooklib import epub
+                        book = epub.EpubBook()
+
+                        book.set_title(title)
+                        idPost = post['item_id']
+                        book.set_identifier(idPost)
+                        c = epub.EpubHtml(title='Page',
+                                          file_name='page.xhtml', lang='en')
+                        c.content= article['content']
+                        book.add_item(c)
+                        book.add_item(epub.EpubNcx())
+                        book.add_item(epub.EpubNav())
+                        book.spine = ['nav', c]
+                        name = re.sub(r'[^a-zA-Z0-9]+', '-', title)
+                        epub.write_epub(f"{PATH}/{post['time_added']}_{name}.epub",
+                                        book, {})
+                        input("Archive? ")
+                        apiSrc.archiveId(idPost)
+
+
+
+
+
+    return
 
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs2')
@@ -251,7 +311,7 @@ def main():
 
     p = modulePocket.modulePocket()
 
-    p.setClient('ftricas')
+    p.setClient('fernand0')
     p.setPostsType('posts')
 
     p.setPosts()

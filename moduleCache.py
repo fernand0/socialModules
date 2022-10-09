@@ -9,17 +9,20 @@
 # (https://github.com/fernand0/scripts/blob/master/moduleRss
 #  obtainPostData method.
 
-import configparser, os
-import pickle
-import logging
-import sys
+import configparser
 import importlib
+import logging
+import os
+import pickle
+import sys
+
 importlib.reload(sys)
 from crontab import CronTab
 
 from configMod import *
-from moduleQueue import *
 from moduleContent import *
+from moduleQueue import *
+
 
 class moduleCache(Content,Queue):
 
@@ -644,7 +647,6 @@ def main():
     testingFiles = True
     if testingFiles:
         import moduleCache
-    
         import moduleRules
         rules = moduleRules.moduleRules()
         rules.checkRules()
@@ -686,9 +688,9 @@ def main():
                 time.localtime(os.path.getmtime(fNP)))
         print(f"File name: {fNP} Date: {fileT}")
 
-        action = input(f"Actions: (D)elete, (S)how (T)itles ")
+        action = input(f"Actions: (D)elete, (S)how (T)itles (L)inks ")
 
-        if action.upper()in ['S','T']:
+        if action.upper()in ['S','T', 'L']:
             url = f"https://{url}/"
 
             site = moduleCache.moduleCache()
@@ -713,6 +715,9 @@ def main():
 
             print()
             if action.upper() == 'T':
+                [ print(f"{i}) {apiCmd(post)}") for i, post in enumerate(posts) ]
+            elif action.upper() == 'L':
+                apiCmd = getattr(api, 'getPostLink')
                 [ print(f"{i}) {apiCmd(post)}") for i, post in enumerate(posts) ]
             else:
                 print(posts)

@@ -2,19 +2,21 @@
 
 import configparser
 import json
-import requests
 import sys
 import urllib.parse
-
 from html.parser import HTMLParser
+
 import oauth2 as oauth
+import requests
 from linkedin_v2 import linkedin
+
+from configMod import *
+from moduleContent import *
+
 # git@github.com:fernand0/python-linkedin-v2.git
 # python setup.py install
 
 
-from configMod import *
-from moduleContent import *
 
 
 class moduleLinkedin(Content):
@@ -135,27 +137,44 @@ class moduleLinkedin(Content):
 
 
     def publishApiPost(self, *args, **kwargs):
-        title, link, comment = args
-        more = kwargs
+        if args and len(args) == 3:
+            title, link, comment = args
+        if kwargs:
+            logging.info(f"Tittt: kwargs: {kwargs}")
+            more = kwargs
+            # FIXME: We need to do something here
+            post = more.get('post', '')
+            api = more.get('api', '')
+            title = api.getPostTitle(post)
+            link = api.getPostLink(post)
+            comment = api.getPostComment(title)
+
         logging.info(f"     Publishing: {title} - {link} - {comment}")
         try:
             self.getClient().get_profile()
             try:
-                res = self.getClient().submit_share(comment=comment, title=title,
-                                                    description=None, 
-                                                    submitted_url=link, 
-                                                    submitted_image_url=None, 
-                                                    urn=self.URN, 
+                res = self.getClient().submit_share(comment=comment,
+                                                    title=title,
+                                                    description=None,
+                                                    submitted_url=link,
+                                                    submitted_image_url=None,
+                                                    urn=self.URN,
                                                     visibility_code='anyone')
             except:
                 logging.info(f"Linkedin. Not authorized.")
                 logging.info(f"Exception {sys.exc_info()}")
                 res = self.report('Linkedin', title, link, sys.exc_info())
         except:
+            logging.info(f"Linkedin. Other problems.")
             logging.info(f"Exception {sys.exc_info()}")
             res = self.report('Linkedin', title, link, sys.exc_info())
-        if ('201'.encode() not in res):
+
+        if isinstance(res, bytes) and ('201'.encode() not in res):
             res = f"Fail!\n{res}"
+        else:
+            code = res.status_code
+            if code and (code != 201):
+                res = f"Fail!\n{res}"
         return res
 
     def deleteApiPosts(self, idPost):
@@ -186,7 +205,7 @@ def main():
 
     testingPost = True
     if testingPost:
-        print("ll", ln.publishPost("A ver otro", "https://www.linkedin.com/in/fernand0/",''))
+        print("ll", ln.publishPost("A ver otro", "https://elmundoesimperfecto.com/",''))
         return
     #sys.exit()
     # print(ln.deleteApiPosts('6764243697006727168'))

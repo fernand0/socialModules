@@ -7,12 +7,11 @@ import sys
 import time
 import urllib.parse
 
-
 path = f"{os.path.expanduser('~')}/usr/src/socialModules"
 sys.path.append(path)
 import moduleRules
-
 from configMod import *
+
 
 class srcDst:
 

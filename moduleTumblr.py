@@ -126,8 +126,11 @@ class moduleTumblr(Content, Queue):
         logging.info("Res: %s" % reply)
         res = reply
         if 'id' in reply:
-            logging.info("Res: %s" % reply['id'])
-            res = f"{self.getUrl()}{reply['id']}"
+            try:
+                logging.info(f"Res: {reply['id']}")
+                res = f"{self.getUrl()}{reply['id']}"
+            except:
+                logging.info(f"Temporal: error {reply}")
         return res
 
     def publishNextPost(self, apiSrc):
@@ -139,8 +142,7 @@ class moduleTumblr(Content, Queue):
         try:
             post = apiSrc.getNextPost()
             if post:
-                res = self.publishApiPost(api=apiSrc, post=post)
-                reply = self.processReply(res)
+                reply = self.publishApiPost(api=apiSrc, post=post)
             else:
                 reply = "Fail! No posts available"
         except:
@@ -157,23 +159,24 @@ class moduleTumblr(Content, Queue):
         try:
             post = apiSrc.getNextPost()
             if post:
-                res = self.publishApiPost(api=apiSrc, post=post)
-                reply = self.processReply(res)
+                reply = self.publishApiPost(api=apiSrc, post=post)
             else:
                 reply = "Fail! No posts available"
         except:
-            reply = self.report(self.service, apiSrc, sys.exc_info())
+            reply = self.report(self.service, post, apiSrc, sys.exc_info())
 
         return reply
 
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
+            logging.info(f"Tittt: args: {args}")
             title, link, comment = args
             api = self
             # Will always work?
             idPost = link.split('/')[-2]
         if kwargs:
+            logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             post = more.get('post', '')
             api = more.get('api', '')
@@ -182,6 +185,8 @@ class moduleTumblr(Content, Queue):
             comment = ''
             idPost = api.getPostId(post)
 
+        logging.info(f"Type: {api.getPostsType()}")
+        logging.info(f"Id: {idPost}")
         try:
             if api.getPostsType() == 'posts':
                 res = self.getClient().create_link(self.getUser(),
@@ -202,7 +207,7 @@ class moduleTumblr(Content, Queue):
             logging.info(f"Connection error in {self.service}")
             res = self.report('Tumblr', post, link, sys.exc_info())
 
-        return(res)
+        return f"{self.processReply(res)}. Title: {title}. Link: {link}"
 
     def publishh(self, j):
         # This is not publishing but changing state -> editing
