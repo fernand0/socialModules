@@ -169,7 +169,7 @@ class moduleHtml(Content, Queue):
             ("\\t",""),
         ]
 
-        from readability import Document
+        from readability.readability import Document
 
         doc = Document(text)
         doc_title = doc.title()

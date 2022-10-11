@@ -48,7 +48,10 @@ class Content:
         logging.info(f"    Connecting {self.service}: {account}")
         # print(f"acc: {account}")
         # print(f"tt: {type(account[1])}")
+        client = None
+
         if isinstance(account, str):
+            #FIXME We should not need these ifs
             self.user = account
         elif isinstance(account[1], str) and (account[1].find('@') > 0):
             # Grrrr
@@ -59,23 +62,28 @@ class Content:
             # Deprecated
             self.user = account[1][1]
 
-        logging.debug(f"Service: {self.service}")
+        logging.debug(f"Service config: {self.service}")
+        configFile = f"{CONFIGDIR}/.rss{self.service}"
         try:
             config = configparser.RawConfigParser()
-            logging.info(f"Service config: {self.service}")
-            config.read(f"{CONFIGDIR}/.rss{self.service}")
+            config.read(f"{configFile}")
+        except:
+            logging.warning("Does file {configFile} exist?")
+
+        try:
             keys = self.getKeys(config)
             # logging.debug(f"keys {keys}")
-
-            try:
-                client = self.initApi(keys)
-            except:
-                logging.warning(f"{self.service} authentication failed!")
-                logging.warning("Unexpected error:", sys.exc_info()[0])
-                client = None
         except:
-            logging.warning("Account not configured")
-            client = None
+            if not config.sections():
+                # FIXME: Are you sure?
+                logging.warning("Do the adequate keys exist in {configFile}")
+
+        try:
+            client = self.initApi(keys)
+        except:
+            if not config.sections and not keys:
+                logging.warning(f"Authentication in {self.service} failed!")
+                logging.warning("Unexpected error:", sys.exc_info()[0])
 
         self.client = client
 

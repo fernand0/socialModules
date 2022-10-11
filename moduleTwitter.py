@@ -17,55 +17,71 @@ from moduleQueue import *
 # https://github.com/sixohsix/twitter/tree
 # http://mike.verdone.ca/twitter/
 
-
-
 class moduleTwitter(Content, Queue):
 
     def __init__(self):
         super().__init__()
+        self.base_url = 'https://twitter.com'
+        self.url = f"{self.base_url}/{self.user}"
 
     def getKeys(self, config):
-        try:
-            CONSUMER_KEY = config.get(self.user, "CONSUMER_KEY")
-        except:
-            CONSUMER_KEY = config.get("appKeys", "CONSUMER_KEY")
-        try:
-            CONSUMER_SECRET = config.get(self.user, "CONSUMER_SECRET")
-        except:
-            CONSUMER_SECRET = config.get("appKeys", "CONSUMER_SECRET")
-        try:
-            BEARER_TOKEN = config.get(self.user, "BEARER_TOKEN")
-        except:
-            BEARER_TOKEN = ""
-
+        CONSUMER_KEY = config.get(self.user, "CONSUMER_KEY")
+        CONSUMER_SECRET = config.get(self.user, "CONSUMER_SECRET")
+        BEARER_TOKEN = config.get(self.user, "BEARER_TOKEN", fallback = '')
         TOKEN_KEY = config.get(self.user, "TOKEN_KEY")
         TOKEN_SECRET = config.get(self.user, "TOKEN_SECRET")
-        return (CONSUMER_KEY, CONSUMER_SECRET, TOKEN_KEY, TOKEN_SECRET, BEARER_TOKEN)
+
+        return (CONSUMER_KEY, CONSUMER_SECRET, TOKEN_KEY, 
+                TOKEN_SECRET, BEARER_TOKEN)
 
     def initApi(self, keys):
-        self.url = f"https://twitter.com/{self.user}"
-        logging.info(f"Oauth")
+        # FIXME: Do we call this method directly?
+        logging.info("Initializing API")
         self.authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
         client = Twitter(auth=self.authentication)
         return client
 
-    def setApiPosts(self):
-        # posts = self.getClient().getStatuses(count=100)
+    def apiCall(self, command, **kwargs):
+        res = []
+
+        print(f"Aaargs: {kwargs}")
+        print(f"Command: {command}")
         try:
-            posts = self.getClient().statuses.user_timeline(count=100)
+            res = command(**kwargs)
         except twitter.api.TwitterHTTPError as twittererror:
             for error in twittererror.response_data.get("errors", []):
                 logging.info(f"      Error code: "
                              f"{error.get('code', None)}")
-            posts = []
-        #posts = self.getClient().statuses.user_timeline(_id='fernand0')
-        return posts
+
+                res = self.report(
+                    self.getService(), kwargs, '', sys.exc_info())
+                res = f"Fail! {res}"
+        return res
+
+    def setApiPosts(self):
+        posts = self.apiCall(self.getClient().statuses.user_timeline, 
+                count=100)
+
+        return posts 
+
+        # try:
+        #     posts = self.getClient().statuses.user_timeline(count=100)
+        # except twitter.api.TwitterHTTPError as twittererror:
+        #     for error in twittererror.response_data.get("errors", []):
+        #         logging.info(f"      Error code: "
+        #                      f"{error.get('code', None)}")
+
+        # return posts
 
     def setApiFavs(self):
-        posts = self.getClient().favorites.list(tweet_mode='extended')
-        # count=100)
-        # https://stackoverflow.com/questions/38717816/twitter-api-text-field-value-is-truncated
+        posts = self.apiCall(self.getClient().favorites.list, 
+                tweet_mode='extended')
+
         return posts
+        # posts = self.getClient().favorites.list(tweet_mode='extended')
+        # # count=100)
+        # # https://stackoverflow.com/questions/38717816/twitter-api-text-field-value-is-truncated
+        # return posts
 
     def processReply(self, reply):
         res = ''
@@ -128,14 +144,16 @@ class moduleTwitter(Content, Queue):
         logging.debug("     Retweeting: %s" % post)
         res = 'Fail!'
         if 'twitter' in link:
-            try:
-                res = self.getClient().statuses.retweet._id(_id=idPost)
-                #         result = t.statuses.retweet._id(_id=tweet['id'])
-            except twitter.api.TwitterHTTPError as twittererror:
-                for error in twittererror.response_data.get("errors", []):
-                    logging.info("      Error code: %s" %
-                                 error.get("code", None))
-                res = self.report('Twitter', post, link, sys.exc_info())
+            res = self.apiCall(self.getClient().statuses.retweet._id, 
+                    _id=idPost)
+            # try:
+            #     res = self.getClient().statuses.retweet._id(_id=idPost)
+            #     #         result = t.statuses.retweet._id(_id=tweet['id'])
+            # except twitter.api.TwitterHTTPError as twittererror:
+            #     for error in twittererror.response_data.get("errors", []):
+            #         logging.info("      Error code: %s" %
+            #                      error.get("code", None))
+            #     res = self.report('Twitter', post, link, sys.exc_info())
         else:
             res = "Fail! Link {link} is not a tweet"
 
@@ -176,23 +194,25 @@ class moduleTwitter(Content, Queue):
             # will reflect this.
 
             logging.debug("     Publishing: %s" % title)
-            try:
-                logging.info(f"Tittt: {title} {link} {comment}")
-                # return "Fail!"
-                res = self.getClient().statuses.update(status=title)
-            except twitter.api.TwitterHTTPError as twittererror:
-                for error in twittererror.response_data.get("errors", []):
-                    logging.info("      Error code: %s" %
-                                 error.get("code", None))
-                res = self.report('Twitter', title, link, sys.exc_info())
-                res = f"Fail! {res}"
+            res = self.apiCall(self.getClient().statuses.update,
+                    status=title)
+            # try:
+            #     logging.info(f"Tittt: {title} {link} {comment}")
+            #     # return "Fail!"
+            #     res = self.getClient().statuses.update(status=title)
+            # except twitter.api.TwitterHTTPError as twittererror:
+            #     for error in twittererror.response_data.get("errors", []):
+            #         logging.info("      Error code: %s" %
+            #                      error.get("code", None))
+            #     res = self.report('Twitter', title, link, sys.exc_info())
+            #     res = f"Fail! {res}"
 
         return res
 
     def deleteApiPosts(self, idPost):
-        result = self.getClient().statuses.destroy(_id=idPost)
-        logging.debug(f"Res: {result}")
-        return (result)
+        res= self.apiCall(self.getClient().statuses.destroy, _id=idPost)
+        logging.debug(f"Res: {res}")
+        return (res)
 
     def deleteApiFavs(self, idPost):
         logging.info("Deleting: {}".format(str(idPost)))
@@ -300,7 +320,7 @@ class moduleTwitter(Content, Queue):
     def search(self, text):
         logging.debug("     Searching in Twitter...")
         try:
-            res = self.client.search.tweets(q=text)
+            res = self.getClient().search.tweets(q=text)
 
             if res:
                 logging.debug("Res: %s" % res)
@@ -338,9 +358,10 @@ def main():
                 print(f" -Link {apiSrc.getPostLink(tweet)}")
                 print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
                 print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
+                print(f"Len: {len(apiSrc.getPosts())}")
         return
 
-    testingFav = True
+    testingFav = False
     if testingFav:
         for key in rules.rules.keys():
             if ((key[0] == 'twitter')
@@ -348,7 +369,6 @@ def main():
                     and (key[3] == 'favs')):
                 apiSrc = rules.readConfigSrc("", key, rules.more[key])
                 apiSrc.setPosts()
-                print(len(apiSrc.getPosts()))
                 for i, tweet in enumerate(apiSrc.getPosts()):
                     print(f" -Title {apiSrc.getPostTitle(tweet)}")
                     print(f" -Link {apiSrc.getPostLink(tweet)}")
@@ -359,16 +379,21 @@ def main():
                         apiSrc.getPostApiDate(tweet))
                     print(
                         f" -Created {parsedDate.year}-{parsedDate.month}-{parsedDate.day}")
+                print(f"Len: {len(apiSrc.getPosts())}")
         return
 
-    testingPost = True
+    testingPost = False
     if testingPost:
         print("Testing Post")
-        tw = moduleTwitter.moduleTwitter()
-        tw.setClient('fernand0Test')
+        for key in rules.rules.keys(): 
+            if ((key[0] == 'twitter') 
+                and ('fernand0Test' in key[2]) 
+                and (key[3] == 'posts')):
+                    break
+        apiSrc = rules.readConfigSrc("", key, rules.more[key])
         title = "Test"
         link = "https://twitter.com/fernand0Test"
-        tw.publishPost(title, link, '')
+        apiSrc.publishPost(title, link, '')
         return
 
     testingPostImages = False
@@ -381,16 +406,34 @@ def main():
     testingRT = False
     if testingRT:
         print("Testing RT")
-        tw1 = moduleTwitter.moduleTwitter()
-        tw1.setClient('reflexioneseir')
-        tw1.setPosts()
-        tweet = tw1.getPosts()[10]
-        idPost = tw1.getPostId(tweet)
-        title = tw1.getPostTitle(tweet)
-        link = tw1.getPostLink(tweet)
-        tw.publishApiRT(title, link, '', post=tweet)
+        for key in rules.rules.keys():
+            if ((key[0] == 'twitter')
+                    and ('reflexioneseir' in key[2])
+                    and (key[3] == 'posts')):
+                apiNew = rules.readConfigSrc("", key, rules.more[key])
+     
+                apiNew.setPosts() 
+                tweet = apiNew.getPosts()[10] 
+                idPost = apiNew.getPostId(tweet) 
+                title = apiNew.getPostTitle(tweet) 
+                link = apiNew.getPostLink(tweet) 
+                print(f"Res: {apiSrc.publishApiRT(title, link, '', post=tweet)}")
+        return
 
-        sys.exit()
+    testingDelete = False
+    if testingDelete:
+        for key in rules.rules.keys(): 
+            if ((key[0] == 'twitter') 
+                and ('fernand0Test' in key[2]) 
+                and (key[3] == 'posts')):
+                    break
+        apiSrc = rules.readConfigSrc("", key, rules.more[key])
+        apiSrc.setPosts()
+        post = apiSrc.getPosts()[0]
+        idPost = apiSrc.getPostId(post)
+        print(f"Deleting: {apiSrc.deleteApiPosts(idPost)}")
+        return
+ 
 
     testingSearch = False
     if testingSearch:
