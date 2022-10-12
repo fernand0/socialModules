@@ -42,10 +42,9 @@ class moduleTwitter(Content, Queue):
         return client
 
     def apiCall(self, command, **kwargs):
+        logging.info(f"Calling: {command.uriparts} with arguments {kwargs}")
         res = []
 
-        print(f"Aaargs: {kwargs}")
-        print(f"Command: {command}")
         try:
             res = command(**kwargs)
         except twitter.api.TwitterHTTPError as twittererror:
@@ -108,15 +107,25 @@ class moduleTwitter(Content, Queue):
 
                 try:
                     t_upload = Twitter(domain='upload.twitter.com',
-                                       auth=self.authentication)
-                    id_img1 = t_upload.media.upload(media=imagedata)[
-                        "media_id_string"]
+                                      auth=self.authentication)
+                    self.getClient().domain = 'upload.twitter.com'
+                    # FIXME Is this really needed?
+                    id_img1 = self.getClient().media.upload(media=imagedata)['media_id_string']
+                    print(f"Id: {id_img1}")
                     if 'alt' in more:
-                        t_upload.media.metadata.create(_json={"media_id": id_img1,
-                                                              "alt_text": {"text": more['alt']}
+                        # t_upload.media.metadata.create(_json={"media_id": id_img1,
+                        self.getClient().media.metadata.create(_json={"media_id": id_img1, "alt_text": {"text": more['alt']}
                                                               })
+                    self.getClient().domain = 'api.twitter.com'
                     res = self.getClient().statuses.update(status=post,
                                                            media_ids=id_img1)
+                    # if 'alt' in more:
+                    #     # t_upload.media.metadata.create(_json={"media_id": id_img1,
+                    #     self.getClient().media.metadata.create(_json={"media_id": id_img1,
+                    #                                           "alt_text": {"text": more['alt']}
+                    #                                           })
+                    # res = self.getClient().statuses.update(status=post,
+                    #                                        media_ids=id_img1)
                 except twitter.api.TwitterHTTPError as twittererror:
                     for error in twittererror.response_data.get("errors", []):
                         logging.info(f"      Error code: "
@@ -210,15 +219,15 @@ class moduleTwitter(Content, Queue):
         return res
 
     def deleteApiPosts(self, idPost):
+        logging.info("Deleting: {}".format(str(idPost)))
         res= self.apiCall(self.getClient().statuses.destroy, _id=idPost)
         logging.debug(f"Res: {res}")
         return (res)
 
     def deleteApiFavs(self, idPost):
         logging.info("Deleting: {}".format(str(idPost)))
-        result = self.getClient().favorites.destroy(_id=idPost)
-        logging.debug(f"Res: {result}")
-        return (result)
+        res = self.apiCall(self.getClient().favorites.destroy, _id=idPost)
+        return (res)
 
     def getPostId(self, post):
         if isinstance(post, str) or isinstance(post, int):
@@ -250,9 +259,10 @@ class moduleTwitter(Content, Queue):
 
     def getPostUrl(self, post):
         idPost = post.get('id_str', '')
-        return f'https://twitter.com/{self.user}/status/{idPost}'
+        return f'{self.base_url}/{self.user}/status/{idPost}'
 
     def getPostLink(self, post):
+        # FIXME: Are you sure? (inconsistent)
         if self.getPostsType() == 'favs':
             content, link = self.extractPostLinks(post)
         else:
@@ -290,44 +300,20 @@ class moduleTwitter(Content, Queue):
             result = self.getPostUrl(post)
         return result
 
-    # def extractDataMessage(self, i):
-    #     (theTitle, theLink, firstLink, theImage, theSummary,
-    #             content, theSummaryLinks, theContent, theLinks, comment) = (
-    #                     None, None, None, None, None,
-    #                     None, None, None, None, None)
+    def searchApi(self, text):
+        print("     Searching in Twitter...")
+        logging.info("     Searching in Twitter...")
+        res = self.apiCall(self.getClient().search.tweets, q=text)
+        if res:
+            return (res.get('statuses', []))
 
-    #     if i < len(self.getPosts()):
-    #         post = self.getPost(i)
-    #         #import pprint
-    #         #pprint.pprint(post)
-    #         theTitle = self.getPostTitle(post)
-    #         theLink = self.getPostUrl(post)
-    #         firstLink = self.getPostContentLink(post)
-    #         theId = self.getPostId(post)
-
-    #         theLinks = [ firstLink, ]
-    #         content = None
-    #         theContent = theTitle
-
-    #         theImage = None
-    #         theSummary = None
-
-    #         theSummaryLinks = None
-    #         comment = theId
-
-    #     return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
-
-    def search(self, text):
-        logging.debug("     Searching in Twitter...")
-        try:
-            res = self.getClient().search.tweets(q=text)
-
-            if res:
-                logging.debug("Res: %s" % res)
-                return (res)
-        except:
-            return (self.report('Twitter', text, sys.exc_info()))
-
+        # try:
+        #     res = self.getClient().search.tweets(q=text)
+        #     if res:
+        #         logging.debug("Res: %s" % res)
+        #         return (res.get('statuses'))
+        # except:
+        #     return (self.report('Twitter', text, sys.exc_info()))
 
 def main():
 
@@ -396,11 +382,19 @@ def main():
         apiSrc.publishPost(title, link, '')
         return
 
-    testingPostImages = False
+    testingPostImages = True
     if testingPostImages:
-        image = '/tmp/E8dCZoWWQAgDWqX.png'
+        image = '/tmp/Fe3Op8HXoAMBFqx.jpg'
         title = 'Prueba imagen'
-        tw.publishImage(title, image)
+        for key in rules.rules.keys():
+            if ((key[0] == 'twitter')
+                    and ('fernand0Test' in key[2])
+                    #and (key[3] == 'favs')
+                    ):
+                break
+        apiSrc = rules.readConfigSrc("", key, rules.more[key])
+        apiSrc.publishApiImage(title, image)
+
         return
 
     testingRT = False
@@ -433,25 +427,50 @@ def main():
         idPost = apiSrc.getPostId(post)
         print(f"Deleting: {apiSrc.deleteApiPosts(idPost)}")
         return
- 
 
+    testingDeleteFavs = False
+    if testingDeleteFavs:
+        for key in rules.rules.keys(): 
+            if ((key[0] == 'twitter') 
+                and ('fernand0' in key[2]) 
+                and (key[3] == 'favs')):
+                    break
+        apiSrc = rules.readConfigSrc("", key, rules.more[key])
+        apiSrc.setPosts()
+        post = apiSrc.getPosts()[0]
+        idPost = apiSrc.getPostId(post)
+        print(f"Deleting: {apiSrc.deleteApiFavs(idPost)}")
+        return
+ 
     testingSearch = False
     if testingSearch:
+        print("Testing Search")
+        for key in rules.rules.keys():
+            print(f"Key: {key}")
+            if ((key[0] == 'twitter')
+                    and ('fernand0' == key[2])
+                    # and (key[3] == 'posts')
+                    ):
+                break
+        apiSrc = rules.readConfigSrc("", key, rules.more[key])
+
+        res = apiSrc.searchApi('tetris')
+        print(f"Res: {res}")
+        for tweet in res:
+            print(f"Title: {apiSrc.getPostTitle(tweet)}")
+        return
+ 
         myLastLink = 'https://twitter.com/reflexioneseir/status/1235128399452164096'
         myLastLink = 'http://fernand0.blogalia.com//historias/78135'
-        tw1 = moduleTwitter.moduleTwitter()
-        tw1.setClient('reflexioneseir')
-        tw1.setPostsType('posts')
-        tw1.setPosts()
-        i = tw1.getLinkPosition(myLastLink)
+        i = apiNew.getLinkPosition(myLastLink)
         print(i)
-        print(tw1.getPosts()[i-1])
-        print(tw1.getPostLink(tw1.getPosts()[i-1]))
+        print(apiNew.getPosts()[i-1])
+        print(apiNew.getPostLink(apiNew.getPosts()[i-1]))
         num = 1
         lastLink = myLastLink
-        listPosts = tw1.getNumPostsData(num, i, lastLink)
+        listPosts = apiNew.getNumPostsData(num, i, lastLink)
         print(listPosts)
-        sys.exit()
+        return
 
     sys.exit()
 
