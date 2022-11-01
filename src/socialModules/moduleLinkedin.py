@@ -17,8 +17,6 @@ from socialModules.moduleContent import *
 # python setup.py install
 
 
-
-
 class moduleLinkedin(Content):
 
     def __init__(self):
