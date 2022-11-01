@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "social_modules"
+version = "0.1.3"
+authors = [
+  { name="fernand0", email="fernand0@elmundoesimperfecto.com" },
+]
+description = "A package to manage interaction with several social sites"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU GENERAL PUBLIC License",
+    "Operating System :: OS Independent",
+]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project.urls]
+"Homepage" = "https://github.com/fernand0/socialModules"
+"Bug Tracker" = "https://github.com/fernand0/socialModules/issues"
