@@ -16,10 +16,40 @@ classifiers = [
     "License :: OSI Approved :: GNU GENERAL PUBLIC License",
     "Operating System :: OS Independent",
 ]
-dynamic = ["dependencies"]
-
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
+dependencies = [ 
+		'colorama',
+		'twitter',
+		'facebook-sdk',
+		'requests',
+		'bs4',
+		'lxml',
+		'dateparser',
+		'google-api-python-client',
+		'google-auth-oauthlib',
+		'oauth2',
+		'oauth2client',
+		'distance',
+		'sievelib',
+		'gitpython',
+		'keyring',
+		'click',
+		'feedparser',
+		'pdfrw',
+		'python-crontab',
+		'tmdbsimple',
+		'imgurpython',
+		'python-linkedin-v2',
+		'Mastodon.py',
+		'medium',
+		'pocket-api',
+		'pytumblr',
+		'telepot',
+		'textract',
+		'gitterpy',
+		'slack_sdk',
+		'Pillow',
+		'readability-lxml'
+]
 
 [project.urls]
 "Homepage" = "https://github.com/fernand0/socialModules"
