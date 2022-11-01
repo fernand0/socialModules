@@ -88,15 +88,19 @@ class moduleMastodon(Content, Queue):
         post = self.addComment(title, comment)
 
         res = 'Fail!'
-        if True:
+        try:
             res = self.getClient().toot(post+" "+link)
-        else:
-            res = self.getClient().status_post(post+" "+link,
-                    visibility='private')
-            # 'direct' 'private' 'unlisted' 'public'
+            res = self.processReply(res)
+        except:
+            res = self.report(self.getService(), kwargs, '', sys.exc_info())
+            res = f"Fail! {res}"
+# else:
+        #     res = self.getClient().status_post(post+" "+link,
+        #             visibility='private')
+        #     # 'direct' 'private' 'unlisted' 'public'
 
 
-        return self.processReply(res)
+        return res
 
     def deleteApiPosts(self, idPost):
         result = self.getClient().status_delete(idPost)
@@ -120,16 +124,35 @@ class moduleMastodon(Content, Queue):
     def getUrlId(self, post):
         return (post.split('/')[-1])
 
+    def getSiteTitle(self):
+        title = ''
+        if self.user:
+            title = f"{self.user}'s {self.service}"
+        return title
+
+
     def getPostTitle(self, post):
         result = ''
         # import pprint
         # print(f"post: {post}")
         # pprint.pprint(post)
+        print(f"PPPPPost: {post}")
         card = post.get('card')
         if card:
-            result = card.get('title')
+            result = f"{card.get('title')} {card.get('url')}"
         if not result:
             result = post.get('content')
+        print(f"RRRRResult: {result}")
+        # soup = BeautifulSoup(result, 'lxml')
+        if result.startswith('<'):
+            result = result[3:]
+        if result.endswith('>'):
+            result = result[:-4]
+        print(f"RRRRResult: {result}")
+        pos = result.find('<')
+        posH = result.find('http')
+        posF = result.find('"',posH+1)
+        result = f"{result[:pos]} {result[posH:posF]}"
 
         # if 'card' in post and post['card'] and 'title' in post['card']:
         #     result = self.getAttribute(post['card'], 'title')
@@ -213,6 +236,24 @@ def main():
     import moduleMastodon
 
     mastodon = moduleMastodon.moduleMastodon()
+
+    mastodon.setClient('@fernand0Test@mastodon.social')
+    testingPosts = True
+    if testingPosts:
+        print("Testing Posts")
+        mastodon.setClient('fernand0')
+        mastodon.setPostsType('posts')
+        mastodon.setPosts()
+        if mastodon.getPosts():
+            toot = mastodon.getPosts()[0]
+            # toot = mastodon.getNextPost()[0]
+            print(toot)
+            print(f" -Title {mastodon.getPostTitle(toot)}")
+            print(f" -Link {mastodon.getPostLink(toot)}")
+            print(f" -Content link {mastodon.getPostContentLink(toot)}")
+            print(f" -Post link {mastodon.extractPostLinks(toot)}")
+        return
+
     mastodon.setClient('@fernand0Test@fosstodon.org')
     testingFav = False
     if testingFav:
@@ -240,7 +281,7 @@ def main():
         mastodon.publishApiPost(title, link, '')
         return
 
-    testingPostImages = True
+    testingPostImages = False
     if testingPostImages:
         image = '/tmp/E8dCZoWWQAgDWqX.png'
         title = 'Prueba imagen'
@@ -248,7 +289,6 @@ def main():
 
 
         return
-
 
 
     print("Testing posting and deleting")

@@ -81,11 +81,14 @@ class moduleRules:
 
         return modules
 
-    def checkRules(self, select=None):
+    def checkRules(self, configFile = None, select=None):
         msgLog = "Checking rules"
         logMsg(msgLog, 1, 2)
         config = configparser.ConfigParser()
-        config.read(CONFIGDIR + "/.rssBlogs")
+        if not configFile:
+            configFile = ".rssBlogs"
+        configFile = f"{CONFIGDIR}/{configFile}"
+        res = config.read(configFile)
 
         services = self.getServices()
         services['regular'].append('cache')

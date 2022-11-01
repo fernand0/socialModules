@@ -392,6 +392,10 @@ class Content:
     def setPostAction(self, action):
         self.postaction = action
 
+
+    def getSiteTitle(self):
+        return self.getName()
+
     def getPostAction(self):
         postaction = "delete"
         if hasattr(self, "postaction"):
@@ -1212,7 +1216,8 @@ class Content:
                 url = self.getPostLink(entry)
                 logging.debug(f"\nUrl: {url} Link:{linkS}")
                 lenCmp = min(len(url), len(linkS))
-                if url[:lenCmp] == linkS[:lenCmp]:
+                # if url[:lenCmp] == linkS[:lenCmp]:
+                if url == linkS:
                     # When there are duplicates (there shouldn't be) it returns
                     # the last one
                     pos = i

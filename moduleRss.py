@@ -28,6 +28,8 @@ class moduleRss(Content, Queue):
         super().__init__()
         self.service = None
         self.rssFeed = ''
+        self.feed = None
+        self.title = None
 
     def getRssFeed(self):
         return(self.rssFeed)
@@ -63,7 +65,22 @@ class moduleRss(Content, Queue):
         else:
             urlRss = urllib.parse.urljoin(self.url,self.getRssFeed())
         logging.debug("Rss: %s" % urlRss)
-        self.posts = feedparser.parse(urlRss).entries
+        if 'github.com' in urlRss:
+            self.feed = feedparser.parse(urlRss, 
+                    request_headers={'Accept':'application/atom+xml'})
+        else:
+            self.feed = feedparser.parse(urlRss)
+        self.posts = self.feed.entries
+        if hasattr(self.feed.feed, 'title'):
+            self.title = self.feed.feed.title
+        else:
+            self.title = self.user
+
+    def getSiteTitle(self):
+        title = ''
+        if self.feed:
+            title = self.feed.feed.get('title', '').replace('\n',' ')
+        return title
 
     def getPostTitle(self, post):
         title = ''
@@ -235,7 +252,7 @@ class moduleRss(Content, Queue):
 
 def main():
 
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
     import moduleRss
@@ -245,6 +262,22 @@ def main():
         config.read(CONFIGDIR + '/.rssBlogs')
     else:
         print("no")
+
+    testingGitHub = False
+
+    if testingGitHub:
+        rssFeed = 'https://github.com/fernand0'
+        url = 'https://github.com/fernand0'
+        blog = moduleRss.moduleRss()
+        blog.setClient(urllib.parse.urljoin(url,rssFeed))
+        blog.setUrl(url)
+        blog.setPosts()
+        print(f"Title: {blog.getSiteTitle()}")
+        for i, post in enumerate(blog.getPosts()):
+            print(f"{i}) {blog.getPostTitle(post)}")
+            print(f"     {blog.getPostLink(post)}")
+            # print(f"Post: {post}")
+        return
 
     print("Configured blogs:")
 
@@ -257,21 +290,23 @@ def main():
             blog.setUrl(url)
             rssFeed = config.get(acc, 'rss')
         except:
-            rssFeed = 'http://rss.slashdot.org/Slashdot/slashdotMain'
-            url = 'http://slashdot.org/'
+            rssFeed = 'https://github.com/fernand0'
+            url = 'https://github.com/fernand0'
         blog.setClient(urllib.parse.urljoin(url,rssFeed))
         #blog.setRssFeed(rssFeed)
         blog.setUrl(url)
         blog.setPosts()
         print(len(blog.getPosts()))
+        print(f"Title: {blog.getSiteTitle()}")
+
         testingPost = True
         if testingPost:
             for post in blog.getPosts():
-                print(post)
+                # print(post)
                 print(f" - {blog.getPostTitle(post)}")
                 print(f" - {blog.getPostLink(post)}")
-                print(f" - {blog.getPostContent(post)}")
-                print(f" - {blog.extractPostLinks(post)}")
+                # print(f" - {blog.getPostContent(post)}")
+                # print(f" - {blog.extractPostLinks(post)}")
 
         continue
         for i, post in enumerate(blog.getPosts()):

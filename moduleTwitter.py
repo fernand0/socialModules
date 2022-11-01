@@ -106,8 +106,8 @@ class moduleTwitter(Content, Queue):
                     imagedata = imagefile.read()
 
                 try:
-                    t_upload = Twitter(domain='upload.twitter.com',
-                                      auth=self.authentication)
+                    # t_upload = Twitter(domain='upload.twitter.com',
+                     #                  auth=self.authentication)
                     self.getClient().domain = 'upload.twitter.com'
                     # FIXME Is this really needed?
                     id_img1 = self.getClient().media.upload(media=imagedata)['media_id_string']
@@ -247,6 +247,13 @@ class moduleTwitter(Content, Queue):
 
     def getUrlId(self, post):
         return (post.split('/')[-1])
+
+    def getSiteTitle(self):
+        title = ''
+        if self.user:
+            title = f"{self.user}'s {self.service}"
+        return title
+
 
     def getPostTitle(self, post):
         logging.info(f"Postttt: {post}")
