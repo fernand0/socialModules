@@ -1,4 +1,10 @@
 # socialModules
+
+Testing installation.
+You can try to install (with dependencies) typing:
+
+    pip install social-modules@git+ssh://git@github.com/fernand0/socialModules@dist
+
 Several modules to write and read in several social netwoks and content sites.
 
 We have two modules to manage content:
