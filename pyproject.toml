@@ -38,7 +38,7 @@ dependencies = [
 		'python-crontab',
 		'tmdbsimple',
 		'imgurpython',
-		'python-linkedin-v2@git+ssh://git@github.com/fernand0/python-linkedin-v2.git',
+		'python-linkedin-v2@git+http://git@github.com/fernand0/python-linkedin-v2.git',
 		'Mastodon.py',
 		'medium',
 		'pocket-api',
