@@ -70,14 +70,35 @@ class moduleCache(Content,Queue):
         self.fileName = fileName
         return fileName
 
-    def setClient(self, param):
+    def setClient(self, param): 
         logging.info(f"    Connecting Cache {self.service}: {param}")
         self.postsType = 'posts'
-        self.url = param[0][1]
-        pos = param[1].find('@')
-        self.socialNetwork = param[1][:pos].capitalize() #param[0][0]
-        self.user = param[1][pos+1:]
-        self.nick = param[1][pos+1:]
+
+        # print(f"param: {param}")
+        self.auxClass = param[0]
+        if isinstance(param, str):
+            self.url = param
+            self.user = param
+            logging.warning("This is not possible!")
+        elif isinstance(param[1], str):
+            logging.info(f"    Connecting Cache {self.service}: {param[0]}")
+            if param[0].find('http')>= 0:
+                self.url = param[0]
+            else:
+                self.url = param[1]
+                # print(f"u: {self.url}")
+                pos = param[2].find('@')
+                self.socialNetwork = param[2][:pos].capitalize()
+                self.user = param[2][pos+1:]
+                self.service = param[0]
+
+                # self.socialNetwork = param[0]
+                # self.service = param[0]
+        # self.url = param[0][1]
+        # pos = param[1].find('@')
+        # self.socialNetwork = param[1][:pos].capitalize() #param[0][0]
+        # self.user = param[1][pos+1:]
+        # self.nick = param[1][pos+1:]
         self.auxClass = param[0][0]
         self.client = self.service
         #self.fileName = self.fileNameBase((self.user, self.socialNetwork))
