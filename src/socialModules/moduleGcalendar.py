@@ -176,10 +176,13 @@ class moduleGcalendar(Content,socialGoogle):
         page_token = None
 
         self.posts = []
-        events_result = api.events().list(calendarId=self.active,
-            timeMin=theDate, maxResults=10, singleEvents=True,
-            orderBy='startTime').execute() 
-        self.posts = events_result.get('items',[])
+        if hasattr(self, 'active'):
+            events_result = api.events().list(calendarId=self.active,
+                timeMin=theDate, maxResults=10, singleEvents=True,
+                orderBy='startTime').execute() 
+            self.posts = events_result.get('items',[])
+        else:
+            self.posts = None
 
         return("orig. "+date+" Translated." + theDate)
 
