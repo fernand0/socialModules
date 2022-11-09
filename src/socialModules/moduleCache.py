@@ -43,17 +43,19 @@ class moduleCache(Content,Queue):
     def fileNameBase(self, dst):
         logging.debug(f"dst: {dst}")
         if hasattr(self, 'fileName') and self.fileName:
+            logging.debug(f"Has")
             return self.fileName
         src = self
         nameSrc = 'Cache'
         typeSrc = typeDst = 'posts'
         if isinstance(dst, tuple):
+            logging.debug(f"tuple")
             user = self.getUrl()
-            service = dst[0][0].capitalize()
+            serviceD = dst[0]
             pos = dst[1].find('@')
             userD = dst[1][pos+1:]
-            serviceD = dst[1][:pos]
-            nameDst = dst[1][:pos].capitalize()
+            # serviceD = dst[1][:pos]
+            nameDst = dst[0].capitalize()
         elif isinstance(self, moduleCache):
             user = dst.getUser()
             service = dst.getService().capitalize()
@@ -61,6 +63,7 @@ class moduleCache(Content,Queue):
             userD = src.nick
             serviceD = src.socialNetwork
             nameDst = serviceD.capitalize()
+        logging.debug("despues if")
 
         fileName = (f"{nameSrc}_{typeSrc}_"
                     f"{user}_{service}__"
@@ -90,7 +93,29 @@ class moduleCache(Content,Queue):
                 pos = param[2].find('@')
                 self.socialNetwork = param[2][:pos].capitalize()
                 self.user = param[2][pos+1:]
-                self.service = param[0]
+                self.service = param[0] 
+
+            if hasattr(self, 'fileName'):       
+                print(f"self.fileName {self.fileName}")        
+            self.fileName = self.fileNameBase((self.user, self.socialNetwork))     
+            logging.debug(f"self {self}")      
+            if hasattr(self, 'fileName'):      
+                    logging.info(f"self.fileName {self.fileName}")     
+
+            #self.user = param[1]      
+            if self.user.find('\n')>=0:        
+                    self.user = None       
+        elif hasattr(param[0], 'getUrl'):      
+                #self.url = param[0].getUrl()      
+            self.user = param[1][1]        
+            self.service = param[1][0]     
+            self.fileName = self.fileNameBase(param[0])        
+            # print(f"ff: {self.fileName}")        
+        else:      
+                self.url = param[0]        
+            self.service = param[1][0]     
+            self.user = param[1][1]
+                
 
                 # self.socialNetwork = param[0]
                 # self.service = param[0]
