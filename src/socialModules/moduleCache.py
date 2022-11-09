@@ -49,8 +49,8 @@ class moduleCache(Content,Queue):
         nameSrc = 'Cache'
         typeSrc = typeDst = 'posts'
         if isinstance(dst, tuple):
-            logging.debug(f"tuple")
             user = self.getUrl()
+            service = self.getService().capitalize()
             serviceD = dst[0]
             pos = dst[1].find('@')
             userD = dst[1][pos+1:]
@@ -63,7 +63,6 @@ class moduleCache(Content,Queue):
             userD = src.nick
             serviceD = src.socialNetwork
             nameDst = serviceD.capitalize()
-        logging.debug("despues if")
 
         fileName = (f"{nameSrc}_{typeSrc}_"
                     f"{user}_{service}__"
@@ -112,7 +111,7 @@ class moduleCache(Content,Queue):
             self.fileName = self.fileNameBase(param[0])        
             # print(f"ff: {self.fileName}")        
         else:      
-                self.url = param[0]        
+            self.url = param[0]        
             self.service = param[1][0]     
             self.user = param[1][1]
                 
