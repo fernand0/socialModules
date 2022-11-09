@@ -54,8 +54,7 @@ class moduleCache(Content,Queue):
             user = self.getUrl()
             service = self.getService().capitalize()
             serviceD = dst[0]
-            pos = dst[1].find('@')
-            userD = dst[1][pos+1:]
+            userD = dst[1]
             # serviceD = dst[1][:pos]
             nameDst = dst[0].capitalize()
         elif isinstance(self, moduleCache):
