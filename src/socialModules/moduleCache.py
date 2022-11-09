@@ -80,6 +80,10 @@ class moduleCache(Content,Queue):
 
         # print(f"param: {param}")
         self.auxClass = param[0]
+        if 'slack' in self.auxClass:
+            #FIXME!!!! 
+            self.auxClass='slack'
+
         if isinstance(param, str):
             self.url = param
             self.user = param
