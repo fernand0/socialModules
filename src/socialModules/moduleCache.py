@@ -125,7 +125,7 @@ class moduleCache(Content,Queue):
         # self.socialNetwork = param[1][:pos].capitalize() #param[0][0]
         # self.user = param[1][pos+1:]
         # self.nick = param[1][pos+1:]
-        self.auxClass = param[0][0]
+        # self.auxClass = param[0][0]
         self.client = self.service
         #self.fileName = self.fileNameBase((self.user, self.socialNetwork))
         
