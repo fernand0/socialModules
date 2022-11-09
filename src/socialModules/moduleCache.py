@@ -36,8 +36,10 @@ class moduleCache(Content,Queue):
 
     def getService(self):
         if hasattr(self, 'auxClass'):
+            logging.debug("has {self.auxClass}")
             return self.auxClass
         else:
+            logging.debug("not has {self.service}")
             return self.service
 
     def fileNameBase(self, dst):
