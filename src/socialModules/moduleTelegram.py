@@ -121,9 +121,8 @@ class moduleTelegram(Content):
         #FIXME: This code needs improvement
         textToPublish = text
         textToPublish2 = ""
-        from html.parser import HTMLParser
-        h = HTMLParser()
-        title = h.unescape(title)
+        from html import unescape
+        title = unescape(title)
         if content:
             content = content.replace('<', '&lt;')
             text = (text + content + '\n\n' + links)

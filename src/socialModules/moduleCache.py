@@ -37,15 +37,49 @@ class moduleCache(Content,Queue):
     def getService(self):
         if hasattr(self, 'auxClass'):
             logging.debug(f"has {self.auxClass}")
+            if isinstance(self.auxClass, tuple):
+                self.auxClass = self.auxClass[0]
             return self.auxClass
         else:
             logging.debug("not has {self.service}")
             return self.service
 
     def fileNameBase(self, dst):
+        logging.debug(f"dst2: {dst}")
+        if hasattr(self, 'fileName') and self.fileName:
+                        return self.fileName
+        src = self
+        nameSrc = 'Cache'
+        typeSrc = typeDst = 'posts'
+        if isinstance(dst, tuple):
+            logging.debug("ttttttuple")
+            user = self.getUrl()
+            service = dst[0][0].capitalize()
+            pos = dst[1].find('@')
+            userD = dst[1][pos+1:]
+            serviceD = dst[1][:pos]
+            nameDst = dst[1][:pos].capitalize()
+        elif isinstance(self, moduleCache):
+            logging.debug("ccccache")
+            user = dst.getUser()
+            service = dst.getService().capitalize()
+            pos = src.getUser().find('@')
+            userD = src.nick
+            serviceD = src.socialNetwork
+            nameDst = serviceD.capitalize()
+            
+        fileName = (f"{nameSrc}_{typeSrc}_"
+                                        f"{user}_{service}__"
+                                        f"{nameDst}_{typeDst}_"
+                                        f"{userD}_{serviceD}")
+        fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
+        self.fileName = fileName
+        return fileName
+
+
+    def fileNameBase2(self, dst):
         logging.debug(f"dst: {dst}")
         if hasattr(self, 'fileName') and self.fileName:
-            logging.debug(f"Has")
             return self.fileName
         src = self
         nameSrc = 'Cache'
@@ -71,9 +105,25 @@ class moduleCache(Content,Queue):
                     f"{userD}_{serviceD}")
         fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
         self.fileName = fileName
-        return fileName
+        return fileName 
 
-    def setClient(self, param): 
+    def setClient(self, param):
+        logging.info(f"    Connecting Cache {self.service}: {param}")
+        self.postsType = 'posts'
+        self.url = param[0][1]
+        pos = param[1].find('@')
+        self.socialNetwork = param[1][:pos].capitalize() #param[0][0]
+        self.user = param[1][pos+1:]
+        self.nick = param[1][pos+1:]
+        self.auxClass = param[0][0]
+        self.client = self.service
+        #self.fileName = self.fileNameBase((self.user, self.socialNetwork))
+
+        if hasattr(self, 'fileName'):
+            logging.info(f"self.fileName {self.fileName}")
+            print(f"self.fileName {self.fileName}")
+
+    def setClient2(self, param): 
         logging.info(f"    Connecting Cache {self.service}: {param}")
         self.postsType = 'posts'
 
@@ -84,10 +134,19 @@ class moduleCache(Content,Queue):
             self.auxClass='slack'
 
         if isinstance(param, str):
+            logging.debug("Is str")
             self.url = param
             self.user = param
             logging.warning("This is not possible!")
+        elif isinstance(param[0], tuple):
+            logging.debug("Is tuple")
+            self.url = param[0][1]
+            self.user = self.url
+            self.service = param[0][0]
+            self.socialNetwork = param[0][0]
+            self.fileName = self.fileNameBase((self.user, self.socialNetwork)) 
         elif isinstance(param[1], str):
+            logging.debug("Is 1 str")
             logging.info(f"    Connecting Cache {self.service}: {param[0]}")
             if param[0].find('http')>= 0:
                 self.url = param[0]
