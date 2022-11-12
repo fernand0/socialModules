@@ -406,13 +406,14 @@ class moduleRules:
         for src in self.rules.keys():
             if src[0] == selector:
                 logging.debug(f"- Src: {src}")
-                logging.debug(f"Selectors: {selector} {selector2} {selector3}")
+                logging.debug(f"Selectors: {selector} - {selector2} - {selector3}")
                 more = self.more[src]
                 srcR = src
                 if not selector2:
                     break
                 else:
-                    if (selector2 == src[2]):
+                    if (selector2 in src[2]):
+                        logging.debug(f"Second Selector: {selector2}")
                         if not selector3:
                             break
                         elif  (selector3 in src[3]):

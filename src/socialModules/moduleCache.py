@@ -108,7 +108,7 @@ class moduleCache(Content,Queue):
         return fileName 
 
     def setClient(self, param):
-        logging.info(f"    Connecting Cache {self.service}: {param}")
+        logging.info(f"    Connecting {self.service}: {param}")
         self.postsType = 'posts'
         self.url = param[0][1]
         pos = param[1].find('@')
@@ -753,11 +753,33 @@ def main():
             level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
-    testingFiles = True
+    testingPosts = True
+    if testingPosts:
+        import socialModules.moduleCache
+        import socialModules.moduleRules
+        rules = socialModules.moduleRules.moduleRules()
+        rules.checkRules()
+        print("Testing Posts")
+        src, more = rules.selectRule('cache', 'imgur')
+        print(f"Src: {src}")
+        print(f"More: {more}")
+        indent = ""
+        apiSrc = rules.readConfigSrc(indent, src, more)
+
+        apiSrc.setPosts()
+        for i, post in enumerate(apiSrc.getPosts()):
+            print(f"{i}) {apiSrc.getPostTitle(post)}")
+
+        return
+ 
+
+
+    testingFiles = False
+
     if testingFiles:
-        import moduleCache
-        import moduleRules
-        rules = moduleRules.moduleRules()
+        import socialModules.moduleCache
+        import socialModules.moduleRules
+        rules = socialModules.moduleRules.moduleRules()
         rules.checkRules()
 
         queues = []
@@ -802,7 +824,7 @@ def main():
         if action.upper()in ['S','T', 'L']:
             url = f"https://{url}/"
 
-            site = moduleCache.moduleCache()
+            site = socialModules.moduleCache.moduleCache()
             print(f"File: {fNP}")
             service = fNP.split('__')[0].split('_')[-1].lower()
             url = fNP.split('__')[0].split('_')[2].replace('---','://').replace('-','/')
