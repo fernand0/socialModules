@@ -29,9 +29,9 @@ class moduleSmtp(Content):
         logging.info("     Connecting SMTP")
         try: 
             self.user = user 
-            self.client = smtplib.SMTP()
             try: 
-                self.client.connect('localhost')
+                self.client = smtplib.SMTP('localhost', 587)
+                # self.client.connect('localhost', 587)
                 logging.info("     Logging OK")
             except:
                 logging.warning("SMTP authentication failed!")
@@ -46,6 +46,7 @@ class moduleSmtp(Content):
             msg = MIMEText(post,'html')
             msg['Subject'] = subject
             msg['From'] = fromaddr
+            self.client.starttls()
             res = self.client.sendmail(fromaddr, toaddr, msg.as_string())
         else:
             logging.info("     Not published in SMTP. Exception ...")

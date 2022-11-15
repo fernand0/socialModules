@@ -165,7 +165,7 @@ class Content:
 
         logging.debug(f"Cmd: {cmd}")
         posts = cmd()
-        #logging.info(f"Posts: {posts}")
+        logging.info(f"Posts: {posts}")
         self.assignPosts(posts)
 
     def getClient(self):
@@ -449,18 +449,15 @@ class Content:
 
     def assignPosts(self, posts):
         self.posts = []
-        self.posts2 = []
         if posts:
             for post in posts:
                 self.posts.append(post)
-                self.posts2.append(post)
 
     def getPosts2(self):
         posts = None
         if hasattr(self, 'posts2'):
             posts = self.posts2
         return posts
-
 
     def getPosts(self):
         posts = None
@@ -860,6 +857,7 @@ class Content:
 
                 method = getattr(self, f"publishApi{nameMethod}")
                 logging.info(f"method: {method}")
+                logging.info(f"method: ...")
                 res = method(api=apiSrc, post=post)
                 reply = self.processReply(res)
             else:

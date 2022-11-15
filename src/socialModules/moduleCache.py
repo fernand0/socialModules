@@ -269,6 +269,8 @@ class moduleCache(Content,Queue):
         except:
             listP = []
 
+        logging.debug(f"listP: {listP}")
+
         return(listP)
 
     def getMax(self):
@@ -383,7 +385,7 @@ class moduleCache(Content,Queue):
         fileNameQ = f"{fileName}.queue"
 
         with open(fileNameQ, 'wb') as f:
-            posts = self.getPosts2()
+            posts = self.getPosts
             pickle.dump(posts, f)
 
         logging.debug("Writing in %s" % fileNameQ)
@@ -601,8 +603,12 @@ class moduleCache(Content,Queue):
             title, link, comment = args
         if kwargs:
             more = kwargs
-        # print(f"more: {more}")
-        posts = self.getPosts2()
+            api = more['api']
+            post = more['post']
+        logging.debug(f"more: {more}")
+        self.setPosts()
+        posts = self.getPosts()
+        logging.debug(f"pppposts: {posts}")
         posts.append(more['post'])
         self.assignPosts(posts)
         self.updatePosts(more['api'])

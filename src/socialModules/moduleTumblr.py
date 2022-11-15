@@ -167,7 +167,6 @@ class moduleTumblr(Content, Queue):
 
         return reply
 
-
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
             logging.info(f"Tittt: args: {args}")

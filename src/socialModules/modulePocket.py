@@ -97,12 +97,17 @@ class modulePocket(Content,Queue):
         return(res)
 
     def publishApiPost(self, *args, **kwargs):
+        logging.info('antes')
+        comment = ''
+        link = ''
+        title = ''
+        logging.info('despu')
         if args and len(args) == 3:
             post, link, comment = args
-            print(f"args: {args} in {self}")
+            logging.info(f"args: {args} in {self}")
         if kwargs:
             more = kwargs
-            print(f"postData: {more} in {self}")
+            logging.info(f"postData: {more} in {self}")
 
         tags = []
         if comment:
