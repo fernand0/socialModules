@@ -448,6 +448,7 @@ class Content:
         self.socialNetworks[socialNetwork[0]] = socialNetwork[1]
 
     def assignPosts(self, posts):
+        logging.info(f"posts assign {posts}")
         self.posts = []
         if posts:
             for post in posts:
@@ -834,8 +835,8 @@ class Content:
                     nameMethod = self.getPostsType().capitalize()
 
                     method = getattr(self, f"deleteApi{nameMethod}")
-                    print(f"aaa: {method}")
-                    print(f"aaa id: {idPost}")
+                    logging.info(f"aaa: {method}")
+                    logging.info(f"aaa id: {idPost}")
                     res = method(idPost)
                     reply = self.processReply(res)
             else:

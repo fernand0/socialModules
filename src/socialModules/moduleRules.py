@@ -603,7 +603,7 @@ class moduleRules:
                     ((not res) or ('SAVELINK' in res) or not ('Fail!' in res))):
                 resUpdate = apiSrc.updateLastLink(apiDst, '')
                 resMsg += f"Update: {resUpdate}"
-            logging.info("Not res: {not res} Fail: {not ('Fail!' in res)}")
+            logging.debug(f"Not res: {not res} Fail: {not ('Fail!' in res)}")
             if ((not res) or ('SAVELINK' in res) or not ('Fail!' in res)
                     or not( 'Duplicate' in res)):
                 postaction = apiSrc.getPostAction()

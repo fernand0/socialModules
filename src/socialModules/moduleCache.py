@@ -364,7 +364,7 @@ class moduleCache(Content,Queue):
             if not self.getPosts():
                 self.setPosts()
             posts = self.getPosts()
-            logging.debug(f"a Posts: {posts} listP: {listPosts}")
+            logging.info(f"a Posts: {posts} listP: {listPosts}")
             for pp in listPosts:
                 posts.append(pp)
             #for i, pp in enumerate(posts):
@@ -385,7 +385,7 @@ class moduleCache(Content,Queue):
         fileNameQ = f"{fileName}.queue"
 
         with open(fileNameQ, 'wb') as f:
-            posts = self.getPosts
+            posts = self.getPosts()
             pickle.dump(posts, f)
 
         logging.debug("Writing in %s" % fileNameQ)
@@ -411,14 +411,15 @@ class moduleCache(Content,Queue):
             nick = self.getUser()
 
         logging.debug(f"Url: {url} service {service} nick {nick}")
-        logging.debug("File: %s" % fileNameQ)
+        logging.debug(f"File: {fileNameQ}")
+        logging.debug("Posts antes: {}".format(str(self.getPosts())))
 
-        with open(fileNameQ+'.queue', 'wb') as f:
+        with open(f'{fileNameQ}.queue', 'wb') as f:
             posts = self.getPosts()
             pickle.dump(posts, f)
 
-        logging.debug("Writing in %s" % fileNameQ)
-        logging.debug("Posts: {}".format(str(self.getPosts())))
+        logging.debug(f"Writing in {fileNameQ}")
+        logging.debug(f"Posts: {str(self.getPosts())}")
 
         return 'Ok'
 
@@ -644,7 +645,7 @@ class moduleCache(Content,Queue):
             # FIXME
             idPost = self.getIdPosition(idPost)
             
-        print(f"id: {idPost}")
+        logging.info(f"id: {idPost}")
         self.deleteApi(idPost)
         return f"OK. Deleted post {idPost}"
 
@@ -688,11 +689,17 @@ class moduleCache(Content,Queue):
     def deleteApi(self, j):
         logging.info(f"Deleting: {j}")
         posts = self.getPosts()
+        logging.info(f"Posts antes: {posts}")
+        logging.info(f"Posts .antes: {self.getPosts()}")
         posts = posts[:j] + posts[j+1:]
+        logging.info(f"Posts despues: {posts}")
+        logging.info(f"Posts .despues: {self.getPosts()}")
         self.assignPosts(posts)
+        logging.info(f"Posts + despues: {posts}")
+        logging.info(f"Posts + .despues: {self.getPosts()}")
         # FIXME: Using two cache files, for compatibiiity with old version
         self.updatePostsCache()
-        self.updatePosts('srcNotUsed')
+        # self.updatePosts('srcNotUsed')
 
         return(f"Deleted: {j}")
 
@@ -772,6 +779,13 @@ def main():
         indent = ""
         apiSrc = rules.readConfigSrc(indent, src, more)
 
+        cmd = getattr(apiSrc, 'setApiPosts')
+        print(cmd)
+        posts = cmd
+        print(posts)
+        posts = cmd()
+        print(posts)
+        sys.exit()
         apiSrc.setPosts()
         for i, post in enumerate(apiSrc.getPosts()):
             print(f"{i}) {apiSrc.getPostTitle(post)}")

@@ -84,9 +84,11 @@ class moduleMedium(Content,Queue):
         print(content)
         links = ""
 
-        from html.parser import HTMLParser
-        h = HTMLParser()
-        title = h.unescape(title)
+        # from html.parser import HTMLParser
+        # h = HTMLParser()
+        # title = h.unescape(title)
+        from html import unescape
+        title = unescape(title)
         textOrig = 'Publicado originalmente en <a href="%s">%s</a><br />\n\n' % (link, title)
 
         try:
