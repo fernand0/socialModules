@@ -17,7 +17,6 @@ from socialModules.configMod import *
 class Content:
 
     def __init__(self):
-        logging.debug(f"Initializing")
         self.url = ""
         self.name = ""
         self.nick = ""
@@ -41,6 +40,7 @@ class Content:
         self.client = None
         ser = self.__class__.__name__
         self.service = self.__class__.__name__[6:]
+        logging.info(f"Initializing {self.service}")
         # They start with module
         self.hold = None
 
@@ -847,8 +847,8 @@ class Content:
 
     def publishPosPost(self, apiSrc, pos):
         reply = ''
-        logging.info(f"    Publishing post in pos {pos} from {apiSrc} in "
-                    f"{self.service}")
+        logging.info(f"    Publishing post in pos {pos} from "
+                     f"{apiSrc} in {self.service}")
         try:
             post = apiSrc.getPost(pos)
             if post:
@@ -858,7 +858,6 @@ class Content:
 
                 method = getattr(self, f"publishApi{nameMethod}")
                 logging.info(f"method: {method}")
-                logging.info(f"method: ...")
                 res = method(api=apiSrc, post=post)
                 reply = self.processReply(res)
             else:
@@ -875,7 +874,7 @@ class Content:
         try:
             post = apiSrc.getNextPost()
             if post:
-                logging.info(f"Publishing: {post}")
+                logging.debug(f"Publishing: {post}")
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
                 comment= ''

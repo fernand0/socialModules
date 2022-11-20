@@ -51,6 +51,7 @@ class moduleImap(Content, Queue):
         super().__init__()
 
     def getKeys(self, config):
+        logging.info("Getting keys")
         pos = self.user.rfind('@')
         if pos>=0:
             self.user, self.server = self.user[:pos], self.user[pos+1:]
@@ -59,7 +60,10 @@ class moduleImap(Content, Queue):
         # password = self.getPassword(self.user, self.server)
         # Should this be the standard way for obtaining credentials?
         key = f"{self.user}@{self.server}"
-        password = config.get(key, "token")
+        try:
+            password = config.get(key, "token")
+        except:
+            logging.warning(f"No key for {key}")
         # for key in config.keys():
         #     # FIXME
         #     if (key != 'DEFAULT') and ('user' in config.options(key)):
@@ -95,7 +99,13 @@ class moduleImap(Content, Queue):
         return posLast
 
     def initApi(self, keys):
-        client = self.makeConnection(self.server, self.user, keys)
+        logging.debug(f"User: {self.user}")
+        logging.debug(f"Server: {self.server}")
+        try:
+            client = self.makeConnection(self.server, self.user, keys)
+        except:
+            logging.info(f"Report: {self.report(self.service, '', '', sys.exc_info())}")
+            logging.info("makeConnection failed")
         return client
 
     def setApiNew(self):
@@ -910,6 +920,7 @@ class moduleImap(Content, Queue):
         return (SERVER, USER, PASSWORD, RULES, INBOX, FOLDER)
 
     def makeConnection(self, SERVER, USER, PASSWORD):
+        logging.info(f"    Making connection {self.service}: {self.user}")
         # IMAP client connection
         import ssl
         context = ssl.create_default_context() #ssl.PROTOCOL_TLSv1)
@@ -1000,6 +1011,7 @@ class moduleImap(Content, Queue):
             logging.info("No oauth config!")
 
         if not method:
+            logging.info("No method")
             PASSWORDD = getPassword(SERVERD, USERD)
             method = 'imap'
 

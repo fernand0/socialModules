@@ -97,22 +97,25 @@ class modulePocket(Content,Queue):
         return(res)
 
     def publishApiPost(self, *args, **kwargs):
-        logging.info('antes')
         comment = ''
         link = ''
         title = ''
-        logging.info('despu')
         if args and len(args) == 3:
             post, link, comment = args
             logging.info(f"args: {args} in {self}")
         if kwargs:
             more = kwargs
+            api = more['api']
             logging.info(f"postData: {more} in {self}")
+            post = more['post']
+            title = api.getPostTitle(post)
+            link = api.getPostLink(post)
+            comment= ''
 
         tags = []
         if comment:
             tags = [comment, ]
-        print(f"ll: {link}")
+        logging.info(f"ll: {link}")
         # This belongs here?
         if not link.startswith('http'):
             logging.warning(f"Link that does not stat with < {link}")
@@ -124,6 +127,7 @@ class modulePocket(Content,Queue):
                 # Sometimes there are two links or something after the link
                 link=link[:pos]
         try:
+            logging.info(f"Link: {link}")
             res = self.getClient().add(link, tags=tags)
         except PocketException as exc:
             logging.warning(f"publishApiPosts generated an exception: {exc}")
@@ -259,6 +263,7 @@ def main():
     except FileExistsError:
         logging.info(f"Creation of the directory {PATH} failed. "
                      f"It exists")
+
     testingPostsArticle = True
     if testingPostsArticle:
         for key in rules.rules.keys():
