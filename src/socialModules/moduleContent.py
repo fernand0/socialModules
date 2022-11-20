@@ -140,32 +140,34 @@ class Content:
 
     def setPosts(self):
         nick = self.getNick()
-        logging.debug(f"nick: {nick}")
         if nick:
             identifier = nick
         else:
             identifier = self.getUrl()
 
         typePosts = self.getPostsType()
-        logging.info(f"  Setting posts in {self.service} {identifier}"
-                     f"  (type: {self.getPostsType()})")
-        logging.debug(f"setApi {typePosts}")
+        msgLog = (f"  Setting posts in {self.service} {identifier}"
+                  f"  (type: {self.getPostsType()})")
+        logMsg(msgLog, 1, 0)
+        msgLog = (f"   setPosts type: {typePosts}")
+        logMsg(msgLog, 2, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
             typePosts = self.getPostsType()
             if typePosts == "cache":
                 # FIXME: cache??
                 cmd = getattr(self, "setApiCache")
             else:
-                logging.debug(f"setApi{typePosts}")
                 cmd = getattr(
                     self, f"setApi{self.getPostsType().capitalize()}"
                 )
         else:
             cmd = getattr(self, "setApiPosts")
 
-        logging.debug(f"Cmd: {cmd}")
+        msgLog = (f"   Cmd: {cmd}")
+        logMsg(msgLog, 2, 0)
         posts = cmd()
-        logging.info(f"Posts: {posts}")
+        msgLog = (f"Posts: {posts}")
+        logMsg(msgLog, 2, 0)
         self.assignPosts(posts)
 
     def getClient(self):
@@ -448,7 +450,6 @@ class Content:
         self.socialNetworks[socialNetwork[0]] = socialNetwork[1]
 
     def assignPosts(self, posts):
-        logging.info(f"posts assign {posts}")
         self.posts = []
         if posts:
             for post in posts:

@@ -458,9 +458,9 @@ class moduleRules:
         msgLog = f"Src: Src {src}"
         logMsg(msgLog, 2, 0)
         msgLog = f"More: Src {more}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 2, 0)
         if src[0] == 'cache':
-            apiSrc = getApi(src[0], src[1:])
+            apiSrc = getApi(src[0], src[1:], indent)
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
             apiSrc.postaction = 'delete'
         else:
@@ -664,10 +664,10 @@ class moduleRules:
         sys.path.append(path)
         from socialModules.configMod import logMsg
 
-        indent = f"    {name}->({action[3]}@{action[2]})] -> "+" "
+        indent = f" {name}->({action[3]}@{action[2]})] -> "+" "
         # The ']' is opened in executeRules FIXME
 
-        msgLog = (f"{indent}Sleeping to launch all processes")
+        msgLog = (f"{indent} Sleeping to launch all processes")
         logMsg(msgLog, 1, 0)
         # 'Cometic' waiting to allow all the processes to be launched.
         time.sleep(1)
@@ -830,6 +830,7 @@ class moduleRules:
     def executeRules(self, args):
         msgLog = "Executing rules"
         logMsg(msgLog, 1, 2)
+        indent = " "
 
         # print(args)
         select = args.checkBlog
@@ -886,8 +887,13 @@ class moduleRules:
                     else:
                         theAction = action[1]
 
-                    msgLog = (f"{nameA} {text} Action {k}:"
-                              f" {action[3]}@{action[2]} ({theAction})")
+                    msgLog = f"{indent}{nameA}"
+                    logMsg(msgLog, 1, 1)
+                    msgLog = f"{indent}{name} {text}"
+                    logMsg(msgLog, 1, 1)
+                    msgLog = (f"{indent}{name} {indent}Action {k}:"
+                             f" {action[3]}@{action[2]} ({theAction})")
+                    logMsg(msgLog, 1, 1)
                     textEnd = f"{textEnd}\n{msgLog}"
                     logMsg(msgLog, 1, 1)
                     nameA = f"{name} [({theAction})"

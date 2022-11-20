@@ -42,7 +42,8 @@ class moduleTwitter(Content, Queue):
         return client
 
     def apiCall(self, command, **kwargs):
-        logging.info(f"Calling: {command.uriparts} with arguments {kwargs}")
+        msgLog = (f"   Calling: {command.uriparts} with arguments {kwargs}")
+        logMsg(msgLog, 2, 0)
         res = []
 
         try:
