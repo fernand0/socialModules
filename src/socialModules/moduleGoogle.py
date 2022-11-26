@@ -43,6 +43,7 @@ class socialGoogle:
 
         store = file.Storage(fileTokenStore)
         logging.debug(f"filetokenstore: {fileTokenStore}")
+        logging.info(f"fileCred: {fileCredStore}")
         # creds = Credentials.from_authorized_user_file('token.json', SCOPES)
         creds = store.get()
 
@@ -54,7 +55,6 @@ class socialGoogle:
                 logging.info("Needs to re-authorize token GMail")
 
                 try:
-                    print(f"fileCred: {fileCredStore}")
                     flow = client.flow_from_clientsecrets(fileCredStore, 
                                                          SCOPES)
                     creds = tools.run_flow(flow, store, 

@@ -18,8 +18,6 @@ from socialModules.moduleQueue import *
 # https://slack.dev/python-slack-sdk/v3-migration/
 
 
-
-
 class moduleSlack(Content, Queue):
 
     def __init__(self):

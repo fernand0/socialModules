@@ -51,8 +51,8 @@ class moduleGmail(Content,Queue,socialGoogle):
         # Queue().__init__()
         self.service = "Gmail"
         self.nick = None
-        self.scopes = ['https://mail.google.com/']
         self.scopes = ['https://www.googleapis.com/auth/gmail.modify']
+        self.scopes = ['https://mail.google.com/']
 
     # def API(self, Acc):
     #     # Back compatibility
@@ -162,6 +162,11 @@ class moduleGmail(Content,Queue,socialGoogle):
 
     def getLabels(self, sel=''):
         return(list(filter(lambda x: sel in x['name'] ,self.labels)))
+
+
+    def getLabelsNames(self, sel=''):
+        labels = (list(filter(lambda x: sel in x['id'] ,self.labels)))
+        return (list(map(lambda x: x['name'], labels)))
 
     def getLabelsIds(self, sel=''):
         labels = (list(filter(lambda x: sel in x['name'] ,self.labels)))
@@ -587,6 +592,13 @@ class moduleGmail(Content,Queue,socialGoogle):
         result = api.users().messages().trash(userId='me', id=idPost).execute()
         logging.info(f"Res: {result}")
         return(result)
+
+    def deleteApiPostDelete(self, idPost):
+        api = self.getClient()
+        result = api.users().messages().delete(userId='me', id=idPost).execute()
+        logging.info(f"Res: {result}")
+        return(result)
+
 
     def delete(self, j):
         logging.info("Deleting %d"% j)

@@ -481,7 +481,7 @@ class moduleCache(Content,Queue):
         title = ''
         if post:
             if hasattr(self, 'auxClass'):
-                print(f"auxClass type: {type(self.auxClass)}")
+                logging.info(f"auxClass type: {type(self.auxClass)}")
                 if isinstance(self.auxClass, str):
                     myModule = f"module{self.auxClass.capitalize()}"
                     import importlib
@@ -491,6 +491,7 @@ class moduleCache(Content,Queue):
                     api = cls()
                 else:
                     api = self.auxClass
+                logging.info(f"Api: {api}")
                 apiCmd = getattr(api, 'getPostTitle')
                 title  = apiCmd(post)
             else:

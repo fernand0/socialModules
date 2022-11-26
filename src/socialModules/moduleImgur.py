@@ -286,8 +286,8 @@ def main():
                         format='%(asctime)s %(message)s')
 
 
-    import moduleRules
-    rules = moduleRules.moduleRules()
+    import socialModules.moduleRules
+    rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
 
     # Example:

@@ -208,6 +208,9 @@ class modulePocket(Content,Queue):
                 link = post['given_url']
         return link
 
+    def setMax(self, maxVal):
+        self.max = 100
+
     # def extractDataMessage(self, i):
     #     logging.info("Service %s"% self.service)
     #     (theTitle, theLink, firstLink, theImage, theSummary,
