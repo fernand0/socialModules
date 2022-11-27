@@ -43,9 +43,10 @@ class Content:
         logging.info(f"Initializing {self.service}")
         # They start with module
         self.hold = None
+        self.indent = ''
 
     def setClient(self, account):
-        logging.info(f"    Connecting {self.service}: {account}")
+        logging.info(f"{self.indent} Connecting {self.service}: {account}")
         # print(f"acc: {account}")
         # print(f"tt: {type(account[1])}")
         client = None
@@ -146,11 +147,9 @@ class Content:
             identifier = self.getUrl()
 
         typePosts = self.getPostsType()
-        msgLog = (f"  Setting posts in {self.service} {identifier}"
-                  f"  (type: {self.getPostsType()})")
+        msgLog = (f"{self.indent} Setting posts in {self.service} {identifier}"
+                  f" (type: {self.getPostsType()})")
         logMsg(msgLog, 1, 0)
-        msgLog = (f"   setPosts type: {typePosts}")
-        logMsg(msgLog, 2, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
             typePosts = self.getPostsType()
             if typePosts == "cache":
@@ -163,10 +162,10 @@ class Content:
         else:
             cmd = getattr(self, "setApiPosts")
 
-        msgLog = (f"   Cmd: {cmd}")
+        msgLog = (f"{self.indent} Cmd: {cmd}")
         logMsg(msgLog, 2, 0)
         posts = cmd()
-        msgLog = (f"Posts: {posts}")
+        msgLog = (f"{self.indent} Posts: {posts}")
         logMsg(msgLog, 2, 0)
         self.assignPosts(posts)
 

@@ -160,11 +160,11 @@ def resizeImage(imgUrl):
     address = '{}{}'.format(WWWADDRESS,NAMEIMG)
     return(address)
 
-def getModule(profile):
+def getModule(profile, indent=''):
     # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
     import importlib
     serviceName = profile.capitalize()
-    msgLog = (f"getModule {serviceName}")
+    msgLog = (f"{indent} getModule {serviceName}")
     logMsg(msgLog, 2, 0)
 
     mod = importlib.import_module('socialModules.module' + serviceName)
@@ -178,6 +178,7 @@ def getApi(profile, nick, indent=""):
     logMsg(msgLog, 2, 0)
 
     api = getModule(profile)
+    api.indent = indent
     api.setClient(nick)
 
     return api

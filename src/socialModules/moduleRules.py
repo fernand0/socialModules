@@ -500,8 +500,8 @@ class moduleRules:
         socialNetwork = (profile, nick)
         msgLog = (f"{indent}socialNetwork: {socialNetwork}")
         logMsg(msgLog, 2, 0)
-        msgLog = (f"{indent}Action: {action}")
-        logMsg(msgLog, 1, 0)
+        # msgLog = (f"{indent}Action: {action}")
+        # logMsg(msgLog, 1, 0)
         msgLog = (f"{indent}More: Dst {more}")
         logMsg(msgLog, 1, 0)
 
@@ -665,7 +665,7 @@ class moduleRules:
         indent = f" {name}"
         # The ']' is opened in executeRules FIXME
 
-        msgLog = (f"{indent}: Sleeping to launch all processes")
+        msgLog = (f"{indent} Sleeping to launch all processes")
         logMsg(msgLog, 1, 0)
         # 'Cometic' waiting to allow all the processes to be launched.
         time.sleep(1)
@@ -677,10 +677,10 @@ class moduleRules:
         apiSrc = self.readConfigSrc(indent, src, more)
 
         if apiSrc.getName(): 
-            msgLog = (f"{indent}Source: {apiSrc.getName()} ({src[3]}) -> "
+            msgLog = (f"{indent} Source: {apiSrc.getName()} ({src[3]}) -> "
                 f"Action: {msgAction})")
         else:
-            msgLog = (f"{indent}Source: {src[2]} ({src[3]}) -> "
+            msgLog = (f"{indent} Source: {src[2]} ({src[3]}) -> "
                 f"Action: {msgAction})")
 
         logMsg(msgLog, 1, 0)
@@ -701,9 +701,6 @@ class moduleRules:
 
         apiSrc.setPosts()
 
-        # print(f"apiSrc: {apiSrc}")
-        # print(f"action: {action}")
-        # print(f"more {more}")
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
         if not apiDst.getClient():
             msgLog = (f"{indent}Error. No client for {action[2]}")
@@ -847,7 +844,7 @@ class moduleRules:
                 if src[0] != previous:
                     i = 0
                 previous = src[0]
-                name = f"{src[0]}{i}>"
+                #name = f"{src[0]}{i}>"
                 if src in self.more:
                     # f"  More: {self.more[src]}")
                     more = self.more[src]
@@ -869,17 +866,15 @@ class moduleRules:
                     text = (f"Source: {srcName} ({src[3]})")
                 else:
                     text = (f"Source: {src[2]} ({src[3]})")
-                textEnd = (f"Source: {name} {src[2]} {src[3]}")
 
                 actions = self.rules[src]
 
                 for k, action in enumerate(actions):
+                    name = f"{src[0]}{i}>"
                     if (select and (select.lower() != f"{src[0].lower()}{i}")):
                         actionMsg = f"Skip."
                     else:
                         actionMsg = (f"Scheduling.")
-                    actionMsg = f"Action {k}: {actionMsg}"
-                    nameA = f"{name} {actionMsg} "
                     if action[1].startswith('http'):
                         # FIXME
                         theAction = 'posts'
@@ -890,10 +885,13 @@ class moduleRules:
                     logMsg(msgLog, 1, 1)
                     msgLog = (f"{indent}{name} {indent}Action {k}:"
                              f" {action[3]}@{action[2]} ({theAction})")
+                    name = f"{name[:-1]} (Action {k})>" # [({theAction})"
+                    nameA = f"{name} {actionMsg} "
+                    textEnd = (f"Source: {nameA} {src[2]} {src[3]}")
                     logMsg(msgLog, 1, 1)
                     textEnd = f"{textEnd}\n{msgLog}"
                     # logMsg(msgLog, 1, 1)
-                    nameA = f"{name} Action {k}" # [({theAction})"
+                    nameA = name #f"{name[:-1]} (Action {k})>" # [({theAction})"
                     # The '[' is closed in executeAction TODO
                     msgLog = f"{indent}{name} {actionMsg}"
                     logMsg(msgLog, 1, 1)

@@ -45,14 +45,13 @@ class moduleCache(Content,Queue):
             return self.service
 
     def fileNameBase(self, dst):
-        logging.debug(f"dst2: {dst}")
+        logging.debug(f"{self.indent} {dst}")
         if hasattr(self, 'fileName') and self.fileName:
                         return self.fileName
         src = self
         nameSrc = 'Cache'
         typeSrc = typeDst = 'posts'
         if isinstance(dst, tuple):
-            logging.debug("ttttttuple")
             user = self.getUrl()
             service = dst[0][0].capitalize()
             pos = dst[1].find('@')
@@ -60,7 +59,6 @@ class moduleCache(Content,Queue):
             serviceD = dst[1][:pos]
             nameDst = dst[1][:pos].capitalize()
         elif isinstance(self, moduleCache):
-            logging.debug("ccccache")
             user = dst.getUser()
             service = dst.getService().capitalize()
             pos = src.getUser().find('@')
@@ -69,9 +67,9 @@ class moduleCache(Content,Queue):
             nameDst = serviceD.capitalize()
             
         fileName = (f"{nameSrc}_{typeSrc}_"
-                                        f"{user}_{service}__"
-                                        f"{nameDst}_{typeDst}_"
-                                        f"{userD}_{serviceD}")
+                    f"{user}_{service}__"
+                    f"{nameDst}_{typeDst}_"
+                    f"{userD}_{serviceD}")
         fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
         self.fileName = fileName
         return fileName
@@ -108,7 +106,7 @@ class moduleCache(Content,Queue):
         return fileName 
 
     def setClient(self, param):
-        logging.info(f"    Connecting {self.service}: {param}")
+        logging.info(f"{self.indent} Connecting {self.service}: {param}")
         self.postsType = 'posts'
         self.url = param[0][1]
         pos = param[1].find('@')
@@ -252,14 +250,14 @@ class moduleCache(Content,Queue):
         else:
             service = self.getService()
             nick = self.getUser()
-        logging.debug(f"Url: {url} service {service} nick {nick}")
+        logging.debug(f"{self.indent} Url: {url} service {service} nick {nick}")
         if not fileNameQ:
             self.fileName = self.fileNameBase((service, nick))
             fileNameQ = self.fileName+".queue" 
         else:
             fileNameQ = fileNameQ+".queue"
 
-        logging.debug("File: %s" % fileNameQ)
+        logging.debug(f"{self.indent} File: %s" % fileNameQ)
         try:
             with open(fileNameQ,'rb') as f:
                 try:
@@ -269,7 +267,7 @@ class moduleCache(Content,Queue):
         except:
             listP = []
 
-        logging.debug(f"listP: {listP}")
+        logging.debug(f"{self.indent} listP: {listP}")
 
         return(listP)
 
