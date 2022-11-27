@@ -264,10 +264,10 @@ class moduleRules:
                                 dsts.append(toAppend)
                             if toAppend:
                                 if hasSpecial:
-                                    msgLog = (f"hasSpecial: {fromSrv}---")
-                                    logMsg(msgLog, 2, 0)
-                                    msgLog = (f"hasSpecial: {toAppend}---")
-                                    logMsg(msgLog, 2, 0)
+                                    # msgLog = (f"hasSpecial: {fromSrv}---")
+                                    # logMsg(msgLog, 2, 0)
+                                    # msgLog = (f"hasSpecial: {toAppend}---")
+                                    # logMsg(msgLog, 2, 0)
                                     nickSn = f"{toAppend[2]}@{toAppend[3]}"
                                     fromSrvSp = (
                                             "cache",
@@ -455,9 +455,9 @@ class moduleRules:
         return iniK, nKey
 
     def readConfigSrc(self, indent, src, more):
-        msgLog = f"Src: Src {src}"
+        msgLog = f"{indent} readConfigSrc: {src}"
         logMsg(msgLog, 2, 0)
-        msgLog = f"More: Src {more}"
+        msgLog = f"{indent} More: Src {more}"
         logMsg(msgLog, 2, 0)
         if src[0] == 'cache':
             apiSrc = getApi(src[0], src[1:], indent)
@@ -495,6 +495,10 @@ class moduleRules:
         return apiSrc
 
     def readConfigDst(self, indent, action, more, apiSrc):
+        msgLog = f"{indent} readConfigDst: {src}"
+        logMsg(msgLog, 2, 0)
+        msgLog = f"{indent} More: Src {more}"
+        logMsg(msgLog, 2, 0)
         profile = action[2]
         nick = action[3]
         socialNetwork = (profile, nick)
@@ -683,7 +687,7 @@ class moduleRules:
             msgLog = (f"{indent} Source: {src[2]} ({src[3]}) -> "
                 f"Action: {msgAction})")
 
-        logMsg(msgLog, 1, 0)
+        # logMsg(msgLog, 1, 0)
         textEnd = (f"{msgLog}")
 
         # print(f"Srcccc: {src}")
@@ -852,7 +856,7 @@ class moduleRules:
                     # f"  More: empty")
                     more = None
 
-                if src[0] in ['cache', 'gitter', 'gmail']:
+                if src[0] in ['cache']:
                     srcName = more['url']
                     # FIXME 
                     if 'slack' in srcName:
@@ -862,10 +866,24 @@ class moduleRules:
                     elif 'imgur' in srcName:
                         srcName = f"Imgur({srcName.split('/')[-1]})"
                     elif '.com' in srcName:
-                        srcName = f"Gmail({srcName.split('.')[0]})"
+                        if 'gmail' in more:
+                            srcName = more['gmail']
+                        srcName = f"Gmail({srcName})"
                     text = (f"Source: {srcName} ({src[3]})")
                 else:
-                    text = (f"Source: {src[2]} ({src[3]})")
+                    #FIXME self.identifier
+                    srcName =src[2]
+                    if 'slack' in srcName:
+                        srcName = f"{srcName.split('/')[2].split('.')[0]}"
+                    elif 'imgur' in srcName:
+                        srcName = more['url']
+                        srcName = f"{srcName.split('/')[-1]}"
+                    elif 'gitter' in srcName:
+                        srcName = f"{srcName.split('/')[-2]}"
+                    elif (not srcName) and ('tumblr' in src[0]):
+                        srcName = more['url']
+                        srcName = f"{srcName.split('/')[2].split('.')[0]}"
+                    text = (f"Source: {srcName} ({src[3]})")
 
                 actions = self.rules[src]
 

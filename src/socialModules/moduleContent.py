@@ -40,7 +40,7 @@ class Content:
         self.client = None
         ser = self.__class__.__name__
         self.service = self.__class__.__name__[6:]
-        logging.info(f"Initializing {self.service}")
+        logging.info(f"{self.indent} Initializing {self.service}")
         # They start with module
         self.hold = None
         self.indent = ''
