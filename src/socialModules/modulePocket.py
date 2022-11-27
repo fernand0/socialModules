@@ -162,7 +162,8 @@ class modulePocket(Content,Queue):
         logging.info(f"Title {title}")
         logging.info(f"Id {idPost}")
         rep = self.archiveId(idPost)
-        if 'Archived' in posts:
+        logging.info(f"Rep: {rep}")
+        if 'Archived' in rep:
             self.posts = self.posts[:j] + self.posts[j+1:]
         return rep
 
