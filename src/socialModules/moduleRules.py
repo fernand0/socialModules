@@ -661,13 +661,11 @@ class moduleRules:
                     noWait, timeSlots, simmulate, name="",
                     nextPost = True, pos = -1, delete=False):
 
-        sys.path.append(path)
-        from socialModules.configMod import logMsg
-
-        indent = f" {name}->({action[3]}@{action[2]})] -> "+" "
+        # indent = f" {name}->({action[3]}@{action[2]})] -> "+" "
+        indent = f" {name}"
         # The ']' is opened in executeRules FIXME
 
-        msgLog = (f"{indent} Sleeping to launch all processes")
+        msgLog = (f"{indent}: Sleeping to launch all processes")
         logMsg(msgLog, 1, 0)
         # 'Cometic' waiting to allow all the processes to be launched.
         time.sleep(1)
@@ -880,6 +878,7 @@ class moduleRules:
                         actionMsg = f"Skip."
                     else:
                         actionMsg = (f"Scheduling.")
+                    actionMsg = f"Action {k}: {actionMsg}"
                     nameA = f"{name} {actionMsg} "
                     if action[1].startswith('http'):
                         # FIXME
@@ -887,18 +886,19 @@ class moduleRules:
                     else:
                         theAction = action[1]
 
-                    msgLog = f"{indent}{nameA}"
-                    logMsg(msgLog, 1, 1)
                     msgLog = f"{indent}{name} {text}"
                     logMsg(msgLog, 1, 1)
                     msgLog = (f"{indent}{name} {indent}Action {k}:"
                              f" {action[3]}@{action[2]} ({theAction})")
                     logMsg(msgLog, 1, 1)
                     textEnd = f"{textEnd}\n{msgLog}"
-                    logMsg(msgLog, 1, 1)
-                    nameA = f"{name} [({theAction})"
+                    # logMsg(msgLog, 1, 1)
+                    nameA = f"{name} Action {k}" # [({theAction})"
                     # The '[' is closed in executeAction TODO
+                    msgLog = f"{indent}{name} {actionMsg}"
+                    logMsg(msgLog, 1, 1)
                     if actionMsg == "Skip.":
+                        #FIXME "In hold"
                         continue
                     timeSlots = args.timeSlots
                     noWait = args.noWait

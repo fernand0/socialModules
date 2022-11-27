@@ -29,7 +29,7 @@ def logMsg(msgLog, log=1, output=1):
         logging.debug(msgLog)
 
     if output == 1:
-        print(msgLog)
+        print(f"{msgLog}")
     elif output == 2:
         print("")
         print("====================================")
