@@ -40,10 +40,10 @@ class Content:
         self.client = None
         ser = self.__class__.__name__
         self.service = self.__class__.__name__[6:]
+        self.indent = ''
         logging.info(f"{self.indent} Initializing {self.service}")
         # They start with module
         self.hold = None
-        self.indent = ''
 
     def setClient(self, account):
         logging.info(f"{self.indent} Connecting {self.service}: {account}")
