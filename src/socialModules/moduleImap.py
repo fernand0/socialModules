@@ -1241,8 +1241,8 @@ class moduleImap(Content, Queue):
     def listMessages(self, M, folder):
         # List the headers of all e-mails in a folder
         posts = []
-        print(f"Folder: {folder}")
-        M.select(folder)
+        # print(f"Folder: {folder}")
+        M.select(self.folderName(folder))
         # data = M.sort('ARRIVAL', 'UTF-8', 'ALL')
         if self.getPostsType() == 'new':
             try:
