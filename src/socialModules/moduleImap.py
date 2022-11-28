@@ -1099,7 +1099,7 @@ class moduleImap(Content, Queue):
         return self.deleteApiPosts(idPost)
 
     def deleteApiPosts(self, idPost):
-        return self.moveMails(self.getClient(), str(idPost).encode(), 'INBOX.variosNews.borrar')
+        return self.moveMails(self.getClient(), str(idPost).encode(), 'INBOX.borrar')
         # return self.moveMails(self.getClient(), str(idPost).encode(), 'INBOX.Trash')
 
     def moveMails(self, M, msgs, folder):
