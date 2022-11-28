@@ -3,7 +3,7 @@
 Testing installation.
 You can try to install (with dependencies) typing:
 
-    pip install social-modules@git+ssh://git@github.com/fernand0/socialModules@dist
+    pip install social-modules@git+https://git@github.com/fernand0/socialModules
 
 Several modules to write and read in several social netwoks and content sites.
 
