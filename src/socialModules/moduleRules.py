@@ -495,7 +495,7 @@ class moduleRules:
         return apiSrc
 
     def readConfigDst(self, indent, action, more, apiSrc):
-        msgLog = f"{indent} readConfigDst: {src}"
+        msgLog = f"{indent} readConfigDst: {action}"
         logMsg(msgLog, 2, 0)
         msgLog = f"{indent} More: Src {more}"
         logMsg(msgLog, 2, 0)
