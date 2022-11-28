@@ -972,11 +972,17 @@ class moduleImap(Content, Queue):
 
         if type(folder) == bytes: folder = folder.decode()
         if folder and folder[0].isdigit():
-           folder = folder[folder.find(') ')+2:]
+            pos = folder.find(') ')
+            if pos >= 0:
+                folder = folder[pos+2:]
         elif "/" in folder:
-           folder = folder[folder.find('"/" ')+4:]
+            pos = folder.find('"/" ')
+            if pos >=0:
+                folder = folder[pos+4:]
         elif "." in folder:
-           folder = folder[folder.find('"." ')+4:]
+            pos = folder.find('"." ')
+            if pos >=0: 
+                folder = folder[pos+4:]
 
         return(folder)
 
@@ -1242,7 +1248,9 @@ class moduleImap(Content, Queue):
         # List the headers of all e-mails in a folder
         posts = []
         # print(f"Folder: {folder}")
-        M.select(self.nameFolder(folder))
+        nameF = self.nameFolder(folder)
+        # print(f"Folder: {nameF}")
+        M.select(nameF)
         # data = M.sort('ARRIVAL', 'UTF-8', 'ALL')
         if self.getPostsType() == 'new':
             try:
