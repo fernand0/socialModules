@@ -42,13 +42,19 @@ class moduleMastodon(Content, Queue):
     def setApiPosts(self):
         posts = []
         if self.getClient():
-           posts = self.getClient().account_statuses(self.getClient().me())
+            try:
+                posts = self.getClient().account_statuses(self.getClient().me())
+            except:
+                posts = []
         return posts
 
     def setApiFavs(self):
         posts = []
         if self.getClient():
-            posts = self.getClient().favourites()
+            try:
+                posts = self.getClient().favourites()
+            except:
+                posts = []
         return posts
 
     def processReply(self, reply):
