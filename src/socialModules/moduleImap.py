@@ -106,6 +106,10 @@ class moduleImap(Content, Queue):
         except:
             logging.info(f"Report: {self.report(self.service, '', '', sys.exc_info())}")
             logging.info("makeConnection failed")
+        
+        client.setChannel()
+        logging.info(f"channel: {client.getChannel()}")
+
         return client
 
     def setApiNew(self):
@@ -120,7 +124,7 @@ class moduleImap(Content, Queue):
 
         #print(f"getChannel: {self.user}@{self.server}")
         self.setClient(f"{self.user}@{self.server}")
-        print(f"getChannel: {self.getChannel()}")
+        # logging.info(f"getChannel: {self.getChannel()}")
         posts = self.listMessages(self.getClient(), self.getChannel())
         return posts
 
@@ -145,7 +149,10 @@ class moduleImap(Content, Queue):
         self.channel = channel
 
     def getChannel(self):
-        return self.channel
+        rep = ''
+        if hasattr(self, 'channel'):
+            rep = self.channel
+        return rep
 
     def createChannel(self, channel):
         api = self.getClient()
@@ -1247,7 +1254,7 @@ class moduleImap(Content, Queue):
     def listMessages(self, M, folder):
         # List the headers of all e-mails in a folder
         posts = []
-        # print(f"Folder: {folder}")
+        logging.info(f"Folder: {folder}")
         nameF = self.nameFolder(folder)
         # print(f"Folder: {nameF}")
         M.select(nameF)
