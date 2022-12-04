@@ -155,6 +155,7 @@ class moduleImap(Content, Queue):
             # str(self.getChannels()[0]).split(' ')[-1][:-1]
             # b'(\\HasChildren) "." INBOX'
         logging.info(f"setChan 2: {channel}")
+        logging.info(f"self: {self}")
         self.channel = channel
 
     def getChannel(self):
