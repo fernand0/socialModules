@@ -149,7 +149,7 @@ class moduleImap(Content, Queue):
             logging.info(f"if: {channel}")
             logging.info(f"if self: {self}")
             logging.info(f"if client: {self.getClient()}")
-            channel = self.getChannelName(self.getChannels[0])
+            channel = self.getChannelName(self.getChannels()[0])
             logging.info(f"después if: {channel}")
             # str(self.getChannels()[0]).split(' ')[-1][:-1]
             # b'(\\HasChildren) "." INBOX'
