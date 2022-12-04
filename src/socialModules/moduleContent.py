@@ -63,7 +63,7 @@ class Content:
             # Deprecated
             self.user = account[1][1]
 
-        msgLog = f"Service config: {self.service}")
+        msgLog = f"Service config: {self.service}"
         logMsg(msgLog, 2, 0)
 
         configFile = f"{CONFIGDIR}/.rss{self.service}"

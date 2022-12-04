@@ -783,7 +783,7 @@ class moduleRules:
                     post = apiSrc.getPost(pos)
 
                 if post:
-                    msgLog = (f"{indent} Post {post}")
+                    msgLog = (f"{indent} Post {apiSrc.getPostTitle(post)}")
                     apiSrc.setNextTime(tNow, tSleep, apiDst)
                 else:
                     msgLog = (f"{indent} No post")
