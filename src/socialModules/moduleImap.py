@@ -130,9 +130,8 @@ class moduleImap(Content, Queue):
         return posts
 
     def getChannels(self):
-        logging.info(f"getChannels .")
+        logging.debug(f"getChannels")
         resp, data = self.getClient().list('""', '*')
-        logging.info(f"Data: {data}")
         return data
 
     def getChannelName(self, channel):
@@ -145,17 +144,10 @@ class moduleImap(Content, Queue):
 
     def setChannel(self, channel=''):
         # setPage in Facebook
-        logging.info(f"setChan 1: {channel}")
         if not channel:
-            logging.info(f"if: {channel}")
-            logging.info(f"if self: {self}")
-            logging.info(f"if client: {self.getClient()}")
             channel = self.getChannelName(self.getChannels()[0])
-            logging.info(f"después if: {channel}")
             # str(self.getChannels()[0]).split(' ')[-1][:-1]
             # b'(\\HasChildren) "." INBOX'
-        logging.info(f"setChan 2: {channel}")
-        logging.info(f"self: {self}")
         self.channel = channel
 
     def getChannel(self):
@@ -834,8 +826,6 @@ class moduleImap(Content, Queue):
         return(listFolders)
 
     def listFolders(self):
-        logging.info(f"listFolders Client: {self.getClient()}")
-        logging.info(f"listFolders Client state: {self.getClient().state}")
         resp, data = self.getClient().list('""', '*')
         return data
 
@@ -977,7 +967,6 @@ class moduleImap(Content, Queue):
                 #res.put(("no", SERVER, USER))
                 #return 0
 
-        logging.info(f"M: {M}")
         return M
 
     def nameFolder(self, folder):
@@ -1205,7 +1194,7 @@ class moduleImap(Content, Queue):
         else:
             post = msg
         html = self.getPostContentHtml(post)
-        logging.info(f"Html: {html}")
+        logging.debug(f"Html: {html}")
         try:
             import quopri
             html = quopri.decodestring(html)
@@ -1277,7 +1266,7 @@ class moduleImap(Content, Queue):
     def listMessages(self, M, folder):
         # List the headers of all e-mails in a folder
         posts = []
-        logging.info(f"Folder: {folder}")
+        logging.debug(f"Folder: {folder}")
         nameF = self.nameFolder(folder)
         # print(f"Folder: {nameF}")
         M.select(nameF)
