@@ -103,11 +103,12 @@ class moduleImap(Content, Queue):
         logging.debug(f"Server: {self.server}")
         try:
             client = self.makeConnection(self.server, self.user, keys)
+            logging.info(f"Connection: {client}")
         except:
             logging.info(f"Report: {self.report(self.service, '', '', sys.exc_info())}")
             logging.info("makeConnection failed")
         
-        client.setChannel()
+        self.setChannel()
         logging.info(f"channel: {client.getChannel()}")
 
         return client
@@ -129,7 +130,9 @@ class moduleImap(Content, Queue):
         return posts
 
     def getChannels(self):
+        logging.info(f"getChannels")
         resp, data = self.getClient().list('""', '*')
+        logging.info(f"Data: {data}")
         return data
 
     def getChannelName(self, channel):
@@ -142,10 +145,12 @@ class moduleImap(Content, Queue):
 
     def setChannel(self, channel=''):
         # setPage in Facebook
+        logging.info(f"setChan: {channel}")
         if not channel:
             channel = self.getChannelName(self.getChannels[0])
             # str(self.getChannels()[0]).split(' ')[-1][:-1]
             # b'(\\HasChildren) "." INBOX'
+        logging.info(f"setChan: {channel}")
         self.channel = channel
 
     def getChannel(self):
@@ -1290,7 +1295,7 @@ class moduleImap(Content, Queue):
 def main():
 
     logging.basicConfig(stream=sys.stdout,
-            level=logging.WARNING,
+            level=logging.INFO,
             format='%(asctime)s %(message)s')
 
     import moduleImap
@@ -1306,16 +1311,18 @@ def main():
 
     indent = ""
     for src in rules.rules.keys():
-        if src[0] == 'imap':
-            # print(f"Src: {src}")
+        if ((src[0] == 'imap')
+            and ('posta' in src[2])):
+            print(f"Src: {src}")
             more = rules.more[src]
-            # print(f"More: {src}")
+            print(f"More: {src}")
             break
     apiSrc = rules.readConfigSrc(indent, src, more)
-    #print(f"Folders: {apiSrc.getChannels()}")
-    apiSrc.setChannel(more['search'])
+    logging.info(f"Folders: {apiSrc.listFolders()}")
+    print(f"Folders: {apiSrc.getChannels()}")
+    # apiSrc.setChannel(more['search'])
 
-    testingPosts = False
+    testingPosts = True
     if testingPosts:
         apiSrc.setPosts()
         for post in apiSrc.getPosts():
