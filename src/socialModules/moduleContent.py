@@ -1301,7 +1301,7 @@ class Content:
         return (soup.get_text().strip("\n"), theSummaryLinks)
 
     def report(self, profile, post, link, data):
-        msg = (f"{profile} failed!",
+        msg = (f"{profile} failed! ",
                f"Post: {post}"
                f"Link: {link}",
                f"Data error: {data}",

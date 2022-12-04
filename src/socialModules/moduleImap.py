@@ -108,9 +108,6 @@ class moduleImap(Content, Queue):
             logging.info(f"Report: {self.report(self.service, '', '', sys.exc_info())}")
             logging.info("makeConnection failed")
         
-        self.setChannel()
-        logging.info(f"channel: {client.getChannel()}")
-
         return client
 
     def setApiNew(self):
@@ -125,12 +122,13 @@ class moduleImap(Content, Queue):
 
         #print(f"getChannel: {self.user}@{self.server}")
         self.setClient(f"{self.user}@{self.server}")
-        # logging.info(f"getChannel: {self.getChannel()}")
-        posts = self.listMessages(self.getClient(), self.getChannel())
+        channel = self.getChannel()
+        logging.info(f"getChannel: {channel}")
+        posts = self.listMessages(self.getClient(), channel)
         return posts
 
     def getChannels(self):
-        logging.info(f"getChannels")
+        logging.info(f"getChannels .")
         resp, data = self.getClient().list('""', '*')
         logging.info(f"Data: {data}")
         return data
@@ -145,12 +143,16 @@ class moduleImap(Content, Queue):
 
     def setChannel(self, channel=''):
         # setPage in Facebook
-        logging.info(f"setChan: {channel}")
+        logging.info(f"setChan 1: {channel}")
         if not channel:
+            logging.info(f"if: {channel}")
+            logging.info(f"if self: {self}")
+            logging.info(f"if client: {self.getClient()}")
             channel = self.getChannelName(self.getChannels[0])
+            logging.info(f"después if: {channel}")
             # str(self.getChannels()[0]).split(' ')[-1][:-1]
             # b'(\\HasChildren) "." INBOX'
-        logging.info(f"setChan: {channel}")
+        logging.info(f"setChan 2: {channel}")
         self.channel = channel
 
     def getChannel(self):
@@ -829,6 +831,8 @@ class moduleImap(Content, Queue):
         return(listFolders)
 
     def listFolders(self):
+        logging.info(f"listFolders Client: {self.getClient()}")
+        logging.info(f"listFolders Client state: {self.getClient().state}")
         resp, data = self.getClient().list('""', '*')
         return data
 
@@ -939,11 +943,11 @@ class moduleImap(Content, Queue):
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
 
-        #context.protocol = ssl.OP_NO_SSLv3
+        # context.protocol = ssl.PROTOCOL_TLS_SERVER
         try:
-            #M = imaplib.IMAP4_SSL(SERVER)
-            M = imaplib.IMAP4(SERVER)
-            M.starttls(ssl_context=context)
+            M = imaplib.IMAP4_SSL(SERVER, 993)
+            # M = imaplib.IMAP4(SERVER)
+            # M.starttls(ssl_context=context)
         except:
             print("except", SERVER, USER)
             print("except", sys.exc_info()[0])
@@ -970,6 +974,7 @@ class moduleImap(Content, Queue):
                 #res.put(("no", SERVER, USER))
                 #return 0
 
+        logging.info(f"M: {M}")
         return M
 
     def nameFolder(self, folder):
@@ -1318,7 +1323,6 @@ def main():
             print(f"More: {src}")
             break
     apiSrc = rules.readConfigSrc(indent, src, more)
-    logging.info(f"Folders: {apiSrc.listFolders()}")
     print(f"Folders: {apiSrc.getChannels()}")
     # apiSrc.setChannel(more['search'])
 
