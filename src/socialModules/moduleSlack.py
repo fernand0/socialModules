@@ -151,7 +151,6 @@ class moduleSlack(Content, Queue):
         return result
 
     def editApiLink(self, post, newLink):
-        logging.info(f"Posttttt: {post}")
         if "attachments" in post:
             post["attachments"][0]["original_url"] = newLink
         else:
@@ -163,7 +162,6 @@ class moduleSlack(Content, Queue):
                 # Some people include URLs in the title of the page
                 pos = text.rfind("<")
                 text[pos + 1 : -1] = newLink
-        logging.info(f"Posttttt desp: {post}")
  
     def getPostId(self, post):
         return (post.get('ts',''))
