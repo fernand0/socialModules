@@ -1205,8 +1205,12 @@ class moduleImap(Content, Queue):
         else:
             post = msg
         html = self.getPostContentHtml(post)
-        import quopri
-        html = quopri.decodestring(html)
+        logging.info(f"Html: {html}")
+        try:
+            import quopri
+            html = quopri.decodestring(html)
+        except:
+            logging.info("Not quoted")
         soup = BeautifulSoup(html, 'lxml')
         res = soup.find_all('a', href=True)
         # print(f"Res: {res}")
@@ -1247,7 +1251,13 @@ class moduleImap(Content, Queue):
             post = msg[1]
         else:
             post = msg
-        return post.get('Subject')
+        subject = post.get('Subject')
+        try:
+            import quopri
+            subject = quopri.decodestring(subject)
+        except:
+            logging.debug("Not quopri")
+        return subject
 
     def getPostId(self, msg):
         return msg[0]
