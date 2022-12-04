@@ -502,11 +502,11 @@ class moduleRules:
         profile = action[2]
         nick = action[3]
         socialNetwork = (profile, nick)
-        msgLog = (f"{indent}socialNetwork: {socialNetwork}")
+        msgLog = (f"{indent} socialNetwork: {socialNetwork}")
         logMsg(msgLog, 2, 0)
         # msgLog = (f"{indent}Action: {action}")
         # logMsg(msgLog, 1, 0)
-        msgLog = (f"{indent}More: Dst {more}")
+        msgLog = (f"{indent} More: Dst {more}")
         logMsg(msgLog, 1, 0)
 
         if action[0] == "cache":
@@ -522,7 +522,7 @@ class moduleRules:
         apiDst.setUser(nick)
         apiDst.setPostsType('posts')
 
-        msgLog = (f"{indent}Api dst: {apiDst}")
+        msgLog = (f"{indent} Api dst: {apiDst}")
         logMsg(msgLog, 2, 0)
 
         if 'max' in more:

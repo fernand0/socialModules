@@ -260,7 +260,7 @@ def main():
         forum = moduleForum()
         forum.setClient(forumData)
         forum.setPosts()
-        logging.info(f"Posts: {forum.getPosts()}")
+        logging.debug(f"Posts: {forum.getPosts()}")
         return
         lastLink, lastTime = checkLastLink(forum.url)
         logging.debug(f"Last: {lastLink} - {lastTime}")

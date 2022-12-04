@@ -18,8 +18,8 @@ class moduleMedium(Content,Queue):
         self.service = None
 
     def setClient(self, channel):
-        logging.info("     Connecting Medium")
-        logging.info(f"     Connecting Medium {channel}")
+        # FIXME: Adapt this method
+        logging.info(f"     Connecting {self.service} {channel}")
         self.service = 'Medium'
         client = None
         userRaw = None

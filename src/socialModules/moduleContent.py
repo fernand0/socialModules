@@ -63,7 +63,9 @@ class Content:
             # Deprecated
             self.user = account[1][1]
 
-        logging.debug(f"Service config: {self.service}")
+        msgLog = f"Service config: {self.service}")
+        logMsg(msgLog, 2, 0)
+
         configFile = f"{CONFIGDIR}/.rss{self.service}"
         try:
             config = configparser.RawConfigParser()
@@ -189,7 +191,7 @@ class Content:
         nameDst = type(dst).__name__
         if 'module' in nameDst:
             nameDst = nameDst[len('module'):]
-            logMsg(f"type s -> {nameSrc} {nameDst}", 2, 0)
+            logMsg(f"{self.indent} {nameSrc} {nameDst}", 2, 0)
             userD = dst.getUser()
             if hasattr(dst, 'socialNetwork'):
                 serviceD = dst.socialNetwork
@@ -281,10 +283,13 @@ class Content:
                 # None published, or non-existent file
         lastLink = ''
         if len(linkLast) == 1:
-            logging.info(f"linkLast len 1 {linkLast}")
             lastLink = linkLast[0]
         else:
             lastLink = linkLast
+            
+        msgLog = f"{self.indent} {linkLast}"
+        logMsg(msgLog, 1, 0)
+
         self.lastLink = lastLink
         return lastLink
 

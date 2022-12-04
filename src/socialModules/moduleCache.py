@@ -479,7 +479,7 @@ class moduleCache(Content,Queue):
         title = ''
         if post:
             if hasattr(self, 'auxClass'):
-                logging.info(f"auxClass type: {type(self.auxClass)}")
+                logging.debug(f"auxClass type: {type(self.auxClass)}")
                 if isinstance(self.auxClass, str):
                     myModule = f"module{self.auxClass.capitalize()}"
                     import importlib
@@ -489,7 +489,7 @@ class moduleCache(Content,Queue):
                     api = cls()
                 else:
                     api = self.auxClass
-                logging.info(f"Api: {api}")
+                logging.debug(f"  Api: {api}")
                 apiCmd = getattr(api, 'getPostTitle')
                 title  = apiCmd(post)
             else:
@@ -688,14 +688,14 @@ class moduleCache(Content,Queue):
     def deleteApi(self, j):
         logging.info(f"Deleting: {j}")
         posts = self.getPosts()
-        logging.info(f"Posts antes: {posts}")
-        logging.info(f"Posts .antes: {self.getPosts()}")
+        logging.debug(f"Posts antes: {posts}")
+        logging.debug(f"Posts .antes: {self.getPosts()}")
         posts = posts[:j] + posts[j+1:]
-        logging.info(f"Posts despues: {posts}")
-        logging.info(f"Posts .despues: {self.getPosts()}")
+        logging.debug(f"Posts despues: {posts}")
+        logging.debug(f"Posts .despues: {self.getPosts()}")
         self.assignPosts(posts)
-        logging.info(f"Posts + despues: {posts}")
-        logging.info(f"Posts + .despues: {self.getPosts()}")
+        logging.debug(f"Posts + despues: {posts}")
+        logging.debug(f"Posts + .despues: {self.getPosts()}")
         # FIXME: Using two cache files, for compatibiiity with old version
         self.updatePostsCache()
         # self.updatePosts('srcNotUsed')
