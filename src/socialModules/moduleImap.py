@@ -125,6 +125,7 @@ class moduleImap(Content, Queue):
         channel = self.getChannel()
         if not channel:
             self.setChannel() 
+            channel = self.getChannel()
         posts = self.listMessages(self.getClient(), channel)
         return posts
 
