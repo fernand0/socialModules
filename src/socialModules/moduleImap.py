@@ -123,7 +123,8 @@ class moduleImap(Content, Queue):
         #print(f"getChannel: {self.user}@{self.server}")
         self.setClient(f"{self.user}@{self.server}")
         channel = self.getChannel()
-        logging.info(f"getChannel: {channel}")
+        if not channel:
+            self.setChannel() 
         posts = self.listMessages(self.getClient(), channel)
         return posts
 
