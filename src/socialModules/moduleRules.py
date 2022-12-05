@@ -126,6 +126,7 @@ class moduleRules:
         more = []
         dsts = []
         ruls = {}
+        rulesNew = {}
         mor = {}
         impRuls = []
         for section in config.sections():
@@ -342,6 +343,61 @@ class moduleRules:
                                         #           f"{fromSrv} ")
                                         # logMsg(msgLog, 2, 0)
 
+            logging.info(f"MoreS: {moreS}")
+            logging.info(f"From: {fromSrv}")
+            orig = None
+            dest = None
+            for key in moreS.keys():
+                if key == 'service':
+                    service = moreS[key]
+                else:
+                    service = key
+
+                if not orig:
+                    if service in services['special']:
+                        logging.info(f"Special: {service}")
+                        orig = service
+                    elif service in services['regular']:
+                        logging.info(f"Regular: {service}")
+                        orig = service
+                    else:
+                        logging.info(f"Not interesting: {service}")
+                else:
+                    if ((key in services['special'])
+                        or (key in services['regular'])):
+                        if key == 'cache':
+                            logging.info(f"Rules: {key}")
+                            dest = key
+                        elif key == 'direct':
+                            logging.info(f"Rules: {key}")
+                            if not fromSrv in rulesNew:
+                                rulesNew[fromSrv]=[]
+                            dest = key
+                        else:
+                            if not dest:
+                                dest = 'direct'
+                            if dest == 'direct':
+                                destRule = (dest, 'post', key, moreS[key])
+                            else:
+                                destRule = (dest, moreS['url'], key, moreS[key])
+                                # Rule cache:
+                                if 'posts' in moreS:
+                                    myPosts = moreS['posts']
+                                else:
+                                    myPosts = 'posts'
+                                fromCache = ('cache', (moreS['service'],
+                                                       moreS['url']),
+                                             f"{key}@{moreS[key]}", myPosts)
+                                if not (fromCache in rulesNew):
+                                    rulesNew[fromCache] = []
+                                rulesNew[fromCache].append(destRule)
+
+                            logging.info(f"Rule: {orig} -> {key}({dest})")
+                            logging.info(f"dest Rule: {destRule})")
+                            if not (fromSrv in rulesNew):
+                                rulesNew[fromSrv] = []
+                            rulesNew[fromSrv].append(destRule)
+
         # Now we can add the sources not added.
 
         for src in srcsA:
@@ -417,6 +473,8 @@ class moduleRules:
         msgLog = (f"Avail: {self.available}")
         logMsg(msgLog, 2, 0)
         msgLog = (f"Ruls: {ruls}")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"RulesNew: {rulesNew}")
         logMsg(msgLog, 2, 0)
 
         self.rules = ruls
