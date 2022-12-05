@@ -16,8 +16,9 @@ path = f"{os.path.dirname(fileName)}"
 
 sys.path.append(path)
 
-hasSet = []
-hasPublish = []
+hasSet = {}
+hasPublish = {}
+myModuleList = {}
 
 class moduleRules:
 
@@ -26,20 +27,25 @@ class moduleRules:
             return []
 
         if service in hasSet:
-            msgLog = " Service considered previously"
+            msgLog = " Considered"
             logMsg(msgLog, 2, 0)
-            return []
-
-        clsService = getModule(service)
-        listMethods = clsService.__dir__()
-        hasSet.append(service)
+            listMethods = hasSet[service]
+        else:
+            clsService = getModule(service)
+            listMethods = clsService.__dir__()
+            hasSet[service] = listMethods
 
         methods = []
         for method in listMethods:
             if (not method.startswith("__")) and (method.find("set") >= 0):
                 action = "set"
                 target = ""
-                myModule = eval(f"clsService.{method}.__module__")
+                try:
+                    myModule = eval(f"clsService.{method}.__module__")
+                    myModuleList[(service, method)] = myModule
+                except:
+                    myModule = myModuleList[(service, method)]
+
 
                 if method.find("Api") >= 0:
                     target = method[len("setApi"):].lower()
@@ -57,13 +63,13 @@ class moduleRules:
 
     def hasPublishMethod(self, service):
         if service in hasPublish:
-            msgLog = " Service considered previously"
+            msgLog = " Considered"
             logMsg(msgLog, 2, 0)
-            return []
-
-        clsService = getModule(service)
-        listMethods = clsService.__dir__()
-        hasPublish.append(service)
+            listMethods = hasPublish[service]
+        else:
+            clsService = getModule(service)
+            listMethods = clsService.__dir__()
+            hasPublish[service] = listMethods
 
         methods = []
         target = None
@@ -71,12 +77,12 @@ class moduleRules:
             if method.find("publish") >= 0:
                 action = "publish"
                 target = ""
-                moduleService = clsService.publishPost.__module__
+                # moduleService = clsService.publishPost.__module__
                 if method.find("Api") >= 0:
                     target = method[len("publishApi"):].lower()
                     # msgLog = (f"Target api {target}")
                     # logMsg(msgLog, 2, 0)
-                elif moduleService == f"module{service.capitalize()}":
+                else: #if moduleService == f"module{service.capitalize()}":
                     target = method[len("publish"):].lower()
                     # msgLog = (f"Target mod {target}")
                     # logMsg(msgLog, 2, 0)
@@ -246,7 +252,8 @@ class moduleRules:
                                     #           f"in {fromSrv} ")
                                     # logMsg(msgLog, 2, 0)
 
-                                hasSpecial = True
+                                if service == 'cache':
+                                    hasSpecial = True
 
                 for service in services["regular"]:
                     if (service == 'cache'):
@@ -345,6 +352,9 @@ class moduleRules:
                 more.append({})
 
         # Now we can see which destinations can be also sources
+        msgLog = f"Dsts: {dsts}"
+        logMsg(msgLog, 2, 0)
+
         for dst in dsts:
             if dst[0] == "direct":
                 service = dst[2]
