@@ -1,6 +1,5 @@
 # socialModules
 
-Testing installation.
 You can try to install (with dependencies) typing:
 
     pip install social-modules@git+https://git@github.com/fernand0/socialModules
