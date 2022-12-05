@@ -16,13 +16,23 @@ path = f"{os.path.dirname(fileName)}"
 
 sys.path.append(path)
 
+hasSet = []
+hasPublish = []
+
 class moduleRules:
 
     def hasSetMethods(self, service):
         if service == "social":
             return []
+
+        if service in hasSet:
+            msgLog = " Service considered previously"
+            logMsg(msgLog, 2, 0)
+            return []
+
         clsService = getModule(service)
         listMethods = clsService.__dir__()
+        hasSet.append(service)
 
         methods = []
         for method in listMethods:
@@ -46,8 +56,14 @@ class moduleRules:
         return methods
 
     def hasPublishMethod(self, service):
+        if service in hasPublish:
+            msgLog = " Service considered previously"
+            logMsg(msgLog, 2, 0)
+            return []
+
         clsService = getModule(service)
         listMethods = clsService.__dir__()
+        hasPublish.append(service)
 
         methods = []
         target = None
@@ -511,7 +527,7 @@ class moduleRules:
 
         if action[0] == "cache":
             print(f"Dst: {action}")
-            apiDst = getApi("cache", ((more['service'],  action[1]), 
+            apiDst = getApi("cache", ((more['service'],  action[1]),
                 f"{action[2]}@{action[3]}", 'posts'))
             apiDst.socialNetwork = action[2]
             apiDst.nick = action[3]
@@ -568,7 +584,7 @@ class moduleRules:
         else:
             print(f"{indent}No listPosts2")
 
-    def executePublishAction(self, indent, msgAction, apiSrc, apiDst, 
+    def executePublishAction(self, indent, msgAction, apiSrc, apiDst,
                             simmulate, nextPost=True, pos=-1):
         res = ''
 
@@ -605,7 +621,7 @@ class moduleRules:
             logging.info(f"Res enddddd: {res}")
             resMsg = f"Publish: {res}. "
             # print(f"{indent}res: {res}")
-            if (nextPost and 
+            if (nextPost and
                     ((not res) or ('SAVELINK' in res) or not ('Fail!' in res))):
                 resUpdate = apiSrc.updateLastLink(apiDst, '')
                 resMsg += f"Update: {resUpdate}"
@@ -680,7 +696,7 @@ class moduleRules:
 
         apiSrc = self.readConfigSrc(indent, src, more)
 
-        if apiSrc.getName(): 
+        if apiSrc.getName():
             msgLog = (f"{indent} Source: {apiSrc.getName()} ({src[3]}) -> "
                 f"Action: {msgAction})")
         else:
@@ -804,11 +820,11 @@ class moduleRules:
                 for i in range(num):
                     time.sleep(tSleep)
                     if nextPost:
-                        res = self.executePublishAction(indent, 
+                        res = self.executePublishAction(indent,
                                 msgAction, apiSrc, apiDst, simmulate)
                     else:
-                        res = self.executePublishAction(indent, 
-                                msgAction, apiSrc, apiDst, 
+                        res = self.executePublishAction(indent,
+                                msgAction, apiSrc, apiDst,
                                 simmulate, nextPost, pos)
                         textEnd = f"{textEnd} {res}"
 
@@ -858,7 +874,7 @@ class moduleRules:
 
                 if src[0] in ['cache']:
                     srcName = more['url']
-                    # FIXME 
+                    # FIXME
                     if 'slack' in srcName:
                         srcName = f"Slack({srcName.split('/')[2].split('.')[0]})"
                     elif 'gitter' in srcName:
