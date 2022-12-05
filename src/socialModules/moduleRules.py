@@ -388,6 +388,7 @@ class moduleRules:
                                 fromCache = ('cache', (moreS['service'],
                                                        moreS['url']),
                                              f"{key}@{moreS[key]}", myPosts)
+                                destRule = ('direct', myPosts, key, moreS[key])
                                 if not (fromCache in rulesNew):
                                     rulesNew[fromCache] = []
                                 rulesNew[fromCache].append(destRule)
@@ -476,6 +477,31 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         msgLog = (f"RulesNew: {rulesNew}")
         logMsg(msgLog, 2, 0)
+
+        print("Actions")
+        for key in rulesNew:
+            print(f"Key: {key}")
+            for i, action in enumerate(rulesNew[key]):
+                print(f" Action {i}: {action}")
+
+        for key in ruls:
+            for rule in ruls[key]:
+                if key in rulesNew:
+                    if not (rule in rulesNew[key]):
+                        logging.info(f"Rule: {rule} not in {rulesNew[key]}")
+                else:
+                    logging.info(f"Key: {key} not in rulesNew")
+
+
+
+        for key in rulesNew:
+            for rule in rulesNew[key]:
+                if key in ruls:
+                    if not (rule in ruls[key]):
+                        logging.info(f"Rule: {rule} not in {ruls[key]}")
+                else:
+                    logging.info(f"Key: {key} not in ruls")
+
 
         self.rules = ruls
         self.more = mor
