@@ -370,8 +370,6 @@ class moduleRules:
                             dest = key
                         elif key == 'direct':
                             logging.info(f"Rules: {key}")
-                            if not fromSrv in rulesNew:
-                                rulesNew[fromSrv]=[]
                             dest = key
                         else:
                             if not dest:
@@ -387,11 +385,14 @@ class moduleRules:
                                     myPosts = 'posts'
                                 fromCache = ('cache', (moreS['service'],
                                                        moreS['url']),
-                                             f"{key}@{moreS[key]}", myPosts)
-                                destRule = ('direct', myPosts, key, moreS[key])
+                                             f"{key}@{moreS[key]}", 'posts')
+                                #FIXME: It is needed for imgur, in the other
+                                # cases is OK
+                                destRuleCache = ('direct', 'post',
+                                                 key, moreS[key])
                                 if not (fromCache in rulesNew):
                                     rulesNew[fromCache] = []
-                                rulesNew[fromCache].append(destRule)
+                                rulesNew[fromCache].append(destRuleCache)
 
                             logging.info(f"Rule: {orig} -> {key}({dest})")
                             logging.info(f"dest Rule: {destRule})")
@@ -477,6 +478,12 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         msgLog = (f"RulesNew: {rulesNew}")
         logMsg(msgLog, 2, 0)
+
+        print("Old Actions")
+        for key in ruls:
+            print(f"Key: {key} Old")
+            for i, action in enumerate(ruls[key]):
+                print(f" Action {i}: {action}")
 
         print("Actions")
         for key in rulesNew:
