@@ -244,7 +244,7 @@ def main():
 
     import moduleRules
     rules = moduleRules.moduleRules()
-    rules.checkRules('Blog43')
+    rules.checkRules()
 
     testingPosts = False
     if testingPosts:
@@ -270,47 +270,44 @@ def main():
 
     testingPostsArticle = True
     if testingPostsArticle:
-        for key in rules.rules.keys():
-            if ((key[0] == 'pocket')
-                    and (key[2] == 'fernand0kobo')):
-                print(f"Key: {key}")
+        src, more = rules.selectRule('pocket', 'fernand0kobo')
+        indent = ""
+        apiSrc = rules.readConfigSrc(indent, src, more)
 
-                apiSrc = rules.readConfigSrc("", key, rules.more[key])
+        apiSrc.setPosts()
+        print(apiSrc.getPosts())
+        for pos, post in enumerate(apiSrc.getPosts()):
+            title = apiSrc.getPostTitle(post)
+            print(f"Title: {title}")
+            if ('is_article' in post) and post['is_article'] == '0':
+                link = apiSrc.getPostLink(post)
+                print(f"Title: {title}")
+                print(f"Link: {link}")
+                import requests
+                from readabilipy import simple_json_from_html_string
+                req = requests.get(link)
+                article = simple_json_from_html_string(req.text,
+                                                       use_readability=True)
+                if not article['content']:
+                    continue
+                from ebooklib import epub
+                book = epub.EpubBook()
 
-                apiSrc.setPosts()
-                print(apiSrc.getPosts())
-                for pos, post in enumerate(apiSrc.getPosts()):
-                    title = apiSrc.getPostTitle(post)
-                    print(f"Title: {title}")
-                    if ('is_article' in post) and post['is_article'] == '0':
-                        link = apiSrc.getPostLink(post)
-                        print(f"Title: {title}")
-                        print(f"Link: {link}")
-                        import requests
-                        from readabilipy import simple_json_from_html_string
-                        req = requests.get(link)
-                        article = simple_json_from_html_string(req.text,
-                                                               use_readability=True)
-                        if not article['content']:
-                            continue
-                        from ebooklib import epub
-                        book = epub.EpubBook()
-
-                        book.set_title(title)
-                        idPost = post['item_id']
-                        book.set_identifier(idPost)
-                        c = epub.EpubHtml(title='Page',
-                                          file_name='page.xhtml', lang='en')
-                        c.content= article['content']
-                        book.add_item(c)
-                        book.add_item(epub.EpubNcx())
-                        book.add_item(epub.EpubNav())
-                        book.spine = ['nav', c]
-                        name = re.sub(r'[^a-zA-Z0-9]+', '-', title)
-                        epub.write_epub(f"{PATH}/{post['time_added']}_{name}.epub",
-                                        book, {})
-                        input("Archive? ")
-                        apiSrc.archiveId(idPost)
+                book.set_title(title)
+                idPost = post['item_id']
+                book.set_identifier(idPost)
+                c = epub.EpubHtml(title='Page',
+                                  file_name='page.xhtml', lang='en')
+                c.content= article['content']
+                book.add_item(c)
+                book.add_item(epub.EpubNcx())
+                book.add_item(epub.EpubNav())
+                book.spine = ['nav', c]
+                name = re.sub(r'[^a-zA-Z0-9]+', '-', title)
+                epub.write_epub(f"{PATH}/{post['time_added']}_{name}.epub",
+                                book, {})
+                input("Archive? ")
+                apiSrc.archiveId(idPost)
 
 
 

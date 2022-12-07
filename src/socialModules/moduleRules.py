@@ -107,6 +107,7 @@ class moduleRules:
         return modules
 
     def checkRules(self, configFile = None, select=None):
+        #FIXME: select does not work
         msgLog = "Checking rules"
         logMsg(msgLog, 1, 2)
         config = configparser.ConfigParser()
