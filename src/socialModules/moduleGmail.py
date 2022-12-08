@@ -289,7 +289,7 @@ class moduleGmail(Content,Queue,socialGoogle):
             mes  = mes + str(base64.urlsafe_b64decode(message['body']))
         elif 'parts' in message['payload']:
             for part in message['payload']['parts']:
-                logging.debug(f"Part: {part}")
+                # logging.debug(f"Part: {part}")
                 if 'data' in part['body']:
                     mes  = mes + str(base64.urlsafe_b64decode(part['body']['data']))
                 elif 'parts' in part:
@@ -413,9 +413,9 @@ class moduleGmail(Content,Queue,socialGoogle):
         # snippet = self.getHeader(post, 'snippet')
         theLink = ''
         if post:
-            logging.info(f"Post: {post}")
+            logging.debug(f"Post: {post}")
             links = self.getPostLinks(post)
-            logging.info(f"Links: {links}")
+            logging.debug(f"Links: {links}")
             if links:
                 theLink = links[0]
 

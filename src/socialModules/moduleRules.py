@@ -27,7 +27,7 @@ class moduleRules:
             return []
 
         if service in hasSet:
-            msgLog = " Considered"
+            msgLog = "{indent}  {service} considered"
             logMsg(msgLog, 2, 0)
             listMethods = hasSet[service]
         else:
@@ -40,6 +40,7 @@ class moduleRules:
             if (not method.startswith("__")) and (method.find("set") >= 0):
                 action = "set"
                 target = ""
+                #FIXME: indenting inside modules?
                 try:
                     myModule = eval(f"clsService.{method}.__module__")
                     myModuleList[(service, method)] = myModule
@@ -52,9 +53,9 @@ class moduleRules:
                 # elif (clsService.setPosts.__module__
                 elif myModule == f"module{service.capitalize()}":
                     target = method[len("set"):].lower()
-                if target and (
-                    target.lower() in ["posts", "drafts", "favs",
-                                       "messages", "queue", "search"]
+                if target and (target.lower() 
+                               in ["posts", "drafts", "favs", 
+                                   "messages", "queue", "search"]
                               ):
                     toAppend = (action, target)
                     if not (toAppend in methods):
@@ -135,36 +136,31 @@ class moduleRules:
             url = config.get(section, "url")
             msgLog = f"Section: {section} Url: {url}"
             logMsg(msgLog, 1, 1)
+            indent = f" {section}>"
             # Sources
             moreS = dict(config.items(section))
             moreSS = None
+            # FIXME Could we avoid the last part for rules, selecting
+            # services here?
             if "rss" in config.options(section):
                 rss = config.get(section, "rss")
-                msgLog = (f"Service: rss -> {rss}")
+                msgLog = (f"{indent} Service: rss -> {rss}")
                 logMsg(msgLog, 2, 0)
                 toAppend = ("rss", "set",
                             urllib.parse.urljoin(url, rss), "posts")
                 srcs.append(toAppend)
                 more.append(moreS)
             else:
-                msgLog = (f"url {url}")
-                logMsg(msgLog, 2, 0)
-
                 for service in services["regular"]:
                     if (
                         ("service" in config[section])
                         and (service == config[section]["service"])
                     ) or (url.find(service) >= 0):
                         methods = self.hasSetMethods(service)
-                        msgLog = (f"Service: {service} has set {methods}")
+                        msgLog = (f"{indent} Service {service} has "
+                                  f"set {methods}")
                         logMsg(msgLog, 2, 0)
                         for method in methods:
-                            # msgLog = (f"Method: {method}")
-                            # logMsg(msgLog, 2, 0)
-                            # msgLog = (f"moreS: {moreS}")
-                            # logMsg(msgLog, 2, 0)
-                            # If it has a method for setting, we can set
-                            # directly using this
                             if service in config[section]:
                                 nick = config[section][service]
                             else:
@@ -179,7 +175,8 @@ class moduleRules:
 
                             if 'posts' in moreS:
                                 if moreS['posts'] == method[1]:
-                                   toAppend = (service, "set", nick, method[1])
+                                   toAppend = (service, "set", 
+                                               nick, method[1])
                             else:
                                toAppend = (service, "set", nick, method[1])
                             # msgLog = (f"toAppend: {toAppend}")
@@ -343,8 +340,8 @@ class moduleRules:
                                         #           f"{fromSrv} ")
                                         # logMsg(msgLog, 2, 0)
 
-            logging.info(f"MoreS: {moreS}")
-            logging.info(f"From: {fromSrv}")
+            logging.debug(f"{indent} MoreS: {moreS}")
+            logging.debug(f"{indent} From: {fromSrv}")
             orig = None
             dest = None
             for key in moreS.keys():
@@ -510,7 +507,7 @@ class moduleRules:
                     logging.info(f"Key: {key} not in ruls")
 
 
-        self.rules = ruls
+        self.rules = rulesNew
         self.more = mor
 
         msgLog = "End Checking rules"

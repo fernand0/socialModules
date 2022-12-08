@@ -19,10 +19,13 @@ WWWDIR = "/var/www/html/img/"
 WWWADDRESS = 'https://elmundoesimperfecto.com/img/'
 NAMEIMG = 'instagram.jpg'
 
+indent = ''
 FAIL = 'Fail!'
 OK = 'OK'
 
 def logMsg(msgLog, log=1, output=1):
+    if indent:
+        msgLog = f"{indent} {msgLog}"
     if log == 1:
         logging.info(msgLog)
     elif log == 2:
