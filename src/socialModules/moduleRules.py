@@ -951,7 +951,7 @@ class moduleRules:
                 if src[0] != previous:
                     i = 0
                 previous = src[0]
-                #name = f"{src[0]}{i}>"
+                indent = f"{src[0]}{i}>"
                 if src in self.more:
                     # f"  More: {self.more[src]}")
                     more = self.more[src]
@@ -993,22 +993,21 @@ class moduleRules:
                 for k, action in enumerate(actions):
                     name = f"{src[0]}{i}>"
                     if (select and (select.lower() != f"{src[0].lower()}{i}")):
-                        actionMsg = f"Skip."
+                        actionMsg = f"{indent} Skip."
                     else:
-                        actionMsg = (f"Scheduling.")
+                        actionMsg = (f"{indent} Scheduling.")
                     if action[1].startswith('http'):
                         # FIXME
                         theAction = 'posts'
                     else:
                         theAction = action[1]
                     
-                    indent = f"{indent}{name}"
                     msgLog = f"{indent} {text}"
                     logMsg(msgLog, 1, 1)
                     msgLog = (f"{indent}  Action {k}:"
                              f" {action[3]}@{action[2]} ({theAction})")
-                    name = f"{name[:-1]} (Action {k})>" # [({theAction})"
-                    nameA = f"{name} {actionMsg} "
+                    name = f"(Action {k})>" # [({theAction})"
+                    nameA = f"{actionMsg} "
                     textEnd = (f"Source: {nameA} {src[2]} {src[3]}")
                     logMsg(msgLog, 1, 1)
                     textEnd = f"{textEnd}\n{msgLog}"
