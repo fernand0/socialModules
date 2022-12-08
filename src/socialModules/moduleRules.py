@@ -329,8 +329,8 @@ class moduleRules:
                 more.append({})
 
         # Now we can see which destinations can be also sources
-        msgLog = f"Dsts: {dsts}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"Dsts: {dsts}"
+        # logMsg(msgLog, 2, 0)
 
         for dst in dsts:
             if dst[0] == "direct":
@@ -393,10 +393,12 @@ class moduleRules:
 
         msgLog = (f"Avail: {self.available}")
         logMsg(msgLog, 2, 0)
+        self.printDict(self.available, "Available")
         msgLog = (f"Ruls: {ruls}")
         logMsg(msgLog, 2, 0)
         msgLog = (f"RulesNew: {rulesNew}")
         logMsg(msgLog, 2, 0)
+        self.printDict(rulesNew, "Rules")
 
         print("Old Actions")
         for key in ruls:
@@ -435,7 +437,7 @@ class moduleRules:
         msgLog = "End Checking rules"
         logMsg(msgLog, 1, 2)
 
-        return (srcs, dsts, ruls, impRuls)
+        return (srcs, ruls, impRuls)
 
     def selectRule(self, selector, selector2 = "", selector3 = ""):
         indent = ""
@@ -543,6 +545,13 @@ class moduleRules:
 
         return modules
 
+    def printDict(self, myList, title):
+        print(f"{title}:")
+        for i, element in enumerate(myList):
+            if type(myList[element]) == list:
+                self.printList(myList[element], element)
+            else:
+                print(f"  {i}) {element} {myList[element]}")
 
     def printList(self, myList, title):
         print(f"{title}:")
@@ -1142,7 +1151,7 @@ def main():
     logMsg(msgLog, 1, 2)
 
     rules = moduleRules()
-    srcs, dsts, ruls, impRuls = rules.checkRules()
+    srcs, ruls, impRuls = rules.checkRules()
 
     args = rules.readArgs()
 
