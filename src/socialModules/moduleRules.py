@@ -400,44 +400,11 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         self.printDict(rulesNew, "Rules")
 
-        print("Old Actions")
-        for key in ruls:
-            print(f"Key: {key} Old")
-            for i, action in enumerate(ruls[key]):
-                print(f" Action {i}: {action}")
-
-        print("Actions")
-        for key in rulesNew:
-            print(f"Key: {key}")
-            for i, action in enumerate(rulesNew[key]):
-                print(f" Action {i}: {action}")
-
-        for key in ruls:
-            for rule in ruls[key]:
-                if key in rulesNew:
-                    if not (rule in rulesNew[key]):
-                        logging.info(f"Rule: {rule} not in {rulesNew[key]}")
-                else:
-                    logging.info(f"Key: {key} not in rulesNew")
-
-
-
-        for key in rulesNew:
-            for rule in rulesNew[key]:
-                if key in ruls:
-                    if not (rule in ruls[key]):
-                        logging.info(f"Rule: {rule} not in {ruls[key]}")
-                else:
-                    logging.info(f"Key: {key} not in ruls")
-
-
         self.rules = rulesNew
         self.more = mor
 
         msgLog = "End Checking rules"
         logMsg(msgLog, 1, 2)
-
-        return (srcs, ruls, impRuls)
 
     def selectRule(self, selector, selector2 = "", selector3 = ""):
         indent = ""
@@ -1134,7 +1101,6 @@ class moduleRules:
 
         return args
 
-
 def main():
 
     mode = logging.DEBUG
@@ -1151,9 +1117,10 @@ def main():
     logMsg(msgLog, 1, 2)
 
     rules = moduleRules()
-    srcs, ruls, impRuls = rules.checkRules()
 
     args = rules.readArgs()
+
+    rules.checkRules()
 
     rules.executeRules(args)
 
