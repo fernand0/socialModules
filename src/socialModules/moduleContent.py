@@ -354,8 +354,12 @@ class Content:
         fileNameNext = ''
         if dst:
             fileNameNext = f"{self.fileNameBase(dst)}.timeAvailable"
-            with open(fileNameNext,'wb') as f:
-                pickle.dump((tNow, tSleep), f)
+            if os.path.exists(fileNameNext):
+                with open(fileNameNext,'wb') as f:
+                    pickle.dump((tNow, tSleep), f)
+            else:
+                logging.warning(f"{self.indent} file {fileNameNext} "
+                                f"does not exist")
         else:
             print(f"Not implemented!")
 

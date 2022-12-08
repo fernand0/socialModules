@@ -40,7 +40,7 @@ class moduleRss(Content, Queue):
         self.bufMax = None
 
     def setClient(self, feed):
-        logging.debug(f"{self.indent} Feed {feed)")
+        logging.debug(f"{self.indent} Feed {feed}")
         if isinstance(feed, str):
             self.rssFeed = feed
         elif isinstance(feed, tuple):
@@ -51,7 +51,7 @@ class moduleRss(Content, Queue):
             self.user = urllib.parse.urlparse(feed).netloc
         else:
             self.user = feed
-        logging.debug(f"{indent} Url + feed {self.rssFeed}")
+        logging.debug(f"{self.indent} Url + feed {self.rssFeed}")
         self.client = 'client'
         self.service = 'Rss'
 
