@@ -398,7 +398,7 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         msgLog = (f"RulesNew: {rulesNew}")
         logMsg(msgLog, 2, 0)
-        if hasattr(self, 'args' and self.args.rules:
+        if hasattr(self, 'args') and self.args.rules:
             self.printDict(rulesNew, "Rules")
 
         self.rules = rulesNew
