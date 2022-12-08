@@ -398,7 +398,8 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         msgLog = (f"RulesNew: {rulesNew}")
         logMsg(msgLog, 2, 0)
-        self.printDict(rulesNew, "Rules")
+        if self.args.rules:
+            self.printDict(rulesNew, "Rules")
 
         self.rules = rulesNew
         self.more = mor
@@ -924,12 +925,13 @@ class moduleRules:
 
         return textEnd
 
-    def executeRules(self, args):
+    def executeRules(self):
         msgLog = "Executing rules"
         logMsg(msgLog, 1, 2)
         indent = " "
 
         # print(args)
+        args = self.args
         select = args.checkBlog
         simmulate = args.simmulate
 
@@ -1097,9 +1099,14 @@ class moduleRules:
             action="store_true",
             help="no wait for time restrictions",
         )
-        args = parser.parse_args()
-
-        return args
+        parser.add_argument(
+            "--rules",
+            "-r",
+            default=False,
+            action="store_true",
+            help="Show the list of rules and actions",
+        )
+        self.args = parser.parse_args()
 
 def main():
 
@@ -1122,7 +1129,7 @@ def main():
 
     rules.checkRules()
 
-    rules.executeRules(args)
+    rules.executeRules()
 
     return
 
