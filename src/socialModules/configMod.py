@@ -19,13 +19,17 @@ WWWDIR = "/var/www/html/img/"
 WWWADDRESS = 'https://elmundoesimperfecto.com/img/'
 NAMEIMG = 'instagram.jpg'
 
-indent = ''
+try:
+    INDENT = indent
+except:
+    INDENT= ''
+
 FAIL = 'Fail!'
 OK = 'OK'
 
 def logMsg(msgLog, log=1, output=1):
-    if indent:
-        msgLog = f"{indent} {msgLog}"
+    if INDENT:
+        msgLog = f"{INDENT} {msgLog}"
     if log == 1:
         logging.info(msgLog)
     elif log == 2:
@@ -123,7 +127,7 @@ def newUpdateLastLink(url, link, lastLink, socialNetwork=()):
 def updateLastLink(url, link, socialNetwork=()):
     logging.debug(f"Url: {url} Link: {link} SocialNetwork: {socialNetwork}")
     fileName = fileNamePath(url, socialNetwork) + ".last"
-    
+
 
     logging.debug(f"fileName: {fileName}")
     with open(fileName, "w") as f:
@@ -167,7 +171,7 @@ def getModule(profile, indent=''):
     # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
     import importlib
     serviceName = profile.capitalize()
-    msgLog = (f"{indent} getModule {serviceName}")
+    msgLog = (f"{INDENT} getModule {serviceName}")
     logMsg(msgLog, 2, 0)
 
     mod = importlib.import_module('socialModules.module' + serviceName)
@@ -177,11 +181,11 @@ def getModule(profile, indent=''):
     return api
 
 def getApi(profile, nick, indent=""):
-    msgLog = (f"{indent} getApi profile: {profile} - {nick}")
+    msgLog = (f"{INDENT} getApi profile: {profile} - {nick}")
     logMsg(msgLog, 2, 0)
 
     api = getModule(profile)
-    api.indent = indent
+    api.indent = INDENT
     api.setClient(nick)
 
     return api
