@@ -398,7 +398,7 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         msgLog = (f"RulesNew: {rulesNew}")
         logMsg(msgLog, 2, 0)
-        if self.args.rules:
+        if hasattr(self, 'args' and self.args.rules:
             self.printDict(rulesNew, "Rules")
 
         self.rules = rulesNew
@@ -563,7 +563,7 @@ class moduleRules:
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
             apiSrc.postaction = 'delete'
         else:
-            logging.info(f"Src: {src}")
+            logging.info(f"{indent} Src: {src}")
             apiSrc = getApi(src[0], src[2])
 
         for option in more:
@@ -773,6 +773,9 @@ class moduleRules:
         # 'Cometic' waiting to allow all the processes to be launched.
         time.sleep(1)
 
+        msgLog = (f"{indent} Go!")
+        logMsg(msgLog, 1, 0)
+
         msgAction = (f"{action[0]} {action[3]}@{action[2]} "
                      f"({action[1]})")
         # Destination
@@ -798,7 +801,7 @@ class moduleRules:
             logging.info(msgHold)
             return msgHold
         if not apiSrc.getClient():
-            msgLog = (f"{indent}Error. No client for {src[2]} ({src[3]})")
+            msgLog = (f"{indent} Error. No client for {src[2]} ({src[3]})")
             logMsg(msgLog, 1, 1)
             return f"End: {msgLog}"
 
@@ -806,7 +809,7 @@ class moduleRules:
 
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
         if not apiDst.getClient():
-            msgLog = (f"{indent}Error. No client for {action[2]}")
+            msgLog = (f"{indent} Error. No client for {action[2]}")
             logMsg(msgLog, 1, 1)
             return f"End: {msgLog}"
 
@@ -998,10 +1001,11 @@ class moduleRules:
                         theAction = 'posts'
                     else:
                         theAction = action[1]
-
-                    msgLog = f"{indent}{name} {text}"
+                    
+                    indent = f"{indent}{name}"
+                    msgLog = f"{indent} {text}"
                     logMsg(msgLog, 1, 1)
-                    msgLog = (f"{indent}{name} {indent}Action {k}:"
+                    msgLog = (f"{indent}  Action {k}:"
                              f" {action[3]}@{action[2]} ({theAction})")
                     name = f"{name[:-1]} (Action {k})>" # [({theAction})"
                     nameA = f"{name} {actionMsg} "
@@ -1011,7 +1015,7 @@ class moduleRules:
                     # logMsg(msgLog, 1, 1)
                     nameA = name #f"{name[:-1]} (Action {k})>" # [({theAction})"
                     # The '[' is closed in executeAction TODO
-                    msgLog = f"{indent}{name} {actionMsg}"
+                    msgLog = f"{indent} {actionMsg}"
                     logMsg(msgLog, 1, 1)
                     if actionMsg == "Skip.":
                         #FIXME "In hold"
@@ -1125,8 +1129,7 @@ def main():
 
     rules = moduleRules()
 
-    args = rules.readArgs()
-
+    rules.readArgs()
     rules.checkRules()
 
     rules.executeRules()
