@@ -14,8 +14,11 @@ from socialModules.moduleQueue import *
 
 class moduleWordpress(Content,Queue):
 
-    def __init__(self):
-        super().__init__()
+    def getKeys(self, config):
+        access_token =  config[self.user]["access_token"]
+        return ((access_token, ))
+
+    def initApi(self, keys):
         self.user = None
         self.wp = None
         self.service = 'Wordpress'
@@ -34,11 +37,6 @@ class moduleWordpress(Content,Queue):
         self.headers=None
         self.access_token=None
 
-    def getKeys(self, config):
-        access_token =  config[self.user]["access_token"]
-        return ((access_token, ))
-
-    def initApi(self, keys):
         self.access_token =  keys[0]
         self.headers = {'Authorization':'Bearer '+self.access_token}
         self.my_site="{}.wordpress.com".format(self.user)

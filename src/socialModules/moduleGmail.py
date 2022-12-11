@@ -45,15 +45,6 @@ from socialModules.moduleQueue import *
 
 class moduleGmail(Content,Queue,socialGoogle):
 
-    def __init__(self):
-        super().__init__()
-        # Content().__init__()
-        # Queue().__init__()
-        self.service = "Gmail"
-        self.nick = None
-        self.scopes = ['https://www.googleapis.com/auth/gmail.modify']
-        self.scopes = ['https://mail.google.com/']
-
     # def API(self, Acc):
     #     # Back compatibility
     #     self.setClient(Acc)
@@ -62,6 +53,11 @@ class moduleGmail(Content,Queue,socialGoogle):
     #     return (())
 
     def initApi(self, keys):
+        self.service = "Gmail"
+        self.nick = None
+        self.scopes = ['https://www.googleapis.com/auth/gmail.modify']
+        self.scopes = ['https://mail.google.com/']
+
         SCOPES = self.scopes
         creds = self.authorize()
         if isinstance(creds, str) and ("Fail!" in creds):

@@ -13,9 +13,6 @@ from socialModules.moduleQueue import *
 
 class moduleImgur(Content, Queue):
 
-    def __init__(self):
-        super().__init__()
-        self.service = 'Imgur'
 
     def getKeys(self, config):
         if self.user.find('http')>=0:
@@ -30,6 +27,7 @@ class moduleImgur(Content, Queue):
         return (client_id, client_secret, access_token, refresh_token)
 
     def initApi(self, keys):
+        self.service = 'Imgur'
         client_id = keys[0]
         client_secret = keys[1]
         access_token = keys[2]

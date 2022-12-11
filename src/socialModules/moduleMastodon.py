@@ -16,9 +16,6 @@ from socialModules.moduleQueue import *
 
 class moduleMastodon(Content, Queue):
 
-    def __init__(self):
-        super().__init__()
-
     def getKeys(self, config):
         #if self.user.startswith('@'):
         #    self.user = self.user[1:]

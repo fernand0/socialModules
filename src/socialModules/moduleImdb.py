@@ -18,8 +18,7 @@ from socialModules.moduleQueue import *
 
 class moduleImdb(Content,Queue):
 
-    def __init__(self):
-        super().__init__()
+    def setClient(self, init=()):
         self.service = 'Imdb'
         self.client = None
         self.url=None
@@ -28,8 +27,6 @@ class moduleImdb(Content,Queue):
         self.cache = False
         self.channels = None
         self.posts = []
-        
-    def setClient(self, init=()):
         logging.info("Setting client")
         logging.info(f"Setting client {str(init)}")
         logging.info(f"Url {self.getUrl()}")

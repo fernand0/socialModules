@@ -23,23 +23,22 @@ from socialModules.moduleContent import *
 
 class moduleXmlrpc(Content):
 
-    def __init__(self):
-         self.url = ""
-         self.name = ""
-         self.rssFeed = ''
-         self.Id = 0
-         self.socialNetworks = {}
-         self.linksToAvoid = ""
-         self.xmlrpc = None
-         self.postsXmlRpc = None
-         self.time = 0
-         self.bufferapp = None
-         self.program = None
-         self.lastLinkPublished = {}
-         self.keys = []
-         #self.logger = logging.getLogger(__name__)
  
     def setClient(self, nick): 
+        self.url = ""
+        self.name = ""
+        self.rssFeed = ''
+        self.Id = 0
+        self.socialNetworks = {}
+        self.linksToAvoid = ""
+        self.xmlrpc = None
+        self.postsXmlRpc = None
+        self.time = 0
+        self.bufferapp = None
+        self.program = None
+        self.lastLinkPublished = {}
+        self.keys = []
+        #self.logger = logging.getLogger(__name__)
         self.user = nick
         self.setXmlRpc()
         

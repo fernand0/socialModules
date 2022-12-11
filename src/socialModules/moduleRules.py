@@ -15,7 +15,6 @@ path = f"{os.path.dirname(fileName)}"
 
 sys.path.append(path)
 
-indent= ''
 hasSet = {}
 hasPublish = {}
 myModuleList = {}
@@ -51,7 +50,7 @@ class moduleRules:
             url = config.get(section, "url")
             msgLog = f"Section: {section} Url: {url}"
             logMsg(msgLog, 1, 1)
-            indent = f" {section}>"
+            self.indent = f" {section}>"
             # Sources
             moreS = dict(config.items(section))
             moreSS = None
@@ -59,7 +58,7 @@ class moduleRules:
             # services here?
             if "rss" in config.options(section):
                 rss = config.get(section, "rss")
-                msgLog = (f"{indent} Service rss -> {rss}")
+                msgLog = (f"{self.indent} Service rss -> {rss}")
                 logMsg(msgLog, 2, 0)
                 toAppend = ("rss", "set",
                             urllib.parse.urljoin(url, rss), "posts")
@@ -72,7 +71,7 @@ class moduleRules:
                         and (service == config[section]["service"])
                     ) or (url.find(service) >= 0):
                         methods = self.hasSetMethods(service)
-                        msgLog = (f"{indent} Service {service} has "
+                        msgLog = (f"{self.indent} Service {service} has "
                                   f"set {methods}")
                         logMsg(msgLog, 2, 0)
                         for method in methods:
@@ -137,16 +136,16 @@ class moduleRules:
                         valueE = config.get(section, service).split("\n")
                         for val in valueE:
                             nick = config.get(section, val)
-                            # msgLog = (f"{indent} Service special: {service} "
+                            # msgLog = (f"{self.indent} Service special: {service} "
                             #          f"({val}, {nick})")
                             # logMsg(msgLog, 2, 0)
                             if service == "direct":
                                 url = "posts"
                             toAppend = (service, url, val, nick) #, timeW, bufferMax)
-                            # msgLog = (f"{indent} Service special toAppend: "
+                            # msgLog = (f"{self.indent} Service special toAppend: "
                             #          f"{toAppend} ")
                             # logMsg(msgLog, 2, 0)
-                            # msgLog = (f"{indent} Service special from: "
+                            # msgLog = (f"{self.indent} Service special from: "
                             #          f"{fromSrv} ")
                             # logMsg(msgLog, 2, 0)
                             if toAppend not in dsts:
@@ -170,14 +169,16 @@ class moduleRules:
                                 if service == 'cache':
                                     hasSpecial = True
 
-                indent = f" {indent}"
+                self.indent = f" {self.indent}"
                 for service in services["regular"]:
                     if (service == 'cache'):
                         continue
                     toAppend = ""
                     if service in config.options(section):
+                        msgLog = (f"{self.indent} service {service} checking ")
+                        logMsg(msgLog, 2, 0)
                         methods = self.hasPublishMethod(service)
-                        msgLog = (f"{indent} service {service} has "
+                        msgLog = (f"{self.indent} service {service} has "
                                   f"{methods}")
                         logMsg(msgLog, 2, 0)
                         for method in methods:
@@ -258,12 +259,14 @@ class moduleRules:
                                         #           f"{fromSrv} ")
                                         # logMsg(msgLog, 2, 0)
 
-            indent = f"{indent[1:]}"
-            logging.debug(f"{indent} MoreS: {moreS}")
-            logging.debug(f"{indent} From: {fromSrv}")
+            self.indent = f"{self.indent[1:]}"
+            msgLog = f"{self.indent} MoreS: {moreS}"
+            logMsg(msgLog, 2, 0)
+            msgLog = f"{self.indent} From: {fromSrv}"
+            logMsg(msgLog, 2, 0)
             orig = None
             dest = None
-            indent = f" {indent}"
+            self.indent = f" {self.indent}"
             for key in moreS.keys():
                 if key == 'service':
                     service = moreS[key]
@@ -272,21 +275,26 @@ class moduleRules:
 
                 if not orig:
                     if service in services['special']:
-                        logging.debug(f"{indent} Special: {service}")
+                        msgLog = f"{self.indent} Special: {service}"
+                        logMsg(msgLog, 2, 0)
                         orig = service
                     elif service in services['regular']:
-                        logging.debug(f"{indent} Regular: {service}")
+                        msgLog = f"{self.indent} Regular: {service}"
+                        logMsg(msgLog, 2, 0)
                         orig = service
                     else:
-                        logging.debug(f"{indent} Not interesting: {service}")
+                        msgLog = f"{self.indent} Not interesting: {service}"
+                        logMsg(msgLog, 2, 0)
                 else:
                     if ((key in services['special'])
                         or (key in services['regular'])):
                         if key == 'cache':
-                            logging.debug(f"{indent} Rules: {key}")
+                            msgLog = f"{self.indent} Rules: {key}"
+                            logMsg(msgLog, 2, 0)
                             dest = key
                         elif key == 'direct':
-                            logging.debug(f"{indent} Rules: {key}")
+                            msgLog = f"{self.indent} Rules: {key}"
+                            logMsg(msgLog, 2, 0)
                             dest = key
                         else:
                             if not dest:
@@ -312,9 +320,11 @@ class moduleRules:
                                     rulesNew[fromCache] = []
                                 rulesNew[fromCache].append(destRuleCache)
 
-                            logging.info(f"{indent} Rule: {orig} -> "
+                            msgLog = (f"{self.indent} Rule: {orig} -> "
                                         f"{key}({dest})")
-                            logging.debug(f"{indent}  dest Rule: {destRule})")
+                            logMsg(msgLog, 2, 0)
+                            msgLog = f"{self.indent}  dest Rule: {destRule})"
+                            logMsg(msgLog, 2, 0)
                             if not (fromSrv in rulesNew):
                                 rulesNew[fromSrv] = []
                             rulesNew[fromSrv].append(destRule)
@@ -332,6 +342,7 @@ class moduleRules:
         # msgLog = f"Dsts: {dsts}"
         # logMsg(msgLog, 2, 0)
 
+        self.indent = f" Destinations:"
         for dst in dsts:
             if dst[0] == "direct":
                 service = dst[2]
@@ -394,8 +405,8 @@ class moduleRules:
         msgLog = (f"Avail: {self.available}")
         logMsg(msgLog, 2, 0)
         self.printDict(self.available, "Available")
-        msgLog = (f"Ruls: {ruls}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"Rules: {ruls}")
+        # logMsg(msgLog, 2, 0)
         msgLog = (f"RulesNew: {rulesNew}")
         logMsg(msgLog, 2, 0)
         if hasattr(self, 'args') and self.args.rules:
@@ -408,7 +419,10 @@ class moduleRules:
         logMsg(msgLog, 1, 2)
 
     def selectRule(self, selector, selector2 = "", selector3 = ""):
-        indent = ""
+        if hasattr(self, 'indent'):
+            indent = self.indent
+        else:
+            indent = ""
         srcR = None
 
         for src in self.rules.keys():
@@ -429,15 +443,17 @@ class moduleRules:
         return (srcR, more)
 
     def hasSetMethods(self, service):
+        msgLog = f"{self.indent} Service {service} checking set methods"
+        logMsg(msgLog, 2, 0)
         if service == "social":
             return []
 
         if service in hasSet:
-            msgLog = f"{indent} Service {service} cached"
+            msgLog = f"{self.indent} Service {service} cached"
             logMsg(msgLog, 2, 0)
             listMethods = hasSet[service]
         else:
-            clsService = getModule(service)
+            clsService = getModule(service, self.indent)
             listMethods = clsService.__dir__()
             hasSet[service] = listMethods
 
@@ -469,12 +485,14 @@ class moduleRules:
         return methods
 
     def hasPublishMethod(self, service):
+        msgLog = f"{self.indent} Service {service} checking publish methods"
+        logMsg(msgLog, 2, 0)
         if service in hasPublish:
-            msgLog = f"{indent}  Service {service} cached"
+            msgLog = f"{self.indent}  Service {service} cached"
             logMsg(msgLog, 2, 0)
             listMethods = hasPublish[service]
         else:
-            clsService = getModule(service)
+            clsService = getModule(service, self.indent)
             listMethods = clsService.__dir__()
             hasPublish[service] = listMethods
 

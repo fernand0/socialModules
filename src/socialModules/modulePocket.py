@@ -12,7 +12,7 @@ from socialModules.moduleQueue import *
 
 class modulePocket(Content,Queue):
 
-    def __init__(self):
+    def __init__(self, indent=''):
         super().__init__()
         self.postaction='archive'
 

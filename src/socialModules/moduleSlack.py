@@ -20,20 +20,18 @@ from socialModules.moduleQueue import *
 
 class moduleSlack(Content, Queue):
 
-    def __init__(self):
-        super().__init__()
-        self.slack_token = None
-        self.user_slack_token = None
-        self.channel = None
-        self.postaction = None
-        self.service = "Slack"
-
     def getKeys(self, config):
         slack_token = config.get(self.service, "oauth-token")
         user_slack_token = config.get(self.service, "user-oauth-token")
         return (slack_token, user_slack_token)
 
     def initApi(self, keys):
+        self.slack_token = None
+        self.user_slack_token = None
+        self.channel = None
+        self.postaction = None
+        self.service = "Slack"
+
         logging.info("     Connecting {}".format(self.service))
         if self.user and self.user.find('/')>=0:
             self.name = self.user.split('/')[2].split('.')[0]

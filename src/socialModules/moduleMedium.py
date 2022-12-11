@@ -13,10 +13,6 @@ from socialModules.moduleQueue import *
 
 class moduleMedium(Content,Queue):
 
-    def __init__(self):
-        super().__init__()
-        self.service = None
-
     def setClient(self, channel):
         # FIXME: Adapt this method
         logging.info(f"     Connecting {self.service} {channel}")

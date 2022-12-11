@@ -23,14 +23,6 @@ from socialModules.moduleQueue import *
 
 
 class moduleForum(Content, Queue):
-    def __init__(self):
-        super().__init__()
-        self.url = ""
-        self.selected = None
-        self.selector = None
-        self.idSeparator = None
-        self.service = None
-        self.max = 15
 
     def setClient(self, forumData):
         """
@@ -49,6 +41,12 @@ class moduleForum(Content, Queue):
                  topictitle
         idSeparator:=
         """
+        self.url = ""
+        self.selected = None
+        self.selector = None
+        self.idSeparator = None
+        self.service = None
+        self.max = 15
         try:
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + "/.rssForums")

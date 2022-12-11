@@ -16,7 +16,7 @@ from socialModules.configMod import *
 
 class Content:
 
-    def __init__(self):
+    def __init__(self, indent=''):
         self.url = ""
         self.name = ""
         self.nick = ""
@@ -40,8 +40,8 @@ class Content:
         self.client = None
         ser = self.__class__.__name__
         self.service = self.__class__.__name__[6:]
-        self.indent = ''
-        logging.info(f"{self.indent} Initializing {self.service}")
+        self.indent = indent
+        logging.info(f"{self.indent} service {self.service} initializing")
         # They start with module
         self.hold = None
 
