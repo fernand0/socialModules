@@ -44,6 +44,7 @@ class moduleRules:
         rulesNew = {}
         mor = {}
         impRuls = []
+        rssConsidered = False
         for section in config.sections():
             if select and (section != select):
                 continue
@@ -54,16 +55,22 @@ class moduleRules:
             # Sources
             moreS = dict(config.items(section))
             moreSS = None
+            msgLog = (f"{self.indent} checking services...")
+            logMsg(msgLog, 2, 0)
             # FIXME Could we avoid the last part for rules, selecting
             # services here?
             if "rss" in config.options(section):
-                rss = config.get(section, "rss")
-                msgLog = (f"{self.indent} Service rss -> {rss}")
-                logMsg(msgLog, 2, 0)
-                toAppend = ("rss", "set",
-                            urllib.parse.urljoin(url, rss), "posts")
-                srcs.append(toAppend)
-                more.append(moreS)
+                if not rssConsidered:
+                    self.indent = f" {self.indent}"
+                    rss = config.get(section, "rss")
+                    msgLog = (f"{self.indent} Service rss -> {rss}")
+                    logMsg(msgLog, 2, 0)
+                    toAppend = ("rss", "set",
+                                urllib.parse.urljoin(url, rss), "posts")
+                    srcs.append(toAppend)
+                    more.append(moreS)
+                    self.indent = self.indent[1:]
+                    rssConsidered = True
             else:
                 for service in services["regular"]:
                     if (
@@ -120,6 +127,7 @@ class moduleRules:
             if "max" in config.options(section):
                 bufferMax = config.get(section, "max")
 
+            self.indent = f" {self.indent}"
             # Destinations
             hasSpecial = False
             if "posts" in config[section]:
@@ -169,18 +177,12 @@ class moduleRules:
                                 if service == 'cache':
                                     hasSpecial = True
 
-                self.indent = f" {self.indent}"
                 for service in services["regular"]:
                     if (service == 'cache'):
                         continue
                     toAppend = ""
                     if service in config.options(section):
-                        msgLog = (f"{self.indent} service {service} checking ")
-                        logMsg(msgLog, 2, 0)
                         methods = self.hasPublishMethod(service)
-                        msgLog = (f"{self.indent} service {service} has "
-                                  f"{methods}")
-                        logMsg(msgLog, 2, 0)
                         for method in methods:
                             # msgLog = (f"Method: {method}")
                             # logMsg(msgLog, 2, 0)
@@ -259,7 +261,6 @@ class moduleRules:
                                         #           f"{fromSrv} ")
                                         # logMsg(msgLog, 2, 0)
 
-            self.indent = f"{self.indent[1:]}"
             msgLog = f"{self.indent} MoreS: {moreS}"
             logMsg(msgLog, 2, 0)
             msgLog = f"{self.indent} From: {fromSrv}"
@@ -275,15 +276,16 @@ class moduleRules:
 
                 if not orig:
                     if service in services['special']:
-                        msgLog = f"{self.indent} Special: {service}"
+                        msgLog = f"{self.indent} Service {service} -> Special"
                         logMsg(msgLog, 2, 0)
                         orig = service
                     elif service in services['regular']:
-                        msgLog = f"{self.indent} Regular: {service}"
+                        msgLog = f"{self.indent} Service {service} -> Regular"
                         logMsg(msgLog, 2, 0)
                         orig = service
                     else:
-                        msgLog = f"{self.indent} Not interesting: {service}"
+                        msgLog = (f"{self.indent} Service {service} -> "
+                                  f"Not interesting")
                         logMsg(msgLog, 2, 0)
                 else:
                     if ((key in services['special'])
@@ -329,6 +331,10 @@ class moduleRules:
                                 rulesNew[fromSrv] = []
                             rulesNew[fromSrv].append(destRule)
 
+            msgLog = f"End Section: {section} Url: {url}"
+            logMsg(msgLog, 1, 1)
+            rssConsidered = False
+
         # Now we can add the sources not added.
 
         for src in srcsA:
@@ -342,6 +348,7 @@ class moduleRules:
         # msgLog = f"Dsts: {dsts}"
         # logMsg(msgLog, 2, 0)
 
+        # FIXME: Is this needed?
         self.indent = f" Destinations:"
         for dst in dsts:
             if dst[0] == "direct":
@@ -402,7 +409,7 @@ class moduleRules:
         self.available = available
         self.availableList = availableList
 
-        msgLog = (f"Avail: {self.available}")
+        msgLog = (f"Available: {self.available}")
         logMsg(msgLog, 2, 0)
         self.printDict(self.available, "Available")
         # msgLog = (f"Rules: {ruls}")
@@ -485,8 +492,10 @@ class moduleRules:
         return methods
 
     def hasPublishMethod(self, service):
-        msgLog = f"{self.indent} Service {service} checking publish methods"
+        self.indent = f" {self.indent}"
+        msgLog = f"{self.indent} Service {service} publish methods"
         logMsg(msgLog, 2, 0)
+        self.indent = f" {self.indent}"
         if service in hasPublish:
             msgLog = f"{self.indent}  Service {service} cached"
             logMsg(msgLog, 2, 0)
@@ -515,6 +524,10 @@ class moduleRules:
                     toAppend = (action, target)
                     if not (toAppend in methods):
                         methods.append(toAppend)
+        self.indent = f"{self.indent[1:]}"
+        msgLog = (f"{self.indent} service {service} has {methods}")
+        logMsg(msgLog, 2, 0)
+        self.indent = f"{self.indent[1:]}"
         return methods
 
     def getServices(self):
@@ -949,7 +962,6 @@ class moduleRules:
     def executeRules(self):
         msgLog = "Executing rules"
         logMsg(msgLog, 1, 2)
-        indent = " "
 
         # print(args)
         args = self.args
@@ -969,7 +981,7 @@ class moduleRules:
                 if src[0] != previous:
                     i = 0
                 previous = src[0]
-                indent = f"{src[0]}{i}>"
+                indent = f" {src[0]}{i}>"
                 if src in self.more:
                     # f"  More: {self.more[src]}")
                     more = self.more[src]
@@ -1019,10 +1031,10 @@ class moduleRules:
                         theAction = 'posts'
                     else:
                         theAction = action[1]
-                    
+
                     msgLog = f"{indent} {text}"
                     logMsg(msgLog, 1, 1)
-                    msgLog = (f"{indent}  Action {k}:"
+                    msgLog = (f" {indent} Action {k}:"
                              f" {action[3]}@{action[2]} ({theAction})")
                     name = f"(Action {k})>" # [({theAction})"
                     nameA = f"{actionMsg} "
