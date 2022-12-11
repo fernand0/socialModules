@@ -26,26 +26,24 @@ from socialModules.moduleQueue import *
 
 class moduleCache(Content,Queue):
 
-    def __init__(self):
-        super().__init__()
-        self.service = 'Cache'
-        self.nick = None
-        self.postaction = 'delete'
-        #self.url = url
-        #self.socialNetwork = (socialNetwork, nick)
-
     def getService(self):
+        msgLog = (f"{self.indent} Service {self.service} getService")
+        logMsg(msgLog, 2, 0)
         if hasattr(self, 'auxClass'):
-            logging.debug(f"has {self.auxClass}")
+            msgLog = (f"{self.indent} Service {self.service} has "
+                      f"auxClass {self.auxClass}")
+            logMsg(msgLog, 2, 0)
             if isinstance(self.auxClass, tuple):
                 self.auxClass = self.auxClass[0]
             return self.auxClass
         else:
-            logging.debug("not has {self.service}")
+            msgLog = f"{self.indent} Service {self.service} has not auxClass"
+            logMsg(msgLog, 2, 0)
             return self.service
 
     def fileNameBase(self, dst):
-        logging.debug(f"{self.indent} {dst}")
+        msgLog = (f"{self.indent} {dst}")
+        logMsg(msgLog, 2, 0)
         if hasattr(self, 'fileName') and self.fileName:
                         return self.fileName
         src = self
@@ -74,38 +72,40 @@ class moduleCache(Content,Queue):
         self.fileName = fileName
         return fileName
 
+    # def fileNameBase2(self, dst):
+    #     logging.debug(f"dst: {dst}")
+    #     if hasattr(self, 'fileName') and self.fileName:
+    #         return self.fileName
+    #     src = self
+    #     nameSrc = 'Cache'
+    #     typeSrc = typeDst = 'posts'
+    #     if isinstance(dst, tuple):
+    #         user = self.getUrl()
+    #         service = self.getService().capitalize()
+    #         serviceD = dst[0]
+    #         userD = dst[1]
+    #         # serviceD = dst[1][:pos]
+    #         nameDst = dst[0].capitalize()
+    #     elif isinstance(self, moduleCache):
+    #         user = dst.getUser()
+    #         service = dst.getService().capitalize()
+    #         pos = src.getUser().find('@')
+    #         userD = src.nick
+    #         serviceD = src.socialNetwork
+    #         nameDst = serviceD.capitalize()
 
-    def fileNameBase2(self, dst):
-        logging.debug(f"dst: {dst}")
-        if hasattr(self, 'fileName') and self.fileName:
-            return self.fileName
-        src = self
-        nameSrc = 'Cache'
-        typeSrc = typeDst = 'posts'
-        if isinstance(dst, tuple):
-            user = self.getUrl()
-            service = self.getService().capitalize()
-            serviceD = dst[0]
-            userD = dst[1]
-            # serviceD = dst[1][:pos]
-            nameDst = dst[0].capitalize()
-        elif isinstance(self, moduleCache):
-            user = dst.getUser()
-            service = dst.getService().capitalize()
-            pos = src.getUser().find('@')
-            userD = src.nick
-            serviceD = src.socialNetwork
-            nameDst = serviceD.capitalize()
-
-        fileName = (f"{nameSrc}_{typeSrc}_"
-                    f"{user}_{service}__"
-                    f"{nameDst}_{typeDst}_"
-                    f"{userD}_{serviceD}")
-        fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
-        self.fileName = fileName
-        return fileName 
+    #     fileName = (f"{nameSrc}_{typeSrc}_"
+    #                 f"{user}_{service}__"
+    #                 f"{nameDst}_{typeDst}_"
+    #                 f"{userD}_{serviceD}")
+    #     fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
+    #     self.fileName = fileName
+    #     return fileName 
 
     def setClient(self, param):
+        self.service = 'Cache'
+        self.nick = None
+        self.postaction = 'delete'
         logging.info(f"{self.indent} Connecting {self.service}: {param}")
         self.postsType = 'posts'
         self.url = param[0][1]
@@ -233,10 +233,13 @@ class moduleCache(Content,Queue):
         # self.client = self.service
 
     def setApiDrafts(self):
+        msgLog = f"{self.indent} setApiDrafts"
         # Every cache is the same, even the origin are drafts ??
         return(self.setApiPosts())
 
     def setApiPosts(self):
+        msgLog = f"{self.indent} service {self.service} setApiPosts"
+        logMsg(msgLog, 2, 0)
         fileNameQ = ''
         url = self.getUrl()
         service = self.getService()
@@ -250,7 +253,8 @@ class moduleCache(Content,Queue):
         else:
             service = self.getService()
             nick = self.getUser()
-        logging.debug(f"{self.indent} Url: {url} service {service} nick {nick}")
+        msgLog = f"{self.indent} Url: {url} service {service} nick {nick}"
+        logMsg(msgLog, 2, 0)
         if not fileNameQ:
             self.fileName = self.fileNameBase((service, nick))
             fileNameQ = self.fileName+".queue" 
@@ -267,7 +271,8 @@ class moduleCache(Content,Queue):
         except:
             listP = []
 
-        logging.debug(f"{self.indent} listP: {listP}")
+        msgLog = f"{self.indent} listP: {listP}"
+        logMsg(msgLog, 2, 0)
 
         return(listP)
 

@@ -27,6 +27,8 @@ def logMsg(msgLog, log=1, output=1):
         logging.info(msgLog)
     elif log == 2:
         logging.debug(msgLog)
+    elif log == 3:
+        logging.warning(msgLog)
 
     if output == 1:
         print(f"{msgLog}")
@@ -174,7 +176,7 @@ def getModule(profile, indent=''):
     return api
 
 def getApi(profile, nick, indent=""):
-    msgLog = (f"{indent} getApi profile: {profile} - {nick}")
+    msgLog = (f"{indent} Service {profile} getApi  {nick}")
     logMsg(msgLog, 2, 0)
 
     api = getModule(profile, indent)

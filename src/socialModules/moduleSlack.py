@@ -95,6 +95,8 @@ class moduleSlack(Content, Queue):
         return self.sc
 
     def setApiPosts(self):
+        msgLog = f"{self.indent} service {self.service} setApiPosts"
+        logMsg(msgLog, 2, 0)
         if not self.channel:
             # FIXME
             # Can we improve this in mosuleSlack and moduleFacebook?

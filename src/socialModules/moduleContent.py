@@ -4,7 +4,6 @@
 
 import configparser
 import html
-import logging
 import re
 import sys
 from html.parser import HTMLParser
@@ -41,12 +40,14 @@ class Content:
         ser = self.__class__.__name__
         self.service = self.__class__.__name__[6:]
         self.indent = indent
-        logging.info(f"{self.indent} service {self.service} initializing")
+        msgLog = (f"{self.indent} Service {self.service} initializing")
+        logMsg(msgLog, 1, 0)
         # They start with module
         self.hold = None
 
     def setClient(self, account):
-        logging.info(f"{self.indent} Connecting {self.service}: {account}")
+        msgLog = (f"{self.indent} Connecting {self.service}: {account}")
+        logMsg(msgLog, 1, 0)
         # print(f"acc: {account}")
         # print(f"tt: {type(account[1])}")
         client = None
@@ -63,7 +64,7 @@ class Content:
             # Deprecated
             self.user = account[1][1]
 
-        msgLog = f"Service config: {self.service}"
+        msgLog = f"{self.indent} Service config: {self.service}"
         logMsg(msgLog, 2, 0)
 
         configFile = f"{CONFIGDIR}/.rss{self.service}"
@@ -71,7 +72,8 @@ class Content:
             config = configparser.RawConfigParser()
             config.read(f"{configFile}")
         except:
-            logging.warning("Does file {configFile} exist?")
+            msgLog = (f"{self.indent} Does file {configFile} exist?")
+            logMsg(msgLog, 3, 0)
 
         try:
             keys = self.getKeys(config)
@@ -79,14 +81,15 @@ class Content:
         except:
             if not config.sections():
                 # FIXME: Are you sure?
-                logging.warning("Do the adequate keys exist in {configFile}")
+                msgLog = (f"{self.indent} Do the adequate keys exist "
+                          f"in {configFile}")
+                logMsg(msgLog, 3, 0)
 
         try:
             client = self.initApi(keys)
         except:
             if not config.sections and not keys:
-                logging.warning(f"Authentication in {self.service} failed!")
-                logging.warning("Unexpected error:", sys.exc_info()[0])
+                self.report({self.service}, "", "", sys.exc_info())
 
         self.client = client
 
@@ -261,13 +264,14 @@ class Content:
         nick = self.getUser()
         fileName = (f"{fileNamePath(url, (service, nick))}.last")
 
-        logging.debug(f"Urll: {url}")
-        logging.debug(f"Nickl: {nick}")
-        logging.debug(f"Servicel: {service}")
-        logging.debug(f"fileName: {fileName}")
-        if not os.path.isdir(os.path.dirname(fileName)):
+        # logging.debug(f"Urll: {url}")
+        # logging.debug(f"Nickl: {nick}")
+        # logging.debug(f"Servicel: {service}")
+        # logging.debug(f"fileName: {fileName}")
+        dirName = os.path.dirname(fileName)
+        if not os.path.isdir(dirName):
             return ""
-            sys.exit("No directory {} exists".format(os.path.dirname(fileName)))
+            sys.exit("No directory {dirName} exists")
         if service in ['html']:
             linkLast = ''
         elif os.path.isfile(fileName):
@@ -277,8 +281,8 @@ class Content:
             # File does not exist, we need to create it.
             # Should we create it here? It is a reading function!!
             with open(fileName, "wb") as f:
-                logging.warning("File %s does not exist. Creating it."
-                        % fileName)
+                msgLog = (f"File {fileName} does not exist. Creating it.")
+                logMsg(msgLog, 3, 0)
                 linkLast = ''
                 # None published, or non-existent file
         lastLink = ''
@@ -358,8 +362,8 @@ class Content:
                 with open(fileNameNext,'wb') as f:
                     pickle.dump((tNow, tSleep), f)
             else:
-                logging.warning(f"{self.indent} file {fileNameNext} "
-                                f"does not exist")
+                msgLog = (f"{self.indent} file {fileNameNext} does not exist")
+                logMsg(msgLog, 3, 0)
         else:
             print(f"Not implemented!")
 
@@ -371,10 +375,11 @@ class Content:
                 with open(fileNameNext,'wb') as f:
                     pickle.dump((tNow, tSleep), f)
             else:
-                logging.warning(f"{self.indent} file {fileNameNext} "
-                                f"does not exist")
+                msgLog = (f"{self.indent} file {fileNameNext} does not exist")
+                logMsg(msgLog, 3, 0)
         else:
-            logging.info(f"Not implemented!")
+            msgLog = (f"Not implemented!")
+            logMsg(msgLog, 3, 0)
 
     def setNumPosts(self, numPosts):
         self.numPosts = numPosts
@@ -452,11 +457,13 @@ class Content:
             "file",
             "kindle",
         ]
-        logging.debug("  sNC {}".format(socialNetworksConfig))
+        msgLog =("  sNC {socialNetworksConfig}")
+        logMsg(msgLog, 2, 0)
         for sN in socialNetworksConfig:
             if sN in socialNetworksOpt:
                 self.addSocialNetwork((sN, socialNetworksConfig[sN]))
-        logging.debug("  sNN {}".format(self.getSocialNetworks()))
+        msgLog = ("  sNN {self.getSocialNetworks()}")
+        logMsg(msgLog, 2, 0)
 
     def addSocialNetwork(self, socialNetwork):
         self.socialNetworks[socialNetwork[0]] = socialNetwork[1]
@@ -705,16 +712,16 @@ class Content:
                     soup = BeautifulSoup(contentHtml,'lxml')
                     if hasattr(self, 'getLinksToAvoid') and self.getLinksToAvoid():
                         (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinksToAvoid())
-                        logging.debug("theC %s" % theContent)
+                        #logging.debug("theC %s" % theContent)
                         if theContent.startswith('Anuncios'):
                             theContent = ''
-                            logging.debug("theC %s"% theContent)
+                            # logging.debug("theC %s"% theContent)
                     else:
                         (theContent, theSummaryLinks) = self.extractLinks(soup, "")
-                        logging.debug("theC %s"% theContent)
+                        # logging.debug("theC %s"% theContent)
                         if theContent.startswith('Anuncios'):
                             theContent = ''
-                        logging.debug("theC %s"% theContent)
+                        # logging.debug("theC %s"% theContent)
                     # theSummaryLinks = theContent + '\n' + theSummaryLinks
 
                 field0 =self.getPostTitle(post)
@@ -764,10 +771,10 @@ class Content:
 
     def getId(self, j):
         idPost = -1
-        logging.info(f"Posts {self.getPosts()} j: {j}")
         if j < len(self.getPosts()):
             post = self.getPost(j)
-            logging.info(f"Post: {post}")
+            msgLog = (f"{self.indent} Post: {post}")
+            logMsg(msgLog, 2, 0)
             idPost = self.getPostId(post)
         return idPost
 
@@ -775,7 +782,7 @@ class Content:
         splitListPosts = []
         for imgL in post[3]:
             myPost = list(post)
-            logging.info("mP", myPost)
+            # logging.info("mP", myPost)
             myPost[3] = imgL
             splitListPosts.append(tuple(myPost))
 
@@ -784,7 +791,7 @@ class Content:
     def getNumPostsData(self, num, i, lastLink=None):
         listPosts = []
         for j in range(num, 0, -1):
-            logging.debug("j, i %d - %d" % (j, i))
+            # logging.debug("j, i %d - %d" % (j, i))
             i = i - 1
             if i < 0:
                 break
@@ -823,7 +830,8 @@ class Content:
     def publishImage(self, *args, **kwargs):
         post, image = args
         more = kwargs
-        logging.info(f"    Publishing image {image} in {self.service}: {post}")
+        msgLog = (f"{self.indent} Service {self.service} publishing image "                       f"{image}: {post}")
+        logMsg(msgLog, 2, 0)
         try:
             reply = self.publishApiImage(post, image, **more)
             return self.processReply(reply)
@@ -835,11 +843,14 @@ class Content:
 
     def deleteNextPost(self):
         reply = ''
-        logging.info(f"    Deleting next post from {self} in {self.service}")
+        msgLog = (f"{self.indent} Service {self.service} Deleting next post")
+        logMsg(msgLog, 2, 0)
         try:
             post = self.getNextPost()
             if post:
-                logging.info(f"Deleting: {post}")
+                msgLog = (f"{self.indent} Service {self.service} Deleting post "
+                          f"{post}")
+                logMsg(msgLog, 2, 0)
                 idPost = self.getPostId(post)
                 if (hasattr(self, 'getPostsType')
                     and (self.getPostsType())
@@ -848,8 +859,6 @@ class Content:
                     nameMethod = self.getPostsType().capitalize()
 
                     method = getattr(self, f"deleteApi{nameMethod}")
-                    logging.info(f"aaa: {method}")
-                    logging.info(f"aaa id: {idPost}")
                     res = method(idPost)
                     reply = self.processReply(res)
             else:
@@ -859,18 +868,23 @@ class Content:
         return reply
 
     def publishPosPost(self, apiSrc, pos):
+        msgLog = (f"{self.indent} Service {self.service} publishing post in "
+                  f"pos {pos} from {apiSrc}")
+        logMsg(msgLog, 2, 0)
         reply = ''
-        logging.info(f"    Publishing post in pos {pos} from "
-                     f"{apiSrc} in {self.service}")
         try:
             post = apiSrc.getPost(pos)
             if post:
-                logging.info(f"Publishing: {post}")
+                msgLog = (f"{self.indent} Service {self.service} publishing "
+                          f"post {post}")
+                logMsg(msgLog, 2, 0)
 
                 nameMethod = 'Post'
 
                 method = getattr(self, f"publishApi{nameMethod}")
-                logging.info(f"method: {method}")
+                msgLog = (f"{self.indent} Service {self.service} "
+                          f"method: {method}")
+                logMsg(msgLog, 2, 0)
                 res = method(api=apiSrc, post=post)
                 reply = self.processReply(res)
             else:
@@ -882,12 +896,16 @@ class Content:
 
     def publishNextPost(self, apiSrc):
         reply = ''
-        logging.info(f"    Publishing next post from {apiSrc} in "
-                    f"{self.service}")
+        msgLog = (f"{self.indent} Service {self.service} publishing next post "
+                  f"from {apiSrc}")
+        logMsg(msgLog, 2, 0)
         try:
             post = apiSrc.getNextPost()
             if post:
-                logging.debug(f"Publishing: {post}")
+                msgLog = (f"{self.indent} Service {self.service} publishing "
+                          f"post {post}")
+                logMsg(msgLog, 2, 0)
+                
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
                 comment= ''
@@ -921,12 +939,15 @@ class Content:
             title = args[0]
             link = args[1]
             comment = args[2]
-            logging.info(f"    Publishing post {title} in {self.service}: "
-                    f"{link} with comment: {comment}")
+            msgLog = (f"{self.indent} Service {self.service} publishing post "
+                      f"{title}, {link} with comment: {comment}")
+            logMsg(msgLog, 2, 0)
         elif len(args) == 1:
             # apiSrc= args[0]
             listPosts = args#[1]
-            logging.info(f"    Publishing in {self.service}: posts {listPosts}")
+            msgLog = (f"{self.indent} Service {self.service} publishing post "
+                      f"{listPosts}")
+            logMsg(msgLog, 2, 0)
             print(f"    Publishing in {self.service}: posts {listPosts}")
             for post in listPosts:
                 title = self.getPostTitle(post)
@@ -979,7 +1000,9 @@ class Content:
         return reply
 
     def deletePostId(self, idPost):
-        logging.debug(f"Deleting: {idPost}")
+        msgLog = (f"{self.indent} Service {self.service} deleting post "
+                  f"id {idPost}")
+        logMsg(msgLog, 2, 0)
         typePosts = self.getPostsType()
         if typePosts:
             if typePosts == "cache":
@@ -994,21 +1017,29 @@ class Content:
         return self.processReply(reply)
 
     def deletePost(self, post):
-        logging.debug(f"Deleting post: {post}")
+        msgLog = (f"{self.indent} Service {self.service} deleting post "
+                  f" {post}")
+        logMsg(msgLog, 2, 0)
         idPost = self.getPostId(post)
-        logging.debug(f"Deleting post: {idPost}")
+        msgLog = (f"{self.indent} Service {self.service} deleting post "
+                  f"id {idPost}")
+        logMsg(msgLog, 2, 0)
         result = self.deletePostId(idPost)
         return result
 
     def delete(self, j):
-        print(f"Deleting Pos: {j}")
+        msgLog = (f"{self.indent} Service {self.service} deleting post "
+                  f"pos: {j}")
+        logMsg(msgLog, 2, 0)
         post = self.getPost(j)
         idPost = self.getPostId(self.getPost(j))
         result = self.deletePostId(idPost)
         return result
 
     def processReply(self, reply):
-        logging.debug("Res: %s" % reply)
+        msgLog = (f"{self.indent} Service {self.service} res "
+                  f"{reply}")
+        logMsg(msgLog, 2, 0)
         return reply
 
     def do_edit(self, j, **kwargs):
@@ -1018,28 +1049,36 @@ class Content:
             if ("newTitle" in kwargs) and kwargs["newTitle"]:
                 oldTitle = self.getPostTitle(post)
                 newTitle = kwargs["newTitle"]
-                logging.info(f"New title {newTitle}")
+                msgLog = (f"{self.indent} Service {self.service} "
+                          f"new title {newTitle}")
+                logMsg(msgLog, 1, 0)
                 res = self.editApiTitle(post, newTitle)
                 res = self.processReply(res)
                 update = f"Changed {oldTitle} with {newTitle} Id {str(res)}"
             if ("newState" in kwargs) and kwargs["newState"]:
                 oldState = self.getPostState(post)
                 newState = kwargs["newState"]
-                logging.info("New state %s", newState)
+                msgLog = (f"{self.indent} Service {self.service} "
+                          f"new state {newState}")
+                logMsg(msgLog, 2, 0)
                 res = self.editApiState(post, newState)
                 res = self.processReply(res)
                 update = f"Changed {oldState} to {newState} Id {str(res)}"
             if ("newLink" in kwargs) and kwargs["newLink"]:
                 oldLink = self.getPostLink(post)
                 newLink = kwargs["newLink"]
-                logging.info(f"New link {newLink}")
+                msgLog = (f"{self.indent} Service {self.service} "
+                          f"new link {newLink}")
+                logMsg(msgLog, 2, 0)
                 res = self.editApiLink(post, newLink)
                 res = self.processReply(res)
                 update = f"Changed {oldLink} with {newLink} Id {str(res)}"
             return update
 
     def edit(self, j, newTitle):
-        logging.debug(f"Do edit {j} - {newTitle}")
+        msgLog = (f"{self.indent} Service {self.service} "
+                  f"do edit {j} - {newTitle}")
+        logMsg(msgLog, 2, 0)
         update = self.do_edit(j, newTitle=newTitle)
         return update
 
@@ -1076,7 +1115,9 @@ class Content:
 
     def getLastLinkPublished(self):
         if self.lastLinkPublished and (len(self.lastLinkPublished) == 1):
-            logging.info(f"linkLast len 1 {self.lastLinkPublished}")
+            msgLog = (f"{self.indent} Service {self.service} "
+                      f"linkLast len 1 {self.lastLinkPublished}")
+            logMsg(msgLog, 2, 0)
             lastLink = self.lastLinkPublished[0]
         else:
             lastLink = self.lastLinkPublished
@@ -1200,7 +1241,7 @@ class Content:
         if posts:
             pos = len(posts)
             if not idPost:
-                logging.debug(self.getPosts())
+                #logging.debug(self.getPosts())
                 return len(self.getPosts())
             for i, entry in enumerate(posts):
                 idEntry = self.getPostId(entry)
@@ -1218,14 +1259,16 @@ class Content:
         if posts:
             pos = len(posts)
             if not link:
-                logging.debug(self.getPosts())
+                #logging.debug(self.getPosts())
                 return len(self.getPosts())
             for i, entry in enumerate(posts):
                 linkS = link
                 if isinstance(link, bytes):
                     linkS = linkS.decode()
                 url = self.getPostLink(entry)
-                logging.debug(f"\nUrl: {url} Link:{linkS}")
+                msgLog = (f"{self.indent} Service {self.service} "
+                          f"\nUrl: {url} Link:{linkS}")
+                logMsg(msgLog, 2, 0)
                 lenCmp = min(len(url), len(linkS))
                 # if url[:lenCmp] == linkS[:lenCmp]:
                 if url == linkS:
@@ -1321,8 +1364,9 @@ class Content:
                f"Unexpected error: {data[0]}",
                f"Unexpected error: {data[1]}")
         for line in msg:
-            logging.warning(line)
-            print(line)
+            msgLog = (f"{self.indent} Service {self.service} "
+                      f"{line}")
+            logMsg(msgLog, 3, 1)
             sys.stderr.write(line)
         return f"Fail! {data[1]}"
         # print("----Unexpected error: %s"% data[2])
@@ -1361,7 +1405,7 @@ class Content:
         res = None
         if i < len(posts):
             post = posts[i]
-            logging.debug("Post: %s" % post)
+            # logging.debug("Post: %s" % post)
             res = self.extractImages(post)
         return res
 
