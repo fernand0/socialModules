@@ -19,7 +19,6 @@ from socialModules.moduleQueue import *
 
 class moduleTwitter(Content, Queue):
 
-
     def getKeys(self, config):
         CONSUMER_KEY = config.get(self.user, "CONSUMER_KEY")
         CONSUMER_SECRET = config.get(self.user, "CONSUMER_SECRET")
@@ -31,6 +30,9 @@ class moduleTwitter(Content, Queue):
                 TOKEN_SECRET, BEARER_TOKEN)
 
     def initApi(self, keys):
+        self.base_url = 'https://twitter.com'
+        self.url = f"{self.base_url}/{self.user}"
+
         # FIXME: Do we call this method directly?
         self.base_url = 'https://twitter.com'
         self.url = f"{self.base_url}/{self.user}"

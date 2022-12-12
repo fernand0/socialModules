@@ -27,9 +27,10 @@ class moduleImdb(Content,Queue):
         self.cache = False
         self.channels = None
         self.posts = []
-        logging.info("Setting client")
-        logging.info(f"Setting client {str(init)}")
-        logging.info(f"Url {self.getUrl()}")
+        
+        logging.info(f"{self.indent} Setting client")
+        logging.info(f"{self.indent} Setting client {str(init)}")
+        # logging.info(f"Url {self.getUrl()}")
         date = time.strftime('%Y-%m-%d')
         if isinstance(init,str): 
             self.url = init 
@@ -93,7 +94,7 @@ class moduleImdb(Content,Queue):
         return posts
 
     def setPosts(self):
-        logging.info(" Setting posts")
+        logging.info(f"{self.indent} Setting posts")
 
         posts = self.setInfoData() 
         # print(f"Posts: {posts}")

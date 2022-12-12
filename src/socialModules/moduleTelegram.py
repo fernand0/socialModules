@@ -12,7 +12,6 @@ from socialModules.moduleContent import *
 
 class moduleTelegram(Content):
 
-
     def getKeys(self, config):
         print(config)
         print(config.get('Telegram', 'TOKEN'))
@@ -22,9 +21,9 @@ class moduleTelegram(Content):
 
     def initApi(self, keys):
         self.service = 'Telegram'
-        logging.info("     Connecting Telegram")
+        # logging.info("     Connecting {self.service}")
         TOKEN = keys[0]
-        logging.info("     token: {TOKEN}")
+        # logging.info("     token: {TOKEN}")
         try:
             bot = telepot.Bot(TOKEN)
             logging.info("     token: {TOKEN}")

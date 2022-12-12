@@ -63,7 +63,7 @@ class moduleCache(Content,Queue):
             userD = src.nick
             serviceD = src.socialNetwork
             nameDst = serviceD.capitalize()
-            
+
         fileName = (f"{nameSrc}_{typeSrc}_"
                     f"{user}_{service}__"
                     f"{nameDst}_{typeDst}_"
@@ -100,13 +100,15 @@ class moduleCache(Content,Queue):
     #                 f"{userD}_{serviceD}")
     #     fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
     #     self.fileName = fileName
-    #     return fileName 
+    #     return fileName
 
     def setClient(self, param):
         self.service = 'Cache'
         self.nick = None
         self.postaction = 'delete'
-        logging.info(f"{self.indent} Connecting {self.service}: {param}")
+
+        msgLog = (f"{self.indent} Service {self.service} connecting {param}")
+        logMsg(msgLog, 1, 0)
         self.postsType = 'posts'
         self.url = param[0][1]
         pos = param[1].find('@')
@@ -121,14 +123,14 @@ class moduleCache(Content,Queue):
             logging.info(f"self.fileName {self.fileName}")
             print(f"self.fileName {self.fileName}")
 
-    def setClient2(self, param): 
+    def setClient2(self, param):
         logging.info(f"    Connecting Cache {self.service}: {param}")
         self.postsType = 'posts'
 
         # print(f"param: {param}")
         self.auxClass = param[0]
         if 'slack' in self.auxClass:
-            #FIXME!!!! 
+            #FIXME!!!!
             self.auxClass='slack'
 
         if isinstance(param, str):
@@ -142,7 +144,7 @@ class moduleCache(Content,Queue):
             self.user = self.url
             self.service = param[0][0]
             self.socialNetwork = param[0][0]
-            self.fileName = self.fileNameBase((self.user, self.socialNetwork)) 
+            self.fileName = self.fileNameBase((self.user, self.socialNetwork))
         elif isinstance(param[1], str):
             logging.debug("Is 1 str")
             logging.info(f"    Connecting Cache {self.service}: {param[0]}")
@@ -154,29 +156,29 @@ class moduleCache(Content,Queue):
                 pos = param[2].find('@')
                 self.socialNetwork = param[2][:pos].capitalize()
                 self.user = param[2][pos+1:]
-                self.service = param[0] 
+                self.service = param[0]
 
-            if hasattr(self, 'fileName'):       
-                print(f"self.fileName {self.fileName}")        
-            self.fileName = self.fileNameBase((self.user, self.socialNetwork))     
-            logging.debug(f"self {self}")      
-            if hasattr(self, 'fileName'):      
-                    logging.info(f"self.fileName {self.fileName}")     
+            if hasattr(self, 'fileName'):
+                print(f"self.fileName {self.fileName}")
+            self.fileName = self.fileNameBase((self.user, self.socialNetwork))
+            logging.debug(f"self {self}")
+            if hasattr(self, 'fileName'):
+                    logging.info(f"self.fileName {self.fileName}")
 
-            #self.user = param[1]      
-            if self.user.find('\n')>=0:        
-                    self.user = None       
-        elif hasattr(param[0], 'getUrl'):      
-                #self.url = param[0].getUrl()      
-            self.user = param[1][1]        
-            self.service = param[1][0]     
-            self.fileName = self.fileNameBase(param[0])        
-            # print(f"ff: {self.fileName}")        
-        else:      
-            self.url = param[0]        
-            self.service = param[1][0]     
+            #self.user = param[1]
+            if self.user.find('\n')>=0:
+                    self.user = None
+        elif hasattr(param[0], 'getUrl'):
+                #self.url = param[0].getUrl()
             self.user = param[1][1]
-                
+            self.service = param[1][0]
+            self.fileName = self.fileNameBase(param[0])
+            # print(f"ff: {self.fileName}")
+        else:
+            self.url = param[0]
+            self.service = param[1][0]
+            self.user = param[1][1]
+
 
                 # self.socialNetwork = param[0]
                 # self.service = param[0]
@@ -188,7 +190,7 @@ class moduleCache(Content,Queue):
         # self.auxClass = param[0][0]
         self.client = self.service
         #self.fileName = self.fileNameBase((self.user, self.socialNetwork))
-        
+
         if hasattr(self, 'fileName'):
             logging.info(f"self.fileName {self.fileName}")
             print(f"self.fileName {self.fileName}")
@@ -257,7 +259,7 @@ class moduleCache(Content,Queue):
         logMsg(msgLog, 2, 0)
         if not fileNameQ:
             self.fileName = self.fileNameBase((service, nick))
-            fileNameQ = self.fileName+".queue" 
+            fileNameQ = self.fileName+".queue"
         else:
             fileNameQ = fileNameQ+".queue"
 
@@ -456,14 +458,14 @@ class moduleCache(Content,Queue):
                 importlib.import_module(myModule)
                 mod = sys.modules.get(myModule)
                 cls = getattr(mod, myModule)
-                api = cls()
+                api = cls(self.indent)
                 apiCmd = getattr(api, 'setPostLink')
                 post  = apiCmd(post, newLink)
             # else:
             #     # Old style
             #     title = post[0]
             return post
- 
+
     def setPostTitle(self, post, newTitle):
         if post:
             if hasattr(self, 'auxClass'):
@@ -472,14 +474,14 @@ class moduleCache(Content,Queue):
                 importlib.import_module(myModule)
                 mod = sys.modules.get(myModule)
                 cls = getattr(mod, myModule)
-                api = cls()
+                api = cls(self.indent)
                 apiCmd = getattr(api, 'setPostTitle')
                 post  = apiCmd(post, newTitle)
             # else:
             #     # Old style
             #     title = post[0]
             return post
- 
+
     def getPostTitle(self, post):
         title = ''
         if post:
@@ -491,7 +493,7 @@ class moduleCache(Content,Queue):
                     importlib.import_module(myModule)
                     mod = sys.modules.get(myModule)
                     cls = getattr(mod, myModule)
-                    api = cls()
+                    api = cls(self.indent)
                 else:
                     api = self.auxClass
                 logging.debug(f"  Api: {api}")
@@ -512,7 +514,7 @@ class moduleCache(Content,Queue):
                     importlib.import_module(myModule)
                     mod = sys.modules.get(myModule)
                     cls = getattr(mod, myModule)
-                    api = cls()
+                    api = cls(self.indent)
                 else:
                     api = self.auxClass
                 apiCmd = getattr(api, 'getPostLink')
@@ -523,14 +525,14 @@ class moduleCache(Content,Queue):
 
     def getPostContentHtml(self, post):
         content = ''
-        if post: 
+        if post:
             if hasattr(self, 'auxClass'):
                 myModule = f"module{self.auxClass.capitalize()}"
                 import importlib
                 importlib.import_module(myModule)
                 mod = sys.modules.get(myModule)
                 cls = getattr(mod, myModule)
-                api = cls()
+                api = cls(self.indent)
                 apiCmd = getattr(api, 'getPostContentHtml')
                 content  = apiCmd(post)
             else:
@@ -539,13 +541,13 @@ class moduleCache(Content,Queue):
 
     def editApiLink(self, post, newLink=''):
         oldLink = self.getPostLink(post)
-        if hasattr(self, 'auxClass'): 
+        if hasattr(self, 'auxClass'):
             myModule = f"module{self.auxClass.capitalize()}"
             import importlib
             importlib.import_module(myModule)
             mod = sys.modules.get(myModule)
             cls = getattr(mod, myModule)
-            api = cls()
+            api = cls(self.indent)
             apiCmd = getattr(api, 'editApiLink')
             content  = apiCmd(post, newLink)
         else:
@@ -628,12 +630,12 @@ class moduleCache(Content,Queue):
                 importlib.import_module(myModule)
                 mod = sys.modules.get(myModule)
                 cls = getattr(mod, myModule)
-                api = cls()
+                api = cls(self.indent)
                 apiCmd = getattr(api, 'getPostId')
                 idPost  = apiCmd(post)
             else:
-                # Old style 
-                link = self.getPostLink(post) 
+                # Old style
+                link = self.getPostLink(post)
                 idPost = self.getLinkPosition(link)
         return idPost
 
@@ -648,7 +650,7 @@ class moduleCache(Content,Queue):
         if isinstance(idPost, str):
             # FIXME
             idPost = self.getIdPosition(idPost)
-            
+
         logging.info(f"id: {idPost}")
         self.deleteApi(idPost)
         return f"OK. Deleted post {idPost}"
@@ -795,7 +797,7 @@ def main():
             print(f"{i}) {apiSrc.getPostTitle(post)}")
 
         return
- 
+
 
 
     testingFiles = False
@@ -810,12 +812,12 @@ def main():
         for fN in os.listdir(f"{DATADIR}"):
             if (fN[0].isupper() and fN.find('queue')>=0):
                 queues.append(fN)
-    
+
         for i, fN in enumerate(queues):
             print(f"{i}) {fN}")
-    
+
         sel = input('Select one ')
-    
+
         fN = queues[int(sel)]
         try:
             url, sN, nick = fN.split('_')
@@ -833,7 +835,7 @@ def main():
             mod = sys.modules.get(myModule)
             cls = getattr(mod, myModule)
             api = cls()
-    
+
             apiCmd = getattr(api, 'getPostTitle')
 
         print(f"url: {url} social network: {sN} nick: {nick}")
@@ -883,12 +885,12 @@ def main():
             os.remove(fileDelete)
         return
 
-    dataSources = {'S0': {'sn':'slack', 
+    dataSources = {'S0': {'sn':'slack',
                             'nick':'http://fernand0-errbot.slack.com/'},
-                   'G0': {'sn':'gitter', 
+                   'G0': {'sn':'gitter',
                             'nick':'https://gitter.im/fernand0errbot/'},
         }
- 
+
     dataCaches = {'S0': {'sn':'slack', 'nick':'http://fernand0-errbot.slack.com/'},
                   'H0': {'sn':'linkedin', 'nick':'Fernando Tricas'},
                   'H1': {'sn':'twitter', 'nick':'fernand0'},
@@ -909,7 +911,7 @@ def main():
         snDst = dataSources[cache]['sn']
         site = getApi(snDst, nickDst)
         site.setPosts()
-        [ print(f"{i}) {site.getPostTitle(post)}") 
+        [ print(f"{i}) {site.getPostTitle(post)}")
                 for i, post in enumerate(site.getPosts()) ]
         pos = int(input("Which post? "))
         for cache in dataCaches.keys():
@@ -946,7 +948,7 @@ def main():
         site.auxClass = 'slack'
         site.setPosts()
 
-        [ print(f"{i}) {site.getPostTitle(post)}") 
+        [ print(f"{i}) {site.getPostTitle(post)}")
                 for i, post in enumerate(site.getPosts()) ]
         pos = int(input("Which post? "))
         post = site.getPost(pos)

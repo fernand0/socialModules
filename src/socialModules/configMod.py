@@ -180,6 +180,7 @@ def getApi(profile, nick, indent=""):
     logMsg(msgLog, 2, 0)
 
     api = getModule(profile, indent)
+    api.indent = indent
     api.setClient(nick)
 
     return api

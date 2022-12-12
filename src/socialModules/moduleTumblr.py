@@ -19,7 +19,6 @@ from socialModules.moduleQueue import *
 
 class moduleTumblr(Content, Queue):
 
-
     def getKeys(self, config):
         consumer_key = config.get("Buffer1", "consumer_key")
         consumer_secret = config.get("Buffer1", "consumer_secret")
@@ -29,9 +28,8 @@ class moduleTumblr(Content, Queue):
         return (consumer_key, consumer_secret, oauth_token, oauth_secret)
 
     def initApi(self, keys):
-        self.user = None
-        self.tc = None
         self.service = 'Tumblr'
+
         client = pytumblr.TumblrRestClient(keys[0], keys[1], keys[2], keys[3])
         # print(f"client: {client}")
         tumblr = self.user

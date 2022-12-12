@@ -25,6 +25,12 @@ from socialModules.moduleQueue import *
 class moduleForum(Content, Queue):
 
     def setClient(self, forumData):
+        self.url = ""
+        self.selected = None
+        self.selector = None
+        self.idSeparator = None
+        self.service = None
+        self.max = 15
         """
         [http://foro.infojardin.com/]
         forums:Identificar cactus

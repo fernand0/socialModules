@@ -20,12 +20,10 @@ from socialModules.moduleContent import *
 
 class moduleInstagram(Content):
 
-    def __init__(self):
-        super().__init__()
+    def setClient(self, instagramAC):
         self.user = None
         self.ig = None
 
-    def setClient(self, instagramAC):
         logging.info("     Connecting Instagram")
         try: 
             keyring.set_keyring(keyrings.alt.file.PlaintextKeyring()) 
@@ -52,7 +50,7 @@ class moduleInstagram(Content):
         self.client = api
  
     def setPosts(self):
-        logging.info("  Setting posts")
+        logging.info(f"{self.indent} Setting posts")
         self.posts = []
         if self.client.getSelfUserFeed():
             igs = self.client.LastJson['items']

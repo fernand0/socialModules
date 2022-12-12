@@ -37,7 +37,8 @@ class moduleRss(Content, Queue):
         self.rssFeed = ''
         self.feed = None
         self.title = None
-        logging.debug(f"{self.indent} Feed {feed}")
+        msgLog = (f"{self.indent} Feed {feed}")
+        logMsg(msgLog, 2, 0)
         if isinstance(feed, str):
             self.rssFeed = feed
         elif isinstance(feed, tuple):
@@ -48,20 +49,19 @@ class moduleRss(Content, Queue):
             self.user = urllib.parse.urlparse(feed).netloc
         else:
             self.user = feed
-        logging.debug(f"{self.indent} Url + feed {self.rssFeed}")
+        msgLog = (f"{self.indent} Url + feed {self.rssFeed}")
+        logMsg(msgLog, 2, 0)
         self.client = 'client'
         self.service = 'Rss'
 
     def setPosts(self):
-        msgLog = "  Setting posts"
-        logging.info(msgLog)
+        msgLog = f"{self.indent} Setting posts"
+        logMsg(msgLog, 2, 0)
 
-        logging.debug(f"   Feed {self.rssFeed}")
         if self.rssFeed.find('http')>=0:
             urlRss = self.getRssFeed()
         else:
             urlRss = urllib.parse.urljoin(self.url,self.getRssFeed())
-        logging.debug("Rss: %s" % urlRss)
         if 'github.com' in urlRss:
             self.feed = feedparser.parse(urlRss, 
                     request_headers={'Accept':'application/atom+xml'})
@@ -139,10 +139,10 @@ class moduleRss(Content, Queue):
         soup = BeautifulSoup(summary, 'lxml')
         for node in soup.find_all('blockquote'):
             node = node.get_text()
-            logging.debug(f"Node: {node}")
+            # logging.debug(f"Node: {node}")
             node = f'"{node[1:-1]}"'
             # We need to delete before and after \n
-            logging.debug(f"Node: {node}")
+            # logging.debug(f"Node: {node}")
         return soup.get_text()
 
 

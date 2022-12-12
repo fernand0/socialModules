@@ -150,7 +150,7 @@ class moduleGcalendar(Content,socialGoogle):
         self.active = idCal
 
     def setCalendarList(self): 
-        logging.info("  Setting calendar list")
+        logging.info(f"{self.indent} Setting calendar list")
         api = self.getClient()
         page_token = None
         self.calendars = api.calendarList().list(pageToken=page_token).execute().get('items',[])
@@ -159,8 +159,8 @@ class moduleGcalendar(Content,socialGoogle):
         return(self.calendars)
 
     def setPosts(self, date=''):
-        logging.info("  Setting posts")
-        logging.info("  Setting posts date %s"%date)
+        logging.info(f"{self.indent} Setting posts")
+        logging.info(f"{self.indent} Setting posts date %s"%date)
         api = self.getClient()
         theDate = ''
         if date:

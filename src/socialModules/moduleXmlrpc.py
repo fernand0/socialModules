@@ -23,7 +23,6 @@ from socialModules.moduleContent import *
 
 class moduleXmlrpc(Content):
 
- 
     def setClient(self, nick): 
         self.url = ""
         self.name = ""

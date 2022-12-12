@@ -56,7 +56,7 @@ class moduleMedium(Content,Queue):
         return self.userRaw
 
     def setPosts(self):
-        logging.info("  Setting posts")
+        logging.info(f"{self.indent} Setting posts")
         self.posts = []
 
         import moduleRss
