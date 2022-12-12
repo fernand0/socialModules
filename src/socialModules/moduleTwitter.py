@@ -30,9 +30,6 @@ class moduleTwitter(Content, Queue):
                 TOKEN_SECRET, BEARER_TOKEN)
 
     def initApi(self, keys):
-        self.base_url = 'https://twitter.com'
-        self.url = f"{self.base_url}/{self.user}"
-
         # FIXME: Do we call this method directly?
         self.base_url = 'https://twitter.com'
         self.url = f"{self.base_url}/{self.user}"

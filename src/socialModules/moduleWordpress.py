@@ -19,7 +19,7 @@ class moduleWordpress(Content,Queue):
         return ((access_token, ))
 
     def initApi(self, keys):
-        self.user = None
+        # self.user = None
         self.wp = None
         self.service = 'Wordpress'
         self.tags = None
