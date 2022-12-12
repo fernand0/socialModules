@@ -48,7 +48,7 @@ keyWords = {"address": ["From", "To"],
 class moduleImap(Content, Queue):
 
     def getKeys(self, config):
-        logging.info("Getting keys")
+        logging.info(f"{self.indent} Getting keys")
         pos = self.user.rfind('@')
         if pos>=0:
             self.user, self.server = self.user[:pos], self.user[pos+1:]

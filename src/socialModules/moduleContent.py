@@ -82,7 +82,7 @@ class Content:
                 logging.warning("Do the adequate keys exist in {configFile}")
 
         try:
-            client = self.initApi(keys, self.indent)
+            client = self.initApi(keys)
         except:
             if not config.sections and not keys:
                 logging.warning(f"Authentication in {self.service} failed!")

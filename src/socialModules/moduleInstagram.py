@@ -50,7 +50,7 @@ class moduleInstagram(Content):
         self.client = api
  
     def setPosts(self):
-        logging.info("  Setting posts")
+        logging.info(f"{self.indent} Setting posts")
         self.posts = []
         if self.client.getSelfUserFeed():
             igs = self.client.LastJson['items']

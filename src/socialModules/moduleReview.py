@@ -52,7 +52,7 @@ class moduleRss(Content, Queue):
         self.service = 'Rss'
 
     def setPosts(self):
-        msgLog = "  Setting posts"
+        msgLog = f"{self.indent} Setting posts"
         logging.info(msgLog)
 
         logging.debug(f"   Feed {self.rssFeed}")

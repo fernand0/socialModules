@@ -29,6 +29,7 @@ class moduleFacebook(Content,Queue):
         return ((oauth_access_token,))
 
     def initApi(self, keys):
+        self.page = None
         graph = facebook.GraphAPI(keys[0], version='3.0')
         return graph
 

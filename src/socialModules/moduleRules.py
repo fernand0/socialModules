@@ -616,7 +616,7 @@ class moduleRules:
             apiDst.nick = action[3]
             apiDst.fileName = apiDst.fileNameBase(apiSrc)
         else:
-            apiDst = getApi(profile, nick)
+            apiDst = getApi(profile, nick, indent)
 
         apiDst.setUser(nick)
         apiDst.setPostsType('posts')
@@ -804,7 +804,7 @@ class moduleRules:
         if not apiSrc.getClient():
             msgLog = (f"{indent} Error. No client for {src[2]} ({src[3]})")
             logMsg(msgLog, 1, 1)
-            return f"End: {msgLog}"
+            return f"{msgLog} End."
 
         apiSrc.setPosts()
 
@@ -1045,7 +1045,7 @@ class moduleRules:
             for future in concurrent.futures.as_completed(delayedPosts):
                 try:
                     res = future.result()
-                    msgLog = (f"End Delay: {res}")
+                    msgLog = (f"{res} End Delay")
                     logMsg(msgLog, 1, 1)
                     if res:
                         messages.append(

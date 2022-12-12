@@ -466,7 +466,7 @@ class moduleCache(Content,Queue):
                 importlib.import_module(myModule)
                 mod = sys.modules.get(myModule)
                 cls = getattr(mod, myModule)
-                api = cls()
+                api = cls(self.indent)
                 apiCmd = getattr(api, 'setPostTitle')
                 post  = apiCmd(post, newTitle)
             # else:
@@ -485,7 +485,7 @@ class moduleCache(Content,Queue):
                     importlib.import_module(myModule)
                     mod = sys.modules.get(myModule)
                     cls = getattr(mod, myModule)
-                    api = cls()
+                    api = cls(self.indent)
                 else:
                     api = self.auxClass
                 logging.debug(f"  Api: {api}")
@@ -506,7 +506,7 @@ class moduleCache(Content,Queue):
                     importlib.import_module(myModule)
                     mod = sys.modules.get(myModule)
                     cls = getattr(mod, myModule)
-                    api = cls()
+                    api = cls(self.indent)
                 else:
                     api = self.auxClass
                 apiCmd = getattr(api, 'getPostLink')
@@ -524,7 +524,7 @@ class moduleCache(Content,Queue):
                 importlib.import_module(myModule)
                 mod = sys.modules.get(myModule)
                 cls = getattr(mod, myModule)
-                api = cls()
+                api = cls(self.indent)
                 apiCmd = getattr(api, 'getPostContentHtml')
                 content  = apiCmd(post)
             else:
@@ -539,7 +539,7 @@ class moduleCache(Content,Queue):
             importlib.import_module(myModule)
             mod = sys.modules.get(myModule)
             cls = getattr(mod, myModule)
-            api = cls()
+            api = cls(self.indent)
             apiCmd = getattr(api, 'editApiLink')
             content  = apiCmd(post, newLink)
         else:
@@ -622,7 +622,7 @@ class moduleCache(Content,Queue):
                 importlib.import_module(myModule)
                 mod = sys.modules.get(myModule)
                 cls = getattr(mod, myModule)
-                api = cls()
+                api = cls(self.indent)
                 apiCmd = getattr(api, 'getPostId')
                 idPost  = apiCmd(post)
             else:
