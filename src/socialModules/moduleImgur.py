@@ -13,10 +13,6 @@ from socialModules.moduleQueue import *
 
 class moduleImgur(Content, Queue):
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 53ee2f7dd1dfc47d717436d112e904849dbb12b8
     def getKeys(self, config):
         if self.user.find('http')>=0:
             user = self.user.split('/')[-1]
@@ -31,10 +27,7 @@ class moduleImgur(Content, Queue):
 
     def initApi(self, keys):
         self.service = 'Imgur'
-<<<<<<< HEAD
 
-=======
->>>>>>> 53ee2f7dd1dfc47d717436d112e904849dbb12b8
         client_id = keys[0]
         client_secret = keys[1]
         access_token = keys[2]
@@ -296,9 +289,9 @@ def main():
     rules.checkRules()
 
     # Example:
-    # 
+    #
     # src: ('imgur', 'set', 'https://imgur.com/user/ftricas', 'drafts')
-    # 
+    #
     # More: Src {'url': 'https://imgur.com/user/ftricas', 'service': 'imgur', 'posts': 'drafts', 'cache': 'imgur', 'imgur': 'ftricas', 'time': '23.1', 'max': '1'}
     print(rules.rules.keys())
 
@@ -352,7 +345,7 @@ def main():
         #                 ('wordpress', 'avecesunafoto')))
         # cache.setClient(('https://imgur.com/user/ftricas',
         #                 ('imgur', 'ftricas')))
-        cache.setClient((('imgur', 'https://imgur.com/user/ftricas'), 
+        cache.setClient((('imgur', 'https://imgur.com/user/ftricas'),
                 'imgur@ftricas', 'posts'))
         cache.socialNetwork = 'imgur'
         cache.nick = 'ftricas'
@@ -378,7 +371,7 @@ def main():
         print(res)
 
         return
- 
+
 
     publishWordpress = False
     # Testing Wordpress publishing
