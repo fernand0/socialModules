@@ -20,14 +20,6 @@ from socialModules.moduleQueue import *
 
 class moduleGitter(Content,Queue):
 
-    def __init__(self):
-        super().__init__()
-        self.service = None
-        self.client = None
-        self.channel = None
-        self.keys = []
-        self.service = 'Gitter'
-
     def getKeys(self, config):
         token = config.get(self.service, "token")
         oauth_key = config.get(self.service, "oauth_key")
@@ -36,6 +28,12 @@ class moduleGitter(Content,Queue):
         return (token, oauth_key, oauth_secret)
 
     def initApi(self, keys):
+        self.service = None
+        self.client = None
+        self.channel = None
+        self.keys = []
+        self.service = 'Gitter'
+
         self.token = keys[0]
         logging.info("     Connecting {}".format(self.service))
         try:

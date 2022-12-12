@@ -26,13 +26,6 @@ from socialModules.moduleGoogle import *
 
 class moduleGcalendar(Content,socialGoogle):    
     
-    def __init__(self):
-        super().__init__()
-        self.service = "Gcalendar"
-        self.nick = None
-        self.scopes = ['https://www.googleapis.com/auth/calendar.readonly',
-                       'https://www.googleapis.com/auth/calendar']
-
     # def API(self, Acc):
     #     # Back compatibility
     #     self.setClient(Acc)
@@ -41,6 +34,11 @@ class moduleGcalendar(Content,socialGoogle):
     #     return (())
 
     def initApi(self, keys):
+        self.service = "Gcalendar"
+        self.nick = None
+        self.scopes = ['https://www.googleapis.com/auth/calendar.readonly',
+                       'https://www.googleapis.com/auth/calendar']
+
         SCOPES = self.scopes
         creds = self.authorize()
         # logging.debug(f"Service: {creds}")

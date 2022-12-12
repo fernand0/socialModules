@@ -19,9 +19,6 @@ from socialModules.moduleContent import *
 
 class moduleLinkedin(Content):
 
-    def __init__(self):
-        super().__init__()
-
     def getKeys(self, config):
         CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY")
         CONSUMER_SECRET = config.get("Linkedin", "CONSUMER_SECRET")

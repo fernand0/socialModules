@@ -170,14 +170,14 @@ def getModule(profile, indent=''):
     mod = importlib.import_module('socialModules.module' + serviceName)
     cls = getattr(mod, 'module' + serviceName)
     # logging.debug(f"Class: {cls}")
-    api = cls()
+    api = cls(indent)
     return api
 
 def getApi(profile, nick, indent=""):
     msgLog = (f"{indent} getApi profile: {profile} - {nick}")
     logMsg(msgLog, 2, 0)
 
-    api = getModule(profile)
+    api = getModule(profile, indent)
     api.indent = indent
     api.setClient(nick)
 

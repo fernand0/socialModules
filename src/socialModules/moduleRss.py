@@ -24,13 +24,6 @@ from socialModules.moduleQueue import *
 
 class moduleRss(Content, Queue):
 
-    def __init__(self):
-        super().__init__()
-        self.service = None
-        self.rssFeed = ''
-        self.feed = None
-        self.title = None
-
     def getRssFeed(self):
         return(self.rssFeed)
 
@@ -40,6 +33,11 @@ class moduleRss(Content, Queue):
         self.bufMax = None
 
     def setClient(self, feed):
+        self.service = None
+        self.rssFeed = ''
+        self.feed = None
+        self.title = None
+
         logging.debug(f"{self.indent} Feed {feed}")
         if isinstance(feed, str):
             self.rssFeed = feed

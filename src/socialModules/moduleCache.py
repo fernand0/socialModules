@@ -26,14 +26,6 @@ from socialModules.moduleQueue import *
 
 class moduleCache(Content,Queue):
 
-    def __init__(self):
-        super().__init__()
-        self.service = 'Cache'
-        self.nick = None
-        self.postaction = 'delete'
-        #self.url = url
-        #self.socialNetwork = (socialNetwork, nick)
-
     def getService(self):
         if hasattr(self, 'auxClass'):
             logging.debug(f"has {self.auxClass}")
@@ -106,7 +98,14 @@ class moduleCache(Content,Queue):
         return fileName 
 
     def setClient(self, param):
-        logging.info(f"{self.indent} Connecting {self.service}: {param}")
+        self.service = 'Cache'
+        self.nick = None
+        self.postaction = 'delete'
+        #self.url = url
+        #self.socialNetwork = (socialNetwork, nick)
+
+        msgLog = (f"{self.indent} Connecting {self.service}: {param}")
+        logMsg(msgLog, 1, 0)
         self.postsType = 'posts'
         self.url = param[0][1]
         pos = param[1].find('@')
@@ -451,7 +450,7 @@ class moduleCache(Content,Queue):
                 importlib.import_module(myModule)
                 mod = sys.modules.get(myModule)
                 cls = getattr(mod, myModule)
-                api = cls()
+                api = cls(self.indent)
                 apiCmd = getattr(api, 'setPostLink')
                 post  = apiCmd(post, newLink)
             # else:

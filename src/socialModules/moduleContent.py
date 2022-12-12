@@ -16,7 +16,7 @@ from socialModules.configMod import *
 
 class Content:
 
-    def __init__(self):
+    def __init__(self, indent=''):
         self.url = ""
         self.name = ""
         self.nick = ""
@@ -40,7 +40,7 @@ class Content:
         self.client = None
         ser = self.__class__.__name__
         self.service = self.__class__.__name__[6:]
-        self.indent = ''
+        self.indent = indent
         logging.info(f"{self.indent} Initializing {self.service}")
         # They start with module
         self.hold = None
@@ -63,7 +63,7 @@ class Content:
             # Deprecated
             self.user = account[1][1]
 
-        msgLog = f"Service config: {self.service}"
+        msgLog = f"{self.indent} Service config: {self.service}"
         logMsg(msgLog, 2, 0)
 
         configFile = f"{CONFIGDIR}/.rss{self.service}"
@@ -82,7 +82,7 @@ class Content:
                 logging.warning("Do the adequate keys exist in {configFile}")
 
         try:
-            client = self.initApi(keys)
+            client = self.initApi(keys, self.indent)
         except:
             if not config.sections and not keys:
                 logging.warning(f"Authentication in {self.service} failed!")

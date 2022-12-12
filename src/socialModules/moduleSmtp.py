@@ -20,12 +20,10 @@ from socialModules.moduleContent import *
 
 class moduleSmtp(Content):
 
-    def __init__(self):
-        super().__init__()
+    def setClient(self, user):
         self.user = None
         self.client = None
 
-    def setClient(self, user):
         logging.info("     Connecting SMTP")
         try: 
             self.user = user 

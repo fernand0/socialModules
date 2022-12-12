@@ -564,7 +564,7 @@ class moduleRules:
             apiSrc.postaction = 'delete'
         else:
             logging.info(f"{indent} Src: {src}")
-            apiSrc = getApi(src[0], src[2])
+            apiSrc = getApi(src[0], src[2], indent)
 
         for option in more:
             if option == 'posts':
@@ -765,7 +765,7 @@ class moduleRules:
                     nextPost = True, pos = -1, delete=False):
 
         # indent = f" {name}->({action[3]}@{action[2]})] -> "+" "
-        indent = f" {name}"
+        indent = f"{name}"
         # The ']' is opened in executeRules FIXME
 
         msgLog = (f"{indent} Sleeping to launch all processes")
@@ -775,6 +775,7 @@ class moduleRules:
 
         msgLog = (f"{indent} Go!")
         logMsg(msgLog, 1, 0)
+        indent = f" {indent}"
 
         msgAction = (f"{action[0]} {action[3]}@{action[2]} "
                      f"({action[1]})")
@@ -783,10 +784,10 @@ class moduleRules:
         apiSrc = self.readConfigSrc(indent, src, more)
 
         if apiSrc.getName():
-            msgLog = (f"{indent} Source: {apiSrc.getName()} ({src[3]}) -> "
+            msgLog = (f"{indent} Source: {apiSrc.getName()}-{src[3]} -> "
                 f"Action: {msgAction})")
         else:
-            msgLog = (f"{indent} Source: {src[2]} ({src[3]}) -> "
+            msgLog = (f"{indent} Source: {src[2]}-{src[3]} -> "
                 f"Action: {msgAction})")
 
         # logMsg(msgLog, 1, 0)
@@ -963,15 +964,15 @@ class moduleRules:
                     srcName = more['url']
                     # FIXME
                     if 'slack' in srcName:
-                        srcName = f"Slack({srcName.split('/')[2].split('.')[0]})"
+                        srcName = f"{srcName.split('/')[2].split('.')[0]}@slack"
                     elif 'gitter' in srcName:
-                        srcName = f"Gitter({srcName.split('/')[-2]})"
+                        srcName = f"{srcName.split('/')[-2]}@gitter"
                     elif 'imgur' in srcName:
-                        srcName = f"Imgur({srcName.split('/')[-1]})"
+                        srcName = f"{srcName.split('/')[-1]}@imgur"
                     elif '.com' in srcName:
                         if 'gmail' in more:
                             srcName = more['gmail']
-                        srcName = f"Gmail({srcName})"
+                        srcName = f"{srcName}@gmail"
                     text = (f"Source: {srcName} ({src[3]})")
                 else:
                     #FIXME self.identifier
@@ -990,32 +991,33 @@ class moduleRules:
 
                 actions = self.rules[src]
 
+                if (select and (select.lower() != f"{src[0].lower()}{i}")):
+                    actionMsg = f"Skip."
+                else:
+                    actionMsg = (f"Scheduling.")
+                msgLog = f"{indent} {text}"
+                logMsg(msgLog, 1, 1)
+                indent = f" {indent}"
+                msgLog = f"{indent} {actionMsg}"
+                logMsg(msgLog, 1, 1)
                 for k, action in enumerate(actions):
                     name = f"{src[0]}{i}>"
-                    if (select and (select.lower() != f"{src[0].lower()}{i}")):
-                        actionMsg = f"{indent} Skip."
-                    else:
-                        actionMsg = (f"{indent} Scheduling.")
                     if action[1].startswith('http'):
                         # FIXME
                         theAction = 'posts'
                     else:
                         theAction = action[1]
                     
-                    msgLog = f"{indent} {text}"
-                    logMsg(msgLog, 1, 1)
                     msgLog = (f"{indent}  Action {k}:"
                              f" {action[3]}@{action[2]} ({theAction})")
-                    name = f"(Action {k})>" # [({theAction})"
+                    name = f"Action {k}:" # [({theAction})"
                     nameA = f"{actionMsg} "
                     textEnd = (f"Source: {nameA} {src[2]} {src[3]}")
                     logMsg(msgLog, 1, 1)
                     textEnd = f"{textEnd}\n{msgLog}"
                     # logMsg(msgLog, 1, 1)
-                    nameA = name #f"{name[:-1]} (Action {k})>" # [({theAction})"
+                    nameA = f"{indent}   {name}" #f"{name[:-1]} (Action {k})>" # [({theAction})"
                     # The '[' is closed in executeAction TODO
-                    msgLog = f"{indent} {actionMsg}"
-                    logMsg(msgLog, 1, 1)
                     if actionMsg == "Skip.":
                         #FIXME "In hold"
                         continue

@@ -12,22 +12,17 @@ from socialModules.moduleQueue import *
 
 class modulePocket(Content,Queue):
 
-    def __init__(self):
-        super().__init__()
-        self.postaction='archive'
-
     def getKeys(self, config):
-        logging.info(f"Nick: {self.user}")
         if self.user.startswith('@'):
             self.user = self.user[1:]
         consumer_key = config.get(self.user, "consumer_key")
         try:
             access_token = config.get(self.user, "access_token")
         except:
-            logging.info(f"Needs authorization")
+            msgLog = (f"Needs authorization")
+            logMsg(msgLog, 3, 0)
             self.authorize()
             access_token = config.get(self.user, "access_token")
-        logging.debug(f"Consumer: {consumer_key}")
 
         return(consumer_key, access_token)
 
@@ -70,6 +65,8 @@ class modulePocket(Content,Queue):
             print(f"Something failed")
 
     def initApi(self, keys):
+        self.postaction='archive'
+
         consumer_key, access_token = keys
         client = Pocket(consumer_key=consumer_key, access_token=access_token)
         return client
@@ -80,7 +77,8 @@ class modulePocket(Content,Queue):
             dictPosts = self.client.retrieve()
             dictPosts = dictPosts['list']
         except PocketException as exc:
-            logging.warning(f"setApiPosts generated an exception: {exc}")
+            msgLog = (f"setApiPosts generated an exception: {exc}")
+            logMsg(msgLog, 3, 0)
             dictposts = []
         for post in dictPosts:
             posts.append(dictPosts[post])
@@ -93,7 +91,8 @@ class modulePocket(Content,Queue):
             idPost = self.getPostId(reply)
             title = self.getPostTitle(reply)
             res = f"{title} https://getpocket.com/read/{idPost}"
-        logging.info(f"     Res: {res}")
+        msgLog=(f"     Res: {res}")
+        logMsg(msgLog, 2, 0)
         return(res)
 
     def publishApiPost(self, *args, **kwargs):
@@ -102,11 +101,13 @@ class modulePocket(Content,Queue):
         title = ''
         if args and len(args) == 3:
             post, link, comment = args
-            logging.info(f"args: {args} in {self}")
+            msgLog=(f"args: {args} in {self}")
+            logMsg(msgLog, 2, 0)
         if kwargs:
             more = kwargs
             api = more['api']
-            logging.info(f"postData: {more} in {self}")
+            msgLog=(f"postData: {more} in {self}")
+            logMsg(msgLog, 2, 0)
             post = more['post']
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
@@ -115,10 +116,11 @@ class modulePocket(Content,Queue):
         tags = []
         if comment:
             tags = [comment, ]
-        logging.info(f"ll: {link}")
+        # logging.info(f"ll: {link}")
         # This belongs here?
         if not link.startswith('http'):
-            logging.warning(f"Link that does not stat with < {link}")
+            msgLog = (f"Link that does not stat with < {link}")
+            logMsg(msgLog, 3, 0)
             pos = link.find('http')
             link = link[pos:]
 
@@ -127,10 +129,12 @@ class modulePocket(Content,Queue):
                 # Sometimes there are two links or something after the link
                 link=link[:pos]
         try:
-            logging.info(f"Link: {link}")
+            msgLog = (f"Link: {link}")
+            logMsg(msgLog, 2, 0)
             res = self.getClient().add(link, tags=tags)
         except PocketException as exc:
-            logging.warning(f"publishApiPosts generated an exception: {exc}")
+            msgLog = (f"publishApiPosts generated an exception: {exc}")
+            logMsg(msgLog, 3, 0)
             res = "Fail!"
 
         return res
@@ -140,44 +144,51 @@ class modulePocket(Content,Queue):
         try:
             res = client.archive(int(idPost))
             res = client.commit()
-            logging.info("Post id res {}".format(str(res)))
-            logging.info("Post id res {}".format(str(res["action_results"])))
+            # logging.info("Post id res {}".format(str(res)))
+            # logging.info("Post id res {}".format(str(res["action_results"])))
             if res['action_results']:
                 rep = f"Archived {idPost}"
             else:
                 rep = "Fail!"
         except:
-            logging.warning("Archiving failed!")
-            logging.warning("Unexpected error:", sys.exc_info()[0])
+            self.report("Archiving failed!", '', '', sys.exc_info()[0])
             rep = "Fail"
 
         return rep
 
     def archive(self, j):
-        logging.info("Archiving %d"% j)
+        msgLog = ("Archiving %d"% j)
+        logMsg(msgLog, 1, 0)
         post = self.getPost(j)
         title = self.getPostTitle(post)
         idPost = self.getPostId(post)
         logging.info(f"Post {post}")
+        logMsg(msgLog, 2, 0)
         logging.info(f"Title {title}")
+        logMsg(msgLog, 2, 0)
         logging.info(f"Id {idPost}")
+        logMsg(msgLog, 2, 0)
         rep = self.archiveId(idPost)
-        logging.info(f"Rep: {rep}")
+        msgLog = (f"Rep: {rep}")
+        logMsg(msgLog, 2, 0)
         if 'Archived' in rep:
             self.posts = self.posts[:j] + self.posts[j+1:]
         return rep
 
     def delete(self, j):
-        logging.info("Deleting %d"% j)
+        msgLog = ("Deleting %d"% j)
+        logMsg(msgLog, 1, 0)
         client = self.client
         post = self.getPost(j)
         title = self.getPostTitle(post)
-        logging.info("Post {}".format(str(post)))
-        logging.info("Title {}".format(title))
+        msgLog = ("Post {}".format(str(post)))
+        logMsg(msgLog, 2, 0)
+        msgLog = ("Title {}".format(title))
+        logMsg(msgLog, 2, 0)
         res = client.delete(int(self.getPostId(post)))
         res = client.commit()
-        logging.info("Post id res {}".format(str(res)))
-        logging.info("Post id res {}".format(str(res["action_results"])))
+        # logging.info("Post id res {}".format(str(res)))
+        # logging.info("Post id res {}".format(str(res["action_results"])))
         if res['action_results']:
             rep = f"Deleted {title}"
         else:

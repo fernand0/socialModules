@@ -24,10 +24,6 @@ from socialModules.moduleQueue import *
 
 class moduleFacebook(Content,Queue):
 
-    def __init__(self):
-        super().__init__()
-        self.page = None
-
     def getKeys(self, config):
         oauth_access_token = config.get(self.service, "oauth_access_token")
         return ((oauth_access_token,))

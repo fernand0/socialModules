@@ -19,11 +19,6 @@ from socialModules.moduleQueue import *
 
 class moduleTwitter(Content, Queue):
 
-    def __init__(self):
-        super().__init__()
-        self.base_url = 'https://twitter.com'
-        self.url = f"{self.base_url}/{self.user}"
-
     def getKeys(self, config):
         CONSUMER_KEY = config.get(self.user, "CONSUMER_KEY")
         CONSUMER_SECRET = config.get(self.user, "CONSUMER_SECRET")
@@ -35,6 +30,9 @@ class moduleTwitter(Content, Queue):
                 TOKEN_SECRET, BEARER_TOKEN)
 
     def initApi(self, keys):
+        self.base_url = 'https://twitter.com'
+        self.url = f"{self.base_url}/{self.user}"
+
         # FIXME: Do we call this method directly?
         logging.info("Initializing API")
         self.authentication = OAuth(keys[2], keys[3], keys[0], keys[1])

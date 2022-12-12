@@ -20,7 +20,8 @@ from socialModules.moduleQueue import *
 
 
 class moduleHtml(Content, Queue):
-    def __init__(self):
+
+    def initApi(self, keys):
         self.url = ""
         self.name = ""
         self.rssFeed = ""
@@ -35,8 +36,6 @@ class moduleHtml(Content, Queue):
         self.lastLinkPublished = {}
         self.service = "Html"
         # self.logger = logging.getLogger(__name__)
-
-    def initApi(self, keys):
         return self
 
     def getKeys(self, config):
