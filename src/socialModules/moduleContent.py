@@ -41,7 +41,7 @@ class Content:
         ser = self.__class__.__name__
         self.service = self.__class__.__name__[6:]
         self.indent = indent
-        logging.info(f"{self.indent} Initializing {self.service}")
+        logging.info(f"{self.indent} service {self.service} initializing")
         # They start with module
         self.hold = None
 

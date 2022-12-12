@@ -37,7 +37,6 @@ class moduleRss(Content, Queue):
         self.rssFeed = ''
         self.feed = None
         self.title = None
-
         msgLog = (f"{self.indent} Feed {feed}")
         logMsg(msgLog, 2, 0)
         if isinstance(feed, str):

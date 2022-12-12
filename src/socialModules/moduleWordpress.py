@@ -37,7 +37,6 @@ class moduleWordpress(Content,Queue):
         self.headers=None
         self.access_token=None
 
-
         self.access_token =  keys[0]
         self.headers = {'Authorization':'Bearer '+self.access_token}
         self.my_site="{}.wordpress.com".format(self.user)

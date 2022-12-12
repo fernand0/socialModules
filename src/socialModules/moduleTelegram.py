@@ -21,7 +21,6 @@ class moduleTelegram(Content):
 
     def initApi(self, keys):
         self.service = 'Telegram'
-
         # logging.info("     Connecting {self.service}")
         TOKEN = keys[0]
         # logging.info("     token: {TOKEN}")

@@ -36,6 +36,7 @@ class moduleHtml(Content, Queue):
         self.lastLinkPublished = {}
         self.service = "Html"
         # self.logger = logging.getLogger(__name__)
+
         return self
 
     def getKeys(self, config):
