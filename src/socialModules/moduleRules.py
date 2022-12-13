@@ -786,14 +786,14 @@ class moduleRules:
         indent = f"{name}"
         # The ']' is opened in executeRules FIXME
 
-        msgLog = (f"{indent} Sleeping to launch all processes")
+        msgLog = (f"{indent}  Sleeping to launch all processes")
         logMsg(msgLog, 1, 0)
         # 'Cometic' waiting to allow all the processes to be launched.
         time.sleep(1)
 
         msgLog = (f"{indent} Go!")
         logMsg(msgLog, 1, 0)
-        indent = f" {indent}"
+        indent = f"{indent} "
 
         msgAction = (f"{action[0]} {action[3]}@{action[2]} "
                      f"({action[1]})")
@@ -1025,9 +1025,9 @@ class moduleRules:
                         theAction = 'posts'
                     else:
                         theAction = action[1]
-                    
+
                     indent = f"{indent} "
-                    msgLog = (f"{indent}  Action {k}:"
+                    msgLog = (f"{indent} Action {k}:"
                              f" {action[3]}@{action[2]} ({theAction})")
                     name = f"Action {k}:" # [({theAction})"
                     nameA = f"{actionMsg} "
@@ -1058,6 +1058,7 @@ class moduleRules:
                                         timeSlots,
                                         args.simmulate,
                                         nameA))
+                    indent = f"{indent[:-1]}"
                 i = i + 1
                 indent = f"{indent[:-1]}"
 
