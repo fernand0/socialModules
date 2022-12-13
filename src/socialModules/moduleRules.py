@@ -1015,7 +1015,7 @@ class moduleRules:
                     actionMsg = (f"Scheduling.")
                 msgLog = f"{indent} {text}"
                 logMsg(msgLog, 1, 1)
-                indent = f" {indent}"
+                indent = f"{indent} "
                 msgLog = f"{indent} {actionMsg}"
                 logMsg(msgLog, 1, 1)
                 for k, action in enumerate(actions):
@@ -1026,6 +1026,7 @@ class moduleRules:
                     else:
                         theAction = action[1]
                     
+                    indent = f"{indent} "
                     msgLog = (f"{indent}  Action {k}:"
                              f" {action[3]}@{action[2]} ({theAction})")
                     name = f"Action {k}:" # [({theAction})"
@@ -1034,7 +1035,7 @@ class moduleRules:
                     logMsg(msgLog, 1, 1)
                     textEnd = f"{textEnd}\n{msgLog}"
                     # logMsg(msgLog, 1, 1)
-                    nameA = f"{indent}   {name}" #f"{name[:-1]} (Action {k})>" # [({theAction})"
+                    nameA = f"{indent} {name}" #f"{name[:-1]} (Action {k})>" # [({theAction})"
                     # The '[' is closed in executeAction TODO
                     if actionMsg == "Skip.":
                         #FIXME "In hold"
@@ -1058,6 +1059,7 @@ class moduleRules:
                                         args.simmulate,
                                         nameA))
                 i = i + 1
+                indent = f"{indent[:-1]}"
 
             messages = []
             for future in concurrent.futures.as_completed(delayedPosts):
