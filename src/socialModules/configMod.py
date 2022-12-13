@@ -63,7 +63,8 @@ def setNextTime(blog, socialNetwork, tNow, tSleep):
 
 def getNextTime(blog, socialNetwork):
     fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext'
-    logging.debug(f"fileNameNext {fileNameNext}")
+    msgLog = (f"fileNameNext {fileNameNext}")
+    logMsg(msgLog, 2, 0)
     try:
         with open(fileNameNext,'rb') as f:
             tNow, tSleep = pickle.load(f)
@@ -71,15 +72,18 @@ def getNextTime(blog, socialNetwork):
     except:
         # File does not exist, we need to create it.
         with open(fileNameNext, "wb") as f:
-            logging.warning("File %s does not exist. Creating it."
-                    % fileNameNext)
+            msgLog = (f"File {fileNameNext} does not exist. Creating it.")
+            logMsg(msgLog, 3, 0)
             # None published, or non-existent file
             return 0, 0
 
 def getLastLink(fileName):
-    logging.debug(f"fileName: {fileName}")
+    msgLog = (f"fileName: {fileName}")
+    logMsg(msgLog, 2, 0)
     if not os.path.isdir(os.path.dirname(fileName)):
-        sys.exit("No directory {} exists".format(os.path.dirname(fileName)))
+        msgLog = (f"No directory {os.path.dirname(fileName)} exists")
+        logMsg(msgLog, 3, 0)
+        sys.exit(f"No directory {os.path.dirname(fileName)} exists")
     if os.path.isfile(fileName):
         with open(fileName, "rb") as f:
             linkLast = f.read().decode().split()  # Last published
@@ -87,8 +91,8 @@ def getLastLink(fileName):
         # File does not exist, we need to create it.
         # Should we create it here? It is a reading function!!
         with open(fileName, "wb") as f:
-            logging.warning("File %s does not exist. Creating it."
-                    % fileName)
+            msgLog = f"File {fileName} does not exist. Creating it."
+            logMsg(msgLog, 3, 0)
             linkLast = ''
             # None published, or non-existent file
     if len(linkLast) == 1:
@@ -99,7 +103,8 @@ def getLastLink(fileName):
 def checkLastLink(url, socialNetwork=()):
     # Redundant with moduleCache
     fileNameL = fileNamePath(url, socialNetwork)+".last"
-    logging.debug("Checking last link: %s" % fileNameL)
+    msgLog = (f"Checking last link: {fileNameL}")
+    logMsg(msgLog, 2, 0)
     #print("Checking last link: %s" % fileNameL)
     (linkLast, timeLast) = getLastLink(fileNameL)
     return(linkLast, timeLast)
@@ -120,11 +125,14 @@ def newUpdateLastLink(url, link, lastLink, socialNetwork=()):
             f.write(link[0])
 
 def updateLastLink(url, link, socialNetwork=()):
-    logging.debug(f"Url: {url} Link: {link} SocialNetwork: {socialNetwork}")
+    msgLog = (f"Url: {url} Link: {link} SocialNetwork: {socialNetwork}")
+    logMsg(msgLog, 2, 0)
+    
     fileName = fileNamePath(url, socialNetwork) + ".last"
 
 
-    logging.debug(f"fileName: {fileName}")
+    msgLog = (f"fileName: {fileName}")
+    logMsg(msgLog, 2, 0)
     with open(fileName, "w") as f:
         if isinstance(link, bytes):
             f.write(link.decode())

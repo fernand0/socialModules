@@ -152,8 +152,8 @@ class Content:
             identifier = self.getUrl()
 
         typePosts = self.getPostsType()
-        msgLog = (f"{self.indent} Setting posts in {self.service} {identifier}"
-                  f" (type: {self.getPostsType()})")
+        msgLog = (f"{self.indent} Service {self.service} setting posts "
+                  f"{identifier} (type: {self.getPostsType()})")
         logMsg(msgLog, 1, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
             typePosts = self.getPostsType()
@@ -167,8 +167,8 @@ class Content:
         else:
             cmd = getattr(self, "setApiPosts")
 
-        msgLog = (f"{self.indent} Cmd: {cmd}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} Cmd: {cmd}")
+        # logMsg(msgLog, 2, 0)
         posts = cmd()
         msgLog = (f"{self.indent} Posts: {posts}")
         logMsg(msgLog, 2, 0)

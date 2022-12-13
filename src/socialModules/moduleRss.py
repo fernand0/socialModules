@@ -37,8 +37,8 @@ class moduleRss(Content, Queue):
         self.rssFeed = ''
         self.feed = None
         self.title = None
-        msgLog = (f"{self.indent} Feed {feed}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} Feed {feed}")
+        # logMsg(msgLog, 2, 0)
         if isinstance(feed, str):
             self.rssFeed = feed
         elif isinstance(feed, tuple):
@@ -49,8 +49,8 @@ class moduleRss(Content, Queue):
             self.user = urllib.parse.urlparse(feed).netloc
         else:
             self.user = feed
-        msgLog = (f"{self.indent} Url + feed {self.rssFeed}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} Url + feed {self.rssFeed}")
+        # logMsg(msgLog, 2, 0)
         self.client = 'client'
         self.service = 'Rss'
 

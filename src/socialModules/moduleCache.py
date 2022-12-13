@@ -273,8 +273,8 @@ class moduleCache(Content,Queue):
         except:
             listP = []
 
-        msgLog = f"{self.indent} listP: {listP}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} listP: {listP}"
+        # logMsg(msgLog, 2, 0)
 
         return(listP)
 

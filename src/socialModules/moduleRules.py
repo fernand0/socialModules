@@ -572,10 +572,10 @@ class moduleRules:
         return iniK, nKey
 
     def readConfigSrc(self, indent, src, more):
-        msgLog = f"{indent} readConfigSrc: {src}"
+        msgLog = f"{indent} Start readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{indent} More: Src {more}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} More: Src {more}"
+        # logMsg(msgLog, 2, 0)
         if src[0] == 'cache':
             apiSrc = getApi(src[0], src[1:], indent)
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
@@ -609,22 +609,24 @@ class moduleRules:
 
         # apiSrc.setPosts()
         # print(f"Postsss: {apiSrc.getPosts()}")
+        msgLog = f"{indent} End readConfigSrc" #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
         return apiSrc
 
     def readConfigDst(self, indent, action, more, apiSrc):
-        msgLog = f"{indent} readConfigDst: {action}"
+        msgLog = f"{indent} Start readConfigDst" #: {action}"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{indent} More: Src {more}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} More: Src {more}"
+        # logMsg(msgLog, 2, 0)
         profile = action[2]
         nick = action[3]
-        socialNetwork = (profile, nick)
-        msgLog = (f"{indent} socialNetwork: {socialNetwork}")
-        logMsg(msgLog, 2, 0)
+        # socialNetwork = (profile, nick)
+        # msgLog = (f"{indent} socialNetwork: {socialNetwork}")
+        # logMsg(msgLog, 2, 0)
         # msgLog = (f"{indent}Action: {action}")
         # logMsg(msgLog, 1, 0)
-        msgLog = (f"{indent} More: Dst {more}")
-        logMsg(msgLog, 1, 0)
+        # msgLog = (f"{indent} More: Dst {more}")
+        # logMsg(msgLog, 1, 0)
 
         if action[0] == "cache":
             print(f"Dst: {action}")
@@ -639,8 +641,8 @@ class moduleRules:
         apiDst.setUser(nick)
         apiDst.setPostsType('posts')
 
-        msgLog = (f"{indent} Api dst: {apiDst}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{indent} Api dst: {apiDst}")
+        # logMsg(msgLog, 2, 0)
 
         if 'max' in more:
             mmax = more['max']
@@ -654,6 +656,8 @@ class moduleRules:
         if 'time' in more:
             apiDst.setTime(more['time'])
 
+        msgLog = f"{indent} End readConfigSrc" #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
         return apiDst
 
     def testDifferPosts(self, apiSrc, lastLink, listPosts):

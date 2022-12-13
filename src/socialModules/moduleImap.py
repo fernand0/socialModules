@@ -10,7 +10,6 @@ import getpass
 import hashlib
 import imaplib
 import io
-import logging
 import os
 import pickle
 import re
@@ -48,19 +47,23 @@ keyWords = {"address": ["From", "To"],
 class moduleImap(Content, Queue):
 
     def getKeys(self, config):
-        logging.info(f"{self.indent} Getting keys")
+        msgLog = (f"{self.indent} Getting keys")
+        logMsg(msgLog, 2, 0)
         pos = self.user.rfind('@')
         if pos>=0:
             self.user, self.server = self.user[:pos], self.user[pos+1:]
         else:
-            logging.warning("This shouldn't happen")
+            msgLog = ("This shouldn't happen")
+            logMsg(msgLog, 3, 0)
+            
         # password = self.getPassword(self.user, self.server)
         # Should this be the standard way for obtaining credentials?
         key = f"{self.user}@{self.server}"
         try:
             password = config.get(key, "token")
         except:
-            logging.warning(f"No key for {key}")
+            msgLog = (f"No key for {key}")
+            logMsg(msgLog, 3, 0)
         # for key in config.keys():
         #     # FIXME
         #     if (key != 'DEFAULT') and ('user' in config.options(key)):
@@ -73,7 +76,8 @@ class moduleImap(Content, Queue):
         return password
 
     def setPassword(self, server, user):
-        logging.info("[%s,%s] New account. Setting password" % (server, user))
+        msgLog = (f"[{server},{user}] New account. Setting password")
+        logMsg(msgLog, 3, 0)
         print("Server: %s,  User: %s" % (server, user))
         password = getpass.getpass()
         keyring.set_password(server, user, password)
@@ -96,14 +100,13 @@ class moduleImap(Content, Queue):
         return posLast
 
     def initApi(self, keys):
-        logging.debug(f"User: {self.user}")
-        logging.debug(f"Server: {self.server}")
+        # logging.debug(f"{self.indent} User: {self.user}")
+        # logging.debug(f"{self.indent} Server: {self.server}")
         try:
             client = self.makeConnection(self.server, self.user, keys)
-            logging.info(f"Connection: {client}")
+            # logging.info(f"{self.indent} Connection: {client}")
         except:
-            logging.info(f"Report: {self.report(self.service, '', '', sys.exc_info())}")
-            logging.info("makeConnection failed")
+            self.report(self.service, '', '', sys.exc_info())
         
         return client
 
@@ -127,7 +130,8 @@ class moduleImap(Content, Queue):
         return posts
 
     def getChannels(self):
-        logging.debug(f"getChannels")
+        msgLog = (f"{indent} Service {self.service} getChannels")
+        logMsg(msgLog, 2, 0)
         resp, data = self.getClient().list('""', '*')
         return data
 
@@ -198,7 +202,8 @@ class moduleImap(Content, Queue):
         try:
             M = makeConnection(SERVER, USER, PASSWORD)
         except:
-            logging.error("Error with %s - %s" % (USER,SERVER))
+            msgLog = (f"Error with {USER} - {SERVER}")
+            logMsg(msgLog, 3, 0)
             sys.exit()
 
 
@@ -217,11 +222,11 @@ class moduleImap(Content, Queue):
             msgs = ''
             for rule in RULES:
                 action = rule.split(',')
-                logging.debug(action)
+                # logging.debug(action)
                 header = action[0][1:-1]
                 content = action[1][1:-1]
                 msgTxt = "[%s,%s] Rule: %s %s" % (srvMsg, usrMsg, header, content)
-                logging.debug(msgTxt)
+                # logging.debug(msgTxt)
                 if (header == 'hash'):
                     msgs = selectHash(M, FOLDER, content)
                     #M.select(folder)
@@ -243,15 +248,19 @@ class moduleImap(Content, Queue):
                     else:
                         msgs = data[0].decode('utf-8')
                 else:
-                    logging.debug("%s - No messages matching." % msgTxt)
-                    msgTxt = "%s - No messages matching." % msgTxt
+                    msgLog = (f"{msgTxt} - No messages matching.")
+                    logMsg(msgLog, 2, 0)
+                    msgTxt = f"{msgTxt} - No messages matching."
 
                 if len(msgs)==0:
-                    logging.debug("%s Nothing to do" % msgTxt)
+                    msgLog = (f"{msgTxt} Nothing to do")
+                    logMsg(msgLog, 2, 0)
                     msgTxt = "%s Nothing to do" % msgTxt
                 else:
-                    logging.debug("%s - Let's go!" % msgTxt)
-                    msgTxt = "%s - Let's go!" % msgTxt
+                    msgLog = (f"{msgTxt} - Let's go!")
+                    logMsg(msgLog, 2, 0)
+                    msgTxt = f"{msgTxt} - Let's go!"
+                    logMsg(msgTxt, 2, 0)
                     msgs = msgs.replace(" ", ",")
                     status = 'OK'
                     if FOLDER:
@@ -263,29 +272,35 @@ class moduleImap(Content, Queue):
                             #print("remote")
                             status = copyMailsRemote(M, msgs, FOLDER)
                         else:
-                            logging.info("msgs %s", msgs)
+                            msgLog = (f"msgs {msgs}")
+                            logMsg(msgLog, 2, 0)
                             result = M.copy(msgs, FOLDER)
                             status = result[0]
                     i = msgs.count(',') + 1
-                    logging.debug("[%s,%s] *%s* Status: %s"% (SERVER,USER,msgs,status))
+                    msgLog = (f"[{SERVER},{USER}] *{msgs}* Status: {status}")
+                    logMsg(msgLog, 2, 0)
 
                     if status == 'OK':
                         # If the list of messages is too long it won't work
                         flag = '\\Deleted'
                         result = M.store(msgs, '+FLAGS', flag)
                         if result[0] == 'OK':
-                            logging.debug("%s: %d messages have been deleted."
+                            msgLog = ("%s: %d messages have been deleted."
                                           % (msgTxt, i))
+                            logMsg(msgLog, 2, 0)
                             msgTxt = "%s: %d messages have been deleted." \
                                           % (msgTxt, i)
                             total = total + i
                         else:
-                            logging.debug("%s -  Couldn't delete messages!" % msgTxt)
+                            msgLog = ("%s -  Couldn't delete messages!" % msgTxt)
+                            logMsg(msgLog, 2, 0)
+                            
                             msgTxt = "%s -  Couldn't delete messages!" % msgTxt
                     else:
-                        logging.debug("%s - Couldn't move messages!" % msgTxt)
+                        msgLog = ("%s - Couldn't move messages!" % msgTxt)
+                        logMsg(msgLog, 2, 0)
                         msgTxt = "%s - Couldn't move messages!" % msgTxt
-                logging.info(msgTxt)
+                logMsg(msgTxt, 2, 0)
         M.close()
         M.logout()
         res.put(("ok", SERVER, USER, total))
@@ -476,7 +491,8 @@ class moduleImap(Content, Queue):
             m = hashlib.md5()
             typ, msg = M.fetch(num, '(BODY.PEEK[TEXT])')
             # PEEK does not change access flags
-            logging.debug("%s" % msg[0][1])
+            msgLog = ("%s" % msg[0][1])
+            logMsg(msgLog, 2, 0)
             m.update(msg[0][1])
             msgDigest = binascii.hexlify(m.digest())
             if (msgDigest == hashSelect):
@@ -487,7 +503,8 @@ class moduleImap(Content, Queue):
                     msgs = num.decode('utf-8')
                 i = i + 1
             else:
-                logging.debug("Message %s\n%s" % (num, msgDigest))
+                msgLog = ("Message %s\n%s" % (num, msgDigest))
+                logMsg(msgLog, 2, 0)
             # We are deleting duplicate messages
             if msgDigest in dupHash:
                 if msgs:
@@ -499,9 +516,11 @@ class moduleImap(Content, Queue):
             else:
                 dupHash.append(msgDigest)
             if (i % 10 == 0):
-                logging.debug("Counter %d" % i)
+                msgLog = ("Counter %d" % i)
+                logMsg(msgLog, 2, 0)
 
-        logging.debug("END\n\n%d messages have been selected\n" % i)
+        msgLog = ("END\n\n%d messages have been selected\n" % i)
+        logMsg(msgLog, 2, 0)
 
         return msgs
 
@@ -926,7 +945,8 @@ class moduleImap(Content, Queue):
         return (SERVER, USER, PASSWORD, RULES, INBOX, FOLDER)
 
     def makeConnection(self, SERVER, USER, PASSWORD):
-        logging.info(f"    Making connection {self.service}: {self.user}")
+        msgLog(f"    Making connection {self.service}: {self.user}")
+        logMsg(msgLog, 2, 0)
         # IMAP client connection
         import ssl
         context = ssl.create_default_context() #ssl.PROTOCOL_TLSv1)
@@ -958,8 +978,9 @@ class moduleImap(Content, Queue):
                 print("except", ins.args)
                 srvMsg = SERVER.split('.')[0]
                 usrMsg = USER.split('@')[0]
-                logging.info("[%s,%s] wrong password!"
+                msgLog = ("[%s,%s] wrong password!"
                                  % (srvMsg, usrMsg))
+                logMsg(msgLog, 3, 0)
                 PASSWORD= setPassword(SERVER, USER)
                 #res.put(("no", SERVER, USER))
                 #return 0
@@ -1005,7 +1026,8 @@ class moduleImap(Content, Queue):
 
         SERVERD = account[pos+1:]
         USERD   = account[:pos]
-        logging.info("Datos.... %s %s" %(SERVERD, USERD))
+        msgLog = ("Datos.... %s %s" %(SERVERD, USERD))
+        logMsg(msgLog, 2, 0)
 
         method = None
 
@@ -1020,14 +1042,17 @@ class moduleImap(Content, Queue):
                         acc = sect
                         break
         except:
-            logging.info("No oauth config!")
+            msgLog = ("No oauth config!")
+            logMsg(msgLog, 3, 0)
 
         if not method:
-            logging.info("No method")
+            msgLog = ("No method")
+            logMsg(msgLog, 2, 0)
             PASSWORDD = getPassword(SERVERD, USERD)
             method = 'imap'
 
-        logging.info("Method %s" % method)
+        msgLog = ("Method %s" % method)
+        logMsg(msgLog, 2, 0)
         if method == 'imap':
             MD = makeConnection(SERVERD, USERD, PASSWORDD)
             if not folder:
@@ -1041,7 +1066,8 @@ class moduleImap(Content, Queue):
             for msgId in msgs.split(','): #[40000:]: #[:25]:
                 print(msgId)
                 #print('.', end='')
-                logging.info("Message %s" % msgId)
+                msgLog = ("Message %s" % msgId)
+                logMsg(msgLog, 1, 0)
 
                 typ, data = M.fetch(msgId, '(FLAGS RFC822)')
                 flagsM = data[0][0]
@@ -1051,7 +1077,8 @@ class moduleImap(Content, Queue):
 
                     if (typ == 'OK'):
                         message = data[0][1]
-                        logging.debug("Message %s", message)
+                        msgLog = ("Message %s", message)
+                        logMsg(msgLog, 2, 0)
 
                         flags = ''
 
@@ -1071,7 +1098,8 @@ class moduleImap(Content, Queue):
             lenM = len(msgs.split(','))
             for msgId in msgs.split(','): #[:25]:
                 #print('.', end='')
-                logging.info("Message %d %s" % (i, msgId))
+                msgLog = ("Message %d %s" % (i, msgId))
+                logMsg(msgLog, 2, 0)
                 print("Message %d %s (%d)" % (i, msgId, lenM))
                 typ, data = M.fetch(msgId, '(FLAGS RFC822)')
                 flagsM = data[0][0]
@@ -1082,10 +1110,12 @@ class moduleImap(Content, Queue):
                     if not (b'Deleted' in flagsM):
 
                         message = data[0][1]
-                        logging.debug("Message %s", message)
+                        msgLog = ("Message %s", message)
+                        logMsg(msgLog, 2, 0)
 
                         rep = service.copyMessage(message, folder)
-                        logging.info("Reply %s" %rep)
+                        msgLog = ("Reply %s" %rep)
+                        logMsg(msgLog, 2, 0)
                         if rep != "Fail!":
                             M.store(msgId, "+FLAGS", "\\Seen")
                             flag = '\\Deleted'
@@ -1115,7 +1145,8 @@ class moduleImap(Content, Queue):
         # return self.moveMails(self.getClient(), str(idPost).encode(), 'INBOX.Trash')
 
     def moveMails(self, M, msgs, folder):
-        logging.info("Copying %s in %s" % (msgs, folder))
+        msgLog = ("Copying %s in %s" % (msgs, folder))
+        logMsg(msgLog, 2, 0)
         (status, resultMsg) = M.copy(msgs, folder)
         res = status
         if status == 'OK':
@@ -1136,7 +1167,7 @@ class moduleImap(Content, Queue):
 
     def printMessageHeaders(self, M, msgs):
         if msgs:
-            logging.info(msgs)
+            # logging.info(msgs)
             for i in msgs.split(','):
                 typ, msg_data_fetch = M.fetch(i, '(BODY.PEEK[HEADER.FIELDS (SUBJECT FROM)])')
                 for response_part in msg_data_fetch:
@@ -1191,12 +1222,13 @@ class moduleImap(Content, Queue):
         else:
             post = msg
         html = self.getPostContentHtml(post)
-        logging.debug(f"Html: {html}")
+        # logging.debug(f"Html: {html}")
         try:
             import quopri
             html = quopri.decodestring(html)
         except:
-            logging.info("Not quoted")
+            msgLog = ("Not quoted")
+            logMsg(msgLog, 3, 0)
         soup = BeautifulSoup(html, 'lxml')
         res = soup.find_all('a', href=True)
         # print(f"Res: {res}")
@@ -1211,7 +1243,8 @@ class moduleImap(Content, Queue):
         post = msg[1]
         theLink = ''
         if post:
-            logging.info(f"Post: {post}")
+            msgLog = (f"Post: {post}")
+            logMsg(msgLog, 2, 0)
             links = self.getPostLinks(post)
             if links:
                 theLink = links[0]
@@ -1242,7 +1275,8 @@ class moduleImap(Content, Queue):
             import quopri
             subject = quopri.decodestring(subject)
         except:
-            logging.debug("Not quopri")
+            msgLog = ("Not quopri")
+            logMsg(msgLog, 3, 0)
         return subject
 
     def getPostId(self, msg):
@@ -1263,7 +1297,8 @@ class moduleImap(Content, Queue):
     def listMessages(self, M, folder):
         # List the headers of all e-mails in a folder
         posts = []
-        logging.debug(f"Folder: {folder}")
+        msgLog = (f"Folder: {folder}")
+        logMsg(msgLog, 2, 0)
         nameF = self.nameFolder(folder)
         # print(f"Folder: {nameF}")
         M.select(nameF)
@@ -1275,7 +1310,8 @@ class moduleImap(Content, Queue):
                 data = ('NO', [])
         else:
             data = M.sort('ARRIVAL', 'UTF-8', 'NOT DELETED')
-        logging.debug(f"Datos: {data}")
+        msgLog = (f"Datos: {data}")
+        logMsg(msgLog, 2, 0)
         # print(f"Datos: {data}")
         if (data[0] == 'OK'):
             messages = data[1][0].decode("utf-8")
@@ -1581,11 +1617,7 @@ def main():
         # We do not want passwords in memory when not needed
     except Exception as ins:
         # We will ask for the new password
-        print("except", SERVER, USER)
-        print("except", sys.exc_info()[0])
-        print("except", ins.args)
-        logging.info("[%s,%s] wrong password!"
-                         % (srvMsg, usrMsg))
+        self.report("Wrong password", SERVER, USER, sys.exc_info())
         res.put(("no", SERVER, USER))
         return 0
 

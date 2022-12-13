@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import configparser
-import logging
 import os
 import pickle
 import sys
@@ -35,18 +34,19 @@ class moduleGitter(Content,Queue):
         self.service = 'Gitter'
 
         self.token = keys[0]
-        logging.info("     Connecting {}".format(self.service))
+        # logging.info("     Connecting {}".format(self.service))
         try:
             client = gitterpy.client.GitterClient(self.token)
         except:
-            logging.warning("Account not configured")
+            msgLog = ("Account not configured")
+            logMsg(msgLog, 3, 0)
             if sys.exc_info()[0]:
-                logging.warning("Unexpected error: {}".format(
-                    sys.exc_info()[0]))
-                logging.info(self.report(self.service, "", "", sys.exc_info()))
+                # logging.warning("Unexpected error: {}".format(
+                #     sys.exc_info()[0]))
+                self.report(self.service, "", "", sys.exc_info())
             print("Please, configure a {} Account".format(self.service))
             sys.exit(-1)
-            logging.info(self.report('Slack', text, sys.exc_info()))
+            # logging.info(self.report('Slack', text, sys.exc_info()))
             client = slack.WebClient(token=self.slack_token)
         return client
 
@@ -67,7 +67,8 @@ class moduleGitter(Content,Queue):
     def setApiPosts(self):
         if not self.channel:
             # It will set the owner channel by default
-            logging.info(f"No channel defined, setting the first one (if any)")
+            msgLog = (f"No channel defined, setting the first one (if any)")
+            logMsg(msgLog, 3, 0)
             self.setChannel()
         posts = []
         try:
@@ -75,7 +76,7 @@ class moduleGitter(Content,Queue):
                 history = self.getClient().messages.list(self.getChannel())
                 posts = history
         except:
-            logging.warning(self.report(self.service, "", "", sys.exc_info()))
+            self.report(self.service, "", "", sys.exc_info())
 
         return posts
 
@@ -124,7 +125,7 @@ class moduleGitter(Content,Queue):
 
     def deleteApiPosts(self, idPost):
         result = self.deteleGitter(idPost, self.getChannel())
-        logging.info(f"Res: {result}")
+        # logging.info(f"Res: {result}")
         return(result)
 
     def deleteGitter(self, idPost, idChannel):
@@ -134,13 +135,13 @@ class moduleGitter(Content,Queue):
         #api_meth = 'rooms/{}/chatMessages/{}'.format(room_id, idPost)
         api_meth  = self.getClient().get_and_update_msg_url(idChannel, idPost)
         result = self.getClient().delete(api_meth)
-        logging.info("Result: {}".format(str(result)))
+        # logging.info("Result: {}".format(str(result)))
         return result
 
     def deleteApiPosts(self, idPost):
         theChan = self.getChannel()
         # idChannel = self.getChanId(theChan)
-        logging.info(f"Chan: {theChan}")
+        # logging.info(f"Chan: {theChan}")
         idChannel = theChan
         res = self.deleteGitter(idPost, idChannel)
         return res
@@ -161,7 +162,8 @@ class moduleGitter(Content,Queue):
     #     return(result)
 
     def getChanId(self, name):
-        logging.debug("getChanId %s"% self.service)
+        msgLog = ("{self.indent} getChanId {self.service}")
+        logMsg(msgLog, 2, 0)
 
         chanList = self.getClient().rooms.rooms_list
         for channel in chanList:
@@ -195,7 +197,7 @@ class moduleGitter(Content,Queue):
 
 
     def processReply(self, reply):
-        logging.info(reply)
+        # logging.info(reply)
         reply = reply.get('id', '')
         return reply
 
