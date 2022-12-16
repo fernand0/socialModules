@@ -154,7 +154,7 @@ class moduleLinkedin(Content):
                                                     submitted_url=link,
                                                     submitted_image_url=None,
                                                     urn=self.URN,
-                                                    visibility_code='anyone')
+                                                    visibility_code='PUBLIC')
             except:
                 logging.info(f"Linkedin. Not authorized.")
                 logging.info(f"Exception {sys.exc_info()}")

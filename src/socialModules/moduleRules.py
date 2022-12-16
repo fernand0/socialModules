@@ -974,7 +974,7 @@ class moduleRules:
                 if src[0] != previous:
                     i = 0
                 previous = src[0]
-                indent = f"{src[0]}{i}>"
+                indent = f"{src[0]:>9}{i}>"
                 if src in self.more:
                     # f"  More: {self.more[src]}")
                     more = self.more[src]
@@ -1022,6 +1022,9 @@ class moduleRules:
                 indent = f"{indent} "
                 msgLog = f"{indent} {actionMsg}"
                 logMsg(msgLog, 1, 1)
+                if actionMsg == "Skip.":
+                    #FIXME ?
+                    continue
                 for k, action in enumerate(actions):
                     name = f"{src[0]}{i}>"
                     if action[1].startswith('http'):
