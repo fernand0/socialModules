@@ -409,9 +409,11 @@ class moduleGmail(Content,Queue,socialGoogle):
         # snippet = self.getHeader(post, 'snippet')
         theLink = ''
         if post:
-            logging.debug(f"Post: {post}")
+            msgLog = (f"Post: {post}")
+            logMsg(msgLog, 2, 0)
             links = self.getPostLinks(post)
-            logging.debug(f"Links: {links}")
+            msgLog = (f"Links: {links}")
+            logMsg(msgLog, 2, 0)
             if links:
                 theLink = links[0]
 
@@ -420,14 +422,20 @@ class moduleGmail(Content,Queue,socialGoogle):
         return result
 
     def getPostTitle(self, post):
-        logging.debug(post)
+        msgLog = (f"{self.indent} getPostTitle")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} {post}")
+        logMsg(msgLog, 2, 0)
         title = ""
         if post:
             title = self.getHeader(post)
         return (title)
 
     def getPostDate(self, post):
-        logging.debug(post)
+        msgLog = (f"{self.indent} getPostDate")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} {post}")
+        logMsg(msgLog, 2, 0)
         if post:
             date = self.getHeader(post,'internalDate')
             # date = int(self.getHeader(post,'internalDate'))/1000
@@ -437,7 +445,10 @@ class moduleGmail(Content,Queue,socialGoogle):
         return(None)
 
     def getHeader(self, message, header = 'Subject'):
-        logging.debug(f"Message: {message}")
+        msgLog = (f"{self.indent} getHeader")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} Message: {message}")
+        logMsg(msgLog, 2, 0)
         if 'meta' in message:
             message = message['meta']
         for head in message:
@@ -494,7 +505,8 @@ class moduleGmail(Content,Queue,socialGoogle):
         labelId = None
         for label in results:
             if (label['name'].lower() == name.lower()) or (label['name'].lower() == name.lower().replace('-',' ')):
-                logging.debug(label)
+                msgLog = (f"{self.indent} {label}")
+                logMsg(msgLog, 2, 0)
                 labelId = label['id']
                 break
 
@@ -504,10 +516,13 @@ class moduleGmail(Content,Queue,socialGoogle):
         return('Not implemented!')
 
     def edit(self, j, newTitle):
-        logging.info("New title %s", newTitle)
+        msgLog = (f"{self.indent} edit")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} New title: {newTitle}")
+        logMsg(msgLog, 2, 0)
         thePost = self.obtainPostData(j)
         oldTitle = thePost[0]
-        logging.info("servicename %s" %self.service)
+        #logging.info("servicename %s" %self.service)
 
         import base64
         import email
@@ -526,39 +541,43 @@ class moduleGmail(Content,Queue,socialGoogle):
             body={'message':message},id=idPost).execute()
 
 
-        logging.info("Update %s" % update)
+        msgLog = (f"{self.indent} Update {update}")
+        logMsg(msgLog, 2, 0)
         update = "Changed "+title+" with "+newTitle
         return(update)
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
-            logging.info(f"Tittt: args: {args}")
+            # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
         if kwargs:
-            logging.info(f"Tittt: kwargs: {kwargs}")
+            # logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             # FIXME: We need to do something here
             post = more.get('post', '')
             api = more.get('api', '')
-            logging.info(f"Post: {post}")
+            # logging.info(f"Post: {post}")
             idPost = api.getPostId(post)
-            logging.info(f"Postt: {post['meta']}")
+            # logging.info(f"Postt: {post['meta']}")
             # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]
             idPost = post['list']['id'] #[1:-1]
-            logging.info(f"Post id: {idPost}")
+            # logging.info(f"Post id: {idPost}")
         res = 'Fail!'
         try:
             # credentials = self.authorize()
             res = api.getClient().users().drafts().send(userId='me',
                        body={'id': str(idPost)}).execute()
-            logging.info("Res: %s" % res)
+            # logging.info("Res: %s" % res)
         except:
             return(self.report('Gmail', idPost, '', sys.exc_info()))
 
         return(f"Res: {res}")
 
     def trash(self, j, typePost='drafts'):
-        logging.info("Trashing %d"% j)
+        msgLog = (f"{self.indent} trash")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} Trashing {j}")
+        logMsg(msgLog, 2, 0)
 
         api = self.getClient()
         idPost = self.getPosts()[j]['list']['id'] #thePost[-1]
@@ -586,21 +605,26 @@ class moduleGmail(Content,Queue,socialGoogle):
     def deleteApiPost(self, idPost):
         api = self.getClient()
         result = api.users().messages().trash(userId='me', id=idPost).execute()
-        logging.info(f"Res: {result}")
+        msgLog = (f"{self.indent} Res: {result}")
+        logMsg(msgLog, 2, 0)
         return(result)
 
     def deleteApiPostDelete(self, idPost):
         api = self.getClient()
         result = api.users().messages().delete(userId='me', id=idPost).execute()
-        logging.info(f"Res: {result}")
+        msgLog = (f"{self.indent} Res: {result}")
+        logMsg(msgLog, 2, 0)
         return(result)
 
 
     def delete(self, j):
-        logging.info("Deleting %d"% j)
+        msgLog = (f"{self.indent} getHeader")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} Deleting {j}")
+        logMsg(msgLog, 2, 0)
 
         typePost = self.getPostsType()
-        logging.info(f"Deleting {typePost}")
+        # logging.info(f"Deleting {typePost}")
 
         if (not typePost or (typePost == 'search')):
             typePost = 'messages'
@@ -612,14 +636,14 @@ class moduleGmail(Content,Queue,socialGoogle):
         except:
             title = ''
 
-        logging.info(f"id {idPost}")
+        # logging.info(f"id {idPost}")
 
         if typePost == 'drafts':
             update = api.users().drafts().trash(userId='me', id=idPost).execute()
         else:
-            logging.info(f"id {idPost}")
+            # logging.info(f"id {idPost}")
             update = api.users().messages().trash(userId='me', id=idPost).execute()
-            logging.info(f"id {update}")
+            # logging.info(f"id {update}")
 
         return("Deleted %s"% title)
 
@@ -646,7 +670,7 @@ class moduleGmail(Content,Queue,socialGoogle):
                     label = label[:-1]
                 if label.upper() in notAllowedLabels:
                     label = 'old-'+label
-                logging.debug("label %s"%label)
+                # logging.debug("label %s"%label)
                 try:
                     labelId = self.getLabelId(label)
                 except:
@@ -666,7 +690,8 @@ class moduleGmail(Content,Queue,socialGoogle):
                 subj = email.header.decode_header(mesT['subject'])[0][0]
             else:
                 subj = ""
-            logging.info("Subject %s",subj)
+            msgLog = (f"{self.indent} Subject {subj}")
+            logMsg(msgLog, 1, 0)
         else:
             if 'raw' in message:
                 mesGE = message['raw']
@@ -683,12 +708,14 @@ class moduleGmail(Content,Queue,socialGoogle):
            # When the message is too big
            # https://github.com/google/import-mailbox-to-gmail/blob/master/import-mailbox-to-gmail.py
 
-           logging.info("Fail 1! Trying another method.")
+           msgLog = (f"{self.indent} Fail 1! Trying another method.")
+           logMsg(msgLog, 3, 0)
+           
            try:
                if not isinstance(message,dict):
                    mesGS = BytesParser().parsebytes(message).as_string()
                    media =  googleapiclient.http.MediaIoBaseUpload(io.StringIO(mesGS), mimetype='message/rfc822')
-                   logging.info("vamos method")
+                   # logging.info("vamos method")
                else:
                     media = message
                #print(media)
@@ -700,9 +727,10 @@ class moduleGmail(Content,Queue,socialGoogle):
                            internalDateSource='dateHeader',
                            body={},
                            media_body=media).execute(num_retries=3)
-               logging.info("messageR method")
+               # logging.info("messageR method")
            except:
-               logging.info("Error with message %s" % message)
+               msgLog = ("Error with message %s" % message)
+               logMsg(msgLog, 3, 0)
                return("Fail 2!")
 
         msg_labels = {'removeLabelIds': [], 'addLabelIds': ['UNREAD', labelId]}
