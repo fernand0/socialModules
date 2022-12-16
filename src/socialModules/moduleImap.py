@@ -107,7 +107,7 @@ class moduleImap(Content, Queue):
         try:
             client = self.makeConnection(self.server, self.user, keys)
             msgLog = (f"{self.indent} Connection: {client}")
-            logmsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, 0)
         except:
             self.report(self.service, '', '', sys.exc_info())
             msgLog = (f"{self.indent} makeConnection failed")

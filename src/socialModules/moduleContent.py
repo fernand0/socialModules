@@ -896,14 +896,12 @@ class Content:
 
     def publishNextPost(self, apiSrc):
         reply = ''
-        msgLog = (f"{self.indent} Service {self.service} publishing next post "
-                  f"from {apiSrc}")
+        msgLog = (f"{self.indent} Service {self.service} publishing next post")
         logMsg(msgLog, 2, 0)
         try:
             post = apiSrc.getNextPost()
             if post:
-                msgLog = (f"{self.indent} Service {self.service} publishing "
-                          f"post {post}")
+                msgLog = (f"{self.indent} Post {post}")
                 logMsg(msgLog, 2, 0)
                 
                 title = apiSrc.getPostTitle(post)
@@ -924,7 +922,9 @@ class Content:
                 res = method(title, link, comment)
                 reply = self.processReply(res)
             else:
-                reply = "Fail! No posts available"
+                msgLog = (f"{self.indent} No posts available")
+                logMsg(msgLog, 2, 0)
+                reply = "No posts available"
         except:
             reply = self.report(self.service, apiSrc, post, sys.exc_info())
 
@@ -1115,12 +1115,14 @@ class Content:
 
     def getLastLinkPublished(self):
         if self.lastLinkPublished and (len(self.lastLinkPublished) == 1):
-            msgLog = (f"{self.indent} Service {self.service} "
-                      f"linkLast len 1 {self.lastLinkPublished}")
-            logMsg(msgLog, 2, 0)
+            msgLog = (f"{self.indent} linkLast (len 1) "
+                      f"{self.lastLinkPublished}")
             lastLink = self.lastLinkPublished[0]
         else:
+            msgLog = (f"{self.indent} linkLast (len >1) "
+                      f"{self.lastLinkPublished}")
             lastLink = self.lastLinkPublished
+        logMsg(msgLog, 2, 0)
         return lastLink
 
     def getLastTimePublished(self):
