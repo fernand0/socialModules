@@ -572,7 +572,7 @@ class moduleRules:
         return iniK, nKey
 
     def readConfigSrc(self, indent, src, more):
-        msgLog = f"{indent} Start readConfigSrc" #: {src[1:]}"
+        msgLog = f"{indent} readConfigSrc: {src[2]}"
         logMsg(msgLog, 2, 0)
         # msgLog = f"{indent} More: Src {more}"
         # logMsg(msgLog, 2, 0)
@@ -614,7 +614,7 @@ class moduleRules:
         return apiSrc
 
     def readConfigDst(self, indent, action, more, apiSrc):
-        msgLog = f"{indent} Start readConfigDst" #: {action}"
+        msgLog = f"{indent} readConfigDst: {action[2]}@{action[3]}"
         logMsg(msgLog, 2, 0)
         # msgLog = f"{indent} More: Src {more}"
         # logMsg(msgLog, 2, 0)
@@ -693,7 +693,7 @@ class moduleRules:
                             simmulate, nextPost=True, pos=-1):
         res = ''
 
-        msgLog = (f"{indent}Go! Action: {msgAction}")
+        msgLog = (f"{indent} End Waiting.")
         logMsg(msgLog, 1, 1)
 
         # The source of data can have changes while we were waiting
@@ -849,9 +849,8 @@ class moduleRules:
             # FIXME: Can we do better?
             return f"{indent}{action}"
 
-        apiDst.setPosts()
-        # print(f"Posttttts: {apiDst.getPosts()}")
-        #FIXME: Is it always needed? Only in caches?
+        # apiDst.setPosts()
+        # #FIXME: Is it always needed? Only in caches?
 
         indent = f"{indent} "
 

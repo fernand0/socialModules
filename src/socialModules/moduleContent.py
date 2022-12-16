@@ -1266,9 +1266,10 @@ class Content:
                 if isinstance(link, bytes):
                     linkS = linkS.decode()
                 url = self.getPostLink(entry)
-                msgLog = (f"{self.indent} Service {self.service} "
-                          f"\nUrl: {url} Link:{linkS}")
-                logMsg(msgLog, 2, 0)
+                # msgLog = (f"{self.indent} Url: {url}"
+                # logMsg(msgLog, 2, 0)
+                # msgLog = (f"{self.indent} Link:{linkS}"
+                # logMsg(msgLog, 2, 0)
                 lenCmp = min(len(url), len(linkS))
                 # if url[:lenCmp] == linkS[:lenCmp]:
                 if url == linkS:

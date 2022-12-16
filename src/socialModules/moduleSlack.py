@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import configparser
-import logging
 import sys
 import time
 import urllib
@@ -32,7 +31,6 @@ class moduleSlack(Content, Queue):
         self.postaction = None
         self.service = "Slack"
 
-        logging.info("     Connecting {}".format(self.service))
         if self.user and self.user.find('/')>=0:
             self.name = self.user.split('/')[2].split('.')[0]
         else:
@@ -74,7 +72,7 @@ class moduleSlack(Content, Queue):
         try:
             self.sc = WebClient(self.slack_token)
         except:
-            logging.info(self.report("Slack", "", "", sys.exc_info()))
+            self.report("Slack", "", "", sys.exc_info())
             self.sc = slack.WebClient(token=self.slack_token)
 
         config = configparser.ConfigParser()
@@ -89,7 +87,7 @@ class moduleSlack(Content, Queue):
 
         if "cache" in config.options(section):
             self.setProgram(config.get(section, "cache"))
-            logging.info("getProgram {}".format(str(self.getProgram())))
+            # logging.info("getProgram {}".format(str(self.getProgram())))
 
     def getSlackClient(self):
         return self.sc
@@ -111,7 +109,7 @@ class moduleSlack(Content, Queue):
         except:
             posts = []
 
-        logging.debug(f"Posts: {posts}")
+        # logging.debug(f"Posts: {posts}")
         return posts
 
     def processReply(self, reply):
@@ -258,7 +256,8 @@ class moduleSlack(Content, Queue):
         return post.get('attachments',[{}])[0].get('image_url', '')
 
     def getChanId(self, name):
-        logging.debug("getChanId %s" % self.service)
+        msgLog = (f"{self.indent} getChanId {self.service}")
+        logMsg(msgLog, 1, 0)
 
         self.getClient().token = self.user_slack_token
         chanList = self.getClient().api_call("conversations.list")["channels"]
@@ -297,7 +296,8 @@ class moduleSlack(Content, Queue):
         return theBots
 
     def search(self, channel, text):
-        logging.debug("     Searching in Slack...")
+        msgLog = ("{self.indent} Searching in Slack...")
+        logMsg(msgLog, 1, 0)
         try:
             self.getClient().token = self.slack_token
             data = {"query": text}
@@ -306,7 +306,7 @@ class moduleSlack(Content, Queue):
             )  # , query=text)
 
             if res:
-                logging.info(self.report(self.service, "", "", sys.exc_info()))
+                self.report(self.service, "", "", sys.exc_info())
                 return res
         except:
             return self.report("Slack", text, sys.exc_info())
@@ -314,6 +314,7 @@ class moduleSlack(Content, Queue):
 
 def main():
 
+    import logging
     logging.basicConfig(stream=sys.stdout, 
             level=logging.INFO, 
             format="%(asctime)s %(message)s"
