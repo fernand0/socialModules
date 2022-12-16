@@ -572,10 +572,10 @@ class moduleRules:
         return iniK, nKey
 
     def readConfigSrc(self, indent, src, more):
-        msgLog = f"{indent} readConfigSrc: {src}"
+        msgLog = f"{indent} readConfigSrc: {src[2]}"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{indent} More: Src {more}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} More: Src {more}"
+        # logMsg(msgLog, 2, 0)
         if src[0] == 'cache':
             apiSrc = getApi(src[0], src[1:], indent)
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
@@ -612,10 +612,10 @@ class moduleRules:
         return apiSrc
 
     def readConfigDst(self, indent, action, more, apiSrc):
-        msgLog = f"{indent} readConfigDst: {action}"
+        msgLog = f"{indent} readConfigDst: {action[2]}@{action[3]}"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{indent} More: Src {more}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} More: Src {more}"
+        # logMsg(msgLog, 2, 0)
         profile = action[2]
         nick = action[3]
         socialNetwork = (profile, nick)
@@ -623,8 +623,8 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         # msgLog = (f"{indent}Action: {action}")
         # logMsg(msgLog, 1, 0)
-        msgLog = (f"{indent} More: Dst {more}")
-        logMsg(msgLog, 1, 0)
+        # msgLog = (f"{indent} More: Dst {more}")
+        # logMsg(msgLog, 1, 0)
 
         if action[0] == "cache":
             print(f"Dst: {action}")
@@ -639,8 +639,8 @@ class moduleRules:
         apiDst.setUser(nick)
         apiDst.setPostsType('posts')
 
-        msgLog = (f"{indent} Api dst: {apiDst}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{indent} Api dst: {apiDst}")
+        # logMsg(msgLog, 2, 0)
 
         if 'max' in more:
             mmax = more['max']
@@ -689,7 +689,7 @@ class moduleRules:
                             simmulate, nextPost=True, pos=-1):
         res = ''
 
-        msgLog = (f"{indent}Go! Action: {msgAction}")
+        msgLog = (f"{indent} End Waiting.")
         logMsg(msgLog, 1, 1)
 
         # The source of data can have changes while we were waiting
@@ -845,9 +845,8 @@ class moduleRules:
             # FIXME: Can we do better?
             return f"{indent}{action}"
 
-        apiDst.setPosts()
-        # print(f"Posttttts: {apiDst.getPosts()}")
-        #FIXME: Is it always needed? Only in caches?
+        # apiDst.setPosts()
+        # #FIXME: Is it always needed? Only in caches?
 
         indent = f"{indent} "
 

@@ -120,7 +120,11 @@ def newUpdateLastLink(url, link, lastLink, socialNetwork=()):
             f.write(link[0])
 
 def updateLastLink(url, link, socialNetwork=()):
-    logging.debug(f"Url: {url} Link: {link} SocialNetwork: {socialNetwork}")
+    msgLog = (f"{self.indent} updateLastLink {self.service}")
+    logMsg(msgLog, 1, 0)
+    msgLog = (f"{self.indent} Url: {url} Link: {link} "
+              f"SocialNetwork: {socialNetwork}")
+    logMsg(msgLog, 2, 0)
     fileName = fileNamePath(url, socialNetwork) + ".last"
 
 

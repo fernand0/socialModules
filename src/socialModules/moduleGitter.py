@@ -35,7 +35,6 @@ class moduleGitter(Content,Queue):
         self.service = 'Gitter'
 
         self.token = keys[0]
-        logging.info("     Connecting {}".format(self.service))
         try:
             client = gitterpy.client.GitterClient(self.token)
         except:

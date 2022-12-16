@@ -96,14 +96,18 @@ class moduleImap(Content, Queue):
         return posLast
 
     def initApi(self, keys):
-        logging.debug(f"User: {self.user}")
-        logging.debug(f"Server: {self.server}")
+        msgLog = (f"{self.indent} User: {self.user}")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} Server: {self.server}")
+        logMsg(msgLog, 2, 0)
         try:
             client = self.makeConnection(self.server, self.user, keys)
-            logging.info(f"Connection: {client}")
+            msgLog = (f"{self.indent} Connection: {client}")
+            logmsg(msgLog, 2, 0)
         except:
-            logging.info(f"Report: {self.report(self.service, '', '', sys.exc_info())}")
-            logging.info("makeConnection failed")
+            self.report(self.service, '', '', sys.exc_info())
+            msgLog = (f"{self.indent} makeConnection failed")
+            logMsg(msgLog, 3, 0)
         
         return client
 
@@ -127,7 +131,8 @@ class moduleImap(Content, Queue):
         return posts
 
     def getChannels(self):
-        logging.debug(f"getChannels")
+        msgLog = (f"{self.indent} getChannels")
+        logMsg(msgLog, 1, 0)
         resp, data = self.getClient().list('""', '*')
         return data
 
@@ -198,7 +203,8 @@ class moduleImap(Content, Queue):
         try:
             M = makeConnection(SERVER, USER, PASSWORD)
         except:
-            logging.error("Error with %s - %s" % (USER,SERVER))
+            msgLog = (f"{self.indent} Error with {USER}-{SERVER}")
+            logMsg(msgLog, 3, 0)
             sys.exit()
 
 
@@ -217,11 +223,13 @@ class moduleImap(Content, Queue):
             msgs = ''
             for rule in RULES:
                 action = rule.split(',')
-                logging.debug(action)
+                msgLog = (f"{self.indent} {action}")
+                logMsg(msgLog, 2, 0)
                 header = action[0][1:-1]
                 content = action[1][1:-1]
                 msgTxt = "[%s,%s] Rule: %s %s" % (srvMsg, usrMsg, header, content)
-                logging.debug(msgTxt)
+                msgLog = (f"{self.indent} {msgTxt}")
+                logMsg(msgLog, 2, 0)
                 if (header == 'hash'):
                     msgs = selectHash(M, FOLDER, content)
                     #M.select(folder)
@@ -926,7 +934,9 @@ class moduleImap(Content, Queue):
         return (SERVER, USER, PASSWORD, RULES, INBOX, FOLDER)
 
     def makeConnection(self, SERVER, USER, PASSWORD):
-        logging.info(f"    Making connection {self.service}: {self.user}")
+        msgLog = (f"{self.indent} Making connection {self.service}: "
+                  f"{self.user}")
+        logMsg(msgLog, 2, 0)
         # IMAP client connection
         import ssl
         context = ssl.create_default_context() #ssl.PROTOCOL_TLSv1)

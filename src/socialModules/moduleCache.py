@@ -11,7 +11,6 @@
 
 import configparser
 import importlib
-import logging
 import os
 import pickle
 import sys
@@ -120,11 +119,13 @@ class moduleCache(Content,Queue):
         #self.fileName = self.fileNameBase((self.user, self.socialNetwork))
 
         if hasattr(self, 'fileName'):
-            logging.info(f"self.fileName {self.fileName}")
+            msgLog = (f"{self.indent} self.fileName {self.fileName}")
+            logMsg(msgLog, 2, 0)
             print(f"self.fileName {self.fileName}")
 
     def setClient2(self, param):
-        logging.info(f"    Connecting Cache {self.service}: {param}")
+        msgLog = (f"{self.indent} Connecting Cache {self.service}: {param}")
+        logMsg(msgLog, 2, 0)
         self.postsType = 'posts'
 
         # print(f"param: {param}")
@@ -134,20 +135,21 @@ class moduleCache(Content,Queue):
             self.auxClass='slack'
 
         if isinstance(param, str):
-            logging.debug("Is str")
+            # logging.debug("Is str")
             self.url = param
             self.user = param
-            logging.warning("This is not possible!")
+            msgLog = (f"{self.indent}  is not possible!")
+            logMsg(msgLog, 3, 0)
         elif isinstance(param[0], tuple):
-            logging.debug("Is tuple")
+            # logging.debug("Is tuple")
             self.url = param[0][1]
             self.user = self.url
             self.service = param[0][0]
             self.socialNetwork = param[0][0]
             self.fileName = self.fileNameBase((self.user, self.socialNetwork))
         elif isinstance(param[1], str):
-            logging.debug("Is 1 str")
-            logging.info(f"    Connecting Cache {self.service}: {param[0]}")
+            # logging.debug("Is 1 str")
+            # logging.info(f"    Connecting Cache {self.service}: {param[0]}")
             if param[0].find('http')>= 0:
                 self.url = param[0]
             else:
@@ -161,9 +163,9 @@ class moduleCache(Content,Queue):
             if hasattr(self, 'fileName'):
                 print(f"self.fileName {self.fileName}")
             self.fileName = self.fileNameBase((self.user, self.socialNetwork))
-            logging.debug(f"self {self}")
-            if hasattr(self, 'fileName'):
-                    logging.info(f"self.fileName {self.fileName}")
+            # logging.debug(f"self {self}")
+            # if hasattr(self, 'fileName'):
+            #      logging.info(f"self.fileName {self.fileName}")
 
             #self.user = param[1]
             if self.user.find('\n')>=0:
@@ -192,7 +194,8 @@ class moduleCache(Content,Queue):
         #self.fileName = self.fileNameBase((self.user, self.socialNetwork))
 
         if hasattr(self, 'fileName'):
-            logging.info(f"self.fileName {self.fileName}")
+            msgLog = (f"{self.indent} self.fileName {self.fileName}")
+            logMsg(msgLog, 2, 0)
             print(f"self.fileName {self.fileName}")
         # if isinstance(param, str):
         #     self.url = param
@@ -263,7 +266,8 @@ class moduleCache(Content,Queue):
         else:
             fileNameQ = fileNameQ+".queue"
 
-        logging.debug(f"{self.indent} File: %s" % fileNameQ)
+        msgLog = (f"{self.indent} File: %s" % fileNameQ)
+        logMsg(msgLog, 2, 0)
         try:
             with open(fileNameQ,'rb') as f:
                 try:
@@ -273,8 +277,8 @@ class moduleCache(Content,Queue):
         except:
             listP = []
 
-        msgLog = f"{self.indent} listP: {listP}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} listP: {listP}"
+        # logMsg(msgLog, 2, 0)
 
         return(listP)
 
@@ -307,7 +311,8 @@ class moduleCache(Content,Queue):
     def setSchedules(self, command=None):
         self.setProfile(self.service)
         profile = self.getProfile()
-        logging.debug("Profile %s" % profile)
+        msgLog = ("Profile %s" % profile)
+        logMsg(msgLog, 2, 0)
 
         profile.id = profile['id']
         profile.profile_id = profile['service_id']
@@ -369,7 +374,7 @@ class moduleCache(Content,Queue):
             if not self.getPosts():
                 self.setPosts()
             posts = self.getPosts()
-            logging.info(f"a Posts: {posts} listP: {listPosts}")
+            # logging.info(f"a Posts: {posts} listP: {listPosts}")
             for pp in listPosts:
                 posts.append(pp)
             #for i, pp in enumerate(posts):
@@ -393,8 +398,9 @@ class moduleCache(Content,Queue):
             posts = self.getPosts()
             pickle.dump(posts, f)
 
-        logging.debug("Writing in %s" % fileNameQ)
-        logging.debug("Posts: {}".format(str(self.getPosts())))
+        msgLog = ("Writing in %s" % fileNameQ)
+        logMsg(msgLog, 2, 0)
+        msgLog = ("Posts: {}".format(str(self.getPosts())))
 
         return 'Ok'
 
@@ -415,16 +421,19 @@ class moduleCache(Content,Queue):
             service = self.getService()
             nick = self.getUser()
 
-        logging.debug(f"Url: {url} service {service} nick {nick}")
-        logging.debug(f"File: {fileNameQ}")
-        logging.debug("Posts antes: {}".format(str(self.getPosts())))
+        msgLog = (f"{self.indent} Url: {url} service {service} nick {nick}")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"File: {fileNameQ}")
+        logMsg(msgLog, 2, 0)
+        # msgLog = ("Posts antes: {}".format(str(self.getPosts())))
 
         with open(f'{fileNameQ}.queue', 'wb') as f:
             posts = self.getPosts()
             pickle.dump(posts, f)
 
-        logging.debug(f"Writing in {fileNameQ}")
-        logging.debug(f"Posts: {str(self.getPosts())}")
+        msgLog = (f"Writing in {fileNameQ}")
+        logMsg(msgLog, 2, 0)
+        # msgLog = (f"Posts: {str(self.getPosts())}")
 
         return 'Ok'
 
@@ -486,7 +495,8 @@ class moduleCache(Content,Queue):
         title = ''
         if post:
             if hasattr(self, 'auxClass'):
-                logging.debug(f"auxClass type: {type(self.auxClass)}")
+                msgLog = (f"auxClass type: {type(self.auxClass)}")
+                logMsg(msgLog, 2, 0)
                 if isinstance(self.auxClass, str):
                     myModule = f"module{self.auxClass.capitalize()}"
                     import importlib
@@ -496,7 +506,7 @@ class moduleCache(Content,Queue):
                     api = cls(self.indent)
                 else:
                     api = self.auxClass
-                logging.debug(f"  Api: {api}")
+                # logging.debug(f"  Api: {api}")
                 apiCmd = getattr(api, 'getPostTitle')
                 title  = apiCmd(post)
             else:
@@ -559,15 +569,18 @@ class moduleCache(Content,Queue):
         return(idPost)
 
     def editApiTitle(self, post, newTitle=''):
-        logging.info(f"ApiTitle: {newTitle}. Post: {post}")
+        msgLog = (f"ApiTitle: {newTitle}. Post: {post}")
+        logMsg(msgLog, 1, 0)
         oldLink = self.getPostLink(post)
         idPost = self.getLinkPosition(oldLink)
         oldTitle = self.getPostTitle(post)
         if not newTitle:
             newTitle = self.reorderTitle(oldTitle)
         self.setPostTitle(post, newTitle)
-        logging.info(f"New post: {post}")
-        logging.info(f"New post: {self.getPost(idPost)}")
+        msgLog = (f"New post: {post}")
+        logMsg(msgLog, 1, 0)
+        # msgLog = (f"New post id: {self.getPost(idPost)}")
+        # logMsg(msgLog, 2, 0)
         # post = (newTitle,) + post[1:]
         # posts = self.getPosts()
         # posts[idPost] = post
@@ -576,10 +589,11 @@ class moduleCache(Content,Queue):
         return(idPost)
 
     def insert(self, j, text):
-        logging.info("Inserting %s", text)
+        msgLog = (f"{self.indent} Inserting {text}")
+        logMsg(msgLog, 2, 0)
         posts = self.getPosts()
         # We do not use j, Maybe in the future.
-        logging.info(f"posts {posts}")
+        # logging.info(f"posts {posts}")
         if (j>=0) and (j<len(posts)):
             textS = text.split(' http')
             post = (textS[0], 'http'+textS[1], '','','','','','','','')
@@ -590,8 +604,9 @@ class moduleCache(Content,Queue):
         # We just store the post, we need more information than the title,
         # link and so on.
         reply = ''
-        logging.info(f"    Publishing next post from {apiSrc} "
-                    f"in {self.service}")
+        msgLog = (f"{self.indent} Publishing next post from {apiSrc} "
+                  f"in {self.service}")
+        logMsg(msgLog, 1, 0)
         try:
             post = apiSrc.getNextPost()
             if post:
@@ -612,10 +627,10 @@ class moduleCache(Content,Queue):
             more = kwargs
             api = more['api']
             post = more['post']
-        logging.debug(f"more: {more}")
+        # logging.debug(f"more: {more}")
         self.setPosts()
         posts = self.getPosts()
-        logging.debug(f"pppposts: {posts}")
+        # logging.debug(f"pppposts: {posts}")
         posts.append(more['post'])
         self.assignPosts(posts)
         self.updatePosts(more['api'])
@@ -651,7 +666,7 @@ class moduleCache(Content,Queue):
             # FIXME
             idPost = self.getIdPosition(idPost)
 
-        logging.info(f"id: {idPost}")
+        # logging.info(f"id: {idPost}")
         self.deleteApi(idPost)
         return f"OK. Deleted post {idPost}"
 
@@ -693,16 +708,17 @@ class moduleCache(Content,Queue):
         return self.deleteApi(j)
 
     def deleteApi(self, j):
-        logging.info(f"Deleting: {j}")
+        msgLog = (f"{self.indent} Deleting: {j}")
+        logMsg(msgLog, 1, 0)
         posts = self.getPosts()
-        logging.debug(f"Posts antes: {posts}")
-        logging.debug(f"Posts .antes: {self.getPosts()}")
+        # logging.debug(f"Posts antes: {posts}")
+        # logging.debug(f"Posts .antes: {self.getPosts()}")
         posts = posts[:j] + posts[j+1:]
-        logging.debug(f"Posts despues: {posts}")
-        logging.debug(f"Posts .despues: {self.getPosts()}")
+        # logging.debug(f"Posts despues: {posts}")
+        # logging.debug(f"Posts .despues: {self.getPosts()}")
         self.assignPosts(posts)
-        logging.debug(f"Posts + despues: {posts}")
-        logging.debug(f"Posts + .despues: {self.getPosts()}")
+        # logging.debug(f"Posts + despues: {posts}")
+        # logging.debug(f"Posts + .despues: {self.getPosts()}")
         # FIXME: Using two cache files, for compatibiiity with old version
         self.updatePostsCache()
         # self.updatePosts('srcNotUsed')
@@ -721,13 +737,16 @@ class moduleCache(Content,Queue):
      #     return post
 
     def copy(self, j, dest):
-        logging.info(f"Copying {j} to {dest}")
+        msgLog = (f"{self.indent} Copying {j} to {dest}")
+        logMsg(msgLog, 1, 0)
         posts = self.getPosts()
         post = posts[j:j+1]
-        logging.info(f"Copying: {self.getPostTitle(post)}")
-        logging.info(f"Destination: {dest}")
-        logging.info(f"Posts: {posts}")
-        logging.info(f"Post: {post}")
+        msgLog = (f"Copying: {self.getPostTitle(post)}")
+        logMsg(msg, 1, 0)
+        msgLog = (f"Destination: {dest}")
+        logMsg(msg, 1, 0)
+        # msgLog = (f"Posts: {posts}")
+        # msgLog = (f"Post: {post}")
 
         #yield f"src: {src}"
 
@@ -743,16 +762,19 @@ class moduleCache(Content,Queue):
         posts[k] = post
         self.assignPosts(posts)
         self.updatePostsCache()
-        logging.info("Moved %s"% self.getPostTitle(post))
+        msgLog = (f"{self.indent} Moved {self.getPostTitle(post)}")
+        logMsg(msgLog, 1, 0)
         return("%s"% self.getPostTitle(post))
 
 
     def move(self, j, dest):
+        msgLog = (f"{self.indent} Moving %d to %d"% (j, k))
+        logMsg(msgLog, 1, 0)
         k = int(dest)
-        logging.info("Moving %d to %d"% (j, k))
         posts = self.getPosts()
         post = posts[j]
-        logging.info("Moving %s"% self.getPostTitle(post))
+        msgLog = (f"{self.indent} Moving {self.getPostTitle(post)}")
+        logMsg(msgLog, 1, 0)
         if j > k:
             for i in range(j-1,k-1,-1):
                 posts[i+1] = posts[i]
@@ -763,8 +785,9 @@ class moduleCache(Content,Queue):
         posts[k] = post
         self.assignPosts(posts)
         self.updatePostsCache()
-        logging.info("Moved %s"% self.getPostTitle(post))
-        return("%s"% self.getPostTitle(post))
+        msgLog = (f"{self.indent} Moved {self.getPostTitle(post)}")
+        logMsg(msgLog, 1, 0)
+        return(f"{self.getPostTitle(post)}")
 
 def main():
 

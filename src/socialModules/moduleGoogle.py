@@ -31,7 +31,8 @@ class socialGoogle:
 
         SCOPES = self.scopes
 
-        logging.info(f"Authorizing...")
+        msgLog = (f"{self.indent} Authorizing...")
+        logMsg(msgLog, 1, 0)
         #logging.info(f"    Connecting {self.service}: {account}")
         pos = self.user.rfind('@')
         self.server = self.user[pos+1:]
@@ -42,17 +43,21 @@ class socialGoogle:
         creds = None
 
         store = file.Storage(fileTokenStore)
-        logging.debug(f"filetokenstore: {fileTokenStore}")
-        logging.info(f"fileCred: {fileCredStore}")
+        msgLog = (f"{self.indent} filetokenstore: {fileTokenStore}")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} fileCred: {fileCredStore}")
+        logMsg(msgLog, 2, 0)
         # creds = Credentials.from_authorized_user_file('token.json', SCOPES)
         creds = store.get()
 
         if not creds:
             if creds and creds.expired and creds.refresh_token:
-                logging.info("Needs to refresh token GMail")
+                msgLog = (f"{self.indent} Needs to refresh token GMail")
+                logMsg(msgLog, 2, 0)
                 creds.refresh(Request())
             else:
-                logging.info("Needs to re-authorize token GMail")
+                msgLog = (f"{self.indent} Needs to re-authorize token GMail")
+                logMsg(msgLog, 2, 0)
 
                 try:
                     flow = client.flow_from_clientsecrets(fileCredStore, 
@@ -77,7 +82,8 @@ class socialGoogle:
                 except ValueError:
                     print("Error de valor")
                     creds = 'Fail!'
-        logging.debug("Storing creds")
+        msgLog = (f"{self.indent} Storing creds")
+        logMsg(msgLog, 2, 0)
         # with open(fileTokenStore, 'wb') as token:
         #     pickle.dump(creds, token)
 
