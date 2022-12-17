@@ -723,10 +723,10 @@ class moduleRules:
                 res = apiDst.publishNextPost(apiSrc)
             else:
                 res = apiDst.publishPosPost(apiSrc, pos)
-            logging.info(f"Res enddddd: {res}")
+            logging.info(f"{indent} Res enddddd: {res}")
             resMsg = f"Publish: {res}. "
             # print(f"{indent}res: {res}")
-            if (nextPost and
+            if (nextPost and (not 'No posts available' in res) and
                     ((not res) or ('SAVELINK' in res) or not ('Fail!' in res))):
                 resUpdate = apiSrc.updateLastLink(apiDst, '')
                 resMsg += f"Update: {resUpdate}"
@@ -972,6 +972,8 @@ class moduleRules:
             for src in sorted(self.rules.keys()):
                 if src[0] != previous:
                     i = 0
+                else:
+                    i = i + 1
                 previous = src[0]
                 indent = f"{src[0]:>9}{i}>"
                 if src in self.more:
@@ -1012,6 +1014,7 @@ class moduleRules:
 
                 actions = self.rules[src]
 
+                # print(f"Select: {select} - {src[0]}{i}")
                 if (select and (select.lower() != f"{src[0].lower()}{i}")):
                     actionMsg = f"Skip."
                 else:
@@ -1065,7 +1068,7 @@ class moduleRules:
                                         args.simmulate,
                                         nameA))
                     indent = f"{indent[:-1]}"
-                i = i + 1
+                # i = i + 1
                 indent = f"{indent[:-1]}"
 
             messages = []

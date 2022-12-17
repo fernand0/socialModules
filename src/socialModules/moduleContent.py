@@ -236,6 +236,8 @@ class Content:
             link = self.getPostLink(link[-1])
         elif not link:
             post = self.getNextPost()
+            msgLog = f"{self.indent} nextPost {post}"
+            logMsg(msgLog, 2, 0)
             link = self.getPostLink(post)
         msgUpdate = f"last link {link} in {self.service}"
         msgLog = f"Updating {msgUpdate}"
