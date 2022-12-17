@@ -394,9 +394,9 @@ class moduleGmail(Content,Queue,socialGoogle):
     def getPostLinks(self, post):
         message = self.getMessageId(self.getPostId(post))
         soup = BeautifulSoup(message, 'lxml')
-        logging.debug(soup)
+        # logging.debug(soup)
         res = soup.find_all('a', href=True)
-        logging.debug(res)
+        # logging.debug(res)
         links = []
         for element in res:
             link = element['href']
@@ -409,10 +409,10 @@ class moduleGmail(Content,Queue,socialGoogle):
         # snippet = self.getHeader(post, 'snippet')
         theLink = ''
         if post:
-            msgLog = (f"Post: {post}")
+            msgLog = (f"{self.indent} Post: {post}")
             logMsg(msgLog, 2, 0)
             links = self.getPostLinks(post)
-            msgLog = (f"Links: {links}")
+            msgLog = (f"{self.indent} Links: {links}")
             logMsg(msgLog, 2, 0)
             if links:
                 theLink = links[0]
