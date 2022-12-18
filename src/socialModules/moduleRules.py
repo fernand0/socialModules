@@ -697,40 +697,80 @@ class moduleRules:
         logMsg(msgLog, 1, 1)
     
         # The source of data can have changes while we were waiting
-        apiSrc.setPosts()
-        if nextPost:
-            # FIXME is  this needed?
-            post = apiSrc.getNextPost()
-        else:
-            post = apiSrc.getPost(pos)
-    
-        if post:
-            msgLog = f"{indent}Would schedule in {msgAction} ..."
-            logMsg(msgLog, 1, 1)
-            indent = f"{indent} "
-            logMsg(msgLog, 2, 0)
-            logMsg(f"{indent}- {apiSrc.getPostTitle(post)}", 1, 1)
-        else:
-            msgLog = f"{indent}No post to schedule in {msgAction}"
-            logMsg(msgLog, 1, 1)
-    
-        indent = f"{indent[:-1]}"
-    
         resMsg = ''
         postaction = ''
-        if not simmulate:
+        if simmulate:
+            apiSrc.setPosts()
+            if nextPost:
+                # FIXME is  this needed?
+                post = apiSrc.getNextPost()
+            else:
+                post = apiSrc.getPost(pos)
+    
+            if post:
+                msgLog = (f"{indent}Would schedule in {apiDst.service} "
+                          f"Title: {apiSrc.getPostTitle(post)}")
+            else:
+                msgLog = f"{indent}No post to schedule."
+            logMsg(msgLog, 1, 1)
+    
+            indent = f"{indent[:-1]}"
+
+            msgLog = (f"{indent}This is a simmulation")
+            logMsg(msgLog, 1, 1)
+            resMsg = f"Simulate: {msgLog}\n"
+            post = apiSrc.getNextPost()
+            if post:
+                link = apiSrc.getPostLink(post)
+                if link:
+                    msgLog = (f"{indent}I'd record link: {link}")
+                    logMsg(msgLog, 1, 1)
+                    resMsg += f"{msgLog}\n"
+                    # fN = fileNamePath(apiDst.getUrl(), socialNetwork)
+                    # msgLog = (f"{indent}in file ", f"{fN}.last")
+                    # logMsg(msgLog, 1, 1)
+                    msgLog = (f"{indent}in file "
+                              f"{apiSrc.fileNameBase(apiDst)}.last")
+                    logMsg(msgLog, 1, 1)
+                    resMsg += f"{msgLog}\n"
+
+        else:
             if nextPost:
                 res = apiDst.publishNextPost(apiSrc)
             else:
                 res = apiDst.publishPosPost(apiSrc, pos)
-            logging.info(f"{indent} Res enddddd: {res}")
+            msgLog = (f"{indent} Res enddddd: {res}")
+            logMsg(msgLog, 2, 0)
             resMsg = f"Publish: {res}. "
             # print(f"{indent}res: {res}")
+            if 'OK. Published!' in res:
+                msgLog = (f"{indent} Res is OK")
+                logMsg(msgLog, 1, 0)
+                postaction = apiSrc.getPostAction()
+                logging.info(f"{indent} postAction: {postaction}")
+                if postaction:
+                    msgLog = (f"{indent}Post Action {postaction}")
+                    logMsg(msgLog, 1, 1)
+    
+                    if nextPost:
+                        cmdPost = getattr(apiSrc, f"{postaction}NextPost")
+                        resPost = cmdPost()
+                    else:
+                        cmdPost = getattr(apiSrc, f"{postaction}")
+                        resPost = cmdPost(pos)
+                        # FIXME inconsistent
+                    msgLog = (f"{indent}Post Action command {cmdPost}")
+                    logMsg(msgLog, 1, 1)
+                    msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
+                    logMsg(msgLog, 1, 1)
+                    resMsg += f"Post Action: {resPost}"
             if (nextPost and (not 'No posts available' in res) and
-                    ((not res) or ('SAVELINK' in res) or not ('Fail!' in res))):
+                    ((not res) or ('SAVELINK' in res) or 
+                     not ('Fail!' in res))):
                 resUpdate = apiSrc.updateLastLink(apiDst, '')
                 resMsg += f"Update: {resUpdate}"
-            if ((not res) or ('SAVELINK' in res) or not ('Fail!' in res)
+            if (((not res) and (not 'OK. Published!' in res))
+                or ('SAVELINK' in res) or not ('Fail!' in res)
                     or not( 'Duplicate' in res)):
                 postaction = apiSrc.getPostAction()
                 logging.info(f"{indent} postAction: {postaction}")
@@ -756,24 +796,6 @@ class moduleRules:
     
             msgLog = (f"{indent}End publish, reply: {resMsg}")
             logMsg(msgLog, 1, 1)
-        else:
-            msgLog = (f"{indent}This is a simmulation")
-            logMsg(msgLog, 1, 1)
-            resMsg = f"Simulate: {msgLog}\n"
-            post = apiSrc.getNextPost()
-            if post:
-                link = apiSrc.getPostLink(post)
-                if link:
-                    msgLog = (f"{indent}I'd record link: {link}")
-                    logMsg(msgLog, 1, 1)
-                    resMsg += f"{msgLog}\n"
-                    # fN = fileNamePath(apiDst.getUrl(), socialNetwork)
-                    # msgLog = (f"{indent}in file ", f"{fN}.last")
-                    # logMsg(msgLog, 1, 1)
-                    msgLog = (f"{indent}in file "
-                              f"{apiSrc.fileNameBase(apiDst)}.last")
-                    logMsg(msgLog, 1, 1)
-                    resMsg += f"{msgLog}\n"
         if postaction == 'delete':
             msgLog = (f"{indent}Available {len(apiSrc.getPosts())-1}")
         else:
@@ -863,22 +885,23 @@ class moduleRules:
     
         time.sleep(1)
         if lastLink:
-            msgLog = (f"Last link: {lastLink} ")
-            logMsg(f"{indent}{msgLog}", 1, 1)
+            msgLog = (f"{indent} Last link: {lastLink} ")
+            logMsg(msgLog, 1, 1)
     
         msgLog = ''
         if lastTime:
             myTime = time.strftime("%Y-%m-%d %H:%M:%S",
                                     time.localtime(lastTime))
     
-            msgLog = (f"{msgLog}Last time: {myTime}")
+            msgLog = (f"{indent} {msgLog}Last time: {myTime}")
+            logMsg(msgLog, 1, 1)
     
         if nextPost:
             num = apiDst.getMax()
         else:
             num = 1
     
-        msgLog = (f"{indent}{msgLog} Num: {num}")
+        msgLog = (f"{indent} Num: {num}")
         logMsg(msgLog, 1, 1)
     
         listPosts = []
@@ -894,9 +917,9 @@ class moduleRules:
                 # If there is no lasTime, we will publish
                 diffTime = hours + 1
     
-            msgLog = (f"{indent}Src time: {apiSrc.getTime()} "
-                      f"Dst time: {apiDst.getTime()}")
-            logMsg(msgLog, 2, 0)
+            # msgLog = (f"{indent}Src time: {apiSrc.getTime()} "
+            #           f"Dst time: {apiDst.getTime()}")
+            # logMsg(msgLog, 2, 0)
     
             numAvailable = 0
     
@@ -909,7 +932,8 @@ class moduleRules:
                     post = apiSrc.getPost(pos)
     
                 if post:
-                    msgLog = (f"{indent} Post {apiSrc.getPostTitle(post)}")
+                    msgLog = (f"{indent} Next post title: "
+                              f"{apiSrc.getPostTitle(post)}")
                     apiSrc.setNextTime(tNow, tSleep, apiDst)
                 else:
                     msgLog = (f"{indent} No post")
@@ -924,7 +948,7 @@ class moduleRules:
                     tSleep = 2.0
                     msgLog= f"{indent}No Waiting"
     
-                msgLog = f"{msgLog} for action: {msgAction}"
+                msgLog = f"{msgLog} for action" #: {msgAction}"
                 logMsg(msgLog, 1, 1)
     
                 for i in range(num):

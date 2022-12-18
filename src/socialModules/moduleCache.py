@@ -398,9 +398,9 @@ class moduleCache(Content,Queue):
             posts = self.getPosts()
             pickle.dump(posts, f)
 
-        msgLog = ("Writing in %s" % fileNameQ)
+        msgLog = (f"{self.indent} Writing in {fileNameQ}")
         logMsg(msgLog, 2, 0)
-        msgLog = ("Posts: {}".format(str(self.getPosts())))
+        #msgLog = ("Posts: {}".format(str(self.getPosts())))
 
         return 'Ok'
 
@@ -431,7 +431,7 @@ class moduleCache(Content,Queue):
             posts = self.getPosts()
             pickle.dump(posts, f)
 
-        msgLog = (f"Writing in {fileNameQ}")
+        msgLog = (f"{self.indent} Writing in {fileNameQ}")
         logMsg(msgLog, 2, 0)
         # msgLog = (f"Posts: {str(self.getPosts())}")
 
@@ -495,7 +495,7 @@ class moduleCache(Content,Queue):
         title = ''
         if post:
             if hasattr(self, 'auxClass'):
-                msgLog = (f"auxClass type: {type(self.auxClass)}")
+                msgLog = (f"auxClass: {self.auxClass}")
                 logMsg(msgLog, 2, 0)
                 if isinstance(self.auxClass, str):
                     myModule = f"module{self.auxClass.capitalize()}"
@@ -604,8 +604,8 @@ class moduleCache(Content,Queue):
         # We just store the post, we need more information than the title,
         # link and so on.
         reply = ''
-        msgLog = (f"{self.indent} Publishing next post from {apiSrc} "
-                  f"in {self.service}")
+        msgLog = (f"{self.indent} Service {self.service} publishing "
+                  f"next post in {self.service}")
         logMsg(msgLog, 1, 0)
         try:
             post = apiSrc.getNextPost()

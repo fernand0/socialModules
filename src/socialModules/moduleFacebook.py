@@ -46,10 +46,13 @@ class moduleFacebook(Content,Queue):
 
         if (facebookAC != 'me'):
             for i in range(len(pages['data'])):
-                logging.debug("    Page: %s %s" % (
-                    pages['data'][i]['name'], facebookAC))
+                msgLog = (f"{self.indent} Page: {pages['data'][i]['name']} "
+                          f"{facebookAC}")
+                logMsg(msgLog, 2, 0)
                 if (pages['data'][i]['name'] == facebookAC):
-                    logging.info("     Selected... %s" % pages['data'][i]['name'])
+                    msgLog = (f"{self.indent} Selected "
+                              f"{pages['data'][i]['name']}")
+                    logMsg(msgLog, 2, 0)
                     graph2 = facebook.GraphAPI(pages['data'][i]['access_token'])
                     self.page = graph2
                     self.pageId = pages['data'][i]['id']
@@ -87,26 +90,28 @@ class moduleFacebook(Content,Queue):
     def processReply(self, reply):
         res = reply
         if reply:
-            logging.debug("Res: %s" % reply)
+            msgLog = (f"{self.indent} Res: {reply}")
+            logMsg(msgLog, 2, 0)
             if 'id' in reply:
                 res = 'https://www.facebook.com/{}'.format(reply['id'])
-                logging.info("     Link process reply: {res}")
+                msgLog = ("{self.indent} Link process reply: {res}")
+                logMsg(msgLog, 2, 0)
         return(res)
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
-            logging.info(f"Tittt: args: {args}")
+            # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
         if kwargs:
-            logging.info(f"Tittt: kwargs: {kwargs}")
+            # logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             post = more.get('post', '')
             api = more.get('api', '')
-            logging.info(f"Api: {api}")
+            # logging.info(f"Api: {api}")
             title = api.getPostTitle(post)
-            logging.info(f"Title: {title}")
+            # logging.info(f"Title: {title}")
             link = api.getPostLink(post)
-            logging.info(f"Link: {link}")
+            # logging.info(f"Link: {link}")
             comment = ''
 
         post = self.addComment(title, comment)
@@ -123,7 +128,8 @@ class moduleFacebook(Content,Queue):
 
     def publishApiImage(self, postData):
         res = 'Fail!'
-        logging.debug(f"{postData} Len: {len(postData)}")
+        msgLog = (f"{self.indent} {postData} Len: {len(postData)}")
+        logMsg(msgLog, 2, 0)
         if len(postData) == 3:
             post, imageName, more = postData
             yield(f" publishing api {post} - {imageName} - {more}")
@@ -139,12 +145,14 @@ class moduleFacebook(Content,Queue):
             except:
                 res = self.report('Facebook', post, '', sys.exc_info())
         else:
-            logging.debug(f" not published")
+            msgLog = (f"{self.indent} not published")
+            logMsg(msgLog, 2, 0)
         return res
 
     def deleteApiPosts(self, idPost):
         result = self.page.delete_object(idPost)
-        logging.info(f"Res: {result}")
+        msgLog = (f"{self.indent} Res: {result}")
+        logMsg(msgLog, 2, 0)
         return(result)
 
     def getPostId(self, post):

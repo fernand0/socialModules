@@ -91,7 +91,7 @@ class moduleImgur(Content, Queue):
                     # logging.info(f"Draft: {info}")
         else:
             msgLog = (f'{self.indent} No client configured!')
-            logMsg(msgLog, 3, 0=
+            logMsg(msgLog, 3, 0)
 
         return (posts)
 

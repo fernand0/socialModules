@@ -152,8 +152,8 @@ class Content:
             identifier = self.getUrl()
 
         typePosts = self.getPostsType()
-        msgLog = (f"{self.indent} Service {self.service} setting posts "
-                  f"{identifier} (type: {self.getPostsType()})")
+        msgLog = (f"{self.indent} Service {self.service} setting "
+                  f"{self.getPostsType()}")
         logMsg(msgLog, 1, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
             typePosts = self.getPostsType()
@@ -1098,7 +1098,8 @@ class Content:
 
         with open(fileNameQ, "wb") as f:
             pickle.dump(self.nextPosts, f)
-        logging.debug("Writing in %s" % fileNameQ)
+        msgLog = ("{self.indent} Writing in {fileNameQ}")
+        logMsg(msgLog, 2, 0)
 
         return "Ok"
 
