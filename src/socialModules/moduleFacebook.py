@@ -46,9 +46,9 @@ class moduleFacebook(Content,Queue):
 
         if (facebookAC != 'me'):
             for i in range(len(pages['data'])):
-                msgLog = (f"{self.indent} Page: {pages['data'][i]['name']} "
-                          f"{facebookAC}")
-                logMsg(msgLog, 2, 0)
+                # msgLog = (f"{self.indent} Page: {pages['data'][i]['name']} "
+                #           f"{facebookAC}")
+                # logMsg(msgLog, 2, 0)
                 if (pages['data'][i]['name'] == facebookAC):
                     msgLog = (f"{self.indent} Selected "
                               f"{pages['data'][i]['name']}")
