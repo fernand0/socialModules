@@ -423,7 +423,7 @@ class moduleCache(Content,Queue):
 
         msgLog = (f"{self.indent} Url: {url} service {service} nick {nick}")
         logMsg(msgLog, 2, 0)
-        msgLog = (f"File: {fileNameQ}")
+        msgLog = (f"{self.indent} File Queue: {fileNameQ}")
         logMsg(msgLog, 2, 0)
         # msgLog = ("Posts antes: {}".format(str(self.getPosts())))
 

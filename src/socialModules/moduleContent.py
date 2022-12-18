@@ -40,8 +40,8 @@ class Content:
         ser = self.__class__.__name__
         self.service = self.__class__.__name__[6:]
         self.indent = indent
-        msgLog = (f"{self.indent} Service {self.service} initializing")
-        logMsg(msgLog, 1, 0)
+        # msgLog = (f"{self.indent} Service {self.service} initializing")
+        # logMsg(msgLog, 1, 0)
         # They start with module
         self.hold = None
 
@@ -845,15 +845,18 @@ class Content:
 
     def deleteNextPost(self):
         reply = ''
-        msgLog = (f"{self.indent} Service {self.service} Deleting next post")
+        msgLog = (f"{self.indent} Service {self.service} deleting next post")
         logMsg(msgLog, 2, 0)
         try:
             post = self.getNextPost()
             if post:
-                msgLog = (f"{self.indent} Service {self.service} Deleting post "
-                          f"{post}")
+                msgLog = (f"{self.indent} Service {self.service} deleting "
+                          f"post {post}")
                 logMsg(msgLog, 2, 0)
                 idPost = self.getPostId(post)
+                msgLog = (f"{self.indent} Service {self.service} post Id "
+                          f"post {idPost}")
+                logMsg(msgLog, 2, 0)
                 if (hasattr(self, 'getPostsType')
                     and (self.getPostsType())
                     and (hasattr(self,

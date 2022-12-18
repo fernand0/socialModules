@@ -733,7 +733,7 @@ class moduleRules:
             if ((not res) or ('SAVELINK' in res) or not ('Fail!' in res)
                     or not( 'Duplicate' in res)):
                 postaction = apiSrc.getPostAction()
-                logging.info(f"postAction: {postaction}")
+                logging.info(f"{indent} postAction: {postaction}")
                 if postaction:
                     msgLog = (f"{indent}Post Action {postaction}")
                     logMsg(msgLog, 1, 1)
