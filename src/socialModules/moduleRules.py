@@ -405,8 +405,7 @@ class moduleRules:
         msgLog = (f"Avail: {self.available}")
         logMsg(msgLog, 2, 0)
         self.printDict(self.available, "Available")
-        # msgLog = (f"Rules: {ruls}")
-        # logMsg(msgLog, 2, 0)
+
         msgLog = (f"RulesNew: {rulesNew}")
         logMsg(msgLog, 2, 0)
         if hasattr(self, 'args') and self.args.rules:
@@ -629,7 +628,7 @@ class moduleRules:
         # logMsg(msgLog, 1, 0)
     
         if action[0] == "cache":
-            print(f"Dst: {action}")
+            print(f"{indent} Dst: {action}")
             apiDst = getApi("cache", ((more['service'],  action[1]),
                 f"{action[2]}@{action[3]}", 'posts'), indent)
             apiDst.socialNetwork = action[2]
@@ -671,12 +670,12 @@ class moduleRules:
                 apiSrc.lastLinkPublished = ''
     
         listPosts2 = apiSrc.getNumNextPost(num)
-        print(f"{listPosts}")
+        print(f"{indent} {listPosts}")
         if listPosts2:
             if (listPosts == listPosts2):
-                print("{indent}Equal listPosts")
+                print("{indent} Equal listPosts")
             else:
-                print(f"Differ listPosts (len {len(listPosts[0])}, "
+                print(f"{indent} Differ listPosts (len {len(listPosts[0])}, "
                       f"{len(listPosts2[0])}:\n")
                 for i, post in enumerate(listPosts):
                     for j, line in enumerate(listPosts[i]):
