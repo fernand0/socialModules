@@ -240,7 +240,7 @@ class Content:
             logMsg(msgLog, 2, 0)
             link = self.getPostLink(post)
         msgUpdate = f"last link {link} in {self.service}"
-        msgLog = f"Updating {msgUpdate}"
+        msgLog = f"{self.indent} Updating {msgUpdate}"
         logMsg(msgLog, 1, 0)
 
         fileName = f"{self.fileNameBase(dst)}.last"

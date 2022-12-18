@@ -1,5 +1,4 @@
 import configparser
-import logging
 import sys
 
 import pytumblr
@@ -39,7 +38,8 @@ class moduleTumblr(Content, Queue):
             self.url = f"https://{tumblr[1]}.tumblr.com/"
         elif isinstance(tumblr, tuple):
             self.url = f"https://{tumblr[1][1]}.tumblr.com/"
-        logging.debug(f"Url: {self.url}")
+        msgLog = (f"{self.indent} Url: {self.url}")
+        logMsg(msgLog, 2, 0)
         self.service = 'tumblr'
 
         return client
@@ -87,7 +87,8 @@ class moduleTumblr(Content, Queue):
 
 
     def getPostTitle(self, post):
-        logging.debug(f"getPostTitle {post}")
+        msgLog = (f"{self.indent} getPostTitle {post}")
+        logMsg(msgLog, 2, 0)
         title = ""
         if post:
             if 'summary' in post:
@@ -95,7 +96,8 @@ class moduleTumblr(Content, Queue):
         return title
 
     def getPostLink(self, post):
-        logging.debug(f"getPostUrl {post}")
+        msgLog = (f"{self.indent} getPostUrl {post}")
+        logMsg(msgLog, 2, 0)
         url = ""
         if post:
             if 'post_url' in post:
@@ -103,7 +105,8 @@ class moduleTumblr(Content, Queue):
         return url
 
     def getPostId(self, post):
-        logging.debug(f"getPostId {post}")
+        msgLog = (f"{self.indent} getPostId {post}")
+        logMsg(msgLog, 2, 0)
         idPost = ""
         if post:
             if 'id' in post:
@@ -111,7 +114,8 @@ class moduleTumblr(Content, Queue):
         return idPost
 
     def getPostState(self, post):
-        logging.debug(f"getPostState {post}")
+        msgLog = (f"{self.indent} getPostState {post}")
+        logMsg(msgLog, 2, 0)
         state = ""
         if post:
             if 'state' in post:
@@ -119,22 +123,26 @@ class moduleTumblr(Content, Queue):
         return state
 
     def processReply(self, reply):
-        logging.info("Res: %s" % reply)
+        msgLog = ("{self.indent} Res: %s" % reply)
+        logMsg(msgLog, 2, 0)
         res = reply
         if 'id' in reply:
             try:
-                logging.info(f"Res: {reply['id']}")
+                msgLog = (f"{self.indent} Res: {reply['id']}")
+                logMsg(msgLog, 2, 0)
                 res = f"{self.getUrl()}{reply['id']}"
             except:
-                logging.info(f"Temporal: error {reply}")
+                msgLog = (f"{self.indent} Temporal: error {reply}")
+                logMsg(msgLog, 3, 0)
         return res
 
     def publishNextPost(self, apiSrc):
         # We just store the post, we need more information than the title,
         # link and so on.
         reply = ''
-        logging.info(f"    Publishing next post from {apiSrc} in "
+        msgLog = (f"{self.indent} Publishing next post from {apiSrc} in "
                     f"{self.service}")
+        logMsg(msgLog, 2, 0)
         try:
             post = apiSrc.getNextPost()
             if post:
@@ -150,8 +158,9 @@ class moduleTumblr(Content, Queue):
         # We just store the post, we need more information than the title,
         # link and so on.
         reply = ''
-        logging.info(f"    Publishing next post from {apiSrc} in "
+        msgLog = (f"{self.indent} Publishing next post from {apiSrc} in "
                     f"{self.service}")
+        logMsg(msgLog, 2, 0)
         try:
             post = apiSrc.getNextPost()
             if post:
@@ -165,13 +174,13 @@ class moduleTumblr(Content, Queue):
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
-            logging.info(f"Tittt: args: {args}")
+            # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
             api = self
             # Will always work?
             idPost = link.split('/')[-2]
         if kwargs:
-            logging.info(f"Tittt: kwargs: {kwargs}")
+            # logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             post = more.get('post', '')
             api = more.get('api', '')
@@ -180,8 +189,8 @@ class moduleTumblr(Content, Queue):
             comment = ''
             idPost = api.getPostId(post)
 
-        logging.info(f"Type: {api.getPostsType()}")
-        logging.info(f"Id: {idPost}")
+        # logging.info(f"Type: {api.getPostsType()}")
+        # logging.info(f"Id: {idPost}")
         try:
             if api.getPostsType() == 'posts':
                 res = self.getClient().create_link(self.getUser(),
@@ -190,7 +199,7 @@ class moduleTumblr(Content, Queue):
                                                    url=link,
                                                    description=comment)
             elif api.getPostsType() == 'queue':
-                logging.debug(f"idPost {idPost}")
+                # logging.debug(f"idPost {idPost}")
                 res = self.editApiStateId(idPost, 'published')
             else:
                 res = self.getClient().create_link(self.getBlogName(),
@@ -199,24 +208,25 @@ class moduleTumblr(Content, Queue):
                                                    url=link,
                                                    description=comment)
         except ConnectionError as connectionError:
-            logging.info(f"Connection error in {self.service}")
+            msgLog = (f"Connection error in {self.service}")
+            logMsg(msgLog, 3, 0)
             res = self.report('Tumblr', post, link, sys.exc_info())
 
         return f"{self.processReply(res)}. Title: {title}. Link: {link}"
 
     def publishh(self, j):
         # This is not publishing but changing state -> editing
-        logging.info(f"Publishing {j}")
-        logging.info(f"servicename {self.service}")
+        # logging.info(f"Publishing {j}")
+        # logging.info(f"servicename {self.service}")
         if hasattr(self, 'getPostsType') and (self.getPostsType() == 'queue'):
-            logging.info(f"Publishing queued state {j}")
-            res = self.do_edit(j, newState='published')
+            # logging.info(f"Publishing queued state {j}")
+            # res = self.do_edit(j, newState='published')
         else:
             # Not tested
             (title, link, firstLink, image, summary, summaryHtml, summaryLinks,
              content, links, comment) = self.obtainPostData(j)
-            logging.info("Publishing {} {}".format(title, link))
-            res = self.publishPost(title, link, comment)
+            # logging.info("Publishing {} {}".format(title, link))
+            # res = self.publishPost(title, link, comment)
 
         return(res)
 
@@ -239,16 +249,19 @@ class moduleTumblr(Content, Queue):
 
     def deleteApi(self, j):
         idPost = self.getId(j)
-        logging.info("Deleting post %s" % idPost)
+        msgLog = (f"{self.indent} Deleting post %s" % idPost)
+        logMsg(msgLog, 1, 0)
         return self.getClient().delete_post(self.getBlogName(), idPost)
 
     def deleteApiQueue(self, idPost):
-        logging.info("Deleting from queue %s" % idPost)
+        msgLog = ("{self.indent} Deleting from queue %s" % idPost)
+        logMsg(msgLog, 1, 0)
         return self.getClient().delete_post(self.getBlogName(), idPost)
 
 
 def main():
 
+    import logging
     logging.basicConfig(
         stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(message)s'
         )
