@@ -1,6 +1,5 @@
 import configparser
 import json
-import logging
 import sys
 import time
 
@@ -45,29 +44,35 @@ class moduleImgur(Content, Queue):
     def setApiPosts(self):
         posts = []
         client = self.getClient()
-        logging.debug(f"Client: {client} {self.user} ")
+        msgLog = (f"{self.indent} Client: {client} {self.user} ")
+        logMsg(msgLog, 2, 0)
         if self.user.find('https')>=0:
             user = self.user.split('/')[-1]
         else:
             user = self.user
 
-        logging.debug(f"User: {user}")
+        msgLog = (f"{self.indent} User: {user}")
+        logMsg(msgLog, 2, 0)
 
         if client:
             for album in client.get_account_albums(user):
-                logging.debug(f"Title: {time.ctime(album.datetime)} "
-                              f"{album.title}")
+                msgLog = (f"{self.indent} Title: {time.ctime(album.datetime)} "
+                          f"{album.title}")
+                logMsg(msgLog, 2, 0)
                 if album.in_gallery:
                     posts.append(album)
             else:
-                logging.warning('No client configured!')
+                msgLog = (f'{self.indent} No client configured!')
+                logMsg(msgLog, 3, 0)
         return (posts)
 
     def setApiDrafts(self):
         posts = []
         client = self.getClient()
-        logging.debug(f"Client: {client}")
-        logging.debug(f"User: {self.user}")
+        msgLog = (f"{self.indent} Client: {client}")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} User: {self.user}")
+        logMsg(msgLog, 2, 0)
 
         if client:
             if self.user.find('http')>= 0:
@@ -75,15 +80,18 @@ class moduleImgur(Content, Queue):
             else:
                 user = self.user
 
-            logging.debug(f"User: {user}")
+            msgLog = (f"{self.indent} User: {user}")
+            logMsg(msgLog, 2, 0)
             for album in client.get_account_albums(user):
                 info = f"{time.ctime(album.datetime)} {album.title}"
-                logging.info(f"Info: {info}")
+                msgLog = (f"{self.indent} Info: {info}")
+                logMsg(msgLog, 2, 0)
                 if not album.in_gallery:
                     posts.append(album)
                     # logging.info(f"Draft: {info}")
         else:
-            logging.warning('No client configured!')
+            msgLog = (f'{self.indent} No client configured!')
+            logMsg(msgLog, 3, 0=
 
         return (posts)
 
@@ -133,7 +141,8 @@ class moduleImgur(Content, Queue):
         res = ''
         if reply:
             if not ('Fail!' in reply):
-                logging.info(f"Reply: {reply}")
+                msgLog = (f"{self.indent} Reply: {reply}")
+                logMsg(msgLog, 2, 0)
                 # idPost = reply.get('id','')
                 # title = reply.get('title')
                 res = f"Published {reply}"
@@ -147,8 +156,9 @@ class moduleImgur(Content, Queue):
         # We just store the post, we need more information than the title,
         # link and so on.
         reply = ''
-        logging.info(f"    Publishing next post from {apiSrc} in "
+        msgLog = (f"{self.indent} Publishing next post from {apiSrc} in "
                     f"{self.service}")
+        logMsg(msgLog, 1, 0)
         try:
             post = apiSrc.getNextPost()
             if post:
@@ -176,33 +186,44 @@ class moduleImgur(Content, Queue):
         print(f"tit: {title} id: {idPost}")
         # This method publishes (as public post) some gallery that is in draft
         # mode
-        logging.info("     Publishing in: {}".format(self.service))
-        logging.info("      {}".format(str(post)))
+        msgLog = (f"{self.indent} Publishing in: {self.service}")
+        logMsg(msgLog, 1, 0)
+        msgLog = (f"{self.indent}  {post}")
+        logMsg(msgLog, 1, 0)
         api = self.getClient()
         # idPost = self.getPostId(post)
         try:
             res = api.share_on_imgur(idPost, title, terms=0)
-            logging.info(f"      Res: {res}")
+            msgLog = (f"{self.indent} Res: {res}")
+            logMsg(msgLog, 2, 0)
             if res:
                 return(OK)
         except:
-            logging.info(self.report('Imgur', post, idPost, sys.exc_info()))
-            return(self.report('Imgur', post, idPost, sys.exc_info()))
+            res = self.report('Imgur', post, idPost, sys.exc_info())
+            return(res)
 
         return(FAIL)
 
     def delete(self, j):
-        logging.info(f"Deleting {j}")
+        msgLog = (f"{self.indent} Deleting {j}")
+        logMsg(msgLog, 1, 0)
         post = self.obtainPostData(j)
-        logging.info(f"Deleting {post[0]}")
+        msgLog = (f"{self.indent} Deleting {post[0]}")
+        logMsg(msgLog, 1, 0)
+        post = self.obtainPostData(j)
         idPost = self.posts[j].id
-        logging.info(f"id {idPost}")
-        logging.info(self.getClient().album_delete(idPost))
+        msgLog = (f"{self.indent} id {idPost}")
+        logMsg(msgLog, 2, 0)
+        post = self.obtainPostData(j)
+        msgLog = (f"{self.indent} {self.getClient().album_delete(idPost)}")
+        logMsg(msgLog, 2, 0)
+        #FIXME is this ok?
         sys.exit()
         self.posts = self.posts[:j] + self.posts[j+1:]
         self.updatePostsCache()
 
-        logging.info(f"Deleted {post[0]}")
+        msgLog = (f"{self.indent} Deleted {post[0]}")
+        logMsg(msgLog, 2, 0)
         return(f"{post[0]}")
 
     def extractImages(self, post):
@@ -212,12 +233,15 @@ class moduleImgur(Content, Queue):
         res = []
         title = theTitle
         for img in data:
-            logging.debug(f"Img: {img}")
+            msgLog = (f"{self.indent} Img: {img}")
+            logMsg(msgLog, 2, 0)
             if img.type == 'video/mp4':
-                logging.info("Es vídeo")
+                msgLog = (f"{self.indent} Es vídeo")
+                logMsg(msgLog, 2, 0)
                 urlImg = img.mp4
             else:
-                logging.info("Es imagen")
+                msgLog = (f"{self.indent} Es imagen")
+                logMsg(msgLog, 2, 0)
                 urlImg = img.link
             # import inspect
             # loggin.debug(inspect.getmembers(img)[2][1])
@@ -244,26 +268,31 @@ class moduleImgur(Content, Queue):
                     else:
                         description = '({})'.format(myDate)
                 except:
-                    logging.warning(f"Name in different format {img.name}")
+                    msgLog = (f"{self.indent} Name in different format "
+                              f"{img.name}")
+                    logMsg(msgLog, 3, 0)
             res.append((urlImg, title, description, tags))
         return res
 
     def getNumPostsData(self, num, i, lastLink):
         listPosts = []
         posts = self.getPosts()
-        logging.debug(f"Eo posts: {posts}")
-        logging.debug(f"Eo posts last: {lastLink}")
+        msgLog = (f"{self.indent} Eo posts: {posts}")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} Eo posts last: {lastLink}")
+        logMsg(msgLog, 2, 0)
         num = 1
         # Only one post each time
         j = 0
-        logging.info(f"i: {i}, len: {len(posts)}")
+        msgLog = (f"{self.indent} i: {i}, len: {len(posts)}")
+        logMsg(msgLog, 2, 0)
         for ii in range(min(i, len(posts)), 0, -1):
-            logging.info(f"iii: {ii}")
+            # logging.info(f"iii: {ii}")
             ii = ii - 1
             if (ii < 0):
                 break
             idPost = self.getPostId(posts[ii])
-            logging.info(f"idPost: {idPost}")
+            # logging.info(f"idPost: {idPost}")
             if (not ((idPost in lastLink)
                      or ('https://imgur.com/a/'+idPost in lastLink))):
                 # Only posts that have not been posted previously. We
@@ -280,6 +309,7 @@ class moduleImgur(Content, Queue):
 
 def main():
 
+    import logging
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
                         format='%(asctime)s %(message)s')
 

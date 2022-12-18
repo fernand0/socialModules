@@ -194,7 +194,7 @@ class Content:
         nameDst = type(dst).__name__
         if 'module' in nameDst:
             nameDst = nameDst[len('module'):]
-            logMsg(f"{self.indent} {nameSrc} {nameDst}", 2, 0)
+            # logMsg(f"{self.indent} {nameSrc} {nameDst}", 2, 0)
             userD = dst.getUser()
             if hasattr(dst, 'socialNetwork'):
                 serviceD = dst.socialNetwork
@@ -315,8 +315,8 @@ class Content:
         lastTime = ''
         linkLast = ''
         if not os.path.isdir(os.path.dirname(fileName)):
-            logMsg("No directory {} exists".format(os.path.dirname(fileName)),
-                    1, 1)
+            msgLog = f"{indent} No directory {os.path.dirname(fileName)}"
+            logMsg(msgLog, 3, 1)
         if os.path.isfile(fileName):
             with open(fileName, "rb") as f:
                 linkLast = f.read().decode().split()  # Last published
@@ -1120,13 +1120,12 @@ class Content:
 
     def getLastLinkPublished(self):
         if self.lastLinkPublished and (len(self.lastLinkPublished) == 1):
-            msgLog = (f"{self.indent} linkLast (len 1) "
-                      f"{self.lastLinkPublished}")
             lastLink = self.lastLinkPublished[0]
+            msgLog = (f"{self.indent} linkLast (len 1) ")
         else:
-            msgLog = (f"{self.indent} linkLast (len >1) "
-                      f"{self.lastLinkPublished}")
+            msgLog = (f"{self.indent} linkLast (len >1) ")
             lastLink = self.lastLinkPublished
+        msgLog = f"{msgLog} {lastLink}"
         logMsg(msgLog, 2, 0)
         return lastLink
 

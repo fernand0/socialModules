@@ -219,7 +219,7 @@ class moduleTumblr(Content, Queue):
         # logging.info(f"Publishing {j}")
         # logging.info(f"servicename {self.service}")
         if hasattr(self, 'getPostsType') and (self.getPostsType() == 'queue'):
-            # logging.info(f"Publishing queued state {j}")
+            logging.info(f"Publishing queued state {j}")
             # res = self.do_edit(j, newState='published')
         else:
             # Not tested
