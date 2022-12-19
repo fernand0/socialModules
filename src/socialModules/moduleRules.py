@@ -740,7 +740,7 @@ class moduleRules:
                 res = apiDst.publishPosPost(apiSrc, pos)
             msgLog = (f"{indent} Res enddddd: {res}")
             logMsg(msgLog, 2, 0)
-            resMsg = f"Publish: {res}. "
+            resMsg = f"Publish: {res}"
             # print(f"{indent}res: {res}")
             if 'OK. Published!' in res:
                 msgLog = (f"{indent} Res is OK")
@@ -762,12 +762,12 @@ class moduleRules:
                     logMsg(msgLog, 1, 1)
                     msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
                     logMsg(msgLog, 1, 1)
-                    resMsg += f"Post Action: {resPost}"
+                    resMsg += f" Post Action: {resPost}"
             if (nextPost and (not 'No posts available' in res) and
                     ((not res) or ('SAVELINK' in res) or 
                      not ('Fail!' in res))):
                 resUpdate = apiSrc.updateLastLink(apiDst, '')
-                resMsg += f"Update: {resUpdate}"
+                resMsg += f" Update: {resUpdate}"
             if (((not res) and (not 'OK. Published!' in res))
                 or ('SAVELINK' in res) or not ('Fail!' in res)
                     or not( 'Duplicate' in res)):
@@ -796,6 +796,8 @@ class moduleRules:
             msgLog = (f"{indent}End publish, reply: {resMsg}")
             logMsg(msgLog, 1, 1)
         if postaction == 'delete':
+            #FIXME: not always len is the available number. We should consider
+            # the last published and so on.
             msgLog = (f"{indent}Available {len(apiSrc.getPosts())-1}")
         else:
             msgLog = (f"{indent}Available {len(apiSrc.getPosts())}")
@@ -1100,7 +1102,9 @@ class moduleRules:
             for future in concurrent.futures.as_completed(delayedPosts):
                 try:
                     res = future.result()
-                    msgLog = (f"{res} End Delay")
+                    msgLog = (f"{res} Res")
+                    logMsg(msgLog, 2, 0)
+                    msgLog = (f"{indent} End Delay")
                     logMsg(msgLog, 1, 1)
                     if res:
                         messages.append(
