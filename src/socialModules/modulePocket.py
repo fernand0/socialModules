@@ -253,9 +253,9 @@ def main():
             level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
-    import moduleRules
-    rules = moduleRules.moduleRules()
-    rules.checkRules('Blog43')
+    import socialModules.moduleRules
+    rules = socialModules.moduleRules.moduleRules()
+    rules.checkRules()
 
     testingPosts = False
     if testingPosts:
@@ -282,6 +282,7 @@ def main():
     testingPostsArticle = True
     if testingPostsArticle:
         for key in rules.rules.keys():
+            print(f"Key: {key}")
             if ((key[0] == 'pocket')
                     and (key[2] == 'fernand0kobo')):
                 print(f"Key: {key}")
