@@ -746,7 +746,7 @@ class moduleRules:
                 res = apiDst.publishPosPost(apiSrc, pos)
             # msgLog = (f"{indent} Res enddddd: {res}")
             # logMsg(msgLog, 2, 0)
-            resMsg = f"Publish: {res}"
+            resMsg = f"Publish result: {res}"
             # print(f"{indent}res: {res}")
             if 'OK. Published!' in res:
                 msgLog = (f"{indent} Res is OK")
@@ -777,7 +777,6 @@ class moduleRules:
                 or ('SAVELINK' in res) or not ('Fail!' in res)
                     or not( 'Duplicate' in res)):
                 postaction = apiSrc.getPostAction()
-                logging.info(f"{indent} postAction: {postaction}")
                 if postaction:
                     msgLog = (f"{indent}Post Action {postaction}")
                     logMsg(msgLog, 1, 1)
@@ -886,7 +885,7 @@ class moduleRules:
         else:
             num = 1
     
-        msgLog = (f"{indent} Num: {num}")
+        msgLog = (f"{indent} I'll publish {num} post")
         logMsg(msgLog, 1, 1)
     
         listPosts = []

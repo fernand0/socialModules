@@ -233,15 +233,15 @@ class moduleImgur(Content, Queue):
         res = []
         title = theTitle
         for img in data:
-            msgLog = (f"{self.indent} Img: {img}")
-            logMsg(msgLog, 2, 0)
+            # msgLog = (f"{self.indent} Img: {img}")
+            # logMsg(msgLog, 2, 0)
             if img.type == 'video/mp4':
-                msgLog = (f"{self.indent} Es vídeo")
-                logMsg(msgLog, 2, 0)
+                # msgLog = (f"{self.indent} Es vídeo")
+                # logMsg(msgLog, 2, 0)
                 urlImg = img.mp4
             else:
-                msgLog = (f"{self.indent} Es imagen")
-                logMsg(msgLog, 2, 0)
+                # msgLog = (f"{self.indent} Es imagen")
+                # logMsg(msgLog, 2, 0)
                 urlImg = img.link
             # import inspect
             # loggin.debug(inspect.getmembers(img)[2][1])
