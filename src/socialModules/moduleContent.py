@@ -1122,18 +1122,31 @@ class Content:
         self.lastLinkPublished[socialNetwork] = (lastLink, lastTime)
 
     def getLastLinkPublished(self):
+        lastLink = ''
         if self.lastLinkPublished and (len(self.lastLinkPublished) == 1):
             lastLink = self.lastLinkPublished[0]
-            msgLog = (f"{self.indent} linkLast (len 1) ")
+            msgLog = (f"{self.indent} Last link (len 1) ")
         else:
-            msgLog = (f"{self.indent} linkLast (len >1) ")
+            msgLog = (f"{self.indent} Last link (len >1) ")
             lastLink = self.lastLinkPublished
-        msgLog = f"{msgLog} {lastLink}"
-        logMsg(msgLog, 2, 0)
+        if lastLink:
+            msgLog = f"{msgLog} {lastLink}"
+        else:
+            msgLog = f"{msgLog} No lastLink"
+        logMsg(msgLog, 1, 1)
         return lastLink
 
-    def getLastTimePublished(self):
-        return self.lastTimePublished
+    def getLastTimePublished(self, indent=''):
+        lastTime = ''
+        msgLog = (f"{indent} No lastTimePublished")
+        if hasattr(self, 'lastTimePublished'):
+            lastTime = self.lastTimePublished
+            import time
+            myTime = time.strftime("%Y-%m-%d %H:%M:%S",
+                                    time.localtime(lastTime))
+            msgLog = (f"{indent} Last time: {myTime}")
+        logMsg(msgLog, 1, 1)
+        return lastTime
 
     def getLinksToAvoid(self):
         return self.linksToAvoid

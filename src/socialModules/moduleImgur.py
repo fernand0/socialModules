@@ -56,9 +56,9 @@ class moduleImgur(Content, Queue):
 
         if client:
             for album in client.get_account_albums(user):
-                msgLog = (f"{self.indent} Title: {time.ctime(album.datetime)} "
-                          f"{album.title}")
-                logMsg(msgLog, 2, 0)
+                # msgLog = (f"{self.indent} Title: {time.ctime(album.datetime)} "
+                #           f"{album.title}")
+                # logMsg(msgLog, 2, 0)
                 if album.in_gallery:
                     posts.append(album)
             else:

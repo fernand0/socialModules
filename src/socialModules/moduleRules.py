@@ -575,6 +575,7 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         # msgLog = f"{indent} More: Src {more}"
         # logMsg(msgLog, 2, 0)
+        indent = f"{indent} "
         if src[0] == 'cache':
             apiSrc = getApi(src[0], src[1:], indent)
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
@@ -610,11 +611,13 @@ class moduleRules:
         # print(f"Postsss: {apiSrc.getPosts()}")
         msgLog = f"{indent} End readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
+        indent = f"{indent[:-1]}"
         return apiSrc
 
     def readConfigDst(self, indent, action, more, apiSrc):
         msgLog = f"{indent} readConfigDst: {action[0]}({action[2]}@{action[3]})"
         logMsg(msgLog, 2, 0)
+        indent = f"{indent} "
         # msgLog = f"{indent} More: Src {more}"
         # logMsg(msgLog, 2, 0)
         profile = action[2]
@@ -654,9 +657,12 @@ class moduleRules:
     
         if 'time' in more:
             apiDst.setTime(more['time'])
+
+        apiDst.setUrl(apiSrc.getUrl())
     
         msgLog = f"{indent} End readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
+        indent = f"{indent[:-1]}"
         return apiDst
     
     def testDifferPosts(self, apiSrc, lastLink, listPosts):
@@ -746,7 +752,6 @@ class moduleRules:
                 msgLog = (f"{indent} Res is OK")
                 logMsg(msgLog, 1, 0)
                 postaction = apiSrc.getPostAction()
-                logging.info(f"{indent} postAction: {postaction}")
                 if postaction:
                     msgLog = (f"{indent}Post Action {postaction} ({nextPost})")
                     logMsg(msgLog, 1, 1)
@@ -758,8 +763,8 @@ class moduleRules:
                         cmdPost = getattr(apiSrc, f"{postaction}")
                         resPost = cmdPost(pos)
                         # FIXME inconsistent
-                    msgLog = (f"{indent}Post Action command {cmdPost}")
-                    logMsg(msgLog, 1, 1)
+                    # msgLog = (f"{indent}Post Action command {cmdPost}")
+                    # logMsg(msgLog, 1, 1)
                     msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
                     logMsg(msgLog, 1, 1)
                     resMsg += f" Post Action: {resPost}"
@@ -854,49 +859,28 @@ class moduleRules:
         apiSrc.setPosts()
     
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
+
         if not apiDst.getClient():
             msgLog = (f"{indent} Error. No client for {action[2]}")
             logMsg(msgLog, 3, 1)
             return f"End: {msgLog}"
     
-        apiDst.setUrl(apiSrc.getUrl())
     
-        # print(f"{indent}action: {action}")
-        # print(f"-->{indent}apiDst: {apiDst.getPostsType()} {action[1]}")
-        # print(f"-->{indent}apiDst: {apiDst.getPostsType()[:-1]} {action[1]}")
-    
-        # print(f"-->{indent}apiDst: {apiDst.getPostsType()} {action[1]}")
         if ((apiDst.getPostsType() != action[1])
             and (apiDst.getPostsType()[:-1] != action[1])
             and (action[0] != 'cache')):
             # FIXME: Can we do better?
-            msgLog = f"{indent}{action}"
+            msgLog = f"{indent} Some problem with {action}"
             logMsg(msgLog, 3, 0)
             return msgLog
-    
-        # apiDst.setPosts()
-        # #FIXME: Is it always needed? Only in caches?
     
         indent = f"{indent} "
     
         apiSrc.setLastLink(apiDst)
-    
-        lastLink = apiSrc.getLastLinkPublished()
-        lastTime = apiSrc.getLastTimePublished()
-    
+
         time.sleep(1)
-        if lastLink:
-            msgLog = (f"{indent} Last link: {lastLink} ")
-            logMsg(msgLog, 1, 1)
-    
+
         msgLog = ''
-        if lastTime:
-            myTime = time.strftime("%Y-%m-%d %H:%M:%S",
-                                    time.localtime(lastTime))
-    
-            msgLog = (f"{indent} {msgLog}Last time: {myTime}")
-            logMsg(msgLog, 1, 1)
-    
         if nextPost:
             num = apiDst.getMax()
         else:
@@ -912,6 +896,8 @@ class moduleRules:
             tNow = time.time()
             hours = float(apiDst.getTime())*60*60
     
+            lastTime = apiSrc.getLastTimePublished(indent)
+
             if lastTime:
                 diffTime = tNow - lastTime
             else:
@@ -975,6 +961,7 @@ class moduleRules:
                 msgLog = (f"{indent} No posts available")
                 logMsg(msgLog, 1, 1)
     
+        indent = f"{indent[:-1]}"
         logMsg(f"{indent} End executeAction", 2, 0)
         return indent
 
@@ -1103,10 +1090,6 @@ class moduleRules:
             for future in concurrent.futures.as_completed(delayedPosts):
                 try:
                     res = future.result()
-                    msgLog = (f"{res} Res")
-                    logMsg(msgLog, 2, 0)
-                    msgLog = (f"{res} End Delay")
-                    logMsg(msgLog, 1, 1)
                     if res:
                         messages.append(
                                 f"  Published in: {future}\n{res} "
@@ -1123,6 +1106,7 @@ class moduleRules:
                     logMsg(msgLog, 1, 1)
 
 
+        #FIXME: We are not using messages
         msgLog = (f"End Executing rules with {threads} threads.")
         logMsg(msgLog, 1, 2)
 

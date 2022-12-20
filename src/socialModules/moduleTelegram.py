@@ -153,7 +153,7 @@ class moduleTelegram(Content):
                 bot.sendMessage('@'+channel, links, parse_mode='HTML')
             rep = "OK. PUblished!"
 
-        return 
+        return rep
 
     def getPostTitle(self, post):
         if 'channel_post' in post:
