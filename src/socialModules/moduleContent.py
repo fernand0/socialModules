@@ -244,6 +244,8 @@ class Content:
         logMsg(msgLog, 1, 0)
 
         fileName = f"{self.fileNameBase(dst)}.last"
+        msgLog = f"{self.indent} fileName {fileName}"
+        logMsg(msgLog, 2, 0)
         with open(fileName, "w") as f:
             if link:
                 if isinstance(link, bytes):

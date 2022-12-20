@@ -613,7 +613,7 @@ class moduleRules:
         return apiSrc
 
     def readConfigDst(self, indent, action, more, apiSrc):
-        msgLog = f"{indent} readConfigDst: {action[2]}@{action[3]}"
+        msgLog = f"{indent} readConfigDst: {action[0]}({action[2]}@{action[3]})"
         logMsg(msgLog, 2, 0)
         # msgLog = f"{indent} More: Src {more}"
         # logMsg(msgLog, 2, 0)
@@ -698,8 +698,8 @@ class moduleRules:
         # The source of data can have changes while we were waiting
         resMsg = ''
         postaction = ''
+        apiSrc.setPosts()
         if simmulate:
-            apiSrc.setPosts()
             if nextPost:
                 # FIXME is  this needed?
                 post = apiSrc.getNextPost()
@@ -738,8 +738,8 @@ class moduleRules:
                 res = apiDst.publishNextPost(apiSrc)
             else:
                 res = apiDst.publishPosPost(apiSrc, pos)
-            msgLog = (f"{indent} Res enddddd: {res}")
-            logMsg(msgLog, 2, 0)
+            # msgLog = (f"{indent} Res enddddd: {res}")
+            # logMsg(msgLog, 2, 0)
             resMsg = f"Publish: {res}"
             # print(f"{indent}res: {res}")
             if 'OK. Published!' in res:
@@ -748,7 +748,7 @@ class moduleRules:
                 postaction = apiSrc.getPostAction()
                 logging.info(f"{indent} postAction: {postaction}")
                 if postaction:
-                    msgLog = (f"{indent}Post Action {postaction}")
+                    msgLog = (f"{indent}Post Action {postaction} ({nextPost})")
                     logMsg(msgLog, 1, 1)
     
                     if nextPost:
@@ -947,7 +947,7 @@ class moduleRules:
                     msgLog= f"{indent}Waiting {tSleep/60:2.2f} minutes"
                 else:
                     tSleep = 2.0
-                    msgLog= f"{indent}No Waiting"
+                    msgLog= f"{indent} No Waiting"
     
                 msgLog = f"{msgLog} for action" #: {msgAction}"
                 logMsg(msgLog, 1, 1)
@@ -964,18 +964,19 @@ class moduleRules:
                         textEnd = f"{textEnd} {res}"
     
             elif (diffTime<=hours):
-                msgLog = (f"Not enough time passed. "
+                msgLog = (f"{indent} Not enough time passed. "
                           f"We will wait at least "
                           f"{(hours-diffTime)/(60*60):2.2f} hours.")
-                # logMsg(msgLog, 1, 1)
+                logMsg(msgLog, 1, 1)
                 textEnd = f"{textEnd} {msgLog}"
     
         else:
             if (num<=0):
-                msgLog = (f"{indent}No posts available")
+                msgLog = (f"{indent} No posts available")
                 logMsg(msgLog, 1, 1)
     
-        return textEnd
+        logMsg(f"{indent} End executeAction", 2, 0)
+        return indent
 
     def executeRules(self):
         msgLog = "Executing rules"
@@ -1104,7 +1105,7 @@ class moduleRules:
                     res = future.result()
                     msgLog = (f"{res} Res")
                     logMsg(msgLog, 2, 0)
-                    msgLog = (f"{indent} End Delay")
+                    msgLog = (f"{res} End Delay")
                     logMsg(msgLog, 1, 1)
                     if res:
                         messages.append(

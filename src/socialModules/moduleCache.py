@@ -408,31 +408,32 @@ class moduleCache(Content,Queue):
         # fileNameQ = fileNamePath(self.url,
         #         (self.socialNetwork, self.nick)) + ".queue"
         fileNameQ = ''
-        url = self.getUrl()
-        service = self.getService()
-        nick = self.getNick()
 
         if hasattr(self, 'fileName'):
-            fileNameQ = self.fileName
+            fileNameQ = f"{self.fileName}.queue"
         elif hasattr(self, "socialNetwork"):
+            url = self.getUrl()
             service = self.socialNetwork
             nick = self.nick
         else:
             service = self.getService()
             nick = self.getUser()
 
-        msgLog = (f"{self.indent} Url: {url} service {service} nick {nick}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} Url: {url} service {service} nick {nick}")
+        # logMsg(msgLog, 2, 0)
         msgLog = (f"{self.indent} File Queue: {fileNameQ}")
         logMsg(msgLog, 2, 0)
         # msgLog = ("Posts antes: {}".format(str(self.getPosts())))
 
-        with open(f'{fileNameQ}.queue', 'wb') as f:
-            posts = self.getPosts()
-            pickle.dump(posts, f)
-
         msgLog = (f"{self.indent} Writing in {fileNameQ}")
         logMsg(msgLog, 2, 0)
+
+        with open(fileNameQ, 'wb') as f:
+            posts = self.getPosts()
+            msgLog = f"{self.indent} Posts {self.service} {posts}"
+            logMsg(msgLog, 2, 0)
+            pickle.dump(posts, f)
+
         # msgLog = (f"Posts: {str(self.getPosts())}")
 
         return 'Ok'
@@ -666,7 +667,8 @@ class moduleCache(Content,Queue):
             # FIXME
             idPost = self.getIdPosition(idPost)
 
-        # logging.info(f"id: {idPost}")
+        msgLog = (f"{self.indent} id: {idPost}")
+        logMsg(msgLog, 2, 0)
         self.deleteApi(idPost)
         return f"OK. Deleted post {idPost}"
 
@@ -719,9 +721,7 @@ class moduleCache(Content,Queue):
         self.assignPosts(posts)
         # logging.debug(f"Posts + despues: {posts}")
         # logging.debug(f"Posts + .despues: {self.getPosts()}")
-        # FIXME: Using two cache files, for compatibiiity with old version
         self.updatePostsCache()
-        # self.updatePosts('srcNotUsed')
 
         return(f"Deleted: {j}")
 
