@@ -93,6 +93,7 @@ class moduleTelegram(Content):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
+        rep = 'Fail!'
         content = ''
         if args and len(args) == 3:
             title, link, comment = args
@@ -150,6 +151,9 @@ class moduleTelegram(Content):
                             parse_mode='HTML')
             if links:
                 bot.sendMessage('@'+channel, links, parse_mode='HTML')
+            rep = "OK. PUblished!"
+
+        return 
 
     def getPostTitle(self, post):
         if 'channel_post' in post:
