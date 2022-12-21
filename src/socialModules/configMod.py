@@ -125,9 +125,14 @@ def newUpdateLastLink(url, link, lastLink, socialNetwork=()):
             f.write(link[0])
 
 def updateLastLink(url, link, socialNetwork=()):
-    msgLog = (f"{self.indent} updateLastLink {self.service}")
+    try:
+        #FIXME: not self here
+        indent = self.indent
+    except:
+        indent = ''
+    msgLog = (f"{indent} updateLastLink {socialNetwork}")
     logMsg(msgLog, 1, 0)
-    msgLog = (f"{self.indent} Url: {url} Link: {link} "
+    msgLog = (f"{indent} Url: {url} Link: {link} "
               f"SocialNetwork: {socialNetwork}")
     logMsg(msgLog, 2, 0)
     fileName = fileNamePath(url, socialNetwork) + ".last"

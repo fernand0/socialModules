@@ -374,9 +374,10 @@ class moduleRules:
         for i, src in enumerate(ruls.keys()):
             if not src:
                 continue
-            iniK, nameK = self.getIniKey(src[0], myKeys, myIniKeys)
+            iniK, nameK = self.getIniKey(self.getNameR(src), myKeys, myIniKeys)
             if not (iniK in available):
-                available[iniK] = {"name": src[0], "data": [], "social": []}
+                available[iniK] = {"name": self.getNameR(src), 
+                                   "data": [], "social": []}
                 available[iniK]["data"] = [{'src': src[1:], 'more': more[i]}]
             else:
                 available[iniK]["data"].append({'src': src[1:],
@@ -425,19 +426,20 @@ class moduleRules:
         srcR = None
 
         for src in self.rules.keys():
-            if src[0] == selector:
+            if self.getNameR(src) == selector:
                 logging.debug(f"- Src: {src}")
-                logging.debug(f"Selectors: {selector} - {selector2} - {selector3}")
+                logging.debug(f"Selectors: {selector} - {selector2} -"
+                              f"{selector3}")
                 more = self.more[src]
                 srcR = src
                 if not selector2:
                     break
                 else:
-                    if (selector2 in src[2]):
+                    if (selector2 in self.getProfileR(src)):
                         logging.debug(f"Second Selector: {selector2}")
                         if not selector3:
                             break
-                        elif  (selector3 in src[3]):
+                        elif  (selector3 in self.getNickR(src)):
                             break
         return (srcR, more)
 
@@ -570,19 +572,38 @@ class moduleRules:
 
         return iniK, nKey
 
+    def getRuleComponent(self, rule, pos):
+        res = ''
+        if isinstance(rule, tuple) :
+            res = rule[pos]
+        return res
+
+
+    def getNameR(self, rule):
+        return self.getRuleComponent(rule, 0)
+
+    def getTypeR(self, rule):
+        return self.getRuleComponent(rule, 1)
+
+    def getProfileR(self, rule):
+        return self.getRuleComponent(rule, 2)
+
+    def getNickR(self, rule):
+        return self.getRuleComponent(rule, 3)
+
     def readConfigSrc(self, indent, src, more):
-        msgLog = f"{indent} readConfigSrc: {src[2]}"
+        msgLog = f"{indent} readConfigSrc: {self.getProfileR(src)}"
         logMsg(msgLog, 2, 0)
         # msgLog = f"{indent} More: Src {more}"
         # logMsg(msgLog, 2, 0)
         indent = f"{indent} "
-        if src[0] == 'cache':
-            apiSrc = getApi(src[0], src[1:], indent)
+        if self.getNameR(src) == 'cache':
+            apiSrc = getApi(self.getNameR(src), src[1:], indent)
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
             apiSrc.postaction = 'delete'
         else:
             logging.info(f"{indent} Src: {src}")
-            apiSrc = getApi(src[0], src[2], indent)
+            apiSrc = getApi(self.getNameR(src), self.getProfileR(src), indent)
 
         for option in more:
             if option == 'posts':
@@ -653,16 +674,16 @@ class moduleRules:
         if self.getMode(action) == "cache":
             print(f"{indent} Dst: {action}")
             apiDst = getApi("cache", ((more['service'],  
-                                       rules.getType(action)), 
+                                       self.getType(action)), 
                                       f"{self.getProfile(action)}@"
                                       f"{self.getNick(action)}", 'posts'), 
                             indent)
             apiDst.socialNetwork = self.getProfile(action)
             apiDst.nick = self.getNick(action)
-            apiDst.fileName = apiDst.fileNameBase(apiSrc)
         else:
             apiDst = getApi(profile, nick, indent)
     
+        apiDst.fileName = apiDst.fileNameBase(apiSrc)
         apiDst.setUser(nick)
         apiDst.setPostsType('posts')
     
@@ -851,16 +872,16 @@ class moduleRules:
     
         msgAction = (f"{self.getMode(action)} "
                      f"{self.getNick(action)}@{self.getProfile(action)} "
-                     f"({rules.getType(action)})")
+                     f"({self.getType(action)})")
         # Destination
     
         apiSrc = self.readConfigSrc(indent, src, more)
     
         if apiSrc.getName():
-            msgLog = (f"{indent} Source: {apiSrc.getName()}-{src[3]} -> "
+            msgLog = (f"{indent} Source: {apiSrc.getName()}-{self.getNick(src)} -> "
                 f"Action: {msgAction})")
         else:
-            msgLog = (f"{indent} Source: {src[2]}-{src[3]} -> "
+            msgLog = (f"{indent} Source: {self.getProfile(src)}-{self.getNick(src)} -> "
                 f"Action: {msgAction})")
     
         # logMsg(msgLog, 1, 0)
@@ -875,7 +896,7 @@ class moduleRules:
             logging.info(msgHold)
             return msgHold
         if not apiSrc.getClient():
-            msgLog = (f"{indent} Error. No client for {src[2]} ({src[3]})")
+            msgLog = (f"{indent} Error. No client for {self.getProfile(src)} ({self.getNick(src)})")
             logMsg(msgLog, 3, 1)
             return f"{msgLog} End."
     
@@ -890,8 +911,8 @@ class moduleRules:
             return f"End: {msgLog}"
     
     
-        if ((apiDst.getPostsType() != rules.getType(action))
-            and (apiDst.getPostsType()[:-1] != rules.getType(action))
+        if ((apiDst.getPostsType() != self.getType(action))
+            and (apiDst.getPostsType()[:-1] != self.getType(action))
             and (self.getMode(action) != 'cache')):
             # FIXME: Can we do better?
             msgLog = f"{indent} Some problem with {action}"
@@ -1009,12 +1030,12 @@ class moduleRules:
             previous = ""
 
             for src in sorted(self.rules.keys()):
-                if src[0] != previous:
+                if self.getMode(src) != previous:
                     i = 0
                 else:
                     i = i + 1
-                previous = src[0]
-                indent = f"{src[0]:->9}{i}>"
+                previous = self.getMode(src)
+                indent = f"{self.getMode(src):->9}{i}>"
                 if src in self.more:
                     # f"  More: {self.more[src]}")
                     more = self.more[src]
@@ -1022,7 +1043,7 @@ class moduleRules:
                     # f"  More: empty")
                     more = None
 
-                if src[0] in ['cache']:
+                if self.getMode(src) in ['cache']:
                     srcName = more['url']
                     # FIXME
                     if 'slack' in srcName:
@@ -1035,10 +1056,10 @@ class moduleRules:
                         if 'gmail' in more:
                             srcName = more['gmail']
                         srcName = f"{srcName}@gmail"
-                    text = (f"Source: {srcName} ({src[3]})")
+                    text = (f"Source: {srcName} ({self.getNick(src)})")
                 else:
                     #FIXME self.identifier
-                    srcName =src[2]
+                    srcName = self.getProfile(src)
                     if 'slack' in srcName:
                         srcName = f"{srcName.split('/')[2].split('.')[0]}"
                     elif 'imgur' in srcName:
@@ -1046,15 +1067,15 @@ class moduleRules:
                         srcName = f"{srcName.split('/')[-1]}"
                     elif 'gitter' in srcName:
                         srcName = f"{srcName.split('/')[-2]}"
-                    elif (not srcName) and ('tumblr' in src[0]):
+                    elif (not srcName) and ('tumblr' in self.getMode(src)):
                         srcName = more['url']
                         srcName = f"{srcName.split('/')[2].split('.')[0]}"
-                    text = (f"Source: {srcName} ({src[3]})")
+                    text = (f"Source: {srcName} ({self.getNick(src)})")
 
                 actions = self.rules[src]
 
                 # print(f"Select: {select} - {src[0]}{i}")
-                if (select and (select.lower() != f"{src[0].lower()}{i}")):
+                if (select and (select.lower() != f"{self.getName(src).lower()}{i}")):
                     actionMsg = f"Skip."
                 else:
                     actionMsg = (f"Scheduling.")
@@ -1067,12 +1088,12 @@ class moduleRules:
                     #FIXME ?
                     continue
                 for k, action in enumerate(actions):
-                    name = f"{src[0]}{i}>"
-                    if rules.getType(action).startswith('http'):
+                    name = f"{self.getNameR(src)}{i}>"
+                    if self.getType(action).startswith('http'):
                         # FIXME
                         theAction = 'posts'
                     else:
-                        theAction = rules.getType(action)
+                        theAction = self.getType(action)
 
                     indent = f"{indent} "
                     msgLog = (f"{indent} Action {k}:"
@@ -1080,7 +1101,8 @@ class moduleRules:
                              f"{self.getProfile(action)} ({theAction})")
                     name = f"Action {k}:" # [({theAction})"
                     nameA = f"{actionMsg} "
-                    textEnd = (f"Source: {nameA} {src[2]} {src[3]}")
+                    textEnd = (f"Source: {nameA} {self.getProfileR(src)} "
+                               f"{self.getNickR(src)}")
                     logMsg(msgLog, 1, 1)
                     textEnd = f"{textEnd}\n{msgLog}"
                     # logMsg(msgLog, 1, 1)
