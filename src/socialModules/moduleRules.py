@@ -614,14 +614,34 @@ class moduleRules:
         indent = f"{indent[:-1]}"
         return apiSrc
 
+    def getActionComponent(self, action, pos):
+        res = ''
+        if isinstance(action, tuple) and (len(action)==4):
+            res = action[pos]
+        return res
+
+    def getMode(self, action):
+        return self.getActionComponent(action, 0)
+
+    def getType(self, action):
+        return self.getActionComponent(action, 1)
+
+    def getProfile(self, action):
+        return self.getActionComponent(action, 2)
+
+    def getNick(self, action):
+        return self.getActionComponent(action, 3)
+
     def readConfigDst(self, indent, action, more, apiSrc):
-        msgLog = f"{indent} readConfigDst: {action[0]}({action[2]}@{action[3]})"
+        msgLog = (f"{indent} readConfigDst: "
+                 f"{self.getMode(action)}"
+                 f"({self.getProfile(action)}@{self.getNick(action)})")
         logMsg(msgLog, 2, 0)
         indent = f"{indent} "
         # msgLog = f"{indent} More: Src {more}"
         # logMsg(msgLog, 2, 0)
-        profile = action[2]
-        nick = action[3]
+        profile = self.getProfile(action)
+        nick = self.getNick(action)
         # socialNetwork = (profile, nick)
         # msgLog = (f"{indent} socialNetwork: {socialNetwork}")
         # logMsg(msgLog, 2, 0)
@@ -630,12 +650,15 @@ class moduleRules:
         # msgLog = (f"{indent} More: Dst {more}")
         # logMsg(msgLog, 1, 0)
     
-        if action[0] == "cache":
+        if self.getMode(action) == "cache":
             print(f"{indent} Dst: {action}")
-            apiDst = getApi("cache", ((more['service'],  action[1]),
-                f"{action[2]}@{action[3]}", 'posts'), indent)
-            apiDst.socialNetwork = action[2]
-            apiDst.nick = action[3]
+            apiDst = getApi("cache", ((more['service'],  
+                                       rules.getType(action)), 
+                                      f"{self.getProfile(action)}@"
+                                      f"{self.getNick(action)}", 'posts'), 
+                            indent)
+            apiDst.socialNetwork = self.getProfile(action)
+            apiDst.nick = self.getNick(action)
             apiDst.fileName = apiDst.fileNameBase(apiSrc)
         else:
             apiDst = getApi(profile, nick, indent)
@@ -826,8 +849,9 @@ class moduleRules:
         logMsg(msgLog, 1, 0)
         indent = f"{indent} "
     
-        msgAction = (f"{action[0]} {action[3]}@{action[2]} "
-                     f"({action[1]})")
+        msgAction = (f"{self.getMode(action)} "
+                     f"{self.getNick(action)}@{self.getProfile(action)} "
+                     f"({rules.getType(action)})")
         # Destination
     
         apiSrc = self.readConfigSrc(indent, src, more)
@@ -860,14 +884,15 @@ class moduleRules:
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
 
         if not apiDst.getClient():
-            msgLog = (f"{indent} Error. No client for {action[2]}")
+            msgLog = (f"{indent} Error. No client for "
+                      f"{self.getProfile(action)}")
             logMsg(msgLog, 3, 1)
             return f"End: {msgLog}"
     
     
-        if ((apiDst.getPostsType() != action[1])
-            and (apiDst.getPostsType()[:-1] != action[1])
-            and (action[0] != 'cache')):
+        if ((apiDst.getPostsType() != rules.getType(action))
+            and (apiDst.getPostsType()[:-1] != rules.getType(action))
+            and (self.getMode(action) != 'cache')):
             # FIXME: Can we do better?
             msgLog = f"{indent} Some problem with {action}"
             logMsg(msgLog, 3, 0)
@@ -1043,15 +1068,16 @@ class moduleRules:
                     continue
                 for k, action in enumerate(actions):
                     name = f"{src[0]}{i}>"
-                    if action[1].startswith('http'):
+                    if rules.getType(action).startswith('http'):
                         # FIXME
                         theAction = 'posts'
                     else:
-                        theAction = action[1]
+                        theAction = rules.getType(action)
 
                     indent = f"{indent} "
                     msgLog = (f"{indent} Action {k}:"
-                             f" {action[3]}@{action[2]} ({theAction})")
+                             f" {self.getNick(action)}@"
+                             f"{self.getProfile(action)} ({theAction})")
                     name = f"Action {k}:" # [({theAction})"
                     nameA = f"{actionMsg} "
                     textEnd = (f"Source: {nameA} {src[2]} {src[3]}")
@@ -1067,8 +1093,9 @@ class moduleRules:
                     noWait = args.noWait
 
                     # Is this the correct place?
-                    if ((action[0] in 'cache') or
-                        ((action[0] == 'direct') and (action[2] == 'pocket'))
+                    if ((self.getMode(action) in 'cache') or
+                        ((self.getMode(action) == 'direct') 
+                         and (self.getProfile(action) == 'pocket'))
                         ):
                         # We will always load new items in the cache
                         timeSlots = 0

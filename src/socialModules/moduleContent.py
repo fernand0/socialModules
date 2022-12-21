@@ -1141,9 +1141,13 @@ class Content:
         msgLog = (f"{indent} No lastTimePublished")
         if hasattr(self, 'lastTimePublished'):
             lastTime = self.lastTimePublished
-            import time
-            myTime = time.strftime("%Y-%m-%d %H:%M:%S",
-                                    time.localtime(lastTime))
+            msgLog = (f"{indent} lastTime {lastTime}")
+            if lastTime:
+                import time
+                myTime = time.strftime("%Y-%m-%d %H:%M:%S",
+                                        time.localtime(lastTime))
+            else:
+                myTime = "No time"
             msgLog = (f"{indent} Last time: {myTime}")
         logMsg(msgLog, 1, 1)
         return lastTime
