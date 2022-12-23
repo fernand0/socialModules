@@ -768,9 +768,9 @@ class moduleCache(Content,Queue):
 
 
     def move(self, j, dest):
+        k = int(dest)
         msgLog = (f"{self.indent} Moving %d to %d"% (j, k))
         logMsg(msgLog, 1, 0)
-        k = int(dest)
         posts = self.getPosts()
         post = posts[j]
         msgLog = (f"{self.indent} Moving {self.getPostTitle(post)}")
@@ -802,7 +802,7 @@ def main():
         rules = socialModules.moduleRules.moduleRules()
         rules.checkRules()
         print("Testing Posts")
-        src, more = rules.selectRule('cache', 'imgur')
+        src, more = rules.selectRule('cache', 'twitter')
         print(f"Src: {src}")
         print(f"More: {more}")
         indent = ""

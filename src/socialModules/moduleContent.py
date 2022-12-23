@@ -53,14 +53,18 @@ class Content:
         client = None
 
         if isinstance(account, str):
+            logging.info(f"{self.indent} setClient str")
             #FIXME We should not need these ifs
             self.user = account
         elif isinstance(account[1], str) and (account[1].find('@') > 0):
+            logging.info(f"{self.indent} setClient account[1] str with @")
             # Grrrr
             self.user = account[1]
         elif isinstance(account[0], str):
+            logging.info(f"{self.indent} setClient account[1] str without @")
             self.user = account[0]
         else:
+            logging.info(f"{self.indent} setClient else")
             # Deprecated
             self.user = account[1][1]
 
