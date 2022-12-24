@@ -630,6 +630,7 @@ class moduleRules:
 
         # apiSrc.setPosts()
         # print(f"Postsss: {apiSrc.getPosts()}")
+        indent = indent[:-1]
         msgLog = f"{indent} End readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         indent = f"{indent[:-1]}"
@@ -975,7 +976,7 @@ class moduleRules:
                 # return
     
                 if (tSleep>0.0):
-                    msgLog= f"{indent}Waiting {tSleep/60:2.2f} minutes"
+                    msgLog= f"{indent} Waiting {tSleep/60:2.2f} minutes"
                 else:
                     tSleep = 2.0
                     msgLog= f"{indent} No Waiting"

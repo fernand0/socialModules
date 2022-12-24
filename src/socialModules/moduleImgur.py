@@ -61,9 +61,9 @@ class moduleImgur(Content, Queue):
                 # logMsg(msgLog, 2, 0)
                 if album.in_gallery:
                     posts.append(album)
-            else:
-                msgLog = (f'{self.indent} No client configured!')
-                logMsg(msgLog, 3, 0)
+        else:
+            msgLog = (f'{self.indent} setApiPosts No client configured!')
+            logMsg(msgLog, 3, 0)
         return (posts)
 
     def setApiDrafts(self):
@@ -90,7 +90,7 @@ class moduleImgur(Content, Queue):
                     posts.append(album)
                     # logging.info(f"Draft: {info}")
         else:
-            msgLog = (f'{self.indent} No client configured!')
+            msgLog = (f'{self.indent} setApiDrafts No client configured!')
             logMsg(msgLog, 3, 0)
 
         return (posts)
