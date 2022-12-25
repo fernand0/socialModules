@@ -323,7 +323,7 @@ class Content:
         lastTime = ''
         linkLast = ''
         if not os.path.isdir(os.path.dirname(fileName)):
-            msgLog = f"{indent} No directory {os.path.dirname(fileName)}"
+            msgLog = f"{self.indent} No directory {os.path.dirname(fileName)}"
             logMsg(msgLog, 3, 1)
         if os.path.isfile(fileName):
             with open(fileName, "rb") as f:

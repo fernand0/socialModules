@@ -299,11 +299,15 @@ class moduleRules:
                         else:
                             if not dest:
                                 dest = 'direct'
+                            destRuleNew = ''
+                            fromCacheNew = ''
                             if dest == 'direct':
                                 destRule = (dest, 'post', key, moreS[key])
                             else:
                                 destRule = (dest, moreS['url'],
                                             key, moreS[key])
+                                destRuleNew = (dest, 'post', ('direct', 'post',
+                                            key, moreS[key]), moreS['url'])
                                 # Rule cache:
                                 if 'posts' in moreS:
                                     myPosts = moreS['posts']
@@ -312,6 +316,10 @@ class moduleRules:
                                 fromCache = ('cache', (moreS['service'],
                                                        moreS['url']),
                                              f"{key}@{moreS[key]}", 'posts')
+                                fromCacheNew = ('cache', 'set', 
+                                                (moreS['service'], 'set',
+                                                       moreS['url'], 'posts'), 
+                                                f"{key}@{moreS[key]}")
                                 #FIXME: It is needed for imgur, in the other
                                 # cases is OK
                                 destRuleCache = ('direct', 'post',
@@ -319,6 +327,9 @@ class moduleRules:
                                 if not (fromCache in rulesNew):
                                     rulesNew[fromCache] = []
                                 rulesNew[fromCache].append(destRuleCache)
+                                print(f"fromCache: {fromCache}")
+                                print(f"fromCacheNew: {fromCacheNew}")
+                                print(f"destRuleCache: {destRuleCache}")
 
                             msgLog = (f"{self.indent} Rule: {orig} -> "
                                         f"{key}({dest})")
@@ -328,6 +339,11 @@ class moduleRules:
                             if not (fromSrv in rulesNew):
                                 rulesNew[fromSrv] = []
                             rulesNew[fromSrv].append(destRule)
+                            print(f"fromSrv: {fromSrv}")
+                            if destRuleNew:
+                                print(f"destRuleNew: {destRuleNew}")
+                            else:
+                                print(f"destRule: {destRule}")
 
         # Now we can add the sources not added.
 
