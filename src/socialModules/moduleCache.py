@@ -49,6 +49,7 @@ class moduleCache(Content,Queue):
         nameSrc = 'Cache'
         typeSrc = typeDst = 'posts'
         if isinstance(dst, tuple):
+            logging.info(f"{self.indent} tuple")
             #FIXME
             user = self.getUrl()
             # service = dst[0][0].capitalize()
@@ -62,6 +63,7 @@ class moduleCache(Content,Queue):
             # nameDst = dst[1][:pos].capitalize()
             nameDst = dst[2][:pos].capitalize()
         elif isinstance(self, moduleCache):
+            logging.info(f"{self.indent} cache")
             user = dst.getUser()
             service = dst.getService().capitalize()
             pos = src.getUser().find('@')
@@ -137,6 +139,9 @@ class moduleCache(Content,Queue):
             msgLog = (f"{self.indent} self.fileName {self.fileName}")
             logMsg(msgLog, 2, 0)
             print(f"self.fileName {self.fileName}")
+
+        msgLog = (f"{self.indent} End connecting {self.service}: {param}")
+        logMsg(msgLog, 2, 0)
 
     # def setClient2(self, param):
     #     msgLog = (f"{self.indent} Connecting Cache {self.service}: {param}")

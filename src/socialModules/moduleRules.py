@@ -620,7 +620,6 @@ class moduleRules:
         indent = f"{indent} "
         if self.getNameR(src) == 'cache':
             apiSrc = getApi(self.getNameR(src), src[1:], indent)
-            msgLog = f"{indent} lllllll "
             logMsg(msgLog, 2, 0)
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
             apiSrc.postaction = 'delete'
@@ -628,25 +627,29 @@ class moduleRules:
             logging.info(f"{indent} Src: {src}")
             apiSrc = getApi(self.getNameR(src), self.getProfileR(src), indent)
 
-        for option in more:
-            if option == 'posts':
-                nameMethod = f"setPostsType"
-            else:
-                nameMethod = f"set{option.capitalize()}"
+        msgLog = f"{indent} {more}"
+        logMsg(msgLog, 2, 0)
 
-            if  nameMethod in apiSrc.__dir__():
-                # setCache ¿?
-                # url, time, max, posts,
-                cmd = getattr(apiSrc, nameMethod)
-                if inspect.ismethod(cmd):
-                    cmd(more[option])
-            else:
-                for name in apiSrc.__dir__():
-                    if name.lower() == nameMethod.lower():
-                        cmd = getattr(apiSrc, name)
-                        if inspect.ismethod(cmd):
-                            cmd(more[option])
-                            break
+        if more: 
+            for option in more:
+                if option == 'posts':
+                    nameMethod = f"setPostsType"
+                else:
+                    nameMethod = f"set{option.capitalize()}"
+
+                if  nameMethod in apiSrc.__dir__():
+                    # setCache ¿?
+                    # url, time, max, posts,
+                    cmd = getattr(apiSrc, nameMethod)
+                    if inspect.ismethod(cmd):
+                        cmd(more[option])
+                else:
+                    for name in apiSrc.__dir__():
+                        if name.lower() == nameMethod.lower():
+                            cmd = getattr(apiSrc, name)
+                            if inspect.ismethod(cmd):
+                                cmd(more[option])
+                                break
 
         if not apiSrc.getPostsType():
             apiSrc.setPostsType('posts')
@@ -697,11 +700,15 @@ class moduleRules:
 
         if self.getMode(action) == "cache":
             print(f"{indent} Dst: {action}")
-            apiDst = getApi("cache", ((more['service'],
-                                       self.getType(action)),
-                                      f"{self.getProfile(action)}@"
-                                      f"{self.getNick(action)}", 'posts'),
-                            indent)
+            apiDst = getApi('cache', ('set', (apiSrc.getService().casefold(),
+                                              'set', apiSrc.getUrl(),
+                                              'posts'),
+                                      f"{action[2][2]}@{action[2][3]}"), indent)
+            # apiDst = getApi("cache", ((more['service'],
+            #                            self.getType(action)),
+            #                           f"{self.getProfile(action)}@"
+            #                           f"{self.getNick(action)}", 'posts'),
+            #                 indent)
             apiDst.socialNetwork = self.getProfile(action)
             apiDst.nick = self.getNick(action)
         else:
