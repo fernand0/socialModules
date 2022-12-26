@@ -64,6 +64,7 @@ class moduleCache(Content,Queue):
             nameDst = dst[2][:pos].capitalize()
         elif isinstance(self, moduleCache):
             logging.info(f"{self.indent} cache")
+            # auxClass ??
             user = dst.getUser()
             service = dst.getService().capitalize()
             pos = src.getUser().find('@')
