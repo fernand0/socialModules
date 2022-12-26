@@ -300,13 +300,15 @@ class moduleRules:
                             if not dest:
                                 dest = 'direct'
                             destRuleNew = ''
+                            destRuleCache = ''
                             fromCacheNew = ''
                             if dest == 'direct':
                                 destRule = (dest, 'post', key, moreS[key])
                             else:
                                 destRule = (dest, moreS['url'],
                                             key, moreS[key])
-                                destRuleNew = (dest, 'post', ('direct', 'post',
+                                destRuleNew = (dest, 'post',
+                                               ('direct', 'post',
                                             key, moreS[key]), moreS['url'])
                                 # Rule cache:
                                 if 'posts' in moreS:
@@ -316,20 +318,22 @@ class moduleRules:
                                 fromCache = ('cache', (moreS['service'],
                                                        moreS['url']),
                                              f"{key}@{moreS[key]}", 'posts')
-                                fromCacheNew = ('cache', 'set', 
+                                fromCacheNew = ('cache', 'set',
                                                 (moreS['service'], 'set',
-                                                       moreS['url'], 'posts'), 
+                                                       moreS['url'], 'posts'),
                                                 f"{key}@{moreS[key]}")
                                 #FIXME: It is needed for imgur, in the other
                                 # cases is OK
                                 destRuleCache = ('direct', 'post',
                                                  key, moreS[key])
-                                if not (fromCache in rulesNew):
-                                    rulesNew[fromCache] = []
-                                rulesNew[fromCache].append(destRuleCache)
+                                if not (fromCacheNew in rulesNew):
+                                    rulesNew[fromCacheNew] = []
+                                rulesNew[fromCacheNew].append(destRuleCache)
                                 print(f"fromCache: {fromCache}")
                                 print(f"fromCacheNew: {fromCacheNew}")
+                                print(f"destRule: {destRule}")
                                 print(f"destRuleCache: {destRuleCache}")
+                                print(f"destRuleNew: {destRuleNew}")
 
                             msgLog = (f"{self.indent} Rule: {orig} -> "
                                         f"{key}({dest})")
@@ -338,12 +342,13 @@ class moduleRules:
                             logMsg(msgLog, 2, 0)
                             if not (fromSrv in rulesNew):
                                 rulesNew[fromSrv] = []
-                            rulesNew[fromSrv].append(destRule)
-                            print(f"fromSrv: {fromSrv}")
+                            print(f".fromSrv: {fromSrv}")
                             if destRuleNew:
-                                print(f"destRuleNew: {destRuleNew}")
+                                print(f".destRuleNew: {destRuleNew}")
+                                rulesNew[fromSrv].append(destRuleNew)
                             else:
                                 print(f"destRule: {destRule}")
+                                rulesNew[fromSrv].append(destRule)
 
         # Now we can add the sources not added.
 
@@ -392,7 +397,7 @@ class moduleRules:
                 continue
             iniK, nameK = self.getIniKey(self.getNameR(src), myKeys, myIniKeys)
             if not (iniK in available):
-                available[iniK] = {"name": self.getNameR(src), 
+                available[iniK] = {"name": self.getNameR(src),
                                    "data": [], "social": []}
                 available[iniK]["data"] = [{'src': src[1:], 'more': more[i]}]
             else:
@@ -419,9 +424,9 @@ class moduleRules:
         self.available = available
         self.availableList = availableList
 
-        msgLog = (f"Avail: {self.available}")
-        logMsg(msgLog, 2, 0)
-        self.printDict(self.available, "Available")
+        # msgLog = (f"Avail: {self.available}")
+        # logMsg(msgLog, 2, 0)
+        # self.printDict(self.available, "Available")
 
         msgLog = (f"RulesNew: {rulesNew}")
         logMsg(msgLog, 2, 0)
@@ -615,6 +620,8 @@ class moduleRules:
         indent = f"{indent} "
         if self.getNameR(src) == 'cache':
             apiSrc = getApi(self.getNameR(src), src[1:], indent)
+            msgLog = f"{indent} lllllll "
+            logMsg(msgLog, 2, 0)
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
             apiSrc.postaction = 'delete'
         else:
@@ -687,45 +694,45 @@ class moduleRules:
         # logMsg(msgLog, 1, 0)
         # msgLog = (f"{indent} More: Dst {more}")
         # logMsg(msgLog, 1, 0)
-    
+
         if self.getMode(action) == "cache":
             print(f"{indent} Dst: {action}")
-            apiDst = getApi("cache", ((more['service'],  
-                                       self.getType(action)), 
+            apiDst = getApi("cache", ((more['service'],
+                                       self.getType(action)),
                                       f"{self.getProfile(action)}@"
-                                      f"{self.getNick(action)}", 'posts'), 
+                                      f"{self.getNick(action)}", 'posts'),
                             indent)
             apiDst.socialNetwork = self.getProfile(action)
             apiDst.nick = self.getNick(action)
         else:
             apiDst = getApi(profile, nick, indent)
-    
+
         apiDst.fileName = apiDst.fileNameBase(apiSrc)
         apiDst.setUser(nick)
         apiDst.setPostsType('posts')
-    
+
         # msgLog = (f"{indent} Api dst: {apiDst}")
         # logMsg(msgLog, 2, 0)
-    
+
         if 'max' in more:
             mmax = more['max']
         elif 'buffermax' in more:
             mmax = more['buffermax']
         else:
             mmax = 0
-    
+
         apiDst.setMax(mmax)
-    
+
         if 'time' in more:
             apiDst.setTime(more['time'])
 
         apiDst.setUrl(apiSrc.getUrl())
-    
+
         msgLog = f"{indent} End readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         indent = f"{indent[:-1]}"
         return apiDst
-    
+
     def testDifferPosts(self, apiSrc, lastLink, listPosts):
         i = 1
         num = 1
@@ -735,7 +742,7 @@ class moduleRules:
                 apiSrc.lastLinkPublished = apiSrc.getPostLink(apiSrc.getPosts()[1])
             except:
                 apiSrc.lastLinkPublished = ''
-    
+
         listPosts2 = apiSrc.getNumNextPost(num)
         print(f"{indent} {listPosts}")
         if listPosts2:
@@ -754,14 +761,14 @@ class moduleRules:
                             print(f"{j})")
         else:
             print(f"{indent}No listPosts2")
-    
+
     def executePublishAction(self, indent, msgAction, apiSrc, apiDst,
                             simmulate, nextPost=True, pos=-1):
         res = ''
-    
+
         msgLog = (f"{indent} End Waiting.")
         logMsg(msgLog, 1, 1)
-    
+
         # The source of data can have changes while we were waiting
         resMsg = ''
         postaction = ''
@@ -772,14 +779,14 @@ class moduleRules:
                 post = apiSrc.getNextPost()
             else:
                 post = apiSrc.getPost(pos)
-    
+
             if post:
                 msgLog = (f"{indent}Would schedule in {apiDst.service} "
                           f"Title: {apiSrc.getPostTitle(post)}")
             else:
                 msgLog = f"{indent}No post to schedule."
             logMsg(msgLog, 1, 1)
-    
+
             indent = f"{indent[:-1]}"
 
             msgLog = (f"{indent}This is a simmulation")
@@ -816,7 +823,7 @@ class moduleRules:
                 if postaction:
                     msgLog = (f"{indent}Post Action {postaction} ({nextPost})")
                     logMsg(msgLog, 1, 1)
-    
+
                     if nextPost:
                         cmdPost = getattr(apiSrc, f"{postaction}NextPost")
                         resPost = cmdPost()
@@ -830,7 +837,7 @@ class moduleRules:
                     logMsg(msgLog, 1, 1)
                     resMsg += f" Post Action: {resPost}"
             if (nextPost and (not 'No posts available' in res) and
-                    ((not res) or ('SAVELINK' in res) or 
+                    ((not res) or ('SAVELINK' in res) or
                      not ('Fail!' in res))):
                 resUpdate = apiSrc.updateLastLink(apiDst, '')
                 resMsg += f" Update: {resUpdate}"
@@ -841,7 +848,7 @@ class moduleRules:
                 if postaction:
                     msgLog = (f"{indent}Post Action {postaction}")
                     logMsg(msgLog, 1, 1)
-    
+
                     if nextPost:
                         cmdPost = getattr(apiSrc, f"{postaction}NextPost")
                         resPost = cmdPost()
@@ -857,7 +864,7 @@ class moduleRules:
                 else:
                     msgLog = (f"{indent}No Post Action")
                     logMsg(msgLog, 1, 1)
-    
+
             msgLog = (f"{indent}End publish, reply: {resMsg}")
             logMsg(msgLog, 1, 1)
         if postaction == 'delete':
@@ -867,43 +874,43 @@ class moduleRules:
         else:
             msgLog = (f"{indent}Available {len(apiSrc.getPosts())}")
         logMsg(msgLog, 1, 1)
-    
+
         return resMsg
-    
+
     def executeAction(self, src, more, action,
                     noWait, timeSlots, simmulate, name="",
                     nextPost = True, pos = -1, delete=False):
-    
+
         # indent = f" {name}->({action[3]}@{action[2]})] -> "+" "
         indent = f"{name}"
         # The ']' is opened in executeRules FIXME
-    
+
         msgLog = (f"{indent}  Sleeping to launch all processes")
         logMsg(msgLog, 1, 0)
         # 'Cometic' waiting to allow all the processes to be launched.
         time.sleep(1)
-    
+
         msgLog = (f"{indent} Go!")
         logMsg(msgLog, 1, 0)
         indent = f"{indent} "
-    
+
         msgAction = (f"{self.getMode(action)} "
                      f"{self.getNick(action)}@{self.getProfile(action)} "
                      f"({self.getType(action)})")
         # Destination
-    
+
         apiSrc = self.readConfigSrc(indent, src, more)
-    
+
         if apiSrc.getName():
             msgLog = (f"{indent} Source: {apiSrc.getName()}-{self.getNick(src)} -> "
                 f"Action: {msgAction})")
         else:
             msgLog = (f"{indent} Source: {self.getProfile(src)}-{self.getNick(src)} -> "
                 f"Action: {msgAction})")
-    
+
         # logMsg(msgLog, 1, 0)
         textEnd = (f"{msgLog}")
-    
+
         # print(f"Srcccc: {src}")
         # print(f"Srcccc: {apiSrc.getNick()}")
         # return
@@ -916,9 +923,9 @@ class moduleRules:
             msgLog = (f"{indent} Error. No client for {self.getProfile(src)} ({self.getNick(src)})")
             logMsg(msgLog, 3, 1)
             return f"{msgLog} End."
-    
+
         apiSrc.setPosts()
-    
+
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
 
         if not apiDst.getClient():
@@ -926,8 +933,8 @@ class moduleRules:
                       f"{self.getProfile(action)}")
             logMsg(msgLog, 3, 1)
             return f"End: {msgLog}"
-    
-    
+
+
         if ((apiDst.getPostsType() != self.getType(action))
             and (apiDst.getPostsType()[:-1] != self.getType(action))
             and (self.getMode(action) != 'cache')):
@@ -935,9 +942,9 @@ class moduleRules:
             msgLog = f"{indent} Some problem with {action}"
             logMsg(msgLog, 3, 0)
             return msgLog
-    
+
         indent = f"{indent} "
-    
+
         apiSrc.setLastLink(apiDst)
 
         time.sleep(1)
@@ -947,17 +954,17 @@ class moduleRules:
             num = apiDst.getMax()
         else:
             num = 1
-    
+
         msgLog = (f"{indent} I'll publish {num} post")
         logMsg(msgLog, 1, 1)
-    
+
         listPosts = []
         link = ''
-    
+
         if (num > 0):
             tNow = time.time()
             hours = float(apiDst.getTime())*60*60
-    
+
             lastTime = apiSrc.getLastTimePublished(indent)
 
             if lastTime:
@@ -965,21 +972,21 @@ class moduleRules:
             else:
                 # If there is no lasTime, we will publish
                 diffTime = hours + 1
-    
+
             # msgLog = (f"{indent}Src time: {apiSrc.getTime()} "
             #           f"Dst time: {apiDst.getTime()}")
             # logMsg(msgLog, 2, 0)
-    
+
             numAvailable = 0
-    
+
             if (noWait or (diffTime>hours)):
                 tSleep = random.random()*float(timeSlots)*60
-    
+
                 if nextPost:
                     post = apiSrc.getNextPost()
                 else:
                     post = apiSrc.getPost(pos)
-    
+
                 if post:
                     msgLog = (f"{indent} Next post title: "
                               f"{apiSrc.getPostTitle(post)}")
@@ -990,16 +997,16 @@ class moduleRules:
                 logMsg(msgLog, 1, 1)
                 # apiSrc.setNextTime(tNow, tSleep, apiDst)
                 # return
-    
+
                 if (tSleep>0.0):
                     msgLog= f"{indent} Waiting {tSleep/60:2.2f} minutes"
                 else:
                     tSleep = 2.0
                     msgLog= f"{indent} No Waiting"
-    
+
                 msgLog = f"{msgLog} for action" #: {msgAction}"
                 logMsg(msgLog, 1, 1)
-    
+
                 for i in range(num):
                     time.sleep(tSleep)
                     if nextPost:
@@ -1010,19 +1017,19 @@ class moduleRules:
                                 msgAction, apiSrc, apiDst,
                                 simmulate, nextPost, pos)
                         textEnd = f"{textEnd} {res}"
-    
+
             elif (diffTime<=hours):
                 msgLog = (f"{indent} Not enough time passed. "
                           f"We will wait at least "
                           f"{(hours-diffTime)/(60*60):2.2f} hours.")
                 logMsg(msgLog, 1, 1)
                 textEnd = f"{textEnd} {msgLog}"
-    
+
         else:
             if (num<=0):
                 msgLog = (f"{indent} No posts available")
                 logMsg(msgLog, 1, 1)
-    
+
         indent = f"{indent[:-1]}"
         logMsg(f"{indent} End executeAction", 2, 0)
         return indent
@@ -1053,6 +1060,7 @@ class moduleRules:
                     i = i + 1
                 previous = self.getMode(src)
                 indent = f"{self.getMode(src):->9}{i}>"
+                print(f"srccccc: {src}")
                 if src in self.more:
                     # f"  More: {self.more[src]}")
                     more = self.more[src]
@@ -1061,8 +1069,13 @@ class moduleRules:
                     more = None
 
                 if self.getMode(src) in ['cache']:
-                    srcName = more['url']
-                    # FIXME
+                    # try:
+                    #     srcName = more['url']
+                    # except:
+                    srcName = src[2][2]
+                    # FIXME Better access?
+
+                    # FIXME Names?
                     if 'slack' in srcName:
                         srcName = f"{srcName.split('/')[2].split('.')[0]}@slack"
                     elif 'gitter' in srcName:
@@ -1133,7 +1146,7 @@ class moduleRules:
 
                     # Is this the correct place?
                     if ((self.getMode(action) in 'cache') or
-                        ((self.getMode(action) == 'direct') 
+                        ((self.getMode(action) == 'direct')
                          and (self.getProfile(action) == 'pocket'))
                         ):
                         # We will always load new items in the cache

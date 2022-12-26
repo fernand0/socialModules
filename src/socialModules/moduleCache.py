@@ -41,7 +41,7 @@ class moduleCache(Content,Queue):
             return self.service
 
     def fileNameBase(self, dst):
-        msgLog = (f"{self.indent} {dst}")
+        msgLog = (f"{self.indent} fileNameBase {dst}")
         logMsg(msgLog, 2, 0)
         if hasattr(self, 'fileName') and self.fileName:
                         return self.fileName
@@ -49,12 +49,18 @@ class moduleCache(Content,Queue):
         nameSrc = 'Cache'
         typeSrc = typeDst = 'posts'
         if isinstance(dst, tuple):
+            #FIXME
             user = self.getUrl()
-            service = dst[0][0].capitalize()
-            pos = dst[1].find('@')
-            userD = dst[1][pos+1:]
-            serviceD = dst[1][:pos]
-            nameDst = dst[1][:pos].capitalize()
+            # service = dst[0][0].capitalize()
+            service = dst[1][0].capitalize()
+            # pos = dst[1].find('@')
+            pos = dst[2].find('@')
+            # userD = dst[1][pos+1:]
+            userD = dst[2][pos+1:]
+            # serviceD = dst[1][:pos]
+            serviceD = dst[2][:pos]
+            # nameDst = dst[1][:pos].capitalize()
+            nameDst = dst[2][:pos].capitalize()
         elif isinstance(self, moduleCache):
             user = dst.getUser()
             service = dst.getService().capitalize()
@@ -68,7 +74,10 @@ class moduleCache(Content,Queue):
                     f"{nameDst}_{typeDst}_"
                     f"{userD}_{serviceD}")
         fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
+        msgLog = (f"{self.indent} End fileNameBase fileName: {fileName}")
+        logMsg(msgLog, 2, 0)
         self.fileName = fileName
+
         return fileName
 
     # def fileNameBase2(self, dst):
@@ -109,12 +118,18 @@ class moduleCache(Content,Queue):
         self.postaction = 'delete'
 
         self.postsType = 'posts'
-        self.url = param[0][1]
-        pos = param[1].find('@')
-        self.socialNetwork = param[1][:pos].capitalize() #param[0][0]
-        self.user = param[1][pos+1:]
-        self.nick = param[1][pos+1:]
-        self.auxClass = param[0][0]
+        # self.url = param[0][1]
+        self.url = param[1][2]
+        # pos = param[1].find('@')
+        pos = param[2].find('@')
+        # self.socialNetwork = param[1][:pos].capitalize() #param[0][0]
+        self.socialNetwork = param[2][:pos].capitalize() #param[0][0]
+        # self.user = param[1][pos+1:]
+        self.user = param[2][pos+1:]
+        # self.nick = param[1][pos+1:]
+        self.nick = param[2][pos+1:]
+        # self.auxClass = param[0][0]
+        self.auxClass = param[1][0]
         self.client = self.service
         #self.fileName = self.fileNameBase((self.user, self.socialNetwork))
 
