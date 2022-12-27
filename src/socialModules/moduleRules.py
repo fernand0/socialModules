@@ -630,7 +630,7 @@ class moduleRules:
         msgLog = f"{indent} {more}"
         logMsg(msgLog, 2, 0)
 
-        if more: 
+        if more:
             for option in more:
                 if option == 'posts':
                     nameMethod = f"setPostsType"
@@ -684,12 +684,19 @@ class moduleRules:
         msgLog = (f"{indent} readConfigDst: "
                  f"{self.getMode(action)}"
                  f"({self.getProfile(action)}@{self.getNick(action)})")
+        msgLog = (f"{indent} readConfigDst: {action})")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{indent} readConfigDst: {self.getMode(action)})")
         logMsg(msgLog, 2, 0)
         indent = f"{indent} "
         # msgLog = f"{indent} More: Src {more}"
         # logMsg(msgLog, 2, 0)
         profile = self.getProfile(action)
         nick = self.getNick(action)
+        msgLog = (f"{indent} readConfigDst: {profile})")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{indent} readConfigDst: {nick})")
+        logMsg(msgLog, 2, 0)
         # socialNetwork = (profile, nick)
         # msgLog = (f"{indent} socialNetwork: {socialNetwork}")
         # logMsg(msgLog, 2, 0)
@@ -699,11 +706,20 @@ class moduleRules:
         # logMsg(msgLog, 1, 0)
 
         if self.getMode(action) == "cache":
+            if isinstance(profile, tuple):
+                param = ('set', (apiSrc.getService().casefold(), 'set',
+                                 apiSrc.getUrl(), 'posts'),
+                         f"{profile[2]}@{profile[3]}")
+            else:
+                param = ('set', (apiSrc.getService().casefold(),
+                                 'set', apiSrc.getUrl(), 'posts'),
+                         f"{action[2][2]}@{action[2][3]}")
+
+
+            msgLog = (f"{indent} readConfigDst param: {param})")
+            logMsg(msgLog, 2, 0)
             print(f"{indent} Dst: {action}")
-            apiDst = getApi('cache', ('set', (apiSrc.getService().casefold(),
-                                              'set', apiSrc.getUrl(),
-                                              'posts'),
-                                      f"{action[2][2]}@{action[2][3]}"), indent)
+            apiDst = getApi('cache', param, indent)
             # apiDst = getApi("cache", ((more['service'],
             #                            self.getType(action)),
             #                           f"{self.getProfile(action)}@"

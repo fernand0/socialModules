@@ -18,6 +18,7 @@ import sys
 importlib.reload(sys)
 from crontab import CronTab
 
+import socialModules
 from socialModules.configMod import *
 from socialModules.moduleContent import *
 from socialModules.moduleQueue import *
@@ -41,7 +42,13 @@ class moduleCache(Content,Queue):
             return self.service
 
     def fileNameBase(self, dst):
-        msgLog = (f"{self.indent} fileNameBase {dst}")
+        msgLog = (f"{self.indent} fileNameBase src: {self}")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} fileNameBase dst: {dst}")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} fileNameBase is {isinstance(self, socialModules.moduleCache.moduleCache)}")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} fileNameBase is {isinstance(self, socialModules.moduleSlack.moduleSlack)}")
         logMsg(msgLog, 2, 0)
         if hasattr(self, 'fileName') and self.fileName:
                         return self.fileName
@@ -62,15 +69,22 @@ class moduleCache(Content,Queue):
             serviceD = dst[2][:pos]
             # nameDst = dst[1][:pos].capitalize()
             nameDst = dst[2][:pos].capitalize()
-        elif isinstance(self, moduleCache):
+        elif isinstance(self, socialModules.moduleCache.moduleCache):
             logging.info(f"{self.indent} cache")
-            # auxClass ??
+            logging.info(f"{self.indent} {src} is not tuple")
             user = dst.getUser()
             service = dst.getService().capitalize()
             pos = src.getUser().find('@')
             userD = src.nick
             serviceD = src.socialNetwork
-            nameDst = serviceD.capitalize()
+
+            if isinstance(serviceD, tuple):
+                logging.info(f"{self.indent} {serviceD} is tuple")
+                userD = serviceD[3]
+                serviceD = serviceD[2]
+        msgLog = (f"{self.indent} fileNameBase serviceD {serviceD}")
+        logMsg(msgLog, 2, 0)
+        nameDst = serviceD.capitalize()
 
         fileName = (f"{nameSrc}_{typeSrc}_"
                     f"{user}_{service}__"
