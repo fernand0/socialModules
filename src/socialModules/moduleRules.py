@@ -1081,6 +1081,8 @@ class moduleRules:
             previous = ""
 
             for src in sorted(self.rules.keys()):
+                msgLog = f"{indent} src: {src}"
+                logMsg(msgLog, 2, 0)
                 if self.getMode(src) != previous:
                     i = 0
                 else:
@@ -1131,7 +1133,8 @@ class moduleRules:
                 actions = self.rules[src]
 
                 # print(f"Select: {select} - {src[0]}{i}")
-                if (select and (select.lower() != f"{self.getName(src).lower()}{i}")):
+                if (select 
+                    and (select.lower() != f"{self.getNameR(src).lower()}{i}")):
                     actionMsg = f"Skip."
                 else:
                     actionMsg = (f"Scheduling.")
@@ -1272,9 +1275,6 @@ def main():
         format="%(asctime)s [%(filename).12s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
-
-    msgLog = "Launched at %s in mode {mode}" % time.asctime()
-    logMsg(msgLog, 1, 2)
 
     rules = moduleRules()
 

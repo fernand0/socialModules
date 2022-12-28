@@ -303,13 +303,21 @@ class moduleCache(Content,Queue):
 
         msgLog = (f"{self.indent} File: %s" % fileNameQ)
         logMsg(msgLog, 2, 0)
+        listP = []
         try:
-            with open(fileNameQ,'rb') as f:
-                try:
-                    listP = pickle.load(f)
-                except:
-                    listP = []
+            msgLog = checkFile(fileNameQ, self.indent)
+            if not "OK" in msgLog:
+                self.report(msgLog, '', '', sys.exc_info())
+            else:
+                with open(fileNameQ,'rb') as f:
+                    try:
+                        listP = pickle.load(f)
+                    except:
+                        msgLog = f"{self.indent} Problem loading data"
+                        logMsg(msgLog, 3, 0)
         except:
+            msgLog = f"{self.indent} Some problem with file {fileNameQ}"
+            self.report(msgLog, '', '', sys.exc_info())
             listP = []
 
         # msgLog = f"{self.indent} listP: {listP}"
@@ -605,7 +613,7 @@ class moduleCache(Content,Queue):
         return(idPost)
 
     def editApiTitle(self, post, newTitle=''):
-        msgLog = (f"ApiTitle: {newTitle}. Post: {post}")
+        msgLog = (f"{self.indent} ApiTitle: {newTitle}. Post: {post}")
         logMsg(msgLog, 1, 0)
         oldLink = self.getPostLink(post)
         idPost = self.getLinkPosition(oldLink)

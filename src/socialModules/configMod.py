@@ -77,28 +77,41 @@ def getNextTime(blog, socialNetwork):
             # None published, or non-existent file
             return 0, 0
 
-def getLastLink(fileName):
+def checkFile(fileName, indent):
+    dirName = os.path.dirname(fileName)
+    if not os.path.isdir(dirName):
+        msgLog = f"{indent} Fail! directory {dirName} does not exist" 
+    elif not os.path.isfile(fileName):
+        msgLog = f"{indent} Fail! file {dirName} does not exist" 
+    else:
+        msgLog = "OK"
+
+    return msgLog
+
+def getLastLink(fileName, indent=''):
     msgLog = (f"fileName: {fileName}")
     logMsg(msgLog, 2, 0)
-    if not os.path.isdir(os.path.dirname(fileName)):
-        msgLog = (f"No directory {os.path.dirname(fileName)} exists")
-        logMsg(msgLog, 3, 0)
-        sys.exit(f"No directory {os.path.dirname(fileName)} exists")
-    if os.path.isfile(fileName):
+    linkLast = ''
+    timeLast = 0
+    msgLog = checkFile(fileNameQ, self.indent)
+    if not "OK" in msgLog:
+        self.report(msgLog, '', '', sys.exc_info())
+    else:
         with open(fileName, "rb") as f:
-            linkLast = f.read().decode().split()  # Last published
-    else:
-        # File does not exist, we need to create it.
-        # Should we create it here? It is a reading function!!
-        with open(fileName, "wb") as f:
-            msgLog = f"File {fileName} does not exist. Creating it."
-            logMsg(msgLog, 3, 0)
-            linkLast = ''
-            # None published, or non-existent file
+            linkLast = f.read().decode().split()  # Last published 
+        timeLast = os.path.getmtime(fileName)
+    # else:
+    #     # File does not exist, we need to create it.
+    #     # Should we create it here? It is a reading function!!
+    #     with open(fileName, "wb") as f:
+    #         msgLog = f"File {fileName} does not exist. Creating it."
+    #         logMsg(msgLog, 3, 0)
+    #         linkLast = ''
+    #         # None published, or non-existent file
     if len(linkLast) == 1:
-        return(linkLast[0], os.path.getmtime(fileName))
+        return(linkLast[0], timeLast)
     else:
-        return(linkLast, os.path.getmtime(fileName))
+        return(linkLast, timeLast)
 
 def checkLastLink(url, socialNetwork=()):
     # Redundant with moduleCache

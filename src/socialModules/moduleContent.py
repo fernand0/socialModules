@@ -122,12 +122,6 @@ class Content:
             user = self.user
         return user
 
-    def getName(self):
-        name = ''
-        if hasattr(self, 'name'):
-            name = getattr('name') #, '')
-        return name
-
     def getNick(self):
         if hasattr(self, 'nick'):
             nick = getattr(self, 'nick')#, '')
@@ -370,11 +364,11 @@ class Content:
         fileNameNext = ''
         if dst:
             fileNameNext = f"{self.fileNameBase(dst)}.timeAvailable"
-            if os.path.exists(fileNameNext):
+            msgLog = checkFile(fileNameNext)
+            if "OK" in msgLog
                 with open(fileNameNext,'wb') as f:
                     pickle.dump((tNow, tSleep), f)
             else:
-                msgLog = (f"{self.indent} file {fileNameNext} does not exist")
                 logMsg(msgLog, 3, 0)
         else:
             print(f"Not implemented!")
