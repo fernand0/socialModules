@@ -684,18 +684,18 @@ class moduleRules:
         msgLog = (f"{indent} readConfigDst: "
                  f"{self.getMode(action)}"
                  f"({self.getProfile(action)}@{self.getNick(action)})")
-        msgLog = (f"{indent} readConfigDst: {action})")
-        logMsg(msgLog, 2, 0)
-        msgLog = (f"{indent} readConfigDst: {self.getMode(action)})")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{indent} readConfigDst: {action})")
+        # logMsg(msgLog, 2, 0)
+        # msgLog = (f"{indent} readConfigDst: {self.getMode(action)})")
+        # logMsg(msgLog, 2, 0)
         indent = f"{indent} "
         # msgLog = f"{indent} More: Src {more}"
         # logMsg(msgLog, 2, 0)
         profile = self.getProfile(action)
         nick = self.getNick(action)
-        msgLog = (f"{indent} readConfigDst: {profile})")
+        msgLog = (f"{indent} readConfigDst: {profile}")
         logMsg(msgLog, 2, 0)
-        msgLog = (f"{indent} readConfigDst: {nick})")
+        msgLog = (f"{indent} readConfigDst: {nick}")
         logMsg(msgLog, 2, 0)
         # socialNetwork = (profile, nick)
         # msgLog = (f"{indent} socialNetwork: {socialNetwork}")
@@ -730,23 +730,27 @@ class moduleRules:
         else:
             apiDst = getApi(profile, nick, indent)
 
+        msgLog = (f"{indent} readConfigDst apiDst: {apiDst})")
+        logMsg(msgLog, 2, 0)
         apiDst.fileName = apiDst.fileNameBase(apiSrc)
         apiDst.setUser(nick)
         apiDst.setPostsType('posts')
 
-        # msgLog = (f"{indent} Api dst: {apiDst}")
-        # logMsg(msgLog, 2, 0)
+        msgLog = (f"{indent} Api dst more: {more}")
+        logMsg(msgLog, 2, 0)
 
-        if 'max' in more:
+        if more and ('max' in more):
             mmax = more['max']
-        elif 'buffermax' in more:
+        elif more and ('buffermax' in more):
             mmax = more['buffermax']
         else:
             mmax = 0
 
+        msgLog = (f"{indent} Api dst more: {more}")
+        logMsg(msgLog, 2, 0)
         apiDst.setMax(mmax)
 
-        if 'time' in more:
+        if more and ('time' in more):
             apiDst.setTime(more['time'])
 
         apiDst.setUrl(apiSrc.getUrl())
@@ -1083,7 +1087,6 @@ class moduleRules:
                     i = i + 1
                 previous = self.getMode(src)
                 indent = f"{self.getMode(src):->9}{i}>"
-                print(f"srccccc: {src}")
                 if src in self.more:
                     # f"  More: {self.more[src]}")
                     more = self.more[src]

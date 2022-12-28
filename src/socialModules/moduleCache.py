@@ -531,7 +531,7 @@ class moduleCache(Content,Queue):
         title = ''
         if post:
             if hasattr(self, 'auxClass'):
-                msgLog = (f"auxClass: {self.auxClass}")
+                msgLog = (f"{self.indent} auxClass: {self.auxClass}")
                 logMsg(msgLog, 2, 0)
                 if isinstance(self.auxClass, str):
                     myModule = f"module{self.auxClass.capitalize()}"

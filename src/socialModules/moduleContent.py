@@ -95,7 +95,9 @@ class Content:
             client = self.initApi(keys)
         except:
             if not config.sections and not keys:
-                self.report({self.service}, "", "", sys.exc_info())
+                self.report({self.service}, "No keys", "", sys.exc_info())
+            else:
+                self.report({self.service}, "Some problem", "", sys.exc_info())
 
         self.client = client
 
@@ -300,7 +302,7 @@ class Content:
             lastLink = linkLast[0]
         else:
             lastLink = linkLast
-            
+
         msgLog = f"{self.indent} {linkLast}"
         logMsg(msgLog, 1, 0)
 
@@ -916,7 +918,7 @@ class Content:
             if post:
                 msgLog = (f"{self.indent} Post {post}")
                 logMsg(msgLog, 2, 0)
-                
+
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
                 comment= ''
