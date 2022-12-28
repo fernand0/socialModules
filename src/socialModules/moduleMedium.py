@@ -69,8 +69,17 @@ class moduleMedium(Content,Queue):
             self.posts.append(post)
 
     def publishApiPost(self, *args, **kwargs):
-        post, link, comment = args
-        more = kwargs
+        mode = ''
+        if args and len(args) == 3:
+            post, link, comment = args
+        if kwargs:
+            more = kwargs
+            comment = more.get('comment','')
+            post = more.get('title','')
+            link = more.get('link','')
+            mode = more.get('mode','')
+        if not mode:
+            mode = 'public'
         logging.info("    Publishing in {} ...".format(self.service))
         client = self.client
         user = self.getUserRaw()
@@ -85,13 +94,16 @@ class moduleMedium(Content,Queue):
         # title = h.unescape(title)
         from html import unescape
         title = unescape(title)
-        textOrig = 'Publicado originalmente en <a href="%s">%s</a><br />\n\n' % (link, title)
+        if link and title:
+            textOrig = 'Publicado originalmente en <a href="%s">%s</a><br />\n\n' % (link, title)
+        else:
+            textOrig = ''
 
         try:
             res = client.create_post(user_id=user["id"], title=title,
                 content="<h4>"+title+"</h4><br />"+textOrig+content,
                 canonical_url = link, content_format="html",
-                publish_status="public")#"public") #draft")
+                publish_status=mode)#"public") #draft")
             logging.debug("Res: %s" % res)
             return(res)
         except:
