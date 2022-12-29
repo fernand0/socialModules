@@ -274,23 +274,19 @@ class Content:
         # logging.debug(f"Nickl: {nick}")
         # logging.debug(f"Servicel: {service}")
         # logging.debug(f"fileName: {fileName}")
-        dirName = os.path.dirname(fileName)
-        if not os.path.isdir(dirName):
-            return ""
-            sys.exit("No directory {dirName} exists")
+        msgLog = checkFile(fileName)
+        # dirName = os.path.dirname(fileName)
+        # if not os.path.isdir(dirName):
+        #     return ""
+        #     sys.exit("No directory {dirName} exists")
         if service in ['html']:
+            #FIXME: Not here
             linkLast = ''
-        elif os.path.isfile(fileName):
+        elif "OK" in msgLog:
             with open(fileName, "rb") as f:
                 linkLast = f.read().decode().split()  # Last published
         else:
-            # File does not exist, we need to create it.
-            # Should we create it here? It is a reading function!!
-            with open(fileName, "wb") as f:
-                msgLog = (f"File {fileName} does not exist. Creating it.")
-                logMsg(msgLog, 3, 0)
-                linkLast = ''
-                # None published, or non-existent file
+            logMsg(msgLog, 3, 0)
         lastLink = ''
         if len(linkLast) == 1:
             lastLink = linkLast[0]
@@ -365,11 +361,11 @@ class Content:
         if dst:
             fileNameNext = f"{self.fileNameBase(dst)}.timeAvailable"
             msgLog = checkFile(fileNameNext)
-            if "OK" in msgLog
+            if "OK" in msgLog:
                 with open(fileNameNext,'wb') as f:
                     pickle.dump((tNow, tSleep), f)
             else:
-                logMsg(msgLog, 3, 0)
+                self.report(self.service, msgLog, '', sys.exc_info())
         else:
             print(f"Not implemented!")
 
@@ -377,12 +373,12 @@ class Content:
         fileNameNext = ''
         if dst:
             fileNameNext = f"{self.fileNameBase(dst)}.timeNext"
-            if os.path.exists(fileNameNext):
+            msgLog = checkFile(fileNameNext)
+            if 'OK' in msgLog:
                 with open(fileNameNext,'wb') as f:
                     pickle.dump((tNow, tSleep), f)
             else:
-                msgLog = (f"{self.indent} file {fileNameNext} does not exist")
-                logMsg(msgLog, 3, 0)
+                self.report('', msgLog, '', sys.exc_info())
         else:
             msgLog = (f"Not implemented!")
             logMsg(msgLog, 3, 0)
@@ -1386,8 +1382,8 @@ class Content:
         return (soup.get_text().strip("\n"), theSummaryLinks)
 
     def report(self, profile, post, link, data):
-        msg = (f"{profile} failed! ",
-               f"Post: {post}"
+        msg = (f"{self.indent} service {self.service} Fail! ",
+               f"Msg: {post}",
                f"Link: {link}",
                f"Data error: {data}",
                f"Unexpected error: {data[0]}",

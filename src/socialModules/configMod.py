@@ -65,24 +65,21 @@ def getNextTime(blog, socialNetwork):
     fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext'
     msgLog = (f"fileNameNext {fileNameNext}")
     logMsg(msgLog, 2, 0)
-    try:
+    msgLog = checkFile(fileNameNext)
+    if 'OK' in msgLog:
         with open(fileNameNext,'rb') as f:
             tNow, tSleep = pickle.load(f)
         return tNow, tSleep
-    except:
-        # File does not exist, we need to create it.
-        with open(fileNameNext, "wb") as f:
-            msgLog = (f"File {fileNameNext} does not exist. Creating it.")
-            logMsg(msgLog, 3, 0)
-            # None published, or non-existent file
-            return 0, 0
+    else:
+        self.report(self.service, msgLog, '', sys.exc_info())
+        return 0, 0
 
-def checkFile(fileName, indent):
+def checkFile(fileName):
     dirName = os.path.dirname(fileName)
     if not os.path.isdir(dirName):
-        msgLog = f"{indent} Fail! directory {dirName} does not exist" 
+        msgLog = f"Directory {dirName} does not exist."
     elif not os.path.isfile(fileName):
-        msgLog = f"{indent} Fail! file {dirName} does not exist" 
+        msgLog = f"File {fileName} does not exist."
     else:
         msgLog = "OK"
 
@@ -93,12 +90,12 @@ def getLastLink(fileName, indent=''):
     logMsg(msgLog, 2, 0)
     linkLast = ''
     timeLast = 0
-    msgLog = checkFile(fileNameQ, self.indent)
+    msgLog = checkFile(fileNameQ)
     if not "OK" in msgLog:
         self.report(msgLog, '', '', sys.exc_info())
     else:
         with open(fileName, "rb") as f:
-            linkLast = f.read().decode().split()  # Last published 
+            linkLast = f.read().decode().split()  # Last published
         timeLast = os.path.getmtime(fileName)
     # else:
     #     # File does not exist, we need to create it.

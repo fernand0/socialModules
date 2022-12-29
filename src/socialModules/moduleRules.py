@@ -318,10 +318,11 @@ class moduleRules:
                                 fromCache = ('cache', (moreS['service'],
                                                        moreS['url']),
                                              f"{key}@{moreS[key]}", 'posts')
-                                fromCacheNew = ('cache', 'set',
-                                                (moreS['service'], 'set',
-                                                       moreS['url'], 'posts'),
-                                                f"{key}@{moreS[key]}")
+                                fromCacheNew = ('cache', moreS['service'],
+                                                ('direct', 'post',
+                                                    key, moreS[key]),
+                                                       moreS['url'])#, 'posts'),
+                                                #f"{key}@{moreS[key]}")
                                 #FIXME: It is needed for imgur, in the other
                                 # cases is OK
                                 destRuleCache = ('direct', 'post',
@@ -342,12 +343,12 @@ class moduleRules:
                             logMsg(msgLog, 2, 0)
                             if not (fromSrv in rulesNew):
                                 rulesNew[fromSrv] = []
-                            print(f".fromSrv: {fromSrv}")
+                            #print(f".fromSrv: {fromSrv}")
                             if destRuleNew:
-                                print(f".destRuleNew: {destRuleNew}")
+                                #print(f".destRuleNew: {destRuleNew}")
                                 rulesNew[fromSrv].append(destRuleNew)
                             else:
-                                print(f"destRule: {destRule}")
+                                #print(f"destRule: {destRule}")
                                 rulesNew[fromSrv].append(destRule)
 
         # Now we can add the sources not added.
@@ -607,7 +608,12 @@ class moduleRules:
         return self.getRuleComponent(rule, 1)
 
     def getProfileR(self, rule):
-        return self.getRuleComponent(rule, 2)
+        profileR = ''
+        if isinstance(self.getRuleComponent(rule, 2), tuple):
+            profileR = rule[1:]
+        else:
+            profileR = self.getRuleComponent(rule, 2)
+        return profileR
 
     def getNickR(self, rule):
         return self.getRuleComponent(rule, 3)
@@ -615,11 +621,15 @@ class moduleRules:
     def readConfigSrc(self, indent, src, more):
         msgLog = f"{indent} readConfigSrc: {self.getProfileR(src)}"
         logMsg(msgLog, 2, 0)
-        # msgLog = f"{indent} More: Src {more}"
+        # msgLog = f"{indent} readConfigSrc More: Src {more}"
         # logMsg(msgLog, 2, 0)
         indent = f"{indent} "
         if self.getNameR(src) == 'cache':
-            apiSrc = getApi(self.getNameR(src), src[1:], indent)
+            msgLog=f"{indent} src {src}"
+            logMsg(msgLog, 2, 0)
+            msgLog=f"{indent} profileR {self.getProfileR(src)}"
+            logMsg(msgLog, 2, 0)
+            apiSrc = getApi(self.getNameR(src), self.getProfileR(src), indent)
             logMsg(msgLog, 2, 0)
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
             apiSrc.postaction = 'delete'
@@ -681,22 +691,20 @@ class moduleRules:
         return self.getActionComponent(action, 3)
 
     def readConfigDst(self, indent, action, more, apiSrc):
-        msgLog = (f"{indent} readConfigDst: "
-                 f"{self.getMode(action)}"
-                 f"({self.getProfile(action)}@{self.getNick(action)})")
+        msgLog = (f"{indent} readConfigDst Action: {action}")
+        logMsg(msgLog, 2, 0)
         # msgLog = (f"{indent} readConfigDst: {action})")
-        # logMsg(msgLog, 2, 0)
         # msgLog = (f"{indent} readConfigDst: {self.getMode(action)})")
         # logMsg(msgLog, 2, 0)
         indent = f"{indent} "
         # msgLog = f"{indent} More: Src {more}"
         # logMsg(msgLog, 2, 0)
-        profile = self.getProfile(action)
-        nick = self.getNick(action)
-        msgLog = (f"{indent} readConfigDst: {profile}")
-        logMsg(msgLog, 2, 0)
-        msgLog = (f"{indent} readConfigDst: {nick}")
-        logMsg(msgLog, 2, 0)
+        # profile = self.getProfile(action)
+        # nick = self.getNick(action)
+        # msgLog = (f"{indent} readConfigDst profile: {profile}")
+        # logMsg(msgLog, 2, 0)
+        # msgLog = (f"{indent} readConfigDst nick: {nick}")
+        # logMsg(msgLog, 2, 0)
         # socialNetwork = (profile, nick)
         # msgLog = (f"{indent} socialNetwork: {socialNetwork}")
         # logMsg(msgLog, 2, 0)
@@ -705,30 +713,43 @@ class moduleRules:
         # msgLog = (f"{indent} More: Dst {more}")
         # logMsg(msgLog, 1, 0)
 
-        if self.getMode(action) == "cache":
-            if isinstance(profile, tuple):
-                param = ('set', (apiSrc.getService().casefold(), 'set',
-                                 apiSrc.getUrl(), 'posts'),
-                         f"{profile[2]}@{profile[3]}")
-            else:
-                param = ('set', (apiSrc.getService().casefold(),
-                                 'set', apiSrc.getUrl(), 'posts'),
-                         f"{action[2][2]}@{action[2][3]}")
-
-
-            msgLog = (f"{indent} readConfigDst param: {param})")
+        if self.getNameR(action) == 'cache':
+            msgLog=f"{indent} action {action}"
             logMsg(msgLog, 2, 0)
-            print(f"{indent} Dst: {action}")
-            apiDst = getApi('cache', param, indent)
-            # apiDst = getApi("cache", ((more['service'],
-            #                            self.getType(action)),
-            #                           f"{self.getProfile(action)}@"
-            #                           f"{self.getNick(action)}", 'posts'),
-            #                 indent)
-            apiDst.socialNetwork = self.getProfile(action)
-            apiDst.nick = self.getNick(action)
-        else:
-            apiDst = getApi(profile, nick, indent)
+            msgLog=f"{indent} profileR {self.getProfileR(action)}"
+            logMsg(msgLog, 2, 0)
+            apiSrc = getApi(self.getNameR(action), self.getProfileR(action), indent)
+            logMsg(msgLog, 2, 0)
+            apiSrc.fileName = apiSrc.fileNameBase(action[1:])
+            apiSrc.postaction = 'delete'
+            # nick = (profile, nick)
+            # profile = 'cache'
+            # msgLog = (f"{indent} readConfigDst profile: {profile}")
+            # logMsg(msgLog, 2, 0)
+            # msgLog = (f"{indent} readConfigDst nick: {nick}")
+            # logMsg(msgLog, 2, 0)
+            # # if isinstance(profile, tuple):
+            # #     param = ('set', (apiSrc.getService().casefold(), 'set',
+            # #                      apiSrc.getUrl(), 'posts'),
+            # #              f"{profile[2]}@{profile[3]}")
+            # # else:
+            # #     param = ('set', (apiSrc.getService().casefold(),
+            # #                      'set', apiSrc.getUrl(), 'posts'),
+            # #              f"{action[2][2]}@{action[2][3]}")
+
+
+            # # msgLog = (f"{indent} readConfigDst param: {param})")
+            # # logMsg(msgLog, 2, 0)
+            # # print(f"{indent} Dst: {action}")
+            # # apiDst = getApi('cache', param, indent)
+            # # # apiDst = getApi("cache", ((more['service'],
+            # # #                            self.getType(action)),
+            # # #                           f"{self.getProfile(action)}@"
+            # # #                           f"{self.getNick(action)}", 'posts'),
+            # # #                 indent)
+            # # apiDst.socialNetwork = self.getProfile(action)
+            # # apiDst.nick = self.getNick(action)
+        apiDst = getApi(profile, nick, indent)
 
         msgLog = (f"{indent} readConfigDst apiDst: {apiDst})")
         logMsg(msgLog, 2, 0)
@@ -1133,7 +1154,7 @@ class moduleRules:
                 actions = self.rules[src]
 
                 # print(f"Select: {select} - {src[0]}{i}")
-                if (select 
+                if (select
                     and (select.lower() != f"{self.getNameR(src).lower()}{i}")):
                     actionMsg = f"Skip."
                 else:

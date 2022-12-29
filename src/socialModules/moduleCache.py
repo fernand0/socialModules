@@ -26,6 +26,11 @@ from socialModules.moduleQueue import *
 
 class moduleCache(Content,Queue):
 
+    def getProfileR(self, rule):
+        msgLog = (f"{self.indent} Service {self.service} getProfileR {rule}")
+        logMsg(msgLog, 2, 0)
+        return rule[2:]
+
     def getService(self):
         msgLog = (f"{self.indent} Service {self.service} getService")
         logMsg(msgLog, 2, 0)
@@ -56,19 +61,18 @@ class moduleCache(Content,Queue):
         nameSrc = 'Cache'
         typeSrc = typeDst = 'posts'
         if isinstance(dst, tuple):
-            logging.info(f"{self.indent} tuple")
+            logging.info(f"{self.indent} tuple {dst}")
+            logging.info(f"{self.indent} self url {self.url} socialN "
+                         f"{self.socialNetwork} user {self.user} "
+                         f"nick {self.nick} auxClass {self.auxClass} "
+                         f"client {self.client}")
             #FIXME
-            user = self.getUrl()
+            user = self.url
             # service = dst[0][0].capitalize()
-            service = dst[1][0].capitalize()
-            # pos = dst[1].find('@')
-            pos = dst[2].find('@')
-            # userD = dst[1][pos+1:]
-            userD = dst[2][pos+1:]
-            # serviceD = dst[1][:pos]
-            serviceD = dst[2][:pos]
-            # nameDst = dst[1][:pos].capitalize()
-            nameDst = dst[2][:pos].capitalize()
+            service = dst[0].capitalize()
+            userD = self.user
+            serviceD = self.socialNetwork
+            nameDst = self.socialNetwork.capitalize()
         elif isinstance(self, socialModules.moduleCache.moduleCache):
             logging.info(f"{self.indent} cache")
             logging.info(f"{self.indent} {src} is not tuple")
@@ -82,9 +86,9 @@ class moduleCache(Content,Queue):
                 logging.info(f"{self.indent} {serviceD} is tuple")
                 userD = serviceD[3]
                 serviceD = serviceD[2]
+            nameDst = serviceD.capitalize()
         msgLog = (f"{self.indent} fileNameBase serviceD {serviceD}")
         logMsg(msgLog, 2, 0)
-        nameDst = serviceD.capitalize()
 
         fileName = (f"{nameSrc}_{typeSrc}_"
                     f"{user}_{service}__"
@@ -135,18 +139,11 @@ class moduleCache(Content,Queue):
         self.postaction = 'delete'
 
         self.postsType = 'posts'
-        # self.url = param[0][1]
-        self.url = param[1][2]
-        # pos = param[1].find('@')
-        pos = param[2].find('@')
-        # self.socialNetwork = param[1][:pos].capitalize() #param[0][0]
-        self.socialNetwork = param[2][:pos].capitalize() #param[0][0]
-        # self.user = param[1][pos+1:]
-        self.user = param[2][pos+1:]
-        # self.nick = param[1][pos+1:]
-        self.nick = param[2][pos+1:]
-        # self.auxClass = param[0][0]
-        self.auxClass = param[1][0]
+        self.url = param[-1]
+        self.socialNetwork = param[1][2]
+        self.user = param[1][3]
+        self.nick = param[1][3]
+        self.auxClass = self.socialNetwork
         self.client = self.service
         #self.fileName = self.fileNameBase((self.user, self.socialNetwork))
 
@@ -305,16 +302,16 @@ class moduleCache(Content,Queue):
         logMsg(msgLog, 2, 0)
         listP = []
         try:
-            msgLog = checkFile(fileNameQ, self.indent)
-            if not "OK" in msgLog:
-                self.report(msgLog, '', '', sys.exc_info())
-            else:
+            msgLog = checkFile(fileNameQ)
+            if "OK" in msgLog:
                 with open(fileNameQ,'rb') as f:
                     try:
                         listP = pickle.load(f)
                     except:
                         msgLog = f"{self.indent} Problem loading data"
-                        logMsg(msgLog, 3, 0)
+                        self.report(self.service, msgLog, '', sys.exc_info())
+            else:
+                self.report(self.service, msgLog, '', sys.exc_info())
         except:
             msgLog = f"{self.indent} Some problem with file {fileNameQ}"
             self.report(msgLog, '', '', sys.exc_info())
