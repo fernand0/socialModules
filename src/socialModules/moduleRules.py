@@ -307,7 +307,7 @@ class moduleRules:
                             else:
                                 destRule = (dest, moreS['url'],
                                             key, moreS[key])
-                                destRuleNew = (dest, 'post',
+                                destRuleNew = (dest, moreS['service'],
                                                ('direct', 'post',
                                             key, moreS[key]), moreS['url'])
                                 # Rule cache:
@@ -749,7 +749,7 @@ class moduleRules:
             # # #                 indent)
             # # apiDst.socialNetwork = self.getProfile(action)
             # # apiDst.nick = self.getNick(action)
-        apiDst = getApi(profile, nick, indent)
+        apiDst = getApi(self.getNameR(action), self.getProfileR(action), indent)
 
         msgLog = (f"{indent} readConfigDst apiDst: {apiDst})")
         logMsg(msgLog, 2, 0)

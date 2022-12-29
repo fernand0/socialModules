@@ -60,12 +60,20 @@ class moduleCache(Content,Queue):
         src = self
         nameSrc = 'Cache'
         typeSrc = typeDst = 'posts'
-        if isinstance(dst, tuple):
+        logging.info(f"{self.indent} self url {self.url} socialN "
+                     f"{self.socialNetwork} user {self.user} "
+                     f"nick {self.nick} auxClass {self.auxClass} "
+                     f"client {self.client}")
+        if isinstance(self, socialModules.moduleCache.moduleCache):
+            logging.info(f"{self.indent} cache")
+            logging.info(f"{self.indent} {src} is not tuple")
+            user = self.url
+            service = dst[0].capitalize()
+            userD = self.user
+            serviceD = self.socialNetwork
+            nameDst = self.socialNetwork.capitalize()
+        elif isinstance(dst, tuple):
             logging.info(f"{self.indent} tuple {dst}")
-            logging.info(f"{self.indent} self url {self.url} socialN "
-                         f"{self.socialNetwork} user {self.user} "
-                         f"nick {self.nick} auxClass {self.auxClass} "
-                         f"client {self.client}")
             #FIXME
             user = self.url
             # service = dst[0][0].capitalize()
@@ -73,20 +81,11 @@ class moduleCache(Content,Queue):
             userD = self.user
             serviceD = self.socialNetwork
             nameDst = self.socialNetwork.capitalize()
-        elif isinstance(self, socialModules.moduleCache.moduleCache):
-            logging.info(f"{self.indent} cache")
-            logging.info(f"{self.indent} {src} is not tuple")
-            user = dst.getUser()
-            service = dst.getService().capitalize()
-            pos = src.getUser().find('@')
-            userD = src.nick
-            serviceD = src.socialNetwork
-
-            if isinstance(serviceD, tuple):
-                logging.info(f"{self.indent} {serviceD} is tuple")
-                userD = serviceD[3]
-                serviceD = serviceD[2]
-            nameDst = serviceD.capitalize()
+        user = self.url
+        service = dst[0].capitalize()
+        userD = self.user
+        serviceD = self.socialNetwork
+        nameDst = self.socialNetwork.capitalize()
         msgLog = (f"{self.indent} fileNameBase serviceD {serviceD}")
         logMsg(msgLog, 2, 0)
 
