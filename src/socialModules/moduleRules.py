@@ -330,11 +330,11 @@ class moduleRules:
                                 if not (fromCacheNew in rulesNew):
                                     rulesNew[fromCacheNew] = []
                                 rulesNew[fromCacheNew].append(destRuleCache)
-                                print(f"fromCache: {fromCache}")
-                                print(f"fromCacheNew: {fromCacheNew}")
-                                print(f"destRule: {destRule}")
-                                print(f"destRuleCache: {destRuleCache}")
-                                print(f"destRuleNew: {destRuleNew}")
+                                # print(f"fromCache: {fromCache}")
+                                # print(f"fromCacheNew: {fromCacheNew}")
+                                # print(f"destRule: {destRule}")
+                                # print(f"destRuleCache: {destRuleCache}")
+                                # print(f"destRuleNew: {destRuleNew}")
 
                             msgLog = (f"{self.indent} Rule: {orig} -> "
                                         f"{key}({dest})")
@@ -630,14 +630,13 @@ class moduleRules:
             msgLog=f"{indent} profileR {self.getProfileR(src)}"
             logMsg(msgLog, 2, 0)
             apiSrc = getApi(self.getNameR(src), self.getProfileR(src), indent)
-            logMsg(msgLog, 2, 0)
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
             apiSrc.postaction = 'delete'
         else:
             logging.info(f"{indent} Src: {src}")
             apiSrc = getApi(self.getNameR(src), self.getProfileR(src), indent)
 
-        msgLog = f"{indent} {more}"
+        msgLog = f"{indent} More: {more}"
         logMsg(msgLog, 2, 0)
 
         if more:
@@ -718,10 +717,10 @@ class moduleRules:
             logMsg(msgLog, 2, 0)
             msgLog=f"{indent} profileR {self.getProfileR(action)}"
             logMsg(msgLog, 2, 0)
-            apiSrc = getApi(self.getNameR(action), self.getProfileR(action), indent)
+            apiDst = getApi(self.getNameR(action), self.getProfileR(action), indent)
             logMsg(msgLog, 2, 0)
-            apiSrc.fileName = apiSrc.fileNameBase(action[1:])
-            apiSrc.postaction = 'delete'
+            apiDst.fileName = apiDst.fileNameBase(action[1:])
+            apiDst.postaction = 'delete'
             # nick = (profile, nick)
             # profile = 'cache'
             # msgLog = (f"{indent} readConfigDst profile: {profile}")
@@ -749,13 +748,17 @@ class moduleRules:
             # # #                 indent)
             # # apiDst.socialNetwork = self.getProfile(action)
             # # apiDst.nick = self.getNick(action)
-        apiDst = getApi(profile, nick, indent)
+        else:
+            apiDst = getApi(self.getProfile(action),
+                            self.getNick(action), indent)
+            # apiDst = getApi(profile, nick, indent)
 
-        msgLog = (f"{indent} readConfigDst apiDst: {apiDst})")
-        logMsg(msgLog, 2, 0)
-        apiDst.fileName = apiDst.fileNameBase(apiSrc)
-        apiDst.setUser(nick)
-        apiDst.setPostsType('posts')
+            msgLog = (f"{indent} readConfigDst apiDst: {apiDst})")
+            logMsg(msgLog, 2, 0)
+            apiDst.fileName = apiDst.fileNameBase(apiSrc)
+            nick = self.getNick(action)
+            apiDst.setUser(nick)
+            apiDst.setPostsType('posts')
 
         msgLog = (f"{indent} Api dst more: {more}")
         logMsg(msgLog, 2, 0)
@@ -767,8 +770,6 @@ class moduleRules:
         else:
             mmax = 0
 
-        msgLog = (f"{indent} Api dst more: {more}")
-        logMsg(msgLog, 2, 0)
         apiDst.setMax(mmax)
 
         if more and ('time' in more):
@@ -968,7 +969,7 @@ class moduleRules:
             logging.info(msgHold)
             return msgHold
         if not apiSrc.getClient():
-            msgLog = (f"{indent} Error. No client for {self.getProfile(src)} ({self.getNick(src)})")
+            msgLog = (f"{indent} Error. No client for {self.getProfileR(src)} ({self.getNick(src)})")
             logMsg(msgLog, 3, 1)
             return f"{msgLog} End."
 
@@ -978,7 +979,7 @@ class moduleRules:
 
         if not apiDst.getClient():
             msgLog = (f"{indent} Error. No client for "
-                      f"{self.getProfile(action)}")
+                      f"{self.getProfileR(action)}")
             logMsg(msgLog, 3, 1)
             return f"End: {msgLog}"
 

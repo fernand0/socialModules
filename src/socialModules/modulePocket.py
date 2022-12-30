@@ -65,10 +65,14 @@ class modulePocket(Content,Queue):
             print(f"Something failed")
 
     def initApi(self, keys):
+        msgLog(f"{self.indent} service {self.service} Start initApi")
+        logMsg(msgLog, 2, 0)
         self.postaction='archive'
 
         consumer_key, access_token = keys
         client = Pocket(consumer_key=consumer_key, access_token=access_token)
+        msgLog(f"{self.indent} service {self.service} End initApi")
+        logMsg(msgLog, 2, 0)
         return client
 
     def setApiPosts(self):

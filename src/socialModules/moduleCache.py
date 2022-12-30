@@ -51,12 +51,14 @@ class moduleCache(Content,Queue):
         logMsg(msgLog, 2, 0)
         msgLog = (f"{self.indent} fileNameBase dst: {dst}")
         logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent} fileNameBase is {isinstance(self, socialModules.moduleCache.moduleCache)}")
-        logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent} fileNameBase is {isinstance(self, socialModules.moduleSlack.moduleSlack)}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} fileNameBase is {isinstance(self, socialModules.moduleCache.moduleCache)}")
+        # logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} fileNameBase is {isinstance(self, socialModules.moduleSlack.moduleSlack)}")
+        # logMsg(msgLog, 2, 0)
         if hasattr(self, 'fileName') and self.fileName:
-                        return self.fileName
+            msgLog = f"{self.indent} has fileName attr"
+            logMsg(msgLog, 2, 0)
+            return self.fileName
         src = self
         nameSrc = 'Cache'
         typeSrc = typeDst = 'posts'
@@ -144,13 +146,19 @@ class moduleCache(Content,Queue):
         self.user = param[1][3]
         self.nick = param[1][3]
         self.auxClass = self.socialNetwork
-        self.client = self.service
+        self.fileName = self.fileNameBase((self.socialNetwork, self.nick))
+        fileNameQ = f"{self.fileName}.queue"
+        msgLog = checkFile(fileNameQ)
+        if 'OK' in msgLog:
+            self.client = self.service
+        else:
+            self.client = None
         #self.fileName = self.fileNameBase((self.user, self.socialNetwork))
 
-        if hasattr(self, 'fileName'):
-            msgLog = (f"{self.indent} self.fileName {self.fileName}")
-            logMsg(msgLog, 2, 0)
-            print(f"self.fileName {self.fileName}")
+        # if hasattr(self, 'fileName'):
+        #     msgLog = (f"{self.indent} self.fileName {self.fileName}")
+        #     logMsg(msgLog, 2, 0)
+        #     print(f"self.fileName {self.fileName}")
 
         msgLog = (f"{self.indent} End connecting {self.service}: {param}")
         logMsg(msgLog, 2, 0)
@@ -303,18 +311,19 @@ class moduleCache(Content,Queue):
         listP = []
         try:
             msgLog = checkFile(fileNameQ)
+            logMsg(f"{self.indent} --- {msgLog}", 2, 0)
             if "OK" in msgLog:
                 with open(fileNameQ,'rb') as f:
                     try:
                         listP = pickle.load(f)
                     except:
-                        msgLog = f"{self.indent} Problem loading data"
+                        msgLog = f"Problem loading data"
                         self.report(self.service, msgLog, '', sys.exc_info())
             else:
-                self.report(self.service, msgLog, '', sys.exc_info())
+                self.report(self.service, msgLog, '', '')
         except:
-            msgLog = f"{self.indent} Some problem with file {fileNameQ}"
-            self.report(msgLog, '', '', sys.exc_info())
+            msgLog = f"Some problem with file {fileNameQ}"
+            self.report(self.service, msgLog, '', sys.exc_info())
             listP = []
 
         # msgLog = f"{self.indent} listP: {listP}"

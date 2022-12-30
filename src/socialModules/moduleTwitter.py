@@ -26,7 +26,7 @@ class moduleTwitter(Content, Queue):
         TOKEN_KEY = config.get(self.user, "TOKEN_KEY")
         TOKEN_SECRET = config.get(self.user, "TOKEN_SECRET")
 
-        return (CONSUMER_KEY, CONSUMER_SECRET, TOKEN_KEY, 
+        return (CONSUMER_KEY, CONSUMER_SECRET, TOKEN_KEY,
                 TOKEN_SECRET, BEARER_TOKEN)
 
     def initApi(self, keys):
@@ -56,10 +56,10 @@ class moduleTwitter(Content, Queue):
         return res
 
     def setApiPosts(self):
-        posts = self.apiCall(self.getClient().statuses.user_timeline, 
-                count=100)
+        posts = self.apiCall(self.getClient().statuses.user_timeline,
+                count=100, tweet_mode='extended')
 
-        return posts 
+        return posts
 
         # try:
         #     posts = self.getClient().statuses.user_timeline(count=100)
@@ -71,7 +71,7 @@ class moduleTwitter(Content, Queue):
         # return posts
 
     def setApiFavs(self):
-        posts = self.apiCall(self.getClient().favorites.list, 
+        posts = self.apiCall(self.getClient().favorites.list,
                 tweet_mode='extended')
 
         return posts
@@ -151,7 +151,7 @@ class moduleTwitter(Content, Queue):
         logging.debug("     Retweeting: %s" % post)
         res = 'Fail!'
         if 'twitter' in link:
-            res = self.apiCall(self.getClient().statuses.retweet._id, 
+            res = self.apiCall(self.getClient().statuses.retweet._id,
                     _id=idPost)
             # try:
             #     res = self.getClient().statuses.retweet._id(_id=idPost)
@@ -377,9 +377,9 @@ def main():
     testingPost = False
     if testingPost:
         print("Testing Post")
-        for key in rules.rules.keys(): 
-            if ((key[0] == 'twitter') 
-                and ('fernand0Test' in key[2]) 
+        for key in rules.rules.keys():
+            if ((key[0] == 'twitter')
+                and ('fernand0Test' in key[2])
                 and (key[3] == 'posts')):
                     break
         apiSrc = rules.readConfigSrc("", key, rules.more[key])
@@ -411,20 +411,20 @@ def main():
                     and ('reflexioneseir' in key[2])
                     and (key[3] == 'posts')):
                 apiNew = rules.readConfigSrc("", key, rules.more[key])
-     
-                apiNew.setPosts() 
-                tweet = apiNew.getPosts()[10] 
-                idPost = apiNew.getPostId(tweet) 
-                title = apiNew.getPostTitle(tweet) 
-                link = apiNew.getPostLink(tweet) 
+
+                apiNew.setPosts()
+                tweet = apiNew.getPosts()[10]
+                idPost = apiNew.getPostId(tweet)
+                title = apiNew.getPostTitle(tweet)
+                link = apiNew.getPostLink(tweet)
                 print(f"Res: {apiSrc.publishApiRT(title, link, '', post=tweet)}")
         return
 
     testingDelete = False
     if testingDelete:
-        for key in rules.rules.keys(): 
-            if ((key[0] == 'twitter') 
-                and ('fernand0Test' in key[2]) 
+        for key in rules.rules.keys():
+            if ((key[0] == 'twitter')
+                and ('fernand0Test' in key[2])
                 and (key[3] == 'posts')):
                     break
         apiSrc = rules.readConfigSrc("", key, rules.more[key])
@@ -436,9 +436,9 @@ def main():
 
     testingDeleteFavs = False
     if testingDeleteFavs:
-        for key in rules.rules.keys(): 
-            if ((key[0] == 'twitter') 
-                and ('fernand0' in key[2]) 
+        for key in rules.rules.keys():
+            if ((key[0] == 'twitter')
+                and ('fernand0' in key[2])
                 and (key[3] == 'favs')):
                     break
         apiSrc = rules.readConfigSrc("", key, rules.more[key])
@@ -447,7 +447,7 @@ def main():
         idPost = apiSrc.getPostId(post)
         print(f"Deleting: {apiSrc.deleteApiFavs(idPost)}")
         return
- 
+
     testingSearch = False
     if testingSearch:
         print("Testing Search")
@@ -465,7 +465,7 @@ def main():
         for tweet in res:
             print(f"Title: {apiSrc.getPostTitle(tweet)}")
         return
- 
+
         myLastLink = 'https://twitter.com/reflexioneseir/status/1235128399452164096'
         myLastLink = 'http://fernand0.blogalia.com//historias/78135'
         i = apiNew.getLinkPosition(myLastLink)

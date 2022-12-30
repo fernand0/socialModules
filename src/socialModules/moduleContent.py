@@ -78,9 +78,10 @@ class Content:
             config = configparser.RawConfigParser()
             config.read(f"{configFile}")
         except:
-            msgLog = (f"{self.indent} Does file {configFile} exist?")
-            logMsg(msgLog, 3, 0)
+            msgLog = (f"Does file {configFile} exist?")
+            self.report({self.indent}, msgLog, 0, '')
 
+        keys = ''
         try:
             keys = self.getKeys(config)
             # logging.debug(f"keys {keys}")
@@ -91,15 +92,21 @@ class Content:
                           f"in {configFile}")
                 logMsg(msgLog, 3, 0)
 
-        try:
-            client = self.initApi(keys)
-        except:
-            if not config.sections and not keys:
-                self.report({self.service}, "No keys", "", sys.exc_info())
-            else:
-                self.report({self.service}, "Some problem", "", sys.exc_info())
+        if keys:
+            try:
+                client = self.initApi(keys)
+            except:
+                msgLog(f"{self.indent} Exception")
+                logMsg(msgLog, 2, 0)
+                if not config.sections and not keys:
+                    self.report({self.service}, "No keys", "", sys.exc_info())
+                else:
+                    self.report({self.service}, "Some problem", "", sys.exc_info())
 
-        self.client = client
+            self.client = client
+        else:
+            self.report(self.service, "No keys", "", sys.exc_info())
+            self.client = None
 
     def getService(self):
         if hasattr(self, 'auxClass'):
@@ -147,6 +154,8 @@ class Content:
         pass
 
     def setPosts(self):
+        msgLog = f"{self.indent} service {self.service} Start setPosts"
+        logMsg(msgLog, 2, 0)
         nick = self.getNick()
         if nick:
             identifier = nick
@@ -175,6 +184,8 @@ class Content:
         msgLog = (f"{self.indent} Posts: {posts}")
         logMsg(msgLog, 2, 0)
         self.assignPosts(posts)
+        msgLog = f"{self.indent} service {self.service} End setPosts"
+        logMsg(msgLog, 2, 0)
 
     def getClient(self):
         client = None
@@ -314,13 +325,14 @@ class Content:
 
         lastTime = ''
         linkLast = ''
-        if not os.path.isdir(os.path.dirname(fileName)):
-            msgLog = f"{self.indent} No directory {os.path.dirname(fileName)}"
-            logMsg(msgLog, 3, 1)
-        if os.path.isfile(fileName):
+        msgLog = checkFile(fileName)
+        if 'OK' in msgLog:
             with open(fileName, "rb") as f:
                 linkLast = f.read().decode().split()  # Last published
             lastTime = os.path.getctime(fileName)
+        else:
+            lastTime = 0
+            self.report(self.service, msgLog, '', '')
 
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime
@@ -378,7 +390,7 @@ class Content:
                 with open(fileNameNext,'wb') as f:
                     pickle.dump((tNow, tSleep), f)
             else:
-                self.report('', msgLog, '', sys.exc_info())
+                self.report('', msgLog, '', '')
         else:
             msgLog = (f"Not implemented!")
             logMsg(msgLog, 3, 0)
@@ -1382,12 +1394,17 @@ class Content:
         return (soup.get_text().strip("\n"), theSummaryLinks)
 
     def report(self, profile, post, link, data):
-        msg = (f"{self.indent} service {self.service} Fail! ",
+        msg = (f"service {self.service} Fail! ",
                f"Msg: {post}",
-               f"Link: {link}",
+               f"Link: {link}")
+        if data:
+            msg = (f"{data}",
                f"Data error: {data}",
                f"Unexpected error: {data[0]}",
                f"Unexpected error: {data[1]}")
+        else:
+            #FIXME
+            data = (post, '','')
         for line in msg:
             msgLog = (f"{self.indent} Service {self.service} "
                       f"{line}")
