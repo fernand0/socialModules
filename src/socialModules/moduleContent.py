@@ -200,6 +200,8 @@ class Content:
         return url
 
     def fileNameBase(self, dst):
+        msgLog = (f"{self.indent} fileNameBase src: {self}")
+        logMsg(msgLog, 2, 0)
         src = self
         nameSrc = type(src).__name__
         if 'module' in nameSrc:
@@ -241,6 +243,9 @@ class Content:
                     f"{nameDst}_{typeDst}_"
                     f"{userD}_{serviceD}")
         fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
+        msgLog = (f"{self.indent} End fileNameBase fileName: {fileName}")
+        logMsg(msgLog, 2, 0)
+
         return fileName
 
     def updateLastLink(self, dst, link):

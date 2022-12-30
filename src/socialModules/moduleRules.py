@@ -756,6 +756,8 @@ class moduleRules:
             msgLog = (f"{indent} readConfigDst apiDst: {apiDst})")
             logMsg(msgLog, 2, 0)
             apiDst.fileName = apiDst.fileNameBase(apiSrc)
+            msgLog=f"{indent} .... Eo"
+            logMsg(msgLog, 2, 0)
             nick = self.getNick(action)
             apiDst.setUser(nick)
             apiDst.setPostsType('posts')
