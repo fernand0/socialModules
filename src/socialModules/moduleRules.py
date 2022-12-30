@@ -307,7 +307,7 @@ class moduleRules:
                             else:
                                 destRule = (dest, moreS['url'],
                                             key, moreS[key])
-                                destRuleNew = (dest, 'post',
+                                destRuleNew = (dest, moreS['service'],
                                                ('direct', 'post',
                                             key, moreS[key]), moreS['url'])
                                 # Rule cache:
