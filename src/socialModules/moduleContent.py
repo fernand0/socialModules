@@ -206,10 +206,13 @@ class Content:
         nameSrc = type(src).__name__
         if 'module' in nameSrc:
             nameSrc = nameSrc[len('module'):]
+            msgLog = (f"{self.indent} fileNameBase module Src: {nameSrc}")
+            logMsg(msgLog, 2, 0)
         nameDst = type(dst).__name__
         if 'module' in nameDst:
             nameDst = nameDst[len('module'):]
-            # logMsg(f"{self.indent} {nameSrc} {nameDst}", 2, 0)
+            msgLog = (f"{self.indent} fileNameBase module Dst: {nameDst}")
+            logMsg(msgLog, 2, 0)
             userD = dst.getUser()
             if hasattr(dst, 'socialNetwork'):
                 serviceD = dst.socialNetwork
@@ -217,6 +220,14 @@ class Content:
                 serviceD = nameDst
             user = src.getUser()
             service = src.getService()
+            msgLog = (f"{self.indent} fileNameBase userD: {userD}")
+            logMsg(msgLog, 2, 0)
+            msgLog = (f"{self.indent} fileNameBase serviceD: {serviceD}")
+            logMsg(msgLog, 2, 0)
+            msgLog = (f"{self.indent} fileNameBase user: {user}")
+            logMsg(msgLog, 2, 0)
+            msgLog = (f"{self.indent} fileNameBase service: {service}")
+            logMsg(msgLog, 2, 0)
         else:
             user = src.getUrl()
             service = self.service
@@ -234,6 +245,10 @@ class Content:
         else:
             typeDst = 'posts'
 
+        msgLog = (f"{self.indent} fileNameBase typeSrc: {typeSrc}")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} fileNameBase typeDst: {typeDst}")
+        logMsg(msgLog, 2, 0)
         # print(f"user: {user}")
         # if not user:
         #     user = dst.getUrl()
@@ -830,7 +845,7 @@ class Content:
         self.postsType = postsType
 
     def getPostsType(self):
-        postsType = None
+        postsType = 'posts'
         if hasattr(self, "postsType"):
             postsType = self.postsType
         return postsType

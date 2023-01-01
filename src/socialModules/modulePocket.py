@@ -14,6 +14,7 @@ class modulePocket(Content,Queue):
 
     def getKeys(self, config):
         if self.user.startswith('@'):
+            #FIXME: Maybe we should avoid this in the configuration file
             self.user = self.user[1:]
         consumer_key = config.get(self.user, "consumer_key")
         try:
