@@ -84,7 +84,7 @@ class Content:
         keys = ''
         try:
             keys = self.getKeys(config)
-            # logging.debug(f"keys {keys}")
+            logging.debug(f"{self.indent} user {self.user}")
         except:
             if not config.sections():
                 # FIXME: Are you sure?
@@ -218,6 +218,7 @@ class Content:
                 serviceD = dst.socialNetwork
             else:
                 serviceD = nameDst
+            logging.debug(f"{self.indent} user... {dst.user}")
             user = src.getUser()
             service = src.getService()
             msgLog = (f"{self.indent} fileNameBase userD: {userD}")

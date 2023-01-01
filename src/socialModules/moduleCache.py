@@ -65,12 +65,20 @@ class moduleCache(Content,Queue):
         logging.info(f"{self.indent} self url {self.url} socialN "
                      f"{self.socialNetwork} user {self.user} "
                      f"nick {self.nick} auxClass {self.auxClass} "
-                     f"client {self.client}")
+                     f"client {self.client} service {self.service}")
         if isinstance(self, socialModules.moduleCache.moduleCache):
             logging.info(f"{self.indent} cache")
             logging.info(f"{self.indent} {src} is not tuple")
             user = self.url
-            service = dst[0].capitalize()
+            if 'slack' in self.url:
+                #FIXME
+                service = 'Slack'
+            elif 'gitter' in self.url:
+                service = 'Gitter'
+            elif 'imgur' in self.url:
+                service = 'Imgur'
+            else:
+                service = self.service.capitalize()
             userD = self.user
             serviceD = self.socialNetwork
             nameDst = self.socialNetwork.capitalize()
@@ -84,7 +92,6 @@ class moduleCache(Content,Queue):
             serviceD = self.socialNetwork
             nameDst = self.socialNetwork.capitalize()
         user = self.url
-        service = dst[0].capitalize()
         userD = self.user
         serviceD = self.socialNetwork
         nameDst = self.socialNetwork.capitalize()
@@ -136,7 +143,6 @@ class moduleCache(Content,Queue):
         self.service = 'Cache'
         msgLog = (f"{self.indent} Connecting {self.service}: {param}")
         logMsg(msgLog, 1, 0)
-        self.nick = None
         self.postaction = 'delete'
 
         self.postsType = 'posts'

@@ -755,11 +755,12 @@ class moduleRules:
 
             msgLog = (f"{indent} readConfigDst apiDst: {apiDst})")
             logMsg(msgLog, 2, 0)
+            logging.debug(f"{self.indent} user {apiDst.user}")
             apiDst.fileName = apiSrc.fileNameBase(apiDst)
             msgLog=f"{indent} .... Eo"
             logMsg(msgLog, 2, 0)
             nick = self.getNick(action)
-            apiDst.setUser(nick)
+            # apiDst.setUser(nick)
             apiDst.setPostsType('posts')
 
         msgLog = (f"{indent} Api dst more: {more}")
