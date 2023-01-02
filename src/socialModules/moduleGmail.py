@@ -96,9 +96,9 @@ class moduleGmail(Content,Queue,socialGoogle):
 
     #             try:
     #                 print(f"fileCred: {fileCredStore}")
-    #                 flow = client.flow_from_clientsecrets(fileCredStore, 
+    #                 flow = client.flow_from_clientsecrets(fileCredStore,
     #                                                      SCOPES)
-    #                 creds = tools.run_flow(flow, store, 
+    #                 creds = tools.run_flow(flow, store,
     #                        tools.argparser.parse_args(args=['--noauth_local_webserver']))
 
     #                 # credentials = run_flow(flow, storage, args)
@@ -292,7 +292,7 @@ class moduleGmail(Content,Queue,socialGoogle):
                         for pp in part['parts']:
                             if 'data' in pp['body']:
                                 mes  = mes + str(base64.urlsafe_b64decode(pp['body']['data']))
-                elif 'data' in part['body']: 
+                elif 'data' in part['body']:
                     print(f"Part body: {part['body']}")
                     mes = mes + str(base64.urlsafe_b64decode(part['body']['data']))
         else:
@@ -569,7 +569,7 @@ class moduleGmail(Content,Queue,socialGoogle):
                        body={'id': str(idPost)}).execute()
             # logging.info("Res: %s" % res)
         except:
-            return(self.report('Gmail', idPost, '', sys.exc_info()))
+            res = self.report('Gmail', idPost, '', sys.exc_info())
 
         return(f"Res: {res}")
 
@@ -710,7 +710,7 @@ class moduleGmail(Content,Queue,socialGoogle):
 
            msgLog = (f"{self.indent} Fail 1! Trying another method.")
            logMsg(msgLog, 3, 0)
-           
+
            try:
                if not isinstance(message,dict):
                    mesGS = BytesParser().parsebytes(message).as_string()
@@ -795,7 +795,7 @@ def main():
                         htm.click(theLink)
                         return
 
- 
+
     testingDrafts = False
     if testingDrafts:
         for key in rules.rules.keys():

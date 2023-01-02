@@ -99,13 +99,13 @@ class Content:
                 msgLog(f"{self.indent} Exception")
                 logMsg(msgLog, 2, 0)
                 if not config.sections and not keys:
-                    self.report({self.service}, "No keys", "", sys.exc_info())
+                    self.report({self.service}, "No keys", "", '')
                 else:
-                    self.report({self.service}, "Some problem", "", sys.exc_info())
+                    self.report({self.service}, "Some problem", "", '')
 
             self.client = client
         else:
-            self.report(self.service, "No keys", "", sys.exc_info())
+            self.report(self.service, "No keys", "", '')
             self.client = None
 
     def getService(self):
@@ -280,16 +280,20 @@ class Content:
         fileName = f"{self.fileNameBase(dst)}.last"
         msgLog = f"{self.indent} fileName {fileName}"
         logMsg(msgLog, 2, 0)
-        with open(fileName, "w") as f:
-            if link:
-                if isinstance(link, bytes):
-                    f.write(link.decode())
-                elif isinstance(link, str):
-                    f.write(link)
-                else:
-                    f.write(link[0])
+        msgLog = checkFile(fileName)
+        if 'OK' in msgLog:
+            with open(fileName, "w") as f:
+                if link:
+                    if isinstance(link, bytes):
+                        f.write(link.decode())
+                    elif isinstance(link, str):
+                        f.write(link)
+                    else:
+                        f.write(link[0])
 
-        self.setLastLink(dst)
+            self.setLastLink(dst)
+        else:
+            logMsg(msgLog, 3, 0)
 
         return f"Updated {msgUpdate}"
 
@@ -398,7 +402,7 @@ class Content:
                 with open(fileNameNext,'wb') as f:
                     pickle.dump((tNow, tSleep), f)
             else:
-                self.report(self.service, msgLog, '', sys.exc_info())
+                self.report(self.service, msgLog, '', '')
         else:
             print(f"Not implemented!")
 
@@ -1416,7 +1420,7 @@ class Content:
 
     def report(self, profile, post, link, data):
         msg = (f"service {self.service} Fail! ",
-               f"Msg: {post}",
+               f"Msg: {post} ",
                f"Link: {link}")
         if data:
             msg = (f"{data}",
@@ -1430,7 +1434,7 @@ class Content:
             msgLog = (f"{self.indent} Service {self.service} "
                       f"{line}")
             logMsg(msgLog, 3, 1)
-            sys.stderr.write(line)
+            # sys.stderr.write(line)
         return f"Fail! {data[1]}"
         # print("----Unexpected error: %s"% data[2])
 

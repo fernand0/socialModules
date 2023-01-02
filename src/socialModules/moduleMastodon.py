@@ -132,19 +132,19 @@ class moduleMastodon(Content, Queue):
             title = f"{self.user}'s {self.service}"
         return title
 
-
     def getPostTitle(self, post):
         result = ''
         # import pprint
         # print(f"post: {post}")
         # pprint.pprint(post)
-        print(f"PPPPPost: {post}")
-        card = post.get('card')
+        card = post.get('card', '')
         if card:
             result = f"{card.get('title')} {card.get('url')}"
+
         if not result:
-            result = post.get('content')
-        print(f"RRRRResult: {result}")
+            result = post.get('content', '')
+        if not result:
+            result = post.get('text', '')
         # soup = BeautifulSoup(result, 'lxml')
         if result.startswith('<'):
             result = result[3:]
@@ -173,7 +173,7 @@ class moduleMastodon(Content, Queue):
         else:
             link = self.getPostUrl(post)
         return link
-        
+
     def extractPostLinks(self, post, linksToAvoid=""):
         return (self.getPostContent(post), self.getPostContentLink(post))
 

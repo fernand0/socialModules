@@ -71,7 +71,7 @@ def getNextTime(blog, socialNetwork):
             tNow, tSleep = pickle.load(f)
         return tNow, tSleep
     else:
-        self.report(self.service, msgLog, '', sys.exc_info())
+        self.report(self.service, msgLog, '', '')
         return 0, 0
 
 def checkFile(fileName):
@@ -92,7 +92,7 @@ def getLastLink(fileName, indent=''):
     timeLast = 0
     msgLog = checkFile(fileNameQ)
     if not "OK" in msgLog:
-        self.report(msgLog, '', '', sys.exc_info())
+        self.report(msgLog, '', '', '')
     else:
         with open(fileName, "rb") as f:
             linkLast = f.read().decode().split()  # Last published
@@ -126,13 +126,15 @@ def newUpdateLastLink(url, link, lastLink, socialNetwork=()):
 
     fileName = fileNamePath(url, socialNetwork) + ".last"
 
-    with open(fileName, "w") as f:
-        if isinstance(link, bytes):
-            f.write(link.decode())
-        elif isinstance(link, str):
-            f.write(link)
-        else:
-            f.write(link[0])
+    msgLog = checkFile(fileName)
+    if 'OK' in msgLog:
+        with open(fileName, "w") as f:
+            if isinstance(link, bytes):
+                f.write(link.decode())
+            elif isinstance(link, str):
+                f.write(link)
+            else:
+                f.write(link[0])
 
 def updateLastLink(url, link, socialNetwork=()):
     try:
@@ -150,13 +152,15 @@ def updateLastLink(url, link, socialNetwork=()):
 
     msgLog = (f"fileName: {fileName}")
     logMsg(msgLog, 2, 0)
-    with open(fileName, "w") as f:
-        if isinstance(link, bytes):
-            f.write(link.decode())
-        elif isinstance(link, str):
-            f.write(link)
-        else:
-            f.write(link[0])
+    msgLog = checkFile(fileName)
+    if 'OK' in msgLog:
+        with open(fileName, "w") as f:
+            if isinstance(link, bytes):
+                f.write(link.decode())
+            elif isinstance(link, str):
+                f.write(link)
+            else:
+                f.write(link[0])
 
 def resizeImage(imgUrl):
     print(imgUrl)

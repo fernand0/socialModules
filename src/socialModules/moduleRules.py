@@ -844,7 +844,7 @@ class moduleRules:
             msgLog = (f"{indent}This is a simmulation")
             logMsg(msgLog, 1, 1)
             resMsg = f"Simulate: {msgLog}\n"
-            post = apiSrc.getNextPost()
+            # post = apiSrc.getNextPost()
             if post:
                 link = apiSrc.getPostLink(post)
                 if link:

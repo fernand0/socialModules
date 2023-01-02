@@ -264,7 +264,13 @@ class moduleTwitter(Content, Queue):
 
     def getPostUrl(self, post):
         idPost = post.get('id_str', '')
-        return f'{self.base_url}/{self.user}/status/{idPost}'
+        msgLog = f"{self.indent} getPostUrl: {post}"
+        logMsg(msgLog, 2, 0)
+        if idPost:
+            res = f'{self.base_url}/{self.user}/status/{idPost}'
+        else:
+            res = ''
+        return res
 
     def getPostLink(self, post):
         # FIXME: Are you sure? (inconsistent)

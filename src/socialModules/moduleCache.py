@@ -323,7 +323,7 @@ class moduleCache(Content,Queue):
                         listP = pickle.load(f)
                     except:
                         msgLog = f"Problem loading data"
-                        self.report(self.service, msgLog, '', sys.exc_info())
+                        self.report(self.service, msgLog, '', '')
             else:
                 self.report(self.service, msgLog, '', '')
         except:
