@@ -232,7 +232,7 @@ class Content:
         else:
             user = src.getUrl()
             service = self.service
-            userD = dst[0]
+            # userD = dst[0]
             serviceD = dst[1]
             nameDst = serviceD.capitalize()
 
