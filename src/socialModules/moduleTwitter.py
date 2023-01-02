@@ -254,7 +254,8 @@ class moduleTwitter(Content, Queue):
 
 
     def getPostTitle(self, post):
-        logging.info(f"Postttt: {post}")
+        msgLog = (f"{self.indent} Postttt: {post}")
+        logMsg(msgLog, 2, 0)
         title = post.get('text')
         if not title:
             title = post.get('full_text')

@@ -78,15 +78,17 @@ class moduleMedium(Content,Queue):
             post = more.get('title','')
             link = more.get('link','')
             mode = more.get('mode','')
+            tags = more.get('tags', [])
         if not mode:
             mode = 'public'
         logging.info("    Publishing in {} ...".format(self.service))
+        logging.info("    with tags {tags}")
         client = self.client
         user = self.getUserRaw()
 
         title = post
         content = comment
-        print(content)
+        # print(content)
         links = ""
 
         # from html.parser import HTMLParser
@@ -95,7 +97,8 @@ class moduleMedium(Content,Queue):
         from html import unescape
         title = unescape(title)
         if link and title:
-            textOrig = 'Publicado originalmente en <a href="%s">%s</a><br />\n\n' % (link, title)
+            textOrig = (f'Publicado originalmente en <a href="{link}">'
+                       f'{title}</a><br />\n\n')
         else:
             textOrig = ''
 
@@ -103,7 +106,7 @@ class moduleMedium(Content,Queue):
             res = client.create_post(user_id=user["id"], title=title,
                 content="<h4>"+title+"</h4><br />"+textOrig+content,
                 canonical_url = link, content_format="html",
-                publish_status=mode)#"public") #draft")
+                publish_status=mode, tags=tags)#"public") #draft")
             logging.debug("Res: %s" % res)
             return(res)
         except:
@@ -144,8 +147,8 @@ class moduleMedium(Content,Queue):
 
 def main():
 
-    logging.basicConfig(stream=sys.stdout, 
-            level=logging.DEBUG, 
+    logging.basicConfig(stream=sys.stdout,
+            level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
     import moduleMedium
@@ -176,7 +179,7 @@ def main():
             print(f"{i}) {tel.getPostTitle(post)} {tel.getPostLink(post)}")
         return
 
- 
+
 
 if __name__ == '__main__':
     main()
