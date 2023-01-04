@@ -1391,10 +1391,10 @@ class Content:
 
     def report(self, profile, post, link, data):
         msg = (f"{profile} failed! ",
-               f"Post: {post}"
-               f"Link: {link}",
-               f"Data error: {data}",
-               f"Unexpected error: {data[0]}",
+               f"Post: {post} "
+               f"Link: {link} ",
+               f"Data error: {data} ",
+               f"Unexpected error: {data[0]} ",
                f"Unexpected error: {data[1]}")
         for line in msg:
             msgLog = (f"{self.indent} Service {self.service} "
