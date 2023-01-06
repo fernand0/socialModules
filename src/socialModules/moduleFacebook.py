@@ -95,7 +95,6 @@ class moduleFacebook(Content,Queue):
         res = reply
         if reply:
             if isinstance(reply, dict) and 'id' in reply:
-                logMsg(msgLog, 2, 0)
                 res = 'https://www.facebook.com/{}'.format(reply['id'])
                 msgLog = ("{self.indent} Link process reply: {res}")
                 logMsg(msgLog, 2, 0)
@@ -132,7 +131,7 @@ class moduleFacebook(Content,Queue):
                                            message=title, link=link)
             except:
                 res = self.report('', res, '', sys.exc_info())
-        res = self.processReply(res)
+        # res = self.processReply(res)
         return res
 
     def publishApiImage(self, postData):

@@ -1423,10 +1423,10 @@ class Content:
                f"Post: {post} "
                f"Link: {link} ")
         if data:
-            msg = (f"{msg} "
-                   f"Data error: {data} ",
-                   f"Unexpected error: {data[0]} ",
-                   f"Unexpected error: {data[1]}")
+               msg = (f"{msg} "
+                      f"Data error: {data} ",
+                      f"Unexpected error: {data[0]} ",
+                      f"Unexpected error: {data[1]}")
         res = ""
         for line in msg:
             msgLog = (f"{self.indent} Service {self.service} "
