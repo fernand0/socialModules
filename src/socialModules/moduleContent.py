@@ -1396,12 +1396,14 @@ class Content:
                f"Data error: {data} ",
                f"Unexpected error: {data[0]} ",
                f"Unexpected error: {data[1]}")
+        res = ""
         for line in msg:
             msgLog = (f"{self.indent} Service {self.service} "
                       f"{line}")
             logMsg(msgLog, 3, 1)
+            res = f"{res}{line}\n"
             sys.stderr.write(line)
-        return f"Fail! {data[1]}"
+        return f"Fail! {res}"
         # print("----Unexpected error: %s"% data[2])
 
     def getPostComment(self, post):

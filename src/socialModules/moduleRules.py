@@ -820,6 +820,8 @@ class moduleRules:
                 resMsg += f" Update: {resUpdate}"
             if ((res and (not 'failed!' in res) and (not 'Fail!' in res))
                 or 
+                (res and ('abusive!' in res))
+                or
                 (((not res) and (not 'OK. Published!' in res))
                 or ('duplicate' in res))):
                 postaction = apiSrc.getPostAction()

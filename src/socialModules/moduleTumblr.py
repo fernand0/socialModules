@@ -134,6 +134,9 @@ class moduleTumblr(Content, Queue):
             except:
                 msgLog = (f"{self.indent} Temporal: error {reply}")
                 logMsg(msgLog, 3, 0)
+        elif 'errors' in reply:
+            res = f"failed! {res.get('errors','')} {reply}"
+
         return res
 
     def publishNextPost(self, apiSrc):
@@ -148,7 +151,7 @@ class moduleTumblr(Content, Queue):
             if post:
                 reply = self.publishApiPost(api=apiSrc, post=post)
             else:
-                reply = "Fail! No posts available"
+                reply = f"Fail! No posts available"
         except:
             reply = self.report(self.service, apiSrc, sys.exc_info())
 

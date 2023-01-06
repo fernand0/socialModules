@@ -90,12 +90,14 @@ class moduleFacebook(Content,Queue):
     def processReply(self, reply):
         res = reply
         if reply:
-            msgLog = (f"{self.indent} Res: {reply}")
-            logMsg(msgLog, 2, 0)
-            if 'id' in reply:
+            if isinstance(reply, dict) and 'id' in reply:
+                logMsg(msgLog, 2, 0)
                 res = 'https://www.facebook.com/{}'.format(reply['id'])
                 msgLog = ("{self.indent} Link process reply: {res}")
                 logMsg(msgLog, 2, 0)
+            elif 'reported as abusive' in reply:
+                res = f"abusive! {res}"
+
         return(res)
 
     def publishApiPost(self, *args, **kwargs):
@@ -119,11 +121,14 @@ class moduleFacebook(Content,Queue):
         if not self.page:
             self.setPage(self.user)
 
-        # logging.debug(f"... {self.page} .... {self.user}")
-
         res = "Fail!"
         if (not isinstance(self.page, str)):
-            res = self.page.put_object('me', "feed", message=title, link=link)
+            try:
+                res = self.page.put_object('me', "feed", 
+                                           message=title, link=link)
+            except:
+                res = self.report('', res, '', sys.exc_info())
+        res = self.processReply(res)
         return res
 
     def publishApiImage(self, postData):
