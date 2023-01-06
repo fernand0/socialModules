@@ -297,10 +297,9 @@ class moduleTwitter(Content, Queue):
                 if 'expanded_url' in post['entities']['urls'][0]:
                     result = post['entities']['urls'][0]['expanded_url']
             elif ('full_text' in post) and ('http' in post['full_text']):
-                print("Sí")
                 pos = post['full_text'].find('http')
                 posF = post['full_text'].find(' ', pos + 1)
-                result = post['full_text'][pos:posF]
+                result = post['full_text'][pos:posF+1]
         elif ('url' in post['user']['entities']['url']
               and (post['user']['entities']['url']['urls'])):
             result = post['user']['entities']['url']['urls'][0]['expanded_url']

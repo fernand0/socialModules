@@ -1419,23 +1419,20 @@ class Content:
         return (soup.get_text().strip("\n"), theSummaryLinks)
 
     def report(self, profile, post, link, data):
-        msg = (f"service {self.service} Fail! ",
-               f"Msg: {post} ",
-               f"Link: {link}")
-        if data:
-            msg = (f"{data}",
-               f"Data error: {data}",
-               f"Unexpected error: {data[0]}",
+        msg = (f"{profile} failed! ",
+               f"Post: {post} "
+               f"Link: {link} ",
+               f"Data error: {data} ",
+               f"Unexpected error: {data[0]} ",
                f"Unexpected error: {data[1]}")
-        else:
-            #FIXME
-            data = (post, '','')
+        res = ""
         for line in msg:
             msgLog = (f"{self.indent} Service {self.service} "
                       f"{line}")
             logMsg(msgLog, 3, 1)
-            # sys.stderr.write(line)
-        return f"Fail! {data[1]}"
+            res = f"{res}{line}\n"
+            sys.stderr.write(line)
+        return f"Fail! {res}"
         # print("----Unexpected error: %s"% data[2])
 
     def getPostComment(self, post):

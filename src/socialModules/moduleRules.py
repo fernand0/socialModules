@@ -890,12 +890,15 @@ class moduleRules:
                     resMsg += f" Post Action: {resPost}"
             if (nextPost and (not 'No posts available' in res) and
                     ((not res) or ('SAVELINK' in res) or
-                     not ('Fail!' in res))):
+                     not ('Fail!' in res) or not ('failed!' in res))):
                 resUpdate = apiSrc.updateLastLink(apiDst, '')
                 resMsg += f" Update: {resUpdate}"
-            if (((not res) and (not 'OK. Published!' in res))
-                or ('SAVELINK' in res) or not ('Fail!' in res)
-                    or not( 'Duplicate' in res)):
+            if ((res and (not 'failed!' in res) and (not 'Fail!' in res))
+                or
+                (res and ('abusive!' in res))
+                or
+                (((not res) and (not 'OK. Published!' in res))
+                or ('duplicate' in res))):
                 postaction = apiSrc.getPostAction()
                 if postaction:
                     msgLog = (f"{indent}Post Action {postaction}")
@@ -1158,8 +1161,7 @@ class moduleRules:
                 actions = self.rules[src]
 
                 # print(f"Select: {select} - {src[0]}{i}")
-                if (select
-                    and (select.lower() != f"{self.getNameR(src).lower()}{i}")):
+                if (select and (select.lower() != f"{self.getNameR(src).lower()}{i}")):
                     actionMsg = f"Skip."
                 else:
                     actionMsg = (f"Scheduling.")
