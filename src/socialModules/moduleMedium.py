@@ -81,7 +81,7 @@ class moduleMedium(Content,Queue):
             tags = more.get('tags', [])
         if not mode:
             mode = 'public'
-        logging.info("    Publishing in {} ...".format(self.service))
+        logging.info(f"    Publishing in {self.service} ...")
         logging.info(f"    with tags {tags}")
         client = self.client
         user = self.getUserRaw()
