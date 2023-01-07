@@ -56,7 +56,7 @@ class moduleCache(Content,Queue):
         # msgLog = (f"{self.indent} fileNameBase is {isinstance(self, socialModules.moduleSlack.moduleSlack)}")
         # logMsg(msgLog, 2, 0)
         if hasattr(self, 'fileName') and self.fileName:
-            msgLog = f"{self.indent} has fileName attr"
+            msgLog = f"{self.indent} has fileName attr {self.fileName}"
             logMsg(msgLog, 2, 0)
             return self.fileName
         src = self
@@ -150,7 +150,7 @@ class moduleCache(Content,Queue):
         self.socialNetwork = param[1][2]
         self.user = param[1][3]
         self.nick = param[1][3]
-        self.auxClass = self.socialNetwork
+        self.auxClass = param[0]
         self.fileName = self.fileNameBase((self.socialNetwork, self.nick))
         fileNameQ = f"{self.fileName}.queue"
         msgLog = checkFile(fileNameQ)

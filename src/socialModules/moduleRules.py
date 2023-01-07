@@ -681,13 +681,25 @@ class moduleRules:
         return self.getActionComponent(action, 0)
 
     def getType(self, action):
-        return self.getActionComponent(action, 1)
+        if isinstance(self.getActionComponent(action, 2), tuple):
+            action = self.getActionComponent(action, 0)
+        else:
+            action = self.getActionComponent(action, 1)
+        return action
 
     def getProfile(self, action):
-        return self.getActionComponent(action, 2)
+        if isinstance(self.getActionComponent(action, 2), tuple):
+            profile = self.getActionComponent(self.getActionComponent(action, 2), 2)
+        else:
+            profile =self.getActionComponent(action, 2)
+        return profile
 
     def getNick(self, action):
-        return self.getActionComponent(action, 3)
+        if isinstance(self.getActionComponent(action, 2), tuple):
+            nick = self.getActionComponent(self.getActionComponent(action, 2), 3)
+        else:
+            nick = self.getActionComponent(action, 3)
+        return nick
 
     def readConfigDst(self, indent, action, more, apiSrc):
         msgLog = (f"{indent} readConfigDst Action: {action}")
@@ -970,11 +982,12 @@ class moduleRules:
         # print(f"Srcccc: {apiSrc.getNick()}")
         # return
         if (apiSrc.getHold() == 'yes'):
+            # FIXME Maybe befour lanuching the subprocess?
             time.sleep(1)
             msgHold = f"{indent} In hold"
             logging.info(msgHold)
             return msgHold
-        if not apiSrc.getClient():
+        elif not apiSrc.getClient():
             msgLog = (f"{indent} Error. No client for {self.getProfileR(src)} ({self.getNick(src)})")
             logMsg(msgLog, 3, 1)
             return f"{msgLog} End."
