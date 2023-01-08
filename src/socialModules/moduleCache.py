@@ -46,6 +46,9 @@ class moduleCache(Content,Queue):
             logMsg(msgLog, 2, 0)
             return self.service
 
+    def getPostsType(self):
+        return 'cache'
+
     def fileNameBase(self, dst):
         msgLog = (f"{self.indent} fileNameBase src: {self}")
         logMsg(msgLog, 2, 0)
@@ -285,6 +288,9 @@ class moduleCache(Content,Queue):
     def setApiDrafts(self):
         msgLog = f"{self.indent} setApiDrafts"
         # Every cache is the same, even the origin are drafts ??
+        return(self.setApiPosts())
+
+    def setApiCache(self):
         return(self.setApiPosts())
 
     def setApiPosts(self):

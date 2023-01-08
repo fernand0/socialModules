@@ -394,16 +394,18 @@ class moduleRules:
         myKeys = {}
         myIniKeys = []
         # for i, src in enumerate(srcs):
-        for i, src in enumerate(ruls.keys()):
+        for i, src in enumerate(rulesNew.keys()):
             if not src:
                 continue
             iniK, nameK = self.getIniKey(self.getNameR(src), myKeys, myIniKeys)
             if not (iniK in available):
                 available[iniK] = {"name": self.getNameR(src),
                                    "data": [], "social": []}
-                available[iniK]["data"] = [{'src': src[1:], 'more': more[i]}]
+                # available[iniK]["data"] = [{'src': src[1:], 'more': more[i]}]
+                available[iniK]["data"] = [{'src': src, 'more': more[i]}]
             else:
-                available[iniK]["data"].append({'src': src[1:],
+                # available[iniK]["data"].append({'src': src[1:],
+                available[iniK]["data"].append({'src': src,
                                                 'more': more[i]})
             # srcC = (src[0], "set", src[1], src[2])
             # if srcC not in ruls:
@@ -620,6 +622,8 @@ class moduleRules:
         return self.getRuleComponent(rule, 3)
 
     def readConfigSrc(self, indent, src, more):
+        msgLog = f"{indent} readConfigSrc: {src}"
+        logMsg(msgLog, 2, 0)
         msgLog = f"{indent} readConfigSrc: {self.getProfileR(src)}"
         logMsg(msgLog, 2, 0)
         # msgLog = f"{indent} readConfigSrc More: Src {more}"
