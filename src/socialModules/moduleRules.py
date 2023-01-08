@@ -259,6 +259,8 @@ class moduleRules:
                                         #           f"{fromSrv} ")
                                         # logMsg(msgLog, 2, 0)
 
+            msgLog = f"{self.indent} Mor: {mor}"
+            logMsg(msgLog, 2, 0)
             msgLog = f"{self.indent} MoreS: {moreS}"
             logMsg(msgLog, 2, 0)
             msgLog = f"{self.indent} From: {fromSrv}"
@@ -327,7 +329,9 @@ class moduleRules:
                                                  key, moreS[key])
                                 if not (fromCacheNew in rulesNew):
                                     rulesNew[fromCacheNew] = []
+                                    mor[fromCacheNew] = []
                                 rulesNew[fromCacheNew].append(destRuleCache)
+                                mor[fromCacheNew].append(moreS)
                                 # print(f"fromCache: {fromCache}")
                                 # print(f"fromCacheNew: {fromCacheNew}")
                                 # print(f"destRule: {destRule}")
