@@ -259,14 +259,12 @@ class moduleRules:
                                         #           f"{fromSrv} ")
                                         # logMsg(msgLog, 2, 0)
 
-            self.indent = f"{self.indent[1:]}"
             msgLog = f"{self.indent} MoreS: {moreS}"
             logMsg(msgLog, 2, 0)
             msgLog = f"{self.indent} From: {fromSrv}"
             logMsg(msgLog, 2, 0)
             orig = None
             dest = None
-            self.indent = f" {self.indent}"
             for key in moreS.keys():
                 if key == 'service':
                     service = moreS[key]

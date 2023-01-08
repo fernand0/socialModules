@@ -90,7 +90,7 @@ def getLastLink(fileName, indent=''):
     logMsg(msgLog, 2, 0)
     linkLast = ''
     timeLast = 0
-    msgLog = checkFile(fileNameQ)
+    msgLog = checkFile(fileName)
     if not "OK" in msgLog:
         self.report(msgLog, '', '', '')
     else:

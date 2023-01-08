@@ -56,19 +56,19 @@ class moduleCache(Content,Queue):
         # msgLog = (f"{self.indent} fileNameBase is {isinstance(self, socialModules.moduleSlack.moduleSlack)}")
         # logMsg(msgLog, 2, 0)
         if hasattr(self, 'fileName') and self.fileName:
-            msgLog = f"{self.indent} has fileName attr {self.fileName}"
-            logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent} has fileName attr {self.fileName}"
+            # logMsg(msgLog, 2, 0)
             return self.fileName
         src = self
         nameSrc = 'Cache'
         typeSrc = typeDst = 'posts'
-        logging.info(f"{self.indent} self url {self.url} socialN "
-                     f"{self.socialNetwork} user {self.user} "
-                     f"nick {self.nick} auxClass {self.auxClass} "
-                     f"client {self.client} service {self.service}")
+        # logging.info(f"{self.indent} self url {self.url} socialN "
+        #              f"{self.socialNetwork} user {self.user} "
+        #              f"nick {self.nick} auxClass {self.auxClass} "
+        #              f"client {self.client} service {self.service}")
         if isinstance(self, socialModules.moduleCache.moduleCache):
-            logging.info(f"{self.indent} cache")
-            logging.info(f"{self.indent} {src} is not tuple")
+            # logging.info(f"{self.indent} cache")
+            # logging.info(f"{self.indent} {src} is not tuple")
             user = self.url
             if 'slack' in self.url:
                 #FIXME
@@ -83,7 +83,7 @@ class moduleCache(Content,Queue):
             serviceD = self.socialNetwork
             nameDst = self.socialNetwork.capitalize()
         elif isinstance(dst, tuple):
-            logging.info(f"{self.indent} tuple {dst}")
+            # logging.info(f"{self.indent} tuple {dst}")
             #FIXME
             user = self.url
             # service = dst[0][0].capitalize()

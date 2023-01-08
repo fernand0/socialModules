@@ -140,6 +140,7 @@ class moduleTumblr(Content, Queue):
         return res
 
     def publishNextPost(self, apiSrc):
+        #FIXME: duplicate?
         # We just store the post, we need more information than the title,
         # link and so on.
         reply = ''

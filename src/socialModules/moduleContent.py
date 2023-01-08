@@ -411,10 +411,13 @@ class Content:
         if dst:
             fileNameNext = f"{self.fileNameBase(dst)}.timeNext"
             msgLog = checkFile(fileNameNext)
+            logMsg(f"{self.indent} fileNameNext: {msgLog}", 2, 0)
             if 'OK' in msgLog:
+                logging.debug(f"{self.indent} OK fileNext")
                 with open(fileNameNext,'wb') as f:
                     pickle.dump((tNow, tSleep), f)
             else:
+                logging.debug(f"{self.indent} not OK fileNext")
                 self.report('', msgLog, '', '')
         else:
             msgLog = (f"Not implemented!")
