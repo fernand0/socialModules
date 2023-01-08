@@ -22,7 +22,7 @@ class socialGoogle:
         self.setClient(Acc)
 
     def getKeys(key, config):
-        return (())
+        return ('keys')
 
     def authorize(self):
         # based on Code from

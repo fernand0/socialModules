@@ -53,6 +53,8 @@ class moduleGmail(Content,Queue,socialGoogle):
     #     return (())
 
     def initApi(self, keys):
+        msgLog = f"{self.indent} initApi moduleGmail"
+        logMsg(msgLog, 2, 0)
         self.service = "Gmail"
         self.nick = None
         self.scopes = ['https://www.googleapis.com/auth/gmail.modify']

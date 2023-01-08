@@ -329,9 +329,8 @@ class moduleRules:
                                                  key, moreS[key])
                                 if not (fromCacheNew in rulesNew):
                                     rulesNew[fromCacheNew] = []
-                                    mor[fromCacheNew] = []
                                 rulesNew[fromCacheNew].append(destRuleCache)
-                                mor[fromCacheNew].append(moreS)
+                                mor[fromCacheNew] = moreS
                                 # print(f"fromCache: {fromCache}")
                                 # print(f"fromCacheNew: {fromCacheNew}")
                                 # print(f"destRule: {destRule}")
