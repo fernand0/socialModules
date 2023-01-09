@@ -897,13 +897,30 @@ class Content:
                 msgLog = (f"{self.indent} Service {self.service} post Id "
                           f"post {idPost}")
                 logMsg(msgLog, 2, 0)
+                msgLog = (f"{self.indent} Service {self.service} post Id "
+                          f"has {hasattr(self, 'getPostsType')}")
+                logMsg(msgLog, 2, 0)
+                msgLog = (f"{self.indent} Service {self.service} post Id "
+                          f"has {self.getPostsType()}")
+                logMsg(msgLog, 2, 0)
+                lalala = f'deleteApi{self.getPostsType().capitalize()}'
+                msgLog = (f"{self.indent} Service {self.service} post Id "
+                          f"has 2 {hasattr(self, lalala)}")
+                logMsg(msgLog, 2, 0)
                 if (hasattr(self, 'getPostsType')
                     and (self.getPostsType())
                     and (hasattr(self,
                             f"deleteApi{self.getPostsType().capitalize()}"))):
+
                     nameMethod = self.getPostsType().capitalize()
 
+                    msgLog = (f"{self.indent} Service {self.service} post Id " 
+                              f"nameMethod {nameMethod}")
+                    logMsg(msgLog, 2, 0)
                     method = getattr(self, f"deleteApi{nameMethod}")
+                    msgLog = (f"{self.indent} Service {self.service} post Id " 
+                              f"method {method}")
+                    logMsg(msgLog, 2, 0)
                     res = method(idPost)
                     reply = self.processReply(res)
             else:

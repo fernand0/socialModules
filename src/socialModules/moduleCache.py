@@ -715,6 +715,12 @@ class moduleCache(Content,Queue):
                 idPost = self.getLinkPosition(link)
         return idPost
 
+    def deleteApiCache(self, idPost):
+        # In caches drafts == posts
+        # There is a problem because the origin is a draft in some cases and
+        # posts in others. #FIXME ?
+        return self.deleteApiPosts(idPost)
+
     def deleteApiDrafts(self, idPost):
         # In caches drafts == posts
         # There is a problem because the origin is a draft in some cases and
