@@ -457,10 +457,12 @@ class moduleRules:
                               f"{selector3}")
                 more = self.more[src]
                 srcR = src
+                logging.debug(f"profileR: {self.getProfileR(src)}")
                 if not selector2:
                     break
                 else:
-                    if (selector2 in self.getProfileR(src)):
+                    if (selector2 in str(self.getProfileR(src))):
+                        #FIXME: ??
                         logging.debug(f"Second Selector: {selector2}")
                         if not selector3:
                             break

@@ -357,12 +357,12 @@ class moduleCache(Content,Queue):
             num = 0
         return num
 
-    # def getPosNextPost(self):
-    #     # cache always shows the first item
-    #     # Some standard contition?
+    def getPosNextPost(self):
+        # cache always shows the first item
+        # Some standard contition?
 
-    #     posLast = 1
-    #     return posLast
+        posLast = 1
+        return posLast
 
     def getHoursSchedules(self, command=None):
         return self.schedules[0].hour.render()

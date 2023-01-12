@@ -272,7 +272,7 @@ def main():
 
     import socialModules.moduleTumblr
 
-    t = moduleTumblr.moduleTumblr()
+    t = socialModules.moduleTumblr.moduleTumblr()
 
     t.setClient('fernand0')
 

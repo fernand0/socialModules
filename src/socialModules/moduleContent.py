@@ -723,7 +723,7 @@ class Content:
                 else:
                     posLast = len(posts)
 
-            msgLog = f"{self.indent} postLast: {posLast}"
+            msgLog = f"{self.indent} posLast: {posLast}"
             logMsg(msgLog, 2, 0)
         return posLast
 

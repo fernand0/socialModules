@@ -1345,61 +1345,61 @@ class moduleImap(Content, Queue):
 
         return posts
 
-    def publishApiPost(self, *args, **kwargs):
-        if args and len(args) == 3:
-            # logging.info(f"Tittt: args: {args}")
-            post, link, comment = args
-        if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
-            more = kwargs
-            # FIXME: We need to do something here
-            post = more.get('post', '')
-            api = more.get('api', '')
-            # logging.info(f"Post: {post}")
-            idPost = api.getPostId(post)
-            # logging.info(f"Postt: {post['meta']}")
-            # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]
-            idPost = post['list']['id'] #[1:-1]
-            # logging.info(f"Post id: {idPost}")
-        res = 'Fail!'
-        try: 
-            destaddr = self.user 
-            toaddrs = self.user 
-            fromaddr = self.user 
-            smtpsrv  = 'localhost' 
-            theUrl = link
-            subject = post.split('\n')[0]
+    # def publishApiPost(self, *args, **kwargs):
+    #     if args and len(args) == 3:
+    #         # logging.info(f"Tittt: args: {args}")
+    #         post, link, comment = args
+    #     if kwargs:
+    #         # logging.info(f"Tittt: kwargs: {kwargs}")
+    #         more = kwargs
+    #         # FIXME: We need to do something here
+    #         post = more.get('post', '')
+    #         api = more.get('api', '')
+    #         # logging.info(f"Post: {post}")
+    #         idPost = api.getPostId(post)
+    #         # logging.info(f"Postt: {post['meta']}")
+    #         # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]
+    #         idPost = post['list']['id'] #[1:-1]
+    #         # logging.info(f"Post id: {idPost}")
+    #     res = 'Fail!'
+    #     try: 
+    #         destaddr = self.user 
+    #         toaddrs = self.user 
+    #         fromaddr = self.user 
+    #         smtpsrv  = 'localhost' 
+    #         theUrl = link
+    #         subject = post.split('\n')[0]
 
-            msg = MIMEMultipart() 
-            msg['From']    = fromaddr 
-            msg['To']      = destaddr 
-            msg['Date']    = time.asctime(time.localtime(time.time())) 
-            msg['X-URL']   = theUrl 
-            msg['X-print'] = theUrl 
-            msg['Subject'] = subject 
-            htmlDoc = (f"Title: {subject} \n\n" 
-                       f"Url: {link} \n\n"
-                       f"{post}") 
-            adj = MIMEApplication(htmlDoc) 
-            encoders.encode_base64(adj) 
-            name = 'notumblr'
-            ext = '.html'
-            adj.add_header('Content-Disposition', 
-                               'attachment; filename="%s"' % name+ext)
+    #         msg = MIMEMultipart() 
+    #         msg['From']    = fromaddr 
+    #         msg['To']      = destaddr 
+    #         msg['Date']    = time.asctime(time.localtime(time.time())) 
+    #         msg['X-URL']   = theUrl 
+    #         msg['X-print'] = theUrl 
+    #         msg['Subject'] = subject 
+    #         htmlDoc = (f"Title: {subject} \n\n" 
+    #                    f"Url: {link} \n\n"
+    #                    f"{post}") 
+    #         adj = MIMEApplication(htmlDoc) 
+    #         encoders.encode_base64(adj) 
+    #         name = 'notumblr'
+    #         ext = '.html'
+    #         adj.add_header('Content-Disposition', 
+    #                            'attachment; filename="%s"' % name+ext)
 
-            msg.attach(adj)
-            msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n"))
-            server = smtplib.SMTP(smtpsrv)
-            server.connect(smtpsrv, 587)
-            server.starttls()
+    #         msg.attach(adj)
+    #         msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n"))
+    #         server = smtplib.SMTP(smtpsrv)
+    #         server.connect(smtpsrv, 587)
+    #         server.starttls()
 
-            server.sendmail(fromaddr, toaddrs, msg.as_string())
-            server.quit()
+    #         server.sendmail(fromaddr, toaddrs, msg.as_string())
+    #         server.quit()
 
-        except:
-            res = self.report(self.service, '', '', sys.exc_info())
+    #     except:
+    #         res = self.report(self.service, '', '', sys.exc_info())
 
-        return(f"Res: {res}")
+    #     return(f"Res: {res}")
 
 
 def main():
