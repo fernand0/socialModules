@@ -50,10 +50,10 @@ class moduleCache(Content,Queue):
         return 'cache'
 
     def fileNameBase(self, dst):
-        msgLog = (f"{self.indent} fileNameBase src: {self}")
-        logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent} fileNameBase dst: {dst}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} fileNameBase src: {self}")
+        # logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} fileNameBase dst: {dst}")
+        # logMsg(msgLog, 2, 0)
         # msgLog = (f"{self.indent} fileNameBase is {isinstance(self, socialModules.moduleCache.moduleCache)}")
         # logMsg(msgLog, 2, 0)
         # msgLog = (f"{self.indent} fileNameBase is {isinstance(self, socialModules.moduleSlack.moduleSlack)}")
@@ -158,7 +158,7 @@ class moduleCache(Content,Queue):
         fileNameQ = f"{self.fileName}.queue"
         msgLog = checkFile(fileNameQ)
         if not 'OK' in msgLog:
-            #with open(fileNameQ, "w") as f: 
+            #with open(fileNameQ, "w") as f:
             msgLog = (f"File {fileNameQ} does not exist. "
                       f"I'll need to create it.")
             logMsg(msgLog, 3, 0)
@@ -863,26 +863,33 @@ def main():
             level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
+    import socialModules.moduleCache
+    import socialModules.moduleRules
+    rules = socialModules.moduleRules.moduleRules()
+    rules.checkRules()
+
     testingPosts = True
     if testingPosts:
-        import socialModules.moduleCache
-        import socialModules.moduleRules
-        rules = socialModules.moduleRules.moduleRules()
-        rules.checkRules()
         print("Testing Posts")
-        src, more = rules.selectRule('cache', 'twitter')
-        print(f"Src: {src}")
-        print(f"More: {more}")
+        i = 0
+        caches = []
+        for rul in rules.rules.keys():
+            if rul[0] == 'cache':
+                print(f"{i}) {rul}")
+                caches.append(rul)
+                i = i + 1
+        sel = int(input(f"Which one? "))
+        src = caches[sel]
+        more = rules.more[src]
         indent = ""
         apiSrc = rules.readConfigSrc(indent, src, more)
 
         cmd = getattr(apiSrc, 'setApiPosts')
-        print(cmd)
         posts = cmd
-        print(posts)
         posts = cmd()
-        print(posts)
-        sys.exit()
+        for i, post in enumerate(posts):
+            print(f"{i}) {apiSrc.getPostTitle(post)}")
+        return
         apiSrc.setPosts()
         for i, post in enumerate(apiSrc.getPosts()):
             print(f"{i}) {apiSrc.getPostTitle(post)}")

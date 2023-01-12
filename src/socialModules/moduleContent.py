@@ -181,7 +181,7 @@ class Content:
         # msgLog = (f"{self.indent} Cmd: {cmd}")
         # logMsg(msgLog, 2, 0)
         posts = cmd()
-        msgLog = (f"{self.indent} Posts: {posts}")
+        msgLog = (f"{self.indent} service {self.service} Posts: {posts}")
         logMsg(msgLog, 2, 0)
         self.assignPosts(posts)
         msgLog = f"{self.indent} service {self.service} End setPosts"
@@ -200,8 +200,8 @@ class Content:
         return url
 
     def fileNameBase(self, dst):
-        msgLog = (f"{self.indent} fileNameBase src: {self}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} fileNameBase src: {self}")
+        # logMsg(msgLog, 2, 0)
         src = self
         nameSrc = type(src).__name__
         if 'module' in nameSrc:
@@ -211,24 +211,23 @@ class Content:
         nameDst = type(dst).__name__
         if 'module' in nameDst:
             nameDst = nameDst[len('module'):]
-            msgLog = (f"{self.indent} fileNameBase module Dst: {nameDst}")
-            logMsg(msgLog, 2, 0)
+            # msgLog = (f"{self.indent} fileNameBase module Dst: {nameDst}")
+            # logMsg(msgLog, 2, 0)
             userD = dst.getUser()
             if hasattr(dst, 'socialNetwork'):
                 serviceD = dst.socialNetwork
             else:
                 serviceD = nameDst
-            logging.debug(f"{self.indent} user... {dst.user}")
             user = src.getUser()
             service = src.getService()
-            msgLog = (f"{self.indent} fileNameBase userD: {userD}")
-            logMsg(msgLog, 2, 0)
-            msgLog = (f"{self.indent} fileNameBase serviceD: {serviceD}")
-            logMsg(msgLog, 2, 0)
-            msgLog = (f"{self.indent} fileNameBase user: {user}")
-            logMsg(msgLog, 2, 0)
-            msgLog = (f"{self.indent} fileNameBase service: {service}")
-            logMsg(msgLog, 2, 0)
+            # msgLog = (f"{self.indent} fileNameBase userD: {userD}")
+            # logMsg(msgLog, 2, 0)
+            # msgLog = (f"{self.indent} fileNameBase serviceD: {serviceD}")
+            # logMsg(msgLog, 2, 0)
+            # msgLog = (f"{self.indent} fileNameBase user: {user}")
+            # logMsg(msgLog, 2, 0)
+            # msgLog = (f"{self.indent} fileNameBase service: {service}")
+            # logMsg(msgLog, 2, 0)
         else:
             user = src.getUrl()
             service = self.service
@@ -282,18 +281,19 @@ class Content:
         logMsg(msgLog, 2, 0)
         msgLog = checkFile(fileName)
         if not 'OK' in msgLog:
-            msgLog = (f"File {fileName} does not exist. ")
+            msgLog = (f"File {fileName} does not exist. "
+                      f"I'm going to create it.")
             logMsg(msgLog, 3, 0)
-            with open(fileName, "w") as f:
-                if link:
-                    if isinstance(link, bytes):
-                        f.write(link.decode())
-                    elif isinstance(link, str):
-                        f.write(link)
-                    else:
-                        f.write(link[0])
+        with open(fileName, "w") as f:
+            if link:
+                if isinstance(link, bytes):
+                    f.write(link.decode())
+                elif isinstance(link, str):
+                    f.write(link)
+                else:
+                    f.write(link[0])
 
-            self.setLastLink(dst)
+        self.setLastLink(dst)
 
         return f"Updated {msgUpdate}"
 
@@ -412,13 +412,14 @@ class Content:
             fileNameNext = f"{self.fileNameBase(dst)}.timeNext"
             msgLog = checkFile(fileNameNext)
             logMsg(f"{self.indent} fileNameNext: {msgLog}", 2, 0)
-            if 'OK' in msgLog:
-                logging.debug(f"{self.indent} OK fileNext")
-                with open(fileNameNext,'wb') as f:
-                    pickle.dump((tNow, tSleep), f)
-            else:
-                logging.debug(f"{self.indent} not OK fileNext")
+            if not 'OK' in msgLog:
+                msgLog = (f"File {fileNameNext} does not exist. "
+                          f"I'm going to create it.")
                 self.report('', msgLog, '', '')
+            with open(fileNameNext,'wb') as f:
+                pickle.dump((tNow, tSleep), f)
+            msgLog = (f"File {fileNameNext} created. ")
+            logMsg(msgLog, 2, 0)
         else:
             msgLog = (f"Not implemented!")
             logMsg(msgLog, 3, 0)
@@ -722,7 +723,7 @@ class Content:
                 else:
                     posLast = len(posts)
 
-            msgLog = f"{self.indent} postLast: {postLast}"
+            msgLog = f"{self.indent} postLast: {posLast}"
             logMsg(msgLog, 2, 0)
         return posLast
 
@@ -921,11 +922,11 @@ class Content:
 
                     nameMethod = self.getPostsType().capitalize()
 
-                    msgLog = (f"{self.indent} Service {self.service} post Id " 
+                    msgLog = (f"{self.indent} Service {self.service} post Id "
                               f"nameMethod {nameMethod}")
                     logMsg(msgLog, 2, 0)
                     method = getattr(self, f"deleteApi{nameMethod}")
-                    msgLog = (f"{self.indent} Service {self.service} post Id " 
+                    msgLog = (f"{self.indent} Service {self.service} post Id "
                               f"method {method}")
                     logMsg(msgLog, 2, 0)
                     res = method(idPost)
