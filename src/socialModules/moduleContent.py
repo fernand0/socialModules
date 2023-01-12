@@ -246,10 +246,10 @@ class Content:
         else:
             typeDst = 'posts'
 
-        msgLog = (f"{self.indent} fileNameBase typeSrc: {typeSrc}")
-        logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent} fileNameBase typeDst: {typeDst}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} fileNameBase typeSrc: {typeSrc}")
+        # logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} fileNameBase typeDst: {typeDst}")
+        # logMsg(msgLog, 2, 0)
         # print(f"user: {user}")
         # if not user:
         #     user = dst.getUrl()
@@ -281,7 +281,9 @@ class Content:
         msgLog = f"{self.indent} fileName {fileName}"
         logMsg(msgLog, 2, 0)
         msgLog = checkFile(fileName)
-        if 'OK' in msgLog:
+        if not 'OK' in msgLog:
+            msgLog = (f"File {fileName} does not exist. ")
+            logMsg(msgLog, 3, 0)
             with open(fileName, "w") as f:
                 if link:
                     if isinstance(link, bytes):
@@ -292,8 +294,6 @@ class Content:
                         f.write(link[0])
 
             self.setLastLink(dst)
-        else:
-            logMsg(msgLog, 3, 0)
 
         return f"Updated {msgUpdate}"
 
@@ -706,17 +706,24 @@ class Content:
 
         if posts and (len(posts) > 0):
             if self.getPostsType() in ['favs', 'queue']:
+                msgLog = f"{self.indent} favs, queue"
+                logMsg(msgLog, 2, 0)
                 # This is not the correct condition, it should be independent
                 # of social network
                 posLast = 1
             else:
+                msgLog = f"{self.indent} others"
+                logMsg(msgLog, 2, 0)
                 lastLink = self.getLastLinkPublished()
-                # print(f"lastLink: {lastLink}")
+                msgLog = f"{self.indent} lastLink: {lastLink}"
+                logMsg(msgLog, 2, 0)
                 if lastLink:
                     posLast = self.getLinkPosition(lastLink)
                 else:
                     posLast = len(posts)
 
+            msgLog = f"{self.indent} postLast: {postLast}"
+            logMsg(msgLog, 2, 0)
         return posLast
 
     def getNumNextPosts(self, num):

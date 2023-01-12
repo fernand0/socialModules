@@ -16,8 +16,15 @@ import re
 import ssl
 import sys
 import time
+from email import encoders
 from email.header import Header, decode_header
 from email.parser import BytesParser
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
+from email.mime.text import MIMEText
+
+import smtplib
+#FIXME should we have another module?
 
 import click
 import dateutil
@@ -1300,8 +1307,6 @@ class moduleImap(Content, Queue):
 
         return None, None
 
-
-
     def listMessages(self, M, folder):
         # List the headers of all e-mails in a folder
         posts = []
@@ -1340,6 +1345,63 @@ class moduleImap(Content, Queue):
 
         return posts
 
+    def publishApiPost(self, *args, **kwargs):
+        if args and len(args) == 3:
+            # logging.info(f"Tittt: args: {args}")
+            post, link, comment = args
+        if kwargs:
+            # logging.info(f"Tittt: kwargs: {kwargs}")
+            more = kwargs
+            # FIXME: We need to do something here
+            post = more.get('post', '')
+            api = more.get('api', '')
+            # logging.info(f"Post: {post}")
+            idPost = api.getPostId(post)
+            # logging.info(f"Postt: {post['meta']}")
+            # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]
+            idPost = post['list']['id'] #[1:-1]
+            # logging.info(f"Post id: {idPost}")
+        res = 'Fail!'
+        try: 
+            destaddr = self.user 
+            toaddrs = self.user 
+            fromaddr = self.user 
+            smtpsrv  = 'localhost' 
+            theUrl = link
+            subject = post.split('\n')[0]
+
+            msg = MIMEMultipart() 
+            msg['From']    = fromaddr 
+            msg['To']      = destaddr 
+            msg['Date']    = time.asctime(time.localtime(time.time())) 
+            msg['X-URL']   = theUrl 
+            msg['X-print'] = theUrl 
+            msg['Subject'] = subject 
+            htmlDoc = (f"Title: {subject} \n\n" 
+                       f"Url: {link} \n\n"
+                       f"{post}") 
+            adj = MIMEApplication(htmlDoc) 
+            encoders.encode_base64(adj) 
+            name = 'notumblr'
+            ext = '.html'
+            adj.add_header('Content-Disposition', 
+                               'attachment; filename="%s"' % name+ext)
+
+            msg.attach(adj)
+            msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n"))
+            server = smtplib.SMTP(smtpsrv)
+            server.connect(smtpsrv, 587)
+            server.starttls()
+
+            server.sendmail(fromaddr, toaddrs, msg.as_string())
+            server.quit()
+
+        except:
+            res = self.report(self.service, '', '', sys.exc_info())
+
+        return(f"Res: {res}")
+
+
 def main():
 
     logging.basicConfig(stream=sys.stdout,
@@ -1358,18 +1420,18 @@ def main():
     # More:  More: ('imap', 'set', 'ftricas@elmundoesimperfecto.com', 'posts')
 
     indent = ""
-    for src in rules.rules.keys():
-        if ((src[0] == 'imap')
-            and ('posta' in src[2])):
-            print(f"Src: {src}")
-            more = rules.more[src]
-            print(f"More: {src}")
-            break
+    src, more = rules.selectRule('imap', 'ftricas@elmundo')
     apiSrc = rules.readConfigSrc(indent, src, more)
     print(f"Folders: {apiSrc.getChannels()}")
     # apiSrc.setChannel(more['search'])
 
-    testingPosts = True
+    testingPublishing = True
+    if testingPublishing:
+        apiSrc.publishPost('Mensaje', 'https://www.unizar.es/', '')
+
+        return
+
+    testingPosts = False
     if testingPosts:
         apiSrc.setPosts()
         for post in apiSrc.getPosts():
@@ -1379,7 +1441,7 @@ def main():
 
         return
 
-    testingAttachment = True
+    testingAttachment = False
     if testingAttachment:
         apiSrc.setChannel('INBOX')
         apiSrc.setPosts()

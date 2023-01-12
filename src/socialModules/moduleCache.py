@@ -98,8 +98,8 @@ class moduleCache(Content,Queue):
         userD = self.user
         serviceD = self.socialNetwork
         nameDst = self.socialNetwork.capitalize()
-        msgLog = (f"{self.indent} fileNameBase serviceD {serviceD}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} fileNameBase serviceD {serviceD}")
+        # logMsg(msgLog, 2, 0)
 
         fileName = (f"{nameSrc}_{typeSrc}_"
                     f"{user}_{service}__"
@@ -157,10 +157,12 @@ class moduleCache(Content,Queue):
         self.fileName = self.fileNameBase((self.socialNetwork, self.nick))
         fileNameQ = f"{self.fileName}.queue"
         msgLog = checkFile(fileNameQ)
-        if 'OK' in msgLog:
-            self.client = self.service
-        else:
-            self.client = None
+        if not 'OK' in msgLog:
+            #with open(fileNameQ, "w") as f: 
+            msgLog = (f"File {fileNameQ} does not exist. "
+                      f"I'll need to create it.")
+            logMsg(msgLog, 3, 0)
+        self.client = self.service
         #self.fileName = self.fileNameBase((self.user, self.socialNetwork))
 
         # if hasattr(self, 'fileName'):
@@ -355,12 +357,12 @@ class moduleCache(Content,Queue):
             num = 0
         return num
 
-    def getPosNextPost(self):
-        # cache always shows the first item
-        # Some standard contition?
+    # def getPosNextPost(self):
+    #     # cache always shows the first item
+    #     # Some standard contition?
 
-        posLast = 1
-        return posLast
+    #     posLast = 1
+    #     return posLast
 
     def getHoursSchedules(self, command=None):
         return self.schedules[0].hour.render()

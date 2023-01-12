@@ -734,7 +734,8 @@ class moduleRules:
             logMsg(msgLog, 2, 0)
             msgLog=f"{indent} profileR {self.getProfileR(action)}"
             logMsg(msgLog, 2, 0)
-            apiDst = getApi(self.getNameR(action), self.getProfileR(action), indent)
+            apiDst = getApi(self.getNameR(action), 
+                            self.getProfileR(action), indent)
             logMsg(msgLog, 2, 0)
             apiDst.fileName = apiDst.fileNameBase(action[1:])
             apiDst.postaction = 'delete'
@@ -774,7 +775,6 @@ class moduleRules:
             logMsg(msgLog, 2, 0)
             logging.debug(f"{self.indent} user {apiDst.user}")
             apiDst.fileName = apiSrc.fileNameBase(apiDst)
-            msgLog=f"{indent} .... Eo"
             logMsg(msgLog, 2, 0)
             nick = self.getNick(action)
             # apiDst.setUser(nick)
@@ -885,12 +885,18 @@ class moduleRules:
             # logMsg(msgLog, 2, 0)
             resMsg = f"Publish result: {res}"
             # print(f"{indent}res: {res}")
+            if (nextPost and (not 'No posts available' in res) and
+                    ((not res) or ('SAVELINK' in res) or
+                     not ('Fail!' in res) or not ('failed!' in res))):
+                resUpdate = apiSrc.updateLastLink(apiDst, '')
+                resMsg += f" Update: {resUpdate}"
             if 'OK. Published!' in res:
                 msgLog = (f"{indent} Res is OK")
                 logMsg(msgLog, 1, 0)
                 postaction = apiSrc.getPostAction()
                 if postaction:
-                    msgLog = (f"{indent}Post Action {postaction} ({nextPost})")
+                    msgLog = (f"{indent}Post Action {postaction} "
+                              f"({nextPost})")
                     logMsg(msgLog, 1, 1)
 
                     if nextPost:
@@ -905,11 +911,6 @@ class moduleRules:
                     msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
                     logMsg(msgLog, 1, 1)
                     resMsg += f" Post Action: {resPost}"
-            if (nextPost and (not 'No posts available' in res) and
-                    ((not res) or ('SAVELINK' in res) or
-                     not ('Fail!' in res) or not ('failed!' in res))):
-                resUpdate = apiSrc.updateLastLink(apiDst, '')
-                resMsg += f" Update: {resUpdate}"
             if ((res and (not 'failed!' in res) and (not 'Fail!' in res))
                 or
                 (res and ('abusive!' in res))
@@ -1007,7 +1008,6 @@ class moduleRules:
             logMsg(msgLog, 3, 1)
             return f"End: {msgLog}"
 
-
         if ((apiDst.getPostsType() != self.getType(action))
             and (apiDst.getPostsType()[:-1] != self.getType(action))
             and (self.getMode(action) != 'cache')):
@@ -1019,6 +1019,7 @@ class moduleRules:
         indent = f"{indent} "
 
         apiSrc.setLastLink(apiDst)
+        #FIXME: best in readConfigSrc ?
 
         time.sleep(1)
 

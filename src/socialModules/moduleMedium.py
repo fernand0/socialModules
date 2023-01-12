@@ -70,6 +70,7 @@ class moduleMedium(Content,Queue):
 
     def publishApiPost(self, *args, **kwargs):
         mode = ''
+        tags = []
         if args and len(args) == 3:
             post, link, comment = args
         if kwargs:
