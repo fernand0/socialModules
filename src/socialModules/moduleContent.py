@@ -398,11 +398,12 @@ class Content:
         if dst:
             fileNameNext = f"{self.fileNameBase(dst)}.timeAvailable"
             msgLog = checkFile(fileNameNext)
-            if "OK" in msgLog:
-                with open(fileNameNext,'wb') as f:
-                    pickle.dump((tNow, tSleep), f)
-            else:
-                self.report(self.service, msgLog, '', '')
+            if not "OK" in msgLog:
+                msgLog = (f"File {fileNameNext} does not exist. "
+                          f"I'm going to create it.")
+                logMsg(msgLog, 2, 0)
+            with open(fileNameNext,'wb') as f:
+                pickle.dump((tNow, tSleep), f)
         else:
             print(f"Not implemented!")
 

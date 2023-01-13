@@ -32,6 +32,8 @@ class moduleTumblr(Content, Queue):
         client = pytumblr.TumblrRestClient(keys[0], keys[1], keys[2], keys[3])
         # print(f"client: {client}")
         tumblr = self.user
+        msgLog = f"{self.indent} Service {self.service} user {self.user}"
+        logMsg(msgLog, 2, 0)
         if isinstance(tumblr, str):
             self.url = f"https://{tumblr}.tumblr.com/"
         elif isinstance(tumblr[1], str):
@@ -139,8 +141,28 @@ class moduleTumblr(Content, Queue):
 
         return res
 
+    # def publishNextPost(self, apiSrc):
+    #     #FIXME: duplicate?
+    #     # We just store the post, we need more information than the title,
+    #     # link and so on.
+    #     reply = ''
+    #     msgLog = (f"{self.indent} Publishing next post from {apiSrc} in "
+    #                 f"{self.service}")
+    #     logMsg(msgLog, 2, 0)
+    #     try:
+    #         post = apiSrc.getNextPost()
+    #         msgLog = (f"{self.indent} Next post from {apiSrc} is {post}")
+    #         logMsg(msgLog, 2, 0)
+    #         if post:
+    #             reply = self.publishApiPost(api=apiSrc, post=post)
+    #         else:
+    #             reply = f"Fail! No posts available"
+    #     except:
+    #         reply = self.report(self.service, apiSrc, sys.exc_info())
+
+    #     return reply
+
     def publishNextPost(self, apiSrc):
-        #FIXME: duplicate?
         # We just store the post, we need more information than the title,
         # link and so on.
         reply = ''
@@ -149,24 +171,8 @@ class moduleTumblr(Content, Queue):
         logMsg(msgLog, 2, 0)
         try:
             post = apiSrc.getNextPost()
-            if post:
-                reply = self.publishApiPost(api=apiSrc, post=post)
-            else:
-                reply = f"Fail! No posts available"
-        except:
-            reply = self.report(self.service, apiSrc, sys.exc_info())
-
-        return reply
-
-    def publishNextPost(self, apiSrc):
-        # We just store the post, we need more information than the title,
-        # link and so on.
-        reply = ''
-        msgLog = (f"{self.indent} Publishing next post from {apiSrc} in "
-                    f"{self.service}")
-        logMsg(msgLog, 2, 0)
-        try:
-            post = apiSrc.getNextPost()
+            msgLog = (f"{self.indent} Next post from {apiSrc} is {post}")
+            logMsg(msgLog, 2, 0)
             if post:
                 reply = self.publishApiPost(api=apiSrc, post=post)
             else:
@@ -184,7 +190,7 @@ class moduleTumblr(Content, Queue):
             # Will always work?
             idPost = link.split('/')[-2]
         if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
+            logging.info(f"{self.indent} Tittt: kwargs: {kwargs}")
             more = kwargs
             post = more.get('post', '')
             api = more.get('api', '')
@@ -195,6 +201,8 @@ class moduleTumblr(Content, Queue):
 
         # logging.info(f"Type: {api.getPostsType()}")
         # logging.info(f"Id: {idPost}")
+        msgLog = f"{self.indent} Service {self.service} User: {self.getUser()}"
+        logMsg(msgLog, 2, 0)
         try:
             if api.getPostsType() == 'posts':
                 res = self.getClient().create_link(self.getUser(),
@@ -206,7 +214,7 @@ class moduleTumblr(Content, Queue):
                 # logging.debug(f"idPost {idPost}")
                 res = self.editApiStateId(idPost, 'published')
             else:
-                res = self.getClient().create_link(self.getBlogName(),
+                res = self.getClient().create_link(self.getUser(),
                                                    state='queue',
                                                    title=title,
                                                    url=link,
@@ -267,7 +275,9 @@ def main():
 
     import logging
     logging.basicConfig(
-        stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(message)s'
+        stream=sys.stdout, 
+        level=logging.INFO, 
+        format='%(asctime)s %(message)s'
         )
 
     import socialModules.moduleTumblr
@@ -276,7 +286,14 @@ def main():
 
     t.setClient('fernand0')
 
-    testingPosts = False
+    testingPosting = False
+    if testingPosting:
+        title = "Test"
+        link = "https://twitter.com/fernand0Test"
+        print(t.publishPost(title, link, ''))
+        return
+
+    testingPosts = True
     if testingPosts:
         print("Testing posts")
         t.setPosts()

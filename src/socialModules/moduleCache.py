@@ -360,7 +360,6 @@ class moduleCache(Content,Queue):
     def getPosNextPost(self):
         # cache always shows the first item
         # Some standard contition?
-
         posLast = 1
         return posLast
 
@@ -683,7 +682,8 @@ class moduleCache(Content,Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        #print(f"->publishApiPost: *{args}*")
+        logging.debug(f"->publishApiPost: *{args}*")
+        logging.debug(f"->publishApiPost: *{kwargs}*")
         if args and len(args)==3:
             title, link, comment = args
         if kwargs:
