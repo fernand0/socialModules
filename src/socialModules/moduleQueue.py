@@ -63,7 +63,8 @@ class Queue:
 
     def selectAndExecute(self, command, args):
         # FIXME Does this belong here?
-        logging.info(f"Selecting {command} with {args} in {self.getService()}")
+        logging.info(f"Selecting {command} with {args} "
+                     f"in {self.getService()}")
         argsCont = ''
         if not isinstance(args, str):
             logging.info(f"Aaaaargs: {args}")
