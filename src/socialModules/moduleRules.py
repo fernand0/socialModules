@@ -399,7 +399,7 @@ class moduleRules:
                 continue
             iniK, nameK = self.getIniKey(self.getNameR(src).upper(), 
                                          myKeys, myIniKeys)
-            logging.info(f"iniK: {iniK}")
+            # logging.info(f"iniK: {iniK}")
             if not (iniK in available):
                 available[iniK] = {"name": self.getNameR(src),
                                    "data": [], "social": []}
