@@ -50,8 +50,8 @@ class moduleSmtp(Content, Queue):
             thePost = more.get('post', '')
             api = more.get('api', '')
             logging.info(f"Post: {post}")
-            post = api.getPostTitle(post)
-            link = api.getPostLink(post)
+            post = api.getPostTitle(thePost)
+            link = api.getPostLink(thePost)
             # idPost = api.getPostId(post)
             # logging.info(f"Postt: {post['meta']}")
             # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]
