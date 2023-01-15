@@ -904,9 +904,13 @@ class moduleRules:
                     logMsg(msgLog, 1, 1)
 
                     if nextPost:
+                        msgLog = (f"{indent}Post Action nextpost")
+                        logMsg(msgLog, 2, 0)
                         cmdPost = getattr(apiSrc, f"{postaction}NextPost")
                         resPost = cmdPost()
                     else:
+                        msgLog = (f"{indent}Post Action pos")
+                        logMsg(msgLog, 2, 0)
                         cmdPost = getattr(apiSrc, f"{postaction}")
                         resPost = cmdPost(pos)
                         # FIXME inconsistent

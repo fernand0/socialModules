@@ -75,6 +75,8 @@ def getNextTime(blog, socialNetwork):
         return 0, 0
 
 def checkFile(fileName):
+    msgLog = f"Checking {fileName} "
+    logMsg(msgLog, 2, 0)
     dirName = os.path.dirname(fileName)
     if not os.path.isdir(dirName):
         msgLog = f"Directory {dirName} does not exist."

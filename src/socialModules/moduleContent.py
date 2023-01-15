@@ -168,13 +168,9 @@ class Content:
         logMsg(msgLog, 1, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
             typePosts = self.getPostsType()
-            if typePosts == "cache":
-                # FIXME: cache??
-                cmd = getattr(self, "setApiCache")
-            else:
-                cmd = getattr(
-                    self, f"setApi{self.getPostsType().capitalize()}"
-                )
+            cmd = getattr(
+                self, f"setApi{self.getPostsType().capitalize()}"
+            )
         else:
             cmd = getattr(self, "setApiPosts")
 
@@ -304,7 +300,11 @@ class Content:
         url = self.getUrl()
         service = self.service.lower()
         nick = self.getUser()
-        fileName = (f"{fileNamePath(url, (service, nick))}.last")
+        if hasattr(self, 'fileName') and self.fileName:
+            fileName = f"{self.fileName}.last"
+        else:
+            fileName = (f"{fileNamePath(url, (service, nick))}.last")
+        linkLast = ''
 
         # logging.debug(f"Urll: {url}")
         # logging.debug(f"Nickl: {nick}")
@@ -358,6 +358,7 @@ class Content:
         else:
             lastTime = 0
             self.report(self.service, msgLog, '', '')
+        logMsg(msgLog, 2, 0)
 
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime

@@ -46,6 +46,12 @@ class moduleCache(Content,Queue):
             logMsg(msgLog, 2, 0)
             return self.service
 
+    def setPostsType(self, postsType):
+        if postsType == 'posts':
+            self.postsType = 'cache'
+        else:
+            self.postsType = postsType
+
     def getPostsType(self):
         return 'cache'
 
@@ -94,6 +100,8 @@ class moduleCache(Content,Queue):
             userD = self.user
             serviceD = self.socialNetwork
             nameDst = self.socialNetwork.capitalize()
+            typeDst = 'cache'
+
         user = self.url
         userD = self.user
         serviceD = self.socialNetwork

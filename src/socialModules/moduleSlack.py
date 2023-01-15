@@ -355,7 +355,7 @@ def main():
         logging.info(f"Nick: {apiSrc.getNick()}")
         return
 
-    testingPublishing = True
+    testingPublishing = False
     if testingPublishing:
         links  = [
 'https://www.npr.org/2022/11/19/1137985619/metric-system-measurement-prefix',
@@ -386,7 +386,7 @@ def main():
         return
 
 
-    testingPosts = False
+    testingPosts = True
     if testingPosts:
         print("Testing posts")
         apiSrc.setPostsType("posts")
