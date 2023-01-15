@@ -44,13 +44,14 @@ class moduleSmtp(Content, Queue):
             # logging.info(f"Tittt: args: {args}")
             post, link, comment = args
         if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
+            logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             # FIXME: We need to do something here
             thePost = more.get('post', '')
             api = more.get('api', '')
-            # logging.info(f"Post: {post}")
+            logging.info(f"Post: {thePost}")
             post = api.getPostTitle(thePost)
+            logging.info(f"Post: {post}")
             link = api.getPostLink(thePost)
             # idPost = api.getPostId(post)
             # logging.info(f"Postt: {post['meta']}")
