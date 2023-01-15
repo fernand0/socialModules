@@ -49,12 +49,12 @@ class moduleSmtp(Content, Queue):
             # FIXME: We need to do something here
             post = more.get('post', '')
             api = more.get('api', '')
-            # logging.info(f"Post: {post}")
+            logging.info(f"Post: {post}")
             idPost = api.getPostId(post)
-            # logging.info(f"Postt: {post['meta']}")
+            logging.info(f"Postt: {post['meta']}")
             # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]
             idPost = post['list']['id'] #[1:-1]
-            # logging.info(f"Post id: {idPost}")
+            logging.info(f"Post id: {idPost}")
         res = 'Fail!'
         try: 
             destaddr = self.user 
