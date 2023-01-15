@@ -49,7 +49,7 @@ class moduleSmtp(Content, Queue):
             # FIXME: We need to do something here
             thePost = more.get('post', '')
             api = more.get('api', '')
-            logging.info(f"Post: {post}")
+            # logging.info(f"Post: {post}")
             post = api.getPostTitle(thePost)
             link = api.getPostLink(thePost)
             # idPost = api.getPostId(post)
