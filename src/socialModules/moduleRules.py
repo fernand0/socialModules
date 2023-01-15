@@ -1092,9 +1092,13 @@ class moduleRules:
                 for i in range(num):
                     time.sleep(tSleep)
                     if nextPost:
+                        msgLog = f"{self.indent} next post"
+                        logMsg(msgLog, 2, 0)
                         res = self.executePublishAction(indent,
                                 msgAction, apiSrc, apiDst, simmulate)
                     else:
+                        msgLog = f"{self.indent} pos {pos}"
+                        logMsg(msgLog, 2, 0)
                         res = self.executePublishAction(indent,
                                 msgAction, apiSrc, apiDst,
                                 simmulate, nextPost, pos)
