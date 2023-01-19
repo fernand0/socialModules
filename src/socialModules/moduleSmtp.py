@@ -65,6 +65,7 @@ class moduleSmtp(Content, Queue):
             fromaddr = self.user 
             smtpsrv  = 'localhost' 
             theUrl = link
+            # logging.info(f"Post: {post}")
             subject = post.split('\n')[0]
 
             msg = MIMEMultipart() 
@@ -79,17 +80,19 @@ class moduleSmtp(Content, Queue):
                        f"{post}") 
             adj = MIMEApplication(htmlDoc) 
             encoders.encode_base64(adj) 
-            name = 'notumblr'
+            name = 'forum'
             ext = '.html'
             adj.add_header('Content-Disposition', 
                                'attachment; filename="%s"' % name+ext)
 
             msg.attach(adj)
-            msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n"))
+            msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n{post}"))
             server = smtplib.SMTP(smtpsrv)
             server.connect(smtpsrv, 587)
             server.starttls()
 
+            logging.info(f"From: {fromaddr} To:{toaddrs}")
+            logging.info(f"Msg: {msg.as_string()}")
             res = server.sendmail(fromaddr, toaddrs, msg.as_string())
             if not res:
                 res = "OK"
