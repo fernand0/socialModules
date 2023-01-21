@@ -625,9 +625,6 @@ class moduleRules:
             profile =self.getActionComponent(action, 2)
         return profile
 
-    def getProfileRule(self, rule):
-        return self.getActionComponent(rule, 2)
-
     def getRuleComponent(self, rule, pos):
         res = ''
         if isinstance(rule, tuple) :
