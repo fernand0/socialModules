@@ -601,6 +601,33 @@ class moduleRules:
 
         return iniK, nKey
 
+    def getNickAction(self, action):
+        if isinstance(self.getActionComponent(action, 2), tuple):
+            nick = self.getActionComponent(self.getActionComponent(action, 2), 3)
+        else:
+            nick = self.getActionComponent(action, 3)
+        return nick
+
+    def getNameAction(self, action):
+        return self.getActionComponent(action, 0)
+
+    def getTypeAction(self, action):
+        if isinstance(self.getActionComponent(action, 2), tuple):
+            action = self.getActionComponent(action, 0)
+        else:
+            action = self.getActionComponent(action, 1)
+        return action
+
+    def getProfileAction(self, action):
+        if isinstance(self.getActionComponent(action, 2), tuple):
+            profile = self.getActionComponent(self.getActionComponent(action, 2), 2)
+        else:
+            profile =self.getActionComponent(action, 2)
+        return profile
+
+    def getProfileRule(self, rule):
+        return self.getActionComponent(rule, 2)
+
     def getRuleComponent(self, rule, pos):
         res = ''
         if isinstance(rule, tuple) :
@@ -685,41 +712,17 @@ class moduleRules:
             res = action[pos]
         return res
 
-    def getMode(self, action):
-        return self.getActionComponent(action, 0)
-
-    def getType(self, action):
-        if isinstance(self.getActionComponent(action, 2), tuple):
-            action = self.getActionComponent(action, 0)
-        else:
-            action = self.getActionComponent(action, 1)
-        return action
-
-    def getProfile(self, action):
-        if isinstance(self.getActionComponent(action, 2), tuple):
-            profile = self.getActionComponent(self.getActionComponent(action, 2), 2)
-        else:
-            profile =self.getActionComponent(action, 2)
-        return profile
-
-    def getNick(self, action):
-        if isinstance(self.getActionComponent(action, 2), tuple):
-            nick = self.getActionComponent(self.getActionComponent(action, 2), 3)
-        else:
-            nick = self.getActionComponent(action, 3)
-        return nick
-
     def readConfigDst(self, indent, action, more, apiSrc):
         msgLog = (f"{indent} readConfigDst Action: {action}")
         logMsg(msgLog, 2, 0)
         # msgLog = (f"{indent} readConfigDst: {action})")
-        # msgLog = (f"{indent} readConfigDst: {self.getMode(action)})")
+        # msgLog = (f"{indent} readConfigDst: {self.getNameAction(action)})")
         # logMsg(msgLog, 2, 0)
         indent = f"{indent} "
         # msgLog = f"{indent} More: Src {more}"
         # logMsg(msgLog, 2, 0)
-        # profile = self.getProfile(action)
-        # nick = self.getNick(action)
+        # profile = self.getProfileAction(action)
+        # nick = self.getNickAction(action)
         # msgLog = (f"{indent} readConfigDst profile: {profile}")
         # logMsg(msgLog, 2, 0)
         # msgLog = (f"{indent} readConfigDst nick: {nick}")
@@ -763,15 +766,15 @@ class moduleRules:
             # # print(f"{indent} Dst: {action}")
             # # apiDst = getApi('cache', param, indent)
             # # # apiDst = getApi("cache", ((more['service'],
-            # # #                            self.getType(action)),
-            # # #                           f"{self.getProfile(action)}@"
-            # # #                           f"{self.getNick(action)}", 'posts'),
+            # # #                            self.getTypeAction(action)),
+            # # #                           f"{self.getProfileAction(action)}@"
+            # # #                           f"{self.getNickAction(action)}", 'posts'),
             # # #                 indent)
-            # # apiDst.socialNetwork = self.getProfile(action)
-            # # apiDst.nick = self.getNick(action)
+            # # apiDst.socialNetwork = self.getProfileAction(action)
+            # # apiDst.nick = self.getNickAction(action)
         else:
-            apiDst = getApi(self.getProfile(action),
-                            self.getNick(action), indent)
+            apiDst = getApi(self.getProfileAction(action),
+                            self.getNickAction(action), indent)
             # apiDst = getApi(profile, nick, indent)
 
             msgLog = (f"{indent} readConfigDst apiDst: {apiDst})")
@@ -779,7 +782,7 @@ class moduleRules:
             logging.debug(f"{self.indent} user {apiDst.user}")
             apiDst.fileName = apiSrc.fileNameBase(apiDst)
             logMsg(msgLog, 2, 0)
-            nick = self.getNick(action)
+            nick = self.getNickAction(action)
             # apiDst.setUser(nick)
             apiDst.setPostsType('posts')
 
@@ -974,25 +977,25 @@ class moduleRules:
         logMsg(msgLog, 1, 0)
         indent = f"{indent} "
 
-        msgAction = (f"{self.getMode(action)} "
-                     f"{self.getNick(action)}@{self.getProfile(action)} "
-                     f"({self.getType(action)})")
+        msgAction = (f"{self.getNameAction(action)} "
+                     f"{self.getNickAction(action)}@{self.getProfileAction(action)} "
+                     f"({self.getTypeAction(action)})")
         # Destination
 
         apiSrc = self.readConfigSrc(indent, src, more)
 
         if apiSrc.getName():
-            msgLog = (f"{indent} Source: {apiSrc.getName()}-{self.getNick(src)} -> "
+            msgLog = (f"{indent} Source: {apiSrc.getName()}-{self.getNickAction(src)} -> "
                 f"Action: {msgAction})")
         else:
-            msgLog = (f"{indent} Source: {self.getProfile(src)}-{self.getNick(src)} -> "
+            msgLog = (f"{indent} Source: {self.getProfileAction(src)}-{self.getNickAction(src)} -> "
                 f"Action: {msgAction})")
 
         # logMsg(msgLog, 1, 0)
         textEnd = (f"{msgLog}")
 
         # print(f"Srcccc: {src}")
-        # print(f"Srcccc: {apiSrc.getNick()}")
+        # print(f"Srcccc: {apiSrc.getNickAction()}")
         # return
         if (apiSrc.getHold() == 'yes'):
             # FIXME Maybe befour lanuching the subprocess?
@@ -1001,7 +1004,7 @@ class moduleRules:
             logging.info(msgHold)
             return msgHold
         elif not apiSrc.getClient():
-            msgLog = (f"{indent} Error. No client for {self.getProfileRule(src)} ({self.getNick(src)})")
+            msgLog = (f"{indent} Error. No client for {self.getProfileRule(src)} ({self.getNickAction(src)})")
             logMsg(msgLog, 3, 1)
             return f"{msgLog} End."
 
@@ -1015,9 +1018,9 @@ class moduleRules:
             logMsg(msgLog, 3, 1)
             return f"End: {msgLog}"
 
-        if ((apiDst.getPostsType() != self.getType(action))
-            and (apiDst.getPostsType()[:-1] != self.getType(action))
-            and (self.getMode(action) != 'cache')):
+        if ((apiDst.getPostsType() != self.getTypeAction(action))
+            and (apiDst.getPostsType()[:-1] != self.getTypeAction(action))
+            and (self.getNameAction(action) != 'cache')):
             # FIXME: Can we do better?
             msgLog = f"{indent} Some problem with {action}"
             logMsg(msgLog, 3, 0)
@@ -1144,12 +1147,12 @@ class moduleRules:
             for src in sorted(self.rules.keys()):
                 msgLog = f"{indent} src: {src}"
                 logMsg(msgLog, 2, 0)
-                if self.getMode(src) != previous:
+                if self.getNameAction(src) != previous:
                     i = 0
                 else:
                     i = i + 1
-                previous = self.getMode(src)
-                indent = f"{self.getMode(src):->9}{i}>"
+                previous = self.getNameAction(src)
+                indent = f"{self.getNameAction(src):->9}{i}>"
                 if src in self.more:
                     # f"  More: {self.more[src]}")
                     more = self.more[src]
@@ -1157,7 +1160,7 @@ class moduleRules:
                     # f"  More: empty")
                     more = None
 
-                if self.getMode(src) in ['cache']:
+                if self.getNameAction(src) in ['cache']:
                     # try:
                     #     srcName = more['url']
                     # except:
@@ -1175,10 +1178,10 @@ class moduleRules:
                         if 'gmail' in more:
                             srcName = more['gmail']
                         srcName = f"{srcName}@gmail"
-                    text = (f"Source: {srcName} ({self.getNick(src)})")
+                    text = (f"Source: {srcName} ({self.getNickAction(src)})")
                 else:
                     #FIXME self.identifier
-                    srcName = self.getProfile(src)
+                    srcName = self.getProfileRule(src)
                     if 'slack' in srcName:
                         srcName = f"{srcName.split('/')[2].split('.')[0]}"
                     elif 'imgur' in srcName:
@@ -1186,10 +1189,10 @@ class moduleRules:
                         srcName = f"{srcName.split('/')[-1]}"
                     elif 'gitter' in srcName:
                         srcName = f"{srcName.split('/')[-2]}"
-                    elif (not srcName) and ('tumblr' in self.getMode(src)):
+                    elif (not srcName) and ('tumblr' in self.getNameAction(src)):
                         srcName = more['url']
                         srcName = f"{srcName.split('/')[2].split('.')[0]}"
-                    text = (f"Source: {srcName} ({self.getNick(src)})")
+                    text = (f"Source: {srcName} ({self.getNickAction(src)})")
 
                 actions = self.rules[src]
 
@@ -1208,16 +1211,16 @@ class moduleRules:
                     continue
                 for k, action in enumerate(actions):
                     name = f"{self.getNameRule(src)}{i}>"
-                    if self.getType(action).startswith('http'):
+                    if self.getTypeAction(action).startswith('http'):
                         # FIXME
                         theAction = 'posts'
                     else:
-                        theAction = self.getType(action)
+                        theAction = self.getTypeAction(action)
 
                     indent = f"{indent} "
                     msgLog = (f"{indent} Action {k}:"
-                             f" {self.getNick(action)}@"
-                             f"{self.getProfile(action)} ({theAction})")
+                             f" {self.getNickAction(action)}@"
+                             f"{self.getProfileAction(action)} ({theAction})")
                     name = f"Action {k}:" # [({theAction})"
                     nameA = f"{actionMsg} "
                     textEnd = (f"Source: {nameA} {self.getProfileRule(src)} "
@@ -1234,9 +1237,9 @@ class moduleRules:
                     noWait = args.noWait
 
                     # Is this the correct place?
-                    if ((self.getMode(action) in 'cache') or
-                        ((self.getMode(action) == 'direct')
-                         and (self.getProfile(action) == 'pocket'))
+                    if ((self.getNameAction(action) in 'cache') or
+                        ((self.getNameAction(action) == 'direct')
+                         and (self.getProfileAction(action) == 'pocket'))
                         ):
                         # We will always load new items in the cache
                         timeSlots = 0
