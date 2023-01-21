@@ -41,10 +41,10 @@ class moduleSmtp(Content, Queue):
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
-            # logging.info(f"Tittt: args: {args}")
+            logging.info(f"Tittt: args: {args}")
             post, link, comment = args
         if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
+            logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             # FIXME: We need to do something here
             thePost = more.get('post', '')
@@ -65,8 +65,10 @@ class moduleSmtp(Content, Queue):
             fromaddr = self.user 
             smtpsrv  = 'localhost' 
             theUrl = link
-            # logging.info(f"Post: {post}")
-            subject = post.split('\n')[0]
+            if link:
+                subject = link
+            else:
+                subject = post.split('\n')[0]
 
             msg = MIMEMultipart() 
             msg['From']    = fromaddr 
@@ -75,18 +77,28 @@ class moduleSmtp(Content, Queue):
             msg['X-URL']   = theUrl 
             msg['X-print'] = theUrl 
             msg['Subject'] = subject 
-            htmlDoc = (f"Title: {subject} \n\n" 
+            if not link:
+                htmlDoc = (f"Title: {subject} \n\n" 
                        f"Url: {link} \n\n"
                        f"{post}") 
+            else:
+                htmlDoc =  post
+            logging.info(f"{self.indent} Doc: {htmlDoc}")
             adj = MIMEApplication(htmlDoc) 
             encoders.encode_base64(adj) 
             name = 'forum'
             ext = '.html'
             adj.add_header('Content-Disposition', 
-                               'attachment; filename="%s"' % name+ext)
+                               f'attachment; filename="{name}{ext}"')
 
             msg.attach(adj)
-            msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n{post}"))
+            if link:
+                if post.startswith('<'):
+                    msg.attach(MIMEText(f"{post}", _subtype='html'))
+                else:
+                    msg.attach(MIMEText(f"{post}"))
+            # else:
+            #     msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n{post}"))
             server = smtplib.SMTP(smtpsrv)
             server.connect(smtpsrv, 587)
             server.starttls()

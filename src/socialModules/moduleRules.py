@@ -397,11 +397,11 @@ class moduleRules:
         for i, src in enumerate(rulesNew.keys()):
             if not src:
                 continue
-            iniK, nameK = self.getIniKey(self.getNameR(src).upper(), 
+            iniK, nameK = self.getIniKey(self.getNameRule(src).upper(), 
                                          myKeys, myIniKeys)
             # logging.info(f"iniK: {iniK}")
             if not (iniK in available):
-                available[iniK] = {"name": self.getNameR(src),
+                available[iniK] = {"name": self.getNameRule(src),
                                    "data": [], "social": []}
                 # available[iniK]["data"] = [{'src': src[1:], 'more': more[i]}]
                 available[iniK]["data"] = [{'src': src, 'more': more[i]}]
@@ -453,22 +453,22 @@ class moduleRules:
         srcR = None
 
         for src in self.rules.keys():
-            if self.getNameR(src) == selector:
+            if self.getNameRule(src) == selector:
                 logging.debug(f"- Src: {src}")
                 logging.debug(f"Selectors: {selector} - {selector2} -"
                               f"{selector3}")
                 more = self.more[src]
                 srcR = src
-                logging.debug(f"profileR: {self.getProfileR(src)}")
+                logging.debug(f"profileR: {self.getProfileRule(src)}")
                 if not selector2:
                     break
                 else:
-                    if (selector2 in str(self.getProfileR(src))):
+                    if (selector2 in str(self.getProfileRule(src))):
                         #FIXME: ??
                         logging.debug(f"Second Selector: {selector2}")
                         if not selector3:
                             break
-                        elif  (selector3 in self.getNickR(src)):
+                        elif  (selector3 in self.getNickRule(src)):
                             break
         return (srcR, more)
 
@@ -607,14 +607,13 @@ class moduleRules:
             res = rule[pos]
         return res
 
-
-    def getNameR(self, rule):
+    def getNameRule(self, rule):
         return self.getRuleComponent(rule, 0)
 
-    def getTypeR(self, rule):
+    def getTypeRule(self, rule):
         return self.getRuleComponent(rule, 1)
 
-    def getProfileR(self, rule):
+    def getProfileRule(self, rule):
         profileR = ''
         if isinstance(self.getRuleComponent(rule, 2), tuple):
             profileR = rule[1:]
@@ -622,28 +621,28 @@ class moduleRules:
             profileR = self.getRuleComponent(rule, 2)
         return profileR
 
-    def getNickR(self, rule):
+    def getNickRule(self, rule):
         return self.getRuleComponent(rule, 3)
 
     def readConfigSrc(self, indent, src, more):
         msgLog = f"{indent} readConfigSrc: {src}"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{indent} readConfigSrc: {self.getProfileR(src)}"
+        msgLog = f"{indent} readConfigSrc: {self.getProfileRule(src)}"
         logMsg(msgLog, 2, 0)
         # msgLog = f"{indent} readConfigSrc More: Src {more}"
         # logMsg(msgLog, 2, 0)
         indent = f"{indent} "
-        if self.getNameR(src) == 'cache':
+        if self.getNameRule(src) == 'cache':
             msgLog=f"{indent} src {src}"
             logMsg(msgLog, 2, 0)
-            msgLog=f"{indent} profileR {self.getProfileR(src)}"
+            msgLog=f"{indent} profileR {self.getProfileRule(src)}"
             logMsg(msgLog, 2, 0)
-            apiSrc = getApi(self.getNameR(src), self.getProfileR(src), indent)
+            apiSrc = getApi(self.getNameRule(src), self.getProfileRule(src), indent)
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
             apiSrc.postaction = 'delete'
         else:
             logging.info(f"{indent} Src: {src}")
-            apiSrc = getApi(self.getNameR(src), self.getProfileR(src), indent)
+            apiSrc = getApi(self.getNameRule(src), self.getProfileRule(src), indent)
 
         msgLog = f"{indent} More: {more}"
         logMsg(msgLog, 2, 0)
@@ -733,13 +732,13 @@ class moduleRules:
         # msgLog = (f"{indent} More: Dst {more}")
         # logMsg(msgLog, 1, 0)
 
-        if self.getNameR(action) == 'cache':
+        if self.getNameRule(action) == 'cache':
             msgLog=f"{indent} action {action}"
             logMsg(msgLog, 2, 0)
-            msgLog=f"{indent} profileR {self.getProfileR(action)}"
+            msgLog=f"{indent} profileR {self.getProfileRule(action)}"
             logMsg(msgLog, 2, 0)
-            apiDst = getApi(self.getNameR(action), 
-                            self.getProfileR(action), indent)
+            apiDst = getApi(self.getNameRule(action), 
+                            self.getProfileRule(action), indent)
             logMsg(msgLog, 2, 0)
             apiDst.fileName = apiDst.fileNameBase(action[1:])
             apiDst.postaction = 'delete'
@@ -1002,7 +1001,7 @@ class moduleRules:
             logging.info(msgHold)
             return msgHold
         elif not apiSrc.getClient():
-            msgLog = (f"{indent} Error. No client for {self.getProfileR(src)} ({self.getNick(src)})")
+            msgLog = (f"{indent} Error. No client for {self.getProfileRule(src)} ({self.getNick(src)})")
             logMsg(msgLog, 3, 1)
             return f"{msgLog} End."
 
@@ -1012,7 +1011,7 @@ class moduleRules:
 
         if not apiDst.getClient():
             msgLog = (f"{indent} Error. No client for "
-                      f"{self.getProfileR(action)}")
+                      f"{self.getProfileRule(action)}")
             logMsg(msgLog, 3, 1)
             return f"End: {msgLog}"
 
@@ -1139,6 +1138,9 @@ class moduleRules:
             i = 0
             previous = ""
 
+            logging.info(f"{indent} Keys: {self.rules.keys()}")
+            for src in self.rules.keys():
+                logging.info(f"{indent} Key: {src}")
             for src in sorted(self.rules.keys()):
                 msgLog = f"{indent} src: {src}"
                 logMsg(msgLog, 2, 0)
@@ -1192,7 +1194,7 @@ class moduleRules:
                 actions = self.rules[src]
 
                 # print(f"Select: {select} - {src[0]}{i}")
-                if (select and (select.lower() != f"{self.getNameR(src).lower()}{i}")):
+                if (select and (select.lower() != f"{self.getNameRule(src).lower()}{i}")):
                     actionMsg = f"Skip."
                 else:
                     actionMsg = (f"Scheduling.")
@@ -1205,7 +1207,7 @@ class moduleRules:
                     #FIXME ?
                     continue
                 for k, action in enumerate(actions):
-                    name = f"{self.getNameR(src)}{i}>"
+                    name = f"{self.getNameRule(src)}{i}>"
                     if self.getType(action).startswith('http'):
                         # FIXME
                         theAction = 'posts'
@@ -1218,8 +1220,8 @@ class moduleRules:
                              f"{self.getProfile(action)} ({theAction})")
                     name = f"Action {k}:" # [({theAction})"
                     nameA = f"{actionMsg} "
-                    textEnd = (f"Source: {nameA} {self.getProfileR(src)} "
-                               f"{self.getNickR(src)}")
+                    textEnd = (f"Source: {nameA} {self.getProfileRule(src)} "
+                               f"{self.getNickRule(src)}")
                     logMsg(msgLog, 1, 1)
                     textEnd = f"{textEnd}\n{msgLog}"
                     # logMsg(msgLog, 1, 1)
