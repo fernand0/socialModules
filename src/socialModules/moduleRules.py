@@ -668,7 +668,10 @@ class moduleRules:
         return profileR
 
     def getNickRule(self, rule):
-        return self.getRuleComponent(rule, 3)
+        if isinstance(self.getRuleComponent(rule, 2), tuple):
+            res = self.getRuleComponent(rule, 3)
+        else:
+            res = self.getRuleComponent(rule, 2)
 
     def readConfigSrc(self, indent, src, more):
         msgLog = f"{indent} readConfigSrc: {src}"
