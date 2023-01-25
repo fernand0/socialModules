@@ -606,6 +606,7 @@ class moduleRules:
         url = url.replace('https', '').replace('http','')
         url = url.replace('---','').replace('.com','')
         url = url.replace('-(','(').replace('- ',' ')
+        url = url.replace(':','').replace('/','')
         return url
 
     def getNickAction(self, action):
