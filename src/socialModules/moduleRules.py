@@ -643,7 +643,12 @@ class moduleRules:
         return self.getRuleComponent(rule, 0)
 
     def getTypeRule(self, rule):
-        return self.getRuleComponent(rule, 1)
+        res = ''
+        if self.getNameRule(rule) == 'cache':
+            res = cache
+        else:
+            res = self.getRuleComponent(rule, 3)
+        return res
 
     def getIdRule(self, rule):
         idR = ''
