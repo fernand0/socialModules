@@ -672,6 +672,7 @@ class moduleRules:
             res = self.getRuleComponent(rule, 3)
         else:
             res = self.getRuleComponent(rule, 2)
+        return res
 
     def readConfigSrc(self, indent, src, more):
         msgLog = f"{indent} readConfigSrc: {src}"
