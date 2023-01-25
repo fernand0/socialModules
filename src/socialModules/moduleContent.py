@@ -885,7 +885,7 @@ class Content:
         msgLog = (f"{self.indent} Service {self.service} publishing image "                       f"{image}: {post}")
         logMsg(msgLog, 2, 0)
         try:
-            reply = self.publishApiImage(post, image, **more)
+            reply = self.publishApiImage(post, image, more)
             return self.processReply(reply)
         except:
             return self.report(self.service, post, image, sys.exc_info())

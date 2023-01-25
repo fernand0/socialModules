@@ -37,7 +37,7 @@ class moduleImgur(Content, Queue):
                              access_token, refresh_token)
         except:
             client = None
-            reply = self.report(self.service, apiSrc, sys.exc_info())
+            reply = self.report(self.service, '', '', sys.exc_info())
 
         return client
 

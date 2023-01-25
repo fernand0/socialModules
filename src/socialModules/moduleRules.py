@@ -601,6 +601,13 @@ class moduleRules:
 
         return iniK, nKey
 
+    def cleanUrlRule(self, url):
+        #FIXME: does it belong here?
+        url = url.replace('https', '').replace('http','')
+        url = url.replace('---','').replace('.com','')
+        url = url.replace('-(','(').replace('- ',' ')
+        return url
+
     def getNickAction(self, action):
         if isinstance(self.getActionComponent(action, 2), tuple):
             nick = self.getActionComponent(self.getActionComponent(action, 2), 3)
@@ -636,6 +643,15 @@ class moduleRules:
 
     def getTypeRule(self, rule):
         return self.getRuleComponent(rule, 1)
+
+    def getIdRule(self, rule):
+        idR = ''
+        if isinstance(self.getRuleComponent(rule, 2), tuple):
+            subC = self.getRuleComponent(rule, 2)
+            idR = f"{self.getRuleComponent(subC, 3)}@{self.getRuleComponent(subC, 2)}@{self.getRuleComponent(rule, 0)}[{self.getRuleComponent(rule, 3)}]" #@{self.getRuleComponent(rule, 0)}]"
+        else:
+            idR = f"{self.getRuleComponent(rule, 2)}@{self.getNameRule(rule)}"
+        return idR
 
     def getProfileRule(self, rule):
         profileR = ''

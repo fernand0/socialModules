@@ -333,16 +333,8 @@ def main():
     # It can be empty: {}
     
     indent = ""
-    for src in rules.rules.keys():
-        if src[0] == 'slack':
-            print(f"Src: {src}")
-            more = rules.more[src]
-            break
-    apiSrc = rules.readConfigSrc(indent, src, more)
-
-    apiSrc.setChannel("links")
-
-    testingInit = False
+    
+    testingInit = True
     if testingInit:
         import moduleRules
         src = ('slack', 'set', 'http://fernand0-errbot.slack.com/', 'posts')
@@ -353,7 +345,6 @@ def main():
         logging.info(f"User: {apiSrc.getUser()}")
         logging.info(f"Name: {apiSrc.getName()}")
         logging.info(f"Nick: {apiSrc.getNick()}")
-        return
 
     testingPublishing = False
     if testingPublishing:

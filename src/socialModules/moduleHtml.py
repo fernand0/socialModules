@@ -200,6 +200,8 @@ class moduleHtml(Content, Queue):
         return videos
 
     def extractImages(self, soup):
+        if not isinstance(soup, BeautifulSoup):
+            soup = BeautifulSoup(soup, 'lxml')
         pageImages = soup.findAll("img")
         return pageImages
 

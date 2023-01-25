@@ -114,7 +114,8 @@ class moduleMedium(Content,Queue):
             return(self.report('Medium', post, link, sys.exc_info()))
 
     def publishApiImage(self, *postData):
-        logging.debug(f"{postData} Len: {len(postData)}")
+        logging.debug(f"{self.service} postData: {postData} "
+                      f"Len: {len(postData)}")
         client = self.client
         if len(postData) == 3:
             post, imageName, more = postData
@@ -125,9 +126,21 @@ class moduleMedium(Content,Queue):
                 try:
                     myImage = client.upload_image(imageName, 'image/png')
                     myImageUrl =  myImage['url']
-                    res = self.publishPost(post, '',
-                           f"{more['content']}\n<br/>\n"
-                           f'<figure>\n<img src="{myImageUrl}">\n</figure>')
+                    if 'content' in more:
+                        res = self.publishApiPost(comment = 
+                                                  f"{more['content']}\n"
+                                                  f"<br/>\n" 
+                                                  f"<figure>\n"
+                                                  f'<img src="{myImageUrl}">'
+                                                  f'\n</figure>', 
+                                              mode='draft')
+                    elif 'alt' in more:
+                        text = f"{post}\n<br />"
+                        text = (f"{text} <figure>\n" 
+                                f'<img src="{myImageUrl}">'
+                                f'\n</figure>') 
+                        res = self.publishApiPost(comment = text)
+
                     print(res)
                 except:
                     res = self.report('Medium', post, imageName, sys.exc_info())
@@ -153,6 +166,18 @@ def main():
             format='%(asctime)s %(message)s')
 
     import moduleMedium
+
+    testingImages = True
+    if testingImages:
+        tel = moduleMedium.moduleMedium()
+
+        tel.setClient('fernand0')
+        tel.publishImage("Prueba",
+                '/tmp/2023-01-22_image.png',
+                content = "Evolución precio para el día 2021-11-01")
+
+        return
+
 
     testingBotElectrico = False
     if testingBotElectrico:

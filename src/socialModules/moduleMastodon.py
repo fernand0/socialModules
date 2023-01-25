@@ -105,14 +105,20 @@ class moduleMastodon(Content, Queue):
         return res
 
     def deleteApiPosts(self, idPost):
-        result = self.getClient().status_delete(idPost)
+        logging.info("Deleting: {}".format(str(idPost)))
+        try:
+            result = self.getClient().status_delete(idPost)
+        except:
+            result = self.report(self.service, '', '', sys.exc_info())
         logging.info(f"Res: {result}")
         return(result)
 
     def deleteApiFavs(self, idPost):
         logging.info("Deleting: {}".format(str(idPost)))
-        print("Deleting: {}".format(str(idPost)))
-        result = self.client.status_unfavourite(idPost)
+        try:
+            result = self.client.status_unfavourite(idPost)
+        except:
+            result = self.report(self.service, '', '', sys.exc_info())
         logging.info(f"Res: {result}")
         return(result)
 
