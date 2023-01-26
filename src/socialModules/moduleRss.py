@@ -49,6 +49,7 @@ class moduleRss(Content, Queue):
             self.user = urllib.parse.urlparse(feed).netloc
         else:
             self.user = feed
+        self.nick = self.user
         # msgLog = (f"{self.indent} Url + feed {self.rssFeed}")
         # logMsg(msgLog, 2, 0)
         self.client = 'client'
