@@ -33,6 +33,7 @@ class moduleSlack(Content, Queue):
 
         if self.user and self.user.find('/')>=0:
             self.name = self.user.split('/')[2].split('.')[0]
+            self.nick = self.name
         else:
             self.name = self.user
         if self.user.find('@')>=0:
