@@ -27,6 +27,7 @@ class moduleImgur(Content, Queue):
     def initApi(self, keys):
         self.service = 'Imgur'
 
+        self.nick = self.user.split('/')[-1]
         client_id = keys[0]
         client_secret = keys[1]
         access_token = keys[2]
