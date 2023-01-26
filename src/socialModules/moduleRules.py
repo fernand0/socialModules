@@ -601,8 +601,10 @@ class moduleRules:
 
         return iniK, nKey
 
-    def cleanUrlRule(self, url):
+    def cleanUrlRule(self, url, service=''):
         #FIXME: does it belong here?
+        if service:
+            url = url.replace(service, '')
         url = url.replace('https', '').replace('http','')
         url = url.replace('---','').replace('.com','')
         url = url.replace('-(','(').replace('- ',' ')
