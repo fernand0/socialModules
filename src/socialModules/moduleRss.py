@@ -47,6 +47,8 @@ class moduleRss(Content, Queue):
             self.rssFeed = feed
         if (not 'flickr' in feed) and (not 'dev.to' in feed):
             self.user = urllib.parse.urlparse(feed).netloc
+        elif 'dev.to' in feed:
+            self.user = feed.replace('feed/','')
         else:
             self.user = feed
         self.nick = self.user
