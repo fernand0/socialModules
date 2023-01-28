@@ -644,6 +644,14 @@ class moduleRules:
     def getNameRule(self, rule):
         return self.getRuleComponent(rule, 0)
 
+    def getSecondNameRule(self, rule):
+        res = ''
+        if self.getNameRule(rule) == 'cache':
+            res = self.getRuleComponent(rule, 1)
+        else:
+            res = self.getRuleComponent(rule, 0)
+        return res
+
     def getTypeRule(self, rule):
         res = 'post'
         if self.getNameRule(rule) == 'cache':
