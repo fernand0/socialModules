@@ -619,7 +619,10 @@ class moduleRules:
         return nick
 
     def getNameAction(self, action):
-        return self.getActionComponent(action, 0)
+        res = self.getActionComponent(action, 0)
+        if res == 'direct':
+            res = self.getActionComponent(action, 2)
+        return res
 
     def getTypeAction(self, action):
         if isinstance(self.getActionComponent(action, 2), tuple):
