@@ -65,7 +65,9 @@ class moduleMastodon(Content, Queue):
 
         res = 'Fail!'
         if True:
+            logging.info(f"{self.indent} First, the image")
             res = self.getClient().media_post(image, "image/png")
+            logging.info(f"{self.indent} Now the post")
             res = self.getClient().status_post(post, media_ids = res['id'])
         else:
             res = self.getClient().status_post(post+" "+link,
@@ -241,12 +243,11 @@ def main():
                         level=logging.DEBUG,
                         format='%(asctime)s %(message)s')
 
-    import moduleMastodon
+    import socialModules.moduleRules
+    rules = socialModules.moduleRules.moduleRules()
+    rules.checkRules()
 
-    mastodon = moduleMastodon.moduleMastodon()
-
-    mastodon.setClient('@fernand0Test@mastodon.social')
-    testingPosts = True
+    testingPosts = False
     if testingPosts:
         print("Testing Posts")
         mastodon.setClient('fernand0')
@@ -262,7 +263,6 @@ def main():
             print(f" -Post link {mastodon.extractPostLinks(toot)}")
         return
 
-    mastodon.setClient('@fernand0Test@fosstodon.org')
     testingFav = False
     if testingFav:
         print("Testing Fav")
@@ -279,7 +279,6 @@ def main():
             print(f" -Post link {mastodon.extractPostLinks(toot)}")
         return
 
-    mastodon.setClient('@fernand0Test@fosstodon.org')
 
     testingPost = False
     if testingPost:
@@ -289,11 +288,14 @@ def main():
         mastodon.publishApiPost(title, link, '')
         return
 
-    testingPostImages = False
+    testingPostImages = True
     if testingPostImages:
-        image = '/tmp/E8dCZoWWQAgDWqX.png'
+        key =  ('mastodon', 'set', '@fernand0@mastodon.social', 'posts')
+        image = '/tmp/2023-01-29_image.png'
         title = 'Prueba imagen'
-        mastodon.publishApiImage(title, image)
+        altText = "Alternative text"
+        apiSrc = rules.readConfigSrc("", key, rules.more.get('key',''))
+        apiSrc.publishImage(title, image, alt=altText)
 
 
         return
@@ -308,8 +310,6 @@ def main():
     mastodon.deletePostId(idPost)
     # sys.exit()
     print("Testing posts")
-    mastodon.setPostsType('posts')
-    mastodon.setPosts()
     print(mastodon.getClient().me())
     for i, post in enumerate(mastodon.getPosts()):
         # print(post)
@@ -320,8 +320,6 @@ def main():
         print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
 
     print("Favorites")
-    mastodon.setPostsType('favs')
-    mastodon.setPosts()
     for post in mastodon.getPosts():
         print(post)
         print(mastodon.getPostTitle(post))
@@ -334,8 +332,6 @@ def main():
 
     print("Posts")
 
-    mastodon.setPostsType('posts')
-    mastodon.setPosts()
     for post in mastodon.getPosts():
         title = mastodon.getPostTitle(post)
         link = mastodon.getPostLink(post)
@@ -343,8 +339,6 @@ def main():
 
     print("Favs")
 
-    mastodon.setPostsType("favs")
-    mastodon.setPosts()
     for i, post in enumerate(mastodon.getPosts()):
         print("i", i)
         print("1", post)

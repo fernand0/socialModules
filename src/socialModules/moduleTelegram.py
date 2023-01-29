@@ -64,6 +64,9 @@ class moduleTelegram(Content):
         self.channel = channel
 
     def publishApiImage(self, *args, **kwargs):
+        msgLog = (f"{self.indent} Service {self.service} publishing args "
+                  f"{args}: kwargs {kwargs}")
+        logMsg(msgLog, 2, 0)
         post, image = args
         more = kwargs
 
@@ -177,9 +180,11 @@ def main():
     tel.setClient('testFernand0')
     # tel.setChannel('testFernand0')
 
-    testingImage = False
+    msgAlt = "hola"
+    testingImage = True
+
     if testingImage:
-        res = tel.publishImage("Prueba imagen", "/tmp/prueba.png")
+        res = tel.publishImage("Prueba imagen", "/tmp/prueba.png", alt=msgAlt)
         return
 
     testingPost = True

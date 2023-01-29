@@ -113,12 +113,13 @@ class moduleMedium(Content,Queue):
         except:
             return(self.report('Medium', post, link, sys.exc_info()))
 
-    def publishApiImage(self, *postData):
+    def publishApiImage(self, *postData, **kwargs):
         logging.debug(f"{self.service} postData: {postData} "
                       f"Len: {len(postData)}")
         client = self.client
-        if len(postData) == 3:
-            post, imageName, more = postData
+        if len(postData) == 2:
+            post, imageName = postData
+            more = kwargs
             if imageName:
                 # with open(imageName, "rb") as imagefile:
                 #         imagedata = imagefile.read()
@@ -127,19 +128,24 @@ class moduleMedium(Content,Queue):
                     myImage = client.upload_image(imageName, 'image/png')
                     myImageUrl =  myImage['url']
                     if 'content' in more:
-                        res = self.publishApiPost(comment = 
-                                                  f"{more['content']}\n"
-                                                  f"<br/>\n" 
-                                                  f"<figure>\n"
-                                                  f'<img src="{myImageUrl}">'
-                                                  f'\n</figure>', 
-                                              mode='draft')
+                        text = f"{more['content']}\n"
+                        title = text.split('\n')[0]
+                        text = (f"<br/><figure>\n"
+                               f'<img src="{myImageUrl}">'
+                               f'\n</figure>'
+                               f"<br/>{text}")
+                        res = self.publishApiPost(title = title,
+                                                  comment = text, 
+                                                  mode='draft')
                     elif 'alt' in more:
                         text = f"{post}\n<br />"
-                        text = (f"{text} <figure>\n" 
-                                f'<img src="{myImageUrl}">'
-                                f'\n</figure>') 
-                        res = self.publishApiPost(comment = text)
+                        title = text.split('\n')[0]
+                        text = (f"<br/><figure>\n"
+                               f'<img src="{myImageUrl}">'
+                               f'\n</figure>'
+                               f"<br/>{text}")
+                        res = self.publishApiPost(title = title,
+                                                  comment = text)
 
                     print(res)
                 except:

@@ -134,20 +134,20 @@ class moduleFacebook(Content,Queue):
         # res = self.processReply(res)
         return res
 
-    def publishApiImage(self, postData):
+    def publishApiImage(self, *args, **kwargs):
         res = 'Fail!'
-        msgLog = (f"{self.indent} {postData} Len: {len(postData)}")
+        msgLog = (f"{self.indent} {args} Len: {len(args)}")
         logMsg(msgLog, 2, 0)
-        if len(postData) == 3:
-            post, imageName, more = postData
+        if len(args) == 3:
+            post, imageName, more = args
             yield(f" publishing api {post} - {imageName} - {more}")
             with open(imageName, "rb") as imagefile:
                     imagedata = imagefile.read()
 
             try:
-                if 'alt' in more:
+                if 'alt' in kwargs:
                     res = self.page.put_photo(imagedata, message=post,
-                        alt_text_custom = more['alt'])
+                        alt_text_custom = kwargs['alt'])
                 else:
                     res = self.page.put_photo(imagedata, message=post)
             except:
@@ -210,8 +210,11 @@ def main():
     fc.setClient('me')
     fc.setPage('Fernand0Test')
 
-    res = fc.publishImage("prueba imagen", "/tmp/2021-06-26_image.png", alt="Imagen con alt")
-    print(res)
+    testingImages = True
+    if testingImages:
+        res = fc.publishImage("prueba imagen", "/tmp/prueba.png", 
+                              alt="Imagen con alt")
+        print(res)
     return
     #print("Testing posting and deleting")
     #res = fc.publishPost("Prueba borrando 7", "http://elmundoesimperfecto.com/", '')

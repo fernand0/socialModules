@@ -340,7 +340,7 @@ def main():
     indent = ""
     apiSrc = rules.readConfigSrc(indent, src, more)
 
-    testingPosts = True
+    testingPosts = False
     if testingPosts:
         for key in rules.rules.keys():
             print(f"Key: {key}")
@@ -394,18 +394,15 @@ def main():
         apiSrc.publishPost(title, link, '')
         return
 
-    testingPostImages = False
+    testingPostImages = True
     if testingPostImages:
-        image = '/tmp/Fe3Op8HXoAMBFqx.jpg'
+        image = '/tmp/prueba.png'
         title = 'Prueba imagen'
-        for key in rules.rules.keys():
-            if ((key[0] == 'twitter')
-                    and ('fernand0Test' in key[2])
-                    #and (key[3] == 'favs')
-                    ):
-                break
+        altText = "Texto adicional"
+        key =  ('twitter', 'set', 'fernand0Test', 'posts')
+
         apiSrc = rules.readConfigSrc("", key, rules.more[key])
-        apiSrc.publishApiImage(title, image)
+        print(f"Res: {apiSrc.publishApiImage(title, image, alt=altText)}")
 
         return
 
