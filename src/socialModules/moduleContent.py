@@ -476,7 +476,6 @@ class Content:
         socialNetwork = (self.service, self.nick)
         return socialNetwork
 
-
     def getSocialNetworks(self):
         socialNetworks = None
         if hasattr(self, "socialNetworks"):
@@ -625,7 +624,6 @@ class Content:
                         '</p>'.format(text, srcTxt )
                         )
         return text
-
 
     def getImagesCode(self, i):
         # FIXME: use some template system.
