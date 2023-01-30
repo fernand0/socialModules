@@ -866,19 +866,19 @@ def main():
     print(api.getPosts()[0])
     print(len(api.getPosts()[0]))
     sys.exit()
-     # It has 8 elements
-    print(api.obtainPostData(0))
-    print('G21', api.selectAndExecute('show', 'G21'))
-    print('G23', api.selectAndExecute('show', 'G23'))
-    print('G05', api.selectAndExecute('show', 'G05'))
-    sys.exit()
-    print('G29', api.selectAndExecute('publish', 'G29'))
-    print('G29', api.selectAndExecute('delete', 'G29'))
-    print('G25', api.selectAndExecute('edit', 'G27'+' '+'Cebollinos (hechos)'))
-    print('M18', api.editPost('M18', 'Vaya'))
-    print('M10', api.publishPost('M10'))
-    sys.exit()
-    api.editPost(pp, api.getPosts(), "M17", 'Prueba.')
+    # It has 8 elements
+    # print(api.obtainPostData(0))
+    # print('G21', api.selectAndExecute('show', 'G21'))
+    # print('G23', api.selectAndExecute('show', 'G23'))
+    # print('G05', api.selectAndExecute('show', 'G05'))
+    # sys.exit()
+    # print('G29', api.selectAndExecute('publish', 'G29'))
+    # print('G29', api.selectAndExecute('delete', 'G29'))
+    # print('G25', api.selectAndExecute('edit', 'G27'+' '+'Cebollinos (hechos)'))
+    # print('M18', api.editPost('M18', 'Vaya'))
+    # print('M10', api.publishPost('M10'))
+    # sys.exit()
+    # api.editPost(pp, api.getPosts(), "M17", 'Prueba.')
 
     logging.basicConfig(#filename='example.log',
             level=logging.DEBUG,format='%(asctime)s %(message)s')
@@ -898,24 +898,24 @@ def main():
     #deletePost(api, pp, postsP, ('M0',0))
     #sys.exit()
 
-    publishPost(api, pp, profiles, ('F',1))
+    # publishPost(api, pp, profiles, ('F',1))
 
-    posts.update(postsP)
-    print("-> Posts",posts)
-    #print("Posts",profiles)
-    print("Keys",posts.keys())
-    print(pp.pformat(profiles))
-    print("Pending",type(profiles))
-    print(pp.pformat(profiles))
-    profiles = listSentPosts(api, pp, "")
-    print("Sent",type(profiles))
-    print(pp.pformat(profiles))
-    print(type(profiles[1]),pp.pformat(profiles[1]))
+    # posts.update(postsP)
+    # print("-> Posts",posts)
+    # #print("Posts",profiles)
+    # print("Keys",posts.keys())
+    # print(pp.pformat(profiles))
+    # print("Pending",type(profiles))
+    # print(pp.pformat(profiles))
+    # profiles = listSentPosts(api, pp, "")
+    # print("Sent",type(profiles))
+    # print(pp.pformat(profiles))
+    # print(type(profiles[1]),pp.pformat(profiles[1]))
 
 
-    if profiles:
-       toPublish, toWhere = input("Which one do you want to publish? ").split(' ')
-       #publishPost(api, pp, profiles, toPublish)
+    # if profiles:
+    #    toPublish, toWhere = input("Which one do you want to publish? ").split(' ')
+    #    #publishPost(api, pp, profiles, toPublish)
 
 
 if __name__ == '__main__':
