@@ -7,10 +7,10 @@ from imgurpython import ImgurClient
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 
-class moduleImgur(Content, Queue):
+class moduleImgur(Content): #, Queue):
 
     def getKeys(self, config):
         if self.user.find('http')>=0:

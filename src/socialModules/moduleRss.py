@@ -17,12 +17,12 @@ from pdfrw import PdfReader
 import socialModules.moduleCache
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 # https://github.com/fernand0/scripts/blob/master/moduleCache.py
 
 
-class moduleRss(Content, Queue):
+class moduleRss(Content): #, Queue):
 
     def getRssFeed(self):
         return(self.rssFeed)

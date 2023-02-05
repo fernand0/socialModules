@@ -14,10 +14,10 @@ import requests
 from bs4 import BeautifulSoup
 
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 
-class moduleGitter(Content,Queue):
+class moduleGitter(Content): #,Queue):
 
     def getKeys(self, config):
         token = config.get(self.service, "token")
@@ -95,6 +95,10 @@ class moduleGitter(Content,Queue):
 
     def getPostContentHtml(self, post):
         return post.get('html', '')
+
+    def editApiLink(self, post, newLink):
+        #FIXME. To be done
+        pass
 
     def setPostTitle(self, post, newTitle):
         # Only in local memory

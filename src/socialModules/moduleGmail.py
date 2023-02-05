@@ -30,7 +30,7 @@ import socialModules.moduleImap
 from socialModules.configMod import *
 from socialModules.moduleContent import *
 from socialModules.moduleGoogle import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 # from googleapiclient.discovery import build
 # from httplib2 import Http
@@ -43,7 +43,7 @@ from socialModules.moduleQueue import *
 
 
 
-class moduleGmail(Content,Queue,socialGoogle):
+class moduleGmail(Content,socialGoogle): #Queue,socialGoogle):
 
     # def API(self, Acc):
     #     # Back compatibility

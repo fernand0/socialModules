@@ -8,13 +8,13 @@ from bs4 import BeautifulSoup
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 # pip install Mastodon.py
 
 
 
-class moduleMastodon(Content, Queue):
+class moduleMastodon(Content): #, Queue):
 
     def getKeys(self, config):
         #if self.user.startswith('@'):

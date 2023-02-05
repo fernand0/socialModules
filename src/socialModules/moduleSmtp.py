@@ -13,13 +13,13 @@ from email.utils import formatdate
 import socialModules
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 #import getpass
 #import keyring
 #import keyrings
 
-class moduleSmtp(Content, Queue):
+class moduleSmtp(Content): #, Queue):
 
     def setClient(self, user):
         self.user = None

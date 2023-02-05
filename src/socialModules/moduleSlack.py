@@ -10,14 +10,14 @@ from bs4 import BeautifulSoup
 from slack_sdk import WebClient
 
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 # from slack_sdk.errors import SlackApiError
 
 # https://slack.dev/python-slack-sdk/v3-migration/
 
 
-class moduleSlack(Content, Queue):
+class moduleSlack(Content): #, Queue):
 
     def getKeys(self, config):
         slack_token = config.get(self.service, "oauth-token")

@@ -7,10 +7,10 @@ from pocket import Pocket, PocketException
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 
-class modulePocket(Content,Queue):
+class modulePocket(Content): #,Queue):
 
     def getKeys(self, config):
         if self.user.startswith('@'):

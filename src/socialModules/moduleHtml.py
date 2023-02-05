@@ -13,13 +13,13 @@ from pdfrw import PdfReader
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 # https://github.com/fernand0/scripts/blob/master/moduleCache.py
 
 
 
-class moduleHtml(Content, Queue):
+class moduleHtml(Content): #, Queue):
 
     def initApi(self, keys):
         self.url = ""
@@ -56,7 +56,11 @@ class moduleHtml(Content, Queue):
         retry = False
         moreContent = ""
         try:
+            from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+            requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
             response = requests.get(theUrl, verify=False)
+            print(f"Response 1: {response}")
             pos = response.text.find("https://www.blogger.com/feeds/")
             # Some blogspot blogs do not render ok because they use javascript
             # to load content. We add the content from the RSS feed.  Dirty
@@ -78,9 +82,12 @@ class moduleHtml(Content, Queue):
         except:
             retry = True
         if retry or response.status_code >= 401:
+            from fake_useragent import UserAgent
+            ua = UserAgent()
             response = requests.get(
-                theUrl, headers={"User-Agent": "Mozilla/5.0"}, verify=False
+                theUrl, headers={"User-Agent": ua.random}, verify=False
             )
+            print(f"Response 2: {response}")
 
         return response, moreContent
 

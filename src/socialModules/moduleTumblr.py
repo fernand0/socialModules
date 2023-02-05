@@ -5,7 +5,7 @@ import pytumblr
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 # Configuration
 #
@@ -16,7 +16,7 @@ from socialModules.moduleQueue import *
 # oauth_secret:
 
 
-class moduleTumblr(Content, Queue):
+class moduleTumblr(Content): #, Queue):
 
     def getKeys(self, config):
         consumer_key = config.get("Buffer1", "consumer_key")

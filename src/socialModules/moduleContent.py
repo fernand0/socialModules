@@ -1469,6 +1469,30 @@ class Content:
         return f"Fail! {res}"
         # print("----Unexpected error: %s"% data[2])
 
+    def show(self, j):
+        if j < len(self.getPosts()):
+            logging.info("To show post %d" % j)
+
+            post = self.getPosts()[j]
+            title = self.getPostTitle(post)
+            link = self.getPostLink(post)
+            content = self.getPostContent(post)
+            if (title == content):
+                content = ''
+
+            reply = ''
+            logging.info("title %s"%title)
+            if title:
+                reply = reply + ' ' + title 
+            if content:
+                reply = reply + ' ' + content
+            if link: 
+                reply = reply + '\n' + link 
+        else:
+            reply = ''
+
+        return(reply)
+
     def getPostComment(self, post):
         return ""
 

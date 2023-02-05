@@ -8,10 +8,10 @@ from medium import Client
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 
-class moduleMedium(Content,Queue):
+class moduleMedium(Content): #,Queue):
 
     def setClient(self, channel):
         # FIXME: Adapt this method

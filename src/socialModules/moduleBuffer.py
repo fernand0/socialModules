@@ -61,7 +61,7 @@ from colorama import Fore
 
 from configMod import *
 from moduleContent import *
-from moduleQueue import *
+# from moduleQueue import *
 
 # We can put as many items as the service with most items allow
 # The limit is ten.

@@ -9,10 +9,10 @@ from bs4 import BeautifulSoup
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 
-class moduleWordpress(Content,Queue):
+class moduleWordpress(Content): #,Queue):
 
     def getKeys(self, config):
         access_token =  config[self.user]["access_token"]

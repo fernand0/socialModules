@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+#from socialModules.moduleQueue import *
 
 # This moule reads directly the HTML code
 #
@@ -22,7 +22,7 @@ from socialModules.moduleQueue import *
 # idSeparator: # character used for the identification of a post
 
 
-class moduleForum(Content, Queue):
+class moduleForum(Content): #, Queue):
 
     def setClient(self, forumData):
         self.url = ""

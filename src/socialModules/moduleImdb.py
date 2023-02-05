@@ -13,10 +13,10 @@ import requests
 import tmdbsimple as tmdb
 
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 
-class moduleImdb(Content,Queue):
+class moduleImdb(Content): #,Queue):
 
     def setClient(self, init=()):
         self.service = 'Imdb'

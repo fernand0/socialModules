@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup, Tag
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 # We are using facebook-sdk
 # You can find the way to obtain tokens and so on at:
@@ -22,7 +22,7 @@ from socialModules.moduleQueue import *
 # app_token:
 # app_id:
 
-class moduleFacebook(Content,Queue):
+class moduleFacebook(Content): #,Queue):
 
     def getKeys(self, config):
         oauth_access_token = config.get(self.service, "oauth_access_token")

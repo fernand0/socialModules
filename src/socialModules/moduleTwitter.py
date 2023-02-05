@@ -10,14 +10,14 @@ from twitter import *
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 # pip install twitter
 # https://pypi.python.org/pypi/twitter
 # https://github.com/sixohsix/twitter/tree
 # http://mike.verdone.ca/twitter/
 
-class moduleTwitter(Content, Queue):
+class moduleTwitter(Content): #, Queue):
 
     def getKeys(self, config):
         CONSUMER_KEY = config.get(self.user, "CONSUMER_KEY")

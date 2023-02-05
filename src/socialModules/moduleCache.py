@@ -21,10 +21,10 @@ from crontab import CronTab
 import socialModules
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+#from socialModules.moduleQueue import *
 
 
-class moduleCache(Content,Queue):
+class moduleCache(Content): #,Queue):
 
     def getProfileR(self, rule):
         msgLog = (f"{self.indent} Service {self.service} getProfileR {rule}")

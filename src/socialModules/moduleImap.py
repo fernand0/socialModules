@@ -41,7 +41,7 @@ import socialModules.moduleGmail
 import socialModules.moduleSieve
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 msgHeaders = ['List-Id', 'From', 'Sender', 'Subject', 'To',
               'X-Original-To', 'X-Envelope-From',
@@ -51,7 +51,7 @@ keyWords = {"address": ["From", "To"],
             "header":  ["subject", "Sender", "X-Original-To", "List-Id"]
             }
 
-class moduleImap(Content, Queue):
+class moduleImap(Content): #, Queue):
 
     def getKeys(self, config):
         msgLog = (f"{self.indent} Getting keys")
