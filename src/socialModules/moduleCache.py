@@ -818,9 +818,9 @@ class moduleCache(Content): #,Queue):
         posts = self.getPosts()
         post = posts[j:j+1]
         msgLog = (f"Copying: {self.getPostTitle(post)}")
-        logMsg(msg, 1, 0)
+        logMsg(msgLog, 1, 0)
         msgLog = (f"Destination: {dest}")
-        logMsg(msg, 1, 0)
+        logMsg(msgLog, 1, 0)
         # msgLog = (f"Posts: {posts}")
         # msgLog = (f"Post: {post}")
 
@@ -841,7 +841,6 @@ class moduleCache(Content): #,Queue):
         msgLog = (f"{self.indent} Moved {self.getPostTitle(post)}")
         logMsg(msgLog, 1, 0)
         return("%s"% self.getPostTitle(post))
-
 
     def move(self, j, dest):
         k = int(dest)
