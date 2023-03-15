@@ -5,6 +5,7 @@ import os
 import sys
 
 from medium import Client
+#local version, to add notifyFollower parameter
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
@@ -80,6 +81,8 @@ class moduleMedium(Content): #,Queue):
             link = more.get('link','')
             mode = more.get('mode','')
             tags = more.get('tags', [])
+            notifyFollowers = more.get('notifyFollowers', False)
+            print(f"Notify: {notifyFollowers}")
         if not mode:
             mode = 'public'
         logging.info(f"    Publishing in {self.service} ...")
@@ -104,10 +107,14 @@ class moduleMedium(Content): #,Queue):
             textOrig = ''
 
         try:
-            res = client.create_post(user_id=user["id"], title=title,
-                content="<h4>"+title+"</h4><br />"+textOrig+content,
-                canonical_url = link, content_format="html",
-                publish_status=mode, tags=tags)#"public") #draft")
+            res = client.create_post(user_id=user["id"], title=title, 
+                                     content="<h4>"+title+"</h4><br />" +
+                                     textOrig+content, canonical_url = link, 
+                                     content_format="html", 
+                                     publish_status=mode, 
+                                     tags=tags, 
+                                     notifyFollowers = notifyFollowers)
+            #"public") #draft")
             logging.debug("Res: %s" % res)
             return(res)
         except:

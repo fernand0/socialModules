@@ -157,7 +157,11 @@ class moduleForum(Content): #, Queue):
                 try:
                     idPost = int(idPost[1:])
                 except:
-                    idPost = [int(s) for s in idPost.split('/') if s.isdigit()][0]
+                    ids = [int(s) for s in idPost.split('/') if s.isdigit()]
+                    if ids:
+                        idPost = ids[0]
+                    else:
+                        idPost = None
 
         logging.debug(f"Id: {idPost}")
         return idPost
