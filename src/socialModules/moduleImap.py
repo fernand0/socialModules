@@ -1226,12 +1226,12 @@ class moduleImap(Content): #, Queue):
         if post.is_multipart():
             mail_content = ''
             for part in post.get_payload():
-                print(f"Post: {part}")
-                print(f"Post: {part.get_content_type()}")
                 if part.get_content_type() == 'text/plain':
                     mail_content += part.get_payload()
                 elif part.get_content_type() == 'text/html':
-                    mail_content += part.get_payload()
+                    text = part.get_payload(decode=True)
+                    soup = BeautifulSoup(text, "html.parser")
+                    mail_content += soup.get_text('\n')
         else:
             mail_content = post.get_payload()
 
