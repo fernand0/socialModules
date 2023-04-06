@@ -3,6 +3,7 @@
 # We will have here the set of functions related to imap mail management
 
 import binascii
+import chardet
 import configparser
 import email
 import email.policy
@@ -1198,14 +1199,15 @@ class moduleImap(Content): #, Queue):
         if post.is_multipart():
             mail_content = ''
             for part in post.get_payload():
-                print(f"type: {part.get_content_type()}")
+                # print(f"type: {part.get_content_type()}")
                 if part.get_content_type() == 'text/html':
                     mail_content += part.get_payload()
                 elif part.get_content_type() == 'multipart/alternative':
                     for subpart in part.get_payload():
                         # print(f"sub: *{subpart}*")
                         if subpart and (subpart.get_content_charset() is None):
-                            charset = chardet.detect(str(subpart))['encoding']
+                            # print(f"sub: *{subpart}*")
+                            charset = chardet.detect(subpart.as_bytes())['encoding']
                         else:
                             charset = subpart.get_content_charset()
                         if subpart.get_content_type() == 'text/plain':
@@ -1286,12 +1288,8 @@ class moduleImap(Content): #, Queue):
         else:
             post = msg
         subject = post.get('Subject')
-        try:
-            import quopri
-            subject = quopri.decodestring(subject)
-        except:
-            msgLog = ("Not quopri")
-            logMsg(msgLog, 3, 0)
+        theHeader = email.header.decode_header(str(subject))
+        subject = str(email.header.make_header(theHeader))
         return subject
 
     def getPostId(self, msg):
@@ -1425,14 +1423,15 @@ def main():
     print(f"Folders: {apiSrc.getChannels()}")
     # apiSrc.setChannel(more['search'])
 
-    testingPublishing = True
+    testingPublishing = False
     if testingPublishing:
         apiSrc.publishPost('Mensaje', 'https://www.unizar.es/', '')
 
         return
 
-    testingPosts = False
+    testingPosts = True
     if testingPosts:
+        apiSrc.setChannel('INBOX')
         apiSrc.setPosts()
         for post in apiSrc.getPosts():
             # print(f"Post: {post}")

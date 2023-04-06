@@ -30,3 +30,4 @@ gitterpy
 slack_sdk
 Pillow
 readability-lxml
+chardet

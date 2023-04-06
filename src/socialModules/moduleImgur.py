@@ -272,6 +272,7 @@ class moduleImgur(Content): #, Queue):
                     msgLog = (f"{self.indent} Name in different format "
                               f"{img.name}")
                     logMsg(msgLog, 3, 0)
+
             res.append((urlImg, title, description, tags))
         return res
 
@@ -392,7 +393,7 @@ def main():
 
     extractImages = True
     if extractImages:
-        apiSrc.setPostsType('posts')
+        apiSrc.setPostsType('drafts')
         apiSrc.setPosts()
 
         for i, post in enumerate(apiSrc.getPosts()[:25]):

@@ -74,6 +74,7 @@ class moduleMedium(Content): #,Queue):
         tags = []
         if args and len(args) == 3:
             post, link, comment = args
+            notifyFollowers = True
         if kwargs:
             more = kwargs
             comment = more.get('comment','')
