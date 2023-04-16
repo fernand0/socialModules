@@ -5,8 +5,7 @@ import sys
 
 import dateparser
 import dateutil
-import twitter
-from twitter import *
+import tweepy
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
@@ -34,58 +33,55 @@ class moduleTwitter(Content): #, Queue):
         self.base_url = 'https://twitter.com'
         self.url = f"{self.base_url}/{self.user}"
         logging.info("Initializing API")
-        self.authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
-        client = Twitter(auth=self.authentication)
+        # self.authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
+        # client = Twitter(auth=self.authentication)
+
+        client = tweepy.Client(consumer_key=keys[0],
+                               consumer_secret=keys[1],
+                               access_token=keys[2],
+                               access_token_secret=keys[3])
+        
         return client
 
     def apiCall(self, command, **kwargs):
-        msgLog = (f"   Calling: {command.uriparts} with arguments {kwargs}")
+        msgLog = (f"   Calling: {command} with arguments {kwargs}")
         logMsg(msgLog, 2, 0)
         res = []
 
-        try:
+        if True:
             res = command(**kwargs)
-        except twitter.api.TwitterHTTPError as twittererror:
-            for error in twittererror.response_data.get("errors", []):
-                logging.info(f"      Error code: "
-                             f"{error.get('code', None)}")
+        #except twitter.api.TwitterHTTPError as twittererror:
+        #    for error in twittererror.response_data.get("errors", []):
+        #        logging.info(f"      Error code: "
+        #                     f"{error.get('code', None)}")
 
-                res = self.report(
-                    self.getService(), kwargs, '', sys.exc_info())
-                res = f"Fail! {res}"
+        #        res = self.report(
+        #            self.getService(), kwargs, '', sys.exc_info())
+        #        res = f"Fail! {res}"
         return res
 
     def setApiPosts(self):
-        posts = self.apiCall(self.getClient().statuses.user_timeline,
-                count=100, tweet_mode='extended')
+        #posts = self.apiCall(self.getClient().statuses.user_timeline,
+        posts = self.apiCall(self.getClient().get_home_timeline,
+                             tweet_fields=['entities']) #,
+                # max_results=100) #, tweet_mode='extended')
+        posts = posts[0]
 
         return posts
-
-        # try:
-        #     posts = self.getClient().statuses.user_timeline(count=100)
-        # except twitter.api.TwitterHTTPError as twittererror:
-        #     for error in twittererror.response_data.get("errors", []):
-        #         logging.info(f"      Error code: "
-        #                      f"{error.get('code', None)}")
-
-        # return posts
 
     def setApiFavs(self):
-        posts = self.apiCall(self.getClient().favorites.list,
-                tweet_mode='extended')
+        # posts = self.apiCall(self.getClient().favorites.list,
+        posts = self.apiCall(self.getClient().get_liked_tweets) #,
+                #tweet_mode='extended')
 
         return posts
-        # posts = self.getClient().favorites.list(tweet_mode='extended')
-        # # count=100)
-        # # https://stackoverflow.com/questions/38717816/twitter-api-text-field-value-is-truncated
-        # return posts
 
     def processReply(self, reply):
         res = ''
         if reply:
             if not ('Fail!' in reply):
                 idPost = self.getPostId(reply)
-                title = reply.get('title')
+                title = self.getPostTitle(reply)
                 res = f"{title} https://twitter.com/{self.user}/status/{idPost}"
             else:
                 res = reply
@@ -151,16 +147,9 @@ class moduleTwitter(Content): #, Queue):
         logging.debug("     Retweeting: %s" % post)
         res = 'Fail!'
         if 'twitter' in link:
-            res = self.apiCall(self.getClient().statuses.retweet._id,
-                    _id=idPost)
-            # try:
-            #     res = self.getClient().statuses.retweet._id(_id=idPost)
-            #     #         result = t.statuses.retweet._id(_id=tweet['id'])
-            # except twitter.api.TwitterHTTPError as twittererror:
-            #     for error in twittererror.response_data.get("errors", []):
-            #         logging.info("      Error code: %s" %
-            #                      error.get("code", None))
-            #     res = self.report('Twitter', post, link, sys.exc_info())
+            #res = self.apiCall(self.getClient().statuses.retweet._id,
+            res = self.apiCall(self.getClient().retweet,
+                    tweet_id=idPost)
         else:
             res = "Fail! Link {link} is not a tweet"
 
@@ -201,30 +190,22 @@ class moduleTwitter(Content): #, Queue):
             # will reflect this.
 
             logging.debug("     Publishing: %s" % title)
-            res = self.apiCall(self.getClient().statuses.update,
-                    status=title)
-            # try:
-            #     logging.info(f"Tittt: {title} {link} {comment}")
-            #     # return "Fail!"
-            #     res = self.getClient().statuses.update(status=title)
-            # except twitter.api.TwitterHTTPError as twittererror:
-            #     for error in twittererror.response_data.get("errors", []):
-            #         logging.info("      Error code: %s" %
-            #                      error.get("code", None))
-            #     res = self.report('Twitter', title, link, sys.exc_info())
-            #     res = f"Fail! {res}"
+            res = self.apiCall(self.getClient().create_tweet,
+                               text=title)
 
         return res
 
     def deleteApiPosts(self, idPost):
         logging.info("Deleting: {}".format(str(idPost)))
-        res= self.apiCall(self.getClient().statuses.destroy, _id=idPost)
+        res= self.apiCall(self.getClient().delete_tweet, id=idPost)
+        # res= self.apiCall(self.getClient().statuses.destroy, _id=idPost)
         logging.debug(f"Res: {res}")
         return (res)
 
     def deleteApiFavs(self, idPost):
         logging.info("Deleting: {}".format(str(idPost)))
-        res = self.apiCall(self.getClient().favorites.destroy, _id=idPost)
+        res = self.apiCall(self.getClient().unlike, tweet_id=idPost)
+        # res = self.apiCall(self.getClient().favorites.destroy, _id=idPost)
         return (res)
 
     def getPostId(self, post):
@@ -232,7 +213,7 @@ class moduleTwitter(Content): #, Queue):
             # It is the tweet URL
             idPost = post
         else:
-            idPost = post.get('id')
+            idPost = post.data.get('id')
         return idPost
 
     def getPostApiSource(self, post):
@@ -252,19 +233,19 @@ class moduleTwitter(Content): #, Queue):
             title = f"{self.user}'s {self.service}"
         return title
 
-
     def getPostTitle(self, post):
         msgLog = (f"{self.indent} Postttt: {post}")
         logMsg(msgLog, 2, 0)
-        title = post.get('text')
+        print(f"post: {post}")
+        title = post.data.get('text')
         if not title:
-            title = post.get('full_text')
+            title = post.data.get('full_text')
         # if 'http' in title:
             # title = title.split('http')[0]
         return title
 
     def getPostUrl(self, post):
-        idPost = post.get('id_str', '')
+        idPost = self.getPostId(post)
         msgLog = f"{self.indent} getPostUrl: {post}"
         logMsg(msgLog, 2, 0)
         if idPost:
@@ -285,27 +266,29 @@ class moduleTwitter(Content): #, Queue):
         return (self.getPostContent(post), self.getPostContentLink(post))
 
     def getPostContent(self, post):
-        result = ''
-        if 'full_text' in post:
-            result = post.get('full_text')
+        result = post
+        # if 'full_text' in post:
+        #     result = post.get('full_text')
         return result
 
     def getPostContentLink(self, post):
         result = ''
-        if ('urls' in post['entities']):
-            if post['entities']['urls']:
-                if 'expanded_url' in post['entities']['urls'][0]:
-                    result = post['entities']['urls'][0]['expanded_url']
-            elif ('full_text' in post) and ('http' in post['full_text']):
-                pos = post['full_text'].find('http')
-                posF = post['full_text'].find(' ', pos + 1)
-                result = post['full_text'][pos:posF+1]
-        elif ('url' in post['user']['entities']['url']
-              and (post['user']['entities']['url']['urls'])):
-            result = post['user']['entities']['url']['urls'][0]['expanded_url']
-        elif ('media' in post['entities']):
-            if (post['entities']['media']):
-                result = post['entities']['media'][0]['expanded_url']
+        entities = post.entities
+        if entities:
+            if ('urls' in entities):
+                if entities['urls']:
+                    if 'expanded_url' in entities['urls'][0]:
+                        result = entities['urls'][0]['expanded_url']
+                elif ('full_text' in post) and ('http' in post['full_text']):
+                    pos = post['full_text'].find('http')
+                    posF = post['full_text'].find(' ', pos + 1)
+                    result = post['full_text'][pos:posF+1]
+            # elif ('url' in post['user']['entities']['url']
+            #       and (post['user']['entities']['url']['urls'])):
+            #     result = post['user']['entities']['url']['urls'][0]['expanded_url']
+            elif ('media' in entities):
+                if (entities['media']):
+                    result = entities['media'][0]['expanded_url']
 
         if not result:
             result = self.getPostUrl(post)
@@ -314,17 +297,10 @@ class moduleTwitter(Content): #, Queue):
     def searchApi(self, text):
         print("     Searching in Twitter...")
         logging.info("     Searching in Twitter...")
-        res = self.apiCall(self.getClient().search.tweets, q=text)
+        res = self.apiCall(self.getClient().search_all_tweets, query=text)
+        # res = self.apiCall(self.getClient().search.tweets, q=text)
         if res:
             return (res.get('statuses', []))
-
-        # try:
-        #     res = self.getClient().search.tweets(q=text)
-        #     if res:
-        #         logging.debug("Res: %s" % res)
-        #         return (res.get('statuses'))
-        # except:
-        #     return (self.report('Twitter', text, sys.exc_info()))
 
 def main():
 
@@ -349,14 +325,16 @@ def main():
                     and (key[3] == 'posts')):
                 print("Testing Posts")
                 apiSrc.setPosts()
-                tweet = apiSrc.getPosts()[0]
-                tweet = apiSrc.getNextPost()
-                print(f"Tweet: {tweet}")
-                print(f" -Title {apiSrc.getPostTitle(tweet)}")
-                print(f" -Link {apiSrc.getPostLink(tweet)}")
-                print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
-                print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
-                print(f"Len: {len(apiSrc.getPosts())}")
+                posts = apiSrc.getPosts()
+                # print(f"Tweets: {posts}")
+                for tweet in posts:
+                    print(f"Tweet: {tweet}")
+                    print(f"Tweet: {tweet.entities}")
+                    print(f" -Title {apiSrc.getPostTitle(tweet)}")
+                    print(f" -Link {apiSrc.getPostLink(tweet)}")
+                    print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
+                    print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
+                    print(f"Len: {len(apiSrc.getPosts())}")
         return
 
     testingFav = False
@@ -391,10 +369,14 @@ def main():
         apiSrc = rules.readConfigSrc("", key, rules.more[key])
         title = "Test"
         link = "https://twitter.com/fernand0Test"
-        apiSrc.publishPost(title, link, '')
+        print(f"Publishing {apiSrc.publishPost(title, link, '')}")
+        delete = input("Delete (write the id)? ")
+        if delete:
+            print(f"Deleting: {apiSrc.deleteApiPosts(delete)}")
+
         return
 
-    testingPostImages = True
+    testingPostImages = False
     if testingPostImages:
         image = '/tmp/prueba.png'
         title = 'Prueba imagen'
@@ -406,7 +388,7 @@ def main():
 
         return
 
-    testingRT = False
+    testingRT = True
     if testingRT:
         print("Testing RT")
         for key in rules.rules.keys():
