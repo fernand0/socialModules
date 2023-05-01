@@ -464,18 +464,25 @@ class moduleImap(Content): #, Queue):
 
     def selectHeaderAuto(self, M, msg):
         i = 1
+        print(f"Msg: {msg}")
         if 'List-Id' in msg:
             return ('List-Id', msg['List-Id'][msg['List-Id'].find('<')+1:-1])
         else:
+
             for header in msgHeaders:
-                if header in msg:
-                    print(i, " ) ", header, msg[header])
+                textHeader = M.getHeader(msg, header) 
+                textHeader = email.header.decode_header(str(textHeader)) 
+                textHeader = str(email.header.make_header(textHeader)) 
+                if textHeader!='None': 
+                    print(f"{i}) {header} {textHeader}") 
                 i = i + 1
             import locale
             header_num = input("Select header: ")
 
             header = msgHeaders[int(header_num)-1]
-            textHeader = msg[msgHeaders[int(header_num)-1]]
+            textHeader = M.getHeader(msg, header)
+            textHeader = email.header.decode_header(str(textHeader))
+            textHeader = str(email.header.make_header(textHeader))
             pos = textHeader.find('<')
             if (pos >= 0):
                 textHeader = textHeader[pos+1:textHeader.find('>', pos + 1)]
@@ -845,7 +852,7 @@ class moduleImap(Content): #, Queue):
             if inNameFolder.isdigit() and name.lower().find((inNameFolder+") ").encode('ascii').lower()) == 0:
                 # There can be a problem if the number is part of the name or
                 # the number of the folder.
-                listFolders = "%d) %s" % (i, nameFolder(name))
+                listFolders = "%d) %s" % (i, self.nameFolder(name))
                 return(listFolders)
             if inNameFolder.encode('ascii').lower() in name.lower():
                 if listFolders:
@@ -863,12 +870,12 @@ class moduleImap(Content): #, Queue):
     def selectFolder(self, M, moreMessages = "", newFolderName='', folderM=''):
         data = self.listFolders()
         #print(data)
-        listAllFolders = listFolderNames(data, moreMessages)
-        if not listAllFolders: listAllFolders = listFolderNames(data, "")
+        listAllFolders = self.listFolderNames(data, moreMessages)
+        if not listAllFolders: listAllFolders = self.listFolderNames(data, "")
         listFolders = listAllFolders
         while listFolders:
             if (listFolders.count('\n') == 0):
-                nF = nameFolder(listFolders)
+                nF = self.nameFolder(listFolders)
                 nF = nF.strip('\n')
                 print("nameFolder", nF)
                 return(nF)
@@ -891,10 +898,10 @@ class moduleImap(Content): #, Queue):
                 iFolder = createFolder(M, nfn, moreMessages)
                 return(iFolder)
                 #listFolders = iFolder
-            listFolders = listFolderNames(listFolders.split('\n'), inNameFolder)
+            listFolders = self.listFolderNames(listFolders.split('\n'), inNameFolder)
             if (not inNameFolder):
                 print("Entra")
-                listAllFolders = listFolderNames(data, "")
+                listAllFolders = self.listFolderNames(data, "")
                 listFolders = ""
             if (not listFolders):
                 listFolders = listAllFolders
@@ -1274,6 +1281,10 @@ class moduleImap(Content): #, Queue):
         result = theLink
         return result
 
+    def getHeader(self, msg, header):
+        post = msg[1]
+        return post.get(header)
+
     def getPostDate(self, msg):
         post = msg[1]
         return post.get('Date')
@@ -1281,6 +1292,14 @@ class moduleImap(Content): #, Queue):
     def getPostFrom(self, msg):
         post = msg[1]
         return post.get('From')
+
+    def getPostTo(self, msg):
+        post = msg[1]
+        return post.get('To')
+
+    def getPostListId(self, msg):
+        post = msg[1]
+        return post.get('List-Id')
 
     def getPostTitle(self, msg):
         post = msg[1]

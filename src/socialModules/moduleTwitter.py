@@ -44,6 +44,7 @@ class moduleTwitter(Content): #, Queue):
         res = []
 
         try:
+            logging.info(f"Command: {command}")
             res = command(**kwargs)
         except twitter.api.TwitterHTTPError as twittererror:
             for error in twittererror.response_data.get("errors", []):
@@ -328,7 +329,7 @@ class moduleTwitter(Content): #, Queue):
 
 def main():
 
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
                         format='%(asctime)s %(message)s')
 
     import socialModules.moduleRules
@@ -345,7 +346,7 @@ def main():
         for key in rules.rules.keys():
             print(f"Key: {key}")
             if ((key[0] == 'twitter')
-                    and ('fernand0' in key[2])
+                    and ('reflexioneseir' in key[2])
                     and (key[3] == 'posts')):
                 print("Testing Posts")
                 apiSrc.setPosts()
@@ -380,12 +381,12 @@ def main():
                 print(f"Len: {len(apiSrc.getPosts())}")
         return
 
-    testingPost = False
+    testingPost = True
     if testingPost:
         print("Testing Post")
         for key in rules.rules.keys():
             if ((key[0] == 'twitter')
-                and ('fernand0Test' in key[2])
+                and ('mbpfernand0' in key[2])
                 and (key[3] == 'posts')):
                     break
         apiSrc = rules.readConfigSrc("", key, rules.more[key])
@@ -394,7 +395,7 @@ def main():
         apiSrc.publishPost(title, link, '')
         return
 
-    testingPostImages = True
+    testingPostImages = False
     if testingPostImages:
         image = '/tmp/prueba.png'
         title = 'Prueba imagen'
@@ -437,7 +438,7 @@ def main():
         print(f"Deleting: {apiSrc.deleteApiPosts(idPost)}")
         return
 
-    testingDeleteFavs = False
+    testingDeleteFavs = True
     if testingDeleteFavs:
         for key in rules.rules.keys():
             if ((key[0] == 'twitter')
@@ -448,6 +449,7 @@ def main():
         apiSrc.setPosts()
         post = apiSrc.getPosts()[0]
         idPost = apiSrc.getPostId(post)
+        print(f"Deleting: {apiSrc.getPostTitle(post)}")
         print(f"Deleting: {apiSrc.deleteApiFavs(idPost)}")
         return
 

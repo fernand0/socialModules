@@ -67,6 +67,7 @@ class moduleMastodon(Content): #, Queue):
         if True:
             logging.info(f"{self.indent} First, the image")
             res = self.getClient().media_post(image, "image/png")
+            logging.info(f"{self.indent} res {res}")
             logging.info(f"{self.indent} Now the post")
             res = self.getClient().status_post(post, media_ids = res['id'])
         else:
