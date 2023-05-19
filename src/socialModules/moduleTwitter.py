@@ -367,7 +367,7 @@ def main():
                     print(f"Len: {len(apiSrc.getPosts())}")
         return
 
-    testingFav = True
+    testingFav = False
     if testingFav:
         logging.info(f"Testing Favs")
         for key in rules.rules.keys():
@@ -393,12 +393,12 @@ def main():
                 print(f"Len: {len(apiSrc.getPosts())}")
         return
 
-    testingPost = False
+    testingPost = True
     if testingPost:
         print("Testing Post")
         for key in rules.rules.keys():
             if ((key[0] == 'twitter')
-                and ('fernand0Test' in key[2])
+                and ('reflexioneseir' in key[2])
                 and (key[3] == 'posts')):
                     break
         apiSrc = rules.readConfigSrc("", key, rules.more[key])
