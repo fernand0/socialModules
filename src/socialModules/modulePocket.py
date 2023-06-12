@@ -299,38 +299,45 @@ def main():
                 for pos, post in enumerate(apiSrc.getPosts()):
                     title = apiSrc.getPostTitle(post)
                     print(f"Title: {title}")
-                    if ('is_article' in post) and post['is_article'] == '0':
+                    if (('is_article' in post) and post['is_article'] == '0'
+                        and ('has_video' in post) and post['has_video'] == '2'):
+                        link = apiSrc.getPostLink(post)
+                        print(f"Video: {link}")
+                        if 'youtube' in link:
+                            idPost = post['item_id']
+                            apiSrc.archiveId(idPost)
+                    elif ('is_article' in post) and post['is_article'] == '0':
                         link = apiSrc.getPostLink(post)
                         print(f"Title: {title}")
                         print(f"Link: {link}")
                         import requests
                         from readabilipy import simple_json_from_html_string
-                        req = requests.get(link)
-                        article = simple_json_from_html_string(req.text,
-                                                               use_readability=True)
-                        if not article['content']:
-                            continue
-                        from ebooklib import epub
-                        book = epub.EpubBook()
+                        try:
+                            req = requests.get(link)
+                            article = simple_json_from_html_string(req.text,
+                                                                   use_readability=True)
+                            if not article['content']:
+                                continue
+                            from ebooklib import epub
+                            book = epub.EpubBook()
 
-                        book.set_title(title)
-                        idPost = post['item_id']
-                        book.set_identifier(idPost)
-                        c = epub.EpubHtml(title='Page',
-                                          file_name='page.xhtml', lang='en')
-                        c.content= article['content']
-                        book.add_item(c)
-                        book.add_item(epub.EpubNcx())
-                        book.add_item(epub.EpubNav())
-                        book.spine = ['nav', c]
-                        name = re.sub(r'[^a-zA-Z0-9]+', '-', title)
-                        epub.write_epub(f"{PATH}/{post['time_added']}_{name}.epub",
-                                        book, {})
-                        input("Archive? ")
-                        apiSrc.archiveId(idPost)
-
-
-
+                            book.set_title(title)
+                            idPost = post['item_id']
+                            book.set_identifier(idPost)
+                            c = epub.EpubHtml(title='Page',
+                                              file_name='page.xhtml', lang='en')
+                            c.content= article['content']
+                            book.add_item(c)
+                            book.add_item(epub.EpubNcx())
+                            book.add_item(epub.EpubNav())
+                            book.spine = ['nav', c]
+                            name = re.sub(r'[^a-zA-Z0-9]+', '-', title)
+                            epub.write_epub(f"{PATH}/{post['time_added']}_{name}.epub",
+                                            book, {})
+                            input("Archive? ")
+                            apiSrc.archiveId(idPost)
+                        except:
+                            print(f"Unknown problem")
 
 
     return
