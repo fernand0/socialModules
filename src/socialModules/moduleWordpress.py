@@ -192,7 +192,7 @@ class moduleWordpress(Content): #,Queue):
                 resJ['generated_slug'])
         else:
             tres = type(res)
-            res = self.report(self.service, self, 
+            res = self.report(self.service, self, '',
                     f"Res: {res} Fail! Failed authentication.")
         return res
 
@@ -210,7 +210,7 @@ class moduleWordpress(Content): #,Queue):
             else:
                 reply = "Fail! No posts available"
         except:
-            reply = self.report(self.service, apiSrc, sys.exc_info())
+            reply = self.report(self.service, apiSrc, '', sys.exc_info())
 
         return reply
 

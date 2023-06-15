@@ -4,6 +4,7 @@
 
 import binascii
 import chardet
+import click
 import configparser
 import email
 import email.policy
@@ -847,14 +848,21 @@ class moduleImap(Content): #, Queue):
         i = 0
 
         for name in data:
-            if (type(name) == str): name = name.encode('ascii')
+            try:
+                if (type(name) == str): name = name.encode('ascii')
+            except:
+                logging.info(f"Non ascii: {name}")
             #print(inNameFolder.isdigit(), (inNameFolder+") "), name.lower().find((inNameFolder+") ").encode('ascii').lower()))
             if inNameFolder.isdigit() and name.lower().find((inNameFolder+") ").encode('ascii').lower()) == 0:
                 # There can be a problem if the number is part of the name or
                 # the number of the folder.
                 listFolders = "%d) %s" % (i, self.nameFolder(name))
                 return(listFolders)
-            if inNameFolder.encode('ascii').lower() in name.lower():
+            if isinstance(name.lower(), bytes):
+                search = inNameFolder.encode('ascii')
+            else:
+                search = inNameFolder
+            if search.lower() in name.lower():
                 if listFolders:
                    listFolders = listFolders + '\n' + "%d) %s" % (i, self.nameFolder(name))
                 else:
@@ -884,7 +892,6 @@ class moduleImap(Content): #, Queue):
                 click.echo_via_pager(listFolders)
             else:
                 print(listFolders)
-            print(len(listFolders))
             inNameFolder = input("Folder number [-cf] Create Folder // A string to select a smaller set of folders ")
 
             if (len(inNameFolder) > 0) and (inNameFolder == '-cf'):

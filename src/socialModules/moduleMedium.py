@@ -6,6 +6,7 @@ import sys
 
 from medium import Client
 #local version, to add notifyFollower parameter
+# Medium has deprecated its API, so this module is discontinued
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
@@ -13,6 +14,25 @@ from socialModules.moduleContent import *
 
 
 class moduleMedium(Content): #,Queue):
+
+    # def authorize(self):
+    #     config = configparser.ConfigParser()
+    #     configFile = CONFIGDIR + '/.rssMedium'
+    #     config.read(configFile)
+    #     application_id = config.get("appKeys","ClientID")
+    #     application_secret = config.get("appKeys","ClientSecret")
+    #     try:
+    #         client = Client(application_id = application_id,
+    #                 application_secret = application_secret)
+    #         auth = client.exchange_authorization_code(application_secret,
+    #                                       "https://elmundoesimperfecto.com/callback/medium")
+    #         access_token = auth["access_token"]
+    #         config.set("appKeys", 'access_token', token)
+    #         shutil.copyfile(configFile, '{}.bak'.format(configFile))
+    #         with open(configFile, 'w') as configfile:
+    #             config.write(configfile)
+    #     except:
+    #         logging.info("Failure with authentication")
 
     def setClient(self, channel):
         # FIXME: Adapt this method
@@ -39,11 +59,17 @@ class moduleMedium(Content): #,Queue):
                 # Get profile details of the user identified by the access
                 # token.
                 userRaw = client.get_current_user()
+                logging.warning(f"User: {userRaw}")
                 user = userRaw['username']
             except:
+                logging.warning(f"Client: {client}")
+                logging.warning(f"Client: {client.__dir__()}")
+                logging.warning(f"Client: {client.get_current_user()}")
                 logging.warning("Medium authentication failed!")
                 logging.warning("Unexpected error:", sys.exc_info())
         except:
+            logging.warning(f"Client: {client}")
+            # res = self.authorize()
             logging.warning("Account not configured")
 
         self.client = client
@@ -87,9 +113,10 @@ class moduleMedium(Content): #,Queue):
         if not mode:
             mode = 'public'
         logging.info(f"    Publishing in {self.service} ...")
-        logging.info(f"    with tags {tags}")
+        logging.info(f"    Tags {tags}")
         client = self.client
         user = self.getUserRaw()
+        logging.info(f"    User {user}")
 
         title = post
         content = comment
@@ -181,7 +208,7 @@ def main():
 
     import moduleMedium
 
-    testingImages = True
+    testingImages = False
     if testingImages:
         tel = moduleMedium.moduleMedium()
 

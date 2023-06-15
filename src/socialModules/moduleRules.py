@@ -259,12 +259,12 @@ class moduleRules:
                                         #           f"{fromSrv} ")
                                         # logMsg(msgLog, 2, 0)
 
-            msgLog = f"{self.indent} Mor: {mor}"
-            logMsg(msgLog, 2, 0)
-            msgLog = f"{self.indent} MoreS: {moreS}"
-            logMsg(msgLog, 2, 0)
-            msgLog = f"{self.indent} From: {fromSrv}"
-            logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent} Mor: {mor}"
+            # logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent} MoreS: {moreS}"
+            # logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent} From: {fromSrv}"
+            # logMsg(msgLog, 2, 0)
             orig = None
             dest = None
             for key in moreS.keys():
@@ -454,9 +454,9 @@ class moduleRules:
 
         for src in self.rules.keys():
             if self.getNameRule(src) == selector:
-                logging.debug(f"- Src: {src}")
-                logging.debug(f"Selectors: {selector} - {selector2} -"
-                              f"{selector3}")
+                # logging.debug(f"- Src: {src}")
+                # logging.debug(f"Selectors: {selector} - {selector2} -"
+                #               f"{selector3}")
                 more = self.more[src]
                 srcR = src
                 logging.debug(f"profileR: {self.getProfileRule(src)}")
@@ -1107,7 +1107,11 @@ class moduleRules:
                 else:
                     post = apiSrc.getPost(pos)
 
+
                 if post:
+                    msgLog = (f"{indent} Post {post}")
+                    msgLog = (f"{indent} Post type {type(post)}")
+                    logMsg(msgLog, 1, 1)
                     msgLog = (f"{indent} Next post title: "
                               f"{apiSrc.getPostTitle(post)}")
                     apiSrc.setNextTime(tNow, tSleep, apiDst)

@@ -46,7 +46,10 @@ class moduleTwitter(Content): #, Queue):
         try:
             logging.info(f"Command: {command}")
             res = command(**kwargs)
+            logging.info(f"Res: {res}")
+
         except twitter.api.TwitterHTTPError as twittererror:
+            logging.info(f"Error: {twittererror}")
             for error in twittererror.response_data.get("errors", []):
                 logging.info(f"      Error code: "
                              f"{error.get('code', None)}")
@@ -57,8 +60,12 @@ class moduleTwitter(Content): #, Queue):
         return res
 
     def setApiPosts(self):
-        posts = self.apiCall(self.getClient().statuses.user_timeline,
-                count=100, tweet_mode='extended')
+        try:
+            posts = self.apiCall(self.getClient().statuses.user_timeline,
+                 count=100, tweet_mode='extended')
+        except:
+             logging.info(self.report('Twitter', text, sys.exc_info()))
+             posts = []
 
         return posts
 
@@ -204,6 +211,7 @@ class moduleTwitter(Content): #, Queue):
             logging.debug("     Publishing: %s" % title)
             res = self.apiCall(self.getClient().statuses.update,
                     status=title)
+            logging.debug(f"     Res: {res}")
             # try:
             #     logging.info(f"Tittt: {title} {link} {comment}")
             #     # return "Fail!"
@@ -389,6 +397,11 @@ def main():
                 and ('mbpfernand0' in key[2])
                 and (key[3] == 'posts')):
                     break
+        key = ('twitter', 'set', 'fernand0', 'posts')
+        print(key)
+        print(rules.more[key])
+        # more = {'url': 'https://twitter.com/fernand0', 'service': 'twitter', 'posts': 'posts', 'direct': 'twitter', 'twitter': 'fernand0', 'time': '23.1', 'max': '1', 'hold': 'no'}
+
         apiSrc = rules.readConfigSrc("", key, rules.more[key])
         title = "Test"
         link = "https://twitter.com/fernand0Test"

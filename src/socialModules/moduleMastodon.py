@@ -64,13 +64,15 @@ class moduleMastodon(Content): #, Queue):
         more = kwargs
 
         res = 'Fail!'
-        if True:
+        try:
             logging.info(f"{self.indent} First, the image")
             res = self.getClient().media_post(image, "image/png")
+            self.lastRes = res 
             logging.info(f"{self.indent} res {res}")
             logging.info(f"{self.indent} Now the post")
             res = self.getClient().status_post(post, media_ids = res['id'])
-        else:
+            self.lastRes = res 
+        except:
             res = self.getClient().status_post(post+" "+link,
                     visibility='private')
         print(f"res: {res}")
@@ -292,11 +294,13 @@ def main():
     testingPostImages = True
     if testingPostImages:
         key =  ('mastodon', 'set', '@fernand0@mastodon.social', 'posts')
-        image = '/tmp/2023-01-29_image.png'
+        image = '/tmp/2023-06-09_image.png'
         title = 'Prueba imagen'
         altText = "Alternative text"
         apiSrc = rules.readConfigSrc("", key, rules.more.get('key',''))
         apiSrc.publishImage(title, image, alt=altText)
+        # print(f"Last res: {apiSrc.lastRes}")
+        # print(f"Last res: {apiSrc.lastRes['media_attachments'][0]['url']}")
 
 
         return

@@ -314,8 +314,6 @@ def main():
     import logging
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
                         format='%(asctime)s %(message)s')
-
-
     import socialModules.moduleRules
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
