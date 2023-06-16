@@ -208,20 +208,10 @@ class moduleTwitter(Content): #, Queue):
             # link itself is less than 23 characters long. Your character count
             # will reflect this.
 
-            logging.debug("     Publishing: %s" % title)
+            logging.debug(f"     Publishing: {title}")
             res = self.apiCall(self.getClient().statuses.update,
                     status=title)
             logging.debug(f"     Res: {res}")
-            # try:
-            #     logging.info(f"Tittt: {title} {link} {comment}")
-            #     # return "Fail!"
-            #     res = self.getClient().statuses.update(status=title)
-            # except twitter.api.TwitterHTTPError as twittererror:
-            #     for error in twittererror.response_data.get("errors", []):
-            #         logging.info("      Error code: %s" %
-            #                      error.get("code", None))
-            #     res = self.report('Twitter', title, link, sys.exc_info())
-            #     res = f"Fail! {res}"
 
         return res
 

@@ -1160,7 +1160,7 @@ class moduleRules:
 
         indent = f"{indent[:-1]}"
         logMsg(f"{indent} End executeAction", 2, 0)
-        return f"{indent} {res}"
+        return f"{indent} {res} {textEnd}"
 
     def executeRules(self):
         msgLog = "Executing rules"
