@@ -50,14 +50,17 @@ class moduleTwitter(Content): #, Queue):
 
         try:
             res = command(**kwargs)
-        except twitter.api.TwitterHTTPError as twittererror:
-            for error in twittererror.response_data.get("errors", []):
-                logging.info(f"      Error code: "
-                             f"{error.get('code', None)}")
+        except:
+            res = self.report('', res, '', sys.exc_info())
 
-                res = self.report(
-                    self.getService(), kwargs, '', sys.exc_info())
-                res = f"Fail! {res}"
+        # except twitter.api.TwitterHTTPError as twittererror:
+        #     for error in twittererror.response_data.get("errors", []):
+        #         logging.info(f"      Error code: "
+        #                      f"{error.get('code', None)}")
+
+        #         res = self.report(
+        #             self.getService(), kwargs, '', sys.exc_info())
+        #         res = f"Fail! {res}"
         return res
 
     def setApiPosts(self):
@@ -72,6 +75,9 @@ class moduleTwitter(Content): #, Queue):
     def setApiFavs(self):
         # posts = self.apiCall(self.getClient().favorites.list,
         logging.debug(f"Id: {self.user}")
+        # API v1.1
+        # posts = self.apiCall(self.getClient().get_favorites,
+        # API v2
         posts = self.apiCall(self.getClient().get_liked_tweets,
                              id=self.user) #,
                              # user_auth=True) #,
@@ -367,18 +373,19 @@ def main():
                     print(f"Len: {len(apiSrc.getPosts())}")
         return
 
-    testingFav = False
+    testingFav = True
     if testingFav:
         logging.info(f"Testing Favs")
         for key in rules.rules.keys():
             logging.debug(f"Key: {key}")
             if ((key[0] == 'twitter')
-                and ('fernand0Test' in key[2])):
-                #and (key[3] == 'favs')):
+                and ('fernand0' in key[2])#):
+                and (key[3] == 'favs')):
                 logging.debug(f"Key: {key}")
                 rules.more[key]['posts'] = 'favs'
                 apiSrc = rules.readConfigSrc("", key, rules.more[key])
 
+                print(f"User: {apiSrc.user}")
                 apiSrc.setPosts()
                 for i, tweet in enumerate(apiSrc.getPosts()):
                     print(f" -Title {apiSrc.getPostTitle(tweet)}")
@@ -393,7 +400,7 @@ def main():
                 print(f"Len: {len(apiSrc.getPosts())}")
         return
 
-    testingPost = True
+    testingPost = False
     if testingPost:
         print("Testing Post")
         for key in rules.rules.keys():
