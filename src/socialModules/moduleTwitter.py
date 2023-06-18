@@ -72,6 +72,8 @@ class moduleTwitter(Content): #, Queue):
         return res
 
     def setApiPosts(self):
+        posts = []
+        # Does not work with new API restrictions
         #posts = self.apiCall(self.getClient().statuses.user_timeline,
         posts = self.apiCall(self.getClient().get_home_timeline,
                              tweet_fields=['entities']) #,
@@ -382,7 +384,7 @@ def main():
                     print(f"Len: {len(apiSrc.getPosts())}")
         return
 
-    testingFav = True
+    testingFav = False
     if testingFav:
         logging.info(f"Testing Favs")
         for key in rules.rules.keys():
@@ -411,7 +413,7 @@ def main():
                 print(f"Len: {len(apiSrc.getPosts())}")
         return
 
-    testingPost = True
+    testingPost = False
     if testingPost:
         print("Testing Post")
         for key in rules.rules.keys():
@@ -434,14 +436,15 @@ def main():
 
         return
 
-    testingPostImages = False
+    testingPostImages = True
     if testingPostImages:
         image = '/tmp/prueba.png'
         title = 'Prueba imagen'
         altText = "Texto adicional"
-        key =  ('twitter', 'set', 'fernand0Test', 'posts')
+        key =  ('twitter', 'set', 'fernand0', 'posts')
 
         apiSrc = rules.readConfigSrc("", key, rules.more[key])
+        print(f"Testing posting with images")
         print(f"Res: {apiSrc.publishApiImage(title, image, alt=altText)}")
 
         return
@@ -468,7 +471,7 @@ def main():
         print(f"Deleting: {apiSrc.deleteApiPosts(idPost)}")
         return
 
-    testingDeleteFavs = True
+    testingDeleteFavs = False
     if testingDeleteFavs:
         for key in rules.rules.keys():
             if ((key[0] == 'twitter')
