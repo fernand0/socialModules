@@ -1,5 +1,5 @@
 colorama
-twitter
+tweepy
 facebook-sdk
 requests
 bs4
