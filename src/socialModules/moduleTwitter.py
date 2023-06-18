@@ -218,7 +218,7 @@ class moduleTwitter(Content): #, Queue):
         title = self.addComment(title, comment)
 
         logging.info(f"Tittt: {title} {link} {comment}")
-        logging.info(f"Tittt: {link and ('twitter' in link)}")
+        # logging.info(f"Tittt: {link and ('twitter' in link)}")
         res = 'Fail!'
         # post = post[:(240 - (len(link) + 1))]
         if (link and ('twitter.com' in link) and ('status' in link)):
@@ -236,8 +236,7 @@ class moduleTwitter(Content): #, Queue):
             # will reflect this.
 
             logging.debug(f"     Publishing: {title}")
-            res = self.apiCall(self.getClient().statuses.update,
-                    status=title)
+            res = self.apiCall(self.getClient().create_tweet, text=title)
             logging.debug(f"     Res: {res}")
         return res
 
