@@ -40,6 +40,13 @@ class moduleTwitter(Content): #, Queue):
                                consumer_secret=keys[1],
                                access_token=keys[2],
                                access_token_secret=keys[3])
+        # auth = tweepy.OAuthHandler(consumer_key=keys[0], 
+        #                            consumer_secret=keys[1],
+        #                            access_token=keys[2], 
+        #                            access_token_secret=keys[3])
+        # api = tweepy.API(auth)
+
+        # self.api = api
 
         return client
 
@@ -73,6 +80,7 @@ class moduleTwitter(Content): #, Queue):
         return posts
 
     def setApiFavs(self):
+        # Not tested, the free API level does not allow this call
         # posts = self.apiCall(self.getClient().favorites.list,
         logging.debug(f"Id: {self.user}")
         # API v1.1
@@ -387,6 +395,8 @@ def main():
 
                 print(f"User: {apiSrc.user}")
                 apiSrc.setPosts()
+                posts = apiSrc.api.get_favorites()
+                print(f"Posts: {posts}")
                 for i, tweet in enumerate(apiSrc.getPosts()):
                     print(f" -Title {apiSrc.getPostTitle(tweet)}")
                     print(f" -Link {apiSrc.getPostLink(tweet)}")
