@@ -246,6 +246,7 @@ class moduleTwitter(Content): #, Queue):
         return (res)
 
     def deleteApiFavs(self, idPost):
+        # Not tested the free API does not work with favorites
         logging.info("Deleting: {}".format(str(idPost)))
         res = self.apiCall(self.getClient().unlike, tweet_id=idPost)
         # res = self.apiCall(self.getClient().favorites.destroy, _id=idPost)
