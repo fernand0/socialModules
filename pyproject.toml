@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "social_modules"
-version = "0.1.7"
+version = "0.1.8"
 authors = [
   { name="fernand0", email="fernand0@elmundoesimperfecto.com" },
 ]
