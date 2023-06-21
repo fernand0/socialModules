@@ -8,7 +8,7 @@ from html.parser import HTMLParser
 
 import oauth2 as oauth
 import requests
-from linkedin_v2 import linkedin
+from linkedin_api.clients.restli.client import RestliClient
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
@@ -18,6 +18,9 @@ from socialModules.moduleContent import *
 
 
 class moduleLinkedin(Content):
+
+    POSTS_RESOURCE = "/posts"
+    API_VERSION = "202302"
 
     def getKeys(self, config):
         CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY")
@@ -29,7 +32,8 @@ class moduleLinkedin(Content):
 
     def initApi(self, keys):
         self.URN = keys[3]
-        client = linkedin.LinkedInApplication(token=keys[2])
+        self.TOKEN = keys[2]
+        client = RestliClient()
         return client
 
     def authorize(self):
@@ -44,18 +48,25 @@ class moduleLinkedin(Content):
             self.state = config.get("Linkedin", 'state')
 
             payload = {'response_type':'code',
-                    'client_id': self.CONSUMER_KEY,
-                    'client_secret': self.CONSUMER_SECRET,
-                    'redirect_uri': 'http://localhost:8080/code',
-                    'state':self.state,
-                    'scope': 'r_liteprofile r_emailaddress w_member_social' }
+                     'client_id': self.CONSUMER_KEY,
+                     'client_secret': self.CONSUMER_SECRET,
+                     'redirect_uri': 'http://localhost:8080/code',
+                     # 'state':self.state,
+                     'scope': 'r_liteprofile r_emailaddress w_member_social' }
             print('https://www.linkedin.com/oauth/v2/authorization?'
                     + urllib.parse.urlencode(payload))
 
+            #auth_client = AuthClient( 
+            #                         client_id=self.CONSUMER_KEY, 
+            #                         client_secret=self.CONSUMER_SECRET, 
+            #                         redirect_url='localhost:3000') 
+            # print(f"{auth_client.generate_member_auth_url(scopes=['r_liteprofile']}")
             resUrl = input("Copy and paste the url in a browser and write here the access token ")
+
             splitUrl = urllib.parse.urlsplit(resUrl)
             result = urllib.parse.parse_qsl(splitUrl.query)
             access_token = result[0][1]
+            token_response = auth_client.exchange_auth_code_for_access_token(auth_code)
             url = 'https://www.linkedin.com/oauth/v2/accessToken'
             payload = {'grant_type':'authorization_code',
                     'code':access_token,
@@ -70,6 +81,7 @@ class moduleLinkedin(Content):
             with open(configLinkedin, 'w') as configfile:
                config.write(configfile)
 
+            restli_client = RestliClient()
             sys.exit()
         except:
             print("Some problem")
@@ -98,12 +110,13 @@ class moduleLinkedin(Content):
             res = json.loads(reply)
         else:
             res = reply
-        if (('message' in res) and ('expired' in res['message'])):
-            reply = f"Fail! {self.service} token expired"
-        if (('message' in res) and ('duplicate' in res['message'])):
-            reply = f"Fail! {self.service} Status is a duplicate."
-        elif ('message' in res):
-            reply = res['message']
+        #if (('message' in res) and ('expired' in res['message'])):
+        #    reply = f"Fail! {self.service} token expired"
+        #if (('message' in res) and ('duplicate' in res['message'])):
+        #    reply = f"Fail! {self.service} Status is a duplicate."
+        #elif ('message' in res):
+        if (hasattr(res,'id')):
+            reply = res['id']
         else:
             reply = res
         logging.info(f"Res: {reply}")
@@ -146,19 +159,47 @@ class moduleLinkedin(Content):
 
         logging.info(f"     Publishing: {title} - {link} - {comment}")
         try:
-            self.getClient().get_profile()
-            try:
-                res = self.getClient().submit_share(comment=comment,
-                                                    title=title,
-                                                    description=None,
-                                                    submitted_url=link,
-                                                    submitted_image_url=None,
-                                                    urn=self.URN,
-                                                    visibility_code='PUBLIC')
+            try: 
+                #me_response = self.getClient().get(resource_path=ME_RESOURCE, 
+                me_response = self.getClient().get(resource_path="/me", 
+                                                   access_token=self.TOKEN)
+
+                POSTS_RESOURCE = "/posts"
+                API_VERSION = "202302"
+                res = self.getClient().create(
+                        resource_path=POSTS_RESOURCE, 
+                        entity={ 
+                                "author": 
+                                f"urn:li:person:{me_response.entity['id']}", 
+                                "lifecycleState": "PUBLISHED", 
+                                "visibility": "PUBLIC", 
+                                "commentary": f"{title} {link}", 
+                                "distribution": { 
+                                                 "feedDistribution": "MAIN_FEED",
+                                                 "targetEntities": [], 
+                                                 "thirdPartyDistributionChannels": [], 
+                                                 }, 
+                                }, 
+                        version_string=API_VERSION, 
+                        access_token=self.TOKEN,
+                        )
             except:
                 logging.info(f"Linkedin. Not authorized.")
                 logging.info(f"Exception {sys.exc_info()}")
                 res = self.report('Linkedin', title, link, sys.exc_info())
+            # self.getClient().get_profile()
+            # try:
+            #     res = self.getClient().submit_share(comment=comment,
+            #                                         title=title,
+            #                                         description=None,
+            #                                         submitted_url=link,
+            #                                         submitted_image_url=None,
+            #                                         urn=self.URN,
+            #                                         visibility_code='PUBLIC')
+            # except:
+            #     logging.info(f"Linkedin. Not authorized.")
+            #     logging.info(f"Exception {sys.exc_info()}")
+            #     res = self.report('Linkedin', title, link, sys.exc_info())
         except:
             logging.info(f"Linkedin. Other problems.")
             logging.info(f"Exception {sys.exc_info()}")
@@ -194,8 +235,9 @@ def main():
 
     ln.setClient('fernand0')
     try:
-        print(ln.getClient().get_profile())
+        print(ln.getClient().get(resource_path="/me", access_token=ln.TOKEN))
     except:
+        logging.info("Not authorized, re-authorizing")
         ln.authorize()
 
     testingPost = True
