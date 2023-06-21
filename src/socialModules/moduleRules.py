@@ -1028,6 +1028,7 @@ class moduleRules:
                 f"Action: {msgAction})")
 
         # logMsg(msgLog, 1, 0)
+        res = ""
         textEnd = (f"{msgLog}")
 
         # print(f"Srcccc: {src}")

@@ -40,13 +40,13 @@ class moduleTwitter(Content): #, Queue):
                                consumer_secret=keys[1],
                                access_token=keys[2],
                                access_token_secret=keys[3])
-        # auth = tweepy.OAuthHandler(consumer_key=keys[0], 
-        #                            consumer_secret=keys[1],
-        #                            access_token=keys[2], 
-        #                            access_token_secret=keys[3])
-        # api = tweepy.API(auth)
+        auth = tweepy.OAuthHandler(consumer_key=keys[0], 
+                                   consumer_secret=keys[1],
+                                   access_token=keys[2], 
+                                   access_token_secret=keys[3])
+        api = tweepy.API(auth)
 
-        # self.api = api
+        self.api = api
 
         return client
 
@@ -98,15 +98,19 @@ class moduleTwitter(Content): #, Queue):
 
     def processReply(self, reply):
         res = ''
-        if reply:
+        msgLog = f"Reply: {reply}"
+        logMsg(msgLog, 1, 1)
+        origReply = reply
+        if not origReply.errors:
             if not ('Fail!' in reply):
                 idPost = self.getPostId(reply)
                 title = self.getPostTitle(reply)
                 res = f"{title} https://twitter.com/{self.user}/status/{idPost}"
             else:
                 res = reply
-                if (('You have already retweeted' in res) or
-                        ('Status is a duplicate.' in res)):
+                if (('You have already retweeted' in res) 
+                    or ('Status is a duplicate.' in res)
+                    or ('not allowed to create a Tweet with duplicate' in res)):
                     res = res + ' SAVELINK'
         return (res)
 
@@ -282,9 +286,13 @@ class moduleTwitter(Content): #, Queue):
         msgLog = (f"{self.indent} Postttt: {post}")
         logMsg(msgLog, 2, 0)
         print(f"post: {post}")
-        title = post.data.get('text')
-        if not title:
-            title = post.data.get('full_text')
+        title = ''
+        try:
+            title = post.data.get('text')
+            if not title:
+                title = post.data.get('full_text')
+        except:
+            title = ''
         # if 'http' in title:
             # title = title.split('http')[0]
         return title
@@ -356,11 +364,11 @@ def main():
     import socialModules.moduleRules
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
-    src, more = rules.selectRule('twitter', 'kk')
-    print(f"Src: {src}")
-    print(f"More: {more}")
-    indent = ""
-    apiSrc = rules.readConfigSrc(indent, src, more)
+    # src, more = rules.selectRule('twitter', 'kk')
+    # print(f"Src: {src}")
+    # print(f"More: {more}")
+    # indent = ""
+    # apiSrc = rules.readConfigSrc(indent, src, more)
 
     testingPosts = False
     if testingPosts:
@@ -412,14 +420,14 @@ def main():
                 print(f"Len: {len(apiSrc.getPosts())}")
         return
 
-    testingPost = False
+    testingPost = True
     if testingPost:
         print("Testing Post")
-        for key in rules.rules.keys():
-            if ((key[0] == 'twitter')
-                and ('reflexioneseir' in key[2])
-                and (key[3] == 'posts')):
-                    break
+        # for key in rules.rules.keys():
+        #     if ((key[0] == 'twitter')
+        #         and ('reflexioneseir' in key[2])
+        #         and (key[3] == 'posts')):
+        #             break
         key = ('twitter', 'set', 'fernand0', 'posts')
         print(key)
         print(rules.more[key])
@@ -433,6 +441,15 @@ def main():
         if delete:
             print(f"Deleting: {apiSrc.deleteApiPosts(delete)}")
 
+        return
+
+    testingDM = True
+    if testingDM:
+        key =  ('twitter', 'set', 'mbpfernand0', 'posts')
+
+        apiSrc = rules.readConfigSrc("", key, rules.more[key])
+
+        print(f"Direct: {apiSrc.api.get_direct_messages()}")
         return
 
     testingPostImages = True
