@@ -115,8 +115,8 @@ class moduleLinkedin(Content):
         #if (('message' in res) and ('duplicate' in res['message'])):
         #    reply = f"Fail! {self.service} Status is a duplicate."
         #elif ('message' in res):
-        if (hasattr(res,'id')):
-            reply = res['id']
+        if (hasattr(res,'entity_id')):
+            reply = res.entity_id
         else:
             reply = res
         logging.info(f"Res: {reply}")

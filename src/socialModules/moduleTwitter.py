@@ -101,7 +101,7 @@ class moduleTwitter(Content): #, Queue):
         msgLog = f"Reply: {reply}"
         logMsg(msgLog, 1, 1)
         origReply = reply
-        if not origReply.errors:
+        if hasattr(origReply, 'errors') and not origReply.errors:
             if not ('Fail!' in reply):
                 idPost = self.getPostId(reply)
                 title = self.getPostTitle(reply)
