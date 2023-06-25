@@ -358,6 +358,7 @@ class Content:
         else:
             lastTime = 0
             self.report(self.service, msgLog, '', '')
+        msgLog = f"{self.indent} {msgLog}"
         logMsg(msgLog, 2, 0)
 
         self.lastLinkPublished = linkLast

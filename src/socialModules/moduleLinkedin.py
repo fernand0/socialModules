@@ -260,7 +260,7 @@ def main():
 
         return
 
-    testingPost = False
+    testingPost = True
     if testingPost:
         print("ll", ln.publishPost("A ver otro", "https://elmundoesimperfecto.com/",''))
         return
