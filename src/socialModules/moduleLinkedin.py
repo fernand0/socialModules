@@ -52,7 +52,7 @@ class moduleLinkedin(Content):
                      'client_secret': self.CONSUMER_SECRET,
                      'redirect_uri': 'http://localhost:8080/code',
                      # 'state':self.state,
-                     'scope': 'r_liteprofile r_emailaddress w_member_social' }
+                     'scope': 'r_liteprofile r_emailaddress w_member_social r_member_social' }
             print('https://www.linkedin.com/oauth/v2/authorization?'
                     + urllib.parse.urlencode(payload))
 
@@ -85,6 +85,17 @@ class moduleLinkedin(Content):
             sys.exit()
         except:
             print("Some problem")
+
+    def setProfile(self):
+        me_response = self.getClient().get(resource_path="/me", 
+                                           access_token=self.TOKEN)
+        self.profile = me_response
+
+    def getProfile(self):
+        profile = None
+        if hasattr(self, 'profile'):
+            profile = self.profile
+        return profile
 
     def setApiPosts(self):
         urn = self.URN
@@ -142,7 +153,6 @@ class moduleLinkedin(Content):
                     logging.info(f"Exception {sys.exc_info()}")
                     res = self.report('Linkedin', title, link, sys.exc_info())
         return res
-
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
@@ -240,7 +250,17 @@ def main():
         logging.info("Not authorized, re-authorizing")
         ln.authorize()
 
-    testingPost = True
+    testingMe = False
+    if testingMe:
+        ln.setProfile()
+        profile = ln.getProfile()
+        if profile and profile.status_code == 200:
+            print(f"Profile: {profile.__dir__()}")
+            print(f"Profile: {profile.entity}")
+
+        return
+
+    testingPost = False
     if testingPost:
         print("ll", ln.publishPost("A ver otro", "https://elmundoesimperfecto.com/",''))
         return
@@ -256,9 +276,32 @@ def main():
         return
 
 
-    testingPosts = False
+    testingPosts = True
     if testingPosts:
         print("Testing posts")
+        ln.setProfile()
+        LIST_POSTS_RESOURCE = "/ugcPosts"
+        QUERY_PARAMS = {'q':'authors', 
+                        'authors':"List({urn:li:person:'"+f"{ln.getProfile().entity['id']}"+'})',
+        'sortBy':'LAST_MODIFIED',
+        'projection':'(elements*(...))'
+                        }                        
+
+
+        print(f"url: {LIST_POSTS_RESOURCE}")
+        print(f"url: {QUERY_PARAMS}")
+        posts = ln.getClient().get(
+                resource_path=LIST_POSTS_RESOURCE, 
+                access_token=ln.TOKEN,
+                query_params=QUERY_PARAMS)
+        print(f"Posts: {posts.__dir__()}")
+        print(f"Posts: {posts.entity}")
+
+
+        # q=authors&authors=List({encoded personUrn})&sortBy=LAST_MODIFIED&projection=(elements*(...))
+                
+
+        return
         ln.setPostsType('posts')
         ln.setPosts()
         for post in ln.getPosts():
