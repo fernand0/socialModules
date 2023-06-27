@@ -167,7 +167,8 @@ class moduleLinkedin(Content):
             link = api.getPostLink(post)
             comment = api.getPostComment(title)
 
-        logging.info(f"     Publishing: {title} - {link} - {comment}")
+        msgLog = (f"{self.indent} Publishing: {title} - {link} - {comment}")
+        logMsg(msgLog, 1, 0)
         try:
             try: 
                 #me_response = self.getClient().get(resource_path=ME_RESOURCE, 
@@ -176,23 +177,49 @@ class moduleLinkedin(Content):
 
                 POSTS_RESOURCE = "/posts"
                 API_VERSION = "202302"
-                res = self.getClient().create(
+                if link:
+                    res = self.getClient().create(
                         resource_path=POSTS_RESOURCE, 
                         entity={ 
                                 "author": 
                                 f"urn:li:person:{me_response.entity['id']}", 
-                                "lifecycleState": "PUBLISHED", 
                                 "visibility": "PUBLIC", 
-                                "commentary": f"{title} {link}", 
+                                "commentary": f"{title}", 
                                 "distribution": { 
                                                  "feedDistribution": "MAIN_FEED",
                                                  "targetEntities": [], 
                                                  "thirdPartyDistributionChannels": [], 
                                                  }, 
+                                "content": {
+                                    "article": {
+                                        "source": f"{link}",
+                                        "title": f"{title}"
+                                        }
+                                    }, 
+                                "lifecycleState": "PUBLISHED", 
                                 }, 
                         version_string=API_VERSION, 
                         access_token=self.TOKEN,
                         )
+                else:                    
+                    res = self.getClient().create(
+                        resource_path=POSTS_RESOURCE, 
+                        entity={ 
+                                "author": 
+                                f"urn:li:person:{me_response.entity['id']}", 
+                                "visibility": "PUBLIC", 
+                                "commentary": f"{title}", 
+                                "distribution": { 
+                                                 "feedDistribution": "MAIN_FEED",
+                                                 "targetEntities": [], 
+                                                 "thirdPartyDistributionChannels": [], 
+                                                 }, 
+                                "lifecycleState": "PUBLISHED", 
+                                }, 
+                        version_string=API_VERSION, 
+                        access_token=self.TOKEN,
+                        )
+
             except:
                 logging.info(f"Linkedin. Not authorized.")
                 logging.info(f"Exception {sys.exc_info()}")
@@ -215,10 +242,20 @@ class moduleLinkedin(Content):
             logging.info(f"Exception {sys.exc_info()}")
             res = self.report('Linkedin', title, link, sys.exc_info())
 
+        logging.debug(f"Code return: {res}")
+        logging.debug(f"Code return: {res.__dir__()}")
+        logging.debug(f"Code return: {res.status_code}")
+        logging.debug(f"Code return: {res.response}")
+        logging.debug(f"Code return entity: {res.entity}")
+        logging.debug(f"Code return: {res.entity_id}")
+        logging.debug(f"Code return headers: {res.headers}")
+        logging.debug(f"Code return headers: {res.url}")
         if isinstance(res, bytes) and ('201'.encode() not in res):
             res = f"Fail!\n{res}"
         else:
             code = res.status_code
+            msgLog = f"{self.indent} return code: {code}"
+            logMsg(msgLog, 1, 0)
             if code and (code != 201):
                 res = f"Fail!\n{res}"
         return res

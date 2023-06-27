@@ -127,6 +127,12 @@ class moduleMastodon(Content): #, Queue):
         logging.info(f"Res: {result}")
         return(result)
 
+    def getPostTime(self, post):
+        time = None
+        if post:
+            time = post.get('created_at', None)
+        return time
+
     def getPostId(self, post):
         if isinstance(post, str):
             idPost = post

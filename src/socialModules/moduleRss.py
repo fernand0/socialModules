@@ -82,6 +82,12 @@ class moduleRss(Content): #, Queue):
             title = self.feed.feed.get('title', '').replace('\n',' ')
         return title
 
+    def getPostTime(self, post):
+        time = None
+        if post:
+            time = post.get('published', None)
+        return time
+
     def getPostTitle(self, post):
         title = ''
         if post:
