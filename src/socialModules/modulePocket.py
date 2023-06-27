@@ -299,15 +299,12 @@ def main():
                 for pos, post in enumerate(apiSrc.getPosts()):
                     title = apiSrc.getPostTitle(post)
                     print(f"Title: {title}")
-                    if (('is_article' in post) and post['is_article'] == '0'
-                        and ('has_video' in post) and post['has_video'] == '2'):
-                        link = apiSrc.getPostLink(post)
-                        print(f"Video: {link}")
-                        if 'youtube' in link:
-                            idPost = post['item_id']
-                            apiSrc.archiveId(idPost)
+                    link = apiSrc.getPostLink(post)
+                    idPost = post['item_id']
+                    archive = False
+                    if (('youtube' in  link) or link.endswith('pdf')):
+                        archive = True
                     elif ('is_article' in post) and post['is_article'] == '0':
-                        link = apiSrc.getPostLink(post)
                         print(f"Title: {title}")
                         print(f"Link: {link}")
                         import requests
@@ -322,7 +319,6 @@ def main():
                             book = epub.EpubBook()
 
                             book.set_title(title)
-                            idPost = post['item_id']
                             book.set_identifier(idPost)
                             c = epub.EpubHtml(title='Page',
                                               file_name='page.xhtml', lang='en')
@@ -334,10 +330,15 @@ def main():
                             name = re.sub(r'[^a-zA-Z0-9]+', '-', title)
                             epub.write_epub(f"{PATH}/{post['time_added']}_{name}.epub",
                                             book, {})
-                            input("Archive? ")
-                            apiSrc.archiveId(idPost)
+                            archive = True
                         except:
-                            print(f"Unknown problem")
+                            print("Problem with link: {link}")
+                    if archive:
+                        input("Archive? ")
+                        apiSrc.archiveId(idPost)
+
+
+
 
 
     return
