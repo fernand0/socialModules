@@ -1447,7 +1447,7 @@ class moduleImap(Content): #, Queue):
 def main():
 
     logging.basicConfig(stream=sys.stdout,
-            level=logging.INFO,
+            level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
     import moduleImap
@@ -1462,10 +1462,12 @@ def main():
     # More:  More: ('imap', 'set', 'ftricas@elmundoesimperfecto.com', 'posts')
 
     indent = ""
-    src, more = rules.selectRule('imap', 'ftricas@elmundo')
-    apiSrc = rules.readConfigSrc(indent, src, more)
-    print(f"Folders: {apiSrc.getChannels()}")
-    # apiSrc.setChannel(more['search'])
+    # src, more = rules.selectRule('imap', 'ftricas@elmundo')
+    # apiSrc = rules.readConfigSrc(indent, src, more)
+    # print(f"Folders: {apiSrc.getChannels()}")
+    # # apiSrc.setChannel(more['search'])
+    key = ('imap', 'set', 'ftricas@elmundoesimperfecto.com@mail.your-server.de', 'posts')
+    print(rules.more[key])
 
     testingPublishing = False
     if testingPublishing:
