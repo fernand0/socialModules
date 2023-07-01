@@ -130,6 +130,20 @@ class moduleImap(Content): #, Queue):
         posts = self.listMessages(self.getClient(), self.getChannel())
         return posts
 
+    def setApiDrafts(self):
+        # IMAP accounts get disconnected when time passes.
+        # Maybe we should check if this is needed
+
+        #print(f"getChannel: {self.user}@{self.server}")
+        self.setClient(f"{self.user}@{self.server}")
+        channel = self.getChannel()
+        if not channel:
+            self.setChannel() 
+            channel = self.getChannel()
+        posts = self.listMessages(self.getClient(), channel)
+        return posts
+
+
     def setApiPosts(self):
         # IMAP accounts get disconnected when time passes.
         # Maybe we should check if this is needed
@@ -1459,7 +1473,19 @@ def main():
 
         return
 
-    testingPosts = True
+    testingDrafts = True
+    if testingDrafts:
+        apiSrc.setChannel('INBOX.Drafts')
+        apiSrc.setPosts()
+        for post in apiSrc.getPosts():
+            # print(f"Post: {post}")
+            print(f"Title: {apiSrc.getPostTitle(post)}")
+            print(f"Content: {apiSrc.getPostContent(post)}")
+
+        return
+
+
+    testingPosts = False
     if testingPosts:
         apiSrc.setChannel('INBOX')
         apiSrc.setPosts()
