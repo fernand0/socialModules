@@ -1466,8 +1466,10 @@ def main():
     # apiSrc = rules.readConfigSrc(indent, src, more)
     # print(f"Folders: {apiSrc.getChannels()}")
     # # apiSrc.setChannel(more['search'])
-    key = ('imap', 'set', 'ftricas@elmundoesimperfecto.com@mail.your-server.de', 'posts')
+    key = ('imap', 'set', 'ftricas@elmundoesimperfecto.com@mail.your-server.de', 'drafts')
     print(rules.more[key])
+    apiSrc = rules.readConfigSrc("", key, rules.more[key])
+
 
     testingPublishing = False
     if testingPublishing:
