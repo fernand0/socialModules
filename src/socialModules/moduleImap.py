@@ -1468,14 +1468,16 @@ def main():
     # # apiSrc.setChannel(more['search'])
     key = ('imap', 'set', 'ftricas@elmundoesimperfecto.com@mail.your-server.de', 'posts')
     print(rules.more[key])
+    apiSrc = rules.readConfigSrc("", key, rules.more[key])
 
-    testingPublishing = False
+
+    testingPublishing = True
     if testingPublishing:
         apiSrc.publishPost('Mensaje', 'https://www.unizar.es/', '')
 
         return
 
-    testingDrafts = True
+    testingDrafts = False
     if testingDrafts:
         apiSrc.setChannel('INBOX.Drafts')
         apiSrc.setPosts()
@@ -1699,7 +1701,7 @@ def main():
     rules = moduleRules.moduleRules()
     rules.checkRules()
 
-    testingSearch = True
+    testingSearch = False
     if testingSearch:
         for key in rules.rules.keys():
             print(f"Key: {key}")
