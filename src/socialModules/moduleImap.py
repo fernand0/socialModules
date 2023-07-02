@@ -64,7 +64,7 @@ class moduleImap(Content): #, Queue):
         else:
             msgLog = ("This shouldn't happen")
             logMsg(msgLog, 3, 0)
-            
+
         # password = self.getPassword(self.user, self.server)
         # Should this be the standard way for obtaining credentials?
         key = f"{self.user}@{self.server}"
@@ -121,7 +121,7 @@ class moduleImap(Content): #, Queue):
             self.report(self.service, '', '', sys.exc_info())
             msgLog = (f"{self.indent} makeConnection failed")
             logMsg(msgLog, 3, 0)
-        
+
         return client
 
     def setApiNew(self):
@@ -138,7 +138,7 @@ class moduleImap(Content): #, Queue):
         self.setClient(f"{self.user}@{self.server}")
         channel = self.getChannel()
         if not channel:
-            self.setChannel() 
+            self.setChannel()
             channel = self.getChannel()
         posts = self.listMessages(self.getClient(), channel)
         return posts
@@ -152,7 +152,7 @@ class moduleImap(Content): #, Queue):
         self.setClient(f"{self.user}@{self.server}")
         channel = self.getChannel()
         if not channel:
-            self.setChannel() 
+            self.setChannel()
             channel = self.getChannel()
         posts = self.listMessages(self.getClient(), channel)
         return posts
@@ -324,7 +324,7 @@ class moduleImap(Content): #, Queue):
                         else:
                             msgLog = ("%s -  Couldn't delete messages!" % msgTxt)
                             logMsg(msgLog, 2, 0)
-                            
+
                             msgTxt = "%s -  Couldn't delete messages!" % msgTxt
                     else:
                         msgLog = ("%s - Couldn't move messages!" % msgTxt)
@@ -485,11 +485,11 @@ class moduleImap(Content): #, Queue):
         else:
 
             for header in msgHeaders:
-                textHeader = M.getHeader(msg, header) 
-                textHeader = email.header.decode_header(str(textHeader)) 
-                textHeader = str(email.header.make_header(textHeader)) 
-                if textHeader!='None': 
-                    print(f"{i}) {header} {textHeader}") 
+                textHeader = M.getHeader(msg, header)
+                textHeader = email.header.decode_header(str(textHeader))
+                textHeader = str(email.header.make_header(textHeader))
+                if textHeader!='None':
+                    print(f"{i}) {header} {textHeader}")
                 i = i + 1
             import locale
             header_num = input("Select header: ")
@@ -1052,7 +1052,7 @@ class moduleImap(Content): #, Queue):
                 folder = folder[pos+4:]
         elif "." in folder:
             pos = folder.find('"." ')
-            if pos >=0: 
+            if pos >=0:
                 folder = folder[pos+4:]
 
         return(folder)
@@ -1387,61 +1387,63 @@ class moduleImap(Content): #, Queue):
 
         return posts
 
-    # def publishApiPost(self, *args, **kwargs):
-    #     if args and len(args) == 3:
-    #         # logging.info(f"Tittt: args: {args}")
-    #         post, link, comment = args
-    #     if kwargs:
-    #         # logging.info(f"Tittt: kwargs: {kwargs}")
-    #         more = kwargs
-    #         # FIXME: We need to do something here
-    #         post = more.get('post', '')
-    #         api = more.get('api', '')
-    #         # logging.info(f"Post: {post}")
-    #         idPost = api.getPostId(post)
-    #         # logging.info(f"Postt: {post['meta']}")
-    #         # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]
-    #         idPost = post['list']['id'] #[1:-1]
-    #         # logging.info(f"Post id: {idPost}")
-    #     res = 'Fail!'
-    #     try: 
-    #         destaddr = self.user 
-    #         toaddrs = self.user 
-    #         fromaddr = self.user 
-    #         smtpsrv  = 'localhost' 
-    #         theUrl = link
-    #         subject = post.split('\n')[0]
+    def publishApiPost(self, *args, **kwargs):
+        if args and len(args) == 3:
+            # logging.info(f"Tittt: args: {args}")
+            post, link, comment = args
+        if kwargs:
+            # logging.info(f"Tittt: kwargs: {kwargs}")
+            more = kwargs
+            # FIXME: We need to do something here
+            post = more.get('post', '')
+            api = more.get('api', '')
+            # logging.info(f"Post: {post}")
+            idPost = api.getPostId(post)
+            # logging.info(f"Postt: {post['meta']}")
+            # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]
+            idPost = post['list']['id'] #[1:-1]
+            # logging.info(f"Post id: {idPost}")
+        res = 'Fail!'
+        try:
+            destaddr = self.user
+            toaddrs = self.user
+            fromaddr = self.user
+            smtpsrv  = 'localhost'
+            theUrl = link
+            subject = post.split('\n')[0]
 
-    #         msg = MIMEMultipart() 
-    #         msg['From']    = fromaddr 
-    #         msg['To']      = destaddr 
-    #         msg['Date']    = time.asctime(time.localtime(time.time())) 
-    #         msg['X-URL']   = theUrl 
-    #         msg['X-print'] = theUrl 
-    #         msg['Subject'] = subject 
-    #         htmlDoc = (f"Title: {subject} \n\n" 
-    #                    f"Url: {link} \n\n"
-    #                    f"{post}") 
-    #         adj = MIMEApplication(htmlDoc) 
-    #         encoders.encode_base64(adj) 
-    #         name = 'notumblr'
-    #         ext = '.html'
-    #         adj.add_header('Content-Disposition', 
-    #                            'attachment; filename="%s"' % name+ext)
+            msg = MIMEMultipart()
+            msg['From']    = fromaddr
+            msg['To']      = destaddr
+            msg['Date']    = time.asctime(time.localtime(time.time()))
+            msg['X-URL']   = theUrl
+            msg['X-print'] = theUrl
+            msg['Subject'] = subject
+            htmlDoc = (f"Title: {subject} \n\n"
+                       f"Url: {link} \n\n"
+                       f"{post}")
+            adj = MIMEApplication(htmlDoc)
+            encoders.encode_base64(adj)
+            name = 'notumblr'
+            ext = '.html'
+            adj.add_header('Content-Disposition',
+                               'attachment; filename="%s"' % name+ext)
 
-    #         msg.attach(adj)
-    #         msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n"))
-    #         server = smtplib.SMTP(smtpsrv)
-    #         server.connect(smtpsrv, 587)
-    #         server.starttls()
+            msg.attach(adj)
+            msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n"))
+            print(f"Msg: {msg}")
+            print(f"Srv: {smtpsrv}")
+            server = smtplib.SMTP(smtpsrv)
+            server.connect(smtpsrv, 587)
+            server.starttls()
 
-    #         server.sendmail(fromaddr, toaddrs, msg.as_string())
-    #         server.quit()
+            server.sendmail(fromaddr, toaddrs, msg.as_string())
+            server.quit()
 
-    #     except:
-    #         res = self.report(self.service, '', '', sys.exc_info())
+        except:
+            res = self.report(self.service, '', '', sys.exc_info())
 
-    #     return(f"Res: {res}")
+        return(f"Res: {res}")
 
 
 def main():
@@ -1466,7 +1468,7 @@ def main():
     # apiSrc = rules.readConfigSrc(indent, src, more)
     # print(f"Folders: {apiSrc.getChannels()}")
     # # apiSrc.setChannel(more['search'])
-    key = ('imap', 'set', 'ftricas@elmundoesimperfecto.com@mail.your-server.de', 'posts')
+    key = ('imap', 'set', 'ftricas@elmundoesimperfecto.com@mail.your-server.de', 'drafts')
     print(rules.more[key])
     apiSrc = rules.readConfigSrc("", key, rules.more[key])
 
