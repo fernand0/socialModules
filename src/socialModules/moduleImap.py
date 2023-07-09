@@ -1387,6 +1387,33 @@ class moduleImap(Content): #, Queue):
 
         return posts
 
+    def sendMessage(self, msg):
+        smtpsrv  = 'localhost'
+        print(f"Msg: {msg}")
+        fromaddr = msg['from']
+        toaddrs = msg['to']
+        res = None
+        try:
+            server = smtplib.SMTP(smtpsrv)
+            server.connect(smtpsrv, 587)
+            server.starttls()
+
+            res = server.sendmail(fromaddr, toaddrs, msg.as_string())
+            server.quit()
+        except:
+            res = self.report(self.service, '', '', sys.exc_info())
+
+        if not res:
+            res = 'OK'
+        return res
+
+    def publishApiDraft(self, post):
+        print(f"Msg: {post}")
+        idMsg, msg = post
+        res = self.sendMessage(msg)
+        self.moveMails(self.getClient(), idMsg, 'INBOX.Trash')
+        return res
+
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
             # logging.info(f"Tittt: args: {args}")
@@ -1431,15 +1458,8 @@ class moduleImap(Content): #, Queue):
 
             msg.attach(adj)
             msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n"))
-            print(f"Msg: {msg}")
-            print(f"Srv: {smtpsrv}")
-            server = smtplib.SMTP(smtpsrv)
-            server.connect(smtpsrv, 587)
-            server.starttls()
 
-            server.sendmail(fromaddr, toaddrs, msg.as_string())
-            server.quit()
-
+            self.sendMessage(msg)
         except:
             res = self.report(self.service, '', '', sys.exc_info())
 
@@ -1468,12 +1488,22 @@ def main():
     # apiSrc = rules.readConfigSrc(indent, src, more)
     # print(f"Folders: {apiSrc.getChannels()}")
     # # apiSrc.setChannel(more['search'])
-    key = ('imap', 'set', 'ftricas@elmundoesimperfecto.com@mail.your-server.de', 'drafts')
+    key = ('imap', 'set', 'ftricas@elmundoesimperfecto.com@mail.your-server.de', 'posts')
     print(rules.more[key])
     apiSrc = rules.readConfigSrc("", key, rules.more[key])
 
+    testingPublishingDraft = True
+    if testingPublishingDraft:
+        apiSrc.setChannel('INBOX.Drafts')
+        apiSrc.setPosts()
+        if apiSrc.getPosts():
+            post = apiSrc.getPosts()[0]
+            apiSrc.publishApiDraft(post)
 
-    testingPublishing = True
+
+        return
+
+    testingPublishing = False
     if testingPublishing:
         apiSrc.publishPost('Mensaje', 'https://www.unizar.es/', '')
 
