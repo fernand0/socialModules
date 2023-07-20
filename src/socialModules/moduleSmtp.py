@@ -65,10 +65,13 @@ class moduleSmtp(Content): #, Queue):
             fromaddr = self.user 
             smtpsrv  = 'localhost' 
             theUrl = link
-            if link:
-                subject = link
-            else:
+            if post:
                 subject = post.split('\n')[0]
+            else:
+                if link:
+                    subject = link
+                else:
+                    subject = "No subject"
 
             msg = MIMEMultipart() 
             msg['From']    = fromaddr 
@@ -77,12 +80,17 @@ class moduleSmtp(Content): #, Queue):
             msg['X-URL']   = theUrl 
             msg['X-print'] = theUrl 
             msg['Subject'] = subject 
-            if not link:
-                htmlDoc = (f"Title: {subject} \n\n" 
-                       f"Url: {link} \n\n"
-                       f"{post}") 
-            else:
-                htmlDoc =  post
+            # if not link:
+            #     htmlDoc = (f"Title: {subject} \n\n" 
+            #            f"Url: {link} \n\n"
+            #            f"{post}") 
+            # else:
+            if comment: 
+                htmlDoc = comment
+            else: 
+                htmlDoc = (f"Title: {subject} <br />\n" 
+                        f"Url: {link} <br />\n"
+                        f"{post}") 
             logging.info(f"{self.indent} Doc: {htmlDoc}")
             adj = MIMEApplication(htmlDoc) 
             encoders.encode_base64(adj) 
@@ -91,14 +99,19 @@ class moduleSmtp(Content): #, Queue):
             adj.add_header('Content-Disposition', 
                                f'attachment; filename="{name}{ext}"')
 
+            adj.add_header('Content-Type','text/html')
+
             msg.attach(adj)
-            if link:
-                if post.startswith('<'):
-                    msg.attach(MIMEText(f"{post}", _subtype='html'))
-                else:
-                    msg.attach(MIMEText(f"{post}"))
-            # else:
-            #     msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n{post}"))
+            # if link  and link.find('http')>=0:
+            #     if post.startswith('<'):
+            #         msg.attach(MIMEText(f"{post}", _subtype='html'))
+            #     else:
+            #         if comment:
+            #             msg.attach(MIMEText(f"{comment}"))
+            #         else:
+            #             msg.attach(MIMEText(f"{post}"))
+            # # else:
+            # #     msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n{post}"))
             server = smtplib.SMTP(smtpsrv)
             server.connect(smtpsrv, 587)
             server.starttls()
@@ -147,12 +160,18 @@ def main():
     # print(f"Folders: {apiSrc.getChannels()}")
     # apiSrc.setChannel(more['search'])
 
-    testingPublishing = True
+    testingPublishing = False
     if testingPublishing:
         apiDst.publishPost('Mensaje', 'https://www.unizar.es/', '')
 
         return
 
+    testingHtml = True
+    if testingHtml:
+        msgHtml = '<body><html><p>Cuadro de mandos<hr></hr></p><p><img alt="Cuadro de mandos" height="240" src="https://live.staticflickr.com/65535/53057264758_272560e5d9_m.jpg" width="160"/></p><p>https://www.flickr.com/photos/fernand0/53057264758/</p></body></html>'
+        apiDst.publishPost('Mensaje', 'https://www.unizar.es/', msgHtml)
+
+        return
 
     import socialModules.moduleSmtp
 

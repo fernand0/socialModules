@@ -124,26 +124,26 @@ class moduleTwitter(Content): #, Queue):
                     imagedata = imagefile.read()
 
                 try:
-                    # FIXME
-                    configFile = f"{CONFIGDIR}/.rss{self.service}"
-                    try:
-                        config = configparser.RawConfigParser()
-                        config.read(f"{configFile}")
-                    except:
-                        msgLog = (f"Does file {configFile} exist?")
-                        self.report({self.indent}, msgLog, 0, '')
-                    keys = self.getKeys(config)
+                    # # FIXME
+                    # configFile = f"{CONFIGDIR}/.rss{self.service}"
+                    # try:
+                    #     config = configparser.RawConfigParser()
+                    #     config.read(f"{configFile}")
+                    # except:
+                    #     msgLog = (f"Does file {configFile} exist?")
+                    #     self.report({self.indent}, msgLog, 0, '')
+                    # keys = self.getKeys(config)
 
 
-                    auth = tweepy.OAuthHandler( keys[0], keys[1])
-                    auth.set_access_token(keys[2], keys[3])
-                    apiImage = tweepy.API(auth)
+                    # auth = tweepy.OAuthHandler( keys[0], keys[1])
+                    # auth.set_access_token(keys[2], keys[3])
+                    # apiImage = tweepy.API(auth)
 
-                    # t_upload = Twitter(domain='upload.twitter.com',
-                    #                  auth=self.authentication)
-                    # self.getClient().domain = 'upload.twitter.com'
-                    # # FIXME Is this really needed?
-                    # id_img1 = self.getClient().media.upload(media=imagedata)['media_id_string']
+                    # # t_upload = Twitter(domain='upload.twitter.com',
+                    # #                  auth=self.authentication)
+                    # # self.getClient().domain = 'upload.twitter.com'
+                    # # # FIXME Is this really needed?
+                    # # id_img1 = self.getClient().media.upload(media=imagedata)['media_id_string']
                     id_img1 = self.apiCall(apiImage.media_upload,
                                            filename=imageName)
 
@@ -372,55 +372,49 @@ def main():
 
     testingPosts = False
     if testingPosts:
-        for key in rules.rules.keys():
-            logging.debug(f"Key: {key}")
-            if ((key[0] == 'twitter')
-                    and ('reflexioneseir' in key[2])
-                    and (key[3] == 'posts')):
-                print("Testing Posts")
-                apiSrc.setPosts()
-                posts = apiSrc.getPosts()
-                # print(f"Tweets: {posts}")
-                for tweet in posts:
-                    print(f"Tweet: {tweet}")
-                    print(f"Tweet: {tweet.entities}")
-                    print(f" -Title {apiSrc.getPostTitle(tweet)}")
-                    print(f" -Link {apiSrc.getPostLink(tweet)}")
-                    print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
-                    print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
-                    print(f"Len: {len(apiSrc.getPosts())}")
+        print("Testing Posts")
+        key = ('twitter', 'set', 'fernand0', 'posts')
+        logging.debug(f"Key: {key}")
+        apiSrc = rules.readConfigSrc("", key, None)
+        apiSrc.setPosts()
+        posts = apiSrc.getPosts()
+        # print(f"Tweets: {posts}")
+        for tweet in posts:
+            print(f"Tweet: {tweet}")
+            print(f"Tweet: {tweet.entities}")
+            print(f" -Title {apiSrc.getPostTitle(tweet)}")
+            print(f" -Link {apiSrc.getPostLink(tweet)}")
+            print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
+            print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
+            print(f"Len: {len(apiSrc.getPosts())}")
         return
 
     testingFav = False
     if testingFav:
         logging.info(f"Testing Favs")
-        for key in rules.rules.keys():
-            logging.debug(f"Key: {key}")
-            if ((key[0] == 'twitter')
-                and ('fernand0' in key[2])#):
-                and (key[3] == 'favs')):
-                logging.debug(f"Key: {key}")
-                rules.more[key]['posts'] = 'favs'
-                apiSrc = rules.readConfigSrc("", key, rules.more[key])
+        key = ('twitter', 'set', 'fernand0', 'favs')
+        logging.debug(f"Key: {key}")
+        apiSrc = rules.readConfigSrc("", key, None)
+        apiSrc.setPostsType('favs')
 
-                print(f"User: {apiSrc.user}")
-                apiSrc.setPosts()
-                posts = apiSrc.api.get_favorites()
-                print(f"Posts: {posts}")
-                for i, tweet in enumerate(apiSrc.getPosts()):
-                    print(f" -Title {apiSrc.getPostTitle(tweet)}")
-                    print(f" -Link {apiSrc.getPostLink(tweet)}")
-                    print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
-                    print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
-                    print(f" -Created {tweet.get('created_at')}")
-                    # parsedDate = dateutil.parser.parse(
-                    #     apiSrc.getPostApiDate(tweet))
-                    # print(
-                    #     f" -Created {parsedDate.year}-{parsedDate.month}-{parsedDate.day}")
-                print(f"Len: {len(apiSrc.getPosts())}")
+        print(f"User: {apiSrc.user}")
+        apiSrc.setPosts()
+        posts = apiSrc.api.get_favorites()
+        print(f"Posts: {posts}")
+        for i, tweet in enumerate(apiSrc.getPosts()):
+            print(f" -Title {apiSrc.getPostTitle(tweet)}")
+            print(f" -Link {apiSrc.getPostLink(tweet)}")
+            print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
+            print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
+            print(f" -Created {tweet.get('created_at')}")
+            # parsedDate = dateutil.parser.parse(
+            #     apiSrc.getPostApiDate(tweet))
+            # print(
+            #     f" -Created {parsedDate.year}-{parsedDate.month}-{parsedDate.day}")
+        print(f"Len: {len(apiSrc.getPosts())}")
         return
 
-    testingPost = True
+    testingPost = False
     if testingPost:
         print("Testing Post")
         # for key in rules.rules.keys():
@@ -443,23 +437,25 @@ def main():
 
         return
 
-    testingDM = True
+    testingDM = False
     if testingDM:
         key =  ('twitter', 'set', 'mbpfernand0', 'posts')
 
-        apiSrc = rules.readConfigSrc("", key, rules.more[key])
+        apiSrc = rules.readConfigSrc("", key, None)
 
         print(f"Direct: {apiSrc.api.get_direct_messages()}")
         return
 
     testingPostImages = True
     if testingPostImages:
-        image = '/tmp/prueba.png'
+        image = '/tmp/2023-07-16_image.svg'
+        # Does not work with svg
+        image = '/tmp/2023-07-16_image.png'
         title = 'Prueba imagen'
         altText = "Texto adicional"
         key =  ('twitter', 'set', 'fernand0', 'posts')
 
-        apiSrc = rules.readConfigSrc("", key, rules.more[key])
+        apiSrc = rules.readConfigSrc("", key, None)
         print(f"Testing posting with images")
         print(f"Res: {apiSrc.publishApiImage(title, image, alt=altText)}")
 

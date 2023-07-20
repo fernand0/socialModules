@@ -57,15 +57,18 @@ class moduleHtml(Content): #, Queue):
         moreContent = ""
         try:
             from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
+            msgLog = f"First try"
+            logMsg(msgLog, 1, 1)
             requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
             response = requests.get(theUrl, verify=False)
-            print(f"Response 1: {response}")
+            logging.info(f"Response 1: {response}")
             pos = response.text.find("https://www.blogger.com/feeds/")
             # Some blogspot blogs do not render ok because they use javascript
             # to load content. We add the content from the RSS feed.  Dirty
             # trick
             if pos >= 0:
+                msgLog = f"Blogger"
+                logMsg(msgLog, 1, 1)
                 pos2 = response.text.find('"', pos + 1)
                 theUrl2 = response.text[pos:pos2]
                 import moduleRss
@@ -80,14 +83,20 @@ class moduleHtml(Content): #, Queue):
                 data = blog.obtainPostData(posPost)
                 moreContent = data[5][0]["value"]
         except:
+            logging.info("Retry")
             retry = True
         if retry or response.status_code >= 401:
-            from fake_useragent import UserAgent
-            ua = UserAgent()
-            response = requests.get(
-                theUrl, headers={"User-Agent": ua.random}, verify=False
-            )
-            print(f"Response 2: {response}")
+            try:
+                msgLog = f"Second try"
+                logMsg(msgLog, 1, 1)
+                from fake_useragent import UserAgent
+                ua = UserAgent()
+                response = requests.get(
+                    theUrl, headers={"User-Agent": ua.random}, verify=False
+                )
+                logging.info(f"Response 2: {response}")
+            except:
+                logging.info("somethigh wrong ")
 
         return response, moreContent
 
