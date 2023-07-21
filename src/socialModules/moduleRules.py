@@ -917,7 +917,6 @@ class moduleRules:
                               f"{apiSrc.fileNameBase(apiDst)}.last")
                     logMsg(msgLog, 1, 1)
                     resMsg += f"{msgLog}\n"
-
         else:
             if nextPost:
                 res = apiDst.publishNextPost(apiSrc)

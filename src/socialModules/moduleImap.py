@@ -1365,7 +1365,7 @@ class moduleImap(Content): #, Queue):
                 data = ('NO', [])
         else:
             data = M.sort('ARRIVAL', 'UTF-8', 'NOT DELETED')
-        msgLog = (f"Datos: {data}")
+        msgLog = (f"Msgs data: {data}")
         logMsg(msgLog, 2, 0)
         # print(f"Datos: {data}")
         if (data[0] == 'OK'):
@@ -1416,15 +1416,16 @@ class moduleImap(Content): #, Queue):
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
-            # logging.info(f"Tittt: args: {args}")
+            logging.info(f"Tittt: args: {args}")
             post, link, comment = args
         if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
+            logging.debug(f"Tittt: kwargs: {kwargs}")
             more = kwargs
+            # logging.debug(f"More: {more}")
             # FIXME: We need to do something here
             post = more.get('post', '')
             api = more.get('api', '')
-            # logging.info(f"Post: {post}")
+            logging.debug(f"Post: {post}")
             idPost = api.getPostId(post)
             # logging.info(f"Postt: {post['meta']}")
             # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]

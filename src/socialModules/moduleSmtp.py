@@ -99,8 +99,17 @@ class moduleSmtp(Content): #, Queue):
             adj.add_header('Content-Disposition', 
                                f'attachment; filename="{name}{ext}"')
 
-            adj.add_header('Content-Type','text/html')
+            adj.add_header('Content-Type','application/octet-stream')
 
+            msg.attach(adj) 
+
+            if htmlDoc.startswith('<'):
+                subtype = 'html'
+            else:
+                subtype = 'plain'
+
+            adj = MIMEText(htmlDoc, _subtype=subtype) 
+            # adj.add_header('Content-Type','text/html')
             msg.attach(adj)
             # if link  and link.find('http')>=0:
             #     if post.startswith('<'):

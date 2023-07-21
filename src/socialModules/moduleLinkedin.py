@@ -178,13 +178,11 @@ class moduleLinkedin(Content):
                 POSTS_RESOURCE = "/posts"
                 API_VERSION = "202302"
                 if link:
-                    res = self.getClient().create(
-                        resource_path=POSTS_RESOURCE, 
-                        entity={ 
+                    entity = { 
                                 "author": 
                                 f"urn:li:person:{me_response.entity['id']}", 
-                                "visibility": "PUBLIC", 
                                 "commentary": f"{title}", 
+                                "visibility": "PUBLIC", 
                                 "distribution": { 
                                                  "feedDistribution": "MAIN_FEED",
                                                  "targetEntities": [], 
@@ -197,7 +195,11 @@ class moduleLinkedin(Content):
                                         }
                                     }, 
                                 "lifecycleState": "PUBLISHED", 
-                                }, 
+                                }
+
+                    res = self.getClient().create(
+                        resource_path=POSTS_RESOURCE, 
+                        entity = entity, 
                         version_string=API_VERSION, 
                         access_token=self.TOKEN,
                         )
@@ -219,7 +221,6 @@ class moduleLinkedin(Content):
                         version_string=API_VERSION, 
                         access_token=self.TOKEN,
                         )
-
             except:
                 logging.info(f"Linkedin. Not authorized.")
                 logging.info(f"Exception {sys.exc_info()}")
@@ -250,6 +251,7 @@ class moduleLinkedin(Content):
         logging.debug(f"Code return: {res.entity_id}")
         logging.debug(f"Code return headers: {res.headers}")
         logging.debug(f"Code return headers: {res.url}")
+        logging.debug(f"Code return type: {type(res)}")
         if isinstance(res, bytes) and ('201'.encode() not in res):
             res = f"Fail!\n{res}"
         else:
@@ -257,7 +259,10 @@ class moduleLinkedin(Content):
             msgLog = f"{self.indent} return code: {code}"
             logMsg(msgLog, 1, 0)
             if code and (code != 201):
-                res = f"Fail!\n{res}"
+                if 'message' in res.entity:
+                    res = f"Fail!\n{res.entity['message']}"
+                else:
+                    res = f"Fail!\n{res.entity}"
         return res
 
     def deleteApiPosts(self, idPost):
