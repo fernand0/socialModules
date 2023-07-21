@@ -1415,6 +1415,7 @@ class moduleImap(Content): #, Queue):
         return res
 
     def publishApiPost(self, *args, **kwargs):
+        link = None
         if args and len(args) == 3:
             logging.info(f"Tittt: args: {args}")
             post, link, comment = args
