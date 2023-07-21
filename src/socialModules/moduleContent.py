@@ -954,10 +954,11 @@ class Content:
                           f"post {post}")
                 logMsg(msgLog, 2, 0)
 
-                if self.getPostsType():
-                    nameMethod = self.getPostsType().capitalize()
+                if self.getPostType():
+                    nameMethod = self.getPostType().capitalize()
                 else:
-                    nameMethod = 'Post'
+
+                nameMethod = 'Post'
 
                 method = getattr(self, f"publishApi{nameMethod}")
                 msgLog = (f"{self.indent} Service {self.service} "

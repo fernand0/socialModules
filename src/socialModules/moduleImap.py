@@ -1441,25 +1441,28 @@ class moduleImap(Content): #, Queue):
             theUrl = link
             subject = post.split('\n')[0]
 
-            msg = MIMEMultipart()
-            msg['From']    = fromaddr
-            msg['To']      = destaddr
-            msg['Date']    = time.asctime(time.localtime(time.time()))
-            msg['X-URL']   = theUrl
-            msg['X-print'] = theUrl
-            msg['Subject'] = subject
-            htmlDoc = (f"Title: {subject} \n\n"
-                       f"Url: {link} \n\n"
-                       f"{post}")
-            adj = MIMEApplication(htmlDoc)
-            encoders.encode_base64(adj)
-            name = 'notumblr'
-            ext = '.html'
-            adj.add_header('Content-Disposition',
-                               'attachment; filename="%s"' % name+ext)
+            if isinstance(post[1], email.message.Message):
+                msg = post[1]
+            else:
+                msg = MIMEMultipart()
+                msg['From']    = fromaddr
+                msg['To']      = destaddr
+                msg['Date']    = time.asctime(time.localtime(time.time()))
+                msg['X-URL']   = theUrl
+                msg['X-print'] = theUrl
+                msg['Subject'] = subject
+                htmlDoc = (f"Title: {subject} \n\n"
+                           f"Url: {link} \n\n"
+                           f"{post}")
+                adj = MIMEApplication(htmlDoc)
+                encoders.encode_base64(adj)
+                name = 'notumblr'
+                ext = '.html'
+                adj.add_header('Content-Disposition',
+                                   'attachment; filename="%s"' % name+ext)
 
-            msg.attach(adj)
-            msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n"))
+                msg.attach(adj)
+                msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n"))
 
             self.sendMessage(msg)
         except:
