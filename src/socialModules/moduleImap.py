@@ -1467,6 +1467,7 @@ class moduleImap(Content): #, Queue):
                 msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n"))
 
             self.sendMessage(msg)
+            res = 'OK'
         except:
             res = self.report(self.service, '', '', sys.exc_info())
 
