@@ -7,6 +7,7 @@ import chardet
 import click
 import configparser
 import email
+import email.message
 import email.policy
 import getpass
 import hashlib
@@ -1434,16 +1435,17 @@ class moduleImap(Content): #, Queue):
             # logging.info(f"Post id: {idPost}")
         res = 'Fail!'
         try:
-            destaddr = self.user
-            toaddrs = self.user
-            fromaddr = self.user
-            smtpsrv  = 'localhost'
-            theUrl = link
-            subject = post.split('\n')[0]
-
-            if isinstance(post[1], email.message.Message):
+            if (isinstance(post, tuple) 
+                and isinstance(post[1], email.message.Message)):
                 msg = post[1]
             else:
+                destaddr = self.user
+                toaddrs = self.user
+                fromaddr = self.user
+                smtpsrv  = 'localhost'
+                theUrl = link
+                subject = post.split('\n')[0]
+
                 msg = MIMEMultipart()
                 msg['From']    = fromaddr
                 msg['To']      = destaddr
