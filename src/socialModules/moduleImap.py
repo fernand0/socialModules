@@ -1429,7 +1429,7 @@ class moduleImap(Content): #, Queue):
             idPost = api.getPostId(post)
             # logging.info(f"Postt: {post['meta']}")
             # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]
-            idPost = post['list']['id'] #[1:-1]
+            # idPost = post['list']['id'] #[1:-1]
             # logging.info(f"Post id: {idPost}")
         res = 'Fail!'
         try:
