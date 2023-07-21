@@ -955,7 +955,7 @@ class Content:
                 logMsg(msgLog, 2, 0)
 
                 if self.getPostType():
-                    nameMethod = self.getPostType().capitalize()
+                    nameMethod = self.getPostsType().capitalize()
                 else:
                     nameMethod = 'Post'
 
