@@ -258,7 +258,7 @@ class moduleSlack(Content): #, Queue):
 
     def getChanId(self, name):
         msgLog = (f"{self.indent} getChanId {self.service}")
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 2, 0)
 
         self.getClient().token = self.user_slack_token
         chanList = self.getClient().api_call("conversations.list")["channels"]

@@ -1,7 +1,6 @@
 # This module provides infrastructure for publishing and updating blog posts
 
 # using several generic APIs  (XML-RPC, blogger API, Metaweblog API, ...)
-
 import configparser
 import logging
 import os
@@ -10,9 +9,7 @@ import time
 import urllib
 
 import feedparser
-import requests
 from bs4 import BeautifulSoup
-from pdfrw import PdfReader
 
 import socialModules.moduleCache
 from socialModules.configMod import *
@@ -20,7 +17,6 @@ from socialModules.moduleContent import *
 # from socialModules.moduleQueue import *
 
 # https://github.com/fernand0/scripts/blob/master/moduleCache.py
-
 
 class moduleRss(Content): #, Queue):
 
@@ -57,7 +53,28 @@ class moduleRss(Content): #, Queue):
         self.client = 'client'
         self.service = 'Rss'
 
-    def setPosts(self):
+    def setApiSearch(self):
+        msgLog = f"{self.indent} Setting posts (search)"
+        logMsg(msgLog, 2, 0)
+
+        posts = self.setApiPosts()
+        print(f"Posts: {posts}")
+        search = self.getSearch()
+        selPosts = []
+        for post in posts:
+            if search.startswith('!'):
+                print(f"Link: {self.getPostLink(post)}")
+                if not (search[1:] in self.getPostLink(post)):
+                    selPosts.append(post)
+            else:
+                print(f"Link: {self.getPostLink(post)}")
+                if search in  self.getPostLink(post):
+                    selPosts.append(post)
+            
+        print(f"Selected posts: {selPosts}")
+        return selPosts
+
+    def setApiPosts(self):
         msgLog = f"{self.indent} Setting posts"
         logMsg(msgLog, 2, 0)
 
@@ -70,11 +87,12 @@ class moduleRss(Content): #, Queue):
                     request_headers={'Accept':'application/atom+xml'})
         else:
             self.feed = feedparser.parse(urlRss)
-        self.posts = self.feed.entries
+        posts = self.feed.entries
         if hasattr(self.feed.feed, 'title'):
             self.title = self.feed.feed.title
         else:
             self.title = self.user
+        return posts
 
     def getSiteTitle(self):
         title = ''
@@ -261,7 +279,9 @@ def main():
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
-    import moduleRss
+    import socialModules.moduleRules
+    rules = socialModules.moduleRules.moduleRules()
+    rules.checkRules()
 
     if os.path.exists(CONFIGDIR + '/.rssBlogs'):
         config = configparser.ConfigParser()
@@ -269,14 +289,25 @@ def main():
     else:
         print("no")
 
-    testingGitHub = False
+    testingSearch = True
+    if testingSearch:
+        key = ('rss', 'set', 'http://github.com/fernand0', 'search')
+        apiSrc = rules.readConfigSrc("", key, None)
+        apiSrc.setSearch("!personalAggregator")
+        apiSrc.setPostsType('search')
+        apiSrc.setPosts()
+        print(f"Posts: {apiSrc.getPosts()}")
 
+        return
+
+    testingGitHub = False
     if testingGitHub:
         rssFeed = 'https://github.com/fernand0'
         url = 'https://github.com/fernand0'
-        blog = moduleRss.moduleRss()
+        blog = socialModules.moduleRss.moduleRss()
         blog.setClient(urllib.parse.urljoin(url,rssFeed))
         blog.setUrl(url)
+        blog.setPostsType('posts')
         blog.setPosts()
         print(f"Title: {blog.getSiteTitle()}")
         for i, post in enumerate(blog.getPosts()):

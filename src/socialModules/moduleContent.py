@@ -165,7 +165,7 @@ class Content:
         typePosts = self.getPostsType()
         msgLog = (f"{self.indent} Service {self.service} setting "
                   f"{self.getPostsType()}")
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 2, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
             typePosts = self.getPostsType()
             cmd = getattr(
@@ -1474,8 +1474,6 @@ class Content:
 
     def show(self, j):
         if j < len(self.getPosts()):
-            logging.info("To show post %d" % j)
-
             post = self.getPosts()[j]
             title = self.getPostTitle(post)
             link = self.getPostLink(post)
@@ -1484,7 +1482,6 @@ class Content:
                 content = ''
 
             reply = ''
-            logging.info("title %s"%title)
             if title:
                 reply = reply + ' ' + title 
             if content:

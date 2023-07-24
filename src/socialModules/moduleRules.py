@@ -1144,7 +1144,7 @@ class moduleRules:
                         res = self.executePublishAction(indent,
                                 msgAction, apiSrc, apiDst,
                                 simmulate, nextPost, pos)
-                        textEnd = f"{textEnd} {res}"
+                        textEnd = f" {textEnd} {res}"
 
             elif (diffTime<=hours):
                 msgLog = (f"{indent} Not enough time passed. "
