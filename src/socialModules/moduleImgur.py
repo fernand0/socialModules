@@ -82,7 +82,14 @@ class moduleImgur(Content): #, Queue):
 
             msgLog = (f"{self.indent} User: {user}")
             logMsg(msgLog, 2, 0)
-            for album in client.get_account_albums(user):
+            try:
+                albums = client.get_account_albums(user)
+            except:
+                msgLog = (f"{self.indent} Error getting albums")
+                logMsg(msgLog, 3, 1)
+                albums = []
+
+            for album in albums:
                 info = f"{time.ctime(album.datetime)} {album.title}"
                 msgLog = (f"{self.indent} Info: {info}")
                 logMsg(msgLog, 2, 0)
