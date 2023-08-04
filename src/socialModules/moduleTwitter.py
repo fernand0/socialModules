@@ -144,7 +144,7 @@ class moduleTwitter(Content): #, Queue):
                     # # self.getClient().domain = 'upload.twitter.com'
                     # # # FIXME Is this really needed?
                     # # id_img1 = self.getClient().media.upload(media=imagedata)['media_id_string']
-                    id_img1 = self.apiCall(apiImage.media_upload,
+                    id_img1 = self.apiCall(self.api.simple_upload,
                                            filename=imageName)
 
                     print(f"Id: {id_img1}")
@@ -154,7 +154,7 @@ class moduleTwitter(Content): #, Queue):
                         #     })
                         logging.debug(f"Setting up alt: {more['alt']}"
                                       f" in image {id_img1}")
-                        self.apiCall(apiImage.create_media_metadata,
+                        self.apiCall(self.api.create_media_metadata,
                                      media_id=id_img1.media_id,
                                      alt_text=more['alt'])
 
@@ -450,13 +450,19 @@ def main():
     if testingPostImages:
         image = '/tmp/2023-07-16_image.svg'
         # Does not work with svg
-        image = '/tmp/2023-07-16_image.png'
+        image = '/tmp/2023-08-04_image.png'
+
         title = 'Prueba imagen'
         altText = "Texto adicional"
         key =  ('twitter', 'set', 'fernand0', 'posts')
 
         apiSrc = rules.readConfigSrc("", key, None)
         print(f"Testing posting with images")
+        res = apiSrc.publishImage("Prueba imagen", image, alt= altText)
+        print(f"Res: {res}")
+
+        return
+
         print(f"Res: {apiSrc.publishApiImage(title, image, alt=altText)}")
 
         return
