@@ -71,6 +71,12 @@ class moduleTwitter(Content): #, Queue):
         #         res = f"Fail! {res}"
         return res
 
+    def getApi(self):
+        api = None
+        if hasattr(self, "api"):
+            api = self.api
+        return api
+
     def setApiPosts(self):
         posts = []
         # Does not work with new API restrictions
@@ -144,7 +150,7 @@ class moduleTwitter(Content): #, Queue):
                     # # self.getClient().domain = 'upload.twitter.com'
                     # # # FIXME Is this really needed?
                     # # id_img1 = self.getClient().media.upload(media=imagedata)['media_id_string']
-                    id_img1 = self.apiCall(self.api.simple_upload,
+                    id_img1 = self.apiCall(self.getApi().simple_upload,
                                            filename=imageName)
 
                     print(f"Id: {id_img1}")
@@ -154,7 +160,7 @@ class moduleTwitter(Content): #, Queue):
                         #     })
                         logging.debug(f"Setting up alt: {more['alt']}"
                                       f" in image {id_img1}")
-                        self.apiCall(self.api.create_media_metadata,
+                        self.apiCall(self.getApi().create_media_metadata,
                                      media_id=id_img1.media_id,
                                      alt_text=more['alt'])
 
