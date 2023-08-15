@@ -107,17 +107,34 @@ class moduleTwitter(Content): #, Queue):
         msgLog = f"Reply: {reply}"
         logMsg(msgLog, 1, 1)
         origReply = reply
+        tweet = ''
         if hasattr(origReply, 'errors') and not origReply.errors:
             if not ('Fail!' in reply):
                 idPost = self.getPostId(reply)
                 title = self.getPostTitle(reply)
-                res = f"{title} https://twitter.com/{self.user}/status/{idPost}"
+                tweet = f"https://twitter.com/{self.user}/status/{idPost}"
+                res = f"{title} {tweet}"
             else:
                 res = reply
                 if (('You have already retweeted' in res) 
                     or ('Status is a duplicate.' in res)
                     or ('not allowed to create a Tweet with duplicate' in res)):
                     res = res + ' SAVELINK'
+        if hasattr(self, 'fileName') and self.fileName:
+            print(f"Self Filename: {self.fileName}")
+        fileName= f"{self.fileNameBase(self)}.published"
+        listP = []
+        if os.path.exists(fileName):
+            with open(fileName, 'rb') as f:
+                try:
+                    listP = pickle.load(f)
+                except:
+                    msgLog = f"Problem loading data"
+                    self.report(self.service, msgLog, '', '')
+        if tweet:
+            listP.append(tweet)
+            with open(fileName, 'wb') as f:
+                pickle.dump(listP, f)
         return (res)
 
     def publishApiImage(self, *args, **kwargs):
@@ -420,7 +437,7 @@ def main():
         print(f"Len: {len(apiSrc.getPosts())}")
         return
 
-    testingPost = False
+    testingPost = True
     if testingPost:
         print("Testing Post")
         # for key in rules.rules.keys():
@@ -428,12 +445,12 @@ def main():
         #         and ('reflexioneseir' in key[2])
         #         and (key[3] == 'posts')):
         #             break
-        key = ('twitter', 'set', 'fernand0', 'posts')
+        key = ('twitter', 'set', 'fernand0Test', 'posts')
         print(key)
         print(rules.more[key])
         # more = {'url': 'https://twitter.com/fernand0', 'service': 'twitter', 'posts': 'posts', 'direct': 'twitter', 'twitter': 'fernand0', 'time': '23.1', 'max': '1', 'hold': 'no'}
 
-        apiSrc = rules.readConfigSrc("", key, rules.more[key])
+        apiSrc = rules.readConfigSrc("", key, None)
         title = "Test"
         link = "https://twitter.com/fernand0Test"
         print(f"Publishing {apiSrc.publishPost(title, link, '')}")
@@ -452,7 +469,7 @@ def main():
         print(f"Direct: {apiSrc.api.get_direct_messages()}")
         return
 
-    testingPostImages = True
+    testingPostImages = False
     if testingPostImages:
         image = '/tmp/2023-07-16_image.svg'
         # Does not work with svg
