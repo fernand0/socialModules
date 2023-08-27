@@ -55,7 +55,14 @@ class moduleImgur(Content): #, Queue):
         logMsg(msgLog, 2, 0)
 
         if client:
-            for album in client.get_account_albums(user):
+            albums = None
+            try:
+                albums = client.get_account_albums(user)
+            except: 
+                msgLog = (f"{self.indent} Failed connection") 
+                logMsg(msgLog, 1, 1)
+
+            for album in albums:
                 # msgLog = (f"{self.indent} Title: {time.ctime(album.datetime)} "
                 #           f"{album.title}")
                 # logMsg(msgLog, 2, 0)

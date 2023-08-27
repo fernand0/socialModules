@@ -114,6 +114,7 @@ class moduleImap(Content): #, Queue):
         logMsg(msgLog, 2, 0)
         msgLog = (f"{self.indent} Server: {self.server}")
         logMsg(msgLog, 2, 0)
+        client = None
         try:
             client = self.makeConnection(self.server, self.user, keys)
             msgLog = (f"{self.indent} Connection: {client}")

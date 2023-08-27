@@ -1456,7 +1456,7 @@ class Content:
                f"Post: {post}"]
 
         if link:
-               msg.append[f"Link: {link}"]
+               msg.append(f"Link: {link}")
         if data:
                logMsg(f"{self.indent} Service {self.service} "
                       f"Data error: {data}", 2, 0)

@@ -304,7 +304,10 @@ def main():
 
     testingPost = True
     if testingPost:
-        print("ll", ln.publishPost("A ver otro", "https://elmundoesimperfecto.com/",''))
+        res = ln.publishPost("A ver otro", "https://elmundoesimperfecto.com/",'')
+        print(f"res: {res}")
+        if 'Fail' in res:
+            ln.authorize()
         return
     #sys.exit()
     # print(ln.deleteApiPosts('6764243697006727168'))
