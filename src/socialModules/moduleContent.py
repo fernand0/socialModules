@@ -1154,6 +1154,7 @@ class Content:
         msgLog = (f"{self.indent} Service {self.service} "
                   f"do edita {j} - {addTitle}")
         logMsg(msgLog, 2, 0)
+        post = self.getPost(j)
         oldTitle = self.getPostTitle(post)
         newTitle = f"oldTitle {addTitle}"
         update = self.edit(j, newTitle)
