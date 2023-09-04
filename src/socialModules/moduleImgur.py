@@ -62,12 +62,13 @@ class moduleImgur(Content): #, Queue):
                 msgLog = (f"{self.indent} Failed connection") 
                 logMsg(msgLog, 1, 1)
 
-            for album in albums:
-                # msgLog = (f"{self.indent} Title: {time.ctime(album.datetime)} "
-                #           f"{album.title}")
-                # logMsg(msgLog, 2, 0)
-                if album.in_gallery:
-                    posts.append(album)
+            if albums:
+                for album in albums:
+                    # msgLog = (f"{self.indent} Title: {time.ctime(album.datetime)} "
+                    #           f"{album.title}")
+                    # logMsg(msgLog, 2, 0)
+                    if album.in_gallery:
+                        posts.append(album)
         else:
             msgLog = (f'{self.indent} setApiPosts No client configured!')
             logMsg(msgLog, 3, 0)

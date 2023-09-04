@@ -1150,6 +1150,15 @@ class Content:
                 update = f"Changed {oldLink} with {newLink} Id {str(res)}"
             return update
 
+    def edita(self, j, addTitle):
+        msgLog = (f"{self.indent} Service {self.service} "
+                  f"do edita {j} - {addTitle}")
+        logMsg(msgLog, 2, 0)
+        oldTitle = self.getPostTitle(post)
+        newTitle = f"oldTitle {addTitle}"
+        update = self.edit(j, newTitle)
+        return update
+
     def edit(self, j, newTitle):
         msgLog = (f"{self.indent} Service {self.service} "
                   f"do edit {j} - {newTitle}")
@@ -1452,16 +1461,22 @@ class Content:
         return (soup.get_text().strip("\n"), theSummaryLinks)
 
     def report(self, profile, post, link, data):
-        msg = [f"{profile} failed!",
-               f"Post: {post}"]
+        if post:
+            msg = [f"Report: failed!",
+                  f"Post: {post}"]
+        else:
+            msg = [f"Report: failed!"]
 
         if link:
                msg.append(f"Link: {link}")
         if data:
                logMsg(f"{self.indent} Service {self.service} "
                       f"Data error: {data}", 2, 0)
-               msg.append(f"Unexpected error: {data[0]}")
-               msg.append(f"Unexpected error: {data[1]}")
+               if isinstance(data,list) or isinstance(data,tuple): 
+                   msg.append(f"Unexpected error: {data[0]}") 
+                   msg.append(f"Unexpected error: {data[1]}")
+               else:
+                   msg.append(f"Unexpected error: {data}") 
         res = ""
         for line in msg:
             msgLog = (f"{self.indent} Service {self.service} "
