@@ -54,6 +54,7 @@ class moduleHtml(Content): #, Queue):
 
         # Based on https://github.com/moshfiqur/html2mobi
         retry = False
+        response = None
         moreContent = ""
         try:
             from requests.packages.urllib3.exceptions import InsecureRequestWarning

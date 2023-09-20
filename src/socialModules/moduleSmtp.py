@@ -40,6 +40,7 @@ class moduleSmtp(Content): #, Queue):
             api = None
 
     def publishApiPost(self, *args, **kwargs):
+        comment = ""
         if args and len(args) == 3:
             logging.info(f"Tittt: args: {args}")
             post, link, comment = args
