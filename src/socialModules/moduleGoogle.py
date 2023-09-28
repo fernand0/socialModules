@@ -10,7 +10,7 @@ import os
 
 from googleapiclient.discovery import build
 from httplib2 import Http
-from oauth2client import client, file, tools
+from oauth2client import client, file, tools, clientsecrets
 
 from socialModules.configMod import *
 
@@ -59,6 +59,9 @@ class socialGoogle:
                 logMsg(msgLog, 2, 0)
 
                 try:
+                    if not os.path.exists(fileCredStore):
+                        with open(fileCredStore, 'w') as fHash:
+                            pass
                     flow = client.flow_from_clientsecrets(fileCredStore, 
                                                          SCOPES)
                     creds = tools.run_flow(flow, store, 
@@ -75,12 +78,13 @@ class socialGoogle:
                     #         success_message='The auth flow is complete; you may close this window.')
                     # Save the credentials for the next run
                 except FileNotFoundError:
-                    print("no")
+                    print("noooo")
                     print(fileCredStore)
                     sys.exit()
                 except ValueError:
-                    print("Error de valor")
-                    creds = 'Fail!'
+                    res = self.report('moduleGoogle', 'Wrong data in file', '', sys.exc_info())
+                    creds.refresh(Request())
+                    #creds = 'Fail!'
         msgLog = (f"{self.indent} Storing creds")
         logMsg(msgLog, 2, 0)
         # with open(fileTokenStore, 'wb') as token:

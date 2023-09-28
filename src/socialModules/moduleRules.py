@@ -1186,6 +1186,11 @@ class moduleRules:
                 logging.info(f"{indent} Key: {src}")
             for src in sorted(self.rules.keys()):
                 msgLog = f"{indent} src: {src}"
+                if src in self.more: 
+                    if (('hold' in self.more[src]) 
+                        and (self.more[src]['hold'] == 'yes')): 
+                        continue
+
                 logMsg(msgLog, 2, 0)
                 if self.getNameAction(src) != previous:
                     i = 0
