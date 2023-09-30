@@ -335,7 +335,7 @@ def main():
     
     indent = ""
     
-    testingInit = True
+    testingInit = False
     if testingInit:
         import moduleRules
         src = ('slack', 'set', 'http://fernand0-errbot.slack.com/', 'posts')
