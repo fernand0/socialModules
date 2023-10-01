@@ -120,6 +120,9 @@ class moduleTwitter(Content): #, Queue):
                     or ('Status is a duplicate.' in res)
                     or ('not allowed to create a Tweet with duplicate' in res)):
                     res = res + ' SAVELINK'
+        import socialModules.moduleCache
+        apiTmp = getApi('Cache', (self.service,('a','b',self.service +'zz',self.user), f'https://twitter.com/{self.user}'))
+        print(f"api fileName {apiTmp.fileName}")
         if hasattr(self, 'fileName') and self.fileName:
             print(f"Self Filename: {self.fileName}")
         fileName= f"{self.fileNameBase(self)}.published"
@@ -453,10 +456,12 @@ def main():
         apiSrc = rules.readConfigSrc("", key, None)
         title = "Test"
         link = "https://twitter.com/fernand0Test"
-        print(f"Publishing {apiSrc.publishPost(title, link, '')}")
-        delete = input("Delete (write the id)? ")
+        res = apiSrc.publishPost(title, link, '')
+        print(f"Publishing {res}")
+        idTweet = res.split('/')[-1]
+        delete = input(f"Delete ({idTweet})? ")
         if delete:
-            print(f"Deleting: {apiSrc.deleteApiPosts(delete)}")
+            print(f"Deleting: {apiSrc.deleteApiPosts(idTweet)}")
 
         return
 
