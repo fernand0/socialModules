@@ -694,6 +694,8 @@ class moduleCache(Content): #,Queue):
         logging.debug(f"->publishApiPost: *{kwargs}*")
         if args and len(args)==3:
             title, link, comment = args
+            post = (title, link, comment)
+            api = None
         if kwargs:
             more = kwargs
             api = more['api']
@@ -702,9 +704,9 @@ class moduleCache(Content): #,Queue):
         self.setPosts()
         posts = self.getPosts()
         # logging.debug(f"pppposts: {posts}")
-        posts.append(more['post'])
+        posts.append(post)
         self.assignPosts(posts)
-        self.updatePosts(more['api'])
+        self.updatePosts(api)
         return "OK. Published!"
 
     def getPostId(self, post):

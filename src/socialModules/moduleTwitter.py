@@ -122,6 +122,7 @@ class moduleTwitter(Content): #, Queue):
                     res = res + ' SAVELINK'
         import socialModules.moduleCache
         apiTmp = getApi('Cache', (self.service,('a','b',self.service +'zz',self.user), f'https://twitter.com/{self.user}'))
+        apiTmp.publishPost(title, tweet, '')
         print(f"api fileName {apiTmp.fileName}")
         if hasattr(self, 'fileName') and self.fileName:
             print(f"Self Filename: {self.fileName}")
