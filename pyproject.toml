@@ -47,7 +47,6 @@ dependencies = [
 		'textract',
 		'gitterpy',
 		'slack_sdk',
-		'Pillow',
 		'readability-lxml'
 ]
 
