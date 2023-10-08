@@ -44,7 +44,6 @@ dependencies = [
 		'pocket-api',
 		'pytumblr',
 		'telepot',
-		'textract',
 		'gitterpy',
 		'slack_sdk',
 		'readability-lxml'
