@@ -7,7 +7,7 @@ import time
 import urllib
 
 import requests
-import textract
+# import textract
 from bs4 import BeautifulSoup, Tag
 from pdfrw import PdfReader
 
@@ -135,12 +135,12 @@ class moduleHtml(Content): #, Queue):
         title = ""
         if theTitle:
             title = theTitle[1:-1]
-        else:
-            lines = textract.process("/tmp/kkkkk.pdf").decode().split("\n")
-            i = 0
-            while len(title) < 25:
-                title = title + " " + lines[i]
-                i = i + 1
+        # else:
+        #     lines = textract.process("/tmp/kkkkk.pdf").decode().split("\n")
+        #     i = 0
+        #     while len(title) < 25:
+        #         title = title + " " + lines[i]
+        #         i = i + 1
 
         return title
 
