@@ -954,7 +954,19 @@ class Content:
                           f"post {post}")
                 logMsg(msgLog, 2, 0)
 
+                title = apiSrc.getPostTitle(post)
+                link = apiSrc.getPostLink(post)
+                comment= ''
+                if hasattr(apiSrc, 'getPostApiDate'):
+                    # FIXME we should use the more general method for calling
+                    # publishing methods
+                    comment = apiSrc.getPostApiDate(post) 
                 nameMethod = 'Post'
+                if (hasattr(apiSrc, 'getPostsType')
+                    and (apiSrc.getPostsType())
+                    and (hasattr(self,
+                        f"publishApi{apiSrc.getPostsType().capitalize()}"))):
+                    nameMethod = self.getPostsType().capitalize()
 
                 method = getattr(self, f"publishApi{nameMethod}")
                 msgLog = (f"{self.indent} Service {self.service} "
@@ -963,16 +975,18 @@ class Content:
                 res = method(api=apiSrc, post=post)
                 reply = self.processReply(res)
             else:
-                reply = "Fail! No posts available"
+                msgLog = (f"{self.indent} No posts available")
+                logMsg(msgLog, 2, 0)
+                reply = "No posts available"
         except:
             reply = self.report(self.service, apiSrc, '', sys.exc_info())
 
         return reply
 
     def publishNextPost(self, apiSrc):
-        reply = ''
         msgLog = (f"{self.indent} Service {self.service} publishing next post")
         logMsg(msgLog, 2, 0)
+        reply = ''
         try:
             post = apiSrc.getNextPost()
             if post:
@@ -994,6 +1008,9 @@ class Content:
                     nameMethod = self.getPostsType().capitalize()
 
                 method = getattr(self, f"publishApi{nameMethod}")
+                msgLog = (f"{self.indent} Service {self.service} "
+                          f"method: {method}")
+                logMsg(msgLog, 2, 0)
                 res = method(title, link, comment)
                 reply = self.processReply(res)
             else:

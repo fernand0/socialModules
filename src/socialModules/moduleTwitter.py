@@ -111,7 +111,8 @@ class moduleTwitter(Content): #, Queue):
             if not ('Fail!' in reply):
                 idPost = self.getPostId(reply)
                 title = self.getPostTitle(reply)
-                res = f"{title} https://twitter.com/{self.user}/status/{idPost}"
+                res = (f"{title}", 
+                       f"https://twitter.com/{self.user}/status/{idPost}")
             else:
                 res = reply
                 if (('You have already retweeted' in res) 

@@ -919,9 +919,12 @@ class moduleRules:
                     resMsg += f"{msgLog}\n"
         else:
             if nextPost:
-                res = apiDst.publishNextPost(apiSrc)
+                post = apiSrc.getNextPost()
+                # res = apiDst.publishNextPost(apiSrc)
             else:
-                res = apiDst.publishPosPost(apiSrc, pos)
+                post = apiSrc.getPost(pos)
+                # res = apiDst.publishPosPost(apiSrc, pos)
+            res = apiDst.publishPost(api = apiSrc, post = post)
             # msgLog = (f"{indent} Res enddddd: {res}")
             # logMsg(msgLog, 2, 0)
             resMsg = f"Publish result: {res}"
