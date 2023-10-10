@@ -919,12 +919,12 @@ class moduleRules:
                     resMsg += f"{msgLog}\n"
         else:
             if nextPost:
-                msgLog = (f"{self.indent} Service {self.service} publishing",
+                msgLog = (f"{self.indent} Service {apiDst.service} publishing",
                           f"next post")
                 post = apiSrc.getNextPost()
                 # res = apiDst.publishNextPost(apiSrc)
             else:
-                msgLog = (f"{self.indent} Service {self.service} publishing",
+                msgLog = (f"{self.indent} Service {apiDst.service} publishing",
                           f"post in pos {pos}")
                 post = apiSrc.getPost(pos)
                 # res = apiDst.publishPosPost(apiSrc, pos)
