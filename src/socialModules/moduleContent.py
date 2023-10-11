@@ -1062,9 +1062,9 @@ class Content:
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
 
-        print(f"    Publishing in {self.service}: {title}")
-        print(f"    Publishing in {self.service}:  {link}")
-        print(f"    Publishing in {self.service}: {comment}")
+        # print(f"    Publishing in {self.service}: {title}")
+        # print(f"    Publishing in {self.service}:  {link}")
+        # print(f"    Publishing in {self.service}: {comment}")
         reply = 'Fail!'
         try:
             nameMethod = 'Post'

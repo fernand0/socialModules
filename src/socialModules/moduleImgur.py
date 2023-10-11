@@ -121,7 +121,11 @@ class moduleImgur(Content): #, Queue):
 
     def getPostTitle(self, post):
         print(f"Post: {post}")
-        return post.title
+        try:
+            title = post.title
+        except:
+            title = ''
+        return title
 
     def getPostContentHtml(self, post):
         content = ''
@@ -142,7 +146,11 @@ class moduleImgur(Content): #, Queue):
         if self.getPostsType() == 'cache':
             return post[1]
         else:
-            return post.link
+            try:
+                link = post.link
+            except:
+                link = ''
+            return link
 
     def getPostImage(self, post):
         # FIXME. Need rethinking

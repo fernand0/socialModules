@@ -884,52 +884,44 @@ class moduleRules:
         resMsg = ''
         postaction = ''
         apiSrc.setPosts()
+        if nextPost:
+            msgLog = (f"next post in service {apiDst.service}.")
+            post = apiSrc.getNextPost()
+            # res = apiDst.publishNextPost(apiSrc)
+        else:
+            msgLog = (f"post in pos {pos} in service {apiDst.service}.")
+            post = apiSrc.getPost(pos)
+                # res = apiDst.publishPosPost(apiSrc, pos)
+        if post:
+            title = apiSrc.getPostTitle(post)
+            link = apiSrc.getPostLink(post)
         if simmulate:
-            if nextPost:
-                # FIXME is  this needed?
-                post = apiSrc.getNextPost()
-            else:
-                post = apiSrc.getPost(pos)
-
             if post:
-                msgLog = (f"{indent}Would schedule in {apiDst.service} "
-                          f"Title: {apiSrc.getPostTitle(post)}")
+                msgLog = (f"Would schedule {msgLog} "
+                          f"Title: {title}.")
+                if link:
+                    msgLog = (f"{indent}{msgLog} I'd record link: {link}"
+                              f"{indent}in file "
+                              f"{apiSrc.fileNameBase(apiDst)}.last")
             else:
-                msgLog = f"{indent}No post to schedule."
+                msgLog = f"{indent}No post to schedule with {msgLog}."
             logMsg(msgLog, 1, 1)
 
             indent = f"{indent[:-1]}"
-
-            msgLog = (f"{indent}This is a simmulation")
-            logMsg(msgLog, 1, 1)
-            resMsg = f"Simulate: {msgLog}\n"
-            # post = apiSrc.getNextPost()
-            if post:
-                link = apiSrc.getPostLink(post)
-                if link:
-                    msgLog = (f"{indent}I'd record link: {link}")
-                    logMsg(msgLog, 1, 1)
-                    resMsg += f"{msgLog}\n"
-                    # fN = fileNamePath(apiDst.getUrl(), socialNetwork)
-                    # msgLog = (f"{indent}in file ", f"{fN}.last")
-                    # logMsg(msgLog, 1, 1)
-                    msgLog = (f"{indent}in file "
-                              f"{apiSrc.fileNameBase(apiDst)}.last")
-                    logMsg(msgLog, 1, 1)
-                    resMsg += f"{msgLog}\n"
+            resMsg = ""
         else:
-            if nextPost:
-                msgLog = (f"{self.indent} Service {apiDst.service} publishing",
-                          f"next post")
-                post = apiSrc.getNextPost()
-                # res = apiDst.publishNextPost(apiSrc)
+            res = ''
+            if post:
+                res = apiDst.publishPost(api = apiSrc, post = post)
+                msgLog = (f"{indent}Trying to publish {msgLog} "
+                          f"Title: {title}.")
+                if link:
+                    msgLog = (f"{indent}{msgLog} I'll record link: {link}"
+                              f"{indent}in file "
+                              f"{apiSrc.fileNameBase(apiDst)}.last")
             else:
-                msgLog = (f"{self.indent} Service {apiDst.service} publishing",
-                          f"post in pos {pos}")
-                post = apiSrc.getPost(pos)
-                # res = apiDst.publishPosPost(apiSrc, pos)
-            logMsg(msgLog, 2, 0)
-            res = apiDst.publishPost(api = apiSrc, post = post)
+                msgLog = f"{indent}No post to schedule with {msgLog}."
+            logMsg(msgLog, 1, 1)
             # msgLog = (f"{indent} Res enddddd: {res}")
             # logMsg(msgLog, 2, 0)
             resMsg = f"Publish result: {res}"
