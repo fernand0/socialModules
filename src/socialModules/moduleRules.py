@@ -873,6 +873,54 @@ class moduleRules:
         else:
             print(f"{indent}No listPosts2")
 
+    def executePostAction(self, indent, msgAction, apiSrc, apiDst,
+                            simmulate, nextPost, pos, res):
+        msgLog = (f"{indent}Trying to excecute Post Action")
+        logMsg(msgLog, 1, 1)
+        postaction = apiSrc.getPostAction()
+        if postaction:
+            msgLog = (f"{indent}Post Action {postaction} ({nextPost})")
+            logMsg(msgLog, 1, 1)
+
+            if nextPost:
+                msgLog = (f"{indent}Post Action next post")
+                logMsg(msgLog, 2, 0)
+                cmdPost = getattr(apiSrc, f"{postaction}NextPost")
+                resPost = cmdPost()
+            else:
+                msgLog = (f"{indent}Post Action pos post")
+                logMsg(msgLog, 2, 0)
+                cmdPost = getattr(apiSrc, f"{postaction}")
+                resPost = cmdPost(pos)
+                # FIXME inconsistent
+            msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
+            logMsg(msgLog, 1, 1)
+            resMsg += f" Post Action: {resPost}"
+            if ((res and (not 'failed!' in res) and (not 'Fail!' in res)) 
+                or (res and ('abusive!' in res)) 
+                or (((not res) and (not 'OK. Published!' in res)) 
+                    or ('duplicate' in res))):
+                msgLog = (f"{indent}Post Action {postaction}")
+                logMsg(msgLog, 1, 1)
+
+                if nextPost:
+                    cmdPost = getattr(apiSrc, f"{postaction}NextPost")
+                    resPost = cmdPost()
+                else:
+                    cmdPost = getattr(apiSrc, f"{postaction}")
+                    resPost = cmdPost(pos)
+                # FIXME inconsistent
+                msgLog = (f"{indent}Post Action command {cmdPost}")
+                logMsg(msgLog, 1, 1)
+                msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
+                logMsg(msgLog, 1, 1)
+                resMsg += f"Post Action: {resPost}" 
+            else:
+                msgLog = (f"{indent}No Post Action")
+                logMsg(msgLog, 1, 1)
+
+            return resMsg
+
     def executePublishAction(self, indent, msgAction, apiSrc, apiDst,
                             simmulate, nextPost=True, pos=-1):
         res = ''
@@ -895,6 +943,7 @@ class moduleRules:
         if post:
             title = apiSrc.getPostTitle(post)
             link = apiSrc.getPostLink(post)
+            resMsg = f"Publish result: {res}"
         if simmulate:
             if post:
                 msgLog = (f"Would schedule {msgLog} "
@@ -919,70 +968,26 @@ class moduleRules:
                     msgLog = (f"{indent}{msgLog} I'll record link: {link}"
                               f"{indent}in file "
                               f"{apiSrc.fileNameBase(apiDst)}.last")
+                # print(f"{indent}res: {res}")
+                if (nextPost and
+                        ((not res) or ('SAVELINK' in res) or
+                         not ('Fail!' in res) or not ('failed!' in res))):
+                    resUpdate = apiSrc.updateLastLink(apiDst, '')
+                    resMsg += f" Update: {resUpdate}"
+
             else:
                 msgLog = f"{indent}No post to schedule with {msgLog}."
             logMsg(msgLog, 1, 1)
             # msgLog = (f"{indent} Res enddddd: {res}")
             # logMsg(msgLog, 2, 0)
-            resMsg = f"Publish result: {res}"
-            # print(f"{indent}res: {res}")
-            if (nextPost and (not 'No posts available' in res) and
-                    ((not res) or ('SAVELINK' in res) or
-                     not ('Fail!' in res) or not ('failed!' in res))):
-                resUpdate = apiSrc.updateLastLink(apiDst, '')
-                resMsg += f" Update: {resUpdate}"
-            if 'OK. Published!' in res:
-                msgLog = (f"{indent} Res is OK")
-                logMsg(msgLog, 1, 0)
-                postaction = apiSrc.getPostAction()
-                if postaction:
-                    msgLog = (f"{indent}Post Action {postaction} "
-                              f"({nextPost})")
-                    logMsg(msgLog, 1, 1)
-
-                    if nextPost:
-                        msgLog = (f"{indent}Post Action nextpost")
-                        logMsg(msgLog, 2, 0)
-                        cmdPost = getattr(apiSrc, f"{postaction}NextPost")
-                        resPost = cmdPost()
-                    else:
-                        msgLog = (f"{indent}Post Action pos")
-                        logMsg(msgLog, 2, 0)
-                        cmdPost = getattr(apiSrc, f"{postaction}")
-                        resPost = cmdPost(pos)
-                        # FIXME inconsistent
-                    # msgLog = (f"{indent}Post Action command {cmdPost}")
-                    # logMsg(msgLog, 1, 1)
-                    msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
-                    logMsg(msgLog, 1, 1)
-                    resMsg += f" Post Action: {resPost}"
-            if ((res and (not 'failed!' in res) and (not 'Fail!' in res))
-                or
-                (res and ('abusive!' in res))
-                or
-                (((not res) and (not 'OK. Published!' in res))
-                or ('duplicate' in res))):
-                postaction = apiSrc.getPostAction()
-                if postaction:
-                    msgLog = (f"{indent}Post Action {postaction}")
-                    logMsg(msgLog, 1, 1)
-
-                    if nextPost:
-                        cmdPost = getattr(apiSrc, f"{postaction}NextPost")
-                        resPost = cmdPost()
-                    else:
-                        cmdPost = getattr(apiSrc, f"{postaction}")
-                        resPost = cmdPost(pos)
-                        # FIXME inconsistent
-                    msgLog = (f"{indent}Post Action command {cmdPost}")
-                    logMsg(msgLog, 1, 1)
-                    msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
-                    logMsg(msgLog, 1, 1)
-                    resMsg += f"Post Action: {resPost}"
-                else:
-                    msgLog = (f"{indent}No Post Action")
-                    logMsg(msgLog, 1, 1)
-
+            if post:
+                if 'OK. Published!' in res:
+                    msgLog = (f"{indent} Res is OK")
+                    logMsg(msgLog, 1, 0)
+                    resMsg = self.executePostAction(inde,nt, msgAction, 
+                                                    apiSrc, apiDst, 
+                                                    simmulate, nextpost, 
+                                                    pos, res)
             msgLog = (f"{indent}End publish, reply: {resMsg}")
             logMsg(msgLog, 1, 1)
         if postaction == 'delete':
