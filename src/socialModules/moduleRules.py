@@ -875,6 +875,8 @@ class moduleRules:
 
     def executePostAction(self, indent, msgAction, apiSrc, apiDst,
                             simmulate, nextPost, pos, res):
+        resPost = ''
+        resMsg = ''
         msgLog = (f"{indent}Trying to excecute Post Action")
         logMsg(msgLog, 1, 1)
         postaction = apiSrc.getPostAction()
@@ -882,17 +884,20 @@ class moduleRules:
             msgLog = (f"{indent}Post Action {postaction} ({nextPost})")
             logMsg(msgLog, 1, 1)
 
-            if nextPost:
-                msgLog = (f"{indent}Post Action next post")
-                logMsg(msgLog, 2, 0)
-                cmdPost = getattr(apiSrc, f"{postaction}NextPost")
-                resPost = cmdPost()
-            else:
-                msgLog = (f"{indent}Post Action pos post")
-                logMsg(msgLog, 2, 0)
-                cmdPost = getattr(apiSrc, f"{postaction}")
-                resPost = cmdPost(pos)
-                # FIXME inconsistent
+            if 'OK. Published!' in res:
+                msgLog = (f"{indent} Res is OK")
+                logMsg(msgLog, 1, 0)
+                if nextPost:
+                    msgLog = (f"{indent}Post Action next post")
+                    logMsg(msgLog, 2, 0)
+                    cmdPost = getattr(apiSrc, f"{postaction}NextPost")
+                    resPost = cmdPost()
+                else:
+                    msgLog = (f"{indent}Post Action pos post")
+                    logMsg(msgLog, 2, 0)
+                    cmdPost = getattr(apiSrc, f"{postaction}")
+                    resPost = cmdPost(pos)
+                    # FIXME inconsistent
             msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
             logMsg(msgLog, 1, 1)
             resMsg += f" Post Action: {resPost}"
@@ -981,13 +986,10 @@ class moduleRules:
             # msgLog = (f"{indent} Res enddddd: {res}")
             # logMsg(msgLog, 2, 0)
             if post:
-                if 'OK. Published!' in res:
-                    msgLog = (f"{indent} Res is OK")
-                    logMsg(msgLog, 1, 0)
-                    resMsg = self.executePostAction(inde,nt, msgAction, 
-                                                    apiSrc, apiDst, 
-                                                    simmulate, nextpost, 
-                                                    pos, res)
+                resMsg = self.executePostAction(indent, msgAction, 
+                                                apiSrc, apiDst, 
+                                                simmulate, nextPost, 
+                                                pos, res)
             msgLog = (f"{indent}End publish, reply: {resMsg}")
             logMsg(msgLog, 1, 1)
         if postaction == 'delete':
