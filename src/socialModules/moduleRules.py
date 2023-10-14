@@ -905,6 +905,8 @@ class moduleRules:
                 or (res and ('abusive!' in res)) 
                 or (((not res) and (not 'OK. Published!' in res)) 
                     or ('duplicate' in res))):
+                msgLog = (f"{indent} Res is not OK")
+                logMsg(msgLog, 1, 0)
                 msgLog = (f"{indent}Post Action {postaction}")
                 logMsg(msgLog, 1, 1)
 
