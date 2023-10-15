@@ -304,7 +304,7 @@ class moduleCache(Content): #,Queue):
         return(self.setApiPosts())
 
     def setApiPosts(self):
-        msgLog = f"{self.indent} service {self.service} setApiPosts"
+        msgLog = f"{self.indent} Service {self.service} Start setApiPosts"
         logMsg(msgLog, 2, 0)
         fileNameQ = ''
         url = self.getUrl()
@@ -349,6 +349,9 @@ class moduleCache(Content): #,Queue):
 
         # msgLog = f"{self.indent} listP: {listP}"
         # logMsg(msgLog, 2, 0)
+
+        msgLog = f"{self.indent} Service {self.service} End setApiPosts"
+        logMsg(msgLog, 2, 0)
 
         return(listP)
 
@@ -690,8 +693,6 @@ class moduleCache(Content): #,Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        logging.debug(f"->publishApiPost: *{args}*")
-        logging.debug(f"->publishApiPost: *{kwargs}*")
         if args and len(args)==3:
             title, link, comment = args
         if kwargs:

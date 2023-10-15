@@ -454,9 +454,6 @@ class moduleRules:
 
         for src in self.rules.keys():
             if self.getNameRule(src) == selector:
-                # logging.debug(f"- Src: {src}")
-                # logging.debug(f"Selectors: {selector} - {selector2} -"
-                #               f"{selector3}")
                 more = self.more[src]
                 srcR = src
                 logging.debug(f"profileR: {self.getProfileRule(src)}")
@@ -613,7 +610,8 @@ class moduleRules:
 
     def getNickAction(self, action):
         if isinstance(self.getActionComponent(action, 2), tuple):
-            nick = self.getActionComponent(self.getActionComponent(action, 2), 3)
+            nick = self.getActionComponent(self.getActionComponent(action, 2),
+                                           3)
         else:
             nick = self.getActionComponent(action, 3)
         return nick
@@ -687,13 +685,18 @@ class moduleRules:
             res = self.getRuleComponent(rule, 2)
         return res
 
+    def clientErrorMsg(self, indent, api, typeC, rule, action):
+        msgLog = (f"{indent} {typeC} Error. " 
+                      f"No client for {rule} ({action})")
+        return f"{msgLog}"
+
     def readConfigSrc(self, indent, src, more):
+        msgLog = f"{indent} Start readConfigSrc" #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
         msgLog = f"{indent} readConfigSrc: {src}"
         logMsg(msgLog, 2, 0)
         msgLog = f"{indent} readConfigSrc: {self.getProfileRule(src)}"
         logMsg(msgLog, 2, 0)
-        # msgLog = f"{indent} readConfigSrc More: Src {more}"
-        # logMsg(msgLog, 2, 0)
         indent = f"{indent} "
         if self.getNameRule(src) == 'cache':
             msgLog=f"{indent} src {src}"
@@ -734,8 +737,6 @@ class moduleRules:
         if not apiSrc.getPostsType():
             apiSrc.setPostsType('posts')
 
-        # apiSrc.setPosts()
-        # print(f"Postsss: {apiSrc.getPosts()}")
         indent = indent[:-1]
         msgLog = f"{indent} End readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
@@ -749,6 +750,8 @@ class moduleRules:
         return res
 
     def readConfigDst(self, indent, action, more, apiSrc):
+        msgLog = f"{indent} Start readConfigDst" #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
         msgLog = (f"{indent} readConfigDst Action: {action}")
         logMsg(msgLog, 2, 0)
         # msgLog = (f"{indent} readConfigDst: {action})")
@@ -855,7 +858,7 @@ class moduleRules:
                 apiSrc.lastLinkPublished = ''
 
         listPosts2 = apiSrc.getNumNextPost(num)
-        print(f"{indent} {listPosts}")
+        # print(f"{indent} {listPosts}")
         if listPosts2:
             if (listPosts == listPosts2):
                 print("{indent} Equal listPosts")
@@ -885,7 +888,7 @@ class moduleRules:
             logMsg(msgLog, 1, 1)
 
             if 'OK. Published!' in res:
-                msgLog = (f"{indent} Res is OK")
+                msgLog = (f"{indent} Res {res} is OK")
                 logMsg(msgLog, 1, 0)
                 if nextPost:
                     msgLog = (f"{indent}Post Action next post")
@@ -905,7 +908,7 @@ class moduleRules:
                 or (res and ('abusive!' in res)) 
                 or (((not res) and (not 'OK. Published!' in res)) 
                     or ('duplicate' in res))):
-                msgLog = (f"{indent} Res is not OK")
+                msgLog = (f"{indent} Res {res} is not OK")
                 logMsg(msgLog, 1, 0)
                 msgLog = (f"{indent}Post Action {postaction}")
                 logMsg(msgLog, 1, 1)
@@ -942,25 +945,23 @@ class moduleRules:
         if nextPost:
             msgLog = (f"next post in service {apiDst.service}.")
             post = apiSrc.getNextPost()
-            # res = apiDst.publishNextPost(apiSrc)
         else:
             msgLog = (f"post in pos {pos} in service {apiDst.service}.")
             post = apiSrc.getPost(pos)
-                # res = apiDst.publishPosPost(apiSrc, pos)
         if post:
             title = apiSrc.getPostTitle(post)
             link = apiSrc.getPostLink(post)
             resMsg = f"Publish result: {res}"
+            msgLog = f"Title: {title}."
+            if link: 
+                msgLog = (f"{msgLog} recording Link: {link}"
+                          f"in file {apiSrc.fileNameBase(apiDst)}.last")
+        else:
+            msgLog = f"{indent}No post to schedule with {msgLog}."
+            
         if simmulate:
             if post:
-                msgLog = (f"Would schedule {msgLog} "
-                          f"Title: {title}.")
-                if link:
-                    msgLog = (f"{indent}{msgLog} I'd record link: {link}"
-                              f"{indent}in file "
-                              f"{apiSrc.fileNameBase(apiDst)}.last")
-            else:
-                msgLog = f"{indent}No post to schedule with {msgLog}."
+                msgLog = f"{indent}Would schedule {msgLog} "
             logMsg(msgLog, 1, 1)
 
             indent = f"{indent[:-1]}"
@@ -969,21 +970,14 @@ class moduleRules:
             res = ''
             if post:
                 res = apiDst.publishPost(api = apiSrc, post = post)
-                msgLog = (f"{indent}Trying to publish {msgLog} "
-                          f"Title: {title}.")
-                if link:
-                    msgLog = (f"{indent}{msgLog} I'll record link: {link}"
-                              f"{indent}in file "
-                              f"{apiSrc.fileNameBase(apiDst)}.last")
+                msgLog = f"{indent}Trying to publish {msgLog} "
                 # print(f"{indent}res: {res}")
-                if (nextPost and
-                        ((not res) or ('SAVELINK' in res) or
-                         not ('Fail!' in res) or not ('failed!' in res))):
+                if (nextPost and ((not res) or ('SAVELINK' in res) or 
+                                  not ('Fail!' in res) or 
+                                  not ('failed!' in res))):
                     resUpdate = apiSrc.updateLastLink(apiDst, '')
                     resMsg += f" Update: {resUpdate}"
 
-            else:
-                msgLog = f"{indent}No post to schedule with {msgLog}."
             logMsg(msgLog, 1, 1)
             # msgLog = (f"{indent} Res enddddd: {res}")
             # logMsg(msgLog, 2, 0)
@@ -1008,58 +1002,61 @@ class moduleRules:
                     noWait, timeSlots, simmulate, name="",
                     nextPost = True, pos = -1, delete=False):
 
-        # indent = f" {name}->({action[3]}@{action[2]})] -> "+" "
         indent = f"{name}"
-        # The ']' is opened in executeRules FIXME
 
         msgLog = (f"{indent}  Sleeping to launch all processes")
         logMsg(msgLog, 1, 0)
         # 'Cometic' waiting to allow all the processes to be launched.
         time.sleep(1)
 
-        msgLog = (f"{indent} Go!")
+        msgLog = (f"{indent}  Go!")
         logMsg(msgLog, 1, 0)
         indent = f"{indent} "
 
-        msgAction = (f"{self.getNameAction(action)} "
-                     f"{self.getNickAction(action)}@{self.getProfileAction(action)} "
-                     f"({self.getTypeAction(action)})")
-        # Destination
-
+        # Source
         apiSrc = self.readConfigSrc(indent, src, more)
-
-        if apiSrc.getName():
-            msgLog = (f"{indent} Source: {apiSrc.getName()}-{self.getNickAction(src)} -> "
-                f"Action: {msgAction})")
-        else:
-            msgLog = (f"{indent} Source: {self.getProfileAction(src)}-{self.getNickAction(src)} -> "
-                f"Action: {msgAction})")
-
-        # logMsg(msgLog, 1, 0)
-        res = ""
-        textEnd = (f"{msgLog}")
-
-        # print(f"Srcccc: {src}")
-        # print(f"Srcccc: {apiSrc.getNickAction()}")
-        # return
-        if (apiSrc.getHold() == 'yes'):
-            # FIXME Maybe befour lanuching the subprocess?
-            time.sleep(1)
-            msgHold = f"{indent} In hold"
-            logging.info(msgHold)
-            return msgHold
-        elif not apiSrc.getClient():
-            msgLog = (f"{indent} Error. No client for {self.getProfileRule(src)} ({self.getNickAction(src)})")
+        if not apiSrc.getClient():
+            msgLog = self.clientErrorMsg(indent, apiSRc, "Source", 
+                                      self.getProfileRule(src), 
+                                      self.getNickAction(src))
+            #msgLog = (f"{indent} Source Error. No client for "
+            #          f"{self.getProfileRule(src)} "
+            #          f"({self.getNickAction(src)})")
             logMsg(msgLog, 3, 1)
             return f"{msgLog} End."
 
-        apiSrc.setPosts()
+        if apiSrc.getName():
+            theName = apiSrc.getName()
+        else:
+            theName = self.getProfileAction(src)
 
+        msgAction = (f"{self.getNameAction(action)} "
+                     f"{self.getNickAction(action)}@"
+                     f"{self.getProfileAction(action)} "
+                     f"({self.getTypeAction(action)})")
+        msgLog = (f"{indent} Source: {theName}-{self.getNickAction(src)}"
+                  f"-> Action: {msgAction}")
+
+        res = ""
+        textEnd = (f"{msgLog}")
+
+        #if (apiSrc.getHold() == 'yes'):
+        #    # FIXME Maybe befour lanuching the subprocess?
+        #    time.sleep(1)
+        #    msgHold = f"{indent} In hold"
+        #    logMsg(msgHold,1, 0)
+        #    return msgHold
+        #el
+
+        # Destination
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
-
         if not apiDst.getClient():
-            msgLog = (f"{indent} Error. No client for "
-                      f"{self.getProfileRule(action)}")
+            msgLog = self.clientErrorMsg(indent, apiDst, "Destination", 
+                                      (f"{self.getNameRule(src)}@" 
+                                       f"{self.getProfileRule(src)}"), 
+                                      self.getNickAction(src))
+            # msgLog = (f"{indent} Destination Error. No client for "
+            #           f"{self.getProfileRule(action)}")
             logMsg(msgLog, 3, 1)
             return f"End: {msgLog}"
 
@@ -1087,14 +1084,11 @@ class moduleRules:
         msgLog = (f"{indent} I'll publish {num} post")
         logMsg(msgLog, 1, 1)
 
-        listPosts = []
-        link = ''
-
         if (num > 0):
             tNow = time.time()
             hours = float(apiDst.getTime())*60*60
 
-            lastTime = apiSrc.getLastTimePublished(indent)
+            lastTime = apiSrc.getLastTimePublished(f"{indent} ")
 
             if lastTime:
                 diffTime = tNow - lastTime
@@ -1102,34 +1096,12 @@ class moduleRules:
                 # If there is no lasTime, we will publish
                 diffTime = hours + 1
 
-            # msgLog = (f"{indent}Src time: {apiSrc.getTime()} "
-            #           f"Dst time: {apiDst.getTime()}")
-            # logMsg(msgLog, 2, 0)
-
             numAvailable = 0
 
             if (noWait or (diffTime>hours)):
                 tSleep = random.random()*float(timeSlots)*60
 
-                if nextPost:
-                    post = apiSrc.getNextPost()
-                else:
-                    post = apiSrc.getPost(pos)
-
-
-                if post:
-                    msgLog = (f"{indent} Post {post}")
-                    msgLog = (f"{indent} Post type {type(post)}")
-                    logMsg(msgLog, 1, 1)
-                    msgLog = (f"{indent} Next post title: "
-                              f"{apiSrc.getPostTitle(post)}")
-                    apiSrc.setNextTime(tNow, tSleep, apiDst)
-                else:
-                    msgLog = (f"{indent} No post")
-                    apiSrc.setNextAvailableTime(tNow, tSleep, apiDst)
-                logMsg(msgLog, 1, 1)
-                # apiSrc.setNextTime(tNow, tSleep, apiDst)
-                # return
+                apiSrc.setNextTime(tNow, tSleep, apiDst)
 
                 if (tSleep>0.0):
                     msgLog= f"{indent} Waiting {tSleep/60:2.2f} minutes"
@@ -1137,30 +1109,20 @@ class moduleRules:
                     tSleep = 2.0
                     msgLog= f"{indent} No Waiting"
 
-                msgLog = f"{msgLog} for action" #: {msgAction}"
+                msgLog = f"{msgLog} for action." #: {msgAction}"
                 logMsg(msgLog, 1, 1)
 
                 for i in range(num):
                     time.sleep(tSleep)
-                    if nextPost:
-                        msgLog = f"{self.indent} next post"
-                        logMsg(msgLog, 2, 0)
-                        res = self.executePublishAction(indent,
-                                msgAction, apiSrc, apiDst, simmulate)
-                    else:
-                        msgLog = f"{self.indent} pos {pos}"
-                        logMsg(msgLog, 2, 0)
-                        res = self.executePublishAction(indent,
-                                msgAction, apiSrc, apiDst,
-                                simmulate, nextPost, pos)
-                        textEnd = f" {textEnd} {res}"
-
+                    res = self.executePublishAction(indent, msgAction, apiSrc, 
+                                                    apiDst, simmulate, nextPost, 
+                                                    pos)
             elif (diffTime<=hours):
                 msgLog = (f"{indent} Not enough time passed. "
                           f"We will wait at least "
                           f"{(hours-diffTime)/(60*60):2.2f} hours.")
                 logMsg(msgLog, 1, 1)
-                textEnd = f"{textEnd} {msgLog}"
+                textEnd = f""
 
         else:
             if (num<=0):
@@ -1172,7 +1134,7 @@ class moduleRules:
         return f"{indent} {res} {textEnd}"
 
     def executeRules(self):
-        msgLog = "Executing rules"
+        msgLog = "Start Executing rules"
         logMsg(msgLog, 1, 2)
         indent = " "
 
@@ -1190,34 +1152,33 @@ class moduleRules:
             i = 0
             previous = ""
 
-            logging.info(f"{indent} Keys: {self.rules.keys()}")
-            for src in self.rules.keys():
-                logging.info(f"{indent} Key: {src}")
+            # logging.info(f"{indent} Keys: {self.rules.keys()}")
+            # for src in self.rules.keys():
+            #     logging.info(f"{indent} Key: {src}")
             for src in sorted(self.rules.keys()):
-                msgLog = f"{indent} src: {src}"
-                if src in self.more: 
-                    if (('hold' in self.more[src]) 
-                        and (self.more[src]['hold'] == 'yes')): 
-                        continue
-
-                logMsg(msgLog, 2, 0)
-                if self.getNameAction(src) != previous:
+                if (self.getNameAction(src) != previous):
                     i = 0
                 else:
                     i = i + 1
                 previous = self.getNameAction(src)
+
                 indent = f"{self.getNameAction(src):->9}{i}>"
+                msgLog = f"{indent} Src: {src}"
+                logMsg(msgLog, 2, 0)
+
+                if src in self.more: 
+                    if (('hold' in self.more[src]) 
+                        and (self.more[src]['hold'] == 'yes')): 
+                        msgHold = f"{indent} On hold." 
+                        logMsg(msgHold,1, 0)
+                        continue
+
                 if src in self.more:
-                    # f"  More: {self.more[src]}")
                     more = self.more[src]
                 else:
-                    # f"  More: empty")
                     more = None
 
                 if self.getNameAction(src) in ['cache']:
-                    # try:
-                    #     srcName = more['url']
-                    # except:
                     srcName = src[2][2]
                     # FIXME Better access?
 
@@ -1232,7 +1193,6 @@ class moduleRules:
                         if 'gmail' in more:
                             srcName = more['gmail']
                         srcName = f"{srcName}@gmail"
-                    text = (f"Source: {srcName} ({self.getNickAction(src)})")
                 else:
                     #FIXME self.identifier
                     srcName = self.getProfileRule(src)
@@ -1246,12 +1206,13 @@ class moduleRules:
                     elif (not srcName) and ('tumblr' in self.getNameAction(src)):
                         srcName = more['url']
                         srcName = f"{srcName.split('/')[2].split('.')[0]}"
-                    text = (f"Source: {srcName} ({self.getNickAction(src)})")
+                text = (f"Source: {srcName} ({self.getNickAction(src)})")
 
                 actions = self.rules[src]
 
                 # print(f"Select: {select} - {src[0]}{i}")
-                if (select and (select.lower() != f"{self.getNameRule(src).lower()}{i}")):
+                if (select and 
+                    (select.lower() != f"{self.getNameRule(src).lower()}{i}")):
                     actionMsg = f"Skip."
                 else:
                     actionMsg = (f"Scheduling.")
@@ -1265,10 +1226,8 @@ class moduleRules:
                     continue
                 for k, action in enumerate(actions):
                     name = f"{self.getNameRule(src)}{i}>"
-                    if self.getTypeAction(action).startswith('http'):
-                        # FIXME
-                        theAction = 'posts'
-                    else:
+                    theAction = 'posts'
+                    if not self.getTypeAction(action).startswith('http'):
                         theAction = self.getTypeAction(action)
 
                     indent = f"{indent} "
@@ -1281,9 +1240,7 @@ class moduleRules:
                                f"{self.getNickRule(src)}")
                     logMsg(msgLog, 1, 1)
                     textEnd = f"{textEnd}\n{msgLog}"
-                    # logMsg(msgLog, 1, 1)
-                    nameA = f"{indent} {name}" #f"{name[:-1]} (Action {k})>" # [({theAction})"
-                    # The '[' is closed in executeAction TODO
+                    nameA = f"{indent} {name}" 
                     if actionMsg == "Skip.":
                         #FIXME "In hold"
                         continue
@@ -1307,8 +1264,8 @@ class moduleRules:
                                         args.simmulate,
                                         nameA))
                     indent = f"{indent[:-1]}"
-                # i = i + 1
                 indent = f"{indent[:-1]}"
+
 
             messages = []
             for future in concurrent.futures.as_completed(delayedPosts):

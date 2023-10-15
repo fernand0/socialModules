@@ -154,7 +154,7 @@ class Content:
         pass
 
     def setPosts(self):
-        msgLog = f"{self.indent} service {self.service} Start setPosts"
+        msgLog = f"{self.indent} Service {self.service} Start setPosts"
         logMsg(msgLog, 2, 0)
         nick = self.getNick()
         if nick:
@@ -163,7 +163,7 @@ class Content:
             identifier = self.getUrl()
 
         typePosts = self.getPostsType()
-        msgLog = (f"{self.indent} Service {self.service} setting "
+        msgLog = (f"{self.indent} Service {self.service} setting type "
                   f"{self.getPostsType()}")
         logMsg(msgLog, 2, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
@@ -174,13 +174,11 @@ class Content:
         else:
             cmd = getattr(self, "setApiPosts")
 
-        # msgLog = (f"{self.indent} Cmd: {cmd}")
-        # logMsg(msgLog, 2, 0)
         posts = cmd()
-        msgLog = (f"{self.indent} service {self.service} Posts: {posts}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} Service {self.service} Posts: {posts}")
+        # logMsg(msgLog, 2, 0)
         self.assignPosts(posts)
-        msgLog = f"{self.indent} service {self.service} End setPosts"
+        msgLog = f"{self.indent} Service {self.service} End setPosts"
         logMsg(msgLog, 2, 0)
 
     def getClient(self):
@@ -202,8 +200,8 @@ class Content:
         nameSrc = type(src).__name__
         if 'module' in nameSrc:
             nameSrc = nameSrc[len('module'):]
-            msgLog = (f"{self.indent} fileNameBase module Src: {nameSrc}")
-            logMsg(msgLog, 2, 0)
+            # msgLog = (f"{self.indent} fileNameBase module Src: {nameSrc}")
+            # logMsg(msgLog, 2, 0)
         nameDst = type(dst).__name__
         if 'module' in nameDst:
             nameDst = nameDst[len('module'):]
@@ -254,8 +252,8 @@ class Content:
                     f"{nameDst}_{typeDst}_"
                     f"{userD}_{serviceD}")
         fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
-        msgLog = (f"{self.indent} End fileNameBase fileName: {fileName}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} End fileNameBase fileName: {fileName}")
+        # logMsg(msgLog, 2, 0)
 
         return fileName
 
@@ -421,7 +419,7 @@ class Content:
                 self.report('', msgLog, '', '')
             with open(fileNameNext,'wb') as f:
                 pickle.dump((tNow, tSleep), f)
-            msgLog = (f"File {fileNameNext} created. ")
+            msgLog = (f"File {fileNameNext} updated.")
             logMsg(msgLog, 2, 0)
         else:
             msgLog = (f"Not implemented!")
@@ -708,24 +706,24 @@ class Content:
 
         if posts and (len(posts) > 0):
             if self.getPostsType() in ['favs', 'queue']:
-                msgLog = f"{self.indent} favs, queue"
-                logMsg(msgLog, 2, 0)
-                # This is not the correct condition, it should be independent
-                # of social network
+                # msgLog = f"{self.indent} favs, queue"
+                # logMsg(msgLog, 2, 0)
+                # # This is not the correct condition, it should be independent
+                # # of social network
                 posLast = 1
             else:
-                msgLog = f"{self.indent} others"
-                logMsg(msgLog, 2, 0)
+                # msgLog = f"{self.indent} others"
+                # logMsg(msgLog, 2, 0)
                 lastLink = self.getLastLinkPublished()
-                msgLog = f"{self.indent} lastLink: {lastLink}"
-                logMsg(msgLog, 2, 0)
+                # msgLog = f"{self.indent} lastLink: {lastLink}"
+                # logMsg(msgLog, 2, 0)
                 if lastLink:
                     posLast = self.getLinkPosition(lastLink)
                 else:
                     posLast = len(posts)
 
-            msgLog = f"{self.indent} posLast: {posLast}"
-            logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent} posLast: {posLast}"
+            # logMsg(msgLog, 2, 0)
         return posLast
 
     def getNumNextPosts(self, num):
@@ -1053,7 +1051,7 @@ class Content:
             link = ''
             comment = ''
         if more:
-            print(f"    Publishing in {self.service}: {more}")
+            # print(f"    Publishing in {self.service}: {more}")
             # if 'tags' in more:
             #     print(f"    Publishing in {self.service}: {type(more['tags'])}")
 
@@ -1220,15 +1218,15 @@ class Content:
         lastLink = ''
         if self.lastLinkPublished and (len(self.lastLinkPublished) == 1):
             lastLink = self.lastLinkPublished[0]
-            msgLog = (f"{self.indent} Last link (len 1) ")
+            # msgLog = (f"{self.indent} Last link (len 1) ")
         else:
-            msgLog = (f"{self.indent} Last link (len >1) ")
+            # msgLog = (f"{self.indent} Last link (len >1) ")
             lastLink = self.lastLinkPublished
-        if lastLink:
-            msgLog = f"{msgLog} {lastLink}"
-        else:
-            msgLog = f"{msgLog} No lastLink"
-        logMsg(msgLog, 1, 1)
+        # if lastLink:
+        #     msgLog = f"{msgLog} {lastLink}"
+        # else:
+        #     msgLog = f"{msgLog} No lastLink"
+        # logMsg(msgLog, 1, 1)
         return lastLink
 
     def getLastTimePublished(self, indent=''):
@@ -1236,7 +1234,6 @@ class Content:
         msgLog = (f"{indent} No lastTimePublished")
         if hasattr(self, 'lastTimePublished'):
             lastTime = self.lastTimePublished
-            msgLog = (f"{indent} lastTime {lastTime}")
             if lastTime:
                 import time
                 myTime = time.strftime("%Y-%m-%d %H:%M:%S",

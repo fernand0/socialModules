@@ -94,7 +94,7 @@ class moduleSlack(Content): #, Queue):
         return self.sc
 
     def setApiPosts(self):
-        msgLog = f"{self.indent} service {self.service} setApiPosts"
+        msgLog = f"{self.indent} Service {self.service} Start setApiPosts"
         logMsg(msgLog, 2, 0)
         if not self.channel:
             # FIXME
@@ -110,6 +110,8 @@ class moduleSlack(Content): #, Queue):
         except:
             posts = []
 
+        msgLog = f"{self.indent} Service {self.service} End setApiPosts"
+        logMsg(msgLog, 2, 0)
         # logging.debug(f"Posts: {posts}")
         return posts
 
@@ -257,7 +259,7 @@ class moduleSlack(Content): #, Queue):
         return post.get('attachments',[{}])[0].get('image_url', '')
 
     def getChanId(self, name):
-        msgLog = (f"{self.indent} getChanId {self.service}")
+        msgLog = (f"{self.indent} Service {self.service} Start getChanId")
         logMsg(msgLog, 2, 0)
 
         self.getClient().token = self.user_slack_token
