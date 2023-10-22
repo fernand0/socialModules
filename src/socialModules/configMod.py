@@ -79,7 +79,7 @@ def checkFile(fileName):
     logMsg(msgLog, 2, 0)
     dirName = os.path.dirname(fileName)
 
-    msgLog = "OK {fileName}"
+    msgLog = f"OK {fileName}"
     if not os.path.isdir(dirName):
         msgLog = f"Directory {dirName} does not exist."
     elif not os.path.isfile(fileName):

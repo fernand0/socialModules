@@ -157,6 +157,7 @@ class Content:
         msgLog = f"{self.indent} Service {self.service} Start setPosts"
         logMsg(msgLog, 2, 0)
         nick = self.getNick()
+        self.indent = f"{self.indent} "
         if nick:
             identifier = nick
         else:
@@ -178,6 +179,7 @@ class Content:
         # msgLog = (f"{self.indent} Service {self.service} Posts: {posts}")
         # logMsg(msgLog, 2, 0)
         self.assignPosts(posts)
+        self.indent = self.indent[:-1]
         msgLog = f"{self.indent} Service {self.service} End setPosts"
         logMsg(msgLog, 2, 0)
 
@@ -262,6 +264,7 @@ class Content:
             #FIXME: This will be removed
             link = self.getPostLink(link[-1])
         elif not link:
+            # FIXME Could post be a parameter?
             post = self.getNextPost()
             msgLog = f"{self.indent} nextPost {post}"
             logMsg(msgLog, 2, 0)
@@ -908,16 +911,6 @@ class Content:
                 msgLog = (f"{self.indent} Service {self.service} post Id "
                           f"post {idPost}")
                 logMsg(msgLog, 2, 0)
-                msgLog = (f"{self.indent} Service {self.service} post Id "
-                          f"has {hasattr(self, 'getPostsType')}")
-                logMsg(msgLog, 2, 0)
-                msgLog = (f"{self.indent} Service {self.service} post Id "
-                          f"has {self.getPostsType()}")
-                logMsg(msgLog, 2, 0)
-                lalala = f'deleteApi{self.getPostsType().capitalize()}'
-                msgLog = (f"{self.indent} Service {self.service} post Id "
-                          f"has 2 {hasattr(self, lalala)}")
-                logMsg(msgLog, 2, 0)
                 if (hasattr(self, 'getPostsType')
                     and (self.getPostsType())
                     and (hasattr(self,
@@ -925,14 +918,9 @@ class Content:
 
                     nameMethod = self.getPostsType().capitalize()
 
-                    msgLog = (f"{self.indent} Service {self.service} post Id "
-                              f"nameMethod {nameMethod}")
-                    logMsg(msgLog, 2, 0)
                     method = getattr(self, f"deleteApi{nameMethod}")
-                    msgLog = (f"{self.indent} Service {self.service} post Id "
-                              f"method {method}")
-                    logMsg(msgLog, 2, 0)
                     res = method(idPost)
+                    msgLog = f"{self.indent}Res: {res}"
                     reply = self.processReply(res)
             else:
                 reply = "Fail! No posts available"
@@ -1023,6 +1011,10 @@ class Content:
     def publishPost(self, *args, **more):
         api = ''
         post = ''
+        # Do we need these?
+        title = ''
+        link = ''
+        comment = ''
         nameMethod = 'Post'
         listPosts = []
         if len(args) == 3:
@@ -1039,17 +1031,13 @@ class Content:
                       f"{listPosts}")
             logMsg(msgLog, 2, 0)
             print(f"    Publishing in {self.service}: posts {listPosts}")
-            for post in listPosts:
-                title = self.getPostTitle(post)
-                link = self.getPostLink(post)
-                comment = ''
-                #more = {'api': apiSrc, 'post': post}
-                print(f"Title: {title}\nLink: {link}")
+            # for post in listPosts:
+            #     # title = self.getPostTitle(post)
+            #     # link = self.getPostLink(post)
+            #     comment = ''
+            #     #more = {'api': apiSrc, 'post': post}
+            #     # print(f"Title: {title}\nLink: {link}")
             return
-        else:
-            title = ''
-            link = ''
-            comment = ''
         if more:
             # print(f"    Publishing in {self.service}: {more}")
             # if 'tags' in more:
@@ -1057,8 +1045,8 @@ class Content:
 
             post = more.get('post', '')
             api = more.get('api', '')
-            title = api.getPostTitle(post)
-            link = api.getPostLink(post)
+            # title = api.getPostTitle(post)
+            # link = api.getPostLink(post)
 
         # print(f"    Publishing in {self.service}: {title}")
         # print(f"    Publishing in {self.service}:  {link}")
@@ -1090,9 +1078,9 @@ class Content:
         return reply
 
     def deletePostId(self, idPost):
-        msgLog = (f"{self.indent} Service {self.service} deleting post "
-                  f"id {idPost}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} Service {self.service} deleting post "
+        #           f"id {idPost}")
+        # logMsg(msgLog, 2, 0)
         typePosts = self.getPostsType()
         if typePosts:
             if typePosts == "cache":
@@ -1107,13 +1095,13 @@ class Content:
         return self.processReply(reply)
 
     def deletePost(self, post):
-        msgLog = (f"{self.indent} Service {self.service} deleting post "
-                  f" {post}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} Service {self.service} deleting post "
+        #           f" {post}")
+        # logMsg(msgLog, 2, 0)
         idPost = self.getPostId(post)
-        msgLog = (f"{self.indent} Service {self.service} deleting post "
-                  f"id {idPost}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} Service {self.service} deleting post "
+        #           f"id {idPost}")
+        # logMsg(msgLog, 2, 0)
         result = self.deletePostId(idPost)
         return result
 

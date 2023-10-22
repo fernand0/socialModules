@@ -816,17 +816,17 @@ class moduleRules:
                             self.getNickAction(action), indent)
             # apiDst = getApi(profile, nick, indent)
 
-            msgLog = (f"{indent} readConfigDst apiDst: {apiDst})")
-            logMsg(msgLog, 2, 0)
-            logging.debug(f"{self.indent} user {apiDst.user}")
-            apiDst.fileName = apiSrc.fileNameBase(apiDst)
-            logMsg(msgLog, 2, 0)
-            nick = self.getNickAction(action)
+            # msgLog = (f"{indent} readConfigDst apiDst: {apiDst})")
+            # logMsg(msgLog, 2, 0)
+            # logging.debug(f"{self.indent} user {apiDst.user}")
+            # apiDst.fileName = apiSrc.fileNameBase(apiDst)
+            # logMsg(msgLog, 2, 0)
+            # nick = self.getNickAction(action)
             # apiDst.setUser(nick)
             apiDst.setPostsType('posts')
 
-        msgLog = (f"{indent} Api dst more: {more}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{indent} Api dst more: {more}")
+        # logMsg(msgLog, 2, 0)
 
         if more and ('max' in more):
             mmax = more['max']
@@ -884,7 +884,7 @@ class moduleRules:
         logMsg(msgLog, 1, 1)
         postaction = apiSrc.getPostAction()
         if postaction:
-            msgLog = (f"{indent}Post Action {postaction} ({nextPost})")
+            msgLog = (f"{indent}Post Action {postaction} (nextPost = {nextPost})")
             logMsg(msgLog, 1, 1)
 
             if 'OK. Published!' in res:
@@ -910,8 +910,6 @@ class moduleRules:
                     or ('duplicate' in res))):
                 msgLog = (f"{indent} Res {res} is not OK")
                 logMsg(msgLog, 1, 0)
-                msgLog = (f"{indent}Post Action {postaction}")
-                logMsg(msgLog, 1, 1)
 
                 if nextPost:
                     cmdPost = getattr(apiSrc, f"{postaction}NextPost")
@@ -954,7 +952,7 @@ class moduleRules:
             resMsg = f"Publish result: {res}"
             msgLog = f"Title: {title}."
             if link: 
-                msgLog = (f"{msgLog} recording Link: {link}"
+                msgLog = (f"{msgLog} Recording Link: {link}"
                           f"in file {apiSrc.fileNameBase(apiDst)}.last")
         else:
             msgLog = f"{indent}No post to schedule with {msgLog}."
@@ -981,6 +979,9 @@ class moduleRules:
             logMsg(msgLog, 1, 1)
             # msgLog = (f"{indent} Res enddddd: {res}")
             # logMsg(msgLog, 2, 0)
+            if res:
+                msgLog = f"{indent}Res: {res} "
+                logMsg(msgLog, 2, 0)
             if post:
                 resMsg = self.executePostAction(indent, msgAction, 
                                                 apiSrc, apiDst, 

@@ -56,7 +56,8 @@ class moduleTwitter(Content): #, Queue):
         res = []
 
         try:
-            logging.info(f"Command: {command}")
+            msgLog = f"{self.indent}Command {command} "
+            logMsg(msgLog, 2, 0)
             res = command(**kwargs)
         except:
             res = self.report('', res, '', sys.exc_info())
@@ -104,7 +105,7 @@ class moduleTwitter(Content): #, Queue):
 
     def processReply(self, reply):
         res = ''
-        msgLog = f"Reply: {reply}"
+        msgLog = f"{self.indent}Reply: {reply}"
         logMsg(msgLog, 1, 1)
         origReply = reply
         if hasattr(origReply, 'errors') and not origReply.errors:
@@ -213,11 +214,11 @@ class moduleTwitter(Content): #, Queue):
         return res
 
     def publishApiPost(self, *args, **kwargs):
-        if args and len(args) == 3:
-            logging.info(f"Tittt: args: {args}")
+        if args and len(args) == 3 and args[0]:
+            # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
         if kwargs:
-            logging.info(f"Tittt: kwargs: {kwargs}")
+            # logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             # FIXME: We need to do something here
             post = more.get('post', '')
@@ -228,7 +229,7 @@ class moduleTwitter(Content): #, Queue):
 
         title = self.addComment(title, comment)
 
-        logging.info(f"Tittt: {title} {link} {comment}")
+        # logging.info(f"Tittt: {title} {link} {comment}")
         # logging.info(f"Tittt: {link and ('twitter' in link)}")
         res = 'Fail!'
         # post = post[:(240 - (len(link) + 1))]
@@ -246,9 +247,11 @@ class moduleTwitter(Content): #, Queue):
             # link itself is less than 23 characters long. Your character count
             # will reflect this.
 
-            logging.debug(f"     Publishing: {title}")
+            msgLog = f"{self.indent}Publishing {title} "
+            logMsg(msgLog, 2, 0)
             res = self.apiCall(self.getClient().create_tweet, text=title)
-            logging.debug(f"     Res: {res}")
+            msgLog = f"{self.indent}Res: {res} "
+            logMsg(msgLog, 2, 0)
         return res
 
     def deleteApiPosts(self, idPost):
@@ -290,9 +293,9 @@ class moduleTwitter(Content): #, Queue):
         return title
 
     def getPostTitle(self, post):
-        msgLog = (f"{self.indent} Postttt: {post}")
-        logMsg(msgLog, 2, 0)
-        print(f"post: {post}")
+        # msgLog = (f"{self.indent} Postttt: {post}")
+        # logMsg(msgLog, 2, 0)
+        # print(f"post: {post}")
         title = ''
         try:
             title = post.data.get('text')

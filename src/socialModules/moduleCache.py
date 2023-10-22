@@ -502,8 +502,8 @@ class moduleCache(Content): #,Queue):
 
         with open(fileNameQ, 'wb') as f:
             posts = self.getPosts()
-            msgLog = f"{self.indent} Posts {self.service} {posts}"
-            logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent} Posts {self.service} {posts}"
+            # logMsg(msgLog, 2, 0)
             pickle.dump(posts, f)
 
         # msgLog = (f"Posts: {str(self.getPosts())}")
@@ -568,8 +568,8 @@ class moduleCache(Content): #,Queue):
         title = ''
         if post:
             if hasattr(self, 'auxClass'):
-                msgLog = (f"{self.indent} auxClass: {self.auxClass}")
-                logMsg(msgLog, 2, 0)
+                # msgLog = (f"{self.indent} auxClass: {self.auxClass}")
+                # logMsg(msgLog, 2, 0)
                 if isinstance(self.auxClass, str):
                     myModule = f"module{self.auxClass.capitalize()}"
                     import importlib
@@ -744,8 +744,8 @@ class moduleCache(Content): #,Queue):
             # FIXME
             idPost = self.getIdPosition(idPost)
 
-        msgLog = (f"{self.indent} id: {idPost}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} id: {idPost}")
+        # logMsg(msgLog, 2, 0)
         self.deleteApi(idPost)
         return f"OK. Deleted post {idPost}"
 
@@ -787,8 +787,8 @@ class moduleCache(Content): #,Queue):
         return self.deleteApi(j)
 
     def deleteApi(self, j):
-        msgLog = (f"{self.indent} Deleting: {j}")
-        logMsg(msgLog, 1, 0)
+        # msgLog = (f"{self.indent} Deleting: {j}")
+        # logMsg(msgLog, 1, 0)
         posts = self.getPosts()
         # logging.debug(f"Posts antes: {posts}")
         # logging.debug(f"Posts .antes: {self.getPosts()}")

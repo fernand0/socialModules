@@ -183,8 +183,8 @@ class moduleTumblr(Content): #, Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        if args and len(args) == 3:
-            # logging.info(f"Tittt: args: {args}")
+        if args and len(args) == 3 and args[0]:
+            logging.info(f"Tittt: args: {args}")
             title, link, comment = args
             api = self
             # Will always work?
@@ -302,7 +302,7 @@ def main():
             print(f"{i}) {t.getPostTitle(post)}")
         return
 
-    testingQueue = True
+    testingQueue = False
     if testingQueue:
         print("Testing queue")
         t.setPostsType('queue')
@@ -313,7 +313,7 @@ def main():
             print(i, t.getPostTitle(p), t.getPostLink(p))
         return
 
-    testingPost = True
+    testingPost = False
     if testingPost:
         t.setPostsType('posts')
         print("Testing posting in queue")

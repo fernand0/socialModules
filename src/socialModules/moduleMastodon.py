@@ -81,10 +81,10 @@ class moduleMastodon(Content): #, Queue):
     def publishApiPost(self, *args, **kwargs):
         title = ''
         if args and len(args) == 3:
-            logging.info(f"Tittt: args: {args}")
+            # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
         if kwargs:
-            logging.info(f"Tittt: kwargs: {kwargs}")
+            # logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             post = more.get('post', '')
             api = more.get('api', '')
@@ -97,7 +97,6 @@ class moduleMastodon(Content): #, Queue):
         res = 'Fail!'
         try:
             res = self.getClient().toot(post+" "+link)
-            res = self.processReply(res)
         except:
             res = self.report(self.getService(), kwargs, '', sys.exc_info())
             res = f"Fail! {res}"
@@ -105,7 +104,6 @@ class moduleMastodon(Content): #, Queue):
         #     res = self.getClient().status_post(post+" "+link,
         #             visibility='private')
         #     # 'direct' 'private' 'unlisted' 'public'
-
 
         return res
 
@@ -167,7 +165,7 @@ class moduleMastodon(Content): #, Queue):
             result = result[3:]
         if result.endswith('>'):
             result = result[:-4]
-        print(f"RRRRResult: {result}")
+        # print(f"RRRRResult: {result}")
         pos = result.find('<')
         posH = result.find('http')
         posF = result.find('"',posH+1)

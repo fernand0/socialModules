@@ -27,8 +27,9 @@ class moduleLinkedin(Content):
         CONSUMER_SECRET = config.get("Linkedin", "CONSUMER_SECRET")
         ACCESS_TOKEN = config.get("Linkedin", "ACCESS_TOKEN")
         URN = config.get("Linkedin", "URN")
+        RETURN_URL = config.get("Linkedin","return_url")
 
-        return (CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, URN)
+        return (CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, URN, RETURN_URL)
 
     def initApi(self, keys):
         self.URN = keys[3]
@@ -50,8 +51,8 @@ class moduleLinkedin(Content):
             payload = {'response_type':'code',
                      'client_id': self.CONSUMER_KEY,
                      'client_secret': self.CONSUMER_SECRET,
-                     'redirect_uri': 'http://localhost:8080/code',
-                     # 'state':self.state,
+                     'redirect_uri': keys[4],
+                     'state':self.state,
                      'scope': 'r_liteprofile r_emailaddress w_member_social r_member_social' }
             print('https://www.linkedin.com/oauth/v2/authorization?'
                     + urllib.parse.urlencode(payload))
@@ -127,7 +128,7 @@ class moduleLinkedin(Content):
         #    reply = f"Fail! {self.service} Status is a duplicate."
         #elif ('message' in res):
         if (hasattr(res,'entity_id')):
-            reply = res.entity_id
+            reply = f"https://www.linkedin.com/feed/update/{res.entity_id}/"
         else:
             reply = res
         logging.info(f"Res: {reply}")
@@ -155,10 +156,10 @@ class moduleLinkedin(Content):
         return res
 
     def publishApiPost(self, *args, **kwargs):
-        if args and len(args) == 3:
+        if args and len(args) == 3 and args[0]:
             title, link, comment = args
         if kwargs:
-            logging.info(f"Tittt: kwargs: {kwargs}")
+            # logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             # FIXME: We need to do something here
             post = more.get('post', '')
@@ -243,15 +244,15 @@ class moduleLinkedin(Content):
             logging.info(f"Exception {sys.exc_info()}")
             res = self.report('Linkedin', title, link, sys.exc_info())
 
-        logging.debug(f"Code return: {res}")
-        logging.debug(f"Code return: {res.__dir__()}")
-        logging.debug(f"Code return: {res.status_code}")
-        logging.debug(f"Code return: {res.response}")
-        logging.debug(f"Code return entity: {res.entity}")
-        logging.debug(f"Code return: {res.entity_id}")
-        logging.debug(f"Code return headers: {res.headers}")
-        logging.debug(f"Code return headers: {res.url}")
-        logging.debug(f"Code return type: {type(res)}")
+        # logging.debug(f"Code return: {res}")
+        # logging.debug(f"Code return: {res.__dir__()}")
+        # logging.debug(f"Code return: {res.status_code}")
+        # logging.debug(f"Code return: {res.response}")
+        # logging.debug(f"Code return entity: {res.entity}")
+        # logging.debug(f"Code return: {res.entity_id}")
+        # logging.debug(f"Code return headers: {res.headers}")
+        # logging.debug(f"Code return headers: {res.url}")
+        # logging.debug(f"Code return type: {type(res)}")
         if isinstance(res, bytes) and ('201'.encode() not in res):
             res = f"Fail!\n{res}"
         else:
@@ -278,8 +279,8 @@ class moduleLinkedin(Content):
 def main():
 
     logging.basicConfig(stream=sys.stdout,
-            level=logging.INFO,
-            format='%(asctime)s %(message)s')
+                        level=logging.INFO,
+                        format='%(asctime)s %(message)s')
 
     import moduleLinkedin
 
@@ -328,8 +329,8 @@ def main():
         LIST_POSTS_RESOURCE = "/ugcPosts"
         QUERY_PARAMS = {'q':'authors', 
                         'authors':"List({urn:li:person:'"+f"{ln.getProfile().entity['id']}"+'})',
-        'sortBy':'LAST_MODIFIED',
-        'projection':'(elements*(...))'
+                        'sortBy':'LAST_MODIFIED',
+                        'projection':'(elements*(...))'
                         }                        
 
 
@@ -344,9 +345,10 @@ def main():
 
 
         # q=authors&authors=List({encoded personUrn})&sortBy=LAST_MODIFIED&projection=(elements*(...))
-                
+
 
         return
+
         ln.setPostsType('posts')
         ln.setPosts()
         for post in ln.getPosts():
