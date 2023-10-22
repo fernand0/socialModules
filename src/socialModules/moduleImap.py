@@ -1418,11 +1418,11 @@ class moduleImap(Content): #, Queue):
 
     def publishApiPost(self, *args, **kwargs):
         link = None
-        if args and len(args) == 3:
-            logging.info(f"Tittt: args: {args}")
+        if args and len(args) == 3 and args[0]:
+            # logging.info(f"Tittt: args: {args}")
             post, link, comment = args
         if kwargs:
-            logging.debug(f"Tittt: kwargs: {kwargs}")
+            # logging.debug(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             # logging.debug(f"More: {more}")
             # FIXME: We need to do something here

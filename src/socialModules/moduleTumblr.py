@@ -184,13 +184,13 @@ class moduleTumblr(Content): #, Queue):
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3 and args[0]:
-            logging.info(f"Tittt: args: {args}")
+            # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
             api = self
             # Will always work?
             idPost = link.split('/')[-2]
         if kwargs:
-            logging.info(f"{self.indent} Tittt: kwargs: {kwargs}")
+            # logging.info(f"{self.indent} Tittt: kwargs: {kwargs}")
             more = kwargs
             post = more.get('post', '')
             api = more.get('api', '')
