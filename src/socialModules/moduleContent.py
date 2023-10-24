@@ -53,16 +53,10 @@ class Content:
         client = None
 
         if isinstance(account, str):
-            logging.info(f"{self.indent} Service {self.service} setClient str")
+            # logging.info(f"{self.indent} Service {self.service} "
+            #               f"setClient str")
             #FIXME We should not need these ifs
             self.user = account
-        # elif isinstance(account[1], str) and (account[1].find('@') > 0):
-        #     logging.info(f"{self.indent} setClient account[1] str with @")
-        #     # Grrrr
-        #     self.user = account[1]
-        # elif isinstance(account[0], str):
-        #     logging.info(f"{self.indent} setClient account[1] str without @")
-        #     self.user = account[0]
         else:
             msgLog = f"{self.indent} setClient else. This shouldn't happen"
             logMsg(msgLog, 3, 0)
@@ -70,7 +64,7 @@ class Content:
             # Deprecated
             self.user = account[1][1]
 
-        msgLog = f"{self.indent} Service config: {self.service}"
+        msgLog = f"{self.indent} Configuring Service {self.service}"
         logMsg(msgLog, 2, 0)
 
         configFile = f"{CONFIGDIR}/.rss{self.service}"
@@ -84,12 +78,12 @@ class Content:
         keys = ''
         try:
             keys = self.getKeys(config)
-            logging.debug(f"{self.indent} user {self.user}")
+            # logging.debug(f"{self.indent} user {self.user}")
         except:
             if not config.sections():
                 # FIXME: Are you sure?
                 msgLog = (f"{self.indent} Do the adequate keys exist "
-                          f"in {configFile}")
+                          f"in {configFile}?")
                 logMsg(msgLog, 3, 0)
 
         if keys:

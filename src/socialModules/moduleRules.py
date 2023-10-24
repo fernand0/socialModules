@@ -693,25 +693,25 @@ class moduleRules:
     def readConfigSrc(self, indent, src, more):
         msgLog = f"{indent} Start readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{indent} readConfigSrc: {src}"
-        logMsg(msgLog, 2, 0)
-        msgLog = f"{indent} readConfigSrc: {self.getProfileRule(src)}"
-        logMsg(msgLog, 2, 0)
         indent = f"{indent} "
+        # msgLog = f"{indent} readConfigSrc: {src}"
+        # logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} readConfigSrc: {self.getProfileRule(src)}"
+        # logMsg(msgLog, 2, 0)
+        apiSrc = getApi(self.getNameRule(src), self.getProfileRule(src), indent)
         if self.getNameRule(src) == 'cache':
-            msgLog=f"{indent} src {src}"
-            logMsg(msgLog, 2, 0)
-            msgLog=f"{indent} profileR {self.getProfileRule(src)}"
-            logMsg(msgLog, 2, 0)
-            apiSrc = getApi(self.getNameRule(src), self.getProfileRule(src), indent)
+            # msgLog=f"{indent} src {src}"
+            # logMsg(msgLog, 2, 0)
+            # msgLog=f"{indent} profileR {self.getProfileRule(src)}"
+            # logMsg(msgLog, 2, 0)
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
             apiSrc.postaction = 'delete'
-        else:
-            logging.info(f"{indent} Src: {src}")
-            apiSrc = getApi(self.getNameRule(src), self.getProfileRule(src), indent)
-
-        msgLog = f"{indent} More: {more}"
-        logMsg(msgLog, 2, 0)
+        # else:
+        #     # logging.info(f"{indent} Src: {src}")
+        #     apiSrc = getApi(self.getNameRule(src), self.getProfileRule(src), indent)
+  
+        # msgLog = f"{indent} More: {more}"
+        # logMsg(msgLog, 2, 0)
 
         if more:
             for option in more:
@@ -752,12 +752,12 @@ class moduleRules:
     def readConfigDst(self, indent, action, more, apiSrc):
         msgLog = f"{indent} Start readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
+        indent = f"{indent} "
         msgLog = (f"{indent} readConfigDst Action: {action}")
         logMsg(msgLog, 2, 0)
         # msgLog = (f"{indent} readConfigDst: {action})")
         # msgLog = (f"{indent} readConfigDst: {self.getNameAction(action)})")
         # logMsg(msgLog, 2, 0)
-        indent = f"{indent} "
         # msgLog = f"{indent} More: Src {more}"
         # logMsg(msgLog, 2, 0)
         # profile = self.getProfileAction(action)
@@ -775,58 +775,14 @@ class moduleRules:
         # logMsg(msgLog, 1, 0)
 
         if self.getNameRule(action) == 'cache':
-            msgLog=f"{indent} action {action}"
-            logMsg(msgLog, 2, 0)
-            msgLog=f"{indent} profileR {self.getProfileRule(action)}"
-            logMsg(msgLog, 2, 0)
             apiDst = getApi(self.getNameRule(action), 
                             self.getProfileRule(action), indent)
-            logMsg(msgLog, 2, 0)
             apiDst.fileName = apiDst.fileNameBase(action[1:])
             apiDst.postaction = 'delete'
-            # nick = (profile, nick)
-            # profile = 'cache'
-            # msgLog = (f"{indent} readConfigDst profile: {profile}")
-            # logMsg(msgLog, 2, 0)
-            # msgLog = (f"{indent} readConfigDst nick: {nick}")
-            # logMsg(msgLog, 2, 0)
-            # # if isinstance(profile, tuple):
-            # #     param = ('set', (apiSrc.getService().casefold(), 'set',
-            # #                      apiSrc.getUrl(), 'posts'),
-            # #              f"{profile[2]}@{profile[3]}")
-            # # else:
-            # #     param = ('set', (apiSrc.getService().casefold(),
-            # #                      'set', apiSrc.getUrl(), 'posts'),
-            # #              f"{action[2][2]}@{action[2][3]}")
-
-
-            # # msgLog = (f"{indent} readConfigDst param: {param})")
-            # # logMsg(msgLog, 2, 0)
-            # # print(f"{indent} Dst: {action}")
-            # # apiDst = getApi('cache', param, indent)
-            # # # apiDst = getApi("cache", ((more['service'],
-            # # #                            self.getTypeAction(action)),
-            # # #                           f"{self.getProfileAction(action)}@"
-            # # #                           f"{self.getNickAction(action)}", 'posts'),
-            # # #                 indent)
-            # # apiDst.socialNetwork = self.getProfileAction(action)
-            # # apiDst.nick = self.getNickAction(action)
         else:
             apiDst = getApi(self.getProfileAction(action),
                             self.getNickAction(action), indent)
-            # apiDst = getApi(profile, nick, indent)
-
-            # msgLog = (f"{indent} readConfigDst apiDst: {apiDst})")
-            # logMsg(msgLog, 2, 0)
-            # logging.debug(f"{self.indent} user {apiDst.user}")
-            # apiDst.fileName = apiSrc.fileNameBase(apiDst)
-            # logMsg(msgLog, 2, 0)
-            # nick = self.getNickAction(action)
-            # apiDst.setUser(nick)
             apiDst.setPostsType('posts')
-
-        # msgLog = (f"{indent} Api dst more: {more}")
-        # logMsg(msgLog, 2, 0)
 
         if more and ('max' in more):
             mmax = more['max']
@@ -909,6 +865,7 @@ class moduleRules:
                 or (((not res) and (not 'OK. Published!' in res)) 
                     or ('duplicate' in res))):
                 msgLog = (f"{indent} Res {res} is not OK")
+                #FIXME Some OK publishing follows this path (mastodon, linkedin, ...)
                 logMsg(msgLog, 1, 0)
 
                 if nextPost:

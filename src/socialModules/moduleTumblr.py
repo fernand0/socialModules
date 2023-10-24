@@ -32,17 +32,16 @@ class moduleTumblr(Content): #, Queue):
         client = pytumblr.TumblrRestClient(keys[0], keys[1], keys[2], keys[3])
         # print(f"client: {client}")
         tumblr = self.user
-        msgLog = f"{self.indent} Service {self.service} user {self.user}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} Service {self.service} user {self.user}"
+        # logMsg(msgLog, 2, 0)
         if isinstance(tumblr, str):
             self.url = f"https://{tumblr}.tumblr.com/"
         elif isinstance(tumblr[1], str):
             self.url = f"https://{tumblr[1]}.tumblr.com/"
         elif isinstance(tumblr, tuple):
             self.url = f"https://{tumblr[1][1]}.tumblr.com/"
-        msgLog = (f"{self.indent} Url: {self.url}")
-        logMsg(msgLog, 2, 0)
-        self.service = 'tumblr'
+        # msgLog = (f"{self.indent} Url: {self.url}")
+        # logMsg(msgLog, 2, 0)
 
         return client
 
@@ -125,14 +124,14 @@ class moduleTumblr(Content): #, Queue):
         return state
 
     def processReply(self, reply):
-        msgLog = ("{self.indent} Res: %s" % reply)
+        msgLog = (f"{self.indent} Res: %s" % reply)
         logMsg(msgLog, 2, 0)
         res = reply
         if 'id' in reply:
             try:
-                msgLog = (f"{self.indent} Res: {reply['id']}")
-                logMsg(msgLog, 2, 0)
-                res = f"{self.getUrl()}{reply['id']}"
+                # msgLog = (f"{self.indent} Res: {reply['id']}")
+                # logMsg(msgLog, 2, 0)
+                res = f"https://{self.service}.com/{self.user}/{reply['id']}"
             except:
                 msgLog = (f"{self.indent} Temporal: error {reply}")
                 logMsg(msgLog, 3, 0)
@@ -201,8 +200,9 @@ class moduleTumblr(Content): #, Queue):
 
         # logging.info(f"Type: {api.getPostsType()}")
         # logging.info(f"Id: {idPost}")
-        msgLog = f"{self.indent} Service {self.service} User: {self.getUser()}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} Service {self.service} User: "
+        #          f"{self.getUser()}"
+        # logMsg(msgLog, 2, 0)
         try:
             if api.getPostsType() == 'posts':
                 res = self.getClient().create_link(self.getUser(),

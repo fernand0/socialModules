@@ -117,7 +117,7 @@ class moduleLinkedin(Content):
         return posts
 
     def processReply(self, reply):
-        logging.info(f"Res {reply}")
+        # logging.info(f"Res {reply}")
         if isinstance(reply, bytes):
             res = json.loads(reply)
         else:
@@ -131,7 +131,7 @@ class moduleLinkedin(Content):
             reply = f"https://www.linkedin.com/feed/update/{res.entity_id}/"
         else:
             reply = res
-        logging.info(f"Res: {reply}")
+        # logging.info(f"Res: {reply}")
 
         return reply
 
@@ -254,16 +254,17 @@ class moduleLinkedin(Content):
         # logging.debug(f"Code return headers: {res.url}")
         # logging.debug(f"Code return type: {type(res)}")
         if isinstance(res, bytes) and ('201'.encode() not in res):
+            #FIXME: Logic? Conditional management?
             res = f"Fail!\n{res}"
         else:
             code = res.status_code
-            msgLog = f"{self.indent} return code: {code}"
-            logMsg(msgLog, 1, 0)
+            # msgLog = f"{self.indent} return code: {code}"
+            # logMsg(msgLog, 1, 0)
             if code and (code != 201):
                 if 'message' in res.entity:
-                    res = f"Fail!\n{res.entity['message']}"
+                    res = f"Fail! {res.entity['message']}"
                 else:
-                    res = f"Fail!\n{res.entity}"
+                    res = f"Fail! {res.entity}"
         return res
 
     def deleteApiPosts(self, idPost):

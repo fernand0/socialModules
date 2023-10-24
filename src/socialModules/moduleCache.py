@@ -157,6 +157,7 @@ class moduleCache(Content): #,Queue):
         self.postaction = 'delete'
 
         self.postsType = 'posts'
+        # FIXME. There should be methods available for checking these values.
         self.url = param[-1]
         self.socialNetwork = param[1][2]
         self.user = param[1][3]
@@ -319,8 +320,8 @@ class moduleCache(Content): #,Queue):
         else:
             service = self.getService()
             nick = self.getUser()
-        msgLog = f"{self.indent} Url: {url} service {service} nick {nick}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} Url: {url} service {service} nick {nick}"
+        # logMsg(msgLog, 2, 0)
         if not fileNameQ:
             self.fileName = self.fileNameBase((service, nick))
             fileNameQ = self.fileName+".queue"

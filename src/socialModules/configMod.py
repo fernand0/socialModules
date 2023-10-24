@@ -207,7 +207,7 @@ def getModule(profile, indent=''):
     return api
 
 def getApi(profile, nick, indent=""):
-    msgLog = (f"{indent} Service {profile} getApi  {nick}")
+    msgLog = (f"{indent} Service {profile} getApi {nick}")
     logMsg(msgLog, 2, 0)
 
     api = getModule(profile, indent)
