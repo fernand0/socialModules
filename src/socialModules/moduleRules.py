@@ -268,6 +268,9 @@ class moduleRules:
             orig = None
             dest = None
             for key in moreS.keys():
+
+                msgLog = f"{self.indent}  key Rule: {key})"
+                logMsg(msgLog, 2, 0)
                 if key == 'service':
                     service = moreS[key]
                 else:

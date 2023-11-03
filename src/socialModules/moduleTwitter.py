@@ -121,7 +121,9 @@ class moduleTwitter(Content): #, Queue):
                     or ('not allowed to create a Tweet with duplicate' in res)):
                     res = res + ' SAVELINK'
         import socialModules.moduleCache
-        apiTmp = getApi('Cache', (self.service,('a','b',self.service +'zz',self.user), f'https://twitter.com/{self.user}'))
+        apiTmp = getApi('Cache', (self.service,('a','b',self.service, self.user), f'https://twitter.com/{self.user}'))
+        # Cache_posts_https---twitter.com-reflexioneseir_Cache__Twitter_posts_fernand0_twitter.queue does not exist.
+        # Cache_posts_https---twitter.com-fernand0Test_Cache__Twitterzz_posts_fernand0Test_Twitterzz
         apiTmp.publishPost(title, tweet, '')
         print(f"api fileName {apiTmp.fileName}")
         if hasattr(self, 'fileName') and self.fileName:
