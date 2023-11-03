@@ -877,22 +877,34 @@ def main():
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
 
+    import inspect
+    frame = inspect.currentframe()
+    print(f"Name: {frame}")
+    info = inspect.getframeinfo(frame)
+    print(f"Name: {info}")
+    name = info.filename
+    print(f"File: {name}")
+
+    pos = name.rfind('module')
+    name = name[pos+len('module'):-3]
+    print(f"Name: {name}")
+
+    i = 0
+    caches = []
+    for rul in rules.rules.keys():
+        if rules.getNameRule(rul).capitalize() == name:
+            print(f"{i}) {rul}")
+            caches.append(rul)
+            i = i + 1
+    sel = int(input(f"Which one? "))
+    src = caches[sel]
+    more = rules.more[src]
+    indent = ""
+    apiSrc = rules.readConfigSrc(indent, src, more)
+
     testingPosts = True
     if testingPosts:
         print("Testing Posts")
-        i = 0
-        caches = []
-        for rul in rules.rules.keys():
-            if rul[0] == 'cache':
-                print(f"{i}) {rul}")
-                caches.append(rul)
-                i = i + 1
-        sel = int(input(f"Which one? "))
-        src = caches[sel]
-        more = rules.more[src]
-        indent = ""
-        apiSrc = rules.readConfigSrc(indent, src, more)
-
         cmd = getattr(apiSrc, 'setApiPosts')
         posts = cmd
         posts = cmd()
