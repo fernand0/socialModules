@@ -120,27 +120,27 @@ class moduleTwitter(Content): #, Queue):
                     or ('Status is a duplicate.' in res)
                     or ('not allowed to create a Tweet with duplicate' in res)):
                     res = res + ' SAVELINK'
-        import socialModules.moduleCache
-        apiTmp = getApi('Cache', (self.service,('a','b',self.service, self.user), f'https://twitter.com/{self.user}'))
-        # Cache_posts_https---twitter.com-reflexioneseir_Cache__Twitter_posts_fernand0_twitter.queue does not exist.
-        # Cache_posts_https---twitter.com-fernand0Test_Cache__Twitterzz_posts_fernand0Test_Twitterzz
-        apiTmp.publishPost(title, tweet, '')
-        print(f"api fileName {apiTmp.fileName}")
-        if hasattr(self, 'fileName') and self.fileName:
-            print(f"Self Filename: {self.fileName}")
-        fileName= f"{self.fileNameBase(self)}.published"
-        listP = []
-        if os.path.exists(fileName):
-            with open(fileName, 'rb') as f:
-                try:
-                    listP = pickle.load(f)
-                except:
-                    msgLog = f"Problem loading data"
-                    self.report(self.service, msgLog, '', '')
-        if tweet:
-            listP.append(tweet)
-            with open(fileName, 'wb') as f:
-                pickle.dump(listP, f)
+        # import socialModules.moduleCache
+        # apiTmp = getApi('Cache', (self.service,('a','b',self.service, self.user), f'https://twitter.com/{self.user}'))
+        # # Cache_posts_https---twitter.com-reflexioneseir_Cache__Twitter_posts_fernand0_twitter.queue does not exist.
+        # # Cache_posts_https---twitter.com-fernand0Test_Cache__Twitterzz_posts_fernand0Test_Twitterzz
+        # apiTmp.publishPost(title, tweet, '')
+        # print(f"api fileName {apiTmp.fileName}")
+        # if hasattr(self, 'fileName') and self.fileName:
+        #     print(f"Self Filename: {self.fileName}")
+        # fileName= f"{self.fileNameBase(self)}.published"
+        # listP = []
+        # if os.path.exists(fileName):
+        #     with open(fileName, 'rb') as f:
+        #         try:
+        #             listP = pickle.load(f)
+        #         except:
+        #             msgLog = f"Problem loading data"
+        #             self.report(self.service, msgLog, '', '')
+        # if tweet:
+        #     listP.append(tweet)
+        #     with open(fileName, 'wb') as f:
+        #         pickle.dump(listP, f)
         return (res)
 
     def publishApiImage(self, *args, **kwargs):
@@ -443,6 +443,7 @@ def main():
         print(f"Len: {len(apiSrc.getPosts())}")
         return
 
+
     testingPost = True
     if testingPost:
         print("Testing Post")
@@ -456,12 +457,27 @@ def main():
         print(rules.more[key])
         # more = {'url': 'https://twitter.com/fernand0', 'service': 'twitter', 'posts': 'posts', 'direct': 'twitter', 'twitter': 'fernand0', 'time': '23.1', 'max': '1', 'hold': 'no'}
 
-        apiSrc = rules.readConfigSrc("", key, None)
+        indent = ""
+        apiSrc = rules.readConfigSrc(indent, key, None)
         title = "Test"
         link = "https://twitter.com/fernand0Test"
         res = apiSrc.publishPost(title, link, '')
         print(f"Publishing {res}")
-        idTweet = res.split('/')[-1]
+        tweet = res.split(' ')[-1]
+        idTweet = tweet.split('/')[-1]
+
+        testingCache = True
+        if testingCache:
+            key = ('twitter', 'set', 'fernand0Test', 'posts')
+            apiSrc = rules.readConfigSrc(indent, key, None)
+    
+            dst = ('cache', 'twitter', ('direct', 'post', 'twitter', 'fernand0'), 
+                   'http://twitter.com/fernand0Test')
+            more = ""
+    
+            apiDst = rules.readConfigDst(indent, dst, more, apiSrc)
+            apiDst.publishPost(title, tweet, '')
+
         delete = input(f"Delete ({idTweet})? ")
         if delete:
             print(f"Deleting: {apiSrc.deleteApiPosts(idTweet)}")

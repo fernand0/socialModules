@@ -1006,6 +1006,7 @@ class Content:
         return reply
 
     def publishPost(self, *args, **more):
+        more  = None
         api = ''
         post = ''
         nameMethod = 'Post'
