@@ -877,16 +877,7 @@ def main():
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
 
-    import inspect
-    frame = inspect.currentframe()
-    print(f"Name: {frame}")
-    info = inspect.getframeinfo(frame)
-    print(f"Name: {info}")
-    name = info.filename
-    print(f"File: {name}")
-
-    pos = name.rfind('module')
-    name = name[pos+len('module'):-3]
+    name = nameModule()
     print(f"Name: {name}")
 
     rulesList = rules.selectRule(name)

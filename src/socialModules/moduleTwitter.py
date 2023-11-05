@@ -375,12 +375,7 @@ def main():
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
 
-    import inspect
-    frame = inspect.currentframe()
-    info = inspect.getframeinfo(frame)
-    name = info.filename
-    pos = name.rfind('module')
-    name = name[pos+len('module'):-3]
+    name = nameModule()
     rulesList = rules.selectRule(name, 'fernand0', 'posts')
     logging.debug(f"Key: {rulesList}")
     key = rulesList[0]
