@@ -889,13 +889,10 @@ def main():
     name = name[pos+len('module'):-3]
     print(f"Name: {name}")
 
-    i = 0
-    caches = []
-    for rul in rules.rules.keys():
-        if rules.getNameRule(rul).capitalize() == name:
-            print(f"{i}) {rul}")
-            caches.append(rul)
-            i = i + 1
+    rulesList = rules.selectRule(name)
+    for i, rule in enumerate(rulesList):
+        print(f"{i}) {rule}")
+
     sel = int(input(f"Which one? "))
     src = caches[sel]
     more = rules.more[src]
