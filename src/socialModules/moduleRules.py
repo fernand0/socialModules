@@ -461,13 +461,13 @@ class moduleRules:
                 if not selector2:
                     rules.append(src)
                 else:
-                    if (selector2 in str(self.getProfileRule(src))):
+                    if (selector2 == self.getProfileRule(src)):
                         #FIXME: ??
                         logging.debug(f"Second Selector: {selector2}")
                         if not selector3:
                             rules.append(src)
-                        elif  (selector3 in self.getNickRule(src)):
-                            break
+                        elif  (selector3 in self.getTypeRule(src)):
+                            rules.append(src)
         return rules
 
     def hasSetMethods(self, service):

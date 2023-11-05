@@ -381,7 +381,8 @@ def main():
     name = info.filename
     pos = name.rfind('module')
     name = name[pos+len('module'):-3]
-    rulesList = rules.selectRule(name, 'fernand0')
+    rulesList = rules.selectRule(name, 'fernand0', 'posts')
+    logging.debug(f"Key: {rulesList}")
     key = rulesList[0]
     logging.debug(f"Key: {key}")
 
