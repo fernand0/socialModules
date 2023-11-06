@@ -354,8 +354,11 @@ class moduleTwitter(Content): #, Queue):
         return result
 
     def getPostContentLink(self, post):
+        msgLog = (f"{self.indent} Entities: {post}")
         result = ''
-        entities = post.entities
+        entities = None
+        if hasattr(post, 'entities'):
+            entities = post.entities
         if entities:
             if ('urls' in entities):
                 if entities['urls']:
@@ -471,12 +474,25 @@ def main():
             key = ('twitter', 'set', 'fernand0Test', 'posts')
             apiSrc = rules.readConfigSrc(indent, key, None)
     
-            dst = ('cache', 'twitter', ('direct', 'post', 'twitter', 'fernand0'), 
+            dst = ('cache', 'twitter', 
+                   ('direct', 'post', 'twitter', 'fernand0'), 
                    'http://twitter.com/fernand0Test')
             more = ""
     
             apiDst = rules.readConfigDst(indent, dst, more, apiSrc)
-            apiDst.publishPost(title, tweet, '')
+
+            # post = type('',(object,),{"data": 
+            #                         {'text': title, 'entities': 
+            #                          {'urls': [{'expanded_url': tweet}]}}
+            #                         })()
+            # post =             
+             
+            post = myTweet()
+            post.data = {'text': title, 'id': idTweet}
+            post.entities = {'urls': [{'expanded_url': tweet}]}
+                                     
+            res = apiDst.publishPost(api = apiSrc, post=post)
+            # apiDst.publishPost(title, tweet, '')
 
         delete = input(f"Delete ({idTweet})? ")
         if delete:

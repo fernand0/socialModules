@@ -215,3 +215,9 @@ def getApi(profile, nick, indent=""):
     api.setClient(nick)
 
     return api
+
+class myTweet():
+    def __init__(self):
+        self.data = None
+        self.entities = None
+

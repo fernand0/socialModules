@@ -561,6 +561,53 @@ class moduleCache(Content): #,Queue):
             #     title = post[0]
             return post
 
+    def getPostContentLink(self, post):
+        title = ''
+        if post:
+            if hasattr(self, 'auxClass'):
+                msgLog = (f"{self.indent} auxClass: {self.auxClass}")
+                logMsg(msgLog, 2, 0)
+                if isinstance(self.auxClass, str):
+                    myModule = f"module{self.auxClass.capitalize()}"
+                    import importlib
+                    importlib.import_module(myModule)
+                    mod = sys.modules.get(myModule)
+                    cls = getattr(mod, myModule)
+                    api = cls(self.indent)
+                else:
+                    api = self.auxClass
+                # logging.debug(f"  Api: {api}")
+                apiCmd = getattr(api, 'getPostContentLink')
+                title  = apiCmd(post)
+            else:
+                # Old style
+                title = post[0]
+        return(title)
+
+    def getPostUrl(self, post):
+        title = ''
+        if post:
+            if hasattr(self, 'auxClass'):
+                msgLog = (f"{self.indent} auxClass: {self.auxClass}")
+                logMsg(msgLog, 2, 0)
+                if isinstance(self.auxClass, str):
+                    myModule = f"module{self.auxClass.capitalize()}"
+                    import importlib
+                    importlib.import_module(myModule)
+                    mod = sys.modules.get(myModule)
+                    cls = getattr(mod, myModule)
+                    api = cls(self.indent)
+                else:
+                    api = self.auxClass
+                # logging.debug(f"  Api: {api}")
+                apiCmd = getattr(api, 'getPostUrl')
+                title  = apiCmd(post)
+            else:
+                # Old style
+                title = post[0]
+        return(title)
+
+
     def getPostTitle(self, post):
         title = ''
         if post:
@@ -700,7 +747,7 @@ class moduleCache(Content): #,Queue):
             more = kwargs
             api = more['api']
             post = more['post']
-        # logging.debug(f"more: {more}")
+        logging.debug(f"more: {more}")
         self.setPosts()
         posts = self.getPosts()
         # logging.debug(f"pppposts: {posts}")
@@ -898,6 +945,14 @@ def main():
         posts = cmd()
         for i, post in enumerate(posts):
             print(f"{i}) {apiSrc.getPostTitle(post)}")
+            print(f"{i}) {apiSrc.getPostUrl(post)}")
+            try:
+                print(f"---> {post.entities['urls'][0]['expanded_url']}")
+            except:
+                print("No")
+            link = apiSrc.getPostContentLink(post)
+            if link:
+                print(f"    Link: {link}")
         return
         apiSrc.setPosts()
         for i, post in enumerate(apiSrc.getPosts()):

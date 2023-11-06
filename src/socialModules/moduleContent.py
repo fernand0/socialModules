@@ -1005,7 +1005,9 @@ class Content:
 
         return reply
 
-    def publishPost(self, *args, **more):
+    def publishPost(self, *args, **kwargs):
+        logging.debug(f"-->publishApiPost: *{args}*")
+        logging.debug(f"-->publishApiPost: *{kwargs}*")
         more  = None
         api = ''
         post = ''
@@ -1036,15 +1038,18 @@ class Content:
             title = ''
             link = ''
             comment = ''
-        if more:
-            print(f"    Publishing in {self.service}: {more}")
+        if kwargs:
+            logging.debug(f"    Publishing in {self.service}: {kwargs}")
             # if 'tags' in more:
             #     print(f"    Publishing in {self.service}: {type(more['tags'])}")
 
-            post = more.get('post', '')
-            api = more.get('api', '')
-            title = api.getPostTitle(post)
-            link = api.getPostLink(post)
+            api = kwargs['api']
+            post = kwargs['post']
+            self.publishApiPost(api = api, post = post)
+            # post = more.get('post', '')
+            # api = more.get('api', '')
+            # title = api.getPostTitle(post)
+            # link = api.getPostLink(post)
 
         print(f"    Publishing in {self.service}: {title}")
         print(f"    Publishing in {self.service}:  {link}")
