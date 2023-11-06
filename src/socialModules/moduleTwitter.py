@@ -18,6 +18,10 @@ from socialModules.moduleContent import *
 
 class moduleTwitter(Content): #, Queue):
 
+    def __init__(self, indent=''):
+        super().__init__(indent)
+        self.base_url = 'https://twitter.com'
+
     def getKeys(self, config):
         CONSUMER_KEY = config.get(self.user, "CONSUMER_KEY")
         CONSUMER_SECRET = config.get(self.user, "CONSUMER_SECRET")
