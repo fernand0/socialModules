@@ -19,6 +19,10 @@ from socialModules.moduleContent import *
 
 class moduleSlack(Content): #, Queue):
 
+    def __init__(self, indent=''):
+        super().__init__(indent)
+        self.channel = '#links'
+
     def getKeys(self, config):
         slack_token = config.get(self.service, "oauth-token")
         user_slack_token = config.get(self.service, "user-oauth-token")

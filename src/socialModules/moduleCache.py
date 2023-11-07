@@ -916,7 +916,7 @@ class moduleCache(Content): #,Queue):
 def main():
 
     logging.basicConfig(stream=sys.stdout,
-            level=logging.DEBUG,
+            level=logging.INFO,
             format='%(asctime)s %(message)s')
 
     import socialModules.moduleCache
@@ -944,12 +944,9 @@ def main():
         posts = cmd
         posts = cmd()
         for i, post in enumerate(posts):
+            logging.debug(f"Post: {post}")
             print(f"{i}) {apiSrc.getPostTitle(post)}")
-            print(f"{i}) {apiSrc.getPostUrl(post)}")
-            try:
-                print(f"---> {post.entities['urls'][0]['expanded_url']}")
-            except:
-                print("No")
+            print(f"    Url: {apiSrc.getPostUrl(post)}")
             link = apiSrc.getPostContentLink(post)
             if link:
                 print(f"    Link: {link}")
