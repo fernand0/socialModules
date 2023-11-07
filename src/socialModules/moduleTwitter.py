@@ -454,11 +454,6 @@ def main():
     testingPost = True
     if testingPost:
         print("Testing Post")
-        # for key in rules.rules.keys():
-        #     if ((key[0] == 'twitter')
-        #         and ('reflexioneseir' in key[2])
-        #         and (key[3] == 'posts')):
-        #             break
         key = ('twitter', 'set', 'fernand0Test', 'posts')
         print(key)
         print(rules.more[key])
