@@ -939,23 +939,34 @@ class moduleRules:
                 logMsg(msgLog, 1, 0)
                 postaction = apiSrc.getPostAction()
                 if postaction:
-                    msgLog = (f"{indent}Post Action {postaction} "
+                    msgLog = (f"{indent}Post Action *{postaction}* "
                               f"({nextPost})")
                     logMsg(msgLog, 1, 1)
 
-                    if nextPost:
+                    if postaction == 'publish':
                         msgLog = (f"{indent}Post Action nextpost")
-                        logMsg(msgLog, 2, 0)
+                        logMsg(msgLog, 1, 1)
+                        msgLog = (f"{indent}Post Action nextpost"
+                                  f"{apiSrc.getPostActionSrv()} - "
+                                  f"{apiSrc.getPostActionAcc()}")
+                        logMsg(msgLog, 1, 1)
                         cmdPost = getattr(apiSrc, f"{postaction}NextPost")
                         resPost = cmdPost()
+ 
                     else:
-                        msgLog = (f"{indent}Post Action pos")
-                        logMsg(msgLog, 2, 0)
-                        cmdPost = getattr(apiSrc, f"{postaction}")
-                        resPost = cmdPost(pos)
-                        # FIXME inconsistent
-                    # msgLog = (f"{indent}Post Action command {cmdPost}")
-                    # logMsg(msgLog, 1, 1)
+                        if nextPost:
+                            msgLog = (f"{indent}Post Action nextpost")
+                            logMsg(msgLog, 2, 0)
+                            cmdPost = getattr(apiSrc, f"{postaction}NextPost")
+                            resPost = cmdPost()
+                        else:
+                            msgLog = (f"{indent}Post Action pos")
+                            logMsg(msgLog, 2, 0)
+                            cmdPost = getattr(apiSrc, f"{postaction}")
+                            resPost = cmdPost(pos)
+                            # FIXME inconsistent
+                        # msgLog = (f"{indent}Post Action command {cmdPost}")
+                        # logMsg(msgLog, 1, 1)
                     msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
                     logMsg(msgLog, 1, 1)
                     resMsg += f" Post Action: {resPost}"
@@ -970,13 +981,25 @@ class moduleRules:
                     msgLog = (f"{indent}Post Action {postaction}")
                     logMsg(msgLog, 1, 1)
 
-                    if nextPost:
+                    if postaction == 'publish':
+                        msgLog = (f"{indent}Post Action nextpost")
+                        logMsg(msgLog, 1, 1)
+                        msgLog = (f"{indent}Post Action nextpost"
+                                  f"{apiSrc.getPostActionSrv()} - "
+                                  f"{apiSrc.getPostActionAcc()}")
+                        logMsg(msgLog, 1, 1)
                         cmdPost = getattr(apiSrc, f"{postaction}NextPost")
                         resPost = cmdPost()
+
                     else:
-                        cmdPost = getattr(apiSrc, f"{postaction}")
-                        resPost = cmdPost(pos)
-                        # FIXME inconsistent
+
+                        if nextPost:
+                            cmdPost = getattr(apiSrc, f"{postaction}NextPost")
+                            resPost = cmdPost()
+                        else:
+                            cmdPost = getattr(apiSrc, f"{postaction}")
+                            resPost = cmdPost(pos)
+                            # FIXME inconsistent
                     msgLog = (f"{indent}Post Action command {cmdPost}")
                     logMsg(msgLog, 1, 1)
                     msgLog = (f"{indent}End {postaction}, reply: {resPost} ")

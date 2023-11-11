@@ -473,9 +473,8 @@ def main():
             key = ('twitter', 'set', 'fernand0Test', 'posts')
             apiSrc = rules.readConfigSrc(indent, key, None)
     
-            dst = ('cache', 'twitter', 
-                   ('direct', 'post', 'twitter', 'fernand0'), 
-                   'http://twitter.com/fernand0Test')
+            dstKey = ('direct', 'post', 'twitter', 'fernand0')
+            dst = ('cache', 'twitter', dstKey, 'http://twitter.com/fernand0Test')
             more = ""
     
             apiDst = rules.readConfigDst(indent, dst, more, apiSrc)
