@@ -998,15 +998,13 @@ class moduleRules:
                                   apiSrc.getPostActionAcc())
                         msgLog = (f"{indent} dst key: {dstKey}")
                         logMsg(msgLog, 1, 1)
-                        dst = ('cache', 'twitter', dstKey,
-                               apiDst.getNick())
-                        msgLog = (f"{indent} dst : {dst}")
+                        dst = ('cache', 'twitter', dstKey, apiDst.getUser())
+                        msgLog = (f"{indent} dst: {dst}")
                         logMsg(msgLog, 1, 1)
-                        apiDst2 = rules.readConfigDst(indent, dst,
-                                                     more, apiSrc)
+                        apiDst2 = self.readConfigDst(indent, dst, None, apiSrc)
 
                         cmdPost = getattr(apiDst2, f"{postaction}NextPost")
-                        resPost = cmdPost()
+                        resPost = cmdPost(apiSrc)
 
                     else:
 
@@ -1056,7 +1054,8 @@ class moduleRules:
         indent = f"{indent} "
 
         msgAction = (f"{self.getNameAction(action)} "
-                     f"{self.getNickAction(action)}@{self.getProfileAction(action)} "
+                     f"{self.getNickAction(action)}@"
+                     f"{self.getProfileAction(action)} "
                      f"({self.getTypeAction(action)})")
         # Destination
 
@@ -1272,7 +1271,8 @@ class moduleRules:
                         srcName = f"{srcName.split('/')[-1]}"
                     elif 'gitter' in srcName:
                         srcName = f"{srcName.split('/')[-2]}"
-                    elif (not srcName) and ('tumblr' in self.getNameAction(src)):
+                    elif ((not srcName) and 
+                          ('tumblr' in self.getNameAction(src))):
                         srcName = more['url']
                         srcName = f"{srcName.split('/')[2].split('.')[0]}"
                     text = (f"Source: {srcName} ({self.getNickAction(src)})")

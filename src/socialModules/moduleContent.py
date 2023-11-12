@@ -991,7 +991,7 @@ class Content:
         msgLog = (f"{self.indent} Service {self.service} publishing next post")
         logMsg(msgLog, 2, 0)
         try:
-            post = self.getNextPost()
+            post = apiSrc.getNextPost()
             if post:
                 msgLog = (f"{self.indent} Post {post}")
                 logMsg(msgLog, 2, 0)
