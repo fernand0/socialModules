@@ -340,7 +340,7 @@ class moduleRules:
                             msgLog = (f"{self.indent} Rule: {orig} -> "
                                         f"{key}({dest})")
                             logMsg(msgLog, 2, 0)
-                            msgLog = f"{self.indent}  dest Rule: {destRule})"
+                            msgLog = f"{self.indent}  dest Rule: {destRule}"
                             logMsg(msgLog, 2, 0)
                             if not (fromSrv in rulesNew):
                                 rulesNew[fromSrv] = []
