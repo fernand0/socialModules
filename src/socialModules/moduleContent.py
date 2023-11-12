@@ -1018,10 +1018,7 @@ class Content:
     #         reply = self.report(self.service, apiSrc, post, sys.exc_info())
     #     return reply
 
-    def publishPost(self, *args, **kwargs):
-        logging.debug(f"-->publishApiPost: *{args}*")
-        logging.debug(f"-->publishApiPost: *{kwargs}*")
-        more  = None
+    def publishPost(self, *args, **more):
         api = ''
         post = ''
         # Do we need these?
