@@ -7,7 +7,7 @@ import sys
 import urllib
 
 import requests
-from PIL import Image
+# from PIL import Image
 
 HOME = os.path.expanduser("~")
 LOGDIR = HOME + "/usr/var/log"
@@ -78,12 +78,12 @@ def checkFile(fileName):
     msgLog = f"Checking {fileName} "
     logMsg(msgLog, 2, 0)
     dirName = os.path.dirname(fileName)
+
+    msgLog = f"OK {fileName}"
     if not os.path.isdir(dirName):
         msgLog = f"Directory {dirName} does not exist."
     elif not os.path.isfile(fileName):
         msgLog = f"File {fileName} does not exist."
-    else:
-        msgLog = "OK"
 
     return msgLog
 
@@ -164,34 +164,34 @@ def updateLastLink(url, link, socialNetwork=()):
             else:
                 f.write(link[0])
 
-def resizeImage(imgUrl):
-    print(imgUrl)
-    response = requests.get(imgUrl, stream=True)
-
-    fileName = '{}/{}'.format(TMPDIR,
-            urllib.parse.urlparse(response.url)[2].split('/')[-1])
-    with open(fileName,'wb') as f:
-        shutil.copyfileobj(response.raw, f)
-
-    im = Image.open(fileName)
-    size = im.size
-
-    if size[0] < size[1]:
-       dif = size[1]-size[0]
-       box = (0, dif/2 , size[0], dif/2+size[0])
-    else:
-       dif = size[0]-size[1]
-       box = (dif/2, 0 , dif/2 + size[1], size[1])
-    region = im.crop(box)
-    fileNameOutput = WWWDIR + NAMEIMG
-    print("f",fileNameOutput)
-    try:
-        region.save(fileNameOutput)
-    except:
-        fileNameOutput = '/tmp/' + NAMEIMG
-        region.save(fileNameOutput)
-    address = '{}{}'.format(WWWADDRESS,NAMEIMG)
-    return(address)
+# def resizeImage(imgUrl):
+#     print(imgUrl)
+#     response = requests.get(imgUrl, stream=True)
+# 
+#     fileName = '{}/{}'.format(TMPDIR,
+#             urllib.parse.urlparse(response.url)[2].split('/')[-1])
+#     with open(fileName,'wb') as f:
+#         shutil.copyfileobj(response.raw, f)
+# 
+#     im = Image.open(fileName)
+#     size = im.size
+# 
+#     if size[0] < size[1]:
+#        dif = size[1]-size[0]
+#        box = (0, dif/2 , size[0], dif/2+size[0])
+#     else:
+#        dif = size[0]-size[1]
+#        box = (dif/2, 0 , dif/2 + size[1], size[1])
+#     region = im.crop(box)
+#     fileNameOutput = WWWDIR + NAMEIMG
+#     print("f",fileNameOutput)
+#     try:
+#         region.save(fileNameOutput)
+#     except:
+#         fileNameOutput = '/tmp/' + NAMEIMG
+#         region.save(fileNameOutput)
+#     address = '{}{}'.format(WWWADDRESS,NAMEIMG)
+#     return(address)
 
 def getModule(profile, indent=''):
     # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
@@ -207,7 +207,7 @@ def getModule(profile, indent=''):
     return api
 
 def getApi(profile, nick, indent=""):
-    msgLog = (f"{indent} Service {profile} getApi  {nick}")
+    msgLog = (f"{indent} Service {profile} getApi {nick}")
     logMsg(msgLog, 2, 0)
 
     api = getModule(profile, indent)

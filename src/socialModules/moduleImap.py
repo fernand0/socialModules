@@ -114,6 +114,7 @@ class moduleImap(Content): #, Queue):
         logMsg(msgLog, 2, 0)
         msgLog = (f"{self.indent} Server: {self.server}")
         logMsg(msgLog, 2, 0)
+        client = None
         try:
             client = self.makeConnection(self.server, self.user, keys)
             msgLog = (f"{self.indent} Connection: {client}")
@@ -1417,11 +1418,11 @@ class moduleImap(Content): #, Queue):
 
     def publishApiPost(self, *args, **kwargs):
         link = None
-        if args and len(args) == 3:
-            logging.info(f"Tittt: args: {args}")
+        if args and len(args) == 3 and args[0]:
+            # logging.info(f"Tittt: args: {args}")
             post, link, comment = args
         if kwargs:
-            logging.debug(f"Tittt: kwargs: {kwargs}")
+            # logging.debug(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             # logging.debug(f"More: {more}")
             # FIXME: We need to do something here

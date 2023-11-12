@@ -215,11 +215,15 @@ class moduleWordpress(Content): #,Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
+        print(f"Args: {args} kwargs: {kwargs}")
         tags = []
         if args and len(args)>3:
             tags = postData[3]
         if args and len(args) >=3:
-            title, link, comment, more = args
+            try:
+                title, link, comment, more = args
+            except:
+                title, link, comment = args
         if kwargs:
             more = kwargs
             post = more.get('post', '')

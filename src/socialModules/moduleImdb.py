@@ -104,12 +104,9 @@ class moduleImdb(Content): #,Queue):
         useCache = False
         j = 0
         for i, post in enumerate(posts): 
-            print(f"Postt: {post}")
             if ((hh <= self.getPostTimeIni(post)) 
                     and (post['GENERO'] == 'Cine')):
-                print(f"Postd: {self.data[j]}")
                 res = self.setPostMoreDataNew(post)
-                print(f"Post: {post}")
                 j = j + 1
         self.posts = sorted(posts, key = lambda d: d['HORA_INICIO'])
 
@@ -150,7 +147,7 @@ class moduleImdb(Content): #,Queue):
             logging.info("Post line {}".format(post))
             line = (f"> [{self.getPostAvg(post)}] - "
                    f"({self.getPostCode(post)}) "
-                   f"{self.getPostTimeIni(post)}-{self.getPostTimeEnd(post)}:"
+                   f"{self.getPostTimeIni(post)}-{self.getPostTimeEnd(post)}: "
                    f"{self.getPostTitle(post)}")
             logging.info("Post line formatted {}".format(line))
 
@@ -249,7 +246,6 @@ class moduleImdb(Content): #,Queue):
             print (f"ResSearch: {response}")
             if len(mySearch.results) > 0: 
                 movie = tmdb.Movies(mySearch.results[0]['id']) 
-                print(f"Movie ({mySearch.results[0]['id']}): {movie.keywords()}")
                 movieData['info'] = movie.info()
                 movieData['credits'] = movie.credits()
                 dataUpdate.update({'RESULT': mySearch.results})

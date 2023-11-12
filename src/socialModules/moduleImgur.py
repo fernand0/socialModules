@@ -55,12 +55,20 @@ class moduleImgur(Content): #, Queue):
         logMsg(msgLog, 2, 0)
 
         if client:
-            for album in client.get_account_albums(user):
-                # msgLog = (f"{self.indent} Title: {time.ctime(album.datetime)} "
-                #           f"{album.title}")
-                # logMsg(msgLog, 2, 0)
-                if album.in_gallery:
-                    posts.append(album)
+            albums = None
+            try:
+                albums = client.get_account_albums(user)
+            except: 
+                msgLog = (f"{self.indent} Failed connection") 
+                logMsg(msgLog, 1, 1)
+
+            if albums:
+                for album in albums:
+                    # msgLog = (f"{self.indent} Title: {time.ctime(album.datetime)} "
+                    #           f"{album.title}")
+                    # logMsg(msgLog, 2, 0)
+                    if album.in_gallery:
+                        posts.append(album)
         else:
             msgLog = (f'{self.indent} setApiPosts No client configured!')
             logMsg(msgLog, 3, 0)
@@ -113,7 +121,11 @@ class moduleImgur(Content): #, Queue):
 
     def getPostTitle(self, post):
         print(f"Post: {post}")
-        return post.title
+        try:
+            title = post.title
+        except:
+            title = ''
+        return title
 
     def getPostContentHtml(self, post):
         content = ''
@@ -134,7 +146,11 @@ class moduleImgur(Content): #, Queue):
         if self.getPostsType() == 'cache':
             return post[1]
         else:
-            return post.link
+            try:
+                link = post.link
+            except:
+                link = ''
+            return link
 
     def getPostImage(self, post):
         # FIXME. Need rethinking

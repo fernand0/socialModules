@@ -157,6 +157,7 @@ class moduleCache(Content): #,Queue):
         self.postaction = 'delete'
 
         self.postsType = 'posts'
+        # FIXME. There should be methods available for checking these values.
         self.url = param[-1]
         self.socialNetwork = param[1][2]
         self.user = param[1][3]
@@ -304,7 +305,7 @@ class moduleCache(Content): #,Queue):
         return(self.setApiPosts())
 
     def setApiPosts(self):
-        msgLog = f"{self.indent} service {self.service} setApiPosts"
+        msgLog = f"{self.indent} Service {self.service} Start setApiPosts"
         logMsg(msgLog, 2, 0)
         fileNameQ = ''
         url = self.getUrl()
@@ -319,8 +320,8 @@ class moduleCache(Content): #,Queue):
         else:
             service = self.getService()
             nick = self.getUser()
-        msgLog = f"{self.indent} Url: {url} service {service} nick {nick}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} Url: {url} service {service} nick {nick}"
+        # logMsg(msgLog, 2, 0)
         if not fileNameQ:
             self.fileName = self.fileNameBase((service, nick))
             fileNameQ = self.fileName+".queue"
@@ -349,6 +350,9 @@ class moduleCache(Content): #,Queue):
 
         # msgLog = f"{self.indent} listP: {listP}"
         # logMsg(msgLog, 2, 0)
+
+        msgLog = f"{self.indent} Service {self.service} End setApiPosts"
+        logMsg(msgLog, 2, 0)
 
         return(listP)
 
@@ -499,8 +503,8 @@ class moduleCache(Content): #,Queue):
 
         with open(fileNameQ, 'wb') as f:
             posts = self.getPosts()
-            msgLog = f"{self.indent} Posts {self.service} {posts}"
-            logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent} Posts {self.service} {posts}"
+            # logMsg(msgLog, 2, 0)
             pickle.dump(posts, f)
 
         # msgLog = (f"Posts: {str(self.getPosts())}")
@@ -612,8 +616,8 @@ class moduleCache(Content): #,Queue):
         title = ''
         if post:
             if hasattr(self, 'auxClass'):
-                msgLog = (f"{self.indent} auxClass: {self.auxClass}")
-                logMsg(msgLog, 2, 0)
+                # msgLog = (f"{self.indent} auxClass: {self.auxClass}")
+                # logMsg(msgLog, 2, 0)
                 if isinstance(self.auxClass, str):
                     myModule = f"module{self.auxClass.capitalize()}"
                     import importlib
@@ -737,8 +741,6 @@ class moduleCache(Content): #,Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        logging.debug(f"->publishApiPost: *{args}*")
-        logging.debug(f"->publishApiPost: *{kwargs}*")
         if args and len(args)==3:
             title, link, comment = args
             post = (title, link, comment)
@@ -792,8 +794,8 @@ class moduleCache(Content): #,Queue):
             # FIXME
             idPost = self.getIdPosition(idPost)
 
-        msgLog = (f"{self.indent} id: {idPost}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} id: {idPost}")
+        # logMsg(msgLog, 2, 0)
         self.deleteApi(idPost)
         return f"OK. Deleted post {idPost}"
 
@@ -835,8 +837,8 @@ class moduleCache(Content): #,Queue):
         return self.deleteApi(j)
 
     def deleteApi(self, j):
-        msgLog = (f"{self.indent} Deleting: {j}")
-        logMsg(msgLog, 1, 0)
+        # msgLog = (f"{self.indent} Deleting: {j}")
+        # logMsg(msgLog, 1, 0)
         posts = self.getPosts()
         # logging.debug(f"Posts antes: {posts}")
         # logging.debug(f"Posts .antes: {self.getPosts()}")
@@ -924,22 +926,34 @@ def main():
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
 
+    import inspect
+    frame = inspect.currentframe()
+    print(f"Name: {frame}")
+    info = inspect.getframeinfo(frame)
+    print(f"Name: {info}")
+    name = info.filename
+    print(f"File: {name}")
+
+    pos = name.rfind('module')
+    name = name[pos+len('module'):-3]
+    print(f"Name: {name}")
+
+    i = 0
+    caches = []
+    for rul in rules.rules.keys():
+        if rules.getNameRule(rul).capitalize() == name:
+            print(f"{i}) {rul}")
+            caches.append(rul)
+            i = i + 1
+    sel = int(input(f"Which one? "))
+    src = caches[sel]
+    more = rules.more[src]
+    indent = ""
+    apiSrc = rules.readConfigSrc(indent, src, more)
+
     testingPosts = True
     if testingPosts:
         print("Testing Posts")
-        i = 0
-        caches = []
-        for rul in rules.rules.keys():
-            if rul[0] == 'cache':
-                print(f"{i}) {rul}")
-                caches.append(rul)
-                i = i + 1
-        sel = int(input(f"Which one? "))
-        src = caches[sel]
-        more = rules.more[src]
-        indent = ""
-        apiSrc = rules.readConfigSrc(indent, src, more)
-
         cmd = getattr(apiSrc, 'setApiPosts')
         posts = cmd
         posts = cmd()

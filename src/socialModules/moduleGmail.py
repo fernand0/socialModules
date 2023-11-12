@@ -775,7 +775,7 @@ def main():
         for key in rules.rules.keys():
             print(f"Key: {key}")
             if ((key[0] == 'gmail')
-                    and ('ftricas' in key[2])
+                    and ('reflexiones' in key[2])
                     and (key[3] == 'posts')):
                 print(f"SKey: {key}\n"
                       f"SRule: {rules.rules[key]}\n"

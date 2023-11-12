@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import configparser
+import json
 import logging
 import sys
 
@@ -140,23 +141,42 @@ class moduleTelegram(Content):
 
         if textToPublish:
             try:
-                bot.sendMessage('@'+channel, textToPublish, parse_mode='HTML')
+                res = bot.sendMessage('@'+channel, textToPublish, 
+                                      parse_mode='HTML')
             except:
                 return(self.report('Telegram', textToPublish,
                     link, sys.exc_info()))
 
             if textToPublish2:
                 try:
-                    bot.sendMessage('@'+channel, textToPublish2[:4090],
-                            parse_mode='HTML')
+                    res = res.append(bot.sendMessage('@'+channel, 
+                                                     textToPublish2[:4090], 
+                                                     parse_mode='HTML'))
                 except:
                     bot.sendMessage('@'+channel, "Text is longer",
                             parse_mode='HTML')
             if links:
                 bot.sendMessage('@'+channel, links, parse_mode='HTML')
-            rep = "OK. PUblished!"
+            rep = res
 
         return rep
+
+    def processReply(self, reply):
+        res = ''
+        if not isinstance(reply, list):
+            origReply = [reply, ]
+        else:
+            origReply = reply
+        for rep in origReply: 
+            if isinstance(rep, str): 
+                rep = rep.replace("'",'"') 
+                rep = json.loads(rep)
+            else:
+                rep = reply
+            if 'message_id' in rep:
+                idPost = rep['message_id']
+                res = f"{res} https://t.me/{self.user}/{idPost}"
+        return (res)
 
     def getPostTitle(self, post):
         if 'channel_post' in post:
@@ -170,7 +190,7 @@ class moduleTelegram(Content):
 
 def main():
 
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
     import moduleTelegram
@@ -181,7 +201,7 @@ def main():
     # tel.setChannel('testFernand0')
 
     msgAlt = "hola"
-    testingImage = True
+    testingImage = False
 
     if testingImage:
         res = tel.publishImage("Prueba imagen", "/tmp/prueba.png", alt=msgAlt)
@@ -191,6 +211,7 @@ def main():
     if testingPost:
         res = tel.publishPost("Prueba texto", "https://t.me/testFernand0", '')
                 #api = 'lala' , post = 'lele')
+        print(f"Res: {res}")
         return
     # print("Testing posts")
     # tel.setPosts()

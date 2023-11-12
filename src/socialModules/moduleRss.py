@@ -75,7 +75,7 @@ class moduleRss(Content): #, Queue):
         return selPosts
 
     def setApiPosts(self):
-        msgLog = f"{self.indent} Setting posts"
+        msgLog = f"{self.indent} Service {self.service} Start setApiPosts"
         logMsg(msgLog, 2, 0)
 
         if self.rssFeed.find('http')>=0:
@@ -92,6 +92,9 @@ class moduleRss(Content): #, Queue):
             self.title = self.feed.feed.title
         else:
             self.title = self.user
+
+        msgLog = f"{self.indent} Service {self.service} End setApiPosts"
+        logMsg(msgLog, 2, 0)
         return posts
 
     def getSiteTitle(self):

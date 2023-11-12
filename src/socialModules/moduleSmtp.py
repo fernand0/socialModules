@@ -40,11 +40,12 @@ class moduleSmtp(Content): #, Queue):
             api = None
 
     def publishApiPost(self, *args, **kwargs):
+        comment = ""
         if args and len(args) == 3:
-            logging.info(f"Tittt: args: {args}")
+            # logging.info(f"Tittt: args: {args}")
             post, link, comment = args
         if kwargs:
-            logging.info(f"Tittt: kwargs: {kwargs}")
+            # logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             # FIXME: We need to do something here
             thePost = more.get('post', '')
@@ -135,7 +136,7 @@ class moduleSmtp(Content): #, Queue):
         except:
             res = self.report(self.service, '', '', sys.exc_info())
 
-        return(f"Res: {res}")
+        return(f"{res}")
 
 
     def publishPostt(self, post, subject, toaddr, fromaddr='fernand0@elmundoesimperfecto.com'):

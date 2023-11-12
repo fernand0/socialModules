@@ -29,12 +29,12 @@ class moduleFacebook(Content): #,Queue):
         return ((oauth_access_token,))
 
     def initApi(self, keys):
-        msgLog = f"{self.indent} initApi {self.service}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} initApi {self.service}"
+        # logMsg(msgLog, 2, 0)
         self.page = None
         graph = facebook.GraphAPI(keys[0], version='3.0')
-        msgLog = f"{self.indent} initApi res {graph}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} initApi res {graph}"
+        # logMsg(msgLog, 2, 0)
         return graph
 
     def getPage(self):
