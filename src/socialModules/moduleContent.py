@@ -457,6 +457,11 @@ class Content:
     def setPostAction(self, action):
         self.postaction = action
 
+    def setPostsrv(self, action):
+        self.postsrv = action
+
+    def setPostacc(self, action):
+        self.postacc = action
 
     def getSiteTitle(self):
         return self.getName()
@@ -472,7 +477,7 @@ class Content:
         if hasattr(self, "postsrv"):
             postaction = self.postsrv
         return postaction
-    
+
     def getPostActionAcc(self):
         postaction = ""
         if hasattr(self, "postacc"):
@@ -893,7 +898,7 @@ class Content:
     def publishImage(self, *args, **kwargs):
         post, image = args
         more = kwargs
-        msgLog = (f"{self.indent} Service {self.service} publishing image "  
+        msgLog = (f"{self.indent} Service {self.service} publishing image "
                   f"{image}: {post}")
         logMsg(msgLog, 2, 0)
         msgLog = (f"{self.indent} Service {self.service} more "
@@ -1501,11 +1506,11 @@ class Content:
 
             reply = ''
             if title:
-                reply = reply + ' ' + title 
+                reply = reply + ' ' + title
             if content:
                 reply = reply + ' ' + content
-            if link: 
-                reply = reply + '\n' + link 
+            if link:
+                reply = reply + '\n' + link
         else:
             reply = ''
 

@@ -400,7 +400,7 @@ class moduleRules:
         for i, src in enumerate(rulesNew.keys()):
             if not src:
                 continue
-            iniK, nameK = self.getIniKey(self.getNameRule(src).upper(), 
+            iniK, nameK = self.getIniKey(self.getNameRule(src).upper(),
                                          myKeys, myIniKeys)
             # logging.info(f"iniK: {iniK}")
             if not (iniK in available):
@@ -779,7 +779,7 @@ class moduleRules:
             logMsg(msgLog, 2, 0)
             msgLog=f"{indent} profileR {self.getProfileRule(action)}"
             logMsg(msgLog, 2, 0)
-            apiDst = getApi(self.getNameRule(action), 
+            apiDst = getApi(self.getNameRule(action),
                             self.getProfileRule(action), indent)
             logMsg(msgLog, 2, 0)
             apiDst.fileName = apiDst.fileNameBase(action[1:])
@@ -939,7 +939,7 @@ class moduleRules:
                 logMsg(msgLog, 1, 0)
                 postaction = apiSrc.getPostAction()
                 if postaction:
-                    msgLog = (f"{indent}Post Action *{postaction}* "
+                    msgLog = (f"{indent}Post Action **{postaction} "
                               f"({nextPost})")
                     logMsg(msgLog, 1, 1)
 
@@ -952,7 +952,7 @@ class moduleRules:
                         logMsg(msgLog, 1, 1)
                         cmdPost = getattr(apiSrc, f"{postaction}NextPost")
                         resPost = cmdPost()
- 
+
                     else:
                         if nextPost:
                             msgLog = (f"{indent}Post Action nextpost")
@@ -978,17 +978,34 @@ class moduleRules:
                 or ('duplicate' in res))):
                 postaction = apiSrc.getPostAction()
                 if postaction:
-                    msgLog = (f"{indent}Post Action {postaction}")
+                    msgLog = (f"{indent}Post Action *{postaction}")
                     logMsg(msgLog, 1, 1)
 
-                    if postaction == 'publish':
+                    if postaction == 'cache':
+                        postaction = 'publish'
                         msgLog = (f"{indent}Post Action nextpost")
                         logMsg(msgLog, 1, 1)
-                        msgLog = (f"{indent}Post Action nextpost"
+                        msgLog = (f"{indent}Post Action nextpost "
                                   f"{apiSrc.getPostActionSrv()} - "
                                   f"{apiSrc.getPostActionAcc()}")
                         logMsg(msgLog, 1, 1)
-                        cmdPost = getattr(apiSrc, f"{postaction}NextPost")
+                        key = (apiSrc.getService(), 'set',
+                               apiSrc.getNick(), 'posts')
+                        msgLog = (f"{indent} key: {key}")
+                        logMsg(msgLog, 1, 1)
+                        dstKey = ('direct', 'post',
+                                  apiSrc.getPostActionSrv(),
+                                  apiSrc.getPostActionAcc())
+                        msgLog = (f"{indent} dst key: {dstKey}")
+                        logMsg(msgLog, 1, 1)
+                        dst = ('cache', 'twitter', dstKey,
+                               apiDst.getNick())
+                        msgLog = (f"{indent} dst : {dst}")
+                        logMsg(msgLog, 1, 1)
+                        apiDst2 = rules.readConfigDst(indent, dst,
+                                                     more, apiSrc)
+
+                        cmdPost = getattr(apiDst2, f"{postaction}NextPost")
                         resPost = cmdPost()
 
                     else:
