@@ -843,7 +843,8 @@ class moduleRules:
         logMsg(msgLog, 1, 1)
         postaction = apiSrc.getPostAction()
         if postaction:
-            msgLog = (f"{indent}Post Action {postaction} (nextPost = {nextPost})")
+            msgLog = (f"{indent}Post Action {postaction} "
+                      f"(nextPost = {nextPost})")
             logMsg(msgLog, 1, 1)
 
             if 'OK. Published!' in res:
@@ -871,23 +872,67 @@ class moduleRules:
                 #FIXME Some OK publishing follows this path (mastodon, linkedin, ...)
                 logMsg(msgLog, 1, 0)
 
-                if nextPost:
-                    cmdPost = getattr(apiSrc, f"{postaction}NextPost")
-                    resPost = cmdPost()
-                else:
-                    cmdPost = getattr(apiSrc, f"{postaction}")
-                    resPost = cmdPost(pos)
-                # FIXME inconsistent
-                msgLog = (f"{indent}Post Action command {cmdPost}")
-                logMsg(msgLog, 1, 1)
-                msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
-                logMsg(msgLog, 1, 1)
-                resMsg += f"Post Action: {resPost}" 
-            else:
-                msgLog = (f"{indent}No Post Action")
-                logMsg(msgLog, 1, 1)
+                postaction = apiSrc.getPostAction()
+                if postaction:
+                    msgLog = (f"{indent}Post Action *{postaction}")
+                    logMsg(msgLog, 1, 1)
 
-            return resMsg
+                    if postaction == 'cache':
+                        postaction = 'publish'
+                        msgLog = (f"{indent}Post Action nextpost")
+                        logMsg(msgLog, 1, 1)
+                        msgLog = (f"{indent}Post Action nextpost "
+                                  f"{apiSrc.getPostActionSrv()} - "
+                                  f"{apiSrc.getPostActionAcc()}")
+                        logMsg(msgLog, 1, 1)
+                        key = (apiSrc.getService(), 'set',
+                               apiSrc.getNick(), 'posts')
+                        msgLog = (f"{indent} key: {key}")
+                        logMsg(msgLog, 1, 1)
+                        dstKey = ('direct', 'post',
+                                  apiSrc.getPostActionSrv(),
+                                  apiSrc.getPostActionAcc())
+                        msgLog = (f"{indent} dst key: {dstKey}")
+                        logMsg(msgLog, 1, 1)
+                        dst = ('cache', 'twitter', dstKey, apiDst.getUser())
+                        msgLog = (f"{indent} dst: {dst}")
+                        logMsg(msgLog, 1, 1)
+                        apiDst2 = self.readConfigDst(indent, dst, None, apiSrc)
+
+                        cmdPost = getattr(apiDst2, f"{postaction}NextPost")
+                        resPost = cmdPost(apiSrc)
+
+                    else:
+
+                        if nextPost:
+                            cmdPost = getattr(apiSrc, f"{postaction}NextPost")
+                            resPost = cmdPost()
+                        else:
+                            cmdPost = getattr(apiSrc, f"{postaction}")
+                            resPost = cmdPost(pos)
+                            # FIXME inconsistent
+                    msgLog = (f"{indent}Post Action command {cmdPost}")
+                    logMsg(msgLog, 1, 1)
+                    msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
+                    logMsg(msgLog, 1, 1)
+                    resMsg += f"Post Action: {resPost}"
+                else:
+                    msgLog = (f"{indent}No Post Action")
+                    logMsg(msgLog, 1, 1)
+
+            msgLog = (f"{indent}End publish, reply: {resMsg}")
+            logMsg(msgLog, 1, 1)
+        if postaction == 'delete':
+            #FIXME: not always len is the available number. We should consider
+            # the last published and so on.
+            msgLog = (f"{indent}Available {len(apiSrc.getPosts())-1}")
+        else:
+            msgLog = (f"{indent}Available {len(apiSrc.getPosts())}")
+        logMsg(msgLog, 1, 1)
+
+
+
+        return resMsg
 
     def executePublishAction(self, indent, msgAction, apiSrc, apiDst,
                             simmulate, nextPost=True, pos=-1):
