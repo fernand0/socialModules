@@ -894,10 +894,12 @@ class moduleRules:
                                   apiSrc.getPostActionAcc())
                         msgLog = (f"{indent} dst key: {dstKey}")
                         logMsg(msgLog, 1, 1)
-                        dst = ('cache', 'twitter', dstKey, apiDst.getUser())
+                        if hasattr(apiDst, 'base_url'):
+                            nickDst = f"{apiDst.base_url}/{apiDst.getUser()}"
+                        dst = ('cache', 'twitter', dstKey, nickDst)
                         msgLog = (f"{indent} dst: {dst}")
                         logMsg(msgLog, 1, 1)
-                        apiDst2 = self.readConfigDst(indent, dst, None, apiSrc)
+                        apiDst2 = self.readConfigDst(indent, dst, None, apiDst)
 
                         cmdPost = getattr(apiDst2, f"{postaction}NextPost")
                         resPost = cmdPost(apiSrc)
@@ -929,8 +931,6 @@ class moduleRules:
         else:
             msgLog = (f"{indent}Available {len(apiSrc.getPosts())}")
         logMsg(msgLog, 1, 1)
-
-
 
         return resMsg
 

@@ -918,7 +918,7 @@ class moduleCache(Content): #,Queue):
 def main():
 
     logging.basicConfig(stream=sys.stdout,
-            level=logging.INFO,
+            level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
     import socialModules.moduleCache
@@ -965,6 +965,7 @@ def main():
             if link:
                 print(f"    Link: {link}")
         return
+
         apiSrc.setPosts()
         for i, post in enumerate(apiSrc.getPosts()):
             print(f"{i}) {apiSrc.getPostTitle(post)}")

@@ -324,6 +324,7 @@ class moduleTwitter(Content): #, Queue):
         # print(f"post: {post}")
         title = ''
         try:
+            logging.info(f"Post data: {post.data}")
             title = post.data.get('text')
             if not title:
                 title = post.data.get('full_text')
