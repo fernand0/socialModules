@@ -41,7 +41,12 @@ class moduleFacebook(Content): #,Queue):
         return self.page
 
     def setPage(self, facebookAC='me'):
+        return
         perms = ['publish_actions','manage_pages','publish_pages']
+        logging.info(f'getClient {self.getClient().get_all_connections("me", "pages")}')
+        # for connection in self.getClient().get_connections("me", ""):
+        #     logging.info(f"Connections: {connection}")
+        # sys.exit()
         pages = self.getClient().get_connections("me", "accounts")
         self.pages = pages
 
@@ -125,9 +130,10 @@ class moduleFacebook(Content): #,Queue):
             self.setPage(self.user)
 
         res = "Fail!"
+        # logging.info(f"Facebook acc: {self.page}")
         if (not isinstance(self.page, str)):
             try:
-                res = self.page.put_object('me', "feed", 
+                res = self.getClient().put_object("me", "feed", 
                                            message=title, link=link)
             except:
                 res = self.report('', res, '', sys.exc_info())
