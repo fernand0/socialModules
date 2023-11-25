@@ -689,7 +689,7 @@ class moduleRules:
         return res
 
     def clientErrorMsg(self, indent, api, typeC, rule, action):
-        msgLog = (f"{indent} {typeC} Error. " 
+        msgLog = (f"{indent} {typeC} Error. "
                       f"No client for {rule} ({action})")
         return f"{msgLog}"
 
@@ -712,7 +712,7 @@ class moduleRules:
         # else:
         #     # logging.info(f"{indent} Src: {src}")
         #     apiSrc = getApi(self.getNameRule(src), self.getProfileRule(src), indent)
-  
+
         # msgLog = f"{indent} More: {more}"
         # logMsg(msgLog, 2, 0)
 
@@ -778,7 +778,7 @@ class moduleRules:
         # logMsg(msgLog, 1, 0)
 
         if self.getNameRule(action) == 'cache':
-            apiDst = getApi(self.getNameRule(action), 
+            apiDst = getApi(self.getNameRule(action),
                             self.getProfileRule(action), indent)
             apiDst.fileName = apiDst.fileNameBase(action[1:])
             apiDst.postaction = 'delete'
@@ -836,10 +836,10 @@ class moduleRules:
             print(f"{indent}No listPosts2")
 
     def executePostAction(self, indent, msgAction, apiSrc, apiDst,
-                            simmulate, nextPost, pos, res):
+                            simmulate, nextPost, pos, res, post=None):
         resPost = ''
         resMsg = ''
-        msgLog = (f"{indent}Trying to excecute Post Action")
+        msgLog = (f"{indent}Trying to execute Post Action")
         logMsg(msgLog, 1, 1)
         postaction = apiSrc.getPostAction()
         if postaction:
@@ -850,23 +850,26 @@ class moduleRules:
             if 'OK. Published!' in res:
                 msgLog = (f"{indent} Res {res} is OK")
                 logMsg(msgLog, 1, 0)
-                if nextPost:
-                    msgLog = (f"{indent}Post Action next post")
-                    logMsg(msgLog, 2, 0)
-                    cmdPost = getattr(apiSrc, f"{postaction}NextPost")
-                    resPost = cmdPost()
+                if post:
+                    resPost = post
                 else:
-                    msgLog = (f"{indent}Post Action pos post")
-                    logMsg(msgLog, 2, 0)
-                    cmdPost = getattr(apiSrc, f"{postaction}")
-                    resPost = cmdPost(pos)
-                    # FIXME inconsistent
+                    if nextPost:
+                        msgLog = (f"{indent}Post Action next post")
+                        logMsg(msgLog, 2, 0)
+                        cmdPost = getattr(apiSrc, f"{postaction}NextPost")
+                        resPost = cmdPost()
+                    else:
+                        msgLog = (f"{indent}Post Action pos post")
+                        logMsg(msgLog, 2, 0)
+                        cmdPost = getattr(apiSrc, f"{postaction}")
+                        resPost = cmdPost(pos)
+                        # FIXME inconsistent
             msgLog = (f"{indent}End {postaction}, reply: {resPost} ")
             logMsg(msgLog, 1, 1)
             resMsg += f" Post Action: {resPost}"
-            if ((res and (not 'failed!' in res) and (not 'Fail!' in res)) 
-                or (res and ('abusive!' in res)) 
-                or (((not res) and (not 'OK. Published!' in res)) 
+            if ((res and (not 'failed!' in res) and (not 'Fail!' in res))
+                or (res and ('abusive!' in res))
+                or (((not res) and (not 'OK. Published!' in res))
                     or ('duplicate' in res))):
                 msgLog = (f"{indent} Res {res} is not OK")
                 #FIXME Some OK publishing follows this path (mastodon, linkedin, ...)
@@ -899,13 +902,19 @@ class moduleRules:
                         dst = ('cache', 'twitter', dstKey, nickDst)
                         msgLog = (f"{indent} dst: {dst}")
                         logMsg(msgLog, 1, 1)
-                        apiDst2 = self.readConfigDst(indent, dst, None, apiDst)
+                        apiDst2 = self.readConfigDst(indent, dst, None,
+                                                     apiDst)
 
-                        cmdPost = getattr(apiDst2, f"{postaction}NextPost")
-                        resPost = cmdPost(apiSrc)
-
+                        if post:
+                            res = apiDst2.publishApiPost(api=apiDst2,
+                                                         post=post)
+                            cmdPost = f"apiDst2.publishApiPost"
+                            resPost = apiDst2.processReply(res)
+                        else:
+                            cmdPost = getattr(apiDst2,
+                                              f"{postaction}NextPost")
+                            resPost = cmdPost(apiSrc)
                     else:
-
                         if nextPost:
                             cmdPost = getattr(apiSrc, f"{postaction}NextPost")
                             resPost = cmdPost()
@@ -956,12 +965,12 @@ class moduleRules:
             link = apiSrc.getPostLink(post)
             resMsg = f"Publish result: {res}"
             msgLog = f"Title: {title}."
-            if link: 
+            if link:
                 msgLog = (f"{msgLog} Recording Link: {link}"
                           f"in file {apiSrc.fileNameBase(apiDst)}.last")
         else:
             msgLog = f"{indent}No post to schedule with {msgLog}."
-            
+
         if simmulate:
             if post:
                 msgLog = f"{indent}Would schedule {msgLog} "
@@ -974,9 +983,9 @@ class moduleRules:
             if post:
                 res = apiDst.publishPost(api = apiSrc, post = post)
                 msgLog = f"{indent}Trying to publish {msgLog} "
-                # print(f"{indent}res: {res}")
-                if (nextPost and ((not res) or ('SAVELINK' in res) or 
-                                  not ('Fail!' in res) or 
+                logging.debug(f"{indent}res: {res}")
+                if (nextPost and ((not res) or ('SAVELINK' in res) or
+                                  not ('Fail!' in res) or
                                   not ('failed!' in res))):
                     resUpdate = apiSrc.updateLastLink(apiDst, '')
                     resMsg += f" Update: {resUpdate}"
@@ -988,9 +997,15 @@ class moduleRules:
                 msgLog = f"{indent}Res: {res} "
                 logMsg(msgLog, 2, 0)
             if post:
-                resMsg = self.executePostAction(indent, msgAction, 
-                                                apiSrc, apiDst, 
-                                                simmulate, nextPost, 
+                if postPost:
+                    resMsg = self.executePostAction(indent, msgAction,
+                                                apiSrc, apiDst,
+                                                simmulate, nextPost,
+                                                pos, res, postPost)
+                else:
+                    resMsg = self.executePostAction(indent, msgAction,
+                                                apiSrc, apiDst,
+                                                simmulate, nextPost,
                                                 pos, res)
             msgLog = (f"{indent}End publish, reply: {resMsg}")
             logMsg(msgLog, 1, 1)
@@ -1022,8 +1037,8 @@ class moduleRules:
         # Source
         apiSrc = self.readConfigSrc(indent, src, more)
         if not apiSrc.getClient():
-            msgLog = self.clientErrorMsg(indent, apiSRc, "Source", 
-                                      self.getProfileRule(src), 
+            msgLog = self.clientErrorMsg(indent, apiSRc, "Source",
+                                      self.getProfileRule(src),
                                       self.getNickAction(src))
             #msgLog = (f"{indent} Source Error. No client for "
             #          f"{self.getProfileRule(src)} "
@@ -1057,9 +1072,9 @@ class moduleRules:
         # Destination
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
         if not apiDst.getClient():
-            msgLog = self.clientErrorMsg(indent, apiDst, "Destination", 
-                                      (f"{self.getNameRule(src)}@" 
-                                       f"{self.getProfileRule(src)}"), 
+            msgLog = self.clientErrorMsg(indent, apiDst, "Destination",
+                                      (f"{self.getNameRule(src)}@"
+                                       f"{self.getProfileRule(src)}"),
                                       self.getNickAction(src))
             # msgLog = (f"{indent} Destination Error. No client for "
             #           f"{self.getProfileRule(action)}")
@@ -1120,8 +1135,8 @@ class moduleRules:
 
                 for i in range(num):
                     time.sleep(tSleep)
-                    res = self.executePublishAction(indent, msgAction, apiSrc, 
-                                                    apiDst, simmulate, nextPost, 
+                    res = self.executePublishAction(indent, msgAction, apiSrc,
+                                                    apiDst, simmulate, nextPost,
                                                     pos)
             elif (diffTime<=hours):
                 msgLog = (f"{indent} Not enough time passed. "
@@ -1172,10 +1187,10 @@ class moduleRules:
                 msgLog = f"{indent} Src: {src}"
                 logMsg(msgLog, 2, 0)
 
-                if src in self.more: 
-                    if (('hold' in self.more[src]) 
-                        and (self.more[src]['hold'] == 'yes')): 
-                        msgHold = f"{indent} On hold." 
+                if src in self.more:
+                    if (('hold' in self.more[src])
+                        and (self.more[src]['hold'] == 'yes')):
+                        msgHold = f"{indent} On hold."
                         logMsg(msgHold,1, 0)
                         continue
 
@@ -1209,7 +1224,7 @@ class moduleRules:
                         srcName = f"{srcName.split('/')[-1]}"
                     elif 'gitter' in srcName:
                         srcName = f"{srcName.split('/')[-2]}"
-                    elif ((not srcName) and 
+                    elif ((not srcName) and
                           ('tumblr' in self.getNameAction(src))):
                         srcName = more['url']
                         srcName = f"{srcName.split('/')[2].split('.')[0]}"
@@ -1218,7 +1233,7 @@ class moduleRules:
                 actions = self.rules[src]
 
                 # print(f"Select: {select} - {src[0]}{i}")
-                if (select and 
+                if (select and
                     (select.lower() != f"{self.getNameRule(src).lower()}{i}")):
                     actionMsg = f"Skip."
                 else:
@@ -1247,7 +1262,7 @@ class moduleRules:
                                f"{self.getNickRule(src)}")
                     logMsg(msgLog, 1, 1)
                     textEnd = f"{textEnd}\n{msgLog}"
-                    nameA = f"{indent} {name}" 
+                    nameA = f"{indent} {name}"
                     if actionMsg == "Skip.":
                         #FIXME "In hold"
                         continue
