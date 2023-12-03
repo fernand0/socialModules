@@ -796,7 +796,10 @@ class moduleRules:
         if more and ('time' in more):
             apiDst.setTime(more['time'])
 
-        apiDst.setUrl(apiSrc.getUrl())
+        if apiSrc:
+            apiDst.setUrl(apiSrc.getUrl())
+        else:
+            apiDst.setUrl(None)
 
         msgLog = f"{indent} End readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
@@ -1073,8 +1076,8 @@ class moduleRules:
                 for i in range(num):
                     time.sleep(tSleep)
                     res = self.executePublishAction(indent, msgAction, apiSrc, 
-                                                    apiDst, simmulate, nextPost, 
-                                                    pos)
+                                                    apiDst, simmulate, 
+                                                    nextPost, pos)
             elif (diffTime<=hours):
                 msgLog = (f"{indent} Not enough time passed. "
                           f"We will wait at least "
