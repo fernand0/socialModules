@@ -41,7 +41,13 @@ class moduleFacebook(Content): #,Queue):
         return self.page
 
     def setPage(self, facebookAC='me'):
+        return
         perms = ['publish_actions','manage_pages','publish_pages']
+        logging.info(f'getClient ',
+                     f'{self.getClient().get_all_connections("me", "pages")}')
+        # for connection in self.getClient().get_connections("me", ""):
+        #     logging.info(f"Connections: {connection}")
+        # sys.exit()
         pages = self.getClient().get_connections("me", "accounts")
         self.pages = pages
 
@@ -125,9 +131,10 @@ class moduleFacebook(Content): #,Queue):
             self.setPage(self.user)
 
         res = "Fail!"
+        # logging.info(f"Facebook acc: {self.page}")
         if (not isinstance(self.page, str)):
             try:
-                res = self.page.put_object('me', "feed", 
+                res = self.getClient().put_object("me", "feed", 
                                            message=title, link=link)
             except:
                 res = self.report('', res, '', sys.exc_info())
@@ -204,34 +211,48 @@ def main():
             level=logging.INFO,
             format='%(asctime)s %(message)s')
 
-    import moduleFacebook
-    fc = moduleFacebook.moduleFacebook()
 
-    fc.setClient('me')
-    fc.setPage('Fernand0Test')
+    testingPages = True
 
-    testingImages = True
+    if testingPages:
+        print("Testing Pages")
+        key = ('facebook', 'set', 'Enlaces de Fernand0', 'posts')
+        apiSrc = rules.readConfigSrc("", key, None)
+        print(f"Accounts:")
+        pages = apiSrc.getClient().get_connections('me', 'accounts')
+        print(f"{pages['data']}")
+        for page in pages['data']:
+            print(f"Page: {page['name']}")
+
+        return
+
+    testingPost = True
+    if testingPost:
+        res = fc.publishPost("Prueba texto", 
+                             "https://elmundoesimperfecto.com/", "")
+        print(res)
+        return
+
+    testingImages = False
     if testingImages:
         res = fc.publishImage("prueba imagen", "/tmp/prueba.png", 
                               alt="Imagen con alt")
         print(res)
-    return
-    #print("Testing posting and deleting")
-    #res = fc.publishPost("Prueba borrando 7", "http://elmundoesimperfecto.com/", '')
-    #print("Res",res)
-    #idPost = fc.getUrlId(res)
-    #print("id",idPost)
-    #input('Delete? ')
-    #fc.deletePostId(idPost)
-    #sys.exit()
-    fc.setPostsType('posts')
-    fc.setPosts()
-    for i, post in enumerate(fc.getPosts()):
-        title = fc.getPostTitle(post)
-        link = fc.getPostLink(post)
-        url = fc.getPostUrl(post)
-        theId = fc.getPostId(post)
-        print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
+        return
+
+    testingPosts = False
+    if testingPosts:
+        fc.setPostsType('posts')
+        fc.setPosts()
+        for i, post in enumerate(fc.getPosts()):
+            title = fc.getPostTitle(post)
+            link = fc.getPostLink(post)
+            url = fc.getPostUrl(post)
+            theId = fc.getPostId(post)
+            print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}"
+                  f"\nId: {theId}\n")
+        return
+
     sys.exit()
     fc.publishPost("Prueba")
     print(fc.user)
