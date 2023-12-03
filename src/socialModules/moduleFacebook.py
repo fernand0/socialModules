@@ -47,10 +47,15 @@ class moduleFacebook(Content): #,Queue):
         return self.page
 
     def setPage(self, facebookAC='me'):
-        perms = ['publish_actions','manage_pages','publish_pages']
+        perms = ['publish_actions',
+                 'manage_pages',
+                 'publish_pages',
+                 'pages_read_engagement',
+                 'pages_manage_posts']
         try:
             pages = self.getClient().get_connections('me', 'accounts')
         except:
+            # Not tested
             url = (f"https://graph.facebook.com/oauth/access_token"
                    f"?client_id={self.app_id}"
                    f"&client_secret={self.client_token}"
@@ -58,6 +63,13 @@ class moduleFacebook(Content): #,Queue):
             logging.info(f"Url: {url}")
             import requests
             result = requests.get(url)
+            logging.info(f"Result: {result.text}")
+            import json
+            data = json.loads(result.text)
+            self.access_token = data['access_token']
+            url2 = (f"https://graph.facebook.com/{self.client_token}/"
+                    f"accounts?access_token={self.access_token}")
+            result = requests.get(url2)
             logging.info(f"Result: {result.text}")
             # pages = self.getClient().get_connections("me", "accounts")
         self.pages = pages
@@ -67,9 +79,9 @@ class moduleFacebook(Content): #,Queue):
 
         if (facebookAC != 'me'):
             for i in range(len(pages['data'])):
-                # msgLog = (f"{self.indent} Page: {pages['data'][i]['name']} "
-                #           f"{facebookAC}")
-                # logMsg(msgLog, 2, 0)
+                msgLog = (f"{self.indent} Page: {pages['data'][i]['name']} "
+                          f"{facebookAC}")
+                logMsg(msgLog, 2, 0)
                 if (pages['data'][i]['name'] == facebookAC):
                     msgLog = (f"{self.indent} Selected "
                               f"{pages['data'][i]['name']}")
@@ -142,10 +154,10 @@ class moduleFacebook(Content): #,Queue):
             self.setPage(self.user)
 
         res = "Fail!"
-        # logging.info(f"Facebook acc: {self.page}")
+        logging.info(f"Facebook acc: {self.page}")
         if (not isinstance(self.page, str)):
             try:
-                res = self.getClient().put_object("me", "feed",
+                res = self.page.put_object("me", "feed",
                                            message=title, link=link)
             except:
                 res = self.report('', res, '', sys.exc_info())
