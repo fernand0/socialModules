@@ -127,7 +127,7 @@ class moduleFacebook(Content): #,Queue):
         res = "Fail!"
         if (not isinstance(self.page, str)):
             try:
-                res = self.page.put_object('me', "feed", 
+                res = self.page.put_object('me', "feed",
                                            message=title, link=link)
             except:
                 res = self.report('', res, '', sys.exc_info())
@@ -204,6 +204,24 @@ def main():
             level=logging.INFO,
             format='%(asctime)s %(message)s')
 
+    import socialModules.moduleRules
+    rules = socialModules.moduleRules.moduleRules()
+    rules.checkRules()
+
+    testingPages = True
+
+    if testingPages:
+        print("Testing Pages")
+        key = ('facebook', 'set', 'Enlaces de Fernand0', 'posts')
+        apiSrc = rules.readConfigSrc("", key, None)
+        print(f"Accounts:")
+        pages = apiSrc.getClient().get_connections('me', 'accounts')
+        print(f"{pages['data']}")
+        for page in pages['data']:
+            print(f"Page: {page['name']}")
+
+        return
+
     import moduleFacebook
     fc = moduleFacebook.moduleFacebook()
 
@@ -212,7 +230,7 @@ def main():
 
     testingImages = True
     if testingImages:
-        res = fc.publishImage("prueba imagen", "/tmp/prueba.png", 
+        res = fc.publishImage("prueba imagen", "/tmp/prueba.png",
                               alt="Imagen con alt")
         print(res)
     return
