@@ -872,7 +872,8 @@ class moduleRules:
                 or (((not res) and (not 'OK. Published!' in res))
                     or ('duplicate' in res))):
                 msgLog = (f"{indent} Res {res} is not OK")
-                #FIXME Some OK publishing follows this path (mastodon, linkedin, ...)
+                #FIXME Some OK publishing follows this path 
+                # (mastodon, linkedin, ...)
                 logMsg(msgLog, 1, 0)
 
                 postaction = apiSrc.getPostAction()
@@ -946,6 +947,7 @@ class moduleRules:
     def executePublishAction(self, indent, msgAction, apiSrc, apiDst,
                             simmulate, nextPost=True, pos=-1):
         res = ''
+        postPost = None
 
         msgLog = (f"{indent} End Waiting.")
         logMsg(msgLog, 1, 1)
@@ -996,6 +998,11 @@ class moduleRules:
             if res:
                 msgLog = f"{indent}Res: {res} "
                 logMsg(msgLog, 2, 0)
+                msgLog = f"{indent}Type: {type(res)} "
+                logMsg(msgLog, 2, 0)
+                if (isinstance(res, tuple) 
+                    and (len(res) == 3) and ('twitter' in res[2])):
+                    postPost = ''
             if post:
                 if postPost:
                     resMsg = self.executePostAction(indent, msgAction,
