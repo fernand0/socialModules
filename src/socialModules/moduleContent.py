@@ -957,7 +957,7 @@ class Content:
     #             if hasattr(apiSrc, 'getPostApiDate'):
     #                 # FIXME we should use the more general method for calling
     #                 # publishing methods
-    #                 comment = apiSrc.getPostApiDate(post) 
+    #                 comment = apiSrc.getPostApiDate(post)
     #             nameMethod = 'Post'
     #             if (hasattr(apiSrc, 'getPostsType')
     #                 and (apiSrc.getPostsType())
@@ -1025,6 +1025,7 @@ class Content:
         title = ''
         link = ''
         comment = ''
+        more = None
         nameMethod = 'Post'
         listPosts = []
         if len(args) == 3:
@@ -1047,6 +1048,7 @@ class Content:
             #     comment = ''
             #     #more = {'api': apiSrc, 'post': post}
             #     # print(f"Title: {title}\nLink: {link}")
+            logging.info(f"End. Return")
             return
         if more:
             # print(f"    Publishing in {self.service}: {more}")
@@ -1485,11 +1487,11 @@ class Content:
         if data:
                logMsg(f"{self.indent} Service {self.service} "
                       f"Data error: {data}", 2, 0)
-               if isinstance(data,list) or isinstance(data,tuple): 
-                   msg.append(f"Unexpected error: {data[0]}") 
+               if isinstance(data,list) or isinstance(data,tuple):
+                   msg.append(f"Unexpected error: {data[0]}")
                    msg.append(f"Unexpected error: {data[1]}")
                else:
-                   msg.append(f"Unexpected error: {data}") 
+                   msg.append(f"Unexpected error: {data}")
         res = ""
         for line in msg:
             msgLog = (f"{self.indent} Service {self.service} "

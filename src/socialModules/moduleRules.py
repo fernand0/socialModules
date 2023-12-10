@@ -906,10 +906,9 @@ class moduleRules:
                         apiDst2 = self.readConfigDst(indent, dst, None, apiDst)
 
                         if post:
-                            post = post + ('',)
                             msgLog = (f"{indent} post: {post}")
                             logMsg(msgLog, 1, 1)
-                            res = apiDst2.publishPost(post)
+                            res = apiDst2.publishPost(post[0], post[1], '')
                             cmdPost = f"apiDst2.publishApiPost"
                             resPost = apiDst2.processReply(res)
                         else:
@@ -964,12 +963,15 @@ class moduleRules:
             msgLog = (f"post in pos {pos} in service {apiDst.service}.")
             post = apiSrc.getPost(pos)
         if post:
+            logging.info(f"Postttt: {post}")
+            logging.info(f"apiSrcccc: {apiSrc}")
             title = apiSrc.getPostTitle(post)
+            logging.info(f"Titleeee: {title}")
             link = apiSrc.getPostLink(post)
             resMsg = f"Publish result: {res}"
             msgLog = f"Title: {title}."
             if link:
-                msgLog = (f"{msgLog} Recording Link: {link}"
+                msgLog = (f"{msgLog} Recording Link: {link} "
                           f"in file {apiSrc.fileNameBase(apiDst)}.last")
         else:
             msgLog = f"{indent}No post to schedule with {msgLog}."

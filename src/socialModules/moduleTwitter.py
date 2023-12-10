@@ -44,9 +44,9 @@ class moduleTwitter(Content): #, Queue):
                                consumer_secret=keys[1],
                                access_token=keys[2],
                                access_token_secret=keys[3])
-        auth = tweepy.OAuthHandler(consumer_key=keys[0], 
+        auth = tweepy.OAuthHandler(consumer_key=keys[0],
                                    consumer_secret=keys[1],
-                                   access_token=keys[2], 
+                                   access_token=keys[2],
                                    access_token_secret=keys[3])
         api = tweepy.API(auth)
 
@@ -117,11 +117,11 @@ class moduleTwitter(Content): #, Queue):
             if not ('Fail!' in reply):
                 idPost = self.getPostId(reply)
                 title = self.getPostTitle(reply)
-                res = (f"{title}", 
+                res = (f"{title}",
                        f"https://twitter.com/{self.user}/status/{idPost}")
             else:
                 res = reply
-                if (('You have already retweeted' in res) 
+                if (('You have already retweeted' in res)
                     or ('Status is a duplicate.' in res)
                     or ('not allowed to create a Tweet with duplicate' in res)):
                     res = res + ' SAVELINK'
@@ -240,6 +240,9 @@ class moduleTwitter(Content): #, Queue):
         return res
 
     def publishApiPost(self, *args, **kwargs):
+        title = ''
+        link = ''
+        comment = ''
         if args and len(args) == 3 and args[0]:
             logging.info(f"Tittt: args: {args}")
             title, link, comment = args
@@ -476,23 +479,23 @@ def main():
         if testingCache:
             key = ('twitter', 'set', 'fernand0Test', 'posts')
             apiSrc = rules.readConfigSrc(indent, key, None)
-    
+
             dstKey = ('direct', 'post', 'twitter', 'fernand0')
             dst = ('cache', 'twitter', dstKey, 'http://twitter.com/fernand0Test')
             more = ""
-    
+
             apiDst = rules.readConfigDst(indent, dst, more, apiSrc)
 
-            # post = type('',(object,),{"data": 
-            #                         {'text': title, 'entities': 
+            # post = type('',(object,),{"data":
+            #                         {'text': title, 'entities':
             #                          {'urls': [{'expanded_url': tweet}]}}
             #                         })()
-            # post =             
-             
+            # post =
+
             post = myTweet()
             post.data = {'text': title, 'id': idTweet}
             post.entities = {'urls': [{'expanded_url': tweet}]}
-                                     
+
             res = apiDst.publishPost(api = apiSrc, post=post)
             # apiDst.publishPost(title, tweet, '')
 
