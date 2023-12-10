@@ -986,6 +986,8 @@ class moduleRules:
         else:
             res = ''
             if post:
+                logging.info(f"PPostttt: {post}")
+                logging.info(f"aapiSrcccc: {apiSrc}")
                 res = apiDst.publishPost(api = apiSrc, post = post)
                 msgLog = f"{indent}Trying to publish {msgLog} "
                 logging.debug(f"{indent}res: {res}")

@@ -1025,7 +1025,6 @@ class Content:
         title = ''
         link = ''
         comment = ''
-        more = None
         nameMethod = 'Post'
         listPosts = []
         if len(args) == 3:
@@ -1057,6 +1056,8 @@ class Content:
 
             post = more.get('post', '')
             api = more.get('api', '')
+            logging.info(f"PPPostttt: {post}")
+            logging.info(f"aaapiSrcccc: {api}")
             # title = api.getPostTitle(post)
             # link = api.getPostLink(post)
 

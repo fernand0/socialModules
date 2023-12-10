@@ -243,9 +243,11 @@ class moduleTwitter(Content): #, Queue):
         title = ''
         link = ''
         comment = ''
-        if args and len(args) == 3 and args[0]:
+        if args:
             logging.info(f"Tittt: args: {args}")
-            title, link, comment = args
+            if len(args) == 3 and args[0]:
+                title, link, comment = args
+        logging.info(f"TTittt: kwargs: {kwargs}")
         if kwargs:
             logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
