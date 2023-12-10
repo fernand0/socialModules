@@ -872,13 +872,13 @@ class moduleRules:
                 or (((not res) and (not 'OK. Published!' in res))
                     or ('duplicate' in res))):
                 msgLog = (f"{indent} Res {res} is not OK")
-                #FIXME Some OK publishing follows this path 
+                #FIXME Some OK publishing follows this path
                 # (mastodon, linkedin, ...)
                 logMsg(msgLog, 1, 0)
 
                 postaction = apiSrc.getPostAction()
                 if postaction:
-                    msgLog = (f"{indent}Post Action *{postaction}")
+                    msgLog = (f"{indent}Post Action *{postaction}*")
                     logMsg(msgLog, 1, 1)
 
                     if postaction == 'cache':
@@ -903,12 +903,13 @@ class moduleRules:
                         dst = ('cache', 'twitter', dstKey, nickDst)
                         msgLog = (f"{indent} dst: {dst}")
                         logMsg(msgLog, 1, 1)
-                        apiDst2 = self.readConfigDst(indent, dst, None,
-                                                     apiDst)
+                        apiDst2 = self.readConfigDst(indent, dst, None, apiDst)
 
                         if post:
-                            res = apiDst2.publishApiPost(api=apiDst2,
-                                                         post=post)
+                            post = post + ('',)
+                            msgLog = (f"{indent} post: {post}")
+                            logMsg(msgLog, 1, 1)
+                            res = apiDst2.publishPost(post)
                             cmdPost = f"apiDst2.publishApiPost"
                             resPost = apiDst2.processReply(res)
                         else:
@@ -1000,9 +1001,7 @@ class moduleRules:
                 logMsg(msgLog, 2, 0)
                 msgLog = f"{indent}Type: {type(res)} "
                 logMsg(msgLog, 2, 0)
-                if (isinstance(res, tuple) 
-                    and (len(res) == 3) and ('twitter' in res[2])):
-                    postPost = ''
+                postPost = res
             if post:
                 if postPost:
                     resMsg = self.executePostAction(indent, msgAction,
