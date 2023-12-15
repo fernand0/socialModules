@@ -21,23 +21,52 @@ from socialModules.moduleContent import *
 
 class moduleSmtp(Content): #, Queue):
 
-    def setClient(self, user):
-        self.user = None
-        self.client = None
+    def getKeys(self, config):
+        SERVER = config.get(self.user, "server")
+        USER = config.get(self.user, "user") 
+        PASSWORD = config.get(self.user, "token") 
+        PORT = config.get(self.user, "port") 
 
-        logging.info("     Connecting SMTP")
-        try: 
-            self.user = user 
-            try: 
-                self.client = smtplib.SMTP('localhost', 587)
-                # self.client.connect('localhost', 587)
-                logging.info("     Logging OK")
-            except:
-                logging.warning("SMTP authentication failed!")
-                logging.warning("Unexpected error:", sys.exc_info()[0])
+        return (SERVER, PORT, USER, PASSWORD,)
+
+    def initApi(self, keys):
+        self.server = keys[0]
+        self.port = keys[1]
+        self.user = keys[2]
+        self.password = keys[3]
+
+        try:
+            client = smtplib.SMTP(self.server, self.port)
+            client.starttls()
+            client.login(self.user, self.password)
+            logging.info("     Logging OK")
         except:
-            logging.warning("Account not configured")
-            api = None
+            logging.warning("SMTP authentication failed!")
+            logging.warning(f"Unexpected error: {sys.exc_info()[0]}")
+        
+        return client
+
+    # def setClient(self, user):
+    #     self.user = None
+    #     self.client = None
+    #     self.server = 'localhost'
+    #     self.port = 587
+    #     self.user = None
+    #     self.password = None
+
+    #     logging.info("     Connecting SMTP")
+    #     try: 
+    #         self.user = user 
+    #         try: 
+    #             self.client = smtplib.SMTP()
+    #             self.client.connect(self.server, self.port)
+    #             logging.info("     Logging OK")
+    #         except:
+    #             logging.warning("SMTP authentication failed!")
+    #             logging.warning(f"Unexpected error: {sys.exc_info()[0]}")
+    #     except:
+    #         logging.warning("Account not configured")
+    #         api = None
 
     def publishApiPost(self, *args, **kwargs):
         comment = ""
@@ -64,7 +93,6 @@ class moduleSmtp(Content): #, Queue):
             destaddr = self.user 
             toaddrs = self.user 
             fromaddr = self.user 
-            smtpsrv  = 'localhost' 
             theUrl = link
             if post:
                 subject = post.split('\n')[0]
@@ -122,9 +150,13 @@ class moduleSmtp(Content): #, Queue):
             #             msg.attach(MIMEText(f"{post}"))
             # # else:
             # #     msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n{post}"))
-            server = smtplib.SMTP(smtpsrv)
-            server.connect(smtpsrv, 587)
-            server.starttls()
+            if not self.client:
+                smtpsrv  = 'localhost' 
+                server = smtplib.SMTP(smtpsrv)
+                server.connect(smtpsrv, 587)
+                server.starttls()
+            else:
+                server =self.client
 
             logging.info(f"From: {fromaddr} To:{toaddrs}")
             logging.info(f"Msg: {msg.as_string()}")
@@ -146,6 +178,8 @@ class moduleSmtp(Content): #, Queue):
             msg['Subject'] = subject
             msg['From'] = fromaddr
             self.client.starttls()
+            if self.user and self.password:
+                self.client.login(self.user, self.password)
             res = self.client.sendmail(fromaddr, toaddr, msg.as_string())
         else:
             logging.info("     Not published in SMTP. Exception ...")
@@ -162,11 +196,24 @@ def main():
     rules.printDict(rules.rules, "Rules")
 
     indent = ""
-    src, more = rules.selectRule('cache', 'smtp')
+    print(f"Rules: {rules}")
+    srcs = rules.selectRule('cache', '')
+    src = srcs[6]
+    print(f"Rule: {src}")
+    more = None
     apiSrc = rules.readConfigSrc(indent, src, more)
     action =  rules.rules[src][0]
     print(f"Action: {action}")
     apiDst = rules.readConfigDst(indent, action, more, apiSrc)
+    print(f"Client: {apiDst.client}")
+    # apiDst.server = 'mail.your-server.de'
+    # apiDst.port = 587
+    # apiDst.user =  'ftricas@elmundoesimperfecto.com'
+    # apiDst.password = '5N1QU2j6v6PM5MdF'
+    # apiDst.client = smtplib.SMTP(apiDst.server, apiDst.port)
+    # apiDst.client.starttls()
+    # apiDst.client.login(apiDst.user, apiDst.password)
+    apiDst.user = 'fernand0Pocket@elmundoesimperfecto.com'
     # print(f"Folders: {apiSrc.getChannels()}")
     # apiSrc.setChannel(more['search'])
 
