@@ -71,23 +71,14 @@ class moduleSmtp(Content): #, Queue):
     def publishApiPost(self, *args, **kwargs):
         comment = ""
         if args and len(args) == 3:
-            # logging.info(f"Tittt: args: {args}")
             post, link, comment = args
         if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             # FIXME: We need to do something here
             thePost = more.get('post', '')
             api = more.get('api', '')
-            # logging.info(f"Post: {thePost}")
             post = api.getPostTitle(thePost)
-            # logging.info(f"Post: {post}")
             link = api.getPostLink(thePost)
-            # idPost = api.getPostId(post)
-            # logging.info(f"Postt: {post['meta']}")
-            # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]
-            # idPost = post['list']['id'] #[1:-1]
-            # logging.info(f"Post id: {idPost}")
         res = 'Fail!'
         try: 
             destaddr = self.user 
@@ -109,11 +100,6 @@ class moduleSmtp(Content): #, Queue):
             msg['X-URL']   = theUrl 
             msg['X-print'] = theUrl 
             msg['Subject'] = subject 
-            # if not link:
-            #     htmlDoc = (f"Title: {subject} \n\n" 
-            #            f"Url: {link} \n\n"
-            #            f"{post}") 
-            # else:
             if comment: 
                 htmlDoc = comment
             else: 
@@ -138,18 +124,7 @@ class moduleSmtp(Content): #, Queue):
                 subtype = 'plain'
 
             adj = MIMEText(htmlDoc, _subtype=subtype) 
-            # adj.add_header('Content-Type','text/html')
             msg.attach(adj)
-            # if link  and link.find('http')>=0:
-            #     if post.startswith('<'):
-            #         msg.attach(MIMEText(f"{post}", _subtype='html'))
-            #     else:
-            #         if comment:
-            #             msg.attach(MIMEText(f"{comment}"))
-            #         else:
-            #             msg.attach(MIMEText(f"{post}"))
-            # # else:
-            # #     msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n{post}"))
             if not self.client:
                 smtpsrv  = 'localhost' 
                 server = smtplib.SMTP(smtpsrv)
@@ -169,21 +144,6 @@ class moduleSmtp(Content): #, Queue):
             res = self.report(self.service, '', '', sys.exc_info())
 
         return(f"{res}")
-
-
-    def publishPostt(self, post, subject, toaddr, fromaddr='fernand0@elmundoesimperfecto.com'):
-        logging.info("     Publishing in SMTP")
-        if True: 
-            msg = MIMEText(post,'html')
-            msg['Subject'] = subject
-            msg['From'] = fromaddr
-            self.client.starttls()
-            if self.user and self.password:
-                self.client.login(self.user, self.password)
-            res = self.client.sendmail(fromaddr, toaddr, msg.as_string())
-        else:
-            logging.info("     Not published in SMTP. Exception ...")
-            return('Fail')
 
 def main():
     logging.basicConfig(stream=sys.stdout, 
