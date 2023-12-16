@@ -100,42 +100,53 @@ class moduleSmtp(Content): #, Queue):
             msg['X-URL']   = theUrl
             msg['X-print'] = theUrl
             msg['Subject'] = subject
-            if comment:
-                htmlDoc = comment
-            else:
-                htmlDoc = (f"Title: {subject} <br />\n"
-                        f"Url: {link} <br />\n"
-                        f"{post}")
-            logging.info(f"{self.indent} Doc: {htmlDoc}")
-            adj = MIMEApplication(htmlDoc)
-            encoders.encode_base64(adj)
-            name = 'forum'
-            ext = '.html'
-            adj.add_header('Content-Disposition',
-                               f'attachment; filename="{name}{ext}"')
 
-            adj.add_header('Content-Type','application/octet-stream')
+            htmlDoc = (f"Title: {subject} <br />\n" 
+                       f"Url: {link} <br />\n" 
+                       f"{post}")
 
-            msg.attach(adj)
-
-            if htmlDoc.startswith('<'):
-                subtype = 'html'
-            else:
-                subtype = 'plain'
+            subtype = 'plain'
 
             adj = MIMEText(htmlDoc, _subtype=subtype)
             msg.attach(adj)
+
+            if comment:
+                htmlDoc = comment
+            
+                logging.info(f"{self.indent} Doc: {htmlDoc}")
+                
+                adj = MIMEApplication(htmlDoc)
+                encoders.encode_base64(adj)
+                name = 'content'
+                ext = '.html'
+
+                adj.add_header('Content-Disposition',
+                                   f'attachment; filename="{name}{ext}"')
+                adj.add_header('Content-Type','application/octet-stream')
+
+                msg.attach(adj)
+
+                if htmlDoc.startswith('<'):
+                    subtype = 'html'
+                else:
+                    subtype = 'plain'
+
+                adj = MIMEText(htmlDoc, _subtype=subtype)
+                msg.attach(adj)
+
             if not self.client:
                 smtpsrv  = 'localhost'
                 server = smtplib.SMTP(smtpsrv)
                 server.connect(smtpsrv, 587)
                 server.starttls()
             else:
-                server =self.client
+                server = self.client
 
             logging.info(f"From: {fromaddr} To:{toaddrs}")
             logging.info(f"Msg: {msg.as_string()}")
+
             res = server.sendmail(fromaddr, toaddrs, msg.as_string())
+
             if not res:
                 res = "OK"
             server.quit()
