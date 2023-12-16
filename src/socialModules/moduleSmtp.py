@@ -101,8 +101,8 @@ class moduleSmtp(Content): #, Queue):
             msg['X-print'] = theUrl
             msg['Subject'] = subject
 
-            htmlDoc = (f"Title: {subject} <br />\n" 
-                       f"Url: {link} <br />\n" 
+            htmlDoc = (f"Title: {subject} <br />\n"
+                       f"Url: {link} <br />\n"
                        f"{post}")
 
             subtype = 'plain'
@@ -112,9 +112,10 @@ class moduleSmtp(Content): #, Queue):
 
             if comment:
                 htmlDoc = comment
-            
-                logging.info(f"{self.indent} Doc: {htmlDoc}")
-                
+
+                msgLog = (f"{self.indent} Doc: {htmlDoc}")
+                logMsg(msgLog, 2, 0)
+
                 adj = MIMEApplication(htmlDoc)
                 encoders.encode_base64(adj)
                 name = 'content'
@@ -142,8 +143,10 @@ class moduleSmtp(Content): #, Queue):
             else:
                 server = self.client
 
-            logging.info(f"From: {fromaddr} To:{toaddrs}")
-            logging.info(f"Msg: {msg.as_string()}")
+            msgLog = (f"From: {fromaddr} To:{toaddrs}")
+            logMsg(msgLog, 2, 0)
+            msgLog = (f"Msg: {msg.as_string()}")
+            logMsg(msgLog, 2, 0)
 
             res = server.sendmail(fromaddr, toaddrs, msg.as_string())
 
