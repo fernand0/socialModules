@@ -458,10 +458,11 @@ class moduleRules:
                 more = self.more[src]
                 srcR = src
                 logging.debug(f"profileR: {self.getProfileRule(src)}")
+                logging.debug(f"profileR: {self.getProfileAction(src)}")
                 if not selector2:
                     rules.append(src)
                 else:
-                    if (selector2 == self.getProfileRule(src)):
+                    if (selector2 == self.getProfileAction(src)):
                         #FIXME: ??
                         logging.debug(f"Second Selector: {selector2}")
                         if not selector3:
