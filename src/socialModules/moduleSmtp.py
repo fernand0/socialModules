@@ -23,9 +23,9 @@ class moduleSmtp(Content): #, Queue):
 
     def getKeys(self, config):
         SERVER = config.get(self.user, "server")
-        USER = config.get(self.user, "user") 
-        PASSWORD = config.get(self.user, "token") 
-        PORT = config.get(self.user, "port") 
+        USER = config.get(self.user, "user")
+        PASSWORD = config.get(self.user, "token")
+        PORT = config.get(self.user, "port")
 
         return (SERVER, PORT, USER, PASSWORD,)
 
@@ -43,7 +43,7 @@ class moduleSmtp(Content): #, Queue):
         except:
             logging.warning("SMTP authentication failed!")
             logging.warning(f"Unexpected error: {sys.exc_info()[0]}")
-        
+
         return client
 
     # def setClient(self, user):
@@ -55,9 +55,9 @@ class moduleSmtp(Content): #, Queue):
     #     self.password = None
 
     #     logging.info("     Connecting SMTP")
-    #     try: 
-    #         self.user = user 
-    #         try: 
+    #     try:
+    #         self.user = user
+    #         try:
     #             self.client = smtplib.SMTP()
     #             self.client.connect(self.server, self.port)
     #             logging.info("     Logging OK")
@@ -80,10 +80,10 @@ class moduleSmtp(Content): #, Queue):
             post = api.getPostTitle(thePost)
             link = api.getPostLink(thePost)
         res = 'Fail!'
-        try: 
-            destaddr = self.user 
-            toaddrs = self.user 
-            fromaddr = self.user 
+        try:
+            destaddr = self.user
+            toaddrs = self.user
+            fromaddr = self.user
             theUrl = link
             if post:
                 subject = post.split('\n')[0]
@@ -93,40 +93,40 @@ class moduleSmtp(Content): #, Queue):
                 else:
                     subject = "No subject"
 
-            msg = MIMEMultipart() 
-            msg['From']    = fromaddr 
-            msg['To']      = destaddr 
-            msg['Date']    = time.asctime(time.localtime(time.time())) 
-            msg['X-URL']   = theUrl 
-            msg['X-print'] = theUrl 
-            msg['Subject'] = subject 
-            if comment: 
+            msg = MIMEMultipart()
+            msg['From']    = fromaddr
+            msg['To']      = destaddr
+            msg['Date']    = time.asctime(time.localtime(time.time()))
+            msg['X-URL']   = theUrl
+            msg['X-print'] = theUrl
+            msg['Subject'] = subject
+            if comment:
                 htmlDoc = comment
-            else: 
-                htmlDoc = (f"Title: {subject} <br />\n" 
+            else:
+                htmlDoc = (f"Title: {subject} <br />\n"
                         f"Url: {link} <br />\n"
-                        f"{post}") 
+                        f"{post}")
             logging.info(f"{self.indent} Doc: {htmlDoc}")
-            adj = MIMEApplication(htmlDoc) 
-            encoders.encode_base64(adj) 
+            adj = MIMEApplication(htmlDoc)
+            encoders.encode_base64(adj)
             name = 'forum'
             ext = '.html'
-            adj.add_header('Content-Disposition', 
+            adj.add_header('Content-Disposition',
                                f'attachment; filename="{name}{ext}"')
 
             adj.add_header('Content-Type','application/octet-stream')
 
-            msg.attach(adj) 
+            msg.attach(adj)
 
             if htmlDoc.startswith('<'):
                 subtype = 'html'
             else:
                 subtype = 'plain'
 
-            adj = MIMEText(htmlDoc, _subtype=subtype) 
+            adj = MIMEText(htmlDoc, _subtype=subtype)
             msg.attach(adj)
             if not self.client:
-                smtpsrv  = 'localhost' 
+                smtpsrv  = 'localhost'
                 server = smtplib.SMTP(smtpsrv)
                 server.connect(smtpsrv, 587)
                 server.starttls()
@@ -146,8 +146,8 @@ class moduleSmtp(Content): #, Queue):
         return(f"{res}")
 
 def main():
-    logging.basicConfig(stream=sys.stdout, 
-            level=logging.DEBUG, 
+    logging.basicConfig(stream=sys.stdout,
+            level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
     import socialModules.moduleRules
@@ -158,7 +158,8 @@ def main():
     indent = ""
     print(f"Rules: {rules}")
     srcs = rules.selectRule('cache', '')
-    src = srcs[6]
+    print(f"Srcs: {srcs}")
+    src = srcs[5]
     print(f"Rule: {src}")
     more = None
     apiSrc = rules.readConfigSrc(indent, src, more)
@@ -166,16 +167,7 @@ def main():
     print(f"Action: {action}")
     apiDst = rules.readConfigDst(indent, action, more, apiSrc)
     print(f"Client: {apiDst.client}")
-    # apiDst.server = 'mail.your-server.de'
-    # apiDst.port = 587
-    # apiDst.user =  'ftricas@elmundoesimperfecto.com'
-    # apiDst.password = '5N1QU2j6v6PM5MdF'
-    # apiDst.client = smtplib.SMTP(apiDst.server, apiDst.port)
-    # apiDst.client.starttls()
-    # apiDst.client.login(apiDst.user, apiDst.password)
     apiDst.user = 'fernand0Pocket@elmundoesimperfecto.com'
-    # print(f"Folders: {apiSrc.getChannels()}")
-    # apiSrc.setChannel(more['search'])
 
     testingPublishing = False
     if testingPublishing:
@@ -201,10 +193,10 @@ def main():
     req = requests.get(url)
     import time
     apiSrc.publishPost(req.text, 'Test {}'.format(time.asctime()), 'fernand0@elmundoesimperfecto.com')
-    apiSrc.publishPost(req.text, 'Test {}'.format(time.asctime()), 
+    apiSrc.publishPost(req.text, 'Test {}'.format(time.asctime()),
                         'fernand0elmundoesimperfecto.com',
                         'fernand0movilizado@gmail.com')
-    
+
 
 
 if __name__ == '__main__':
