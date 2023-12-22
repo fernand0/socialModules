@@ -30,6 +30,7 @@ class moduleSmtp(Content): #, Queue):
         return (SERVER, PORT, USER, PASSWORD,)
 
     def initApi(self, keys):
+        self.fromaddr = self.user
         self.server = keys[0]
         self.port = keys[1]
         self.user = keys[2]
@@ -83,7 +84,10 @@ class moduleSmtp(Content): #, Queue):
         try:
             destaddr = self.user
             toaddrs = self.user
-            fromaddr = self.user
+            if self.fromaddr:
+                fromaddr = self.fromaddr
+            else:
+                fromaddr = self.user
             theUrl = link
             if post:
                 subject = post.split('\n')[0]
@@ -101,8 +105,8 @@ class moduleSmtp(Content): #, Queue):
             msg['X-print'] = theUrl
             msg['Subject'] = subject
 
-            htmlDoc = (f"Title: {subject} <br />\n"
-                       f"Url: {link} <br />\n"
+            htmlDoc = (f"Title: {subject}\n"
+                       f"Url: {link}\n"
                        f"{post}")
 
             subtype = 'plain'
