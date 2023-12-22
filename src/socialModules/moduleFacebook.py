@@ -26,12 +26,18 @@ class moduleFacebook(Content): #,Queue):
 
     def getKeys(self, config):
         oauth_access_token = config.get(self.service, "oauth_access_token")
-        return ((oauth_access_token,))
+        app_id = config.get(self.service, "app_id")
+        client_token = config.get(self.service, "client_token")
+
+        return ((oauth_access_token, app_id, client_token))
 
     def initApi(self, keys):
         # msgLog = f"{self.indent} initApi {self.service}"
         # logMsg(msgLog, 2, 0)
         self.page = None
+        self.oauth_access_token = keys[0]
+        self.app_id = keys[1]
+        self.client_token = keys[2]
         graph = facebook.GraphAPI(keys[0], version='3.0')
         # msgLog = f"{self.indent} initApi res {graph}"
         # logMsg(msgLog, 2, 0)
@@ -41,14 +47,31 @@ class moduleFacebook(Content): #,Queue):
         return self.page
 
     def setPage(self, facebookAC='me'):
-        return
-        perms = ['publish_actions','manage_pages','publish_pages']
-        logging.info(f'getClient ',
-                     f'{self.getClient().get_all_connections("me", "pages")}')
-        # for connection in self.getClient().get_connections("me", ""):
-        #     logging.info(f"Connections: {connection}")
-        # sys.exit()
-        pages = self.getClient().get_connections("me", "accounts")
+        perms = ['publish_actions',
+                 'manage_pages',
+                 'publish_pages',
+                 'pages_read_engagement',
+                 'pages_manage_posts']
+        try:
+            pages = self.getClient().get_connections('me', 'accounts')
+        except:
+            # Not tested
+            url = (f"https://graph.facebook.com/oauth/access_token"
+                   f"?client_id={self.app_id}"
+                   f"&client_secret={self.client_token}"
+                   f"&grant_type=client_credentials")
+            logging.info(f"Url: {url}")
+            import requests
+            result = requests.get(url)
+            logging.info(f"Result: {result.text}")
+            import json
+            data = json.loads(result.text)
+            self.access_token = data['access_token']
+            url2 = (f"https://graph.facebook.com/{self.client_token}/"
+                    f"accounts?access_token={self.access_token}")
+            result = requests.get(url2)
+            logging.info(f"Result: {result.text}")
+            # pages = self.getClient().get_connections("me", "accounts")
         self.pages = pages
 
         # Publishing as me
@@ -56,9 +79,9 @@ class moduleFacebook(Content): #,Queue):
 
         if (facebookAC != 'me'):
             for i in range(len(pages['data'])):
-                # msgLog = (f"{self.indent} Page: {pages['data'][i]['name']} "
-                #           f"{facebookAC}")
-                # logMsg(msgLog, 2, 0)
+                msgLog = (f"{self.indent} Page: {pages['data'][i]['name']} "
+                          f"{facebookAC}")
+                logMsg(msgLog, 2, 0)
                 if (pages['data'][i]['name'] == facebookAC):
                     msgLog = (f"{self.indent} Selected "
                               f"{pages['data'][i]['name']}")
@@ -131,10 +154,10 @@ class moduleFacebook(Content): #,Queue):
             self.setPage(self.user)
 
         res = "Fail!"
-        # logging.info(f"Facebook acc: {self.page}")
+        logging.info(f"Facebook acc: {self.page}")
         if (not isinstance(self.page, str)):
             try:
-                res = self.getClient().put_object("me", "feed", 
+                res = self.page.put_object("me", "feed",
                                            message=title, link=link)
             except:
                 res = self.report('', res, '', sys.exc_info())
@@ -208,19 +231,42 @@ class moduleFacebook(Content): #,Queue):
 def main():
 
     logging.basicConfig(stream=sys.stdout,
-            level=logging.INFO,
+            level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
+    import socialModules.moduleRules
+    rules = socialModules.moduleRules.moduleRules()
+    rules.checkRules()
 
-    testingPages = True
+    key = ('facebook', 'set', 'Enlaces de Fernand0', 'posts')
+    try:
+        apiSrc = rules.readConfigSrc("", key, None)
+    except:
+        url = (f"https://graph.facebook.com/oauth/access_token"
+               f"?client_id={apiSrc.app_id}"
+               f"&client_secret={apiSrc.client_token}"
+               f"&grant_type=client_credentials")
+        print(f"Url: {url}")
+        import requests
+        result = requests.get(url)
+        print(f"Result: {result}")
+        return
 
+    testingToken = False
+    if testingToken:
+        url = (f"https://graph.facebook.com/oauth/access_token"
+               f"?client_id={apiSrc.app_id}"
+               f"&client_secret={apiSrc.client_token}"
+               f"&grant_type=client_credentials")
+        print(f"Url: {url}")
+
+        return
+
+    testingPages = False
     if testingPages:
         print("Testing Pages")
-        key = ('facebook', 'set', 'Enlaces de Fernand0', 'posts')
-        apiSrc = rules.readConfigSrc("", key, None)
-        print(f"Accounts:")
         pages = apiSrc.getClient().get_connections('me', 'accounts')
-        print(f"{pages['data']}")
+        print(f"Data: {pages['data'][0].keys()}")
         for page in pages['data']:
             print(f"Page: {page['name']}")
 
@@ -228,14 +274,16 @@ def main():
 
     testingPost = True
     if testingPost:
-        res = fc.publishPost("Prueba texto", 
+
+        apiSrc.setPage('Enlaces de fernand0')
+        res = apiSrc.publishPost("Prueba texto",
                              "https://elmundoesimperfecto.com/", "")
         print(res)
         return
 
     testingImages = False
     if testingImages:
-        res = fc.publishImage("prueba imagen", "/tmp/prueba.png", 
+        res = fc.publishImage("prueba imagen", "/tmp/prueba.png",
                               alt="Imagen con alt")
         print(res)
         return

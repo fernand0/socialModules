@@ -296,7 +296,7 @@ def main():
 
                 apiSrc.setPosts()
                 print(apiSrc.getPosts())
-                for pos, post in enumerate(apiSrc.getPosts()):
+                for pos, post in enumerate(reversed(apiSrc.getPosts())):
                     title = apiSrc.getPostTitle(post)
                     print(f"Title: {title}")
                     link = apiSrc.getPostLink(post)
@@ -304,42 +304,65 @@ def main():
                     archive = False
                     if (('youtube' in  link) or link.endswith('pdf')):
                         archive = True
-                    elif ('is_article' in post) and post['is_article'] == '0':
+                    elif (('is_article' in post)
+                          and (post['is_article'] == '0')):
                         print(f"Title: {title}")
                         print(f"Link: {link}")
                         import requests
                         from readabilipy import simple_json_from_html_string
                         try:
                             req = requests.get(link)
-                            article = simple_json_from_html_string(req.text,
-                                                                   use_readability=True)
-                            if not article['content']:
-                                continue
-                            from ebooklib import epub
-                            book = epub.EpubBook()
+                            if req.status_code >= 400:
+                                print(f"Something is wrong "
+                                      f"{req.status_code}, {req.text}")
 
-                            book.set_title(title)
-                            book.set_identifier(idPost)
-                            c = epub.EpubHtml(title='Page',
-                                              file_name='page.xhtml', lang='en')
-                            c.content= article['content']
-                            book.add_item(c)
-                            book.add_item(epub.EpubNcx())
-                            book.add_item(epub.EpubNav())
-                            book.spine = ['nav', c]
-                            name = re.sub(r'[^a-zA-Z0-9]+', '-', title)
-                            epub.write_epub(f"{PATH}/{post['time_added']}_{name}.epub",
-                                            book, {})
-                            archive = True
+                                src = rules.selectRule('cache', 'smtp')
+                                indent = ''
+                                print(f"Src: {src}")
+                                src = src[0]
+                                more = None
+                                indent = ''
+                                apiSrc = rules.readConfigSrc(indent, src, more)
+                                print(f"apiSrc: {apiSrc}")
+                                action =  rules.rules[src][0]
+                                print(f"Action: {action}")
+                                newAction = (action[:3] + 
+                                    ('fernand0Pocket@elmundoesimperfecto.com',))
+
+                                print(f"Action: {newAction}")
+                                apiDst = rules.readConfigDst(indent,
+                                                             newAction,
+                                                             more, apiSrc)
+                                print(f"apiDst: {apiDst}")
+                                apiDst.publishPost(f"Fail Pocket! {title}",
+                                                      link, f"{req.text}")
+                            else:
+                                article = simple_json_from_html_string(req.text,
+                                                           use_readability=True)
+                                if not article['content']:
+                                    continue
+                                from ebooklib import epub
+                                book = epub.EpubBook()
+
+                                book.set_title(title)
+                                book.set_identifier(idPost)
+                                c = epub.EpubHtml(title='Page',
+                                                  file_name='page.xhtml', 
+                                                  lang='en')
+                                c.content= article['content']
+                                book.add_item(c)
+                                book.add_item(epub.EpubNcx())
+                                book.add_item(epub.EpubNav())
+                                book.spine = ['nav', c]
+                                name = re.sub(r'[^a-zA-Z0-9]+', '-', title)
+                                epub.write_epub(f"{PATH}/{post['time_added']}_{name}.epub",
+                                                book, {})
+                                archive = True
                         except:
-                            print("Problem with link: {link}")
+                            print(f"Problem with link: {link}")
                     if archive:
                         input("Archive? ")
                         apiSrc.archiveId(idPost)
-
-
-
-
 
     return
 
