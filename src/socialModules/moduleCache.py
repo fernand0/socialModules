@@ -877,22 +877,22 @@ def main():
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
 
+    name = nameModule()
+    print(f"Name: {name}")
+
+    rulesList = rules.selectRule(name)
+    for i, rule in enumerate(rulesList):
+        print(f"{i}) {rule}")
+
+    sel = int(input(f"Which one? "))
+    src = caches[sel]
+    more = rules.more[src]
+    indent = ""
+    apiSrc = rules.readConfigSrc(indent, src, more)
+
     testingPosts = True
     if testingPosts:
         print("Testing Posts")
-        i = 0
-        caches = []
-        for rul in rules.rules.keys():
-            if rul[0] == 'cache':
-                print(f"{i}) {rul}")
-                caches.append(rul)
-                i = i + 1
-        sel = int(input(f"Which one? "))
-        src = caches[sel]
-        more = rules.more[src]
-        indent = ""
-        apiSrc = rules.readConfigSrc(indent, src, more)
-
         cmd = getattr(apiSrc, 'setApiPosts')
         posts = cmd
         posts = cmd()

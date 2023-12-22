@@ -167,15 +167,15 @@ def updateLastLink(url, link, socialNetwork=()):
 # def resizeImage(imgUrl):
 #     print(imgUrl)
 #     response = requests.get(imgUrl, stream=True)
-# 
+#
 #     fileName = '{}/{}'.format(TMPDIR,
 #             urllib.parse.urlparse(response.url)[2].split('/')[-1])
 #     with open(fileName,'wb') as f:
 #         shutil.copyfileobj(response.raw, f)
-# 
+#
 #     im = Image.open(fileName)
 #     size = im.size
-# 
+#
 #     if size[0] < size[1]:
 #        dif = size[1]-size[0]
 #        box = (0, dif/2 , size[0], dif/2+size[0])
@@ -215,3 +215,13 @@ def getApi(profile, nick, indent=""):
     api.setClient(nick)
 
     return api
+
+def nameModule():
+    import inspect
+    stack = inspect.stack()
+    info = stack[1]
+    name = info.filename
+    pos = name.rfind('module')
+    name = name[pos+len('module'):-3]
+    return name
+

@@ -40,9 +40,9 @@ class moduleTwitter(Content): #, Queue):
                                consumer_secret=keys[1],
                                access_token=keys[2],
                                access_token_secret=keys[3])
-        auth = tweepy.OAuthHandler(consumer_key=keys[0], 
+        auth = tweepy.OAuthHandler(consumer_key=keys[0],
                                    consumer_secret=keys[1],
-                                   access_token=keys[2], 
+                                   access_token=keys[2],
                                    access_token_secret=keys[3])
         api = tweepy.API(auth)
 
@@ -112,11 +112,11 @@ class moduleTwitter(Content): #, Queue):
             if not ('Fail!' in reply):
                 idPost = self.getPostId(reply)
                 title = self.getPostTitle(reply)
-                res = (f"{title}", 
+                res = (f"{title}",
                        f"https://twitter.com/{self.user}/status/{idPost}")
             else:
                 res = reply
-                if (('You have already retweeted' in res) 
+                if (('You have already retweeted' in res)
                     or ('Status is a duplicate.' in res)
                     or ('not allowed to create a Tweet with duplicate' in res)):
                     res = res + ' SAVELINK'
@@ -374,17 +374,19 @@ def main():
     import socialModules.moduleRules
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
-    # src, more = rules.selectRule('twitter', 'kk')
-    # print(f"Src: {src}")
-    # print(f"More: {more}")
-    # indent = ""
-    # apiSrc = rules.readConfigSrc(indent, src, more)
+
+    name = nameModule()
+    rulesList = rules.selectRule(name, 'fernand0', 'posts')
+    logging.debug(f"Key: {rulesList}")
+    key = rulesList[0]
+    logging.debug(f"Key: {key}")
+
 
     testingPosts = False
     if testingPosts:
         print("Testing Posts")
-        key = ('twitter', 'set', 'fernand0', 'posts')
-        logging.debug(f"Key: {key}")
+        # key = ('twitter', 'set', 'fernand0', 'posts')
+        # logging.debug(f"Key: {key}")
         apiSrc = rules.readConfigSrc("", key, None)
         apiSrc.setPosts()
         posts = apiSrc.getPosts()
@@ -456,7 +458,7 @@ def main():
         print(f"Direct: {apiSrc.api.get_direct_messages()}")
         return
 
-    testingPostImages = True
+    testingPostImages = False
     if testingPostImages:
         image = '/tmp/2023-07-16_image.svg'
         # Does not work with svg
