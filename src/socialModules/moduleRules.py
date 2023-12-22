@@ -458,10 +458,11 @@ class moduleRules:
                 more = self.more[src]
                 srcR = src
                 logging.debug(f"profileR: {self.getProfileRule(src)}")
+                logging.debug(f"profileR: {self.getProfileAction(src)}")
                 if not selector2:
                     rules.append(src)
                 else:
-                    if (selector2 == self.getProfileRule(src)):
+                    if (selector2 == self.getProfileAction(src)):
                         #FIXME: ??
                         logging.debug(f"Second Selector: {selector2}")
                         if not selector3:
@@ -978,7 +979,7 @@ class moduleRules:
         # Source
         apiSrc = self.readConfigSrc(indent, src, more)
         if not apiSrc.getClient():
-            msgLog = self.clientErrorMsg(indent, apiSRc, "Source",
+            msgLog = self.clientErrorMsg(indent, apiSrc, "Source",
                                       self.getProfileRule(src),
                                       self.getNickAction(src))
             #msgLog = (f"{indent} Source Error. No client for "
