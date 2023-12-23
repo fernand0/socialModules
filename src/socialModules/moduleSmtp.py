@@ -185,7 +185,7 @@ def main():
     print(f"Action: {action}")
     apiDst = rules.readConfigDst(indent, action, more, apiSrc)
     print(f"Client: {apiDst.client}")
-    apiDst.user = 'fernand0Pocket@elmundoesimperfecto.com'
+    apiDst.user = 'fernand0Enlaces@elmundoesimperfecto.com'
 
     testingPublishing = False
     if testingPublishing:
