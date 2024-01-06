@@ -65,7 +65,7 @@ class Content:
             self.user = account[1][1]
 
         msgLog = f"{self.indent} Configuring Service {self.service}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 2, 0)
 
         configFile = f"{CONFIGDIR}/.rss{self.service}"
         try:
@@ -75,7 +75,8 @@ class Content:
             msgLog = (f"Does file {configFile} exist?")
             self.report({self.indent}, msgLog, 0, '')
 
-        msgLog = (f"{self.indent} Getting keys for {self.service}: {account}")
+        msgLog = (f"{self.indent} Getting keys for {self.service}: {account}"
+                  f" {config}")
         logMsg(msgLog, 1, 0)
         keys = ''
         try:
