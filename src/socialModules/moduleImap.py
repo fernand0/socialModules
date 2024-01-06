@@ -68,6 +68,7 @@ class moduleImap(Content): #, Queue):
         self.user = config.get(self.user, "user")
         #FIXME: We are using the same value for configuration and the
         # identifier of the account return password
+        return password
 
     def setPassword(self, server, user):
         msgLog = (f"[{server},{user}] New account. Setting password")
