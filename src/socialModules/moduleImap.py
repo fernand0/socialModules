@@ -126,7 +126,12 @@ class moduleImap(Content): #, Queue):
         # Maybe we should check if this is needed
 
         #print(f"getChannel: {self.user}@{self.server}")
-        self.setClient(f"{self.user}@{self.server}")
+        try:
+            # Trying to avoid re-authentication. Are ther better ways?
+            self.getClient().noop()
+        except:
+            self.setClient(f"{self.user}")
+
         channel = self.getChannel()
         if not channel:
             self.setChannel()
