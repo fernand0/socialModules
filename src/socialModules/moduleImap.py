@@ -59,31 +59,15 @@ class moduleImap(Content): #, Queue):
     def getKeys(self, config):
         msgLog = (f"{self.indent} Getting keys")
         logMsg(msgLog, 2, 0)
-        pos = self.user.rfind('@')
-        if pos>=0:
-            self.user, self.server = self.user[:pos], self.user[pos+1:]
-        else:
-            msgLog = ("This shouldn't happen")
-            logMsg(msgLog, 3, 0)
-
-        # password = self.getPassword(self.user, self.server)
-        # Should this be the standard way for obtaining credentials?
-        key = f"{self.user}@{self.server}"
+        self.server = config.get(self.user, "server")
         try:
-            password = config.get(key, "token")
+            password = config.get(self.user, "token")
         except:
             msgLog = (f"No key for {key}")
             logMsg(msgLog, 3, 0)
-        # for key in config.keys():
-        #     # FIXME
-        #     if (key != 'DEFAULT') and ('user' in config.options(key)):
-        #         user = config.get(key, "user")
-        #         print(f"Config: {user}")
-        #         print(f"Config: {self.user}")
-        #         if self.user == user:
-        #             print("sí")
-        #             password = config.get(key, "token")
-        return password
+        self.user = config.get(self.user, "user")
+        #FIXME: We are using the same value for configuration and the
+        # identifier of the account return password
 
     def setPassword(self, server, user):
         msgLog = (f"[{server},{user}] New account. Setting password")
@@ -127,7 +111,11 @@ class moduleImap(Content): #, Queue):
         return client
 
     def setApiNew(self):
-        self.setClient(f"{self.user}@{self.server}")
+        try:
+            # Trying to avoid re-authentication. Are ther better ways?
+            self.getClient().noop()
+        except:
+            self.setClient(f"{self.user}")
         # print(f"getChannel: {self.getChannel()}")
         posts = self.listMessages(self.getClient(), self.getChannel())
         return posts
@@ -145,13 +133,12 @@ class moduleImap(Content): #, Queue):
         posts = self.listMessages(self.getClient(), channel)
         return posts
 
-
     def setApiPosts(self):
         # IMAP accounts get disconnected when time passes.
         # Maybe we should check if this is needed
 
-        #print(f"getChannel: {self.user}@{self.server}")
-        self.setClient(f"{self.user}@{self.server}")
+        logging.info(f"getChannel: {self.user}@{self.server}")
+        self.setClient(f"{self.user}")
         channel = self.getChannel()
         if not channel:
             self.setChannel()
@@ -991,7 +978,7 @@ class moduleImap(Content): #, Queue):
 
     def makeConnection(self, SERVER, USER, PASSWORD):
         msgLog = (f"{self.indent} Making connection {self.service}: "
-                  f"{self.user}")
+                  f"{USER} at {SERVER}")
         logMsg(msgLog, 2, 0)
         # IMAP client connection
         import ssl
@@ -1001,14 +988,14 @@ class moduleImap(Content): #, Queue):
 
         # context.protocol = ssl.PROTOCOL_TLS_SERVER
         try:
-            M = imaplib.IMAP4_SSL(SERVER, 993)
+            M = imaplib.IMAP4_SSL(SERVER, 993, ssl_context=context)
             # M = imaplib.IMAP4(SERVER)
             # M.starttls(ssl_context=context)
         except:
-            print("except", SERVER, USER)
-            print("except", sys.exc_info()[0])
-            print("except", sys.exc_info()[1])
-            print("except", sys.exc_info()[2])
+            logging.debug("{self.indent} except user, server", USER, SERVER)
+            logging.debug("{self.indent} except", sys.exc_info()[0])
+            logging.debug("{self.indent} except", sys.exc_info()[1])
+            logging.debug("{self.indent} except", sys.exc_info()[2])
             sys.exit()
         ok = ''
         while not ok:
@@ -1019,9 +1006,11 @@ class moduleImap(Content): #, Queue):
                 ok = 'ok'
             except Exception as ins:
                 # We will ask for the new password
-                print("except", SERVER, USER)
-                print("except", sys.exc_info()[0])
-                print("except", ins.args)
+                print(f"{self.indent} server", M.state)
+                print(f"{self.indent} except", SERVER, USER)
+                print(f"{self.indent} except {sys.exc_info()}")
+                print(f"{self.indent} except", ins.args)
+                sys.exit()
                 srvMsg = SERVER.split('.')[0]
                 usrMsg = USER.split('@')[0]
                 msgLog = ("[%s,%s] wrong password!"
@@ -1487,28 +1476,25 @@ def main():
     rules.checkRules()
 
     # Example:
-    #
     # ('imap', 'set', 'ftricas@elmundoesimperfecto.com', 'posts')
-    #
     # More:  More: ('imap', 'set', 'ftricas@elmundoesimperfecto.com', 'posts')
 
     indent = ""
-    # src, more = rules.selectRule('imap', 'ftricas@elmundo')
-    # apiSrc = rules.readConfigSrc(indent, src, more)
-    # print(f"Folders: {apiSrc.getChannels()}")
-    # # apiSrc.setChannel(more['search'])
-    key = ('imap', 'set', 'ftricas@elmundoesimperfecto.com@mail.your-server.de', 'posts')
-    print(rules.more[key])
-    apiSrc = rules.readConfigSrc("", key, rules.more[key])
+    selRules = rules.selectRule('imap', '')
+    print(f"Rules:")
+    for i, rul in enumerate(selRules):
+        print(f"{i}) {rul}")
+    iRul = input("Which rule? ")
+    src = selRules[int(iRul)]
+    apiSrc = rules.readConfigSrc("", src, rules.more[src])
 
-    testingPublishingDraft = True
+    testingPublishingDraft = False
     if testingPublishingDraft:
         apiSrc.setChannel('INBOX.Drafts')
         apiSrc.setPosts()
         if apiSrc.getPosts():
             post = apiSrc.getPosts()[0]
             apiSrc.publishApiDraft(post)
-
 
         return
 
@@ -1530,7 +1516,7 @@ def main():
         return
 
 
-    testingPosts = False
+    testingPosts = True
     if testingPosts:
         apiSrc.setChannel('INBOX')
         apiSrc.setPosts()

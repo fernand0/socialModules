@@ -37,8 +37,10 @@ class moduleSmtp(Content): #, Queue):
         self.password = keys[3]
 
         try:
+            import ssl
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS)
             client = smtplib.SMTP(self.server, self.port)
-            client.starttls()
+            client.starttls(context=context)
             client.login(self.user, self.password)
             logging.info("     Logging OK")
         except:
@@ -109,11 +111,6 @@ class moduleSmtp(Content): #, Queue):
                        f"Url: {link}\n"
                        f"{post}")
 
-            subtype = 'plain'
-
-            adj = MIMEText(htmlDoc, _subtype=subtype)
-            msg.attach(adj)
-
             if comment:
                 htmlDoc = comment
 
@@ -126,7 +123,7 @@ class moduleSmtp(Content): #, Queue):
                 ext = '.html'
 
                 adj.add_header('Content-Disposition',
-                                   f'attachment; filename="{name}{ext}"')
+                               f'attachment; filename="{name}{ext}"')
                 adj.add_header('Content-Type','application/octet-stream')
 
                 msg.attach(adj)
@@ -138,6 +135,12 @@ class moduleSmtp(Content): #, Queue):
 
                 adj = MIMEText(htmlDoc, _subtype=subtype)
                 msg.attach(adj)
+            else:
+                subtype = 'plain'
+
+                adj = MIMEText(htmlDoc, _subtype=subtype)
+                msg.attach(adj)
+
 
             if not self.client:
                 smtpsrv  = 'localhost'
