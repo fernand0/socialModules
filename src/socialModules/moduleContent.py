@@ -75,6 +75,8 @@ class Content:
             msgLog = (f"Does file {configFile} exist?")
             self.report({self.indent}, msgLog, 0, '')
 
+        msgLog = (f"{self.indent} Getting keys for {self.service}: {account}")
+        logMsg(msgLog, 1, 0)
         keys = ''
         try:
             keys = self.getKeys(config)
