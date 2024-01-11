@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "social_modules"
-version = "0.1.82"
+version = "0.2.0"
 authors = [
   { name="fernand0", email="fernand0@elmundoesimperfecto.com" },
 ]
@@ -17,6 +17,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [ 
+		'atproto',
 		'colorama',
 		'tweepy',
 		'facebook-sdk',
