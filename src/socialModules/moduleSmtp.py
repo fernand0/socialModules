@@ -30,14 +30,17 @@ class moduleSmtp(Content): #, Queue):
         return (SERVER, PORT, USER, PASSWORD,)
 
     def initApi(self, keys):
+        self.fromaddr = self.user
         self.server = keys[0]
         self.port = keys[1]
         self.user = keys[2]
         self.password = keys[3]
 
         try:
+            import ssl
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS)
             client = smtplib.SMTP(self.server, self.port)
-            client.starttls()
+            client.starttls(context=context)
             client.login(self.user, self.password)
             logging.info("     Logging OK")
         except:
@@ -83,7 +86,10 @@ class moduleSmtp(Content): #, Queue):
         try:
             destaddr = self.user
             toaddrs = self.user
-            fromaddr = self.user
+            if self.fromaddr:
+                fromaddr = self.fromaddr
+            else:
+                fromaddr = self.user
             theUrl = link
             if post:
                 subject = post.split('\n')[0]
@@ -101,27 +107,23 @@ class moduleSmtp(Content): #, Queue):
             msg['X-print'] = theUrl
             msg['Subject'] = subject
 
-            htmlDoc = (f"Title: {subject} <br />\n" 
-                       f"Url: {link} <br />\n" 
+            htmlDoc = (f"Title: {subject}\n"
+                       f"Url: {link}\n"
                        f"{post}")
-
-            subtype = 'plain'
-
-            adj = MIMEText(htmlDoc, _subtype=subtype)
-            msg.attach(adj)
 
             if comment:
                 htmlDoc = comment
-            
-                logging.info(f"{self.indent} Doc: {htmlDoc}")
-                
+
+                msgLog = (f"{self.indent} Doc: {htmlDoc}")
+                logMsg(msgLog, 2, 0)
+
                 adj = MIMEApplication(htmlDoc)
                 encoders.encode_base64(adj)
                 name = 'content'
                 ext = '.html'
 
                 adj.add_header('Content-Disposition',
-                                   f'attachment; filename="{name}{ext}"')
+                               f'attachment; filename="{name}{ext}"')
                 adj.add_header('Content-Type','application/octet-stream')
 
                 msg.attach(adj)
@@ -133,6 +135,12 @@ class moduleSmtp(Content): #, Queue):
 
                 adj = MIMEText(htmlDoc, _subtype=subtype)
                 msg.attach(adj)
+            else:
+                subtype = 'plain'
+
+                adj = MIMEText(htmlDoc, _subtype=subtype)
+                msg.attach(adj)
+
 
             if not self.client:
                 smtpsrv  = 'localhost'
@@ -142,8 +150,10 @@ class moduleSmtp(Content): #, Queue):
             else:
                 server = self.client
 
-            logging.info(f"From: {fromaddr} To:{toaddrs}")
-            logging.info(f"Msg: {msg.as_string()}")
+            msgLog = (f"From: {fromaddr} To:{toaddrs}")
+            logMsg(msgLog, 2, 0)
+            msgLog = (f"Msg: {msg.as_string()}")
+            logMsg(msgLog, 2, 0)
 
             res = server.sendmail(fromaddr, toaddrs, msg.as_string())
 
@@ -178,7 +188,7 @@ def main():
     print(f"Action: {action}")
     apiDst = rules.readConfigDst(indent, action, more, apiSrc)
     print(f"Client: {apiDst.client}")
-    apiDst.user = 'fernand0Pocket@elmundoesimperfecto.com'
+    apiDst.user = 'fernand0Enlaces@elmundoesimperfecto.com'
 
     testingPublishing = False
     if testingPublishing:

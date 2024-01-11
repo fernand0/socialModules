@@ -979,7 +979,7 @@ class moduleRules:
         # Source
         apiSrc = self.readConfigSrc(indent, src, more)
         if not apiSrc.getClient():
-            msgLog = self.clientErrorMsg(indent, apiSRc, "Source",
+            msgLog = self.clientErrorMsg(indent, apiSrc, "Source",
                                       self.getProfileRule(src),
                                       self.getNickAction(src))
             #msgLog = (f"{indent} Source Error. No client for "

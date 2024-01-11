@@ -58,20 +58,16 @@ class moduleRss(Content): #, Queue):
         logMsg(msgLog, 2, 0)
 
         posts = self.setApiPosts()
-        print(f"Posts: {posts}")
         search = self.getSearch()
         selPosts = []
         for post in posts:
             if search.startswith('!'):
-                print(f"Link: {self.getPostLink(post)}")
                 if not (search[1:] in self.getPostLink(post)):
                     selPosts.append(post)
             else:
-                print(f"Link: {self.getPostLink(post)}")
                 if search in  self.getPostLink(post):
                     selPosts.append(post)
             
-        print(f"Selected posts: {selPosts}")
         return selPosts
 
     def setApiPosts(self):
@@ -300,9 +296,12 @@ def main():
         apiSrc.setPostsType('search')
         apiSrc.setPosts()
         print(f"Posts: {apiSrc.getPosts()}")
+        for i, post in enumerate(apiSrc.getPosts()):
+            print(f"{i}) {apiSrc.getPostTitle(post)}")
+            print(f"     {apiSrc.getPostLink(post)}")
 
         return
-
+    
     testingGitHub = False
     if testingGitHub:
         rssFeed = 'https://github.com/fernand0'
