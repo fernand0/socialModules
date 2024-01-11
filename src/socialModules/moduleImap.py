@@ -148,6 +148,7 @@ class moduleImap(Content): #, Queue):
             # Trying to avoid re-authentication. Are ther better ways?
             self.getClient().noop()
         except:
+            logging.info(f"Re-identifying")
             self.setClient(f"{self.user}")
         channel = self.getChannel()
         if not channel:
