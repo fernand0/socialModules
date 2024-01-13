@@ -49,28 +49,6 @@ class moduleSmtp(Content): #, Queue):
 
         return client
 
-    # def setClient(self, user):
-    #     self.user = None
-    #     self.client = None
-    #     self.server = 'localhost'
-    #     self.port = 587
-    #     self.user = None
-    #     self.password = None
-
-    #     logging.info("     Connecting SMTP")
-    #     try:
-    #         self.user = user
-    #         try:
-    #             self.client = smtplib.SMTP()
-    #             self.client.connect(self.server, self.port)
-    #             logging.info("     Logging OK")
-    #         except:
-    #             logging.warning("SMTP authentication failed!")
-    #             logging.warning(f"Unexpected error: {sys.exc_info()[0]}")
-    #     except:
-    #         logging.warning("Account not configured")
-    #         api = None
-
     def publishApiPost(self, *args, **kwargs):
         comment = ""
         if args and len(args) == 3:

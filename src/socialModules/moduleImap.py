@@ -1413,7 +1413,8 @@ class moduleImap(Content): #, Queue):
         print(f"Msg: {post}")
         idMsg, msg = post
         res = self.sendMessage(msg)
-        self.moveMails(self.getClient(), idMsg, 'INBOX.Trash')
+        logging.info(f"Res: {res}")
+        self.moveMails(self.getClient(), idMsg, 'Trash')
         return res
 
     def publishApiPost(self, *args, **kwargs):
