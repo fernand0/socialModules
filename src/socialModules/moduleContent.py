@@ -996,7 +996,7 @@ class Content:
                     reply = method(api=api, post=post)
                 else:
                     logging.debug(f"Calling method 2")
-                    reply = method(post)
+                    reply = method(api=api, post=post)
 
             reply = self.processReply(reply)
         except:
