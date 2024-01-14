@@ -214,7 +214,6 @@ class moduleTwitter(Content): #, Queue):
         return res
 
     def publishApiPost(self, *args, **kwargs):
-        logging.debug(f"Args: {args} kwargs: {kwargs}")
         if args and len(args) == 3 and args[0]:
             # logging.info(f"Tittt: args: {args}")
             title, link, comment = args

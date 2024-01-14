@@ -123,6 +123,7 @@ class moduleSlack(Content): #, Queue):
         return res
 
     def publishApiPost(self, *args, **kwargs):
+        logging.debug(f"Args: {args} kwargs: {kwargs}")
         if args and len(args) == 3:
             title, link, comment = args
         if kwargs:
