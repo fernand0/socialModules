@@ -127,6 +127,13 @@ class moduleSlack(Content): #, Queue):
             title, link, comment = args
         if kwargs:
             more = kwargs
+            post = more.get('post', '')
+            api = more.get('api', '')
+            title = api.getPostTitle(post)
+            link = api.getPostLink(post)
+            comment = api.getPostComment(title)
+
+
         chan = self.getChannel()
         if not chan:
             self.setChannel()
