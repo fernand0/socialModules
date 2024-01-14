@@ -956,7 +956,9 @@ class Content:
             #     # print(f"Title: {title}\nLink: {link}")
             return
         if more:
-            # print(f"    Publishing in {self.service}: {more}")
+            msgLog = (f"{self.indent} Service {self.service} publishing post "
+                      f"with more: {more}")
+            logMsg(msgLog, 2, 0)
             # if 'tags' in more:
             #     print(f"    Publishing in {self.service}: {type(more['tags'])}")
 
@@ -971,22 +973,30 @@ class Content:
         reply = 'Fail!'
         try:
             nameMethod = 'Post'
+            
             if (hasattr(self, 'getPostsType')
                     and (self.getPostsType())
                     and (hasattr(self,
                         f"publishApi{self.getPostsType().capitalize()}"))):
                 nameMethod = self.getPostsType().capitalize()
+            else:
+                logging.debug("nameMethod no")
 
             method = getattr(self, f"publishApi{nameMethod}")
+            logging.debug(f"Method: {method}")
+            logging.debug(f"Api: {api}")
 
             if listPosts:
                 for post in listPosts:
                     reply = method(title, link, comment, api=api, post=post)
             else:
+                logging.debug(f"no listposts")
                 if api and post:
-                    reply = method(title, link, comment, api=api, post=post)
+                    logging.debug(f"Calling method with post: {post}")
+                    reply = method(post)
                 else:
-                    reply = method(title, link, comment)
+                    logging.debug(f"Calling method 2")
+                    reply = method(post)
 
             reply = self.processReply(reply)
         except:
@@ -1195,33 +1205,6 @@ class Content:
     def getMax(self):
         maxVal = 1
         return maxVal
-
-    # def getCache(self):
-    #     return self.cache
-
-    # def setCache(self):
-    #     import moduleCache
-
-    #     # https://github.com/fernand0/scripts/blob/master/moduleCache.py
-    #     self.cache = {}
-    #     for service in self.getSocialNetworks():
-    #         if (
-    #             self.getProgram()
-    #             and isinstance(self.getProgram(), list)
-    #             and service in self.getProgram()
-    #         ) or (
-    #             self.getProgram()
-    #             and isinstance(self.getProgram(), str)
-    #             and (service[0] in self.getProgram())
-    #         ):
-
-    #             nick = self.getSocialNetworks()[service]
-    #             cache = moduleCache.moduleCache()
-    #             param = (self.url, (service, nick))
-    #             cache.setClient(param)
-    #             cache.setUrl(self.getUrl())
-    #             cache.setPosts()
-    #             self.cache[(service, nick)] = cache
 
     def getProgram(self):
         return self.program

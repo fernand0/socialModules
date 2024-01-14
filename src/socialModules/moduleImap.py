@@ -132,10 +132,8 @@ class moduleImap(Content): #, Queue):
         except:
             self.setClient(f"{self.user}")
 
+        self.setChannel('Drafts')
         channel = self.getChannel()
-        if not channel:
-            self.setChannel('Drafts')
-            channel = self.getChannel()
         posts = self.listMessages(self.getClient(), channel)
         return posts
 
@@ -1195,6 +1193,7 @@ class moduleImap(Content): #, Queue):
         logMsg(msgLog, 2, 0)
         (status, resultMsg) = M.copy(msgs, folder)
         res = status
+        logging.debug(f"Res status: {res}")
         if status == 'OK':
             # If the list of messages is too long it won't work
             flag = '\\Deleted'
@@ -1205,7 +1204,7 @@ class moduleImap(Content): #, Queue):
             else:
                 print(f"deleting! {result}")
         else:
-            print(f"Fail copying")
+            logging.debug(f"Fail copying")
             res = "Fail!"
         #print(f"Expunge: {M.expunge()}")
         # msgs contains the index of the message, we can retrieve/move them
@@ -1391,16 +1390,19 @@ class moduleImap(Content): #, Queue):
 
     def sendMessage(self, msg):
         smtpsrv  = 'localhost'
-        print(f"Msg: {msg}")
-        fromaddr = msg['from']
+        logging.debug(f"Msg (sendMessage): {type(msg)}")
+        fromaddr = msg.get('from')
+        logging.debug(f"Msg (sendMessage): {fromaddr}")
         toaddrs = msg['to']
+        logging.debug(f"Msg (sendMessage): {fromaddr}")
         res = None
         try:
+            #FIXME: we should use moduleSmtp
             server = smtplib.SMTP(smtpsrv)
             server.connect(smtpsrv, 587)
             server.starttls()
 
-            res = server.sendmail(fromaddr, toaddrs, msg.as_string())
+            res = server.send_message(msg)
             server.quit()
         except:
             res = self.report(self.service, '', '', sys.exc_info())
@@ -1409,12 +1411,15 @@ class moduleImap(Content): #, Queue):
             res = 'OK'
         return res
 
+    def publishApiDrafts(self, post):
+        return self.publishApiDraft(post)
+
     def publishApiDraft(self, post):
-        print(f"Msg: {post}")
         idMsg, msg = post
         res = self.sendMessage(msg)
         logging.info(f"Res: {res}")
-        self.moveMails(self.getClient(), idMsg, 'Trash')
+        resMove = self.moveMails(self.getClient(), idMsg, 'Trash')
+        logging.info(f"Res move: {resMove}")
         return res
 
     def publishApiPost(self, *args, **kwargs):
@@ -1532,10 +1537,18 @@ def main():
     if testingPosts:
         apiSrc.setChannel('INBOX')
         apiSrc.setPosts()
-        for post in apiSrc.getPosts():
+        for i, post in enumerate(apiSrc.getPosts()):
             # print(f"Post: {post}")
-            print(f"Title: {apiSrc.getPostTitle(post)}")
-            print(f"Content: {apiSrc.getPostContent(post)}")
+            print(f"{i}) Title: {apiSrc.getPostTitle(post)}")
+            # print(f"Content: {apiSrc.getPostContent(post)}")
+
+        selPost = input("Select one: ")
+        if selPost and selPost.isdigit() and (int(selPost)<=i):
+            print(f"{i}) Title: "
+                  f"{apiSrc.getPostTitle(apiSrc.getPosts()[int(selPost)])}")
+            input("Send?")
+            res = apiSrc.publishPost(api = apiSrc, post = post)
+            print(f"Res: {res}")
 
         return
 
