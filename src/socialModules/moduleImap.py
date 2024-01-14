@@ -1472,15 +1472,15 @@ class moduleImap(Content): #, Queue):
                                    'attachment; filename="%s"' % name+ext)
 
                 msg.attach(adj)
-                msg.attach(MIMEText(f"[{subject}]({theUrl})\n\nURL: {theUrl}\n"))
+                msg.attach(MIMEText(f"[{subject}]({theUrl})\n\n"
+                                    f"URL: {theUrl}\n"))
 
             self.sendMessage(msg)
-            res = 'OK'
+            res = 'OK. Published!'
         except:
             res = self.report(self.service, '', '', sys.exc_info())
 
         return(f"Res: {res}")
-
 
 def main():
 
