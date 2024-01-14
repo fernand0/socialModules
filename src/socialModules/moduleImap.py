@@ -1411,10 +1411,15 @@ class moduleImap(Content): #, Queue):
             res = 'OK'
         return res
 
-    def publishApiDrafts(self, post):
-        return self.publishApiDraft(post)
+    def publishApiDrafts(self, *args, **kwargs):
+        return self.publishApiDraft(*args, **kwargs)
 
-    def publishApiDraft(self, post):
+    def publishApiDraft(self, *args, **kwargs):
+        logging.debug(f"Args: {args} Kwargs: {kwargs}")
+        if kwargs:
+            post = kwargs.get('post', '')
+            api = kwargs.get('api', '')
+        logging.debug(f"Post: {post} Api: {api}")
         idMsg, msg = post
         res = self.sendMessage(msg)
         logging.info(f"Res: {res}")

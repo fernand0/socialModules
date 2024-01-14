@@ -993,7 +993,7 @@ class Content:
                 logging.debug(f"no listposts")
                 if api and post:
                     logging.debug(f"Calling method with post: {post}")
-                    reply = method(post=post)
+                    reply = method(api=api, post=post)
                 else:
                     logging.debug(f"Calling method 2")
                     reply = method(post)
