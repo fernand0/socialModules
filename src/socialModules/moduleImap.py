@@ -1428,7 +1428,7 @@ class moduleImap(Content): #, Queue):
             # logging.info(f"Tittt: args: {args}")
             post, link, comment = args
         if kwargs:
-            # logging.debug(f"Tittt: kwargs: {kwargs}")
+            logging.debug(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             # logging.debug(f"More: {more}")
             # FIXME: We need to do something here
