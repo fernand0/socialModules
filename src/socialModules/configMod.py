@@ -94,7 +94,7 @@ def getLastLink(fileName, indent=''):
     timeLast = 0
     msgLog = checkFile(fileName)
     if not "OK" in msgLog:
-        self.report(msgLog, '', '', '')
+        logging.info(msgLog)
     else:
         with open(fileName, "rb") as f:
             linkLast = f.read().decode().split()  # Last published

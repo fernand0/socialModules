@@ -88,6 +88,7 @@ class moduleForum(Content): #, Queue):
         logging.debug(f"Soup: {soup}")
         logging.debug(f"Selector: {selector}")
         if hasattr(self, "selectorby") and (self.selectorby == "a"):
+            logging.debug(f"Selector by: {self.selectorby}")
             links = soup.find_all("a", {"class": selector})
         else:
             links = soup.find_all(class_=selector)
@@ -161,7 +162,11 @@ class moduleForum(Content): #, Queue):
                     if ids:
                         idPost = ids[0]
                     else:
-                        idPost = None
+                        ids = [int(s) for s in idPost.split('-') if s.isdigit()]
+                        if ids:
+                            idPost = ids[0]
+                        else:
+                            idPost = None
 
         logging.debug(f"Id: {idPost}")
         return idPost
@@ -180,9 +185,16 @@ class moduleForum(Content): #, Queue):
         posts = {}
         for i, forum in enumerate(forums):
             logging.debug("Forum html: %s" % forum)
+            logging.debug("Forum name: %s" % forum.name)
             if forum.name != "a":
                 # It is inside some other tag
-                forum = forum.contents[0]
+                logging.debug("Forum contents: %s" % forum.contents)
+                if forum.contents[0].startswith('<'):
+                    forum = forum.contents[0]
+                else:
+                    forum = forum.contents[1]
+
+                logging.debug("Forum in html: %s" % forum)
             text = forum.text
             logging.debug(f"Text: {text}")
             if ((text.lower() in self.selected)
