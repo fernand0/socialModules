@@ -3,6 +3,7 @@ import logging
 import time
 
 import requests
+import bs4
 from bs4 import BeautifulSoup
 
 from socialModules.configMod import *
@@ -188,8 +189,8 @@ class moduleForum(Content): #, Queue):
             logging.debug("Forum name: %s" % forum.name)
             if forum.name != "a":
                 # It is inside some other tag
-                logging.debug("Forum contents: %s" % forum.contents)
-                if forum.contents[0].startswith('<'):
+                logging.debug(f"Forum contents:{forum.contents}")
+                if isinstance(forum.contents[0], bs4.element.Tag):
                     forum = forum.contents[0]
                 else:
                     forum = forum.contents[1]
@@ -268,8 +269,8 @@ def main():
     )
 
     forums = [
-         'https://cactuspro.com/forum/',
          "http://foro.infojardin.com/",
+         'https://cactuspro.com/forum/',
          'https://garden.org/forums/'
          'http://www.agaveville.org/index.php'
          "https://www.cactuseros.com/foro/index.php",

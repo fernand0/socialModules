@@ -926,6 +926,7 @@ class Content:
         return reply
 
     def publishPost(self, *args, **more):
+        logging.debug(f"Args: {args} More: {more}")
         api = ''
         post = ''
         # Do we need these?
@@ -938,14 +939,15 @@ class Content:
             title = args[0]
             link = args[1]
             comment = args[2]
-            msgLog = (f"{self.indent} Service {self.service} publishing post "
-                      f"{title}, {link} with comment: {comment}")
+            msgLog = (f"{self.indent} Service {self.service} "
+                      f"publishing post {title}, {link} with "
+                      f"comment: {comment}")
             logMsg(msgLog, 2, 0)
         elif len(args) == 1:
             # apiSrc= args[0]
             listPosts = args#[1]
-            msgLog = (f"{self.indent} Service {self.service} publishing post "
-                      f"{listPosts}")
+            msgLog = (f"{self.indent} Service {self.service} publishing "
+                      f"post {listPosts}")
             logMsg(msgLog, 2, 0)
             print(f"    Publishing in {self.service}: posts {listPosts}")
             # for post in listPosts:
