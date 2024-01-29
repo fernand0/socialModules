@@ -155,14 +155,17 @@ def updateLastLink(url, link, socialNetwork=()):
     msgLog = (f"fileName: {fileName}")
     logMsg(msgLog, 2, 0)
     msgLog = checkFile(fileName)
-    if 'OK' in msgLog:
-        with open(fileName, "w") as f:
-            if isinstance(link, bytes):
-                f.write(link.decode())
-            elif isinstance(link, str):
-                f.write(link)
-            else:
-                f.write(link[0])
+    logMsg(msgLog, 2, 0)
+    if not 'OK' in msgLog:
+        msgLog = (f"fileName: {fileName} does not exist, I'll create it")
+        logMsg(msgLog, 2, 0)
+    with open(fileName, "w") as f:
+        if isinstance(link, bytes):
+            f.write(link.decode())
+        elif isinstance(link, str):
+            f.write(link)
+        else:
+            f.write(link[0])
 
 # def resizeImage(imgUrl):
 #     print(imgUrl)

@@ -104,7 +104,8 @@ class moduleSlack(Content): #, Queue):
         theChannel = self.getChannel()
         self.getClient().token = self.slack_token
         data = {"limit": 1000, "channel": theChannel}
-        history = self.getClient().api_call("conversations.history", data=data)
+        history = self.getClient().api_call("conversations.history", 
+                                            data=data)
         try:
             posts = history["messages"]
         except:
@@ -357,7 +358,7 @@ def main():
         logging.info(f"Name: {apiSrc.getName()}")
         logging.info(f"Nick: {apiSrc.getNick()}")
 
-    testingPublishing = True
+    testingPublishing = False
     if testingPublishing:
         links  = [
 'https://til.simonwillison.net/python/inlining-binary-data',
@@ -408,6 +409,7 @@ def main():
         print("Testing posts")
         apiSrc.setPostsType("posts")
         apiSrc.setChannel('links')
+        apiSrc.setChannel('tavern-of-the-bots')
         apiSrc.setPosts()
 
         print("Testing title and link")
