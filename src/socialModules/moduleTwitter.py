@@ -113,18 +113,18 @@ class moduleTwitter(Content): #, Queue):
         logMsg(msgLog, 1, 1)
         origReply = reply
         tweet = ''
-        if hasattr(origReply, 'errors') and not origReply.errors:
-            if not ('Fail!' in reply):
-                idPost = self.getPostId(reply)
-                title = self.getPostTitle(reply)
-                res = (f"{title}",
-                       f"https://twitter.com/{self.user}/status/{idPost}")
-            else:
-                res = reply
-                if (('You have already retweeted' in res)
-                    or ('Status is a duplicate.' in res)
-                    or ('not allowed to create a Tweet with duplicate' in res)):
-                    res = res + ' SAVELINK'
+        #if hasattr(origReply, 'errors') and not origReply.errors:
+        if not ('Fail!' in reply):
+            idPost = self.getPostId(reply)
+            title = self.getPostTitle(reply)
+            res = (f"{title}",
+                   f"https://twitter.com/{self.user}/status/{idPost}")
+        else:
+            res = reply
+            if (('You have already retweeted' in res)
+                or ('Status is a duplicate.' in res)
+                or ('not allowed to create a Tweet with duplicate' in res)):
+                res = res + ' SAVELINK'
         # import socialModules.moduleCache
         # apiTmp = getApi('Cache', (self.service,('a','b',self.service, self.user), f'https://twitter.com/{self.user}'))
         # # Cache_posts_https---twitter.com-reflexioneseir_Cache__Twitter_posts_fernand0_twitter.queue does not exist.
@@ -384,9 +384,9 @@ class moduleTwitter(Content): #, Queue):
             # elif ('url' in post['user']['entities']['url']
             #       and (post['user']['entities']['url']['urls'])):
             #     result = post['user']['entities']['url']['urls'][0]['expanded_url']
-            elif ('media' in entities):
-                if (entities['media']):
-                    result = entities['media'][0]['expanded_url']
+        elif ('media' in entities):
+            if (entities['media']):
+                result = entities['media'][0]['expanded_url']
 
         if not result:
             result = self.getPostUrl(post)
@@ -474,36 +474,37 @@ def main():
         link = "https://twitter.com/fernand0Test"
         res = apiSrc.publishPost(title, link, '')
         print(f"Publishing {res}")
-        tweet = res.split(' ')[-1]
-        idTweet = tweet.split('/')[-1]
+        if not 'Fail' in res:
+            tweet = res[1]
+            idTweet = tweet.split('/')[-1]
 
-        testingCache = True
-        if testingCache:
-            key = ('twitter', 'set', 'fernand0Test', 'posts')
-            apiSrc = rules.readConfigSrc(indent, key, None)
+            testingCache = True
+            if testingCache:
+                key = ('twitter', 'set', 'fernand0Test', 'posts')
+                apiSrc = rules.readConfigSrc(indent, key, None)
 
-            dstKey = ('direct', 'post', 'twitter', 'fernand0')
-            dst = ('cache', 'twitter', dstKey, 'http://twitter.com/fernand0Test')
-            more = ""
+                dstKey = ('direct', 'post', 'twitter', 'fernand0')
+                dst = ('cache', 'twitter', dstKey, 'https://twitter.com/fernand0Test')
+                more = ""
 
-            apiDst = rules.readConfigDst(indent, dst, more, apiSrc)
+                apiDst = rules.readConfigDst(indent, dst, more, apiSrc)
 
-            # post = type('',(object,),{"data":
-            #                         {'text': title, 'entities':
-            #                          {'urls': [{'expanded_url': tweet}]}}
-            #                         })()
-            # post =
+                # post = type('',(object,),{"data":
+                #                         {'text': title, 'entities':
+                #                          {'urls': [{'expanded_url': tweet}]}}
+                #                         })()
+                # post =
 
-            post = myTweet()
-            post.data = {'text': title, 'id': idTweet}
-            post.entities = {'urls': [{'expanded_url': tweet}]}
+                post = myTweet()
+                post.data = {'text': title, 'id': idTweet}
+                post.entities = {'urls': [{'expanded_url': tweet}]}
 
-            res = apiDst.publishPost(api = apiSrc, post=post)
-            # apiDst.publishPost(title, tweet, '')
+                res = apiDst.publishPost(api = apiSrc, post=post)
+                # apiDst.publishPost(title, tweet, '')
 
-        delete = input(f"Delete ({idTweet})? ")
-        if delete:
-            print(f"Deleting: {apiSrc.deleteApiPosts(idTweet)}")
+            delete = input(f"Delete ({idTweet})? ")
+            if delete:
+                print(f"Deleting: {apiSrc.deleteApiPosts(idTweet)}")
 
         return
 
