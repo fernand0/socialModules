@@ -920,13 +920,13 @@ class Content:
                     msgLog = f"{self.indent}Res: {res}"
                     reply = self.processReply(res)
             else:
-                reply = "Fail! No posts available"
+                reply = "No posts available"
         except:
             reply = self.report(self.service, post, idPost, sys.exc_info())
         return reply
 
     def publishPost(self, *args, **more):
-        logging.debug(f"Args: {args} More: {more}")
+        logging.debug(f"{self.indent} Args: {args} More: {more}")
         api = ''
         post = ''
         # Do we need these?
@@ -982,22 +982,23 @@ class Content:
                         f"publishApi{self.getPostsType().capitalize()}"))):
                 nameMethod = self.getPostsType().capitalize()
             else:
-                logging.debug("nameMethod no")
+                logging.debug(f"{self.indent} nameMethod no")
 
             method = getattr(self, f"publishApi{nameMethod}")
-            logging.debug(f"Method: {method}")
-            logging.debug(f"Api: {api}")
+            logging.debug(f"{self.indent} nMethod: {method}")
+            logging.debug(f"{self.indent} nApi: {api}")
 
             if listPosts:
                 for post in listPosts:
                     reply = method(title, link, comment, api=api, post=post)
             else:
-                logging.debug(f"no listposts")
+                logging.debug(f"{self.indent} no listposts")
                 if api and post:
-                    logging.debug(f"Calling method with post: {post}")
+                    logging.debug(f"{self.indent} Calling method "
+                                  f"with post: {post}")
                     reply = method(api=api, post=post)
                 else:
-                    logging.debug(f"Calling method 2")
+                    logging.debug(f"{self.indent} Calling method 2")
                     reply = method(title, link, comment)
 
             reply = self.processReply(reply)
@@ -1378,8 +1379,8 @@ class Content:
                logMsg(f"{self.indent} Service {self.service} "
                       f"Data error: {data}", 2, 0)
                if isinstance(data,list) or isinstance(data,tuple): 
-                   msg.append(f"Unexpected error: {data[0]}") 
-                   msg.append(f"Unexpected error: {data[1]}")
+                   for line in data: 
+                       msg.append(f"Unexpected error: {line}") 
                else:
                    msg.append(f"Unexpected error: {data}") 
         res = ""
@@ -1388,7 +1389,7 @@ class Content:
                       f"{line}")
             logMsg(msgLog, 3, 1)
             res = f"{res}{line}\n"
-            sys.stderr.write(f"{msgLog}\n")
+            sys.stderr.write(f"Error: {msgLog}\n")
         return f"Fail! {res}"
         # print("----Unexpected error: %s"% data[2])
 

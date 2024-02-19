@@ -175,7 +175,7 @@ class moduleTumblr(Content): #, Queue):
             if post:
                 reply = self.publishApiPost(api=apiSrc, post=post)
             else:
-                reply = "Fail! No posts available"
+                reply = "No posts available"
         except:
             reply = self.report(self.service, post, apiSrc, sys.exc_info())
 

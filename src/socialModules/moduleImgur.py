@@ -188,7 +188,7 @@ class moduleImgur(Content): #, Queue):
                 res = self.publishApiPost(api=apiSrc, post=post)
                 reply = self.processReply(res)
             else:
-                reply = "Fail! No posts available"
+                reply = "No posts available"
         except:
             reply = self.report(self.service, apiSrc, sys.exc_info())
 

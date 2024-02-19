@@ -64,9 +64,11 @@ class moduleSmtp(Content): #, Queue):
         try:
             destaddr = self.user
             toaddrs = self.user
-            if self.fromaddr:
+            if hasattr(self, 'fromaddr') and self.fromaddr:
+                logging.info(f"{self.indent} 1")
                 fromaddr = self.fromaddr
             else:
+                logging.info(f"{self.indent} 2")
                 fromaddr = self.user
             theUrl = link
             if post:
@@ -85,9 +87,11 @@ class moduleSmtp(Content): #, Queue):
             msg['X-print'] = theUrl
             msg['Subject'] = subject
 
-            htmlDoc = (f"Title: {subject}\n"
+            htmlDoc = (f"<html><body>"
+                       f"Title: {subject}\n"
                        f"Url: {link}\n"
-                       f"{post}")
+                       f"{post}"
+                       f"</body></html>\n")
 
             if comment:
                 htmlDoc = comment
@@ -95,29 +99,41 @@ class moduleSmtp(Content): #, Queue):
                 msgLog = (f"{self.indent} Doc: {htmlDoc}")
                 logMsg(msgLog, 2, 0)
 
-                adj = MIMEApplication(htmlDoc)
-                encoders.encode_base64(adj)
-                name = 'content'
-                ext = '.html'
 
-                adj.add_header('Content-Disposition',
-                               f'attachment; filename="{name}{ext}"')
-                adj.add_header('Content-Type','application/octet-stream')
-
-                msg.attach(adj)
-
-                if htmlDoc.startswith('<'):
-                    subtype = 'html'
-                else:
-                    subtype = 'plain'
-
-                adj = MIMEText(htmlDoc, _subtype=subtype)
-                msg.attach(adj)
+            if htmlDoc.startswith('<'):
+                subtype = 'html'
             else:
                 subtype = 'plain'
 
-                adj = MIMEText(htmlDoc, _subtype=subtype)
-                msg.attach(adj)
+            adj = MIMEText(htmlDoc, _subtype=subtype)
+            msg.attach(adj)
+
+            #     adj = MIMEApplication(htmlDoc)
+            #     encoders.encode_base64(adj)
+            #     name = 'content'
+            #     ext = '.html'
+
+            #     adj.add_header('Content-Disposition',
+            #                    f'attachment; filename="{name}{ext}"')
+            #     adj.add_header('Content-Type','application/octet-stream')
+
+            #     msg.attach(adj)
+
+            #     if htmlDoc.startswith('<'):
+            #         subtype = 'html'
+            #     else:
+            #         subtype = 'plain'
+
+            #     adj = MIMEText(htmlDoc, _subtype=subtype)
+            #     msg.attach(adj)
+            # else:
+            #     if htmlDoc.startswith('<'):
+            #         subtype = 'html'
+            #     else:
+            #         subtype = 'plain'
+
+            #     adj = MIMEText(htmlDoc, _subtype=subtype)
+            #     msg.attach(adj)
 
 
             if not self.client:
@@ -127,13 +143,24 @@ class moduleSmtp(Content): #, Queue):
                 server.starttls()
             else:
                 server = self.client
+                respN = server.noop()
+                if not (respN == "250"):
+                    import ssl
+                    context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+                    server = smtplib.SMTP(self.server, self.port)
+                    server.starttls(context=context)
+                    server.login(self.user, self.password)
 
             msgLog = (f"From: {fromaddr} To:{toaddrs}")
             logMsg(msgLog, 2, 0)
             msgLog = (f"Msg: {msg.as_string()}")
             logMsg(msgLog, 2, 0)
 
-            res = server.sendmail(fromaddr, toaddrs, msg.as_string())
+            try:
+                res = server.sendmail(fromaddr, toaddrs, msg.as_string())
+            except:
+                res = self.report(self.service, 
+                                    f"{post} {link}", post, sys.exc_info())
 
             if not res:
                 res = "OK"
@@ -157,8 +184,11 @@ def main():
     indent = ""
     print(f"Rules: {rules}")
     srcs = rules.selectRule('cache', '')
-    print(f"Srcs: {srcs}")
-    src = srcs[5]
+    for i, src in enumerate(srcs): 
+        print(f"{i}) Src: {src}")
+
+    sel = input("Which one? ")
+    src = srcs[int(sel)]
     print(f"Rule: {src}")
     more = None
     apiSrc = rules.readConfigSrc(indent, src, more)
@@ -174,28 +204,23 @@ def main():
 
         return
 
-    testingHtml = True
+    testingHtml = False
     if testingHtml:
         msgHtml = '<body><html><p>Cuadro de mandos<hr></hr></p><p><img alt="Cuadro de mandos" height="240" src="https://live.staticflickr.com/65535/53057264758_272560e5d9_m.jpg" width="160"/></p><p>https://www.flickr.com/photos/fernand0/53057264758/</p></body></html>'
         apiDst.publishPost('Mensaje', 'https://www.unizar.es/', msgHtml)
 
         return
 
-    import socialModules.moduleSmtp
 
-    apiSrc = socialModules.moduleSmtp.moduleSmtp()
-
-    apiSrc.setClient('fernand0')
-
-    url = 'https://avecesunafoto.wordpress.com/2017/07/19/maria-fernandez-guajardo-consejos-practicos-de-una-feminista-zaragozana-en-el-silicon-valley/'
-    import requests
-    req = requests.get(url)
-    import time
-    apiSrc.publishPost(req.text, 'Test {}'.format(time.asctime()), 'fernand0@elmundoesimperfecto.com')
-    apiSrc.publishPost(req.text, 'Test {}'.format(time.asctime()),
-                        'fernand0elmundoesimperfecto.com',
-                        'fernand0movilizado@gmail.com')
-
+    testingWeb = True
+    if testingWeb:
+        url = 'https://avecesunafoto.wordpress.com/2017/07/19/maria-fernandez-guajardo-consejos-practicos-de-una-feminista-zaragozana-en-el-silicon-valley/'
+        import requests
+        req = requests.get(url)
+        import time
+        myTime = time.asctime()
+        print(f"Res1: {apiDst.publishPost(req.text, myTime ,'')}")
+        print(f"Res2: {apiDst.publishPost(req.text, myTime, req.text)}")
 
 
 if __name__ == '__main__':

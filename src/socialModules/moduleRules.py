@@ -1077,8 +1077,9 @@ class moduleRules:
 
                 for i in range(num):
                     time.sleep(tSleep)
-                    res = self.executePublishAction(indent, msgAction, apiSrc,
-                                                    apiDst, simmulate,
+                    res = self.executePublishAction(indent, msgAction, 
+                                                    apiSrc, apiDst, 
+                                                    simmulate,
                                                     nextPost, pos)
             elif (diffTime<=hours):
                 msgLog = (f"{indent} Not enough time passed. "
@@ -1303,7 +1304,7 @@ class moduleRules:
 
 def main():
 
-    mode = logging.DEBUG
+    mode = logging.INFO
     logging.basicConfig(
         filename=LOGDIR + "/rssSocial.log",
         # filename=LOGDIR + "/rssSocial.log",

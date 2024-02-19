@@ -687,7 +687,7 @@ class moduleCache(Content): #,Queue):
                 res = self.publishApiPost(api=self, post=post)
                 reply = self.processReply(res)
             else:
-                reply = "Fail! No posts available"
+                reply = "No posts available"
         except:
             reply = self.report(self.service, apiSrc, post, sys.exc_info())
 

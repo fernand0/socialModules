@@ -114,7 +114,7 @@ class moduleBlsk(Content): #, Queue):
         res = 'Fail!'
         # post = post[:(240 - (len(link) + 1))]
         if link:
-            title = title[:(300 - (23 + 1))]
+            title = title[:(300 - (len(link)+1))]
 
             facets =  []
             facets.append(models.AppBskyRichtextFacet.Main( 
@@ -127,22 +127,38 @@ class moduleBlsk(Content): #, Queue):
 
             title = title+" " + link
 
-            msgLog = f"{self.indent}Publishing {title} "
+            msgLog = f"{self.indent}Publishing {title} ({len(title)}"
             logMsg(msgLog, 2, 0) 
             client = self.api
-            res = client.com.atproto.repo.create_record( 
-                     models.ComAtprotoRepoCreateRecord.Data(
+            try:
+                res = client.com.atproto.repo.create_record(
+                        models.ComAtprotoRepoCreateRecord.Data(
                          repo=client.me.did, 
                          collection=models.ids.AppBskyFeedPost, 
                          record=models.AppBskyFeedPost.Main(
                              created_at=client.get_current_time_iso(), 
                              text=title, facets=facets),
                          )
-                                                         )
- 
+                        )
+            except: 
+                res = self.report(self.service, 
+                                    f"{title} {link}", title, sys.exc_info())
+
             msgLog = f"{self.indent}Res: {res} "
             logMsg(msgLog, 2, 0)
         return res
+
+    def processReply(self, reply):
+        res = reply
+        if 'success=False' in reply:
+            pos = reply.find("message='")
+            if pos > 0:
+                pos2 = reply.find("'", pos+10)
+                resMsg = reply[pos+len("message='"):pos2]
+                res = reply.split('\n')[0]
+                res =  f"{res} {resMsg}"
+
+        return (res)
 
     def deleteApiPosts(self, idPost): 
         res = None
@@ -187,8 +203,9 @@ def main():
         more = None
         apiDst = rules.readConfigDst(indent, keyD, more, apiSrc)
 
-        title = "Test"
-        link = "https://twitter.com/fernand0Test"
+        # Example of long post
+        title = "'The situation has become appalling': fake scientific papers push research credibility to crisis point |  Peer review and scientific publishing |  The Guardian"
+        link = "https://www.theguardian.com/science/2024/feb/03/the-situation-has-become-appalling-fake-scientific-papers-push-research-credibility-to-crisis-point"
         print(f"Publishing {apiDst.publishPost(title, link, '')}")
         delete = input("Delete (write the id)? ")
         if delete:
