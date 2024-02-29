@@ -1001,6 +1001,7 @@ class Content:
                     logging.debug(f"{self.indent} Calling method 2")
                     reply = method(title, link, comment)
 
+            logging.info(f"Reply publish: {reply}")
             reply = self.processReply(reply)
         except:
             reply = self.report(self.service, title, link, sys.exc_info())

@@ -688,8 +688,10 @@ class moduleRules:
         return res
 
     def clientErrorMsg(self, indent, api, typeC, rule, action):
-        msgLog = (f"{indent} {typeC} Error. "
-                      f"No client for {rule} ({action})")
+        msgLog = ""
+        if not 'rss' in rule:
+            msgLog = (f"{indent} {typeC} Error. "
+                      f"No client for {rule} ({action}). End.")
         return f"{msgLog}"
 
     def readConfigSrc(self, indent, src, more):
@@ -985,7 +987,8 @@ class moduleRules:
             #msgLog = (f"{indent} Source Error. No client for "
             #          f"{self.getProfileRule(src)} "
             #          f"({self.getNickAction(src)})")
-            logMsg(msgLog, 3, 1)
+            if msgLog:
+                logMsg(msgLog, 3, 1)
             return f"{msgLog} End."
 
         if apiSrc.getName():
@@ -1020,7 +1023,9 @@ class moduleRules:
                                       self.getNickAction(src))
             # msgLog = (f"{indent} Destination Error. No client for "
             #           f"{self.getProfileRule(action)}")
-            logMsg(msgLog, 3, 1)
+            if msgLog:
+                logMsg(msgLog, 3, 1)
+                sys.stderr.write(f"Error: {msgLog}\n")
             return f"End: {msgLog}"
 
         if ((apiDst.getPostsType() != self.getTypeAction(action))
@@ -1102,7 +1107,6 @@ class moduleRules:
         logMsg(msgLog, 1, 2)
         indent = " "
 
-        # print(args)
         args = self.args
         select = args.checkBlog
         simmulate = args.simmulate
@@ -1116,9 +1120,6 @@ class moduleRules:
             i = 0
             previous = ""
 
-            # logging.info(f"{indent} Keys: {self.rules.keys()}")
-            # for src in self.rules.keys():
-            #     logging.info(f"{indent} Key: {src}")
             for src in sorted(self.rules.keys()):
                 if (self.getNameAction(src) != previous):
                     i = 0
@@ -1148,7 +1149,8 @@ class moduleRules:
 
                     # FIXME Names?
                     if 'slack' in srcName:
-                        srcName = f"{srcName.split('/')[2].split('.')[0]}@slack"
+                        srcName = (f"{srcName.split('/')[2].split('.')[0]}"
+                                  f"@slack")
                     elif 'gitter' in srcName:
                         srcName = f"{srcName.split('/')[-2]}@gitter"
                     elif 'imgur' in srcName:
@@ -1167,7 +1169,8 @@ class moduleRules:
                         srcName = f"{srcName.split('/')[-1]}"
                     elif 'gitter' in srcName:
                         srcName = f"{srcName.split('/')[-2]}"
-                    elif (not srcName) and ('tumblr' in self.getNameAction(src)):
+                    elif ((not srcName) 
+                          and ('tumblr' in self.getNameAction(src))):
                         srcName = more['url']
                         srcName = f"{srcName.split('/')[2].split('.')[0]}"
                 text = (f"Source: {srcName} ({self.getNickAction(src)})")
@@ -1176,7 +1179,8 @@ class moduleRules:
 
                 # print(f"Select: {select} - {src[0]}{i}")
                 if (select and
-                    (select.lower() != f"{self.getNameRule(src).lower()}{i}")):
+                    (select.lower() != 
+                     f"{self.getNameRule(src).lower()}{i}")):
                     actionMsg = f"Skip."
                 else:
                     actionMsg = (f"Scheduling.")
@@ -1306,8 +1310,7 @@ def main():
 
     mode = logging.INFO
     logging.basicConfig(
-        filename=LOGDIR + "/rssSocial.log",
-        # filename=LOGDIR + "/rssSocial.log",
+        filename=f"{LOGDIR}/rssSocial.log",
         # stream=sys.stdout,
         level=mode,
         format="%(asctime)s [%(filename).12s] %(message)s",

@@ -28,9 +28,14 @@ class moduleBlsk(Content): #, Queue):
         # client = Twitter(auth=self.authentication)
 
         client = Client()
-        profile = client.login(keys[0], keys[1])
-
+        try:
+            profile = client.login(keys[0], keys[1])
+        except:
+            res = self.report(self.indent, 'Error in initApi', 
+                              '', sys.exc_info())
+            client = None
         self.api = client
+
 
         return client
 
