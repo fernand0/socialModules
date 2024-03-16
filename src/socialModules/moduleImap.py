@@ -109,6 +109,21 @@ class moduleImap(Content): #, Queue):
             msgLog = (f"{self.indent} makeConnection failed")
             logMsg(msgLog, 3, 0)
 
+        ok, folders = client.list()
+        if ok == 'OK':
+            separator= str(folders[0]).split('"')[1]
+            logging.info(f"Separator: {separator}")
+
+        self.separator = separator
+
+        specialFolders = ['Trash', 'Junk', 'Sent', 'Drafts'] 
+        self.special = {}
+        for folder in folders:
+            parts = str(folder).split(self.separator)
+            for special in specialFolders:
+                if special in parts[0]:
+                    self.special[special] = self.getChannelName(folder)
+        
         return client
 
     def setApiNew(self):
@@ -162,12 +177,11 @@ class moduleImap(Content): #, Queue):
         return data
 
     def getChannelName(self, channel):
-        name = str(channel).split(' ')[-1][:-1]
-        if name.endswith('"'):
-            name = str(channel).split('"')[-2]
-            name = f'"{name}"'
+        # Examples:
+        # b'(\\HasNoChildren \\UnMarked) "/" INBOX/unizar/vrtic'
+        # b'(\\HasNoChildren \\UnMarked) "." INBOX.unizar.vrtic'
+        name = str(channel).split(f'"{self.separator}"')[-1][1:-1]
         return name
-        # b'(\\HasChildren) "." INBOX'
 
     def setChannel(self, channel=''):
         # setPage in Facebook
@@ -1185,8 +1199,10 @@ class moduleImap(Content): #, Queue):
         return self.deleteApiPosts(idPost)
 
     def deleteApiPosts(self, idPost):
-        return self.moveMails(self.getClient(), str(idPost).encode(), 'Trash')
-        # return self.moveMails(self.getClient(), str(idPost).encode(), 'INBOX.Trash')
+        try:
+            res = self.moveMails(self.getClient(), str(idPost).encode(), self.special['Trash'])
+        except: 
+            logging.warning("Some error moving mails to Trash")
 
     def moveMails(self, M, msgs, folder):
         msgLog = ("Copying %s in %s" % (msgs, folder))
@@ -1511,9 +1527,20 @@ def main():
     src = selRules[int(iRul)]
     apiSrc = rules.readConfigSrc("", src, rules.more[src])
 
+    testingFolders=True
+    if testingFolders:
+        ok, folders=apiSrc.getClient().list()
+        if ok == 'OK':
+            for folder in folders:
+                name = str(folder).split(f'"{apiSrc.separator}"')[-1][1:-1]
+                print(f"Folder: {folder} Name: {name}")
+            print(f"Specials: {apiSrc.special}")
+        return
+
+
     testingPublishingDraft = False
     if testingPublishingDraft:
-        apiSrc.setChannel('INBOX.Drafts')
+        apiSrc.setChannel(apiSrc.special['Drafts'])
         apiSrc.setPosts()
         if apiSrc.getPosts():
             post = apiSrc.getPosts()[0]
@@ -1529,7 +1556,7 @@ def main():
 
     testingDrafts = False
     if testingDrafts:
-        apiSrc.setChannel('INBOX.Drafts')
+        apiSrc.setChannel(apiSrc.special['Drafts'])
         apiSrc.setPosts()
         for post in apiSrc.getPosts():
             # print(f"Post: {post}")
