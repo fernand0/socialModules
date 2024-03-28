@@ -38,7 +38,7 @@ class moduleFacebook(Content): #,Queue):
         self.oauth_access_token = keys[0]
         self.app_id = keys[1]
         self.client_token = keys[2]
-        graph = facebook.GraphAPI(keys[0], version='3.0')
+        graph = facebook.GraphAPI(keys[0], version='19.0')
         # msgLog = f"{self.indent} initApi res {graph}"
         # logMsg(msgLog, 2, 0)
         return graph
@@ -266,6 +266,7 @@ def main():
     if testingPages:
         print("Testing Pages")
         pages = apiSrc.getClient().get_connections('me', 'accounts')
+        print(f"Pages: {pages}")
         print(f"Data: {pages['data'][0].keys()}")
         for page in pages['data']:
             print(f"Page: {page['name']}")

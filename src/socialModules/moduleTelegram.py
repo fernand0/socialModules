@@ -142,23 +142,25 @@ class moduleTelegram(Content):
             logging.info(f"{self.service} Publishing (text to) {textToPublish}")
             logging.info(f"{self.service} Publishing (text 2) {textToPublish2}")
 
-        if textToPublish:
+        textToPublish = text
+        while textToPublish:
             try:
-                res = bot.sendMessage('@'+channel, textToPublish, 
+                res = bot.sendMessage('@'+channel, textToPublish[:4080], 
                                       parse_mode='HTML')
+                textToPublish = textToPublish[4080:]
             except:
                 return(self.report('Telegram', textToPublish,
                     link, sys.exc_info()))
 
-            if textToPublish2:
-                try:
-                    res2 = bot.sendMessage('@'+channel, textToPublish2[:4090], 
-                                            parse_mode='HTML')
-                    if res2: 
-                        res = res.append(res2)
-                except:
-                    bot.sendMessage('@'+channel, "Text is longer",
-                            parse_mode='HTML')
+            #if textToPublish2:
+            #    try:
+            #        res2 = bot.sendMessage('@'+channel, textToPublish2[:4090], 
+            #                                parse_mode='HTML')
+            #        if res2: 
+            #            res = res.append(res2)
+            #    except:
+            #        bot.sendMessage('@'+channel, "Text is longer",
+            #                parse_mode='HTML')
             if links:
                 bot.sendMessage('@'+channel, links, parse_mode='HTML')
             rep = res

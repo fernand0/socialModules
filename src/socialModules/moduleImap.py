@@ -174,6 +174,8 @@ class moduleImap(Content): #, Queue):
         msgLog = (f"{self.indent} getChannels")
         logMsg(msgLog, 1, 0)
         resp, data = self.getClient().list('""', '*')
+        if resp != 'OK':
+            logging.warning("Some problem getting list of folders")
         return data
 
     def getChannelName(self, channel):
@@ -1527,20 +1529,18 @@ def main():
     src = selRules[int(iRul)]
     apiSrc = rules.readConfigSrc("", src, rules.more[src])
 
-    testingFolders=True
+    testingFolders=False
     if testingFolders:
-        ok, folders=apiSrc.getClient().list()
-        if ok == 'OK':
-            for folder in folders:
-                name = str(folder).split(f'"{apiSrc.separator}"')[-1][1:-1]
-                print(f"Folder: {folder} Name: {name}")
-            print(f"Specials: {apiSrc.special}")
+        folders=apiSrc.getChannels()
+        for folder in folders:
+            # print(f"Folder: {folder} Name: {name}")
+            print(f"Folder: {apiSrc.getChannelName(folder)}")
+        print(f"Special folders: {apiSrc.special}")
         return
 
-
-    testingPublishingDraft = False
+    testingPublishingDraft = True
     if testingPublishingDraft:
-        apiSrc.setChannel(apiSrc.special['Drafts'])
+        apiSrc.setPostsType('drafts')
         apiSrc.setPosts()
         if apiSrc.getPosts():
             post = apiSrc.getPosts()[0]
