@@ -1520,14 +1520,7 @@ def main():
     # ('imap', 'set', 'ftricas@elmundoesimperfecto.com', 'posts')
     # More:  More: ('imap', 'set', 'ftricas@elmundoesimperfecto.com', 'posts')
 
-    indent = ""
-    selRules = rules.selectRule('imap', '')
-    print(f"Rules:")
-    for i, rul in enumerate(selRules):
-        print(f"{i}) {rul}")
-    iRul = input("Which rule? ")
-    src = selRules[int(iRul)]
-    apiSrc = rules.readConfigSrc("", src, rules.more[src])
+    apiSrc = rules.selectRuleInteractive(rules)
 
     testingFolders=False
     if testingFolders:

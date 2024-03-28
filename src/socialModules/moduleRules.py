@@ -445,6 +445,20 @@ class moduleRules:
         msgLog = "End Checking rules"
         logMsg(msgLog, 1, 2)
 
+    def selectRuleInteractive(self, rules): 
+        nameModule = os.path.basename(inspect.stack()[1].filename)
+        service = nameModule.split('.')[0][6:].casefold()
+        indent = ""
+        selRules = rules.selectRule(service, '')
+        print(f"Rules:")
+        for i, rul in enumerate(selRules):
+            print(f"{i}) {rul}")
+        iRul = input("Which rule? ")
+        src = selRules[int(iRul)]
+        apiSrc = rules.readConfigSrc("", src, rules.more[src])
+
+        return apiSrc
+
     def selectRule(self, name = "", selector2 = "", selector3 = ""):
         if hasattr(self, 'indent'):
             indent = self.indent
