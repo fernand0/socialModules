@@ -131,16 +131,6 @@ class moduleTelegram(Content):
         if content:
             content = content.replace('<', '&lt;')
             text = (text + content + '\n\n' + links)
-            textToPublish2 = ""
-            if len(text) < 4090:
-                textToPublish = text
-                links = ""
-            else:
-                textToPublish = text[:4080] + ' ...'
-                textToPublish2 = '... ' + text[4081:]
-
-            logging.info(f"{self.service} Publishing (text to) {textToPublish}")
-            logging.info(f"{self.service} Publishing (text 2) {textToPublish2}")
 
         textToPublish = text
         while textToPublish:
@@ -152,15 +142,6 @@ class moduleTelegram(Content):
                 return(self.report('Telegram', textToPublish,
                     link, sys.exc_info()))
 
-            #if textToPublish2:
-            #    try:
-            #        res2 = bot.sendMessage('@'+channel, textToPublish2[:4090], 
-            #                                parse_mode='HTML')
-            #        if res2: 
-            #            res = res.append(res2)
-            #    except:
-            #        bot.sendMessage('@'+channel, "Text is longer",
-            #                parse_mode='HTML')
             if links:
                 bot.sendMessage('@'+channel, links, parse_mode='HTML')
             rep = res
@@ -199,6 +180,10 @@ def main():
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
+    import socialModules.moduleRules
+    rules = socialModules.moduleRules.moduleRules()
+    rules.checkRules()
+
     import moduleTelegram
 
     tel = moduleTelegram.moduleTelegram()
@@ -213,8 +198,20 @@ def main():
         res = tel.publishImage("Prueba imagen", "/tmp/prueba.png", alt=msgAlt)
         return
     
-    testingRssPost = False
+    testingRssPost = True
     if testingRssPost:
+        selRules = rules.selectRule('rss', '')
+        print(f"Rules:")
+        for i, rul in enumerate(selRules):
+            print(f"{i}) {rul}")
+
+        iRul = input("Which rule? ")
+        src = selRules[int(iRul)]
+        apiSrc = rules.readConfigSrc("", src, rules.more[src])
+        apiSrc.setPosts()
+        posts = apiSrc.getPosts()
+        if posts: 
+            tel.publishPost(api=apiSrc, post=posts[0])
 
         return
 
