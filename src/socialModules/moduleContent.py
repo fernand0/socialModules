@@ -147,6 +147,29 @@ class Content:
 
         # return result
 
+    def apiCall(self, commandName, api = None, **kwargs):
+        if api:
+            client = api
+        else:
+            client = self.getClient()
+        msgLog = (f"{self.indent} Calling: {commandName}"
+                  f" with arguments {kwargs}")
+        logMsg(msgLog, 2, 0)
+        res = []
+
+        command = getattr(client, commandName)
+        error = None
+        try:
+            msgLog = f"{self.indent}Command {command} "
+            logMsg(msgLog, 2, 0)
+            res = command(**kwargs)
+        except:
+            res = None
+            error = self.report('', res, '', sys.exc_info())
+
+        return res, error
+
+
     def setApiPosts(self):
         pass
 

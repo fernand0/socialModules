@@ -1520,7 +1520,7 @@ def main():
     # ('imap', 'set', 'ftricas@elmundoesimperfecto.com', 'posts')
     # More:  More: ('imap', 'set', 'ftricas@elmundoesimperfecto.com', 'posts')
 
-    apiSrc = rules.selectRuleInteractive(rules)
+    apiSrc = rules.selectRuleInteractive()
 
     testingFolders=False
     if testingFolders:

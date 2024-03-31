@@ -445,20 +445,53 @@ class moduleRules:
         msgLog = "End Checking rules"
         logMsg(msgLog, 1, 2)
 
-    def selectRuleInteractive(self, rules): 
-        nameModule = os.path.basename(inspect.stack()[1].filename)
-        service = nameModule.split('.')[0][6:].casefold()
+    def selectActionInteractive(self, service = None): 
+        if not service:
+            nameModule = os.path.basename(inspect.stack()[1].filename)
+            service = nameModule.split('.')[0][6:].casefold()
         indent = ""
-        selRules = rules.selectRule(service, '')
+        selActions = self.selectAction(service)
+
+        print(f"Actions:")
+        for i, act in enumerate(selActions):
+            print(f"{i}) {act}")
+        iAct = input("Which action? ")
+        src = selActions[int(iAct)]
+        apiDst = self.readConfigDst(indent, act, None, None)
+
+        return apiDst
+
+    def selectRuleInteractive(self, service = None): 
+        if not service:
+            nameModule = os.path.basename(inspect.stack()[1].filename)
+            service = nameModule.split('.')[0][6:].casefold()
+        indent = ""
+        selRules = self.selectRule(service, '')
         print(f"Rules:")
         for i, rul in enumerate(selRules):
             print(f"{i}) {rul}")
         iRul = input("Which rule? ")
         src = selRules[int(iRul)]
-        apiSrc = rules.readConfigSrc("", src, rules.more[src])
+        apiSrc = self.readConfigSrc("", src, self.more[src])
 
         return apiSrc
 
+    def selectAction(self, name = "", selector2 = "", selector3 = ""):
+        if hasattr(self, 'indent'): 
+            indent = self.indent
+        else:
+            indent = ""
+        srcR = None
+
+        actions = []
+        for src in self.rules.keys():
+            for act in self.rules[src]:
+                if (self.getNameAction(act).capitalize() == name.capitalize()):
+                    logging.debug(f"Action: {act}")
+                    actions.append(act)
+
+        return actions
+         
     def selectRule(self, name = "", selector2 = "", selector3 = ""):
         if hasattr(self, 'indent'):
             indent = self.indent

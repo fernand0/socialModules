@@ -2,7 +2,6 @@
 
 import configparser
 import sys
-
 import dateparser
 import dateutil
 from atproto import Client, models
@@ -21,7 +20,7 @@ class moduleBlsk(Content): #, Queue):
 
     def initApi(self, keys):
         # FIXME: Do we call this method directly?
-        self.base_url = 'https://blsk.app'
+        self.base_url = 'https://bsky.app'
         self.url = f"{self.base_url}/profile/{self.user}"
         logging.info("Initializing API")
         # self.authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
@@ -35,23 +34,10 @@ class moduleBlsk(Content): #, Queue):
                               '', sys.exc_info())
             client = None
         self.api = client
-
+        self.me = client.me
+        client = client.app.bsky.feed
 
         return client
-
-    def apiCall(self, command, **kwargs):
-        msgLog = (f"   Calling: {command} with arguments {kwargs}")
-        logMsg(msgLog, 2, 0)
-        res = []
-
-        try:
-            msgLog = f"{self.indent}Command {command} "
-            logMsg(msgLog, 2, 0)
-            res = command(**kwargs)
-        except:
-            res = self.report('', res, '', sys.exc_info())
-
-        return res
 
     def getApi(self):
         api = None
@@ -61,25 +47,109 @@ class moduleBlsk(Content): #, Queue):
 
     def setApiPosts(self):
         posts = []
-        # TODO
+
+        posts, error = self.apiCall('get_timeline')
+
+        if not error:
+            posts = posts['feed']
+
 
         return posts
 
     def setApiFavs(self):
         posts = []
-        # TODO
+
+        posts, error = self.apiCall('get_actor_likes', 
+                                    params={'actor':self.me.did})
+
+        if not error:
+            posts = posts['feed']
 
         return posts
 
-    def processReply(self, reply): 
-        res = reply
-        # TODO
+    def getPostTitle(self, post):
+        title = ''
+        try:
+            title = post.post.record.text
+        except:
+            title = ''
+        return title
 
-        return (res)
+    def getPostUrl(self, post):
+        idPost = self.getPostId(post)
+        msgLog = f"{self.indent} getPostUrl: {post}"
+        logMsg(msgLog, 2, 0)
+        if idPost:
+            res = f'{self.base_url}/profile/{self.getPostHandle(post)}/post/{idPost}'
+        else:
+            res = ''
+        return res
 
+    def getPostLink(self, post):
+        # FIXME: Are you sure? (inconsistent)
+        if self.getPostsType() == 'favs':
+            content, link = self.extractPostLinks(post)
+        else:
+            link = self.getPostUrl(post)
+        return link
+
+    def extractPostLinks(self, post, linksToAvoid=""):
+        return (self.getPostContent(post), self.getPostContentLink(post))
+
+    def getPostContent(self, post):
+        result = post.post.record.text
+        # if 'full_text' in post:
+        #     result = post.get('full_text')
+        return result
+
+    def getPostContentLink(self, post):
+        result = ''
+        logging.debug(f"Record: {post.post.record}")
+        if hasattr(post.post.record, 'uri'):
+            logging.debug(f"Uri")
+            result = post.post.record.uri
+        elif (hasattr(post.post.record, 'facets') 
+              and post.post.record.facets 
+              and hasattr(post.post.record.facets[0].features[0], 'uri')):
+            logging.debug(f"Facets > Uri")
+            result = post.post.record.facets[0].features[0].uri
+        elif (hasattr(post.post.record, 'embed')
+              and hasattr(post.post.record.embed, 'external')
+              and hasattr(post.post.record.embed.external, 'uri')):
+            logging.debug(f"Embed > Uri")
+            result = post.post.record.embed.external.uri
+
+        return result
+ 
     def publishApiImage(self, *args, **kwargs):
         res = None
-        # TODO
+        if len(args) == 2:
+            post, imageName = args
+            more = kwargs
+            if imageName and os.path.exists(imageName):
+                with open(imageName, "rb") as imagefile:
+                    imagedata = imagefile.read()
+
+                try:
+                    imgAlt = None
+                    if 'alt' in more:
+                        logging.debug(f"Setting up alt: {more['alt']}"
+                                      f" in image {imageName}")
+                        imgAlt = more['alt']
+                    res, error = self.apiCall('send_image', api=self.api,
+                                              text=post, 
+                                              image=imagedata, 
+                                              image_alt=imgAlt)
+
+                except: 
+                    res = self.report(self.service, post, 
+                                      imageName, sys.exc_info())
+            else:
+                logging.info(f"No image available")
+                res = "Fail! No image available"
+        else:
+            res = "Fail! Not published, not enough arguments"
+            logging.debug(res)
 
         return res
 
@@ -118,52 +188,52 @@ class moduleBlsk(Content): #, Queue):
         # logging.info(f"Tittt: {link and ('twitter' in link)}")
         res = 'Fail!'
         # post = post[:(240 - (len(link) + 1))]
+
+        facets =  []
         if link:
             title = title[:(300 - (len(link)+1))]
 
-            facets =  []
-            facets.append(models.AppBskyRichtextFacet.Main( 
-                features=[models.AppBskyRichtextFacet.Link(uri=link)],
-                index=models.AppBskyRichtextFacet.ByteSlice(
-                    byte_start=len(title)+1, 
-                    byte_end=len(title)+len(link)+1),
-                )
-            )
+            embed_external = models.AppBskyEmbedExternal.Main( 
+                              external=models.AppBskyEmbedExternal.External( 
+                                title=title, 
+                                description='', 
+                                uri=link,
+                            )
+                        )
+            # facets.append(models.AppBskyRichtextFacet.Main( 
+            #     features=[models.AppBskyRichtextFacet.Link(uri=link)],
+            #     index=models.AppBskyRichtextFacet.ByteSlice(
+            #         byte_start=len(title)+1, 
+            #         byte_end=len(title)+len(link)+1),
+            #     )
+            # )
 
             title = title+" " + link
+            #embed_post = models.AppBskyEmbedRecord.Main(record=models.create_strong_ref(post_with_link_card))
 
-            msgLog = f"{self.indent}Publishing {title} ({len(title)}"
-            logMsg(msgLog, 2, 0) 
-            client = self.api
-            try:
-                res = client.com.atproto.repo.create_record(
-                        models.ComAtprotoRepoCreateRecord.Data(
-                         repo=client.me.did, 
-                         collection=models.ids.AppBskyFeedPost, 
-                         record=models.AppBskyFeedPost.Main(
-                             created_at=client.get_current_time_iso(), 
-                             text=title, facets=facets),
-                         )
-                        )
-            except: 
-                res = self.report(self.service, 
-                                    f"{title} {link}", title, sys.exc_info())
 
-            msgLog = f"{self.indent}Res: {res} "
-            logMsg(msgLog, 2, 0)
+        msgLog = f"{self.indent}Publishing {title} ({len(title)}"
+        logMsg(msgLog, 2, 0) 
+        client = self.api
+        try:
+            res = self.apiCall('send_post', api=client, 
+                               text=title, embed=embed_external)
+            # res = client.com.atproto.repo.create_record(
+            #         models.ComAtprotoRepoCreateRecord.Data(
+            #          repo=client.me.did, 
+            #          collection=models.ids.AppBskyFeedPost, 
+            #          record=models.AppBskyFeedPost.Main(
+            #              created_at=client.get_current_time_iso(), 
+            #              text=title, facets=facets),
+            #          )
+            #         )
+        except: 
+            res = self.report(self.service, 
+                                f"{title} {link}", title, sys.exc_info())
+
+        msgLog = f"{self.indent}Res: {res} "
+        logMsg(msgLog, 2, 0)
         return res
-
-    def processReply(self, reply):
-        res = reply
-        if 'success=False' in reply:
-            pos = reply.find("message='")
-            if pos > 0:
-                pos2 = reply.find("'", pos+10)
-                resMsg = reply[pos+len("message='"):pos2]
-                res = reply.split('\n')[0]
-                res =  f"{res} {resMsg}"
-
-        return (res)
 
     def deleteApiPosts(self, idPost): 
         res = None
@@ -174,13 +244,44 @@ class moduleBlsk(Content): #, Queue):
     def deleteApiFavs(self, idPost): 
         res = None
         # TODO
+        logging.info(f"Deleting: {idPost}")
+        res = self.api.unlike(idPost)
+        # res = self.apiCall(self.getClient().favorites.destroy, _id=idPost)
+        return (res)
+
+    def getPostHandle(self, post):
+        handle = post.post.author.handle
+        return handle
+
+    def getPostId(self, post):
+        idPost = ''
+        if isinstance(post, str) or isinstance(post, int):
+            # It is the tweet URL
+            idPost = post
+        else:
+            if self.getPostsType() == 'favs':
+                idPost = post.post.viewer.like
+            else:
+                idPost = post.post.uri
+                idPost = idPost.split('/')[-1]
+
+        return idPost
+
+    def processReply(self, reply):
+        res = ''
+        msgLog = f"{self.indent}Reply: {reply}"
+        logMsg(msgLog, 1, 1)
+        origReply = reply
+        if reply:
+            if isinstance(reply, str) and 'Fail' in reply:
+                res = reply
+            else:
+                res = "OK!"
+        else:
+            res = "Fail!"
 
         return (res)
 
-    def getPostId(self, post):
-        #TODO
-
-        return None
 
 def main():
 
@@ -190,15 +291,42 @@ def main():
     import socialModules.moduleRules
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
-    # src, more = rules.selectRule('twitter', 'kk')
-    # print(f"Src: {src}")
-    # print(f"More: {more}")
-    # indent = ""
-    # apiSrc = rules.readConfigSrc(indent, src, more)
 
-    print(f"Rules: {rules}")
+    apiSrc = rules.selectRuleInteractive()
 
-    testingPost = True
+    testingPosts = False
+    if testingPosts:
+        apiSrc.setPosts()
+        for i,post in enumerate(apiSrc.getPosts()):
+            print(f"Post {i}): {post.post}")
+            print(f"id {post.post.uri}")
+            print(f"Post {i}): {apiSrc.getPostUrl(post)}")
+        return
+
+    testingPost = False
+    if testingPost:
+        apiSrc.publishPost("prueba","https://elmundoesimperfecto.com/", "")
+        return
+
+    testingPostImages = True
+    if testingPostImages:
+        image = '/tmp/2024-03-30_image.png'
+        # Does not work with svg
+        # image = '/tmp/2023-08-04_image.png'
+
+        title = 'Prueba imagen '
+        altText = "Texto adicional"
+
+        print(f"Testing posting with images")
+        res = apiSrc.publishImage("Prueba imagen", image, alt= altText)
+        print(f"Res: {res}")
+
+        return
+
+
+    return 
+
+    testingPost = False
     if testingPost:
         print("Testing Post")
         key = ('twitter', 'set', 'fernand0', 'posts')
