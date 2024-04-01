@@ -210,26 +210,28 @@ class moduleBlsk(Content): #, Queue):
 
             title = title+" " + link
             #embed_post = models.AppBskyEmbedRecord.Main(record=models.create_strong_ref(post_with_link_card))
+        else:
+            embed_external = None
 
 
         msgLog = f"{self.indent}Publishing {title} ({len(title)}"
         logMsg(msgLog, 2, 0) 
         client = self.api
-        try:
-            res = self.apiCall('send_post', api=client, 
+        #try:
+        res, error = self.apiCall('send_post', api=client, 
                                text=title, embed=embed_external)
-            # res = client.com.atproto.repo.create_record(
-            #         models.ComAtprotoRepoCreateRecord.Data(
-            #          repo=client.me.did, 
-            #          collection=models.ids.AppBskyFeedPost, 
-            #          record=models.AppBskyFeedPost.Main(
-            #              created_at=client.get_current_time_iso(), 
-            #              text=title, facets=facets),
-            #          )
-            #         )
-        except: 
-            res = self.report(self.service, 
-                                f"{title} {link}", title, sys.exc_info())
+        #    # res = client.com.atproto.repo.create_record(
+        #    #         models.ComAtprotoRepoCreateRecord.Data(
+        #    #          repo=client.me.did, 
+        #    #          collection=models.ids.AppBskyFeedPost, 
+        #    #          record=models.AppBskyFeedPost.Main(
+        #    #              created_at=client.get_current_time_iso(), 
+        #    #              text=title, facets=facets),
+        #    #          )
+        #    #         )
+        #except: 
+        #    res = self.report(self.service, 
+        #                        f"{title} {link}", title, sys.exc_info())
 
         msgLog = f"{self.indent}Res: {res} "
         logMsg(msgLog, 2, 0)
@@ -237,13 +239,12 @@ class moduleBlsk(Content): #, Queue):
 
     def deleteApiPosts(self, idPost): 
         res = None
-        # TODO
+        res, error = self.apiCall('delete_post', self.api,  post_uri=idPost)
 
         return (res)
 
     def deleteApiFavs(self, idPost): 
         res = None
-        # TODO
         logging.info(f"Deleting: {idPost}")
         res = self.api.unlike(idPost)
         # res = self.apiCall(self.getClient().favorites.destroy, _id=idPost)
@@ -273,10 +274,10 @@ class moduleBlsk(Content): #, Queue):
         logMsg(msgLog, 1, 1)
         origReply = reply
         if reply:
-            if isinstance(reply, str) and 'Fail' in reply:
+            #if isinstance(reply, str) and 'Fail' in reply:
                 res = reply
-            else:
-                res = "OK!"
+            # else:
+            #     res = "OK!"
         else:
             res = "Fail!"
 
@@ -294,6 +295,19 @@ def main():
 
     apiSrc = rules.selectRuleInteractive()
 
+    testingPostDelete = True
+    if testingPostDelete:
+        res = apiSrc.publishPost("prueba","https://elmundoesimperfecto.com/", "")
+        print(f"Published: {res}")
+        idPost = res.uri
+        delete = input(f"Delete (write the id {idPost})? ")
+        if delete:
+            print(f"Deleting: {apiSrc.deleteApiPosts(delete)}")
+        else:
+            print(f"Deleting: {apiSrc.deleteApiPosts(idPost)}")
+
+        return
+
     testingPosts = False
     if testingPosts:
         apiSrc.setPosts()
@@ -308,7 +322,7 @@ def main():
         apiSrc.publishPost("prueba","https://elmundoesimperfecto.com/", "")
         return
 
-    testingPostImages = True
+    testingPostImages = False
     if testingPostImages:
         image = '/tmp/2024-03-30_image.png'
         # Does not work with svg
