@@ -31,6 +31,7 @@ class moduleRules:
         res = config.read(configFile)
 
         services = self.getServices()
+        logging.debug(f"Services: {services}")
         services['regular'].append('cache')
         # cache objects can be considered as regular for publishing elements
         # stored there
@@ -84,7 +85,7 @@ class moduleRules:
                                     nick = nick.split("/")[-1]
                             if (service == 'imdb') or (service == 'imgur'):
                                 nick = url
-                            elif ('twitter' in url):
+                            elif ('twitter' in url) or ('flickr' in url):
                                 nick = url.split("/")[-1]
 
                             if 'posts' in moreS:
@@ -341,6 +342,8 @@ class moduleRules:
                                         f"{key}({dest})")
                             logMsg(msgLog, 2, 0)
                             msgLog = f"{self.indent}  dest Rule: {destRule}"
+                            logMsg(msgLog, 2, 0)
+                            msgLog = f"{self.indent}  from Srv: {fromSrv}"
                             logMsg(msgLog, 2, 0)
                             if not (fromSrv in rulesNew):
                                 rulesNew[fromSrv] = []
@@ -963,7 +966,7 @@ class moduleRules:
             resMsg = f"Publish result: {res}"
             msgLog = f"Title: {title}."
             if link:
-                msgLog = (f"{msgLog} Recording Link: {link}"
+                msgLog = (f"{msgLog} Recording Link: {link} "
                           f"in file {apiSrc.fileNameBase(apiDst)}.last")
         else:
             msgLog = f"{indent}No post to schedule with {msgLog}."

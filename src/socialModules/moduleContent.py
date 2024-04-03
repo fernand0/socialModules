@@ -1299,6 +1299,7 @@ class Content:
                 if isinstance(link, bytes):
                     linkS = linkS.decode()
                 url = self.getPostLink(entry)
+                logging.debug(f"Url: {url} Link: {linkS}")
                 # msgLog = (f"{self.indent} Url: {url}"
                 # logMsg(msgLog, 2, 0)
                 # msgLog = (f"{self.indent} Link:{linkS}"

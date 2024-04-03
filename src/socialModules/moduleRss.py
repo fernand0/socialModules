@@ -180,13 +180,16 @@ def main():
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
 
-    if os.path.exists(CONFIGDIR + '/.rssBlogs'):
-        config = configparser.ConfigParser()
-        config.read(CONFIGDIR + '/.rssBlogs')
-    else:
-        print("no")
+    apiSrc = rules.selectRuleInteractive()
 
-    testingSearch = True
+    testingPosts = True
+    if testingPosts:
+        apiSrc.setPosts()
+        for i,post in enumerate(apiSrc.getPosts()):
+            print(f"Post {i}): {post}")
+        return
+
+    testingSearch = False
     if testingSearch:
         key = ('rss', 'set', 'http://github.com/fernand0', 'search')
         apiSrc = rules.readConfigSrc("", key, None)
