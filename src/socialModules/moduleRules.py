@@ -86,7 +86,9 @@ class moduleRules:
                             if (service == 'imdb') or (service == 'imgur'):
                                 nick = url
                             elif ('twitter' in url) or ('flickr' in url):
-                                nick = url.split("/")[-1]
+                                nick = url.split("/")[-1] 
+                            elif ('blsk' in url):
+                                nick = url.split(".")[0]
 
                             if 'posts' in moreS:
                                 if moreS['posts'] == method[1]:
@@ -127,6 +129,8 @@ class moduleRules:
                 postsType = config[section]["posts"]
             else:
                 postsType = "posts"
+            msgLog = f"{self.indent} Type post {postsType}"
+            logMsg(msgLog, 2, 0)
             if fromSrv:
                 fromSrv = ( fromSrv[0], fromSrv[1], fromSrv[2], postsType,)
                 for service in services["special"]:
@@ -982,11 +986,15 @@ class moduleRules:
             res = ''
             if post:
                 res = apiDst.publishPost(api = apiSrc, post = post)
+                msgLog = f"{indent}Reply: {res}"
                 msgLog = f"{indent}Trying to publish {msgLog} "
                 # print(f"{indent}res: {res}")
-                if (nextPost and ((not res) or ('SAVELINK' in res) or
-                                  not ('Fail!' in res) or
-                                  not ('failed!' in res))):
+                if (nextPost 
+                    and not ('Fail!' in res)
+                    and not ('failed!' in res)):
+                    #((not res) or ('SAVELINK' in res) or
+                    #              (not ('Fail!' in res)) or
+                    #              (not ('failed!' in res)))):
                     resUpdate = apiSrc.updateLastLink(apiDst, '')
                     resMsg += f" Update: {resUpdate}"
 
@@ -1090,6 +1098,10 @@ class moduleRules:
 
         apiSrc.setLastLink(apiDst)
         #FIXME: best in readConfigSrc ?
+
+        if apiSrc.getPostsType() == 'drafts':
+            #FIXME
+            apiDst.setPostsType('drafts')
 
         time.sleep(1)
 

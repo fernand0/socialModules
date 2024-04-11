@@ -29,15 +29,19 @@ class moduleBlsk(Content): #, Queue):
         client = Client()
         try:
             profile = client.login(keys[0], keys[1])
+            if hasattr(client, 'me'):
+                self.me = client.me
+            else:
+                self.me = None
         except:
             res = self.report(self.indent, 'Error in initApi', 
                               '', sys.exc_info())
             client = None
         self.api = client
-        self.me = client.me
-        client = client.app.bsky.feed
-
+        if hasattr(client, 'app'):
+            client = client.app.bsky.feed
         return client
+
 
     def getApi(self):
         api = None

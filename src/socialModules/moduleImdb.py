@@ -106,7 +106,10 @@ class moduleImdb(Content): #,Queue):
         for i, post in enumerate(posts): 
             if ((hh <= self.getPostTimeIni(post)) 
                     and (post['GENERO'] == 'Cine')):
-                res = self.setPostMoreDataNew(post)
+                try:
+                    res = self.setPostMoreDataNew(post)
+                except:
+                    res = ""
                 j = j + 1
         self.posts = sorted(posts, key = lambda d: d['HORA_INICIO'])
 

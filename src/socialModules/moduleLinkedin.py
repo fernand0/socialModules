@@ -20,7 +20,6 @@ from socialModules.moduleContent import *
 class moduleLinkedin(Content):
 
     POSTS_RESOURCE = "/posts"
-    API_VERSION = "202302"
 
     def getKeys(self, config):
         CONSUMER_KEY = config.get("Linkedin", "CONSUMER_KEY")
@@ -34,6 +33,7 @@ class moduleLinkedin(Content):
     def initApi(self, keys):
         self.URN = keys[3]
         self.TOKEN = keys[2]
+        self.API_VERSION = "202402"
         client = RestliClient()
         return client
 
@@ -177,7 +177,6 @@ class moduleLinkedin(Content):
                                                    access_token=self.TOKEN)
 
                 POSTS_RESOURCE = "/posts"
-                API_VERSION = "202302"
                 if link:
                     entity = { 
                                 "author": 
@@ -201,7 +200,7 @@ class moduleLinkedin(Content):
                     res = self.getClient().create(
                         resource_path=POSTS_RESOURCE, 
                         entity = entity, 
-                        version_string=API_VERSION, 
+                        version_string=self.API_VERSION, 
                         access_token=self.TOKEN,
                         )
                 else:                    
@@ -219,7 +218,7 @@ class moduleLinkedin(Content):
                                                  }, 
                                 "lifecycleState": "PUBLISHED", 
                                 }, 
-                        version_string=API_VERSION, 
+                        version_string=self.API_VERSION, 
                         access_token=self.TOKEN,
                         )
             except:

@@ -164,7 +164,7 @@ class Content:
             logMsg(msgLog, 2, 0)
             res = command(**kwargs)
         except:
-            res = None
+            res = "Fail!"
             error = self.report('', res, '', sys.exc_info())
 
         return res, error
