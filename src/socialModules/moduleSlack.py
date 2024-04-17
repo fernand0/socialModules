@@ -54,6 +54,10 @@ class moduleSlack(Content): #, Queue):
     def setChannel(self, channel=''):
         # setPage in Facebook
         if not channel:
+            listChannels = self.getChannels()[3]
+            # FIXME. There should be a better way
+            msgLog=f"{self.indent} List of channels: {listChannels}"
+            logMsg(msgLog, 2, 0)
             channel = self.getChannels()[0].get('name','')
         theChannel = self.getChanId(channel)
         self.channel = theChannel
@@ -140,6 +144,8 @@ class moduleSlack(Content): #, Queue):
         if not chan:
             self.setChannel()
             chan = self.getChannel()
+        msgLog = (f"{self.indent} Service {self.service} Channel: {chan}")
+        logMsg(msgLog, 2, 0)
         self.getClient().token = self.user_slack_token
         data = {"channel": chan, "text": f"{title} {link}"}
         result = self.getClient().api_call("chat.postMessage", data=data)  # ,
@@ -328,7 +334,7 @@ def main():
 
     import logging
     logging.basicConfig(stream=sys.stdout, 
-            level=logging.INFO, 
+            level=logging.DEBUG, 
             format="%(asctime)s %(message)s"
     )
 
@@ -357,6 +363,8 @@ def main():
         logging.info(f"User: {apiSrc.getUser()}")
         logging.info(f"Name: {apiSrc.getName()}")
         logging.info(f"Nick: {apiSrc.getNick()}")
+        logging.info(f"Channels: {apiSrc.getChannels()}")
+        return
 
     testingPublishing = False
     if testingPublishing:

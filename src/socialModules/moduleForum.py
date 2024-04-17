@@ -113,7 +113,9 @@ class moduleForum(Content): #, Queue):
         logging.debug(f"Url:  {url}")
         logging.debug(f"Data: {data}")
         if "index.php" in url:
-            link = url[:-9] + data.get("href")
+            href = data.get("href")
+            if href:
+                link = url[:-9] + href
         else:
             if url[-1] != '/':
                 link = urllib.parse.urljoin(url, data.get("href"))
