@@ -58,7 +58,7 @@ class moduleSlack(Content): #, Queue):
             # FIXME. There should be a better way
             msgLog=f"{self.indent} List of channels: {listChannels}"
             logMsg(msgLog, 2, 0)
-            channel = self.getChannels()[0].get('name','')
+            channel = self.getChannels()[3].get('name','')
         theChannel = self.getChanId(channel)
         self.channel = theChannel
 
