@@ -1375,7 +1375,13 @@ class moduleImap(Content): #, Queue):
         logMsg(msgLog, 2, 0)
         nameF = self.nameFolder(folder)
         logging.debug(f"Folder: {nameF}")
-        logging.debug(f"Select: {M.select(nameF)}")
+        res = M.select(nameF)[0]
+        logging.debug(f"Select: {res}")
+        if res[0] != 'OK': 
+            nameF = f"INBOX.{nameF}"
+            res = M.select(nameF)[0] 
+            logging.debug(f"Select 2: {res}")
+
         # data = M.sort('ARRIVAL', 'UTF-8', 'ALL')
         if self.getPostsType() == 'new':
             try:
