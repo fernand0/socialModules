@@ -449,6 +449,10 @@ class moduleRules:
         self.rules = rulesNew
         self.more = mor
 
+
+
+
+
         msgLog = "End Checking rules"
         logMsg(msgLog, 1, 2)
 

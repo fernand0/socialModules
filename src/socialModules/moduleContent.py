@@ -979,7 +979,7 @@ class Content:
             #     comment = ''
             #     #more = {'api': apiSrc, 'post': post}
             #     # print(f"Title: {title}\nLink: {link}")
-            # return
+            return
         if more:
             msgLog = (f"{self.indent} Service {self.service} publishing post "
                       f"with more: {more}")

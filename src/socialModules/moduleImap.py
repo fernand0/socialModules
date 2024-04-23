@@ -1374,7 +1374,7 @@ class moduleImap(Content): #, Queue):
         msgLog = (f"Folder: {folder}")
         logMsg(msgLog, 2, 0)
         nameF = self.nameFolder(folder)
-        # print(f"Folder: {nameF}")
+        logging.debug(f"Folder: {nameF}")
         M.select(nameF)
         # data = M.sort('ARRIVAL', 'UTF-8', 'ALL')
         if self.getPostsType() == 'new':
@@ -1383,7 +1383,10 @@ class moduleImap(Content): #, Queue):
             except:
                 data = ('NO', [])
         else:
-            data = M.sort('ARRIVAL', 'UTF-8', 'NOT DELETED')
+            try:
+                data = M.sort('ARRIVAL', 'UTF-8', 'NOT DELETED')
+            except:
+                data = M.sort('ARRIVAL', 'UTF-8', 'NOT DELETED')
         msgLog = (f"Msgs data: {data}")
         logMsg(msgLog, 2, 0)
         # print(f"Datos: {data}")
