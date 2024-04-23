@@ -1377,7 +1377,7 @@ class moduleImap(Content): #, Queue):
         logging.debug(f"Folder: {nameF}")
         res = M.select(nameF)[0]
         logging.debug(f"Select: {res}")
-        if res[0] != 'OK': 
+        if res != 'OK': 
             nameF = f"INBOX.{nameF}"
             res = M.select(nameF)[0] 
             logging.debug(f"Select 2: {res}")
