@@ -1375,7 +1375,7 @@ class moduleImap(Content): #, Queue):
         logMsg(msgLog, 2, 0)
         nameF = self.nameFolder(folder)
         logging.debug(f"Folder: {nameF}")
-        M.select(nameF)
+        logging.debug(f"Select: {M.select(nameF)}")
         # data = M.sort('ARRIVAL', 'UTF-8', 'ALL')
         if self.getPostsType() == 'new':
             try:
