@@ -84,9 +84,13 @@ class moduleBlsk(Content): #, Queue):
         msgLog = f"{self.indent} getPostUrl: {post}"
         logMsg(msgLog, 2, 0)
         if idPost:
-            res = f'{self.base_url}/profile/{self.getPostHandle(post)}/post/{idPost}'
+            user = self.getPostHandle(post)
+            idPost = idPost.split('/')[-1]
+            res = f'{self.base_url}/profile/{user}/post/{idPost}'
         else:
             res = ''
+        msgLog = f"{self.indent} getPostUrl res: {res}"
+        logMsg(msgLog, 2, 0)
         return res
 
     def getPostLink(self, post):
@@ -122,6 +126,8 @@ class moduleBlsk(Content): #, Queue):
               and hasattr(post.post.record.embed.external, 'uri')):
             logging.debug(f"Embed > Uri")
             result = post.post.record.embed.external.uri
+        if not result:
+            result = self.getPostUrl(post)
 
         return result
  
@@ -243,6 +249,9 @@ class moduleBlsk(Content): #, Queue):
 
     def deleteApiPosts(self, idPost): 
         res = None
+
+        msgLog = f"{self.indent} deleteApiPosts deleting: {idPost}"
+        logMsg(msgLog, 1, 0)
         res, error = self.apiCall('delete_post', self.api,  post_uri=idPost)
 
         return (res)
@@ -250,8 +259,10 @@ class moduleBlsk(Content): #, Queue):
     def deleteApiFavs(self, idPost): 
         res = None
         logging.info(f"Deleting: {idPost}")
-        res = self.api.unlike(idPost)
-        # res = self.apiCall(self.getClient().favorites.destroy, _id=idPost)
+        res = self.api.delete_like(idPost)
+        #res, error = self.apiCall('delete_like', self.api,  like_uri=idPost)
+        msgLog = f"{self.indent} res: {res}"# error: {error}"
+        logMsg(msgLog, 1, 0)
         return (res)
 
     def getPostHandle(self, post):
@@ -268,7 +279,6 @@ class moduleBlsk(Content): #, Queue):
                 idPost = post.post.viewer.like
             else:
                 idPost = post.post.uri
-                idPost = idPost.split('/')[-1]
 
         return idPost
 
@@ -299,7 +309,7 @@ def main():
 
     apiSrc = rules.selectRuleInteractive()
 
-    testingPostDelete = True
+    testingPostDelete = False
     if testingPostDelete:
         res = apiSrc.publishPost("prueba","https://elmundoesimperfecto.com/", "")
         print(f"Published: {res}")
@@ -341,6 +351,30 @@ def main():
 
         return
 
+    testingFav = True
+    if testingFav:
+        logging.info(f"Testing Favs")
+
+        apiSrc.setPosts()
+        posts = apiSrc.getPosts()
+        print(f"Posts: {posts}")
+        for i, tweet in enumerate(apiSrc.getPosts()):
+            print(f" -Title {apiSrc.getPostTitle(tweet)}")
+            print(f" -Link {apiSrc.getPostLink(tweet)}")
+            print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
+            print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
+            import pprint
+            print(f"Type: {type(tweet)}")
+            pprint.pprint(f"Post: {tweet}")
+            idPost = apiSrc.getPostId(tweet)
+            print(f" -idPost: {idPost}")
+            # idPost=tweet.post.viewer.like
+            delete = input(f"Delete (write the id {idPost})? ")
+            print(f"Deleting: {apiSrc.deleteApiFavs(idPost)}")
+
+        print(f"Len: {len(apiSrc.getPosts())}")
+        return
+
 
     return 
 
@@ -363,9 +397,6 @@ def main():
             print(f"Deleting: {apiDst.deleteApiPosts(delete)}")
 
         return
-
-
-
 
     return
 
