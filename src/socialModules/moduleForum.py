@@ -112,6 +112,7 @@ class moduleForum(Content): #, Queue):
         url = self.url
         logging.debug(f"Url:  {url}")
         logging.debug(f"Data: {data}")
+        link = ''
         if "index.php" in url:
             href = data.get("href")
             if href:
@@ -122,7 +123,10 @@ class moduleForum(Content): #, Queue):
             else:
                 link = urllib.parse.urljoin(url, data.get("href"))
                 #link = url + data.get("href")
-        logging.debug(f"Link: {link}")
+        if link:
+            logging.debug(f"Link: {link}")
+        else:
+            logging.debug(f"Link else: {data}")
         if "sid" in link:
             link = link.split("&sid")[0]
         if "page" in link:
