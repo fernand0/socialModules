@@ -133,6 +133,9 @@ class moduleFlickr(Content): #, Queue):
         logging.debug(f"Post: {post} Api: {api}")
         res = self.apiCall('photos.setPerms', photo_id=post['id'], 
                      is_public=1, is_friend=1, is_family=1)
+        logging.debug(f"Res: {res}")
+        if not res:
+            res = "OK. Published!"
         return res
 
     def deleteApiPosts(self, idPost): 
@@ -145,6 +148,17 @@ class moduleFlickr(Content): #, Queue):
 
         return (res)
 
+    def processReply(self, reply):
+        res = ''
+        msgLog = f"{self.indent}Reply: {reply}"
+        logMsg(msgLog, 1, 1)
+        origReply = reply[0]
+        if 'stat' in origReply and origReply.get('stat') == 'ok':
+            if not ('Fail!' in reply):
+                idPost = self.getPostId(origReply)
+                res = (f"https://flickr.com/photos/{self.user}/status/{idPost}")
+        return (res)
+
     def getPostHandle(self, post):
         res = None
         print(f"Post: {post}")
@@ -152,15 +166,12 @@ class moduleFlickr(Content): #, Queue):
         return handle
 
     def getPostId(self, post):
-        idPost = None
+        try:
+            idPost = post.get('photoid').get('_content')
+        except:
+            idpost = ''
 
         return idPost
-
-    def processReply(self, reply):
-        res = None
-
-        return (res)
-
 
 def main():
 

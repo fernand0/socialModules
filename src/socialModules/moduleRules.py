@@ -1,3 +1,4 @@
+import concurrent.futures
 import configparser
 import inspect
 import logging
@@ -905,7 +906,8 @@ class moduleRules:
         logMsg(msgLog, 1, 1)
         postaction = apiSrc.getPostAction()
         if postaction:
-            msgLog = (f"{indent}Post Action {postaction} (nextPost = {nextPost})")
+            msgLog = (f"{indent}Post Action {postaction} "
+                      f"(nextPost = {nextPost})")
             logMsg(msgLog, 1, 1)
 
             if 'OK. Published!' in res:
@@ -994,8 +996,9 @@ class moduleRules:
                 msgLog = f"{indent}Trying to publish {msgLog} "
                 # print(f"{indent}res: {res}")
                 if (nextPost 
+                    and (res 
                     and not ('Fail!' in res)
-                    and not ('failed!' in res)):
+                    and not ('failed!' in res))):
                     #((not res) or ('SAVELINK' in res) or
                     #              (not ('Fail!' in res)) or
                     #              (not ('failed!' in res)))):
@@ -1046,9 +1049,6 @@ class moduleRules:
             msgLog = self.clientErrorMsg(indent, apiSrc, "Source",
                                       self.getProfileRule(src),
                                       self.getNickAction(src))
-            #msgLog = (f"{indent} Source Error. No client for "
-            #          f"{self.getProfileRule(src)} "
-            #          f"({self.getNickAction(src)})")
             if msgLog:
                 logMsg(msgLog, 3, 1)
             return f"{msgLog} End."
@@ -1067,14 +1067,6 @@ class moduleRules:
 
         res = ""
         textEnd = (f"{msgLog}")
-
-        #if (apiSrc.getHold() == 'yes'):
-        #    # FIXME Maybe befour lanuching the subprocess?
-        #    time.sleep(1)
-        #    msgHold = f"{indent} In hold"
-        #    logMsg(msgHold,1, 0)
-        #    return msgHold
-        #el
 
         # Destination
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
@@ -1176,8 +1168,6 @@ class moduleRules:
         args = self.args
         select = args.checkBlog
         simmulate = args.simmulate
-
-        import concurrent.futures
 
         delayedPosts = []
 
@@ -1374,14 +1364,13 @@ class moduleRules:
 
 def main():
 
-    mode = logging.INFO
-    logging.basicConfig(
-        filename=f"{LOGDIR}/rssSocial.log",
-        # stream=sys.stdout,
-        level=mode,
-        format="%(asctime)s [%(filename).12s] %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
+    mode = logging.DEBUG
+    logging.basicConfig(filename=f"{LOGDIR}/rssSocial.log", 
+                        # stream=sys.stdout, 
+                        level=mode, 
+                        format="%(asctime)s [%(filename).12s] %(message)s", 
+                        datefmt="%Y-%m-%d %H:%M:%S",
+                        )
 
     rules = moduleRules()
 
@@ -1391,26 +1380,6 @@ def main():
     rules.executeRules()
 
     return
-
-
-    rules.printList(srcs, "Sources")
-    rules.printList(dsts, "Destinations")
-    print("Rules")
-    for i,rul in enumerate(sorted(ruls)):
-        print(f"{i}) {rul}")
-        for j, action in enumerate(ruls[rul]):
-                print(f"   └---->{j}) {action}")
-
-    return
-
-    # rules.printList(impRuls, "Implicit rules")
-
-    # print("===========================================================")
-    # for i,rul in enumerate(rules.available):
-    #     print(f"{rul.upper()}({len( rules.available[rul]['data'])}) "
-    #           f"{rules.available[rul]['name']}\n"
-    #           f"{rules.available[rul]['data']}")
-
 
 if __name__ == "__main__":
     main()
