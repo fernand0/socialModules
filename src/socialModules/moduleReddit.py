@@ -113,6 +113,12 @@ class moduleReddit(Content): #, Queue):
         result = ''
         return result
 
+    def getPostTime(self, post):
+        time = None
+        if post:
+            time = post.get('updated', None)
+        return time
+
     def publishApiImage(self, *args, **kwargs):
         res = None
         return res
@@ -183,7 +189,8 @@ class moduleReddit(Content): #, Queue):
 
 def main():
 
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
+    logLevel = logging.DEBUG
+    logging.basicConfig(stream=sys.stdout, level=logLevel,
                         format='%(asctime)s %(message)s')
 
     import socialModules.moduleRules
@@ -195,7 +202,6 @@ def main():
     testingPosts = False
     if testingPosts:
         apiSrc.setPosts()
-        print("aquí")
         print(apiSrc.getPosts())
         for i,post in enumerate(apiSrc.getPosts()):
             print(f"Post {i}): {post}")
@@ -222,9 +228,14 @@ def main():
             apiSrc.setPosts()
             print(f" Group: {page}")
             for i,post in enumerate(apiSrc.getPosts()):
-                print(f" Post {i}): {post}")
+                if logLevel == logging.DEBUG:
+                    print(f" Post {i}): {post}")
                 print(f"  -Title {apiSrc.getPostTitle(post)}")
                 print(f"  -Link {apiSrc.getPostLink(post)}")
+                print(f"  -Time {apiSrc.getPostTime(post)}")
+                print(f"  -Comments {apiSrc.getPostContent(post).count('/comments/')}")
+                if post['updated'] != post['published']:
+                    print(f"Different!")
             import time
             time.sleep(1)
         return
