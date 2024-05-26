@@ -188,29 +188,6 @@ def main():
         listPosts = {}
         for i,post in enumerate(apiSrc.getPosts()):
             print(f"Post {i}): {post}")
-            if 'reddit' in apiSrc.getUrl():
-                link = post['link']
-                posIni = link.find('/r')+3
-                posFin = link.find('/', posIni)
-                group = link[posIni:posFin]
-                title =post['title']
-                updated = post['updated']
-                summary = post['summary']
-                if not group in listPosts.keys():
-                    listPosts[group] = []
-
-                listPosts[group].append( (title,link, updated, summary))
-
-                print(f"  Group: {group}")
-                print(f"  Title: {title}")
-                print(f"  Link:  {link}")
-                print(f"  Date: {updated}")
-                print(f"  Summary: {summary}")
-
-        for group in listPosts:
-            print(f"Group: {group}")
-            for i, post in enumerate(listPosts[group]):
-                print(f" {i:2}) {post}")
         return
 
     testingSearch = False

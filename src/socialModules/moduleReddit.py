@@ -20,12 +20,17 @@ class moduleReddit(Content): #, Queue):
         self.id = keys[0]
         self.base_url = self.user.split('u')[0]
         self.nick = self.user.split('/')[-1]
-        self.rssFeedAll = (f"{self.base_url}/.rss?feed=" 
+        self.rssFeedAll = (f"{self.base_url}/.rss?feed="
                            f"{self.id}&user={self.nick}")
+        print(f"Base: {self.rssFeedAll}")
 
         self.setPages()
-        print(f"Groups: {self.groups}")
 
+        self.setPage()
+
+        blog = socialModules.moduleRss.moduleRss()
+        blog.setUrl(self.base_url)
+        blog.setRssFeed(self.rssFeed)
 
         client = blog
 
@@ -38,10 +43,26 @@ class moduleReddit(Content): #, Queue):
         return api
 
     def setApiPosts(self):
-        self.client.setPosts()
+        if self.page:
+            self.client.setRssFeed(self.rssFeed)
+            self.client.setPosts()
         posts = self.client.getPosts()
 
         return posts
+
+    def setPage(self, page=None):
+        if page:
+            self.page = page
+        else:
+            if self.groups:
+                self.page = self.groups[0]
+            else:
+                self.warning("You need to join, at least, one group")
+        if self.page:
+            self.rssFeed = f"r/{self.page}/new/.rss?sort=new"
+
+    def getPage(self):
+        return self.page
 
     def setPages(self):
         blog = socialModules.moduleRss.moduleRss()
@@ -57,6 +78,7 @@ class moduleReddit(Content): #, Queue):
             if not group in groups:
                 groups.append(group)
         self.groups = groups
+        logging.info(f"Groups: {self.groups}")
 
     def getPages(self):
         return self.groups
@@ -76,7 +98,7 @@ class moduleReddit(Content): #, Queue):
 
     def getPostLink(self, post):
         logging.debug(f"Post: {post}")
-        link = f"{self.url}/{post['id']}"
+        link = post['link']
         logging.debug(f"Post link: {link}")
         return link
 
@@ -84,13 +106,13 @@ class moduleReddit(Content): #, Queue):
         return (self.getPostContent(post), self.getPostContentLink(post))
 
     def getPostContent(self, post):
-        result = post.post.record.text
+        result = post['content'][0]['value']
         return result
 
     def getPostContentLink(self, post):
         result = ''
         return result
- 
+
     def publishApiImage(self, *args, **kwargs):
         res = None
         return res
@@ -117,19 +139,19 @@ class moduleReddit(Content): #, Queue):
             post = kwargs.get('post', '')
             api = kwargs.get('api', '')
         logging.debug(f"Post: {post} Api: {api}")
-        res = self.apiCall('photos.setPerms', photo_id=post['id'], 
+        res = self.apiCall('photos.setPerms', photo_id=post['id'],
                      is_public=1, is_friend=1, is_family=1)
         logging.debug(f"Res: {res}")
         if not res:
             res = "OK. Published!"
         return res
 
-    def deleteApiPosts(self, idPost): 
+    def deleteApiPosts(self, idPost):
         res = None
 
         return (res)
 
-    def deleteApiFavs(self, idPost): 
+    def deleteApiFavs(self, idPost):
         res = None
 
         return (res)
@@ -170,77 +192,42 @@ def main():
 
     apiSrc = rules.selectRuleInteractive()
 
-    testingPostsPos = True
-    if testingPostsPos:
-        apiSrc.setPosts()
-        apiSrc.lastLinkPublished='https://flickr.com/photos/fernand0/53624853058'
-        print(f"Link: {apiSrc.getLastLinkPublished()}")
-        print(f"Link: {apiSrc.getNextPost()}")
-        print(f"Link: {apiSrc.getPosNextPost()}")
-        print(f"Link: {apiSrc.getPosNextPost()}")
-        post = apiSrc.getPosts()[0]
-        print(f"Url: {apiSrc.getPostUrl(post)}")
-        return
-
     testingPosts = False
     if testingPosts:
         apiSrc.setPosts()
+        print("aquí")
+        print(apiSrc.getPosts())
         for i,post in enumerate(apiSrc.getPosts()):
             print(f"Post {i}): {post}")
-        return
-
-    testingPublishDraft = False
-    if testingPublishDraft:
-        apiSrc.setPosts()
-        post = apiSrc.getPosts()[0]
-        print(f"Post: {post}")
-        apiSrc.publishApiDraft(api= apiSrc.getClient(), post=post)
-        return
-
-    testingPost = False
-    if testingPost:
-        apiSrc.publishPost("prueba","https://elmundoesimperfecto.com/", "")
-        return
-
-    testingPostImages = False
-    if testingPostImages:
-        image = '/tmp/2024-03-30_image.png'
-        # Does not work with svg
-        # image = '/tmp/2023-08-04_image.png'
-
-        title = 'Prueba imagen '
-        altText = "Texto adicional"
-
-        print(f"Testing posting with images")
-        res = apiSrc.publishImage("Prueba imagen", image, alt= altText)
-        print(f"Res: {res}")
+            print(f" -Title {apiSrc.getPostTitle(post)}")
+            print(f" -Link {apiSrc.getPostLink(post)}")
+            print(f" -Content link {apiSrc.getPostContentLink(post)}")
+            print(f" -Post link {apiSrc.extractPostLinks(post)}")
+            print(f"Len: {len(apiSrc.getPosts())}")
 
         return
 
-
-    return 
-
-    testingPost = False
-    if testingPost:
-        print("Testing Post")
-        key = ('twitter', 'set', 'fernand0', 'posts')
-        apiSrc = rules.readConfigSrc("", key, None)
-        keyD = ('direct', 'post', 'blsk', 'fernand0.bsky.social')
-        indent = ""
-        more = None
-        apiDst = rules.readConfigDst(indent, keyD, more, apiSrc)
-
-        # Example of long post
-        title = "'The situation has become appalling': fake scientific papers push research credibility to crisis point |  Peer review and scientific publishing |  The Guardian"
-        link = "https://www.theguardian.com/science/2024/feb/03/the-situation-has-become-appalling-fake-scientific-papers-push-research-credibility-to-crisis-point"
-        print(f"Publishing {apiDst.publishPost(title, link, '')}")
-        delete = input("Delete (write the id)? ")
-        if delete:
-            print(f"Deleting: {apiDst.deleteApiPosts(delete)}")
-
+    testingGroups = False
+    if testingGroups:
+        print(f"Pages:")
+        for page in apiSrc.getPages():
+            print(f"  {page}")
         return
-    return
 
+    testingGroupsPosts = True
+    if testingGroupsPosts:
+        print(f"Posts in groups")
+        for page in apiSrc.getPages():
+            apiSrc.setPage(page)
+            apiSrc.setPosts()
+            print(f" Group: {page}")
+            for i,post in enumerate(apiSrc.getPosts()):
+                print(f" Post {i}): {post}")
+                print(f"  -Title {apiSrc.getPostTitle(post)}")
+                print(f"  -Link {apiSrc.getPostLink(post)}")
+            import time
+            time.sleep(1)
+        return
 
 if __name__ == '__main__':
     main()
