@@ -189,7 +189,7 @@ class moduleReddit(Content): #, Queue):
 
 def main():
 
-    logLevel = logging.DEBUG
+    logLevel = logging.INFO
     logging.basicConfig(stream=sys.stdout, level=logLevel,
                         format='%(asctime)s %(message)s')
 
@@ -204,7 +204,7 @@ def main():
         apiSrc.setPosts()
         print(apiSrc.getPosts())
         for i,post in enumerate(apiSrc.getPosts()):
-            print(f"Post {i}): {post}")
+            logging.debug(f"Post {i}): {post}")
             print(f" -Title {apiSrc.getPostTitle(post)}")
             print(f" -Link {apiSrc.getPostLink(post)}")
             print(f" -Content link {apiSrc.getPostContentLink(post)}")
