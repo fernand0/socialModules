@@ -253,12 +253,16 @@ def main():
     import socialModules.moduleRules
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
+    name = nameModule()
+    rulesList = rules.selectRule(name, '@fernand0', 'favs')
+    logging.debug(f"Key: {rulesList}")
+    key = rulesList[0]
+
 
     testingPosts = False
     if testingPosts:
         print("Testing Posts")
-        mastodon.setClient('fernand0')
-        mastodon.setPostsType('posts')
+        mastodon = rules.reacConfigSrc("", key, None)
         mastodon.setPosts()
         if mastodon.getPosts():
             toot = mastodon.getPosts()[0]
@@ -270,15 +274,15 @@ def main():
             print(f" -Post link {mastodon.extractPostLinks(toot)}")
         return
 
-    testingFav = False
+    testingFav = True
     if testingFav:
         print("Testing Fav")
-        mastodon.setClient('fernand0')
-        mastodon.setPostsType('favs')
+        mastodon = rules.readConfigSrc("", key, None)
         mastodon.setPosts()
+        logging.info(f"Favs: {mastodon.getPosts()}")
         if mastodon.getPosts():
             toot = mastodon.getPosts()[0]
-            toot = mastodon.getNextPost()[0]
+            toot = mastodon.getNextPost()#[0]
             print(toot)
             print(f" -Title {mastodon.getPostTitle(toot)}")
             print(f" -Link {mastodon.getPostLink(toot)}")
@@ -295,7 +299,7 @@ def main():
         mastodon.publishApiPost(title, link, '')
         return
 
-    testingPostImages = True
+    testingPostImages = False
     if testingPostImages:
         key =  ('mastodon', 'set', '@fernand0@mastodon.social', 'posts')
         image = '/tmp/2023-06-09_image.png'

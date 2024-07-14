@@ -28,32 +28,42 @@ class modulePocket(Content): #,Queue):
         return(consumer_key, access_token)
 
     def authorize(self):
+        logging.info("Starting authorize process")
         #url = f"https://getpocket.com/v3/oauth/request"
         config = configparser.ConfigParser(interpolation=None)
         fileConfig = f"{CONFIGDIR}/.rss{self.service}"
         config.read(fileConfig)
         name = self.user
+        logging.debug(f"Name: {name}")
+        # Based on https://github.com/dogsheep/pocket-to-sqlite/blob/main/pocket_to_sqlite/cli.py
+        consumer_key = config.get(name, 'consumer_key')
+        redir = config.get(name, 'redirect_uri')
+        if not redir:
+            redir = "https://getpocket.com/connected_applications"
         try:
-            # Based on https://github.com/dogsheep/pocket-to-sqlite/blob/main/pocket_to_sqlite/cli.py
-            consumer_key = config.get(name, 'consumer_key')
             response = requests.post(
                 "https://getpocket.com/v3/oauth/request",
-                { "consumer_key": consumer_key,
-                  "redirect_uri": "https://getpocket.com/connected_applications",
+                json = { "consumer_key": consumer_key,
+                  "redirect_uri": redir,
                 },
             )
             request_token = dict(urllib.parse.parse_qsl(response.text))["code"]
             print("Visit this page and sign in with your Pocket account:\n")
-            print("https://getpocket.com/auth/authorize?request_token={}&redirect_uri={}\n".format(
-                request_token, "https://getpocket.com/connected_applications"
-                )
-            )
+            print(f"https://getpocket.com/auth/authorize?"
+                  f"request_token={request_token}&redirect_uri={redir}\n")
             input("Once you have signed in there, hit <enter> to continue")
-            # Now exchange the request_token for an access_token
+        except: # PocketException as exc:
+            msgLog = (f"Authorize request exception: {sys.info_exc()}")
+            logMsg(msgLog, 1, 0)
+        
+        # Now exchange the request_token for an access_token
+        try:
             response2 = requests.post(
                    "https://getpocket.com/v3/oauth/authorize",
                    {"consumer_key": consumer_key, "code": request_token},
             )
+            logging.debug(f"Response: {response2}")
+            logging.debug(f"Response: {response2.text}")
             codes = dict(urllib.parse.parse_qsl(response2.text))
             access_token = codes['access_token']
             config.set(name, 'access_token', access_token)
@@ -81,12 +91,14 @@ class modulePocket(Content): #,Queue):
         try:
             dictPosts = self.client.retrieve()
             dictPosts = dictPosts['list']
-        except PocketException as exc:
-            msgLog = (f"setApiPosts generated an exception: {exc}")
+            for post in dictPosts:
+                posts.append(dictPosts[post])
+        except: # PocketException as exc:
+            msgLog = (f"authorize generated an exception: {sys.exc_info()}")
+            logging.debug(f"Msggg: {msgLog}")
+            self.authorize()
             logMsg(msgLog, 3, 0)
             dictposts = []
-        for post in dictPosts:
-            posts.append(dictPosts[post])
 
         return(posts[:100])
 
@@ -118,7 +130,7 @@ class modulePocket(Content): #,Queue):
             link = api.getPostLink(post)
             comment= ''
 
-        tags = []
+        tags = ""
         if comment:
             tags = [comment, ]
         # logging.info(f"ll: {link}")
@@ -136,10 +148,15 @@ class modulePocket(Content): #,Queue):
         try:
             msgLog = (f"Link: {link}")
             logMsg(msgLog, 2, 0)
-            res = self.getClient().add(link, tags=tags)
+            msgLog = (f"Tags: {tags}")
+            logMsg(msgLog, 2, 0)
+            res = self.getClient().add(link) #, tags=tags)
         except PocketException as exc:
             msgLog = (f"publishApiPosts generated an exception: {exc}")
             logMsg(msgLog, 3, 0)
+            # msgLog = (f"publishApiPosts generated an exception: {exc}")
+            # logMsg(msgLog, 3, 0)
+            # self.authorize()
             res = "Fail!"
 
         return res
@@ -266,13 +283,29 @@ def main():
     if testingPosts:
         for key in rules.rules.keys():
             if ((key[0] == 'pocket')
-                    and (key[2] == 'fernand0kobo')):
+                    and (key[2] == 'fernand0')):
                 apiSrc = rules.readConfigSrc("", key, rules.more[key])
 
-                apiSrc.setPosts()
+                try:
+                    apiSrc.setPosts()
+                except:
+                    apiSrc.authorize()
                 for post in apiSrc.getPosts():
                         print(f"Title: {apiSrc.getPostTitle(post)}")
         return
+
+    testingPublish = True
+    if testingPublish:
+        for key in rules.rules.keys():
+            if ((key[0] == 'pocket')
+                    and (key[2] == 'fernand0')):
+                apiSrc = rules.readConfigSrc("", key, rules.more[key])
+                res = apiSrc.setPosts()
+                apiSrc.publishPost('titulo',
+                                   'https://github.com/danielbrendel/hortusfox-web',
+                                   '')
+        return
+
 
     PATH = '/tmp/kobo'
     try:
