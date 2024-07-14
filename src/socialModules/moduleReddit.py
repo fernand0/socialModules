@@ -205,11 +205,14 @@ def main():
         print(apiSrc.getPosts())
         for i,post in enumerate(apiSrc.getPosts()):
             logging.debug(f"Post {i}): {post}")
-            print(f" -Title {apiSrc.getPostTitle(post)}")
-            print(f" -Link {apiSrc.getPostLink(post)}")
-            print(f" -Content link {apiSrc.getPostContentLink(post)}")
-            print(f" -Post link {apiSrc.extractPostLinks(post)}")
-            print(f"Len: {len(apiSrc.getPosts())}")
+            try:
+                print(f" -Title {apiSrc.getPostTitle(post)}")
+                print(f" -Link {apiSrc.getPostLink(post)}")
+                print(f" -Content link {apiSrc.getPostContentLink(post)}")
+                print(f" -Post link {apiSrc.extractPostLinks(post)}")
+                print(f"Len: {len(apiSrc.getPosts())}")
+            except:
+                print(f"Post: {post}")
 
         return
 
@@ -228,14 +231,17 @@ def main():
             apiSrc.setPosts()
             print(f" Group: {page}")
             for i,post in enumerate(apiSrc.getPosts()):
-                if logLevel == logging.DEBUG:
+                try:
+                    print(f"  -Title {apiSrc.getPostTitle(post)}")
+                    print(f"  -Link {apiSrc.getPostLink(post)}")
+                    print(f"  -Time {apiSrc.getPostTime(post)}")
+                    print(f"  -Comments {apiSrc.getPostContent(post).count('/comments/')}")
+                    if post['updated'] != post['published']:
+                        print(f"Different!")
+                except:
                     print(f" Post {i}): {post}")
-                print(f"  -Title {apiSrc.getPostTitle(post)}")
-                print(f"  -Link {apiSrc.getPostLink(post)}")
-                print(f"  -Time {apiSrc.getPostTime(post)}")
-                print(f"  -Comments {apiSrc.getPostContent(post).count('/comments/')}")
-                if post['updated'] != post['published']:
-                    print(f"Different!")
+            resUpdate = apiSrc.updateLastLink((page,'cache'), '')
+            print(f"Update: {resUpdate}")
             import time
             time.sleep(1)
         return

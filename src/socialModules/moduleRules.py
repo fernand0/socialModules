@@ -87,7 +87,7 @@ class moduleRules:
                             if (service == 'imdb') or (service == 'imgur'):
                                 nick = url
                             elif ('twitter' in url) or ('flickr' in url):
-                                nick = url.split("/")[-1] 
+                                nick = url.split("/")[-1]
                             elif ('blsk' in url):
                                 nick = url.split(".")[0]
 
@@ -457,7 +457,7 @@ class moduleRules:
         msgLog = "End Checking rules"
         logMsg(msgLog, 1, 2)
 
-    def selectActionInteractive(self, service = None): 
+    def selectActionInteractive(self, service = None):
         if not service:
             nameModule = os.path.basename(inspect.stack()[1].filename)
             service = nameModule.split('.')[0][6:].casefold()
@@ -473,23 +473,26 @@ class moduleRules:
 
         return apiDst
 
-    def selectRuleInteractive(self, service = None): 
+    def selectRuleInteractive(self, service = None):
         if not service:
             nameModule = os.path.basename(inspect.stack()[1].filename)
             service = nameModule.split('.')[0][6:].casefold()
         indent = ""
         selRules = self.selectRule(service, '')
         print(f"Rules:")
-        for i, rul in enumerate(selRules):
-            print(f"{i}) {rul}")
-        iRul = input("Which rule? ")
+        if len(selRules)>1:
+            for i, rul in enumerate(selRules):
+                print(f"{i}) {rul}")
+            iRul = input("Which rule? ")
+        else:
+            iRul = 0
         src = selRules[int(iRul)]
         apiSrc = self.readConfigSrc("", src, self.more[src])
 
         return apiSrc
 
     def selectAction(self, name = "", selector2 = "", selector3 = ""):
-        if hasattr(self, 'indent'): 
+        if hasattr(self, 'indent'):
             indent = self.indent
         else:
             indent = ""
@@ -503,7 +506,7 @@ class moduleRules:
                     actions.append(act)
 
         return actions
-         
+
     def selectRule(self, name = "", selector2 = "", selector3 = ""):
         if hasattr(self, 'indent'):
             indent = self.indent
@@ -995,8 +998,8 @@ class moduleRules:
                 msgLog = f"{indent}Reply: {res}"
                 msgLog = f"{indent}Trying to publish {msgLog} "
                 # print(f"{indent}res: {res}")
-                if (nextPost 
-                    and (res 
+                if (nextPost
+                    and (res
                     and not ('Fail!' in res)
                     and not ('failed!' in res))):
                     #((not res) or ('SAVELINK' in res) or
@@ -1140,8 +1143,8 @@ class moduleRules:
 
                 for i in range(num):
                     time.sleep(tSleep)
-                    res = self.executePublishAction(indent, msgAction, 
-                                                    apiSrc, apiDst, 
+                    res = self.executePublishAction(indent, msgAction,
+                                                    apiSrc, apiDst,
                                                     simmulate,
                                                     nextPost, pos)
             elif (diffTime<=hours):
@@ -1225,7 +1228,7 @@ class moduleRules:
                         srcName = f"{srcName.split('/')[-1]}"
                     elif 'gitter' in srcName:
                         srcName = f"{srcName.split('/')[-2]}"
-                    elif ((not srcName) 
+                    elif ((not srcName)
                           and ('tumblr' in self.getNameAction(src))):
                         srcName = more['url']
                         srcName = f"{srcName.split('/')[2].split('.')[0]}"
@@ -1235,7 +1238,7 @@ class moduleRules:
 
                 # print(f"Select: {select} - {src[0]}{i}")
                 if (select and
-                    (select.lower() != 
+                    (select.lower() !=
                      f"{self.getNameRule(src).lower()}{i}")):
                     actionMsg = f"Skip."
                 else:
@@ -1365,10 +1368,10 @@ class moduleRules:
 def main():
 
     mode = logging.DEBUG
-    logging.basicConfig(filename=f"{LOGDIR}/rssSocial.log", 
-                        # stream=sys.stdout, 
-                        level=mode, 
-                        format="%(asctime)s [%(filename).12s] %(message)s", 
+    logging.basicConfig(filename=f"{LOGDIR}/rssSocial.log",
+                        # stream=sys.stdout,
+                        level=mode,
+                        format="%(asctime)s [%(filename).12s] %(message)s",
                         datefmt="%Y-%m-%d %H:%M:%S",
                         )
 

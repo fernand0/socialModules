@@ -247,7 +247,7 @@ class Content:
         else:
             user = src.getUrl()
             service = self.service
-            # userD = dst[0]
+            userD = dst[0]
             serviceD = dst[1]
             nameDst = serviceD.capitalize()
 
@@ -902,7 +902,7 @@ class Content:
     def publishImage(self, *args, **kwargs):
         post, image = args
         more = kwargs
-        msgLog = (f"{self.indent} Service {self.service} publishing image "  
+        msgLog = (f"{self.indent} Service {self.service} publishing image "
                   f"{image}: {post}")
         logMsg(msgLog, 2, 0)
         msgLog = (f"{self.indent} Service {self.service} more "
@@ -998,7 +998,7 @@ class Content:
         reply = 'Fail!'
         try:
             nameMethod = 'Post'
-            
+
             if (hasattr(self, 'getPostsType')
                     and (self.getPostsType())
                     and (hasattr(self,
@@ -1403,11 +1403,11 @@ class Content:
         if data:
                logMsg(f"{self.indent} Service {self.service} "
                       f"Data error: {data}", 2, 0)
-               if isinstance(data,list) or isinstance(data,tuple): 
-                   for line in data: 
-                       msg.append(f"Unexpected error: {line}") 
+               if isinstance(data,list) or isinstance(data,tuple):
+                   for line in data:
+                       msg.append(f"Unexpected error: {line}")
                else:
-                   msg.append(f"Unexpected error: {data}") 
+                   msg.append(f"Unexpected error: {data}")
         res = ""
         for line in msg:
             msgLog = (f"{self.indent} Service {self.service} "
@@ -1429,11 +1429,11 @@ class Content:
 
             reply = ''
             if title:
-                reply = reply + ' ' + title 
+                reply = reply + ' ' + title
             if content:
                 reply = reply + ' ' + content
-            if link: 
-                reply = reply + '\n' + link 
+            if link:
+                reply = reply + '\n' + link
         else:
             reply = ''
 
