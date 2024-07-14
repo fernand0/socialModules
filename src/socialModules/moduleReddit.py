@@ -230,6 +230,7 @@ def main():
             apiSrc.setPage(page)
             apiSrc.setPosts()
             print(f" Group: {page}")
+            apiSrc.setLastLink(apiDst)
             for i,post in enumerate(apiSrc.getPosts()):
                 try:
                     print(f"  -Title {apiSrc.getPostTitle(post)}")
