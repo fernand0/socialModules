@@ -366,7 +366,10 @@ class Content:
             else:
                 url = self.getUrl()
                 service = self.service.lower()
-                nick = self.getUser()
+                nick = self.getNick()
+                page = self.getPage()
+                if page:
+                    nick = f"{nick}-{page}"
                 fileName = (f"{fileNamePath(url, (service, nick))}.last")
 
         lastTime = ''
