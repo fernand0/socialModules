@@ -139,17 +139,8 @@ class moduleReddit(Content): #, Queue):
         return self.publishApiDraft(*args, **kwargs)
 
     def publishApiDraft(self, *args, **kwargs):
-        res = ''
-        logging.debug(f"Args: {args} Kwargs: {kwargs}")
-        if kwargs:
-            post = kwargs.get('post', '')
-            api = kwargs.get('api', '')
-        logging.debug(f"Post: {post} Api: {api}")
-        res = self.apiCall('photos.setPerms', photo_id=post['id'],
-                     is_public=1, is_friend=1, is_family=1)
-        logging.debug(f"Res: {res}")
-        if not res:
-            res = "OK. Published!"
+        res = None
+
         return res
 
     def deleteApiPosts(self, idPost):
@@ -164,18 +155,11 @@ class moduleReddit(Content): #, Queue):
 
     def processReply(self, reply):
         res = ''
-        msgLog = f"{self.indent}Reply: {reply}"
-        logMsg(msgLog, 1, 1)
-        origReply = reply[0]
-        if 'stat' in origReply and origReply.get('stat') == 'ok':
-            if not ('Fail!' in reply):
-                idPost = self.getPostId(origReply)
-                res = (f"https://flickr.com/photos/{self.user}/status/{idPost}")
+
         return (res)
 
     def getPostHandle(self, post):
         res = None
-        print(f"Post: {post}")
 
         return handle
 
