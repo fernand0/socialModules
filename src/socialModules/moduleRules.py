@@ -103,14 +103,14 @@ class moduleRules:
                                                    f"{mS}")
                                     msgLog = (f"toAppend: {toAppend}")
                                     logging.info(msgLog)
-                            if not (toAppend in srcs):
-                                if (('posts' in moreS)
-                                    and (moreS['posts'] == method[1])):
-                                    srcs.append(toAppend)
-                                    more.append(moreS)
-                                else:
-                                    # Available, but with no rules
-                                    srcsA.append(toAppend)
+                                    if not (toAppend in srcs):
+                                        if (('posts' in moreS)
+                                            and (moreS['posts'] == method[1])):
+                                            srcs.append(toAppend)
+                                            more.append(moreS)
+                                        else:
+                                            # Available, but with no rules
+                                            srcsA.append(toAppend)
             fromSrv = toAppend
             # msgLog = (f"fromSrv toAppend: {toAppend}")
             # logMsg(msgLog, 2, 0)
