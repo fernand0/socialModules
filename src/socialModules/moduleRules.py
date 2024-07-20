@@ -377,7 +377,7 @@ class moduleRules:
         # msgLog = f"Dsts: {dsts}"
         # logMsg(msgLog, 2, 0)
         logging.info(f"Srcs: {srcs}")
-        logging.info(f"SrcsA: {srcA}")
+        logging.info(f"SrcsA: {srcsA}")
 
         self.indent = f" Destinations:"
         for dst in dsts:
