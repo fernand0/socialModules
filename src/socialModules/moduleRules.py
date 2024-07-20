@@ -100,7 +100,7 @@ class moduleRules:
                                    toAppend = (service, "set", nick, 
                                                f"channel-moreS['posts']")
                             msgLog = (f"toAppend: {toAppend}")
-                            logging.info(msgLog, 2, 0)
+                            logging.info(msgLog)
                             if not (toAppend in srcs):
                                 if (('posts' in moreS)
                                     and (moreS['posts'] == method[1])):
