@@ -368,6 +368,10 @@ class moduleRules:
 
         for src in srcsA:
             logging.info(f"-> {src}")
+            # FIXME Repeated code
+            iniK, nameK = self.getIniKey(self.getNameRule(src).upper(),
+                                         myKeys, myIniKeys)
+            available[iniK]["data"].append({'src': src, 'more': None})
             if not src in srcs:
                 # msgLog = (f"Adding implicit {src}")
                 # logMsg(msgLog, 2, 0)
