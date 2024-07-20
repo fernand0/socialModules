@@ -189,9 +189,16 @@ class Content:
         logMsg(msgLog, 2, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
             typePosts = self.getPostsType()
-            cmd = getattr(
-                self, f"setApi{self.getPostsType().capitalize()}"
-            )
+            if self.getPostsType() in ['posts', 'drafts', 'draft']:
+                cmd = getattr(
+                    self, f"setApi{self.getPostsType().capitalize()}"
+                )
+            else:
+                self.setChannel(self.getPostsType())
+                cmd = getattr(
+                    self, f"setApiPosts)}"
+                )
+
         else:
             cmd = getattr(self, "setApiPosts")
 
