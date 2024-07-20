@@ -93,14 +93,16 @@ class moduleRules:
 
                             if 'posts' in moreS:
                                 logging.info(f"More: {moreS['posts']} met: {method}")
-                                if moreS['posts'] == method[1]:
-                                   toAppend = (service, "set",
-                                               nick, method[1])
-                                else:
-                                   toAppend = (service, "set", nick, 
-                                               f"{moreS['posts']}")
-                                msgLog = (f"toAppend: {toAppend}")
-                                logging.info(msgLog)
+                                moreSS = moreS['posts'].split(',')
+                                for mS in moreSS:
+                                    if mS == method[1]:
+                                       toAppend = (service, "set",
+                                                   nick, method[1])
+                                    else:
+                                       toAppend = (service, "set", nick, 
+                                                   f"{mS}")
+                                    msgLog = (f"toAppend: {toAppend}")
+                                    logging.info(msgLog)
                             if not (toAppend in srcs):
                                 if (('posts' in moreS)
                                     and (moreS['posts'] == method[1])):
