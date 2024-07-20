@@ -369,6 +369,8 @@ class moduleRules:
 
         for src in srcsA:
             logging.info(f"-> {src}")
+            if not (src in rulesNew):
+                rulesNew[src] = []
             # FIXME Repeated code
             if not src in srcs:
                 # msgLog = (f"Adding implicit {src}")
