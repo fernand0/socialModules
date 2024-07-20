@@ -92,7 +92,6 @@ class moduleRules:
                                 nick = url.split(".")[0]
 
                             if 'posts' in moreS:
-                                logging.info(f"More: {moreS['posts']} met: {method}")
                                 moreSS = moreS['posts'].split(',')
                                 for mS in moreSS:
                                     if mS == method[1]:
@@ -135,6 +134,7 @@ class moduleRules:
             else:
                 postsType = "posts"
             msgLog = f"{self.indent} Type post {postsType}"
+            logging.debug(f" Type post {postsType}")
             logMsg(msgLog, 2, 0)
             if fromSrv:
                 fromSrv = ( fromSrv[0], fromSrv[1], fromSrv[2], postsType,)
@@ -376,6 +376,8 @@ class moduleRules:
         # Now we can see which destinations can be also sources
         # msgLog = f"Dsts: {dsts}"
         # logMsg(msgLog, 2, 0)
+        logging.info(f"Srcs: {srcs}")
+        logging.info(f"SrcsA: {srcA}")
 
         self.indent = f" Destinations:"
         for dst in dsts:
