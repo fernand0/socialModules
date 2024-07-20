@@ -92,6 +92,7 @@ class moduleRules:
                                 nick = url.split(".")[0]
 
                             if 'posts' in moreS:
+                                logging.info(f"More: {moreS['posts'} met: {method}")
                                 if moreS['posts'] == method[1]:
                                    toAppend = (service, "set",
                                                nick, method[1])
