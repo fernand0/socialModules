@@ -364,14 +364,12 @@ class moduleRules:
                                 #print(f"destRule: {destRule}")
                                 rulesNew[fromSrv].append(destRule)
 
+        logging.info(f"Rules: {rulesNew}")
         # Now we can add the sources not added.
 
         for src in srcsA:
             logging.info(f"-> {src}")
             # FIXME Repeated code
-            iniK, nameK = self.getIniKey(self.getNameRule(src).upper(),
-                                         myKeys, myIniKeys)
-            available[iniK]["data"].append({'src': src, 'more': None})
             if not src in srcs:
                 # msgLog = (f"Adding implicit {src}")
                 # logMsg(msgLog, 2, 0)
