@@ -367,6 +367,7 @@ class moduleRules:
         # Now we can add the sources not added.
 
         for src in srcsA:
+            logging.info(f"-> {src}")
             if not src in srcs:
                 # msgLog = (f"Adding implicit {src}")
                 # logMsg(msgLog, 2, 0)
