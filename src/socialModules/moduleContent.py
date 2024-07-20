@@ -196,7 +196,7 @@ class Content:
             else:
                 self.setChannel(self.getPostsType())
                 cmd = getattr(
-                    self, f"setApiPosts)}"
+                    self, f"setApiPosts"
                 )
 
         else:
