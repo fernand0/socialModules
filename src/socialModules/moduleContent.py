@@ -846,6 +846,7 @@ class Content:
 
     def getLink(self, i):
         link = ""
+        logging.debug(f"Posts: {self.getPosts()}")
         if i < len(self.getPosts()):
             post = self.getPost(i)
             link = self.getPostLink(post)
