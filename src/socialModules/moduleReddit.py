@@ -48,6 +48,9 @@ class moduleReddit(Content): #, Queue):
             self.client.setRssFeed(self.rssFeed)
             self.client.setPosts()
         posts = self.client.getPosts()
+            
+        lastLink, lastTime = checkLastLink(self.url)
+        logging.info(f"Last: {lastLink} |  {lastTime}")
 
         return posts
 
