@@ -49,6 +49,8 @@ class moduleReddit(Content): #, Queue):
             self.client.setPosts()
         posts = self.client.getPosts()
         posts.reverse()
+        #FIXME: This should not be here
+        self.posts = posts
             
         lastLink, lastTime = checkLastLink(self.getUrl())
         logging.info(f"Last: {lastLink} |  {lastTime}")
