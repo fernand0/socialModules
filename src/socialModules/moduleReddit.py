@@ -19,6 +19,7 @@ class moduleReddit(Content): #, Queue):
         # FIXME: Do we call this method directly?
         self.id = keys[0]
         self.base_url = self.user.split('u')[0]
+        self.url = self.user
         self.nick = self.user.split('/')[-1]
         self.rssFeedAll = (f"{self.base_url}/.rss?feed="
                            f"{self.id}&user={self.nick}")
@@ -64,8 +65,16 @@ class moduleReddit(Content): #, Queue):
         if self.page:
             self.rssFeed = f"r/{self.page}/new/.rss?sort=new"
 
+    def getUrl(self):
+        url = self.getUrl()
+        page = self.getPage()
+        if page:
+            url = page
+        return url
+
     def getPage(self):
-        return self.page
+        page = self.page
+        return page
 
     def setPages(self):
         blog = socialModules.moduleRss.moduleRss()
