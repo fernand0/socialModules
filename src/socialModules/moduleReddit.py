@@ -69,7 +69,7 @@ class moduleReddit(Content): #, Queue):
         url = self.url
         page = self.getPage()
         if page:
-            url = f"{url}/r/{page}
+            url = f"{url}/r/{page}"
         return url
 
     def getPage(self):
