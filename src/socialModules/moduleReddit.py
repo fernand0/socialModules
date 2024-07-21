@@ -109,9 +109,7 @@ class moduleReddit(Content): #, Queue):
         return res
 
     def getPostLink(self, post):
-        logging.debug(f"Post: {post}")
         link = post['link']
-        logging.debug(f"Post link: {link}")
         return link
 
     def extractPostLinks(self, post, linksToAvoid=""):

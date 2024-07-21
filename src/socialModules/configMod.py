@@ -39,10 +39,8 @@ def logMsg(msgLog, log=1, output=1):
         print("====================================")
 
 def fileNamePath(url, socialNetwork=()):
-    logging.info(f"url: {url}")
     urlParsed = urllib.parse.urlparse(url)
     myNetloc = urlParsed.netloc
-    logging.info(f"myNetloc: {myNetloc}")
     if not myNetloc:
         myNetloc=url
     if ('twitter' in myNetloc) or ('reddit' in myNetloc):
@@ -56,7 +54,6 @@ def fileNamePath(url, socialNetwork=()):
         myFile = (f"{DATADIR}/{myNetloc}_"
                   f"{socialNetwork[0]}_{socialNetwork[1]}")
         theName = os.path.expanduser(myFile)
-    logging.info(f"theName: {theName}")
     return(theName)
 
 def setNextTime(blog, socialNetwork, tNow, tSleep):
