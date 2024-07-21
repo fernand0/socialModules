@@ -49,7 +49,7 @@ class moduleReddit(Content): #, Queue):
             self.client.setPosts()
         posts = self.client.getPosts()
             
-        lastLink, lastTime = checkLastLink(self.url)
+        lastLink, lastTime = checkLastLink(self.getUrl())
         logging.info(f"Last: {lastLink} |  {lastTime}")
 
         return posts
