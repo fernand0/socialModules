@@ -66,7 +66,7 @@ class moduleReddit(Content): #, Queue):
             self.rssFeed = f"r/{self.page}/new/.rss?sort=new"
 
     def getUrl(self):
-        url = self.getUrl()
+        url = self.url
         page = self.getPage()
         if page:
             url = page
