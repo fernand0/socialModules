@@ -45,7 +45,7 @@ def fileNamePath(url, socialNetwork=()):
     logging.info(f"myNetloc: {myNetloc}")
     if not myNetloc:
         myNetloc=url
-    if 'twitter' in myNetloc:
+    if ('twitter' in myNetloc) or ('reddit' in myNetloc):
         myNetloc = f"{myNetloc}_{urlParsed.path[1:]}"
     if myNetloc.endswith('/'):
         myNetloc = myNetloc[:-1]
