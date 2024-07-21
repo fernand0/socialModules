@@ -49,6 +49,7 @@ def fileNamePath(url, socialNetwork=()):
         myNetloc = f"{myNetloc}_{urlParsed.path[1:]}"
     if myNetloc.endswith('/'):
         myNetloc = myNetloc[:-1]
+    theName = theName.replace('/')
     if not socialNetwork:
         theName = (f"{DATADIR}/{myNetloc}")
     else:
