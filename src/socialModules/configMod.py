@@ -53,6 +53,7 @@ def fileNamePath(url, socialNetwork=()):
         myFile = (f"{DATADIR}/{myNetloc}_"
                   f"{socialNetwork[0]}_{socialNetwork[1]}")
         theName = os.path.expanduser(myFile)
+    logging.info(f"theName: {theName}")
     return(theName)
 
 def setNextTime(blog, socialNetwork, tNow, tSleep):
