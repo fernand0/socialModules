@@ -849,7 +849,8 @@ class Content:
         logging.debug(f"Posts: {self.getPosts()}")
         logging.debug(f"Posts: {type(self.getPosts())}")
         logging.debug(f"Posts: {len(self.getPosts())}")
-        if i < len(self.getPosts()):
+        numPosts = len(self.getPosts())
+        if i < numPosts:
             post = self.getPost(i)
             link = self.getPostLink(post)
         return link
