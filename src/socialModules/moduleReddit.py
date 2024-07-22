@@ -48,7 +48,6 @@ class moduleReddit(Content): #, Queue):
         posts = []
         if self.page:
             self.clientRss.setRssFeed(self.rssFeed)
-            logging.info(f"--------> {self.rssFeed}")
             self.clientRss.setPosts()
             posts = self.clientRss.getPosts()
             posts.reverse()
@@ -77,7 +76,7 @@ class moduleReddit(Content): #, Queue):
             else:
                 self.warning("You need to join, at least, one group")
         if self.page:
-            self.rssFeed = f"r/{self.page}/new/.rss?sort=new"
+            self.rssFeed = f"r/{self.page}/.rss?sort=new"
 
     def getUrl(self):
         url = self.url
