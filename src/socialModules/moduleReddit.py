@@ -57,8 +57,8 @@ class moduleReddit(Content): #, Queue):
         pos = self.getLinkPosition(lastLink)
         logging.info(f"Position: {pos} Len: {len(posts)}")
         if pos<0:
-            pos = 1
-        posts = posts[pos-1:]
+            pos = 0
+        posts = posts[pos:]
         logging.info(f"Posts: {posts}")
 
         return posts
