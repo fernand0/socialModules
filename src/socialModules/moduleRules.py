@@ -111,10 +111,10 @@ class moduleRules:
                                             # Available, but with no rules
                                             srcsA.append(toAppend)
             fromSrv = toAppend
-            # msgLog = (f"fromSrv toAppend: {toAppend}")
-            # logMsg(msgLog, 2, 0)
-            # msgLog = (f"fromSrv moreS: {moreS}")
-            # logMsg(msgLog, 2, 0)
+            msgLog = (f"fromSrv toAppend: {toAppend}")
+            logMsg(msgLog, 2, 0)
+            msgLog = (f"fromSrv moreS: {moreS}")
+            logMsg(msgLog, 2, 0)
 
             if "time" in config.options(section):
                 timeW = config.get(section, "time")
