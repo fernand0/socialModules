@@ -48,7 +48,7 @@ class moduleReddit(Content): #, Queue):
             self.client.setRssFeed(self.rssFeed)
             self.client.setPosts()
         posts = self.client.getPosts()
-        posts.reverse()
+        # posts.reverse()
         #FIXME: This should not be here
         self.posts = posts
             
