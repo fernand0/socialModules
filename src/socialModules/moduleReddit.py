@@ -68,8 +68,10 @@ class moduleReddit(Content): #, Queue):
 
     def setPage(self, page=None):
         if page:
-            if not page.startswith('http'):
-            self.page = f"https://www.reddit.com/r/{page}"
+            if not page.startswith('http'): 
+                self.page = f"https://www.reddit.com/r/{page}"
+            else:
+                self.page = page
         else:
             if self.groups:
                 self.page = self.groups[0]
