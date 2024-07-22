@@ -52,10 +52,8 @@ class moduleReddit(Content): #, Queue):
             posts = self.clientRss.getPosts()
             posts.reverse()
             #FIXME: This should not be here
-            logging.info(f"Postssss: {posts}")
             self.posts = posts[:-1] # The last one seems to be the always the
                                     # same post
-            logging.info(f"Postssss: {posts}")
             
         lastLink, lastTime = checkLastLink(self.getUrl())
         logging.info(f"Last: {lastLink} |  {lastTime}")
@@ -63,7 +61,7 @@ class moduleReddit(Content): #, Queue):
         logging.info(f"Position: {pos} Len: {len(posts)}")
         if pos<0:
             pos = 0
-        posts = self.posts[pos:-1]
+        posts = self.posts[pos:]
 
         return posts
 
