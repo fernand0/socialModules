@@ -1299,11 +1299,11 @@ class Content:
 
     def getLinkPosition(self, link):
         posts = self.getPosts()
+        pos = -1 # len(posts)
         if posts:
-            pos = len(posts)
             if not link:
                 #logging.debug(self.getPosts())
-                return len(self.getPosts())
+                return -1 #len(self.getPosts())
             for i, entry in enumerate(posts):
                 linkS = link
                 if isinstance(link, bytes):
