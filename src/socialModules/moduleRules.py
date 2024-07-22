@@ -498,7 +498,10 @@ class moduleRules:
         else:
             iRul = 0
         src = selRules[int(iRul)]
-        apiSrc = self.readConfigSrc("", src, self.more[src])
+        more = None
+        if src in self.more:
+            more = self.more[src]
+        apiSrc = self.readConfigSrc("", src, more)
 
         return apiSrc
 
@@ -528,7 +531,9 @@ class moduleRules:
         rules = []
         for src in self.rules.keys():
             if self.getNameRule(src).capitalize() == name.capitalize():
-                more = self.more[src]
+                more = None
+                if src in self.more:
+                    more = self.more[src]
                 srcR = src
                 logging.debug(f"profileR: {self.getProfileRule(src)}")
                 logging.debug(f"profileR: {self.getProfileAction(src)}")

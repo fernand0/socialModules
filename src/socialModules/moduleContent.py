@@ -205,7 +205,9 @@ class Content:
         posts = cmd()
         # msgLog = (f"{self.indent} Service {self.service} Posts: {posts}")
         # logMsg(msgLog, 2, 0)
+        print(f"Posts->->: {posts}")
         self.assignPosts(posts)
+        print(f"Posts->->->: {self.posts}")
         self.indent = self.indent[:-1]
         msgLog = f"{self.indent} Service {self.service} End setPosts"
         logMsg(msgLog, 2, 0)

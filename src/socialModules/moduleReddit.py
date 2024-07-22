@@ -33,7 +33,8 @@ class moduleReddit(Content): #, Queue):
         blog.setUrl(self.base_url)
         blog.setRssFeed(self.rssFeed)
 
-        client = blog
+        self.clientRss = blog
+        client = None
 
         return client
 
@@ -44,13 +45,15 @@ class moduleReddit(Content): #, Queue):
         return api
 
     def setApiPosts(self):
+        posts = []
+        print(f"--------> {self.clientRss.getRssFeed()}")
         if self.page:
-            self.client.setRssFeed(self.rssFeed)
-            self.client.setPosts()
-        posts = self.client.getPosts()
-        posts.reverse()
-        #FIXME: This should not be here
-        self.posts = posts
+            self.clientRss.setRssFeed(self.rssFeed)
+            self.clientRss.setPosts()
+            posts = self.clientRss.getPosts()
+            posts.reverse()
+            #FIXME: This should not be here
+            self.posts = posts
             
         lastLink, lastTime = checkLastLink(self.getUrl())
         logging.info(f"Last: {lastLink} |  {lastTime}")
@@ -68,10 +71,7 @@ class moduleReddit(Content): #, Queue):
 
     def setPage(self, page=None):
         if page:
-            if not page.startswith('http'): 
-                self.page = f"https://www.reddit.com/r/{page}"
-            else:
-                self.page = page
+            self.page = page
         else:
             if self.groups:
                 self.page = self.groups[0]
@@ -198,7 +198,7 @@ class moduleReddit(Content): #, Queue):
 
 def main():
 
-    logLevel = logging.INFO
+    logLevel = logging.DEBUG
     logging.basicConfig(stream=sys.stdout, level=logLevel,
                         format='%(asctime)s %(message)s')
 
@@ -217,6 +217,7 @@ def main():
             logging.debug(f"Post {i}): {post}")
             try:
                 print(f" -Title {apiSrc.getPostTitle(post)}")
+                print(f" -Time {apiSrc.getPostTime(post)}")
                 print(f" -Link {apiSrc.getPostLink(post)}")
                 print(f" -Content link {apiSrc.getPostContentLink(post)}")
                 print(f" -Post link {apiSrc.extractPostLinks(post)}")
