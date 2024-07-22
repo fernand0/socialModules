@@ -1303,7 +1303,7 @@ class Content:
         if posts:
             if not link:
                 #logging.debug(self.getPosts())
-                return -1 #len(self.getPosts())
+                pos = -1 #len(self.getPosts())
             for i, entry in enumerate(posts):
                 linkS = link
                 if isinstance(link, bytes):
@@ -1321,8 +1321,6 @@ class Content:
                     # the last one
                     pos = i
                     # print(url[:lenCmp],linkS[:lenCmp])
-        else:
-            pos = -1
         return pos
 
     def datePost(self, pos):
