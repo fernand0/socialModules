@@ -46,9 +46,9 @@ class moduleReddit(Content): #, Queue):
 
     def setApiPosts(self):
         posts = []
-        logging.info(f"--------> {self.clientRss.getRssFeed()}")
         if self.page:
             self.clientRss.setRssFeed(self.rssFeed)
+            logging.info(f"--------> {self.rssFeed}")
             self.clientRss.setPosts()
             posts = self.clientRss.getPosts()
             posts.reverse()
