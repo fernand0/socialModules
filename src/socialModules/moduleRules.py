@@ -111,6 +111,9 @@ class moduleRules:
                                         else:
                                             # Available, but with no rules
                                             srcsA.append(toAppend)
+                            else:
+                               toAppend = (service, "set", nick, method[1])
+
             fromSrv = toAppend
             # msgLog = (f"fromSrv toAppend: {toAppend}")
             # logMsg(msgLog, 2, 0)
