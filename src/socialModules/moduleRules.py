@@ -666,7 +666,7 @@ class moduleRules:
                 if i < len(key):
                     iniK = key[i]
                 else:
-                    iniK = "j"
+                    iniK = "ñ"
                     while iniK in myIniKeys:
                         iniK = chr(ord(iniK) + 1)
             myKeys[key] = iniK
