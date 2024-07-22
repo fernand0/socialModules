@@ -48,7 +48,7 @@ class moduleReddit(Content): #, Queue):
             self.client.setRssFeed(self.rssFeed)
             self.client.setPosts()
         posts = self.client.getPosts()
-        # posts.reverse()
+        posts.reverse()
         #FIXME: This should not be here
         self.posts = posts
             
@@ -68,7 +68,8 @@ class moduleReddit(Content): #, Queue):
 
     def setPage(self, page=None):
         if page:
-            self.page = page
+            if not page.startswith('http'):
+            self.page = f"https://www.reddit.com/r/{page}"
         else:
             if self.groups:
                 self.page = self.groups[0]
@@ -205,8 +206,9 @@ def main():
 
     apiSrc = rules.selectRuleInteractive()
 
-    testingPosts = False
+    testingPosts = True
     if testingPosts:
+        apiSrc.setPage('hifiaudio')
         apiSrc.setPosts()
         print(apiSrc.getPosts())
         for i,post in enumerate(apiSrc.getPosts()):
@@ -229,7 +231,7 @@ def main():
             print(f"  {page}")
         return
 
-    testingGroupsPosts = True
+    testingGroupsPosts = False
     if testingGroupsPosts:
         print(f"Posts in groups")
         for page in apiSrc.getPages():
