@@ -52,7 +52,8 @@ class moduleReddit(Content): #, Queue):
             posts = self.clientRss.getPosts()
             posts.reverse()
             #FIXME: This should not be here
-            self.posts = posts
+            self.posts = posts[:-1] # The last one seems to be the always the
+                                    # same post
             
         lastLink, lastTime = checkLastLink(self.getUrl())
         logging.info(f"Last: {lastLink} |  {lastTime}")
