@@ -87,7 +87,9 @@ class moduleReddit(Content): #, Queue):
         return url
 
     def getPage(self):
-        page = self.page
+        page = ''
+        if hasattr(self, 'page'):
+            page = self.page
         return page
 
     def setPages(self):
