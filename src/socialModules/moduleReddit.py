@@ -77,7 +77,7 @@ class moduleReddit(Content): #, Queue):
             else:
                 self.warning("You need to join, at least, one group")
         if self.page:
-            self.rssFeed = f"r/{self.page}/.rss?sort=new"
+            self.rssFeed = f"r/{self.page}/new/.rss?sort=new"
 
     def getUrl(self):
         url = self.url
