@@ -577,6 +577,10 @@ class moduleRules:
         url = url.replace(':','').replace('/','')
         return url
 
+    def getNickSrc(self, action):
+        src = self.getActionComponent(action, 0)
+        return src
+
     def getNickAction(self, action):
         if isinstance(self.getActionComponent(action, 2), tuple):
             nick = self.getActionComponent(self.getActionComponent(action, 2),
@@ -1040,6 +1044,7 @@ class moduleRules:
         logMsg(f"{indent} End executeAction {textEnd}", 2, 0)
         return f"{indent} {res} {textEnd}"
 
+
     def executeRules(self):
         msgLog = "Start Executing rules"
         logMsg(msgLog, 1, 2)
@@ -1057,9 +1062,6 @@ class moduleRules:
             previous = ""
 
             for src in sorted(self.rules.keys()):
-                if not src:
-                    #FIXME. There should not be empty srd's
-                    continue
                 if (self.getNameAction(src) != previous):
                     i = 0
                 else:
@@ -1067,8 +1069,6 @@ class moduleRules:
                 previous = self.getNameAction(src)
 
                 indent = f"{self.getNameAction(src):->9}{i}>"
-                msgLog = f"{indent} Src: {src}"
-                logMsg(msgLog, 2, 0)
 
                 if src in self.more:
                     if (('hold' in self.more[src])
@@ -1112,7 +1112,8 @@ class moduleRules:
                           and ('tumblr' in self.getNameAction(src))):
                         srcName = more['url']
                         srcName = f"{srcName.split('/')[2].split('.')[0]}"
-                text = (f"Source: {srcName} ({self.getNickAction(src)})")
+                msgIni = (f"Source: [{self.getNickSrc(src)}] {srcName} "
+                          f"({self.getNickAction(src)})")
 
                 actions = self.rules[src]
 
@@ -1123,7 +1124,7 @@ class moduleRules:
                     actionMsg = f"Skip."
                 else:
                     actionMsg = (f"Scheduling.")
-                msgLog = f"{indent} {text}"
+                msgLog = f"{indent} {msgIni}"
                 logMsg(msgLog, 1, 1)
                 indent = f"{indent} "
                 msgLog = f"{indent} {actionMsg}"
