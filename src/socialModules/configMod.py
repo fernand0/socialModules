@@ -200,7 +200,7 @@ def getModule(profile, indent=''):
     # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
     import importlib
     serviceName = profile.capitalize()
-    msgLog = (f"{indent} service {serviceName} getModule")
+    msgLog = (f"{indent} [{serviceName}] Checking service getModule")
     logMsg(msgLog, 2, 0)
 
     mod = importlib.import_module('socialModules.module' + serviceName)
