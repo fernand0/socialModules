@@ -55,7 +55,7 @@ class modulePocket(Content): #,Queue):
         except: # PocketException as exc:
             msgLog = (f"Authorize request exception: {sys.info_exc()}")
             logMsg(msgLog, 1, 0)
-        
+
         # Now exchange the request_token for an access_token
         try:
             response2 = requests.post(
@@ -294,7 +294,7 @@ def main():
                         print(f"Title: {apiSrc.getPostTitle(post)}")
         return
 
-    testingPublish = True
+    testingPublish = False
     if testingPublish:
         for key in rules.rules.keys():
             if ((key[0] == 'pocket')
