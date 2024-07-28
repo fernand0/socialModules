@@ -341,10 +341,11 @@ class moduleRules:
                                 # cases is OK
                                 destRuleCache = ('direct', 'post',
                                                  key, moreS[key])
-                                if not (fromCacheNew in rulesNew):
-                                    rulesNew[fromCacheNew] = []
-                                rulesNew[fromCacheNew].append(destRuleCache)
-                                mor[fromCacheNew] = moreS
+                                if fromCacheNew: 
+                                    if (not fromCacheNew in rulesNew): 
+                                        rulesNew[fromCacheNew] = []
+                                    rulesNew[fromCacheNew].append(destRuleCache)
+                                    mor[fromCacheNew] = moreS
                                 # print(f"fromCache: {fromCache}")
                                 # print(f"fromCacheNew: {fromCacheNew}")
                                 # print(f"destRule: {destRule}")
@@ -358,15 +359,16 @@ class moduleRules:
                             logMsg(msgLog, 2, 0)
                             msgLog = f"{self.indent}  from Srv: {fromSrv}"
                             logMsg(msgLog, 2, 0)
-                            if not (fromSrv in rulesNew):
-                                rulesNew[fromSrv] = []
-                            #print(f".fromSrv: {fromSrv}")
-                            if destRuleNew:
-                                #print(f".destRuleNew: {destRuleNew}")
-                                rulesNew[fromSrv].append(destRuleNew)
-                            else:
-                                #print(f"destRule: {destRule}")
-                                rulesNew[fromSrv].append(destRule)
+                            if fromSrv: 
+                                if not (fromSrv in rulesNew): 
+                                    rulesNew[fromSrv] = [] 
+                                    #print(f".fromSrv: {fromSrv}") 
+                                if destRuleNew:
+                                    #print(f".destRuleNew: {destRuleNew}")
+                                    rulesNew[fromSrv].append(destRuleNew)
+                                else:
+                                    #print(f"destRule: {destRule}")
+                                    rulesNew[fromSrv].append(destRule)
 
         logging.info(f"Rules: {rulesNew}")
         # Now we can add the sources not added.

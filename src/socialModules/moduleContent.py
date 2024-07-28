@@ -189,7 +189,7 @@ class Content:
         logMsg(msgLog, 2, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
             typePosts = self.getPostsType()
-            if self.getPostsType() in ['posts', 'drafts', 'draft']:
+            if self.getPostsType() in ['posts', 'drafts', 'draft','cache']:
                 cmd = getattr(
                     self, f"setApi{self.getPostsType().capitalize()}"
                 )
