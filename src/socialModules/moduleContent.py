@@ -4,6 +4,7 @@
 
 import configparser
 import html
+import inspect
 import re
 import sys
 from html.parser import HTMLParser
@@ -146,6 +147,34 @@ class Content:
         #     result = ""
 
         # return result
+
+    def setMoreValues(self, more):
+        # We have a dictionary of values and we check for methods for
+        # setting these values in our object
+        if more:
+            # Setting values available in more
+            for option in more:
+                if option == 'posts':
+                    nameMethod = f"setPostsType"
+                else:
+                    nameMethod = f"set{option.capitalize()}"
+
+                if  nameMethod in self.__dir__():
+                    # Simple names setUrl, setTime, ...
+                    # setting url, time, max, posts,
+                    # setCache ¿?
+                    cmd = getattr(self, nameMethod)
+                    if inspect.ismethod(cmd):
+                        cmd(more[option])
+                else:
+                    for name in self.__dir__():
+                        if name.lower() == nameMethod.lower():
+                            # Composed names setPostAction, setLinksToAvoid, ...
+                            # setting postaction, linkstoavoid
+                            cmd = getattr(self, name)
+                            if inspect.ismethod(cmd):
+                                cmd(more[option])
+                                break
 
     def apiCall(self, commandName, api = None, **kwargs):
         if api:

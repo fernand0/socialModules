@@ -1,6 +1,5 @@
 import concurrent.futures
 import configparser
-import inspect
 import logging
 import os
 import random
@@ -23,7 +22,8 @@ myModuleList = {}
 class moduleRules:
 
     def checkRules(self, configFile = None, select=None):
-        msgLog = "Checking rules"
+        operation = "Checking Rules"
+        msgLog = f"Start {operation}"
         logMsg(msgLog, 1, 2)
         config = configparser.ConfigParser()
         if not configFile:
@@ -265,12 +265,21 @@ class moduleRules:
                                     rulesNew[fromCacheNew].append(destRuleCache)
                                     mor[fromCacheNew] = moreS
 
-                            msgLog = (f"{msgIni} Rule: -> {key}({dest})")
-                            logMsg(msgLog, 2, 0)
-                            msgLog = (f"{msgIni}  from Srv: {fromSrv}")
-                            logMsg(msgLog, 2, 0)
-                            msgLog = (f"{msgIni}  dest Rule: {destRule}")
-                            logMsg(msgLog, 2, 0)
+                            if fromSrv:
+                                # msgLog = (f"{msgIni} Action: -> {key}"
+                                #           f"({fromSrv[3]})")
+                                # logMsg(msgLog, 2, 0)
+                                msgLog = (f"{msgIni} Source: {fromSrv[2]} "
+                                          f"({fromSrv[3]}) ({fromSrv})")
+                                logMsg(msgLog, 2, 0)
+                                msgLog = (f"{msgIni}  Action: {destRule[3]}@"
+                                          f"{destRule[2]} {destRule[1]} "
+                                          f"({destRule})")
+                                logMsg(msgLog, 2, 0)
+                            # msgLog = (f"{msgIni}  from Srv: {fromSrv}")
+                            # logMsg(msgLog, 2, 0)
+                            # msgLog = (f"{msgIni}  dest Rule: {destRule}")
+                            # logMsg(msgLog, 2, 0)
                             if fromSrv:
                                 if not (fromSrv in rulesNew):
                                     rulesNew[fromSrv] = []
@@ -343,7 +352,7 @@ class moduleRules:
         self.available = available
         self.availableList = availableList
 
-        msgLog = "End Checking rules"
+        msgLog = f"End {operation}"
         logMsg(msgLog, 1, 2)
 
         msgLog = (f"RulesNew: {rulesNew}")
@@ -602,6 +611,15 @@ class moduleRules:
             action = self.getActionComponent(action, 1)
         return action
 
+    def getDestAction(self, action):
+        profile = ''
+        if isinstance(self.getActionComponent(action, 2), tuple):
+            profile = action[1:]
+        else:
+            profile = self.getActionComponent(action, 3)
+
+        return profile
+
     def getProfileAction(self, action):
         if isinstance(self.getActionComponent(action, 2), tuple):
             profile = self.getActionComponent(self.getActionComponent(action, 2), 2)
@@ -669,35 +687,17 @@ class moduleRules:
         msgLog = f"{indent} Start readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         indent = f"{indent} "
-        # msgLog = f"{indent} readConfigSrc: {src}"
-        # logMsg(msgLog, 2, 0)
-        # msgLog = f"{indent} readConfigSrc: {self.getProfileRule(src)}"
-        # logMsg(msgLog, 2, 0)
-        apiSrc = getApi(self.getNameRule(src), self.getProfileRule(src), indent)
+
+
+        logging.info(f"(====> Src ")
+        logging.info(f"(====> {self.getNameRule(src)} , {self.getProfileRule(src)}")
+        apiSrc = getApi(self.getNameRule(src), 
+                        self.getProfileRule(src), indent)
         if self.getNameRule(src) == 'cache':
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
             apiSrc.postaction = 'delete'
 
-        if more:
-            for option in more:
-                if option == 'posts':
-                    nameMethod = f"setPostsType"
-                else:
-                    nameMethod = f"set{option.capitalize()}"
-
-                if  nameMethod in apiSrc.__dir__():
-                    # setCache ¿?
-                    # url, time, max, posts,
-                    cmd = getattr(apiSrc, nameMethod)
-                    if inspect.ismethod(cmd):
-                        cmd(more[option])
-                else:
-                    for name in apiSrc.__dir__():
-                        if name.lower() == nameMethod.lower():
-                            cmd = getattr(apiSrc, name)
-                            if inspect.ismethod(cmd):
-                                cmd(more[option])
-                                break
+        apiSrc.setMoreValues(more)
 
         if not apiSrc.getPostsType():
             apiSrc.setPostsType('posts')
@@ -718,25 +718,39 @@ class moduleRules:
         msgLog = f"{indent} Start readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         indent = f"{indent} "
-        msgLog = (f"{indent} readConfigDst Action: {action}")
-        logMsg(msgLog, 2, 0)
+        
+        logging.debug(f">====> action {action}")
 
+        # apiDst = getApi(self.getNameAction(action), 
+        #                 self.getProfileAction(action), indent)
+        apiDst = getApi(self.getNameAction(action),
+                        self.getDestAction(action), indent)
         if self.getNameRule(action) == 'cache':
-            apiDst = getApi(self.getNameRule(action),
-                            self.getProfileRule(action), indent)
+            logging.debug(f">====> cache")
+            logging.debug(f">====> {self.getNameRule(action)} , {self.getProfileRule(action)}")
+            logging.debug(f">====> {self.getProfileAction(action)} , {self.getNickAction(action)}")
+            logging.debug(f">====> {self.getNameAction(action)} , {self.getDestAction(action)}")
+
+            # apiDst = getApi(self.getNameAction(action),
+            #                 self.getDestAction(action), indent)
             apiDst.fileName = apiDst.fileNameBase(action[1:])
             apiDst.postaction = 'delete'
         else:
-            apiDst = getApi(self.getProfileAction(action),
-                            self.getNickAction(action), indent)
+            logging.debug(f">====> else cache")
+            logging.debug(f">====> {self.getNameRule(action)} , {self.getProfileRule(action)}")
+            logging.debug(f">====> {self.getProfileAction(action)} , {self.getNickAction(action)}")
+            logging.debug(f">====> {self.getNameAction(action)} , {self.getDestAction(action)}")
+
+            # apiDst = getApi(self.getProfileAction(action),
+            #                 self.getNickAction(action), indent)
             apiDst.setPostsType('posts')
 
-        if more and ('max' in more):
-            mmax = more['max']
-        elif more and ('buffermax' in more):
-            mmax = more['buffermax']
-        else:
-            mmax = 0
+        mmax = 0
+        if more: 
+            if ('max' in more): 
+                mmax = more['max'] 
+            elif ('buffermax' in more): 
+                mmax = more['buffermax']
 
         apiDst.setMax(mmax)
 
@@ -959,8 +973,6 @@ class moduleRules:
                                       (f"{self.getNameRule(src)}@"
                                        f"{self.getProfileRule(src)}"),
                                       self.getNickAction(src))
-            # msgLog = (f"{indent} Destination Error. No client for "
-            #           f"{self.getProfileRule(action)}")
             if msgLog:
                 logMsg(msgLog, 3, 1)
                 sys.stderr.write(f"Error: {msgLog}\n")
@@ -1068,7 +1080,8 @@ class moduleRules:
                     i = i + 1
                 previous = self.getNameAction(src)
 
-                indent = f"{self.getNameAction(src):->9}{i}>"
+                nameAction =f"[{self.getNameAction(src)}{i}]"
+                indent = f"{nameAction:->12}>"
 
                 if src in self.more:
                     if (('hold' in self.more[src])
@@ -1112,8 +1125,7 @@ class moduleRules:
                           and ('tumblr' in self.getNameAction(src))):
                         srcName = more['url']
                         srcName = f"{srcName.split('/')[2].split('.')[0]}"
-                msgIni = (f"Source: [{self.getNickSrc(src)}] {srcName} "
-                          f"({self.getNickAction(src)})")
+                msgIni = (f"Source: {srcName} ({self.getNickAction(src)})")
 
                 actions = self.rules[src]
 
