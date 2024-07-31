@@ -333,7 +333,7 @@ class moduleCache(Content): #,Queue):
         listP = []
         try:
             msgLog = checkFile(fileNameQ)
-            logMsg(f"{self.indent} --- {msgLog}", 2, 0)
+            logMsg(f"{self.indent} {msgLog}", 2, 0)
             if "OK" in msgLog:
                 with open(fileNameQ,'rb') as f:
                     try:

@@ -74,12 +74,12 @@ def getNextTime(blog, socialNetwork):
         self.report(self.service, msgLog, '', '')
         return 0, 0
 
-def checkFile(fileName):
-    msgLog = f"Checking {fileName} "
+def checkFile(fileName, indent=""):
+    msgLog = f"{indent} Checking File {fileName} "
     logMsg(msgLog, 2, 0)
     dirName = os.path.dirname(fileName)
 
-    msgLog = f"OK {fileName}"
+    msgLog = f"{indent} File OK"
     if not os.path.isdir(dirName):
         msgLog = f"Directory {dirName} does not exist."
     elif not os.path.isfile(fileName):
@@ -92,7 +92,7 @@ def getLastLink(fileName, indent=''):
     logMsg(msgLog, 2, 0)
     linkLast = ''
     timeLast = 0
-    msgLog = checkFile(fileName)
+    msgLog = checkFile(fileName, indent)
     if not "OK" in msgLog:
         logging.info(msgLog)
     else:

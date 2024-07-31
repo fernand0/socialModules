@@ -717,7 +717,7 @@ class moduleRules:
         
         apiDst = getApi(self.getNameAction(action),
                         self.getDestAction(action), indent)
-        if self.getNameRule(action) == 'cache':
+        if self.getNameAction(action) == 'cache':
             apiDst.fileName = apiDst.fileNameBase(action[1:])
             apiDst.postaction = 'delete'
         else:
@@ -947,13 +947,19 @@ class moduleRules:
                 sys.stderr.write(f"Error: {msgLog}\n")
             return f"End: {msgLog}"
 
-        if ((apiDst.getPostsType() != self.getTypeAction(action))
-            and (apiDst.getPostsType()[:-1] != self.getTypeAction(action))
-            and (self.getNameAction(action) != 'cache')):
-            # FIXME: Can we do better?
-            msgLog = f"{indent} Some problem with {action}"
-            logMsg(msgLog, 3, 0)
-            return msgLog
+        logging.info(f"After: {apiDst.getPostsType()} "
+                     f"After: {self.getTypeAction(action)}\n"
+                     f"After: {apiDst.getPostsType()[:-1]} "
+                     f"After: {self.getTypeAction(action)}\n"
+                     f"After: {self.getNameAction(action)}"
+                     )
+        # if ((apiDst.getPostsType() != self.getTypeAction(action))
+        #     and (apiDst.getPostsType()[:-1] != self.getTypeAction(action))
+        #     and (self.getNameAction(action) != 'cache')):
+        #     # FIXME: Can we do better?
+        #     msgLog = f"{indent} Some problem with {action}"
+        #     logMsg(msgLog, 3, 0)
+        #     return msgLog
 
         indent = f"{indent} "
 

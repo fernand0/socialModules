@@ -150,9 +150,13 @@ class Content:
     def setMoreValues(self, more):
         # We have a dictionary of values and we check for methods for
         # setting these values in our object
+        msgLog = f"{self.indent} Start setMoreValues" #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
         if more:
             # Setting values available in more
             for option in more:
+                msgLog = f"{self.indent}  Option: {option}" #: {src[1:]}"
+                logMsg(msgLog, 2, 0)
                 if option == 'posts':
                     nameMethod = f"setPostsType"
                 else:
@@ -174,6 +178,8 @@ class Content:
                             if inspect.ismethod(cmd):
                                 cmd(more[option])
                                 break
+        msgLog = f"{self.indent} End setMoreValues" #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
 
     def apiCall(self, commandName, api = None, **kwargs):
         if api:
@@ -314,8 +320,8 @@ class Content:
         elif not link:
             # FIXME Could post be a parameter?
             post = self.getNextPost()
-            msgLog = f"{self.indent} nextPost {post}"
-            logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent} nextPost {post}"
+            # logMsg(msgLog, 2, 0)
             link = self.getPostLink(post)
         msgUpdate = f"last link {link} in {self.service}"
         msgLog = f"{self.indent} Updating {msgUpdate}"
@@ -324,7 +330,7 @@ class Content:
         fileName = f"{self.fileNameBase(dst)}.last"
         msgLog = f"{self.indent} fileName {fileName}"
         logMsg(msgLog, 2, 0)
-        msgLog = checkFile(fileName)
+        msgLog = checkFile(fileName, self.indent)
         if not 'OK' in msgLog:
             msgLog = (f"File {fileName} does not exist. "
                       f"I'm going to create it.")
@@ -465,15 +471,15 @@ class Content:
         fileNameNext = ''
         if dst:
             fileNameNext = f"{self.fileNameBase(dst)}.timeNext"
-            msgLog = checkFile(fileNameNext)
-            logMsg(f"{self.indent} fileNameNext: {msgLog}", 2, 0)
+            msgLog = checkFile(fileNameNext, self.indent)
+            logMsg(f"{msgLog}", 2, 0)
             if not 'OK' in msgLog:
                 msgLog = (f"File {fileNameNext} does not exist. "
                           f"I'm going to create it.")
                 self.report('', msgLog, '', '')
             with open(fileNameNext,'wb') as f:
                 pickle.dump((tNow, tSleep), f)
-            msgLog = (f"File {fileNameNext} updated.")
+            msgLog = (f"{self.indent} File updated {fileNameNext}")
             logMsg(msgLog, 2, 0)
         else:
             msgLog = (f"Not implemented!")
@@ -980,7 +986,10 @@ class Content:
         return reply
 
     def publishPost(self, *args, **more):
-        logging.debug(f"{self.indent} Args: {args} More: {more}")
+        msgLog = (f"{self.indent} Start publishPost.")
+        logMsg(msgLog, 2, 0)
+        #FIXME: logic complicated
+
         api = ''
         post = ''
         # Do we need these?
@@ -990,6 +999,9 @@ class Content:
         nameMethod = 'Post'
         listPosts = []
         if len(args) == 3:
+            msgLog = (f"{self.indent} With args.")
+            logMsg(msgLog, 2, 0)
+
             title = args[0]
             link = args[1]
             comment = args[2]
@@ -998,7 +1010,8 @@ class Content:
                       f"comment: {comment}")
             logMsg(msgLog, 2, 0)
         elif len(args) == 1:
-            # apiSrc= args[0]
+            msgLog = (f"{sefl.indent} What's happening here?")
+            logMsg(msgLog, 2, 0)
             listPosts = args#[1]
             msgLog = (f"{self.indent} Service {self.service} publishing "
                       f"post {listPosts}")
@@ -1013,19 +1026,14 @@ class Content:
             return
         if more:
             msgLog = (f"{self.indent} Service {self.service} publishing post "
-                      f"with more: {more}")
+                      f"with more")
             logMsg(msgLog, 2, 0)
             # if 'tags' in more:
             #     print(f"    Publishing in {self.service}: {type(more['tags'])}")
 
             post = more.get('post', '')
             api = more.get('api', '')
-            # title = api.getPostTitle(post)
-            # link = api.getPostLink(post)
 
-        # print(f"    Publishing in {self.service}: {title}")
-        # print(f"    Publishing in {self.service}:  {link}")
-        # print(f"    Publishing in {self.service}: {comment}")
         reply = 'Fail!'
         try:
             nameMethod = 'Post'
@@ -1036,30 +1044,37 @@ class Content:
                         f"publishApi{self.getPostsType().capitalize()}"))):
                 nameMethod = self.getPostsType().capitalize()
             else:
-                logging.debug(f"{self.indent} nameMethod no")
+                msgLog = (f"{self.indent} No api for getPostsType") 
+                logMsg(msgLog, 2, 0)
 
             method = getattr(self, f"publishApi{nameMethod}")
-            logging.debug(f"{self.indent} nMethod: {method}")
-            logging.debug(f"{self.indent} nApi: {api}")
+            msgLog = (f"{self.indent} Method: {method}")
+            logMsg(msgLog, 2, 0)
 
             if listPosts:
                 for post in listPosts:
                     reply = method(title, link, comment, api=api, post=post)
             else:
-                logging.debug(f"{self.indent} no listposts")
+                logging.debug(f"{self.indent} No listposts")
                 if api and post:
-                    logging.debug(f"{self.indent} Calling method "
-                                  f"with post: {post}")
+                    msgLog = (f"{self.indent} Calling method " 
+                              f"with api and post")
+                    logMsg(msgLog, 2, 0)
                     reply = method(api=api, post=post)
                 else:
-                    logging.debug(f"{self.indent} Calling method 2")
+                    msgLog = (f"{self.indent} Calling method " 
+                              f"with title, link, comment")
+                    logMsg(msgLog, 2, 0)
                     reply = method(title, link, comment)
 
-            logging.info(f"Reply publish: {reply}")
+            msgLog = (f"{self.indent} Reply publish: {reply}")
+            logMsg(msgLog, 2, 0)
             reply = self.processReply(reply)
         except:
             reply = self.report(self.service, title, link, sys.exc_info())
 
+        msgLog = (f"{self.indent} End publishPost.")
+        logMsg(msgLog, 2, 0)
         return reply
 
     def deletePostId(self, idPost):
@@ -1336,7 +1351,7 @@ class Content:
                 if isinstance(link, bytes):
                     linkS = linkS.decode()
                 url = self.getPostLink(entry)
-                logging.debug(f"Url: {url} Link: {linkS}")
+                # logging.debug(f"{self.indent} Url: {url} Link: {linkS}")
                 # msgLog = (f"{self.indent} Url: {url}"
                 # logMsg(msgLog, 2, 0)
                 # msgLog = (f"{self.indent} Link:{linkS}"
