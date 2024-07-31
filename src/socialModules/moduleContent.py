@@ -76,9 +76,8 @@ class Content:
             msgLog = (f"Does file {configFile} exist?")
             self.report({self.indent}, msgLog, 0, '')
 
-        msgLog = (f"{self.indent} Getting keys for {self.service}: {account}"
-                  f" {config}")
-        logMsg(msgLog, 1, 0)
+        msgLog = (f"{self.indent} Getting keys for {self.service}: {account}")
+        logMsg(msgLog, 2, 0)
         keys = ''
         try:
             keys = self.getKeys(config)
@@ -1273,7 +1272,13 @@ class Content:
         self.program = program
         self.setCache()
 
+    def setBufferMax(self, bufMax):
+        #FIXME: ????
+        self.bufMax = bufMax
+        self.max = bufMax
+
     def setBufMax(self, bufMax):
+        #FIXME: ????
         self.bufMax = bufMax
 
     def getBufMax(self):

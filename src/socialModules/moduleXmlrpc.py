@@ -74,7 +74,9 @@ class moduleXmlrpc(Content):
     def getXmlRpc(self):
         return(self.xmlrpc)
 
-    def setXmlRpc(self):
+    def setXmlRpc(self, xmlrpc=None):
+        #FIXME: ???
+        logging.info(f"Xmlrpc: {xmlrpc}")
         conf = configparser.ConfigParser() 
         conf.read(CONFIGDIR + '/.blogaliarc')
         for section in conf.sections(): 

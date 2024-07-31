@@ -76,7 +76,7 @@ class modulePocket(Content): #,Queue):
             print(f"Something failed")
 
     def initApi(self, keys):
-        msgLog = (f"{self.indent} service {self.service} Start initApi {self.user}")
+        msgLog = (f"{self.indent} Service {self.service} Start initApi {self.user}")
         logMsg(msgLog, 2, 0)
         self.postaction='archive'
 

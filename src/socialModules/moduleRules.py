@@ -688,19 +688,15 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         indent = f"{indent} "
 
-
-        logging.info(f"(====> Src ")
-        logging.info(f"(====> {self.getNameRule(src)} , {self.getProfileRule(src)}")
         apiSrc = getApi(self.getNameRule(src), 
                         self.getProfileRule(src), indent)
         if self.getNameRule(src) == 'cache':
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
             apiSrc.postaction = 'delete'
+        else:
+            apiSrc.setPostsType('posts')
 
         apiSrc.setMoreValues(more)
-
-        if not apiSrc.getPostsType():
-            apiSrc.setPostsType('posts')
 
         indent = indent[:-1]
         msgLog = f"{indent} End readConfigSrc" #: {src[1:]}"
@@ -719,49 +715,22 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         indent = f"{indent} "
         
-        logging.debug(f">====> action {action}")
-
-        # apiDst = getApi(self.getNameAction(action), 
-        #                 self.getProfileAction(action), indent)
         apiDst = getApi(self.getNameAction(action),
                         self.getDestAction(action), indent)
         if self.getNameRule(action) == 'cache':
-            logging.debug(f">====> cache")
-            logging.debug(f">====> {self.getNameRule(action)} , {self.getProfileRule(action)}")
-            logging.debug(f">====> {self.getProfileAction(action)} , {self.getNickAction(action)}")
-            logging.debug(f">====> {self.getNameAction(action)} , {self.getDestAction(action)}")
-
-            # apiDst = getApi(self.getNameAction(action),
-            #                 self.getDestAction(action), indent)
             apiDst.fileName = apiDst.fileNameBase(action[1:])
             apiDst.postaction = 'delete'
         else:
-            logging.debug(f">====> else cache")
-            logging.debug(f">====> {self.getNameRule(action)} , {self.getProfileRule(action)}")
-            logging.debug(f">====> {self.getProfileAction(action)} , {self.getNickAction(action)}")
-            logging.debug(f">====> {self.getNameAction(action)} , {self.getDestAction(action)}")
-
-            # apiDst = getApi(self.getProfileAction(action),
-            #                 self.getNickAction(action), indent)
             apiDst.setPostsType('posts')
 
-        mmax = 0
-        if more: 
-            if ('max' in more): 
-                mmax = more['max'] 
-            elif ('buffermax' in more): 
-                mmax = more['buffermax']
-
-        apiDst.setMax(mmax)
-
-        if more and ('time' in more):
-            apiDst.setTime(more['time'])
+        apiDst.setMoreValues(more)
 
         if apiSrc:
             apiDst.setUrl(apiSrc.getUrl())
         else:
             apiDst.setUrl(None)
 
+        indent = indent[:-1]
         msgLog = f"{indent} End readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         indent = f"{indent[:-1]}"
@@ -970,9 +939,9 @@ class moduleRules:
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
         if not apiDst.getClient():
             msgLog = self.clientErrorMsg(indent, apiDst, "Destination",
-                                      (f"{self.getNameRule(src)}@"
-                                       f"{self.getProfileRule(src)}"),
-                                      self.getNickAction(src))
+                                      (f"{self.getNameAction(action)}@"
+                                       f"{self.getDestAction(action)}"),
+                                      self.getNickAction(action))
             if msgLog:
                 logMsg(msgLog, 3, 1)
                 sys.stderr.write(f"Error: {msgLog}\n")

@@ -19,6 +19,8 @@ class moduleBlsk(Content): #, Queue):
         return (USER, PASSWORD)
 
     def initApi(self, keys):
+        msgLog = (f"{self.indent} Service {self.service} Start initApi {self.user}")
+        logMsg(msgLog, 2, 0)
         # FIXME: Do we call this method directly?
         self.base_url = 'https://bsky.app'
         self.url = f"{self.base_url}/profile/{self.user}"
@@ -40,6 +42,9 @@ class moduleBlsk(Content): #, Queue):
         self.api = client
         if hasattr(client, 'app'):
             client = client.app.bsky.feed
+
+        msgLog = (f"{self.indent} service {self.service} End initApi")
+        logMsg(msgLog, 2, 0)
         return client
 
 
