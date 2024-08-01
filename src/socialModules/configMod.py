@@ -99,14 +99,6 @@ def getLastLink(fileName, indent=''):
         with open(fileName, "rb") as f:
             linkLast = f.read().decode().split()  # Last published
         timeLast = os.path.getmtime(fileName)
-    # else:
-    #     # File does not exist, we need to create it.
-    #     # Should we create it here? It is a reading function!!
-    #     with open(fileName, "wb") as f:
-    #         msgLog = f"File {fileName} does not exist. Creating it."
-    #         logMsg(msgLog, 3, 0)
-    #         linkLast = ''
-    #         # None published, or non-existent file
     if len(linkLast) == 1:
         return(linkLast[0], timeLast)
     else:

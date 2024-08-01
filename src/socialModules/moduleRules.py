@@ -832,10 +832,10 @@ class moduleRules:
         postaction = ''
         apiSrc.setPosts()
         if nextPost:
-            msgLog = (f"next post in service {apiDst.service}.")
+            msgLog = (f"next post in service {apiDst.service}")
             post = apiSrc.getNextPost()
         else:
-            msgLog = (f"post in pos {pos} in service {apiDst.service}.")
+            msgLog = (f"post in pos {pos} in service {apiDst.service}")
             post = apiSrc.getPost(pos)
         if post:
             title = apiSrc.getPostTitle(post)
@@ -978,7 +978,7 @@ class moduleRules:
         else:
             num = 1
 
-        msgLog = (f"{indent} I'll publish {num} post")
+        msgLog = (f"{indent} I'll publish {num} post in {apiDst.getService()}")
         logMsg(msgLog, 1, 1)
 
         if (num > 0):

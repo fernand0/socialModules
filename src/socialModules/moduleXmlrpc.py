@@ -76,7 +76,7 @@ class moduleXmlrpc(Content):
 
     def setXmlRpc(self, xmlrpc=None):
         #FIXME: ???
-        logging.info(f"Xmlrpc: {xmlrpc}")
+        logging.info(f"{self.indent} Xmlrpc: {xmlrpc}")
         conf = configparser.ConfigParser() 
         conf.read(CONFIGDIR + '/.blogaliarc')
         for section in conf.sections(): 
@@ -89,6 +89,7 @@ class moduleXmlrpc(Content):
                 blogId, blogName = self.blogId(srv, usr, pwd)
                 self.setId(blogId)
                 self.setName(blogName)
+        self.client = self.xmlrpc
 
     def getPostsXmlRpc(self):
         return(self.postsXmlRpc)
