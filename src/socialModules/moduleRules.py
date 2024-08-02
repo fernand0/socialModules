@@ -1,5 +1,6 @@
 import concurrent.futures
 import configparser
+import inspect
 import logging
 import os
 import random
@@ -357,6 +358,7 @@ class moduleRules:
 
         msgLog = (f"RulesNew: {rulesNew}")
         logMsg(msgLog, 2, 0)
+
         if hasattr(self, 'args') and self.args.rules:
             self.printDict(rulesNew, "Rules")
         sys.exit
@@ -897,14 +899,19 @@ class moduleRules:
 
     def executeAction(self, src, more, action,
                     noWait, timeSlots, simmulate, name="",
-                    nextPost = True, pos = -1, delete=False):
+                    numAct = 1, nextPost = True, pos = -1, delete=False):
 
         indent = f"{name}"
 
-        msgLog = (f"{indent}  Sleeping to launch all processes")
+        numAct = max(3, numAct) # Less than 3 is too small
+        tL = random.random()*numAct
+        msgLog = (f"{indent}  Sleeping {tL:.2f} seconds ({numAct} actions) "
+                  f"to launch all processes") 
         logMsg(msgLog, 1, 0)
-        # 'Cometic' waiting to allow all the processes to be launched.
-        time.sleep(1)
+        # 'Cosmetic' waiting to allow all the processes to be launched.
+        # Randomization is a way to avoid calling several times the same
+        # service (almost) as the same time.
+        time.sleep(tL)
 
         msgLog = (f"{indent}  Go!")
         logMsg(msgLog, 1, 0)
@@ -929,7 +936,7 @@ class moduleRules:
                      f"{self.getNickAction(action)}@"
                      f"{self.getProfileAction(action)} "
                      f"({self.getTypeAction(action)})")
-        msgLog = (f"{indent} Source: {theName}-{self.getNickAction(src)}"
+        msgLog = (f"Source: {theName}-{self.getNickAction(src)} "
                   f"-> Action: {msgAction}")
 
         res = ""
@@ -947,24 +954,9 @@ class moduleRules:
                 sys.stderr.write(f"Error: {msgLog}\n")
             return f"End: {msgLog}"
 
-        logging.info(f"After: {apiDst.getPostsType()} "
-                     f"After: {self.getTypeAction(action)}\n"
-                     f"After: {apiDst.getPostsType()[:-1]} "
-                     f"After: {self.getTypeAction(action)}\n"
-                     f"After: {self.getNameAction(action)}"
-                     )
-        # if ((apiDst.getPostsType() != self.getTypeAction(action))
-        #     and (apiDst.getPostsType()[:-1] != self.getTypeAction(action))
-        #     and (self.getNameAction(action) != 'cache')):
-        #     # FIXME: Can we do better?
-        #     msgLog = f"{indent} Some problem with {action}"
-        #     logMsg(msgLog, 3, 0)
-        #     return msgLog
-
         indent = f"{indent} "
 
         apiSrc.setLastLink(apiDst)
-        #FIXME: best in readConfigSrc ?
 
         if apiSrc.getPostsType() == 'drafts':
             #FIXME
@@ -1157,7 +1149,7 @@ class moduleRules:
                                         noWait,
                                         timeSlots,
                                         args.simmulate,
-                                        nameA))
+                                        name = nameA, numAct=len(actions)))
                     indent = f"{indent[:-1]}"
                 indent = f"{indent[:-1]}"
 

@@ -250,19 +250,13 @@ class Content:
         return url
 
     def fileNameBase(self, dst):
-        # msgLog = (f"{self.indent} fileNameBase src: {self}")
-        # logMsg(msgLog, 2, 0)
         src = self
         nameSrc = type(src).__name__
         if 'module' in nameSrc:
             nameSrc = nameSrc[len('module'):]
-            # msgLog = (f"{self.indent} fileNameBase module Src: {nameSrc}")
-            # logMsg(msgLog, 2, 0)
         nameDst = type(dst).__name__
         if 'module' in nameDst:
             nameDst = nameDst[len('module'):]
-            # msgLog = (f"{self.indent} fileNameBase module Dst: {nameDst}")
-            # logMsg(msgLog, 2, 0)
             userD = dst.getUser()
             if hasattr(dst, 'socialNetwork'):
                 serviceD = dst.socialNetwork
@@ -270,14 +264,6 @@ class Content:
                 serviceD = nameDst
             user = src.getUser()
             service = src.getService()
-            # msgLog = (f"{self.indent} fileNameBase userD: {userD}")
-            # logMsg(msgLog, 2, 0)
-            # msgLog = (f"{self.indent} fileNameBase serviceD: {serviceD}")
-            # logMsg(msgLog, 2, 0)
-            # msgLog = (f"{self.indent} fileNameBase user: {user}")
-            # logMsg(msgLog, 2, 0)
-            # msgLog = (f"{self.indent} fileNameBase service: {service}")
-            # logMsg(msgLog, 2, 0)
         else:
             user = src.getUrl()
             service = self.service
@@ -295,21 +281,11 @@ class Content:
         else:
             typeDst = 'posts'
 
-        # msgLog = (f"{self.indent} fileNameBase typeSrc: {typeSrc}")
-        # logMsg(msgLog, 2, 0)
-        # msgLog = (f"{self.indent} fileNameBase typeDst: {typeDst}")
-        # logMsg(msgLog, 2, 0)
-        # print(f"user: {user}")
-        # if not user:
-        #     user = dst.getUrl()
-        # print(f"user: {user}")
         fileName = (f"{nameSrc}_{typeSrc}_"
                     f"{user}_{service}__"
                     f"{nameDst}_{typeDst}_"
                     f"{userD}_{serviceD}")
         fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
-        # msgLog = (f"{self.indent} End fileNameBase fileName: {fileName}")
-        # logMsg(msgLog, 2, 0)
 
         return fileName
 
@@ -365,7 +341,7 @@ class Content:
         # logging.debug(f"Nickl: {nick}")
         # logging.debug(f"Servicel: {service}")
         # logging.debug(f"fileName: {fileName}")
-        msgLog = checkFile(fileName)
+        msgLog = checkFile(fileName, self.indent)
         # dirName = os.path.dirname(fileName)
         # if not os.path.isdir(dirName):
         #     return ""
@@ -408,7 +384,7 @@ class Content:
 
         lastTime = ''
         linkLast = ''
-        msgLog = checkFile(fileName)
+        msgLog = checkFile(fileName, self.indent)
         if 'OK' in msgLog:
             with open(fileName, "rb") as f:
                 linkLast = f.read().decode().split()  # Last published
@@ -457,7 +433,7 @@ class Content:
         fileNameNext = ''
         if dst:
             fileNameNext = f"{self.fileNameBase(dst)}.timeAvailable"
-            msgLog = checkFile(fileNameNext)
+            msgLog = checkFile(fileNameNext, self.indent)
             if not "OK" in msgLog:
                 msgLog = (f"File {fileNameNext} does not exist. "
                           f"I'm going to create it.")

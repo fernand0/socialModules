@@ -39,6 +39,8 @@ def logMsg(msgLog, log=1, output=1):
         print("====================================")
 
 def fileNamePath(url, socialNetwork=()):
+    logging.info(f" ----> Url: {url}")
+    logging.info(f"socialNetwork: {socialNetwork}")
     urlParsed = urllib.parse.urlparse(url)
     myNetloc = urlParsed.netloc
     if not myNetloc:
@@ -79,7 +81,7 @@ def checkFile(fileName, indent=""):
     logMsg(msgLog, 2, 0)
     dirName = os.path.dirname(fileName)
 
-    msgLog = f"{indent} File OK"
+    msgLog = f"File OK"
     if not os.path.isdir(dirName):
         msgLog = f"Directory {dirName} does not exist."
     elif not os.path.isfile(fileName):

@@ -165,7 +165,7 @@ class moduleCache(Content): #,Queue):
         self.auxClass = param[0]
         self.fileName = self.fileNameBase((self.socialNetwork, self.nick))
         fileNameQ = f"{self.fileName}.queue"
-        msgLog = checkFile(fileNameQ)
+        msgLog = checkFile(fileNameQ, self.indent)
         if not 'OK' in msgLog:
             #with open(fileNameQ, "w") as f:
             msgLog = (f"File {fileNameQ} does not exist. "
@@ -332,7 +332,7 @@ class moduleCache(Content): #,Queue):
         logMsg(msgLog, 2, 0)
         listP = []
         try:
-            msgLog = checkFile(fileNameQ)
+            msgLog = checkFile(fileNameQ, self.indent)
             logMsg(f"{self.indent} {msgLog}", 2, 0)
             if "OK" in msgLog:
                 with open(fileNameQ,'rb') as f:
