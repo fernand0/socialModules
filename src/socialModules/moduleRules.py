@@ -685,13 +685,13 @@ class moduleRules:
                       f"No client for {rule} ({action}). End.")
         return f"{msgLog}"
 
-    def readConfigSrc(self, indent, src, more):
-        msgLog = f"{indent} Start readConfigSrc" #: {src[1:]}"
+    def readConfigSrc(self, src, more):
+        msgLog = f"{self.indent} Start readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        indent = f"{indent} "
+        self.indent = f"{self.indent} "
 
         apiSrc = getApi(self.getNameRule(src), 
-                        self.getProfileRule(src), indent)
+                        self.getProfileRule(src), self.indent)
         if self.getNameRule(src) == 'cache':
             apiSrc.fileName = apiSrc.fileNameBase(src[1:])
             apiSrc.postaction = 'delete'
@@ -700,10 +700,9 @@ class moduleRules:
 
         apiSrc.setMoreValues(more)
 
-        indent = indent[:-1]
-        msgLog = f"{indent} End readConfigSrc" #: {src[1:]}"
+        self.indent = self.indent[:-1]
+        msgLog = f"{self.indent} End readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        indent = f"{indent[:-1]}"
         return apiSrc
 
     def getActionComponent(self, action, pos):
@@ -712,13 +711,13 @@ class moduleRules:
             res = action[pos]
         return res
 
-    def readConfigDst(self, indent, action, more, apiSrc):
-        msgLog = f"{indent} Start readConfigDst" #: {src[1:]}"
+    def readConfigDst(self, action, more, apiSrc):
+        msgLog = f"{self.indent} Start readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        indent = f"{indent} "
+        self.indent = f"{self.indent} "
         
         apiDst = getApi(self.getNameAction(action),
-                        self.getDestAction(action), indent)
+                        self.getDestAction(action), self.indent)
         if self.getNameAction(action) == 'cache':
             apiDst.fileName = apiDst.fileNameBase(action[1:])
             apiDst.postaction = 'delete'
@@ -732,10 +731,9 @@ class moduleRules:
         else:
             apiDst.setUrl(None)
 
-        indent = indent[:-1]
-        msgLog = f"{indent} End readConfigDst" #: {src[1:]}"
+        self.indent = self.indent[:-1]
+        msgLog = f"{self.indent} End readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        indent = f"{indent[:-1]}"
         return apiDst
 
     def testDifferPosts(self, apiSrc, lastLink, listPosts):
@@ -861,7 +859,7 @@ class moduleRules:
             res = ''
             if post:
                 res = apiDst.publishPost(api = apiSrc, post = post)
-                msgLog = f"{indent}Reply: {res}"
+                # msgLog = f"{indent}Reply: {res}"
                 msgLog = f"{indent}Trying to publish {msgLog} "
                 # print(f"{indent}res: {res}")
                 if (nextPost
@@ -918,7 +916,8 @@ class moduleRules:
         indent = f"{indent} "
 
         # Source
-        apiSrc = self.readConfigSrc(indent, src, more)
+        self.indent = indent
+        apiSrc = self.readConfigSrc(src, more)
         if not apiSrc.getClient():
             msgLog = self.clientErrorMsg(indent, apiSrc, "Source",
                                       self.getProfileRule(src),
@@ -943,9 +942,9 @@ class moduleRules:
         textEnd = (f"{msgLog}")
 
         # Destination
-        apiDst = self.readConfigDst(indent, action, more, apiSrc)
+        apiDst = self.readConfigDst(action, more, apiSrc)
         if not apiDst.getClient():
-            msgLog = self.clientErrorMsg(indent, apiDst, "Destination",
+            msgLog = self.clientErrorMsg(self.indent, apiDst, "Destination",
                                       (f"{self.getNameAction(action)}@"
                                        f"{self.getDestAction(action)}"),
                                       self.getNickAction(action))

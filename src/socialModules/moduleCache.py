@@ -56,68 +56,59 @@ class moduleCache(Content): #,Queue):
         return 'cache'
 
     def fileNameBase(self, dst):
-        # msgLog = (f"{self.indent} fileNameBase src: {self}")
-        # logMsg(msgLog, 2, 0)
-        # msgLog = (f"{self.indent} fileNameBase dst: {dst}")
-        # logMsg(msgLog, 2, 0)
-        # msgLog = (f"{self.indent} fileNameBase is {isinstance(self, socialModules.moduleCache.moduleCache)}")
-        # logMsg(msgLog, 2, 0)
-        # msgLog = (f"{self.indent} fileNameBase is {isinstance(self, socialModules.moduleSlack.moduleSlack)}")
-        # logMsg(msgLog, 2, 0)
-        if hasattr(self, 'fileName') and self.fileName:
-            # msgLog = f"{self.indent} has fileName attr {self.fileName}"
-            # logMsg(msgLog, 2, 0)
-            return self.fileName
-        src = self
-        nameSrc = 'Cache'
-        typeSrc = typeDst = 'posts'
-        # logging.info(f"{self.indent} self url {self.url} socialN "
-        #              f"{self.socialNetwork} user {self.user} "
-        #              f"nick {self.nick} auxClass {self.auxClass} "
-        #              f"client {self.client} service {self.service}")
-        if isinstance(self, socialModules.moduleCache.moduleCache):
-            # logging.info(f"{self.indent} cache")
-            # logging.info(f"{self.indent} {src} is not tuple")
-            user = self.url
-            if 'slack' in self.url:
-                #FIXME
-                service = 'Slack'
-            elif 'gitter' in self.url:
-                service = 'Gitter'
-            elif 'imgur' in self.url:
-                service = 'Imgur'
-            else:
-                service = self.service.capitalize()
-            userD = self.user
-            serviceD = self.socialNetwork
-            nameDst = self.socialNetwork.capitalize()
-        elif isinstance(dst, tuple):
-            # logging.info(f"{self.indent} tuple {dst}")
-            #FIXME
-            user = self.url
-            # service = dst[0][0].capitalize()
-            service = dst[0].capitalize()
-            userD = self.user
-            serviceD = self.socialNetwork
-            nameDst = self.socialNetwork.capitalize()
-            typeDst = 'cache'
-
-        user = self.url
-        userD = self.user
-        serviceD = self.socialNetwork
-        nameDst = self.socialNetwork.capitalize()
-        # msgLog = (f"{self.indent} fileNameBase serviceD {serviceD}")
-        # logMsg(msgLog, 2, 0)
-
-        fileName = (f"{nameSrc}_{typeSrc}_"
-                    f"{user}_{service}__"
-                    f"{nameDst}_{typeDst}_"
-                    f"{userD}_{serviceD}")
-        fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
-        msgLog = (f"{self.indent} End fileNameBase fileName: {fileName}")
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Start fileNameBase")
         logMsg(msgLog, 2, 0)
-        self.fileName = fileName
+        if hasattr(self, 'fileName') and self.fileName:
+            fileName =  self.fileName
+        else:
+            src = self
+            nameSrc = 'Cache'
+            typeSrc = typeDst = 'posts'
+            if isinstance(self, socialModules.moduleCache.moduleCache):
+                user = self.url
+                if 'slack' in self.url:
+                    #FIXME
+                    service = 'Slack'
+                elif 'gitter' in self.url:
+                    service = 'Gitter'
+                elif 'imgur' in self.url:
+                    service = 'Imgur'
+                else:
+                    service = self.service.capitalize()
+                userD = self.user
+                serviceD = self.socialNetwork
+                nameDst = self.socialNetwork.capitalize()
+            elif isinstance(dst, tuple):
+                # logging.info(f"{self.indent} tuple {dst}")
+                #FIXME
+                user = self.url
+                # service = dst[0][0].capitalize()
+                service = dst[0].capitalize()
+                userD = self.user
+                serviceD = self.socialNetwork
+                nameDst = self.socialNetwork.capitalize()
+                typeDst = 'cache'
 
+            user = self.url
+            userD = self.user
+            serviceD = self.socialNetwork
+            nameDst = self.socialNetwork.capitalize()
+            # msgLog = (f"{self.indent} fileNameBase serviceD {serviceD}")
+            # logMsg(msgLog, 2, 0)
+
+            fileName = (f"{nameSrc}_{typeSrc}_"
+                        f"{user}_{service}__"
+                        f"{nameDst}_{typeDst}_"
+                        f"{userD}_{serviceD}")
+            fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
+            self.fileName = fileName
+
+        msgLog = f"{self.indent}  fileName: {fileName}"
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} End fileNameBase")
+        logMsg(msgLog, 2, 0)
+        self.indent = self.indent[:-1]
         return fileName
 
     # def fileNameBase2(self, dst):
@@ -152,7 +143,7 @@ class moduleCache(Content): #,Queue):
 
     def setClient(self, param):
         self.service = 'Cache'
-        msgLog = (f"{self.indent} Connecting {self.service}: {param}")
+        msgLog = (f"{self.indent} Start Connecting {self.service}")
         logMsg(msgLog, 1, 0)
         self.postaction = 'delete'
 
@@ -165,136 +156,17 @@ class moduleCache(Content): #,Queue):
         self.auxClass = param[0]
         self.fileName = self.fileNameBase((self.socialNetwork, self.nick))
         fileNameQ = f"{self.fileName}.queue"
-        msgLog = checkFile(fileNameQ, self.indent)
+        msgLog = checkFile(fileNameQ, f"{self.indent} ")
         if not 'OK' in msgLog:
             #with open(fileNameQ, "w") as f:
-            msgLog = (f"File {fileNameQ} does not exist. "
+            msgLog = (f"{self.indent} File {fileNameQ} does not exist. "
                       f"I'll need to create it.")
             logMsg(msgLog, 3, 0)
         self.client = self.service
-        #self.fileName = self.fileNameBase((self.user, self.socialNetwork))
 
-        # if hasattr(self, 'fileName'):
-        #     msgLog = (f"{self.indent} self.fileName {self.fileName}")
-        #     logMsg(msgLog, 2, 0)
-        #     print(f"self.fileName {self.fileName}")
-
-        msgLog = (f"{self.indent} End connecting {self.service}: {param}")
+        msgLog = (f"{self.indent} End connecting {self.service}")
         logMsg(msgLog, 2, 0)
 
-    # def setClient2(self, param):
-    #     msgLog = (f"{self.indent} Connecting Cache {self.service}: {param}")
-    #     logMsg(msgLog, 2, 0)
-    #     self.postsType = 'posts'
-
-    #     # print(f"param: {param}")
-    #     self.auxClass = param[0]
-    #     if 'slack' in self.auxClass:
-    #         #FIXME!!!!
-    #         self.auxClass='slack'
-
-    #     if isinstance(param, str):
-    #         # logging.debug("Is str")
-    #         self.url = param
-    #         self.user = param
-    #         msgLog = (f"{self.indent}  is not possible!")
-    #         logMsg(msgLog, 3, 0)
-    #     elif isinstance(param[0], tuple):
-    #         # logging.debug("Is tuple")
-    #         self.url = param[0][1]
-    #         self.user = self.url
-    #         self.service = param[0][0]
-    #         self.socialNetwork = param[0][0]
-    #         self.fileName = self.fileNameBase((self.user, self.socialNetwork))
-    #     elif isinstance(param[1], str):
-    #         # logging.debug("Is 1 str")
-    #         # logging.info(f"    Connecting Cache {self.service}: {param[0]}")
-    #         if param[0].find('http')>= 0:
-    #             self.url = param[0]
-    #         else:
-    #             self.url = param[1]
-    #             # print(f"u: {self.url}")
-    #             pos = param[2].find('@')
-    #             self.socialNetwork = param[2][:pos].capitalize()
-    #             self.user = param[2][pos+1:]
-    #             self.service = param[0]
-
-    #         if hasattr(self, 'fileName'):
-    #             print(f"self.fileName {self.fileName}")
-    #         self.fileName = self.fileNameBase((self.user, self.socialNetwork))
-    #         # logging.debug(f"self {self}")
-    #         # if hasattr(self, 'fileName'):
-    #         #      logging.info(f"self.fileName {self.fileName}")
-
-    #         #self.user = param[1]
-    #         if self.user.find('\n')>=0:
-    #                 self.user = None
-    #     elif hasattr(param[0], 'getUrl'):
-    #             #self.url = param[0].getUrl()
-    #         self.user = param[1][1]
-    #         self.service = param[1][0]
-    #         self.fileName = self.fileNameBase(param[0])
-    #         # print(f"ff: {self.fileName}")
-    #     else:
-    #         self.url = param[0]
-    #         self.service = param[1][0]
-    #         self.user = param[1][1]
-
-
-    #             # self.socialNetwork = param[0]
-    #             # self.service = param[0]
-    #     # self.url = param[0][1]
-    #     # pos = param[1].find('@')
-    #     # self.socialNetwork = param[1][:pos].capitalize() #param[0][0]
-    #     # self.user = param[1][pos+1:]
-    #     # self.nick = param[1][pos+1:]
-    #     # self.auxClass = param[0][0]
-    #     self.client = self.service
-    #     #self.fileName = self.fileNameBase((self.user, self.socialNetwork))
-
-    #     if hasattr(self, 'fileName'):
-    #         msgLog = (f"{self.indent} self.fileName {self.fileName}")
-    #         logMsg(msgLog, 2, 0)
-    #         print(f"self.fileName {self.fileName}")
-    #     # if isinstance(param, str):
-    #     #     self.url = param
-    #     #     self.user = param
-    #     #     logging.warning("This is not possible!")
-    #     # elif isinstance(param[1], str):
-    #     #     logging.info(f"    Connecting Cache {self.service}: {param[0]}")
-    #     #     if param[0].find('http')>= 0:
-    #     #         self.url = param[0]
-    #     #     else:
-    #     #         self.url = param[1]
-    #     #         # print(f"u: {self.url}")
-    #     #         pos = param[2].find('@')
-    #     #         self.socialNetwork = param[2][:pos].capitalize()
-    #     #         self.user = param[2][pos+1:]
-    #     #         self.service = param[0]
-
-    #     #         # self.socialNetwork = param[0]
-    #     #         # self.service = param[0]
-    #     #     if hasattr(self, 'fileName'):
-    #     #         print(f"self.fileName {self.fileName}")
-    #     #     self.fileName = self.fileNameBase((self.user, self.socialNetwork))
-    #     #     logging.debug(f"self {self}")
-    #     #     if hasattr(self, 'fileName'):
-    #     #         logging.info(f"self.fileName {self.fileName}")
-
-    #     #     #self.user = param[1]
-    #     #     if self.user.find('\n')>=0:
-    #     #         self.user = None
-    #     # elif hasattr(param[0], 'getUrl'):
-    #     #     #self.url = param[0].getUrl()
-    #     #     self.user = param[1][1]
-    #     #     self.service = param[1][0]
-    #     #     self.fileName = self.fileNameBase(param[0])
-    #     #     # print(f"ff: {self.fileName}")
-    #     # else:
-    #     #     self.url = param[0]
-    #     #     self.service = param[1][0]
-    #     #     self.user = param[1][1]
-    #     # self.client = self.service
 
     def setApiDrafts(self):
         msgLog = f"{self.indent} setApiDrafts"
@@ -888,7 +760,7 @@ def main():
     src = caches[sel]
     more = rules.more[src]
     indent = ""
-    apiSrc = rules.readConfigSrc(indent, src, more)
+    apiSrc = rules.readConfigSrc(src, more)
 
     testingPosts = True
     if testingPosts:

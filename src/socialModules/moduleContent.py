@@ -47,26 +47,17 @@ class Content:
         self.hold = None
 
     def setClient(self, account):
-        msgLog = (f"{self.indent} Connecting {self.service}: {account}")
+        msgLog = (f"{self.indent} Start Connecting {self.service}")
         logMsg(msgLog, 1, 0)
-        # print(f"acc: {account}")
-        # print(f"tt: {type(account[1])}")
         client = None
 
         if isinstance(account, str):
-            # logging.info(f"{self.indent} Service {self.service} "
-            #               f"setClient str")
             #FIXME We should not need these ifs
             self.user = account
         else:
             msgLog = f"{self.indent} setClient else. This shouldn't happen"
-            logMsg(msgLog, 3, 0)
-            logging.info(f"{self.indent} setClient else")
             # Deprecated
             self.user = account[1][1]
-
-        msgLog = f"{self.indent} Configuring Service {self.service}"
-        logMsg(msgLog, 2, 0)
 
         configFile = f"{CONFIGDIR}/.rss{self.service}"
         try:
@@ -76,7 +67,8 @@ class Content:
             msgLog = (f"Does file {configFile} exist?")
             self.report({self.indent}, msgLog, 0, '')
 
-        msgLog = (f"{self.indent} Getting keys for {self.service}: {account}")
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Getting keys")
         logMsg(msgLog, 2, 0)
         keys = ''
         try:
@@ -104,6 +96,9 @@ class Content:
         else:
             self.report(self.service, "No keys", "", '')
             self.client = None
+        self.indent = self.indent[:-1]
+        msgLog = (f"{self.indent} End Connecting {self.service}")
+        logMsg(msgLog, 1, 0)
 
     def getService(self):
         if hasattr(self, 'auxClass'):
@@ -367,6 +362,10 @@ class Content:
         return lastLink
 
     def setLastLink(self, dst = None):
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Start setLastLink")
+        logMsg(msgLog, 1, 0)
+
         if hasattr(self, 'fileName') and self.fileName:
             fileName = f"{self.fileName}.last"
         else:
@@ -397,6 +396,10 @@ class Content:
 
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime
+
+        msgLog = (f"{self.indent} End setLastLink")
+        logMsg(msgLog, 1, 0)
+        self.indent = self.indent[:-1]
 
     def getLastTime(self, other = None):
         lastTime = 0.0

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import importlib
 import logging
 import os
 import pickle
@@ -77,6 +78,7 @@ def getNextTime(blog, socialNetwork):
         return 0, 0
 
 def checkFile(fileName, indent=""):
+    indent = f"{indent} "
     msgLog = f"{indent} Checking File {fileName} "
     logMsg(msgLog, 2, 0)
     dirName = os.path.dirname(fileName)
@@ -87,6 +89,7 @@ def checkFile(fileName, indent=""):
     elif not os.path.isfile(fileName):
         msgLog = f"File {fileName} does not exist."
 
+    indent = indent[:-1]
     return msgLog
 
 def getLastLink(fileName, indent=''):
@@ -192,25 +195,28 @@ def updateLastLink(url, link, socialNetwork=()):
 
 def getModule(profile, indent=''):
     # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
-    import importlib
-    serviceName = profile.capitalize()
-    msgLog = (f"{indent} [{serviceName}] Checking service getModule")
+    indent = f"{indent} "
+    msgLog = (f"{indent} Start getModule")
     logMsg(msgLog, 2, 0)
+    serviceName = profile.capitalize()
 
     mod = importlib.import_module('socialModules.module' + serviceName)
     cls = getattr(mod, 'module' + serviceName)
-    # logging.debug(f"Class: {cls}")
     api = cls(indent)
+    msgLog = (f"{indent} End getModule")
+    logMsg(msgLog, 2, 0)
+    indent = indent[:-1]
     return api
 
 def getApi(profile, nick, indent=""):
-    msgLog = (f"{indent} Service {profile} getApi {nick}")
+    msgLog = (f"{indent} Start getApi {nick}")
     logMsg(msgLog, 2, 0)
 
     api = getModule(profile, indent)
     api.indent = indent
     api.setClient(nick)
 
+    msgLog = (f"{indent} End getApi")
     return api
 
 def nameModule():
