@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import importlib
 import logging
 import os
 import pickle
@@ -198,25 +199,33 @@ def updateLastLink(url, link, socialNetwork=()):
 
 def getModule(profile, indent=''):
     # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
-    import importlib
-    serviceName = profile.capitalize()
-    msgLog = (f"{indent} service {serviceName} getModule")
+    msgLog = (f"{indent} Start getModule")
     logMsg(msgLog, 2, 0)
+    indent = f"{indent} "
+    serviceName = profile.capitalize()
 
     mod = importlib.import_module('socialModules.module' + serviceName)
     cls = getattr(mod, 'module' + serviceName)
     # logging.debug(f"Class: {cls}")
     api = cls(indent)
+    indent = indent[:-1]
+    msgLog = (f"{indent} End getModule")
+    logMsg(msgLog, 2, 0)
     return api
 
 def getApi(profile, nick, indent=""):
-    msgLog = (f"{indent} Service {profile} getApi {nick}")
+    msgLog = (f"{indent} Start getApi")
     logMsg(msgLog, 2, 0)
 
+    indent = f"{indent} "
     api = getModule(profile, indent)
     api.indent = indent
     api.setClient(nick)
+    api.setPostsType('posts')
 
+    indent = indent[:-1]
+    msgLog = (f"{indent} End getApi")
+    logMsg(msgLog, 2, 0)
     return api
 
 def nameModule():

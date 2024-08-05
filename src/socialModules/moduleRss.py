@@ -34,6 +34,12 @@ class moduleRss(Content): #, Queue):
         self.max = None
         self.bufMax = None
 
+    def setNick(self, nick=None):
+        if not nick:
+            nick = self.geRss()
+        self.nick = nick
+
+
     def setClient(self, feed):
         self.service = None
         self.rssFeed = ''

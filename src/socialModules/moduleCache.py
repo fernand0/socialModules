@@ -56,7 +56,7 @@ class moduleCache(Content): #,Queue):
             self.postsType = postsType
 
     def getPostsType(self):
-        return 'cache'
+        return 'posts'
 
     def fileNameBase(self, dst):
         self.indent = f"{self.indent} "
@@ -112,32 +112,22 @@ class moduleCache(Content): #,Queue):
             userD = self.user
             serviceD = self.socialNetwork
             nameDst = self.socialNetwork.capitalize()
-        elif isinstance(dst, tuple):
-            # logging.info(f"{self.indent} tuple {dst}")
-            #FIXME
-            user = self.url
-            # service = dst[0][0].capitalize()
-            service = dst[0].capitalize()
-            userD = self.user
-            serviceD = self.socialNetwork
-            nameDst = self.socialNetwork.capitalize()
-            typeDst = 'cache'
 
-        user = self.url
-        userD = self.user
-        serviceD = self.socialNetwork
-        nameDst = self.socialNetwork.capitalize()
-        # msgLog = (f"{self.indent} fileNameBase serviceD {serviceD}")
-        # logMsg(msgLog, 2, 0)
+        # user = self.url
+        # userD = self.user
+        # serviceD = self.socialNetwork
+        # nameDst = self.socialNetwork.capitalize()
+        # # msgLog = (f"{self.indent} fileNameBase serviceD {serviceD}")
+        # # logMsg(msgLog, 2, 0)
 
-        fileName = (f"{nameSrc}_{typeSrc}_"
-                    f"{user}_{service}__"
-                    f"{nameDst}_{typeDst}_"
-                    f"{userD}_{serviceD}")
-        fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
-        msgLog = (f"{self.indent} End fileNameBase fileName: {fileName}")
-        logMsg(msgLog, 2, 0)
-        self.fileName = fileName
+            fileName = (f"{nameSrc}_{typeSrc}_"
+                        f"{user}_{service}__"
+                        f"{nameDst}_{typeDst}_"
+                        f"{userD}_{serviceD}")
+            fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
+            msgLog = (f"{self.indent} End fileNameBase fileName: {fileName}")
+            logMsg(msgLog, 2, 0)
+            self.fileName = fileName
 
         return fileName
 

@@ -52,23 +52,6 @@ class moduleRules:
             url = config.get(section, "url")
             msgLog = f"Section: {section} Url: {url}"
             logMsg(msgLog, 1, 1)
-<<<<<<< Updated upstream
-            self.indent = f" {section}>"
-            # Sources
-            moreS = dict(config.items(section))
-            moreSS = None
-            # FIXME Could we avoid the last part for rules, selecting
-            # services here?
-            if "rss" in config.options(section):
-                rss = config.get(section, "rss")
-                msgLog = (f"{self.indent} Service rss -> {rss}")
-                logMsg(msgLog, 2, 0)
-                toAppend = ("rss", "set",
-                            urllib.parse.urljoin(url, rss), "posts")
-                srcs.append(toAppend)
-                more.append(moreS)
-            else:
-=======
             self.indent = f"  {section}>"
             toAppend = ""
             # Sources
@@ -87,23 +70,23 @@ class moduleRules:
             #     more.append(moreS)
             # else:
             if True:
->>>>>>> Stashed changes
                 for service in services["regular"]:
                     if (
                         ("service" in config[section])
                         and (service == config[section]["service"])
-                    ) or (url.find(service) >= 0):
-                        msgLog = f"  {self.indent} Service: {service}"
+                    ):
+                        msgLog = f"{self.indent} Service: {service}"
                         logMsg(msgLog, 1, 1)
+                        theService = service
                         api = getModule(service, self.indent)
                         api.setUrl(url)
-                        msgLog = f"  {self.indent} Api: {api}"
+                        msgLog = f"{self.indent} Api: {api}"
                         logMsg(msgLog, 1, 1)
                         if service in config[section]:
                             serviceData = config.get(section, service)
                             api.setService(service, serviceData)
                             nameGet = f"get{service.capitalize()}"
-                            msgLog = f"  {self.indent} nameGet: {nameGet}"
+                            msgLog = f"{self.indent} nameGet: {nameGet}"
                             logMsg(msgLog, 1, 1)
                             if nameGet in api.__dir__():
                                 cmd =  getattr(api, nameGet)
@@ -125,31 +108,11 @@ class moduleRules:
                         logMsg(msgLog, 2, 0)
                         for method in methods:
                             if 'posts' in moreS:
-<<<<<<< Updated upstream
-                                moreSS = moreS['posts'].split(',')
-                                for mS in moreSS:
-                                    if mS == method[1]:
-                                       toAppend = (service, "set",
-                                                   nick, method[1])
-                                    else:
-                                       toAppend = (service, "set", nick,
-                                                   f"{mS}")
-                                    msgLog = (f"toAppend: {toAppend}")
-                                    logging.info(msgLog)
-                                    if not (toAppend in srcs):
-                                        if (('posts' in moreS)
-                                            and (moreS['posts'] == method[1])):
-                                            srcs.append(toAppend)
-                                            more.append(moreS)
-                                        else:
-                                            # Available, but with no rules
-                                            srcsA.append(toAppend)
-=======
                                 if moreS['posts'] == method[1]:
-                                   toAppend = (service, "set",
+                                   toAppend = (theService, "set",
                                                api.getNick(), method[1])
                             else:
-                               toAppend = (service, "set", api.getNick(), method[1])
+                               toAppend = (theService, "set", api.getNick(), method[1])
                             if not (toAppend in srcs):
                                 if (('posts' in moreS)
                                     and (moreS['posts'] == method[1])):
@@ -158,10 +121,9 @@ class moduleRules:
                                 else:
                                     # Available, but with no rules
                                     srcsA.append(toAppend)
->>>>>>> Stashed changes
             fromSrv = toAppend
-            # msgLog = (f"fromSrv toAppend: {toAppend}")
-            # logMsg(msgLog, 2, 0)
+            msgLog = (f"fromSrv toAppend: {toAppend}")
+            logMsg(msgLog, 2, 0)
             # msgLog = (f"fromSrv moreS: {moreS}")
             # logMsg(msgLog, 2, 0)
 
@@ -194,17 +156,10 @@ class moduleRules:
                     if service in config.options(section):
                         valueE = config.get(section, service).split("\n")
                         for val in valueE:
-<<<<<<< Updated upstream
-                            nick = config.get(section, val)
-                            # msgLog = (f"{self.indent} Service special: {service} "
-                            #          f"({val}, {nick})")
-                            # logMsg(msgLog, 2, 0)
-=======
                             if val in config[section]:
                                 nick = config.get(section, val)
                             else:
                                 nick = api.getNick()
->>>>>>> Stashed changes
                             if service == "direct":
                                 url = "posts"
                             toAppend = (service, url, val, nick) #, timeW, bufferMax)
@@ -215,7 +170,8 @@ class moduleRules:
                             #          f"{fromSrv} ")
                             # logMsg(msgLog, 2, 0)
                             if toAppend not in dsts:
-                                dsts.append(toAppend)
+                                if 'service' not in toAppend:
+                                    dsts.append(toAppend)
                             if toAppend:
                                 if fromSrv not in mor:
                                     mor[fromSrv] = moreS
@@ -237,7 +193,7 @@ class moduleRules:
 
                 self.indent = f" {self.indent}"
                 for service in services["regular"]:
-                    if (service == 'cache'):
+                    if (service == 'cache') or (service == 'xmlrpc'):
                         continue
                     toAppend = ""
                     if service in config.options(section):
@@ -341,17 +297,6 @@ class moduleRules:
 
                 if not orig:
                     if service in services['special']:
-<<<<<<< Updated upstream
-                        msgLog = f"{self.indent} Special: {service}"
-                        logMsg(msgLog, 2, 0)
-                        orig = service
-                    elif service in services['regular']:
-                        msgLog = f"{self.indent} Regular: {service}"
-                        logMsg(msgLog, 2, 0)
-                        orig = service
-                    else:
-                        msgLog = f"{self.indent} Not interesting: {service}"
-=======
                         msgLog = (f"{msgLog} special")
                         logMsg(msgLog, 2, 0)
                         orig = service
@@ -361,7 +306,6 @@ class moduleRules:
                         orig = service
                     else:
                         msgLog = (f"{msgLog} not interesting")
->>>>>>> Stashed changes
                         logMsg(msgLog, 2, 0)
                 else:
                     if ((key in services['special'])
@@ -422,29 +366,31 @@ class moduleRules:
                             logMsg(msgLog, 2, 0)
                             msgLog = f"{self.indent}  from Srv: {fromSrv}"
                             logMsg(msgLog, 2, 0)
-                            if not (fromSrv in rulesNew):
-                                rulesNew[fromSrv] = []
-                            #print(f".fromSrv: {fromSrv}")
-                            if destRuleNew:
-                                #print(f".destRuleNew: {destRuleNew}")
-                                rulesNew[fromSrv].append(destRuleNew)
-                            else:
-                                #print(f"destRule: {destRule}")
-                                rulesNew[fromSrv].append(destRule)
+                            if fromSrv:
+                                if not (fromSrv in rulesNew):
+                                    rulesNew[fromSrv] = []
+                                #print(f".fromSrv: {fromSrv}")
+                                if destRuleNew:
+                                    #print(f".destRuleNew: {destRuleNew}")
+                                    rulesNew[fromSrv].append(destRuleNew)
+                                else:
+                                    #print(f"destRule: {destRule}")
+                                    rulesNew[fromSrv].append(destRule)
 
         logging.info(f"Rules: {rulesNew}")
         # Now we can add the sources not added.
 
         for src in srcsA:
             logging.info(f"-> {src}")
-            if not (src in rulesNew):
-                # Adding more rules
-                rulesNew[src] = []
-            if not src in srcs:
-                # msgLog = (f"Adding implicit {src}")
-                # logMsg(msgLog, 2, 0)
-                srcs.append(src)
-                more.append({})
+            if src:
+                if not (src in rulesNew):
+                    # Adding more rules
+                    rulesNew[src] = []
+                if not src in srcs:
+                    # msgLog = (f"Adding implicit {src}")
+                    # logMsg(msgLog, 2, 0)
+                    srcs.append(src)
+                    more.append({})
 
         # Now we can see which destinations can be also sources
         # msgLog = f"Dsts: {dsts}"
@@ -452,14 +398,13 @@ class moduleRules:
         logging.info(f"Srcs: {srcs}")
         logging.info(f"SrcsA: {srcsA}")
 
-        self.indent = f" Destinations:"
+        self.indent = f"{self.indent} Destinations:"
         for dst in dsts:
+            msgLog = f"{self.indent} Dest: {dst}"
+            logMsg(msgLog, 2, 0)
             if dst[0] == "direct":
                 service = dst[2]
-<<<<<<< Updated upstream
-=======
                 #FIXME
->>>>>>> Stashed changes
                 methods = self.hasSetMethods(service)
                 for method in methods:
                     # msgLog = (f"cache dst {dst}")
@@ -533,10 +478,6 @@ class moduleRules:
         self.rules = rulesNew
         self.more = mor
 
-
-
-
-
         msgLog = "End Checking rules"
         logMsg(msgLog, 1, 2)
 
@@ -552,7 +493,7 @@ class moduleRules:
             print(f"{i}) {act}")
         iAct = input("Which action? ")
         src = selActions[int(iAct)]
-        apiDst = self.readConfigDst(indent, act, None, None)
+        apiDst = self.readConfigDst(act, None, None)
 
         return apiDst
 
@@ -570,7 +511,7 @@ class moduleRules:
         else:
             iRul = 0
         src = selRules[int(iRul)]
-        apiSrc = self.readConfigSrc("", src, self.more[src])
+        apiSrc = self.readConfigSrc(src, self.more[src])
 
         return apiSrc
 
@@ -659,12 +600,8 @@ class moduleRules:
         return methods
 
     def hasPublishMethod(self, service):
-<<<<<<< Updated upstream
-        msgLog = f"{self.indent} Service {service} checking publish methods"
-=======
         msgLog = (f"{self.indent} [{service}] "
                   f"Checking service publish methods")
->>>>>>> Stashed changes
         logMsg(msgLog, 2, 0)
         if service in hasPublish:
             msgLog = f"{self.indent}  Service {service} cached"
@@ -684,13 +621,7 @@ class moduleRules:
                 # moduleService = clsService.publishPost.__module__
                 if method.find("Api") >= 0:
                     target = method[len("publishApi"):].lower()
-<<<<<<< Updated upstream
-                    # msgLog = (f"Target api {target}")
-                    # logMsg(msgLog, 2, 0)
-                else: #if moduleService == f"module{service.capitalize()}":
-=======
                 else:
->>>>>>> Stashed changes
                     target = method[len("publish"):].lower()
                     # msgLog = (f"Target mod {target}")
                     # logMsg(msgLog, 2, 0)
@@ -764,8 +695,6 @@ class moduleRules:
         url = url.replace(':','').replace('/','')
         return url
 
-<<<<<<< Updated upstream
-=======
     def getNickSrc(self, src):
         if isinstance(src[2], tuple):
             res = src[-1]
@@ -773,7 +702,13 @@ class moduleRules:
             res = src[2]
         return res
 
->>>>>>> Stashed changes
+    def getDestAction(self, action):
+        if isinstance(self.getActionComponent(action, 2), tuple):
+            destAction = action[1:]
+        else:
+            destAction = self.getActionComponent(action, 3)
+        return destAction
+
     def getNickAction(self, action):
         if isinstance(self.getActionComponent(action, 2), tuple):
             nick = self.getActionComponent(self.getActionComponent(action, 2),
@@ -858,24 +793,24 @@ class moduleRules:
                       f"No client for {rule} ({action}). End.")
         return f"{msgLog}"
 
-    def readConfigSrc(self, indent, src, more):
-        msgLog = f"{indent} Start readConfigSrc" #: {src[1:]}"
+    def readConfigSrc(self, src, more):
+        msgLog = f"{self.indent} Start readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         self.indent = f"{self.indent} "
 
         apiSrc = getApi(self.getNameRule(src),
                         self.getProfileRule(src), self.indent)
-        apiSrc.fileNameBase(src)
+        apiSrc.setPostsType('posts')
+        # apiSrc.fileNameBase(src)
         # if self.getNameRule(src) == 'cache':
         #     # apiSrc.fileName = apiSrc.fileNameBase(src[1:])
         #     apiSrc.postaction = 'delete'
         # else:
-        #     apiSrc.setPostsType('posts')
+        apiSrc.setMoreValues(more)
 
-        indent = indent[:-1]
-        msgLog = f"{indent} End readConfigSrc" #: {src[1:]}"
+        self.indent = f"{self.indent[:-1]}"
+        msgLog = f"{self.indent} End readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        indent = f"{indent[:-1]}"
         return apiSrc
 
     def getActionComponent(self, action, pos):
@@ -884,65 +819,42 @@ class moduleRules:
             res = action[pos]
         return res
 
-    def readConfigDst(self, indent, action, more, apiSrc):
+    def readConfigDst(self, action, more, apiSrc):
+        indent = self.indent
         msgLog = f"{indent} Start readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-<<<<<<< Updated upstream
-        indent = f"{indent} "
-        msgLog = (f"{indent} readConfigDst Action: {action}")
-        logMsg(msgLog, 2, 0)
-        # msgLog = (f"{indent} readConfigDst: {action})")
-        # msgLog = (f"{indent} readConfigDst: {self.getNameAction(action)})")
-        # logMsg(msgLog, 2, 0)
-        # msgLog = f"{indent} More: Src {more}"
-        # logMsg(msgLog, 2, 0)
-        # profile = self.getProfileAction(action)
-        # nick = self.getNickAction(action)
-        # msgLog = (f"{indent} readConfigDst profile: {profile}")
-        # logMsg(msgLog, 2, 0)
-        # msgLog = (f"{indent} readConfigDst nick: {nick}")
-        # logMsg(msgLog, 2, 0)
-        # socialNetwork = (profile, nick)
-        # msgLog = (f"{indent} socialNetwork: {socialNetwork}")
-        # logMsg(msgLog, 2, 0)
-        # msgLog = (f"{indent}Action: {action}")
-        # logMsg(msgLog, 1, 0)
-        # msgLog = (f"{indent} More: Dst {more}")
-        # logMsg(msgLog, 1, 0)
-
-        if self.getNameRule(action) == 'cache':
-            apiDst = getApi(self.getNameRule(action),
-                            self.getProfileRule(action), indent)
-            apiDst.fileName = apiDst.fileNameBase(action[1:])
-            apiDst.postaction = 'delete'
-        else:
-            apiDst = getApi(self.getProfileAction(action),
-                            self.getNickAction(action), indent)
-            apiDst.setPostsType('posts')
-=======
         self.indent = f"{self.indent} "
+
+        msgLog = f"{self.indent} AAction: {action}"
+        logMsg(msgLog, 2, 0)
+        msgLog = f"{self.indent} AAction: {self.getNameAction(action)} - {self.getDestAction(action)}"
+        logMsg(msgLog, 2, 0)
+        msgLog = f"{self.indent} AAction cache: {self.getNameRule(action)} - {self.getProfileRule(action)}"
+        logMsg(msgLog, 2, 0)
+        msgLog = f"{self.indent} AAction else: {self.getProfileAction(action)} - {self.getNickAction(action)}"
+        logMsg(msgLog, 2, 0)
 
         apiDst = getApi(self.getNameAction(action),
                         self.getDestAction(action), self.indent)
+        apiSrc.setPostsType('posts')
         apiSrc.fileNameBase(action)
         # if self.getNameAction(action) == 'cache':
         #     apiDst.fileName = apiDst.fileNameBase(action[1:])
         #     apiDst.postaction = 'delete'
         # else:
         #     apiDst.setPostsType('posts')
->>>>>>> Stashed changes
 
-        if more and ('max' in more):
-            mmax = more['max']
-        elif more and ('buffermax' in more):
-            mmax = more['buffermax']
-        else:
-            mmax = 0
+        # if more and ('max' in more):
+        #     mmax = more['max']
+        # elif more and ('buffermax' in more):
+        #     mmax = more['buffermax']
+        # else:
+        #     mmax = 0
 
-        apiDst.setMax(mmax)
+        # apiDst.setMax(mmax)
 
-        if more and ('time' in more):
-            apiDst.setTime(more['time'])
+        # if more and ('time' in more):
+        #     apiDst.setTime(more['time'])
 
         if apiSrc:
             apiDst.setUrl(apiSrc.getUrl())
@@ -1050,15 +962,8 @@ class moduleRules:
         postaction = ''
         apiSrc.setPosts()
         if nextPost:
-<<<<<<< Updated upstream
-            msgLog = (f"next post in service {apiDst.service}.")
             post = apiSrc.getNextPost()
         else:
-            msgLog = (f"post in pos {pos} in service {apiDst.service}.")
-=======
-            post = apiSrc.getNextPost()
-        else:
->>>>>>> Stashed changes
             post = apiSrc.getPost(pos)
         if post:
             title = apiSrc.getPostTitle(post)
@@ -1119,19 +1024,14 @@ class moduleRules:
         return resMsg
 
     def executeAction(self, src, more, action,
-                    noWait, timeSlots, simmulate, name="",
-                    nextPost = True, pos = -1, delete=False):
+                      noWait, timeSlots, simmulate, name="",
+                      numAct = 1, nextPost = True, pos = -1, delete=False):
 
         indent = f"{name}"
 
-<<<<<<< Updated upstream
-        msgLog = (f"{indent}  Sleeping to launch all processes")
-        logMsg(msgLog, 1, 0)
-        # 'Cometic' waiting to allow all the processes to be launched.
-        time.sleep(1)
-=======
         tL = random.random()*numAct
-        msgLog = (f"{indent}  Sleeping {tL:.2f} seconds ({numAct} actions) "
+        indent = f"{indent} "
+        msgLog = (f"{indent} Sleeping {tL:.2f} seconds ({numAct} actions) "
                   f"to launch all processes")
         logMsg(msgLog, 1, 0)
         numAct = max(3, numAct) # Less than 3 is too small
@@ -1139,16 +1039,16 @@ class moduleRules:
         # Randomization is a way to avoid calling several times the same
         # service (almost) as the same time.
         time.sleep(tL)
->>>>>>> Stashed changes
 
-        msgLog = (f"{indent}  Go!")
+        msgLog = (f"{indent} Go!")
         logMsg(msgLog, 1, 0)
         indent = f"{indent} "
 
         # Source
-        apiSrc = self.readConfigSrc(indent, src, more)
+        self.indent = indent
+        apiSrc = self.readConfigSrc(src, more)
         if not apiSrc.getClient():
-            msgLog = self.clientErrorMsg(indent, apiSrc, "Source",
+            msgLog = self.clientErrorMsg(self.indent, apiSrc, "Source",
                                       self.getProfileRule(src),
                                       self.getNickAction(src))
             if msgLog:
@@ -1164,16 +1064,16 @@ class moduleRules:
                      f"{self.getNickAction(action)}@"
                      f"{self.getProfileAction(action)} "
                      f"({self.getTypeAction(action)})")
-        msgLog = (f"{indent} Source: {theName}-{self.getNickAction(src)}"
+        msgLog = (f"{self.indent} Source: {theName}-{self.getNickAction(src)}"
                   f"-> Action: {msgAction}")
 
         res = ""
         textEnd = (f"{msgLog}")
 
         # Destination
-        apiDst = self.readConfigDst(indent, action, more, apiSrc)
+        apiDst = self.readConfigDst(action, more, apiSrc)
         if not apiDst.getClient():
-            msgLog = self.clientErrorMsg(indent, apiDst, "Destination",
+            msgLog = self.clientErrorMsg(self.indent, apiDst, "Destination",
                                       (f"{self.getNameRule(src)}@"
                                        f"{self.getProfileRule(src)}"),
                                       self.getNickAction(src))
@@ -1188,11 +1088,11 @@ class moduleRules:
             and (apiDst.getPostsType()[:-1] != self.getTypeAction(action))
             and (self.getNameAction(action) != 'cache')):
             # FIXME: Can we do better?
-            msgLog = f"{indent} Some problem with {action}"
+            msgLog = f"{self.indent} Some problem with {action}"
             logMsg(msgLog, 3, 0)
             return msgLog
 
-        indent = f"{indent} "
+        self.indent = f"{self.indent} "
 
         apiSrc.setLastLink(apiDst)
         #FIXME: best in readConfigSrc ?
@@ -1209,14 +1109,14 @@ class moduleRules:
         else:
             num = 1
 
-        msgLog = (f"{indent} I'll publish {num} post")
+        msgLog = (f"{self.indent} I'll publish {num} post")
         logMsg(msgLog, 1, 1)
 
         if (num > 0):
             tNow = time.time()
             hours = float(apiDst.getTime())*60*60
 
-            lastTime = apiSrc.getLastTimePublished(f"{indent} ")
+            lastTime = apiSrc.getLastTimePublished(f"{self.indent} ")
 
             if lastTime:
                 diffTime = tNow - lastTime
@@ -1232,24 +1132,24 @@ class moduleRules:
                 apiSrc.setNextTime(tNow, tSleep, apiDst)
 
                 if (tSleep>0.0):
-                    msgLog= f"{indent} Waiting {tSleep/60:2.2f} minutes"
+                    msgLog= f"{self.indent} Waiting {tSleep/60:2.2f} minutes"
                 else:
                     tSleep = 2.0
-                    msgLog= f"{indent} No Waiting"
+                    msgLog= f"{self.indent} No Waiting"
 
                 msgLog = f"{msgLog} for action." #: {msgAction}"
                 logMsg(msgLog, 1, 1)
 
                 for i in range(num):
                     time.sleep(tSleep)
-                    msgLog = (f"{indent} End Waiting.")
+                    msgLog = (f"{self.indent} End Waiting. {apiSrc} -> {apiDst}")
                     logMsg(msgLog, 1, 1)
-                    res = self.executePublishAction(indent, msgAction,
+                    res = self.executePublishAction(self.indent, msgAction,
                                                     apiSrc, apiDst,
                                                     simmulate,
                                                     nextPost, pos)
             elif (diffTime<=hours):
-                msgLog = (f"{indent} Not enough time passed. "
+                msgLog = (f"{self.indent} Not enough time passed. "
                           f"We will wait at least "
                           f"{(hours-diffTime)/(60*60):2.2f} hours.")
                 logMsg(msgLog, 1, 1)
@@ -1287,9 +1187,8 @@ class moduleRules:
                     i = i + 1
                 previous = self.getNameAction(src)
 
-                indent = f"{self.getNameAction(src):->9}{i}>"
-                msgLog = f"{indent} Src: {src}"
-                logMsg(msgLog, 2, 0)
+                nameAction =f"[{self.getNameAction(src)}{i}]"
+                indent = f"{nameAction:->12}>"
 
                 if src in self.more:
                     if (('hold' in self.more[src])
@@ -1313,35 +1212,6 @@ class moduleRules:
                 #     # msgLog = f"{self.indent} getProfileAction: {self.getProfileAction(src)}"
                 #     # logMsg(msgLog,2, 0)
 
-<<<<<<< Updated upstream
-                    # FIXME Names?
-                    if 'slack' in srcName:
-                        srcName = (f"{srcName.split('/')[2].split('.')[0]}"
-                                  f"@slack")
-                    elif 'gitter' in srcName:
-                        srcName = f"{srcName.split('/')[-2]}@gitter"
-                    elif 'imgur' in srcName:
-                        srcName = f"{srcName.split('/')[-1]}@imgur"
-                    elif '.com' in srcName:
-                        if 'gmail' in more:
-                            srcName = more['gmail']
-                        srcName = f"{srcName}@gmail"
-                else:
-                    #FIXME self.identifier
-                    srcName = self.getProfileRule(src)
-                    if 'slack' in srcName:
-                        srcName = f"{srcName.split('/')[2].split('.')[0]}"
-                    elif 'imgur' in srcName:
-                        srcName = more['url']
-                        srcName = f"{srcName.split('/')[-1]}"
-                    elif 'gitter' in srcName:
-                        srcName = f"{srcName.split('/')[-2]}"
-                    elif ((not srcName)
-                          and ('tumblr' in self.getNameAction(src))):
-                        srcName = more['url']
-                        srcName = f"{srcName.split('/')[2].split('.')[0]}"
-                text = (f"Source: {srcName} ({self.getNickAction(src)})")
-=======
                 #     # FIXME Names?
                 #     if 'slack' in srcName:
                 #         srcName = (f"{srcName.split('/')[2].split('.')[0]}"
@@ -1377,7 +1247,7 @@ class moduleRules:
                 #         srcName = more['url']
                 #         srcName = f"{srcName.split('/')[2].split('.')[0]}"
                 msgIni = (f"{self.getNickSrc(src)} ({self.getNickAction(src)})")
->>>>>>> Stashed changes
+                # logging.info(f"{self.indent} msgIni... {msgIni} src {src}")
 
                 actions = self.rules[src]
 
@@ -1386,16 +1256,9 @@ class moduleRules:
                      f"{self.getNameRule(src).lower()}{i}")):
                     actionMsg = f"Skip {msgIni}"
                 else:
-<<<<<<< Updated upstream
-                    actionMsg = (f"Scheduling.")
-                msgLog = f"{indent} {text}"
-                logMsg(msgLog, 1, 1)
-                indent = f"{indent} "
-=======
                     actionMsg = (f"Scheduling {msgIni}")
                 # msgLog = f"{indent} {msgIni}"
                 # logMsg(msgLog, 1, 1)
->>>>>>> Stashed changes
                 msgLog = f"{indent} {actionMsg}"
                 logMsg(msgLog, 1, 1)
                 if actionMsg == "Skip.":
@@ -1418,7 +1281,7 @@ class moduleRules:
                     logMsg(msgLog, 1, 1)
                     textEnd = f"{textEnd}\n{msgLog}"
                     nameA = f"{indent} {name}"
-                    if actionMsg == "Skip.":
+                    if "Skip" in actionMsg:
                         #FIXME "In hold"
                         continue
                     timeSlots = args.timeSlots
@@ -1439,7 +1302,7 @@ class moduleRules:
                                         noWait,
                                         timeSlots,
                                         args.simmulate,
-                                        nameA))
+                                        nameA, threads))
                     indent = f"{indent[:-1]}"
                 indent = f"{indent[:-1]}"
 

@@ -320,11 +320,10 @@ def main():
             if ((key[0] == 'pocket')
                     and (key[2] == 'fernand0kobo')):
 
-                apiSrc = rules.readConfigSrc(key, rules.more[key])
+                apiSrc = rules.readConfigSrc("",key, rules.more[key])
 
                 apiSrc.setPosts()
                 print(f"Posts: {apiSrc.getPosts()}")
-                # return
                 for pos, post in enumerate(reversed(apiSrc.getPosts())):
                     title = apiSrc.getPostTitle(post)
                     print(f"Title: {title}")
@@ -345,7 +344,7 @@ def main():
                         import requests
                         from readabilipy import simple_json_from_html_string
                         try:
-                            req = requests.get(link)
+                            req = requests.get(link, headers={"User-Agent":"Mozilla/5.0"})
                             error = False
                             if req.status_code < 400:
                                 msg = title

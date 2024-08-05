@@ -4,6 +4,7 @@
 
 import configparser
 import html
+import inspect
 import re
 import sys
 from html.parser import HTMLParser
@@ -48,26 +49,23 @@ class Content:
 
     def setService(self, service, serviceData):
         nameSet = f"set{service.capitalize()}"
-        msgLog = f"  {self.indent} nameSet: {nameSet}"
+        msgLog = f"{self.indent} nameSet: {nameSet}"
         logMsg(msgLog, 1, 1)
         if nameSet in self.__dir__():
             cmd =  getattr(self, nameSet)
-            msgLog = f"  {self.indent} Cmd set: {cmd}"
+            msgLog = f"{self.indent} Cmd set: {cmd}"
             logMsg(msgLog, 1, 1)
             cmd(serviceData)
 
 
     def setClient(self, account):
-        msgLog = (f"{self.indent} Connecting {self.service}: {account}")
+        msgLog = (f"{self.indent} Start setClient account: {account}")
         logMsg(msgLog, 1, 0)
-        # print(f"acc: {account}")
-        # print(f"tt: {type(account[1])}")
+        indent = f"{indent} "
+
         client = None
 
         if isinstance(account, str):
-            # logging.info(f"{self.indent} Service {self.service} "
-            #               f"setClient str")
-            #FIXME We should not need these ifs
             self.user = account
         else:
             msgLog = f"{self.indent} setClient else. This shouldn't happen"
@@ -76,7 +74,7 @@ class Content:
             # Deprecated
             self.user = account[1][1]
 
-        msgLog = f"{self.indent} Configuring Service {self.service}"
+        msgLog = f"{self.indent} Configuring Service"
         logMsg(msgLog, 2, 0)
 
         configFile = f"{CONFIGDIR}/.rss{self.service}"
@@ -87,7 +85,7 @@ class Content:
             msgLog = (f"Does file {configFile} exist?")
             self.report({self.indent}, msgLog, 0, '')
 
-        msgLog = (f"{self.indent} Getting keys for {self.service}: {account}"
+        msgLog = (f"{self.indent} Getting keys"
                   f" {config}")
         logMsg(msgLog, 1, 0)
         keys = ''
@@ -116,6 +114,9 @@ class Content:
         else:
             self.report(self.service, "No keys", "", '')
             self.client = None
+        indent = indent[:-1]
+        msgLog = (f"{self.indent} End setClient")
+        logMsg(msgLog, 1, 0)
 
     def getService(self):
         if hasattr(self, 'auxClass'):
@@ -169,6 +170,7 @@ class Content:
     def setMoreValues(self, more):
         # We have a dictionary of values and we check for methods for
         # setting these values in our object
+        self.indent = f"{self.indent} "
         msgLog = f"{self.indent} Start setMoreValues" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         if more:
@@ -200,22 +202,23 @@ class Content:
                                 break
         msgLog = f"{self.indent} End setMoreValues" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
+        self.indent = f"{self.indent[:-1]}"
 
-    def apicall(self, commandname, api = none, **kwargs):
+    def apiCall(self, commandname, api = None, **kwargs):
         if api:
             client = api
         else:
             client = self.getclient()
-        msglog = (f"{self.indent} calling: {commandname}"
+        msgLog = (f"{self.indent} calling: {commandname}"
                   f" with arguments {kwargs}")
-        logmsg(msglog, 2, 0)
+        logMsg(msgLog, 2, 0)
         res = []
 
         command = getattr(client, commandname)
-        error = none
+        error = None
         try:
-            msglog = f"{self.indent}command {command} "
-            logmsg(msglog, 2, 0)
+            msgLog = f"{self.indent}command {command} "
+            logMsg(msgLog, 2, 0)
             res = command(**kwargs)
         except:
             res = "fail!"
@@ -224,143 +227,140 @@ class Content:
         return res, error
 
 
-    def setapiposts(self):
+    def setApiPosts(self):
         pass
 
-    def setposts(self):
-        msglog = f"{self.indent} start setposts"
-        logmsg(msglog, 2, 0)
-        nick = self.getnick()
+    def setPosts(self):
+        msgLog = f"{self.indent} start setPosts"
+        logMsg(msgLog, 2, 0)
+        nick = self.getNick()
         self.indent = f"{self.indent} "
-        if nick:
-            identifier = nick
-        else:
-            identifier = self.geturl()
+        identifier = nick
 
-        typeposts = self.getpoststype()
-        msglog = (f"{self.indent} setting type {self.getpoststype()}")
-        logmsg(msglog, 2, 0)
-        if hasattr(self, "getpoststype") and self.getpoststype():
-            typeposts = self.getpoststype()
-            if self.getpoststype() in ['posts', 'drafts', 'draft']:
+        typeposts = self.getPostsType()
+        msgLog = (f"{self.indent} setting type {self.getPostsType()}")
+        logMsg(msgLog, 2, 0)
+        if hasattr(self, "getPostsType") and self.getPostsType():
+            typeposts = self.getPostsType()
+            if self.getPostsType() in ['posts', 'drafts', 'draft']:
                 cmd = getattr(
-                    self, f"setapi{self.getpoststype().capitalize()}"
+                    self, f"setApi{self.getPostsType().capitalize()}"
                 )
             else:
-                self.setchannel(self.getpoststype())
+                self.setChannel(self.getPostsType())
                 cmd = getattr(
-                    self, f"setapiposts"
+                    self, f"setApiPosts"
                 )
 
         else:
-            cmd = getattr(self, "setapiposts")
+            cmd = getattr(self, "setApiPosts")
 
         posts = cmd()
-        # msglog = (f"{self.indent} service {self.service} posts: {posts}")
-        # logmsg(msglog, 2, 0)
-        self.assignposts(posts)
+        # msgLog = (f"{self.indent} service {self.service} posts: {posts}")
+        # logMsg(msgLog, 2, 0)
+        self.assignPosts(posts)
         self.indent = self.indent[:-1]
-        msglog = f"{self.indent} end setposts"
-        logmsg(msglog, 2, 0)
+        msgLog = f"{self.indent} end setPosts"
+        logMsg(msgLog, 2, 0)
 
-    def getclient(self):
-        client = none
+    def getClient(self):
+        client = None
         if hasattr(self, "client"):
             client = self.client
         return client
 
-    def geturl(self):
+    def getUrl(self):
         url = ""
         if hasattr(self, "url"):
             url = self.url
         return url
 
-    def filenamebase(self, dst):
-        # msglog = (f"{self.indent} filenamebase src: {self}")
-        # logmsg(msglog, 2, 0)
+    def fileNameBase(self, dst):
+        # msgLog = (f"{self.indent} fileNameBase src: {self}")
+        # logMsg(msgLog, 2, 0)
         src = self
-        namesrc = type(src).__name__
-        if 'module' in namesrc:
-            namesrc = namesrc[len('module'):]
-            # msglog = (f"{self.indent} filenamebase module src: {namesrc}")
-            # logmsg(msglog, 2, 0)
-        namedst = type(dst).__name__
-        if 'module' in namedst:
-            namedst = namedst[len('module'):]
-            # msglog = (f"{self.indent} filenamebase module dst: {namedst}")
-            # logmsg(msglog, 2, 0)
-            userd = dst.getuser()
+        nameSrc = type(src).__name__
+        if 'module' in nameSrc:
+            nameSrc = nameSrc[len('module'):]
+            # msgLog = (f"{self.indent} fileNameBase module src: {nameSrc}")
+            # logMsg(msgLog, 2, 0)
+        nameDst = type(dst).__name__
+        if 'module' in nameDst:
+            nameDst = nameDst[len('module'):]
+            # msgLog = (f"{self.indent} fileNameBase module dst: {nameDst}")
+            # logMsg(msgLog, 2, 0)
+            userD = dst.getUser()
             if hasattr(dst, 'socialnetwork'):
-                serviced = dst.socialnetwork
+                serviceD = dst.socialnetwork
             else:
-                serviced = namedst
-            user = src.getuser()
-            service = src.getservice()
-            # msglog = (f"{self.indent} filenamebase userd: {userd}")
-            # logmsg(msglog, 2, 0)
-            # msglog = (f"{self.indent} filenamebase serviced: {serviced}")
-            # logmsg(msglog, 2, 0)
-            # msglog = (f"{self.indent} filenamebase user: {user}")
-            # logmsg(msglog, 2, 0)
-            # msglog = (f"{self.indent} filenamebase service: {service}")
-            # logmsg(msglog, 2, 0)
+                serviceD = nameDst
+            user = src.getUser()
+            service = src.getService()
+            # msgLog = (f"{self.indent} fileNameBase userD: {userD}")
+            # logMsg(msgLog, 2, 0)
+            # msgLog = (f"{self.indent} fileNameBase serviceD: {serviceD}")
+            # logMsg(msgLog, 2, 0)
+            # msgLog = (f"{self.indent} fileNameBase user: {user}")
+            # logMsg(msgLog, 2, 0)
+            # msgLog = (f"{self.indent} fileNameBase service: {service}")
+            # logMsg(msgLog, 2, 0)
         else:
-            user = src.geturl()
+            user = src.getUrl()
             service = self.service
-            userd = dst[0]
-            serviced = dst[1]
-            namedst = serviced.capitalize()
+            userD = dst[0]
+            serviceD = dst[1]
+            nameDst = serviceD.capitalize()
 
-        if hasattr(src, 'getpoststype'):
-            typesrc = src.getpoststype()
+        if hasattr(src, 'getPostsType'):
+            typeSrc = src.getPostsType()
         else:
-            typesrc = 'posts'
+            typeSrc = 'posts'
 
-        if hasattr(dst, 'getpoststype'):
-            typedst = dst.getpoststype()
+        if hasattr(dst, 'getPostsType'):
+            typeDst = dst.getPostsType()
         else:
-            typedst = 'posts'
+            typeDst = 'posts'
 
-        # msglog = (f"{self.indent} filenamebase typesrc: {typesrc}")
-        # logmsg(msglog, 2, 0)
-        # msglog = (f"{self.indent} filenamebase typedst: {typedst}")
-        # logmsg(msglog, 2, 0)
+        # msgLog = (f"{self.indent} fileNameBase typeSrc: {typeSrc}")
+        # logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} fileNameBase typeDst: {typeDst}")
+        # logMsg(msgLog, 2, 0)
         # print(f"user: {user}")
         # if not user:
-        #     user = dst.geturl()
+        #     user = dst.getUrl()
         # print(f"user: {user}")
-        filename = (f"{namesrc}_{typesrc}_"
+        filename = (f"{nameSrc}_{typeSrc}_"
                     f"{user}_{service}__"
-                    f"{namedst}_{typedst}_"
-                    f"{userd}_{serviced}")
-        filename = (f"{datadir}/{filename.replace('/','-').replace(':','-')}")
-        # msglog = (f"{self.indent} end filenamebase filename: {filename}")
-        # logmsg(msglog, 2, 0)
+                    f"{nameDst}_{typeDst}_"
+                    f"{userD}_{serviceD}")
+        filename = (f"{DATADIR}/{filename.replace('/','-').replace(':','-')}")
+        # msgLog = (f"{self.indent} end fileNameBase filename: {filename}")
+        # logMsg(msgLog, 2, 0)
 
         return filename
 
-    def updatelastlink(self, dst, link):
+    def updateLastLink(self, dst, link):
         if link and isinstance(link, list):
             #fixme: this will be removed
-            link = self.getpostlink(link[-1])
+            link = self.getPostLink(link[-1])
         elif not link:
             # fixme could post be a parameter?
             post = self.getnextpost()
-            msglog = f"{self.indent} nextpost {post}"
-            logmsg(msglog, 2, 0)
-            link = self.getpostlink(post)
+            msgLog = f"{self.indent} nextpost {post}"
+            logMsg(msgLog, 2, 0)
+            link = self.getPostLink(post)
         msgupdate = f"last link {link} in {self.service}"
-        msglog = f"{self.indent} updating {msgupdate}"
-        logmsg(msglog, 1, 0)
+        msgLog = f"{self.indent} updating {msgupdate}"
+        logMsg(msgLog, 1, 0)
 
-        filename = f"{self.filenamebase(dst)}.last"
-        msglog = f"{self.indent} filename {filename}"
-        logmsg(msglog, 2, 0)
-        msglog = checkfile(filename)
-        if not 'ok' in msglog:
-            msglog = (f"file {filename} does not exist. "
+        filename = f"{self.fileNameBase(dst)}.last"
+        msgLog = f"{self.indent} filename {filename}"
+        logMsg(msgLog, 2, 0)
+        msgLog = checkFile(filename)
+        if not 'ok' in msgLog:
+            msgLog = (f"file {filename} does not exist. "
                       f"i'm going to create it.")
-            logmsg(msglog, 3, 0)
+            logMsg(msgLog, 3, 0)
         with open(filename, "w") as f:
             if link:
                 if isinstance(link, bytes):
@@ -370,206 +370,206 @@ class Content:
                 else:
                     f.write(link[0])
 
-        self.setlastlink(dst)
+        self.setlastLink(dst)
 
         return f"updated {msgupdate}"
 
-    def getlastlinknew(self, dst):
-        return self.lastlinkpublished
+    def getLastLinkNew(self, dst):
+        return self.lastLinkPublished
 
-    def getlastlink(self):
-        url = self.geturl()
+    def getLastLink(self):
+        url = self.getUrl()
         service = self.service.lower()
-        nick = self.getuser()
+        nick = self.getUser()
         if hasattr(self, 'filename') and self.filename:
             filename = f"{self.filename}.last"
         else:
-            filename = (f"{filenamepath(url, (service, nick))}.last")
-        linklast = ''
+            filename = (f"{fileNamePath(url, (service, nick))}.last")
+        linkLast = ''
 
         # logging.debug(f"urll: {url}")
         # logging.debug(f"nickl: {nick}")
         # logging.debug(f"servicel: {service}")
         # logging.debug(f"filename: {filename}")
-        msglog = checkfile(filename)
+        msgLog = checkFile(filename)
         # dirname = os.path.dirname(filename)
         # if not os.path.isdir(dirname):
         #     return ""
         #     sys.exit("no directory {dirname} exists")
         if service in ['html']:
             #fixme: not here
-            linklast = ''
-        elif "ok" in msglog:
+            linkLast = ''
+        elif "ok" in msgLog:
             with open(filename, "rb") as f:
-                linklast = f.read().decode().split()  # last published
+                linkLast = f.read().decode().split()  # last published
         else:
-            logmsg(msglog, 3, 0)
-        lastlink = ''
-        if len(linklast) == 1:
-            lastlink = linklast[0]
+            logMsg(msgLog, 3, 0)
+        lastLink = ''
+        if len(linkLast) == 1:
+            lastLink = linkLast[0]
         else:
-            lastlink = linklast
+            lastLink = linkLast
 
-        msglog = f"{self.indent} {linklast}"
-        logmsg(msglog, 1, 0)
+        msgLog = f"{self.indent} {linkLast}"
+        logMsg(msgLog, 1, 0)
 
-        self.lastlink = lastlink
-        return lastlink
+        self.lastLink = lastLink
+        return lastLink
 
-    def setlastlink(self, dst = none):
+    def setLastLink(self, dst = None):
         if hasattr(self, 'filename') and self.filename:
             filename = f"{self.filename}.last"
         else:
             if dst:
-                self.filename = self.filenamebase(dst)
+                self.filename = self.fileNameBase(dst)
                 filename = f"{self.filename}.last"
             else:
-                url = self.geturl()
+                url = self.getUrl()
                 service = self.service.lower()
-                nick = self.getnick()
-                page = self.getpage()
+                nick = self.getNick()
+                page = self.getPage()
                 if page:
                     nick = f"{nick}-{page}"
-                filename = (f"{filenamepath(url, (service, nick))}.last")
+                filename = (f"{fileNamePath(url, (service, nick))}.last")
 
-        lasttime = ''
-        linklast = ''
-        msglog = checkfile(filename)
-        if 'ok' in msglog:
+        lastTime = ''
+        linkLast = ''
+        msgLog = checkFile(filename)
+        if 'ok' in msgLog:
             with open(filename, "rb") as f:
-                linklast = f.read().decode().split()  # last published
-            lasttime = os.path.getctime(filename)
+                linkLast = f.read().decode().split()  # last published
+            lastTime = os.path.getctime(filename)
         else:
-            lasttime = 0
-            self.report(self.service, msglog, '', '')
-        msglog = f"{self.indent} {msglog}"
-        logmsg(msglog, 2, 0)
+            lastTime = 0
+            self.report(self.service, msgLog, '', '')
+        msgLog = f"{self.indent} {msgLog}"
+        logMsg(msgLog, 2, 0)
 
-        self.lastlinkpublished = linklast
-        self.lasttimepublished = lasttime
+        self.lastLinkPublished = linkLast
+        self.lastTimePublished = lastTime
 
-    def getlasttime(self, other = none):
-        lasttime = 0.0
-        mylastlink = ""
-        # you always need to check lastlink?
+    def getLastTime(self, other = None):
+        lastTime = 0.0
+        myLastLink = ""
+        # you always need to check lastLink?
         # example: gmail, twitter
         if other:
-            filename = self.filenamebase(other)
-            lasttime2 = ""
+            filename = self.fileNameBase(other)
+            lastTime2 = ""
             if os.path.isfile(filename):
-                lasttime2 = os.path.getctime(filename)
-            mylastlink2 = self.getlastlinknew(other)
-            print(f"mylastlink2: {mylastlink2} {lasttime2}")
-            return mylastlink2, lasttime2
+                lastTime2 = os.path.getctime(filename)
+            myLastLink2 = self.getLastLinkNew(other)
+            print(f"myLastLink2: {myLastLink2} {lastTime2}")
+            return myLastLink2, lastTime2
         try:
-                url = self.geturl()
+                url = self.getUrl()
                 service = self.service.lower()
-                nick = self.getuser()
-                fn = (f"{filenamepath(url, (service, nick))}.last")
-                lasttime = os.path.getctime(fn)
-                mylastlink = self.getlastlink()
+                nick = self.getUser()
+                fn = (f"{fileNamePath(url, (service, nick))}.last")
+                lastTime = os.path.getctime(fn)
+                myLastLink = self.getLastLink()
         except:
                 fn = ""
-                msglog = (f"no last link")
-                logmsg(msglog, 2, 0)
+                msgLog = (f"no last link")
+                logMsg(msgLog, 2, 0)
 
-        self.lastlinkpublished = mylastlink
-        self.lasttimepublished = lasttime
+        self.lastLinkPublished = myLastLink
+        self.lastTimePublished = lastTime
 
-        logmsg(f"mylastlink: {mylastlink} {lasttime}",2 , 0)
-        return mylastlink, lasttime
+        logMsg(f"myLastLink: {myLastLink} {lastTime}",2 , 0)
+        return myLastLink, lastTime
 
-    def setnextavailabletime(self, tnow, tsleep, dst = none):
-        filenamenext = ''
+    def setNextAvailableTime(self, tnow, tSleep, dst = None):
+        fileNameNext = ''
         if dst:
-            filenamenext = f"{self.filenamebase(dst)}.timeavailable"
-            msglog = checkfile(filenamenext)
-            if not "ok" in msglog:
-                msglog = (f"file {filenamenext} does not exist. "
+            fileNameNext = f"{self.fileNameBase(dst)}.timeavailable"
+            msgLog = checkFile(fileNameNext)
+            if not "ok" in msgLog:
+                msgLog = (f"file {fileNameNext} does not exist. "
                           f"i'm going to create it.")
-                logmsg(msglog, 2, 0)
-            with open(filenamenext,'wb') as f:
-                pickle.dump((tnow, tsleep), f)
+                logMsg(msgLog, 2, 0)
+            with open(fileNameNext,'wb') as f:
+                pickle.dump((tnow, tSleep), f)
         else:
             print(f"not implemented!")
 
-    def setnexttime(self, tnow, tsleep, dst = none):
-        filenamenext = ''
+    def setNextTime(self, tnow, tSleep, dst = None):
+        fileNameNext = ''
         if dst:
-            filenamenext = f"{self.filenamebase(dst)}.timenext"
-            msglog = checkfile(filenamenext)
-            logmsg(f"{self.indent} filenamenext: {msglog}", 2, 0)
-            if not 'ok' in msglog:
-                msglog = (f"file {filenamenext} does not exist. "
+            fileNameNext = f"{self.fileNameBase(dst)}.timenext"
+            msgLog = checkFile(fileNameNext)
+            logMsg(f"{self.indent} fileNameNext: {msgLog}", 2, 0)
+            if not 'ok' in msgLog:
+                msgLog = (f"file {fileNameNext} does not exist. "
                           f"i'm going to create it.")
-                self.report('', msglog, '', '')
-            with open(filenamenext,'wb') as f:
-                pickle.dump((tnow, tsleep), f)
-            msglog = (f"file {filenamenext} updated.")
-            logmsg(msglog, 2, 0)
+                self.report('', msgLog, '', '')
+            with open(fileNameNext,'wb') as f:
+                pickle.dump((tnow, tSleep), f)
+            msgLog = (f"file {fileNameNext} updated.")
+            logMsg(msgLog, 2, 0)
         else:
-            msglog = (f"not implemented!")
-            logmsg(msglog, 3, 0)
+            msgLog = (f"not implemented!")
+            logMsg(msgLog, 3, 0)
 
-    def setnumposts(self, numposts):
+    def setNumPosts(self, numposts):
         self.numposts = numposts
 
-    def getnumposts(self):
+    def getNumPosts(self):
         return self.numposts
 
-    def seturl(self, url):
+    def setUrl(self, url):
         self.url = url
 
-    def setsearch(self, term):
+    def setSearch(self, term):
         self.search = term
 
-    def getsearch(self):
+    def getSearch(self):
         name = ""
         if hasattr(self, "search"):
             name = self.search
         return name
 
-    def getname(self):
+    def getName(self):
         name = ""
         if hasattr(self, "name"):
             name = self.name
         return name
 
-    def setname(self, name):
+    def setName(self, name):
         self.name = name
 
-    def setpostaction(self, action):
+    def setPostAction(self, action):
         self.postaction = action
 
 
-    def getsitetitle(self):
-        return self.getname()
+    def getSiteTitle(self):
+        return self.getName()
 
-    def getpostaction(self):
+    def getPostAction(self):
         postaction = "delete"
         if hasattr(self, "postaction"):
             postaction = self.postaction
         return postaction
 
-    def getpostcontenthtml(self, post):
+    def getPostContentHtml(self, post):
         return ""
 
-    def getpostcontentlink(self, post):
-        return self.getpostlink(post)
+    def getPostContentLink(self, post):
+        return self.getPostLink(post)
 
-    def getsocialnetwork(self):
-        socialnetwork = (self.service, self.nick)
-        return socialnetwork
+    def getSocialNetwork(self):
+        socialNetwork = (self.service, self.nick)
+        return socialNetwork
 
-    def getsocialnetworks(self):
-        socialnetworks = none
-        if hasattr(self, "socialnetworks"):
-            socialnetworks = self.socialnetworks
-        return socialnetworks
+    def getSocialNetworks(self):
+        socialNetworks = None
+        if hasattr(self, "socialNetworks"):
+            socialNetworks = self.socialNetworks
+        return socialNetworks
 
     # old ? to eliminate
-    def setsocialnetworks(self, socialnetworksconfig):
-        socialnetworksopt = [
+    def setSocialNetworks(self, socialNetworksConfig):
+        socialNetworksOpt = [
             "twitter",
             "facebook",
             "telegram",
@@ -586,53 +586,53 @@ class Content:
             "file",
             "kindle",
         ]
-        msglog =("  snc {socialnetworksconfig}")
-        logmsg(msglog, 2, 0)
-        for sn in socialnetworksconfig:
-            if sn in socialnetworksopt:
-                self.addsocialnetwork((sn, socialnetworksconfig[sn]))
-        msglog = ("  snn {self.getsocialnetworks()}")
-        logmsg(msglog, 2, 0)
+        msgLog =("  snc {socialnetworksconfig}")
+        logMsg(msgLog, 2, 0)
+        for sn in socialNetworksConfig:
+            if sn in socialNetworksOpt:
+                self.addSocialNetwork((sn, socialNetworksConfig[sn]))
+        msgLog = ("  snn {self.getSocialNetworks()}")
+        logMsg(msgLog, 2, 0)
 
-    def addsocialnetwork(self, socialnetwork):
-        self.socialnetworks[socialnetwork[0]] = socialnetwork[1]
+    def addSocialNetwork(self, socialNetwork):
+        self.socialNetworks[socialNetwork[0]] = socialNetwork[1]
 
-    def assignposts(self, posts):
+    def assignPosts(self, posts):
         self.posts = []
         if posts:
             for post in posts:
                 self.posts.append(post)
 
-    def getposts2(self):
-        posts = none
+    def getPosts2(self):
+        posts = None
         if hasattr(self, 'posts2'):
             posts = self.posts2
         return posts
 
-    def getposts(self):
-        posts = none
+    def getPosts(self):
+        posts = None
         if hasattr(self, 'posts'):
             posts = self.posts
         return posts
 
-    def getpost(self, i):
+    def getPost(self, i):
         self.indent = f"{self.indent} "
-        msglog = (f"{self.indent} start getpost pos {i}.")
-        logmsg(msglog, 2, 0)
-        post = none
-        posts = self.getposts()
+        msgLog = (f"{self.indent} start getpost pos {i}.")
+        logMsg(msgLog, 2, 0)
+        post = None
+        posts = self.getPosts()
         if posts and (i >= 0) and (i < len(posts)):
             post = posts[i]
 
-        msglog = (f"{self.indent} end getpost pos {i}.")
-        logmsg(msglog, 2, 0)
+        msgLog = (f"{self.indent} end getpost pos {i}.")
+        logMsg(msgLog, 2, 0)
         self.indent = self.indent[:-1]
         return post
 
-    def getpostimages(self, post):
+    def getPostImages(self, post):
         return self.extractimages(post)
 
-    def getimagestags(self, i):
+    def getImagesTags(self, i):
         res = self.getimages(i)
         tags = []
         for iimg in res:
@@ -642,10 +642,10 @@ class Content:
 
         return tags
 
-    def getpostimagescode(self, post):
+    def getPostImagesCode(self, post):
         # needs work
-        url = self.getpostlink(post)
-        res = self.getpostimages(post)
+        url = self.getPostLink(post)
+        res = self.getPostImages(post)
         text = ""
         if res:
             for iimg in res:
