@@ -21,9 +21,15 @@ from socialModules.moduleContent import *
 class moduleRss(Content): #, Queue):
 
     def getRssFeed(self):
+        return self.getRss()
+
+    def getRss(self):
         return(self.rssFeed)
 
     def setRssFeed(self, feed):
+        self.setRss(feed)
+
+    def setRss(self, feed):
         self.rssFeed = feed
         self.max = None
         self.bufMax = None

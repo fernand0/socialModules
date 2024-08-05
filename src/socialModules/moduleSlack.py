@@ -51,6 +51,12 @@ class moduleSlack(Content): #, Queue):
         conversations = response.get("channels", '')
         return conversations
 
+    def setNick(self, nick=None):
+        if not nick:
+            nick = self.getUrl()
+            nick = nick.split("/")[2].split('.')[0]
+        self.nick = nick
+
     def setChannel(self, channel=''):
         # setPage in Facebook
         if not channel:
@@ -108,7 +114,7 @@ class moduleSlack(Content): #, Queue):
         theChannel = self.getChannel()
         self.getClient().token = self.slack_token
         data = {"limit": 1000, "channel": theChannel}
-        history = self.getClient().api_call("conversations.history", 
+        history = self.getClient().api_call("conversations.history",
                                             data=data)
         try:
             posts = history["messages"]
@@ -178,7 +184,7 @@ class moduleSlack(Content): #, Queue):
                 # Some people include URLs in the title of the page
                 pos = text.rfind("<")
                 text[pos + 1 : -1] = newLink
- 
+
     def getPostId(self, post):
         return (post.get('ts',''))
 
@@ -333,8 +339,8 @@ class moduleSlack(Content): #, Queue):
 def main():
 
     import logging
-    logging.basicConfig(stream=sys.stdout, 
-            level=logging.DEBUG, 
+    logging.basicConfig(stream=sys.stdout,
+            level=logging.DEBUG,
             format="%(asctime)s %(message)s"
     )
 
@@ -344,14 +350,14 @@ def main():
     rules.checkRules()
 
     # Example:
-    # 
+    #
     # src: ('slack', 'set', 'http://fernand0-errbot.slack.com/', 'posts')
     #
     # More: {'url': 'http://fernand0-errbot.slack.com/', 'service': 'slack', 'cache': 'linkedin\ntwitter\nfacebook\nmastodon\ntumblr', 'twitter': 'fernand0Test', 'facebook': 'Fernand0Test', 'mastodon': '@fernand0@mastodon.social', 'linkedin': 'Fernando Tricas', 'tumblr': 'fernand0', 'buffermax': '9'}
     # It can be empty: {}
-    
+
     indent = ""
-    
+
     testingInit = True
     if testingInit:
         import moduleRules
@@ -458,7 +464,7 @@ def main():
         input(f"Delete {site.getPostTitle(post)}? ")
         site.delete(0)
         return
-        
+
     testingDelete = False
     if testingDelete:
         # print("Testing posting and deleting")
