@@ -61,7 +61,7 @@ class Content:
     def setClient(self, account):
         msgLog = (f"{self.indent} Start setClient account: {account}")
         logMsg(msgLog, 1, 0)
-        indent = f"{indent} "
+        self.indent = f"{self.indent} "
 
         client = None
 
@@ -114,7 +114,7 @@ class Content:
         else:
             self.report(self.service, "No keys", "", '')
             self.client = None
-        indent = indent[:-1]
+        self.indent = self.indent[:-1]
         msgLog = (f"{self.indent} End setClient")
         logMsg(msgLog, 1, 0)
 
