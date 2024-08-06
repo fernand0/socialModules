@@ -75,18 +75,20 @@ def getNextTime(blog, socialNetwork):
         self.report(self.service, msgLog, '', '')
         return 0, 0
 
-def checkFile(fileName):
-    msgLog = f"Checking {fileName} "
+def checkFile(fileName, indent=""):
+    msgLog = f"{indent} Start Checking {fileName} "
     logMsg(msgLog, 2, 0)
     dirName = os.path.dirname(fileName)
 
-    msgLog = f"OK {fileName}"
+    msgRes = f"OK {fileName}"
     if not os.path.isdir(dirName):
-        msgLog = f"Directory {dirName} does not exist."
+        msgRes = f"Directory {dirName} does not exist."
     elif not os.path.isfile(fileName):
-        msgLog = f"File {fileName} does not exist."
+        msgRes = f"File {fileName} does not exist."
 
-    return msgLog
+    msgLog = f"{indent} End Checking"
+    logMsg(msgLog, 2, 0)
+    return msgRes
 
 def getLastLink(fileName, indent=''):
     msgLog = (f"fileName: {fileName}")
@@ -217,13 +219,18 @@ def getApi(profile, nick, indent=""):
     msgLog = (f"{indent} Start getApi")
     logMsg(msgLog, 2, 0)
 
-    indent = f"{indent} "
+    #indent = f"{indent} "
+
+    msgLog = (f"{indent}  Profile {profile}")
+    logMsg(msgLog, 2, 0)
+    msgLog = (f"{indent}  Nick {nick}")
+    logMsg(msgLog, 2, 0)
     api = getModule(profile, indent)
     api.indent = indent
     api.setClient(nick)
     api.setPostsType('posts')
 
-    indent = indent[:-1]
+    #indent = indent[:-1]
     msgLog = (f"{indent} End getApi")
     logMsg(msgLog, 2, 0)
     return api

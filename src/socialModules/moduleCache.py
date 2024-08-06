@@ -62,7 +62,7 @@ class moduleCache(Content): #,Queue):
         self.indent = f"{self.indent} "
         msgLog = (f"{self.indent} Start fileNameBase")
         logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent} dst {dst}")
+        msgLog = (f"{self.indent}  dst {dst}")
         logMsg(msgLog, 2, 0)
         if isinstance(dst, tuple) and len(dst)>2 and isinstance(dst[2], tuple):
             myDst = dst[1:]
@@ -91,9 +91,9 @@ class moduleCache(Content): #,Queue):
             elif isinstance(myDst, tuple):
                 # logging.info(f"{self.indent} tuple {myDst}")
                 #FIXME
-                user = self.url
-                # service = myDst[0][0].capitalize()
+                user = self.getUrl()
                 service = myDst[0].capitalize()
+                logging.info(f"SSSservice: {service} - {self.getService()}")
                 userD = self.user
                 serviceD = self.socialNetwork
                 nameDst = self.socialNetwork.capitalize()
@@ -125,10 +125,11 @@ class moduleCache(Content): #,Queue):
                         f"{nameDst}_{typeDst}_"
                         f"{userD}_{serviceD}")
             fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
-            msgLog = (f"{self.indent} End fileNameBase fileName: {fileName}")
-            logMsg(msgLog, 2, 0)
             self.fileName = fileName
 
+        msgLog = (f"{self.indent} End fileNameBase")
+        logMsg(msgLog, 2, 0)
+        self.indent = f"{self.indent[:-1]}"
         return fileName
 
     # def fileNameBase2(self, dst):
@@ -162,9 +163,10 @@ class moduleCache(Content): #,Queue):
     #     return fileName
 
     def setClient(self, param):
+        self.indent = f"{self.indent} "
         self.service = 'Cache'
-        msgLog = (f"{self.indent} Connecting {self.service}: {param}")
-        logMsg(msgLog, 1, 0)
+        msgLog = (f"{self.indent} Start setClient: {param}")
+        logMsg(msgLog, 2, 0)
         self.postaction = 'delete'
 
         self.postsType = 'posts'
@@ -176,10 +178,10 @@ class moduleCache(Content): #,Queue):
         self.auxClass = param[0]
         self.fileName = self.fileNameBase((self.socialNetwork, self.nick))
         fileNameQ = f"{self.fileName}.queue"
-        msgLog = checkFile(fileNameQ)
+        msgLog = checkFile(fileNameQ, self.indent)
         if not 'OK' in msgLog:
             #with open(fileNameQ, "w") as f:
-            msgLog = (f"File {fileNameQ} does not exist. "
+            msgLog = (f"{self.indent} File {fileNameQ} does not exist. "
                       f"I'll need to create it.")
             logMsg(msgLog, 3, 0)
         self.client = self.service
@@ -190,7 +192,7 @@ class moduleCache(Content): #,Queue):
         #     logMsg(msgLog, 2, 0)
         #     print(f"self.fileName {self.fileName}")
 
-        msgLog = (f"{self.indent} End connecting {self.service}: {param}")
+        msgLog = (f"{self.indent} End setClient")
         logMsg(msgLog, 2, 0)
 
     # def setClient2(self, param):

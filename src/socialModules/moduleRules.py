@@ -751,6 +751,8 @@ class moduleRules:
         # else:
         apiSrc.setMoreValues(more)
 
+        msgLog = f"{self.indent} Url: {apiSrc.getUrl()}" #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
         self.indent = f"{self.indent[:-1]}"
         msgLog = f"{self.indent} End readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
@@ -768,14 +770,14 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         self.indent = f"{self.indent} "
 
-        msgLog = f"{self.indent} AAction: {action}"
-        logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent} AAction: {self.getNameAction(action)} - {self.getDestAction(action)}"
-        logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent} AAction cache: {self.getNameRule(action)} - {self.getProfileRule(action)}"
-        logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent} AAction else: {self.getProfileAction(action)} - {self.getNickAction(action)}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} AAction: {action}"
+        # logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} AAction: {self.getNameAction(action)} - {self.getDestAction(action)}"
+        # logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} AAction cache: {self.getNameRule(action)} - {self.getProfileRule(action)}"
+        # logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} AAction else: {self.getProfileAction(action)} - {self.getNickAction(action)}"
+        # logMsg(msgLog, 2, 0)
 
         apiDst = getApi(self.getNameAction(action),
                         self.getDestAction(action), self.indent)
@@ -1034,8 +1036,6 @@ class moduleRules:
             msgLog = f"{self.indent} Some problem with {action}"
             logMsg(msgLog, 3, 0)
             return msgLog
-
-        self.indent = f"{self.indent} "
 
         apiSrc.setLastLink(apiDst)
         #FIXME: best in readConfigSrc ?

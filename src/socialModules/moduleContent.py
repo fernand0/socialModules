@@ -130,7 +130,7 @@ class Content:
         else:
             return ""
 
-    def setUser(self, nick):
+    def setUser(self, nick=''):
         self.user = nick
 
     def getUser(self):
@@ -170,7 +170,6 @@ class Content:
     def setMoreValues(self, more):
         # We have a dictionary of values and we check for methods for
         # setting these values in our object
-        self.indent = f"{self.indent} "
         msgLog = f"{self.indent} Start setMoreValues" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         if more:
@@ -200,9 +199,10 @@ class Content:
                             if inspect.ismethod(cmd):
                                 cmd(more[option])
                                 break
+        if not self.getUser():
+            self.setUser()
         msgLog = f"{self.indent} End setMoreValues" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        self.indent = f"{self.indent[:-1]}"
 
     def apiCall(self, commandname, api = None, **kwargs):
         if api:
@@ -276,19 +276,22 @@ class Content:
         return url
 
     def fileNameBase(self, dst):
-        # msgLog = (f"{self.indent} fileNameBase src: {self}")
-        # logMsg(msgLog, 2, 0)
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} SStart fileNameBase")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} dst {dst}")
+        logMsg(msgLog, 2, 0)
         src = self
         nameSrc = type(src).__name__
         if 'module' in nameSrc:
             nameSrc = nameSrc[len('module'):]
-            # msgLog = (f"{self.indent} fileNameBase module src: {nameSrc}")
-            # logMsg(msgLog, 2, 0)
+            msgLog = (f"{self.indent} fileNameBase module src: {nameSrc}")
+            logMsg(msgLog, 2, 0)
         nameDst = type(dst).__name__
         if 'module' in nameDst:
             nameDst = nameDst[len('module'):]
-            # msgLog = (f"{self.indent} fileNameBase module dst: {nameDst}")
-            # logMsg(msgLog, 2, 0)
+            msgLog = (f"{self.indent} fileNameBase module dst: {nameDst}")
+            logMsg(msgLog, 2, 0)
             userD = dst.getUser()
             if hasattr(dst, 'socialnetwork'):
                 serviceD = dst.socialnetwork
@@ -296,14 +299,14 @@ class Content:
                 serviceD = nameDst
             user = src.getUser()
             service = src.getService()
-            # msgLog = (f"{self.indent} fileNameBase userD: {userD}")
-            # logMsg(msgLog, 2, 0)
-            # msgLog = (f"{self.indent} fileNameBase serviceD: {serviceD}")
-            # logMsg(msgLog, 2, 0)
-            # msgLog = (f"{self.indent} fileNameBase user: {user}")
-            # logMsg(msgLog, 2, 0)
-            # msgLog = (f"{self.indent} fileNameBase service: {service}")
-            # logMsg(msgLog, 2, 0)
+            msgLog = (f"{self.indent} fileNameBase userD: {userD}")
+            logMsg(msgLog, 2, 0)
+            msgLog = (f"{self.indent} fileNameBase serviceD: {serviceD}")
+            logMsg(msgLog, 2, 0)
+            msgLog = (f"{self.indent} fileNameBase user: {user}")
+            logMsg(msgLog, 2, 0)
+            msgLog = (f"{self.indent} fileNameBase service: {service}")
+            logMsg(msgLog, 2, 0)
         else:
             user = src.getUrl()
             service = self.service
@@ -337,6 +340,9 @@ class Content:
         # msgLog = (f"{self.indent} end fileNameBase filename: {filename}")
         # logMsg(msgLog, 2, 0)
 
+        msgLog = (f"{self.indent} End fileNameBase")
+        logMsg(msgLog, 2, 0)
+        self.indent = f"{self.indent[:-1]}"
         return filename
 
     def updateLastLink(self, dst, link):
@@ -356,8 +362,8 @@ class Content:
         filename = f"{self.fileNameBase(dst)}.last"
         msgLog = f"{self.indent} filename {filename}"
         logMsg(msgLog, 2, 0)
-        msgLog = checkFile(filename)
-        if not 'ok' in msgLog:
+        msgLog = checkFile(filename, self.indent)
+        if not 'OK' in msgLog:
             msgLog = (f"file {filename} does not exist. "
                       f"i'm going to create it.")
             logMsg(msgLog, 3, 0)
@@ -391,7 +397,7 @@ class Content:
         # logging.debug(f"nickl: {nick}")
         # logging.debug(f"servicel: {service}")
         # logging.debug(f"filename: {filename}")
-        msgLog = checkFile(filename)
+        msgLog = checkFile(filename, self.indent)
         # dirname = os.path.dirname(filename)
         # if not os.path.isdir(dirname):
         #     return ""
@@ -399,7 +405,7 @@ class Content:
         if service in ['html']:
             #fixme: not here
             linkLast = ''
-        elif "ok" in msgLog:
+        elif "OK" in msgLog:
             with open(filename, "rb") as f:
                 linkLast = f.read().decode().split()  # last published
         else:
@@ -418,8 +424,10 @@ class Content:
 
     def setLastLink(self, dst = None):
         if hasattr(self, 'filename') and self.filename:
+            logging.info(f"aaaa")
             filename = f"{self.filename}.last"
         else:
+            logging.info(f"aaav")
             if dst:
                 self.filename = self.fileNameBase(dst)
                 filename = f"{self.filename}.last"
@@ -434,16 +442,17 @@ class Content:
 
         lastTime = ''
         linkLast = ''
-        msgLog = checkFile(filename)
-        if 'ok' in msgLog:
+        msgLog = checkFile(filename, self.indent)
+        logMsg(f"{self.indent} {msgLog}", 2, 0)
+        if 'OK' in msgLog:
             with open(filename, "rb") as f:
                 linkLast = f.read().decode().split()  # last published
             lastTime = os.path.getctime(filename)
         else:
             lastTime = 0
             self.report(self.service, msgLog, '', '')
-        msgLog = f"{self.indent} {msgLog}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} {msgLog}"
+        # logMsg(msgLog, 2, 0)
 
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime
@@ -483,8 +492,8 @@ class Content:
         fileNameNext = ''
         if dst:
             fileNameNext = f"{self.fileNameBase(dst)}.timeavailable"
-            msgLog = checkFile(fileNameNext)
-            if not "ok" in msgLog:
+            msgLog = checkFile(fileNameNext, self.indent)
+            if not "OK" in msgLog:
                 msgLog = (f"file {fileNameNext} does not exist. "
                           f"i'm going to create it.")
                 logMsg(msgLog, 2, 0)
@@ -497,9 +506,9 @@ class Content:
         fileNameNext = ''
         if dst:
             fileNameNext = f"{self.fileNameBase(dst)}.timenext"
-            msgLog = checkFile(fileNameNext)
+            msgLog = checkFile(fileNameNext, self.indent)
             logMsg(f"{self.indent} fileNameNext: {msgLog}", 2, 0)
-            if not 'ok' in msgLog:
+            if not 'OK' in msgLog:
                 msgLog = (f"file {fileNameNext} does not exist. "
                           f"i'm going to create it.")
                 self.report('', msgLog, '', '')
