@@ -307,9 +307,9 @@ class moduleRules:
                             msgLog = (f"{self.indent} Rule: {orig} -> "
                                         f"{key}({dest})")
                             logMsg(msgLog, 2, 0)
-                            msgLog = f"{self.indent}  dest Rule: {destRule}"
-                            logMsg(msgLog, 2, 0)
                             msgLog = f"{self.indent}  from Srv: {fromSrv}"
+                            logMsg(msgLog, 2, 0)
+                            msgLog = f"{self.indent}  dest Rule: {destRule}"
                             logMsg(msgLog, 2, 0)
                             if fromSrv:
                                 if not (fromSrv in rulesNew):
@@ -438,7 +438,7 @@ class moduleRules:
             print(f"{i}) {act}")
         iAct = input("Which action? ")
         src = selActions[int(iAct)]
-        apiDst = self.readConfigDst(act, None, None)
+        apiDst = self.readConfigDst("", act, None, None)
 
         return apiDst
 
@@ -456,7 +456,7 @@ class moduleRules:
         else:
             iRul = 0
         src = selRules[int(iRul)]
-        apiSrc = self.readConfigSrc(src, self.more[src])
+        apiSrc = self.readConfigSrc("", src, self.more[src])
 
         return apiSrc
 
@@ -748,13 +748,13 @@ class moduleRules:
                       f"No client for {rule} ({action}). End.")
         return f"{msgLog}"
 
-    def readConfigSrc(self, src, more):
-        msgLog = f"{self.indent} Start readConfigSrc" #: {src[1:]}"
+    def readConfigSrc(self, indent, src, more):
+        msgLog = f"{indent} Start readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        self.indent = f"{self.indent} "
+        indent = f"{indent} "
 
         apiSrc = getApi(self.getNameRule(src),
-                        self.getProfileRule(src), self.indent)
+                        self.getProfileRule(src), indent)
         apiSrc.setPostsType(src[-1])
         # apiSrc.fileNameBase(src)
         # if self.getNameRule(src) == 'cache':
@@ -764,10 +764,10 @@ class moduleRules:
         if more:
             apiSrc.setMoreValues(more)
 
-        msgLog = f"{self.indent} Url: {apiSrc.getUrl()}" #: {src[1:]}"
+        msgLog = f"{indent} Url: {apiSrc.getUrl()}" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        self.indent = f"{self.indent[:-1]}"
-        msgLog = f"{self.indent} End readConfigSrc" #: {src[1:]}"
+        indent = f"{indent[:-1]}"
+        msgLog = f"{indent} End readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         return apiSrc
 
@@ -777,23 +777,22 @@ class moduleRules:
             res = action[pos]
         return res
 
-    def readConfigDst(self, action, more, apiSrc):
-        indent = self.indent
+    def readConfigDst(self, indent, action, more, apiSrc):
         msgLog = f"{indent} Start readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        self.indent = f"{self.indent} "
+        indent = f"{indent} "
 
-        # msgLog = f"{self.indent} AAction: {action}"
+        # msgLog = f"{indent} AAction: {action}"
         # logMsg(msgLog, 2, 0)
-        # msgLog = f"{self.indent} AAction: {self.getNameAction(action)} - {self.getDestAction(action)}"
+        # msgLog = f"{indent} AAction: {self.getNameAction(action)} - {self.getDestAction(action)}"
         # logMsg(msgLog, 2, 0)
-        # msgLog = f"{self.indent} AAction cache: {self.getNameRule(action)} - {self.getProfileRule(action)}"
+        # msgLog = f"{indent} AAction cache: {self.getNameRule(action)} - {self.getProfileRule(action)}"
         # logMsg(msgLog, 2, 0)
-        # msgLog = f"{self.indent} AAction else: {self.getProfileAction(action)} - {self.getNickAction(action)}"
+        # msgLog = f"{indent} AAction else: {self.getProfileAction(action)} - {self.getNickAction(action)}"
         # logMsg(msgLog, 2, 0)
 
         apiDst = getApi(self.getNameAction(action),
-                        self.getDestAction(action), self.indent)
+                        self.getDestAction(action), indent)
         apiDst.setPostsType('posts')
         apiSrc.fileNameBase(action)
         # if self.getNameAction(action) == 'cache':
@@ -816,9 +815,9 @@ class moduleRules:
 
         if apiSrc:
             apiDst.setUrl(apiSrc.getUrl())
-            if apiSrc.getPostsType() == 'drafts':
-                #FIXME
-                apiDst.setPostsType('drafts')
+            # if apiSrc.getPostsType() == 'drafts':
+            #     #FIXME
+            #     apiDst.setPostsType('drafts')
         else:
             apiDst.setUrl(None)
 
@@ -1003,10 +1002,10 @@ class moduleRules:
         indent = f"{indent} "
 
         # Source
-        self.indent = indent
-        apiSrc = self.readConfigSrc(src, more)
+        #self.indent = indent
+        apiSrc = self.readConfigSrc(indent, src, more)
         if not apiSrc.getClient():
-            msgLog = self.clientErrorMsg(self.indent, apiSrc, "Source",
+            msgLog = self.clientErrorMsg(indent, apiSrc, "Source",
                                       self.getProfileRule(src),
                                       self.getNickAction(src))
             if msgLog:
@@ -1022,16 +1021,16 @@ class moduleRules:
                      f"{self.getNickAction(action)}@"
                      f"{self.getProfileAction(action)} "
                      f"({self.getTypeAction(action)})")
-        msgLog = (f"{self.indent} Source: {theName}-{self.getNickAction(src)}"
+        msgLog = (f"{indent} Source: {theName}-{self.getNickAction(src)}"
                   f"-> Action: {msgAction}")
 
         res = ""
         textEnd = (f"{msgLog}")
 
         # Destination
-        apiDst = self.readConfigDst(action, more, apiSrc)
+        apiDst = self.readConfigDst(indent, action, more, apiSrc)
         if not apiDst.getClient():
-            msgLog = self.clientErrorMsg(self.indent, apiDst, "Destination",
+            msgLog = self.clientErrorMsg(indent, apiDst, "Destination",
                                       (f"{self.getNameRule(src)}@"
                                        f"{self.getProfileRule(src)}"),
                                       self.getNickAction(src))
@@ -1042,13 +1041,19 @@ class moduleRules:
                 sys.stderr.write(f"Error: {msgLog}\n")
             return f"End: {msgLog}"
 
-        msgLog = f"{self.indent} Start postsType {apiSrc.getPostsType()}" #: {src[1:]}"
+        msgLog = f"{indent} Start postsType {apiSrc.getPostsType()}" #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
+        msgLog = f"---> {apiDst.getPostsType()} != {self.getTypeAction(action)}"
+        logMsg(msgLog, 2, 0)
+        msgLog = f"{apiDst.getPostsType()[:-1]} != {self.getTypeAction(action)}"
+        logMsg(msgLog, 2, 0)
+        msgLog = f"{self.getNameAction(action)} != {'cache'}"
         logMsg(msgLog, 2, 0)
         if ((apiDst.getPostsType() != self.getTypeAction(action))
             and (apiDst.getPostsType()[:-1] != self.getTypeAction(action))
             and (self.getNameAction(action) != 'cache')):
             # FIXME: Can we do better?
-            msgLog = f"{self.indent} Some problem with {action}"
+            msgLog = f"{indent} Some problem with {action}"
             logMsg(msgLog, 3, 0)
             return msgLog
 
@@ -1067,14 +1072,14 @@ class moduleRules:
         else:
             num = 1
 
-        msgLog = (f"{self.indent} I'll publish {num} post")
+        msgLog = (f"{indent} I'll publish {num} post")
         logMsg(msgLog, 1, 1)
 
         if (num > 0):
             tNow = time.time()
             hours = float(apiDst.getTime())*60*60
 
-            lastTime = apiSrc.getLastTimePublished(f"{self.indent} ")
+            lastTime = apiSrc.getLastTimePublished(f"{indent} ")
 
             if lastTime:
                 diffTime = tNow - lastTime
@@ -1090,24 +1095,24 @@ class moduleRules:
                 apiSrc.setNextTime(tNow, tSleep, apiDst)
 
                 if (tSleep>0.0):
-                    msgLog= f"{self.indent} Waiting {tSleep/60:2.2f} minutes"
+                    msgLog= f"{indent} Waiting {tSleep/60:2.2f} minutes"
                 else:
                     tSleep = 2.0
-                    msgLog= f"{self.indent} No Waiting"
+                    msgLog= f"{indent} No Waiting"
 
                 msgLog = f"{msgLog} for action." #: {msgAction}"
                 logMsg(msgLog, 1, 1)
 
                 for i in range(num):
                     time.sleep(tSleep)
-                    msgLog = (f"{self.indent} End Waiting. {apiSrc} -> {apiDst}")
+                    msgLog = (f"{indent} End Waiting. {apiSrc} -> {apiDst}")
                     logMsg(msgLog, 1, 1)
-                    res = self.executePublishAction(self.indent, msgAction,
+                    res = self.executePublishAction(indent, msgAction,
                                                     apiSrc, apiDst,
                                                     simmulate,
                                                     nextPost, pos)
             elif (diffTime<=hours):
-                msgLog = (f"{self.indent} Not enough time passed. "
+                msgLog = (f"{indent} Not enough time passed. "
                           f"We will wait at least "
                           f"{(hours-diffTime)/(60*60):2.2f} hours.")
                 logMsg(msgLog, 1, 1)
