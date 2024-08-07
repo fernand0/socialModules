@@ -57,6 +57,9 @@ class moduleRss(Content): #, Queue):
     def setNick(self, nick=None):
         if not nick:
             nick = self.geRss()
+        if not nick.startswith('http'):
+            if hasattr(self, 'url'):
+                nick = urllib.parse.urljoin(self.url,self.getRssFeed())
         self.nick = nick
 
 

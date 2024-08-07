@@ -172,6 +172,8 @@ class Content:
         # setting these values in our object
         msgLog = f"{self.indent} Start setMoreValues" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
+        msgLog = f"{self.indent}  moreValues {more}" #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
         if more:
             # Setting values available in more
             for option in more:
@@ -277,73 +279,82 @@ class Content:
 
     def fileNameBase(self, dst):
         self.indent = f"{self.indent} "
-        msgLog = (f"{self.indent} SStart fileNameBase")
+        msgLog = (f"{self.indent} Start fileNameBase")
         logMsg(msgLog, 2, 0)
         msgLog = (f"{self.indent} dst {dst}")
         logMsg(msgLog, 2, 0)
-        src = self
-        nameSrc = type(src).__name__
-        if 'module' in nameSrc:
-            nameSrc = nameSrc[len('module'):]
-            msgLog = (f"{self.indent} fileNameBase module src: {nameSrc}")
-            logMsg(msgLog, 2, 0)
-        nameDst = type(dst).__name__
-        if 'module' in nameDst:
-            nameDst = nameDst[len('module'):]
-            msgLog = (f"{self.indent} fileNameBase module dst: {nameDst}")
-            logMsg(msgLog, 2, 0)
-            userD = dst.getUser()
-            if hasattr(dst, 'socialnetwork'):
-                serviceD = dst.socialnetwork
+        if hasattr(self, 'fileName') and self.fileName:
+            fileName =  self.fileName
+        else:
+            src = self
+            nameSrc = type(src).__name__
+            if 'module' in nameSrc:
+                nameSrc = nameSrc[len('module'):]
+                msgLog = (f"{self.indent} fileNameBase module src: {nameSrc}")
+                logMsg(msgLog, 2, 0)
+            nameDst = type(dst).__name__
+            if 'module' in nameDst:
+                nameDst = nameDst[len('module'):]
+                msgLog = (f"{self.indent} fileNameBase module dst: {nameDst}")
+                logMsg(msgLog, 2, 0)
+                userD = dst.getUser()
+                if hasattr(dst, 'socialNetwork'):
+                    serviceD = dst.socialNetwork
+                else:
+                    serviceD = nameDst
+                user = src.getUser()
+                service = src.getService()
+                msgLog = (f"{self.indent} fileNameBase userD: {userD}")
+                logMsg(msgLog, 2, 0)
+                msgLog = (f"{self.indent} fileNameBase serviceD: {serviceD}")
+                logMsg(msgLog, 2, 0)
+                msgLog = (f"{self.indent} fileNameBase user: {user}")
+                logMsg(msgLog, 2, 0)
+                msgLog = (f"{self.indent} fileNameBase service: {service}")
+                logMsg(msgLog, 2, 0)
+                msgLog = (f"{self.indent} fileNameBase serviceD: {dst.getService()}")
+                logMsg(msgLog, 2, 0)
+                # msgLog = (f"{self.indent} fileNameBase action: {}")
+                # logMsg(msgLog, 2, 0)
             else:
-                serviceD = nameDst
-            user = src.getUser()
-            service = src.getService()
-            msgLog = (f"{self.indent} fileNameBase userD: {userD}")
-            logMsg(msgLog, 2, 0)
-            msgLog = (f"{self.indent} fileNameBase serviceD: {serviceD}")
-            logMsg(msgLog, 2, 0)
-            msgLog = (f"{self.indent} fileNameBase user: {user}")
-            logMsg(msgLog, 2, 0)
-            msgLog = (f"{self.indent} fileNameBase service: {service}")
-            logMsg(msgLog, 2, 0)
-        else:
-            user = src.getUrl()
-            service = self.service
-            userD = dst[0]
-            serviceD = dst[1]
-            nameDst = serviceD.capitalize()
+                user = src.getUrl()
+                service = self.service
+                userD = dst[0]
+                serviceD = dst[1]
+                nameDst = serviceD.capitalize()
 
-        if hasattr(src, 'getPostsType'):
-            typeSrc = src.getPostsType()
-        else:
-            typeSrc = 'posts'
+            if hasattr(src, 'getPostsType'):
+                msgLog = (f"{self.indent} getPostsType {src.getPostsType()}")
+                logMsg(msgLog, 2, 0)
+                typeSrc = src.getPostsType()
+            else:
+                typeSrc = 'posts'
 
-        if hasattr(dst, 'getPostsType'):
-            typeDst = dst.getPostsType()
-        else:
-            typeDst = 'posts'
+            if hasattr(dst, 'getPostsType'):
+                typeDst = dst.getPostsType()
+            else:
+                typeDst = 'posts'
 
-        # msgLog = (f"{self.indent} fileNameBase typeSrc: {typeSrc}")
-        # logMsg(msgLog, 2, 0)
-        # msgLog = (f"{self.indent} fileNameBase typeDst: {typeDst}")
-        # logMsg(msgLog, 2, 0)
-        # print(f"user: {user}")
-        # if not user:
-        #     user = dst.getUrl()
-        # print(f"user: {user}")
-        filename = (f"{nameSrc}_{typeSrc}_"
-                    f"{user}_{service}__"
-                    f"{nameDst}_{typeDst}_"
-                    f"{userD}_{serviceD}")
-        filename = (f"{DATADIR}/{filename.replace('/','-').replace(':','-')}")
-        # msgLog = (f"{self.indent} end fileNameBase filename: {filename}")
-        # logMsg(msgLog, 2, 0)
+            # msgLog = (f"{self.indent} fileNameBase typeSrc: {typeSrc}")
+            # logMsg(msgLog, 2, 0)
+            # msgLog = (f"{self.indent} fileNameBase typeDst: {typeDst}")
+            # logMsg(msgLog, 2, 0)
+            # print(f"user: {user}")
+            # if not user:
+            #     user = dst.getUrl()
+            # print(f"user: {user}")
+            fileName = (f"{nameSrc}_{typeSrc}_"
+                        f"{user}_{service}__"
+                        f"{nameDst}_{typeDst}_"
+                        f"{userD}_{serviceD}")
+            fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
+            # msgLog = (f"{self.indent} end fileNameBase fileName: {fileName}")
+            # logMsg(msgLog, 2, 0)
 
         msgLog = (f"{self.indent} End fileNameBase")
         logMsg(msgLog, 2, 0)
         self.indent = f"{self.indent[:-1]}"
-        return filename
+        return fileName
 
     def updateLastLink(self, dst, link):
         if link and isinstance(link, list):
@@ -359,15 +370,15 @@ class Content:
         msgLog = f"{self.indent} updating {msgupdate}"
         logMsg(msgLog, 1, 0)
 
-        filename = f"{self.fileNameBase(dst)}.last"
-        msgLog = f"{self.indent} filename {filename}"
+        fileName = f"{self.fileNameBase(dst)}.last"
+        msgLog = f"{self.indent} fileName {fileName}"
         logMsg(msgLog, 2, 0)
-        msgLog = checkFile(filename, self.indent)
+        msgLog = checkFile(fileName, self.indent)
         if not 'OK' in msgLog:
-            msgLog = (f"file {filename} does not exist. "
+            msgLog = (f"file {fileName} does not exist. "
                       f"i'm going to create it.")
             logMsg(msgLog, 3, 0)
-        with open(filename, "w") as f:
+        with open(fileName, "w") as f:
             if link:
                 if isinstance(link, bytes):
                     f.write(link.decode())
@@ -387,18 +398,18 @@ class Content:
         url = self.getUrl()
         service = self.service.lower()
         nick = self.getUser()
-        if hasattr(self, 'filename') and self.filename:
-            filename = f"{self.filename}.last"
+        if hasattr(self, 'fileName') and self.fileName:
+            fileName = f"{self.fileName}.last"
         else:
-            filename = (f"{fileNamePath(url, (service, nick))}.last")
+            fileName = (f"{fileNamePath(url, (service, nick))}.last")
         linkLast = ''
 
         # logging.debug(f"urll: {url}")
         # logging.debug(f"nickl: {nick}")
         # logging.debug(f"servicel: {service}")
-        # logging.debug(f"filename: {filename}")
-        msgLog = checkFile(filename, self.indent)
-        # dirname = os.path.dirname(filename)
+        # logging.debug(f"fileName: {fileName}")
+        msgLog = checkFile(fileName, self.indent)
+        # dirname = os.path.dirname(fileName)
         # if not os.path.isdir(dirname):
         #     return ""
         #     sys.exit("no directory {dirname} exists")
@@ -406,7 +417,7 @@ class Content:
             #fixme: not here
             linkLast = ''
         elif "OK" in msgLog:
-            with open(filename, "rb") as f:
+            with open(fileName, "rb") as f:
                 linkLast = f.read().decode().split()  # last published
         else:
             logMsg(msgLog, 3, 0)
@@ -423,14 +434,14 @@ class Content:
         return lastLink
 
     def setLastLink(self, dst = None):
-        if hasattr(self, 'filename') and self.filename:
+        if hasattr(self, 'fileName') and self.fileName:
             logging.info(f"aaaa")
-            filename = f"{self.filename}.last"
+            fileName = f"{self.fileName}.last"
         else:
             logging.info(f"aaav")
             if dst:
-                self.filename = self.fileNameBase(dst)
-                filename = f"{self.filename}.last"
+                self.fileName = self.fileNameBase(dst)
+                fileName = f"{self.fileName}.last"
             else:
                 url = self.getUrl()
                 service = self.service.lower()
@@ -438,16 +449,16 @@ class Content:
                 page = self.getPage()
                 if page:
                     nick = f"{nick}-{page}"
-                filename = (f"{fileNamePath(url, (service, nick))}.last")
+                fileName = (f"{fileNamePath(url, (service, nick))}.last")
 
         lastTime = ''
         linkLast = ''
-        msgLog = checkFile(filename, self.indent)
+        msgLog = checkFile(fileName, self.indent)
         logMsg(f"{self.indent} {msgLog}", 2, 0)
         if 'OK' in msgLog:
-            with open(filename, "rb") as f:
+            with open(fileName, "rb") as f:
                 linkLast = f.read().decode().split()  # last published
-            lastTime = os.path.getctime(filename)
+            lastTime = os.path.getctime(fileName)
         else:
             lastTime = 0
             self.report(self.service, msgLog, '', '')
@@ -463,10 +474,10 @@ class Content:
         # you always need to check lastLink?
         # example: gmail, twitter
         if other:
-            filename = self.fileNameBase(other)
+            fileName = self.fileNameBase(other)
             lastTime2 = ""
-            if os.path.isfile(filename):
-                lastTime2 = os.path.getctime(filename)
+            if os.path.isfile(fileName):
+                lastTime2 = os.path.getctime(fileName)
             myLastLink2 = self.getLastLinkNew(other)
             print(f"myLastLink2: {myLastLink2} {lastTime2}")
             return myLastLink2, lastTime2
@@ -505,7 +516,7 @@ class Content:
     def setNextTime(self, tnow, tSleep, dst = None):
         fileNameNext = ''
         if dst:
-            fileNameNext = f"{self.fileNameBase(dst)}.timenext"
+            fileNameNext = f"{self.fileNameBase(dst)}.timeNext"
             msgLog = checkFile(fileNameNext, self.indent)
             logMsg(f"{self.indent} fileNameNext: {msgLog}", 2, 0)
             if not 'OK' in msgLog:
@@ -595,7 +606,7 @@ class Content:
             "file",
             "kindle",
         ]
-        msgLog =("  snc {socialnetworksconfig}")
+        msgLog =("  snc {socialNetworksConfig}")
         logMsg(msgLog, 2, 0)
         for sn in socialNetworksConfig:
             if sn in socialNetworksOpt:

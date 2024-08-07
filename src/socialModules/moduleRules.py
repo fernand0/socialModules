@@ -176,7 +176,9 @@ class moduleRules:
 
                 self.indent = f"{self.indent} "
                 for service in services["regular"]:
-                    if (service == 'cache') or (service == 'xmlrpc'):
+                    if ((service == 'cache')
+                        or (service == 'xmlrpc')
+                        or (service == theService)):
                         continue
                     toAppend = ""
                     if service in config.options(section):
@@ -184,7 +186,7 @@ class moduleRules:
                         logMsg(msgLog, 2, 0)
                         methods = self.hasPublishMethod(service)
                         msgLog = (f"{self.indent} Service {service} has "
-                                  f"{methods}")
+                                  f"publish {methods}")
                         logMsg(msgLog, 2, 0)
                         for method in methods:
                             if not method[1]:
@@ -259,7 +261,9 @@ class moduleRules:
                             msgLog = f"{self.indent} Rules: {key}"
                             logMsg(msgLog, 2, 0)
                             dest = key
-                        else:
+                        elif self.hasPublishMethod(key):
+                            # If it has no publish methods it can not be a
+                            # destination
                             if not dest:
                                 dest = 'direct'
                             destRuleNew = ''
@@ -553,7 +557,12 @@ class moduleRules:
             listMethods = hasPublish[service]
         else:
             clsService = getModule(service, self.indent)
+            msgLog = f"{self.indent} Service cls: {clsService}"
+            logMsg(msgLog, 2, 0)
+
             listMethods = clsService.__dir__()
+            # msgLog = f"{self.indent} Service listMethods: {listMethods}"
+            # logMsg(msgLog, 2, 0)
             hasPublish[service] = listMethods
 
         methods = []
@@ -565,9 +574,12 @@ class moduleRules:
                 # moduleService = clsService.publishPost.__module__
                 if method.find("Api") >= 0:
                     target = method[len("publishApi"):].lower()
-                else:
-                    target = method[len("publish"):].lower()
+                # else:
+                #     target = method[len("publish"):].lower()
+
                 if target and (target!='image'):
+                    msgLog = f"{self.indent} Service target: {target}"
+                    logMsg(msgLog, 2, 0)
                     toAppend = (action, target)
                     if not (toAppend in methods):
                         methods.append(toAppend)
@@ -576,7 +588,7 @@ class moduleRules:
 
     def getServices(self):
         modulesFiles = os.listdir(path)
-        modules = {"special": ["cache", "direct", "service"], "regular": []}
+        modules = {"special": ["cache", "direct"], "regular": [], "other": ['service']}
         # Initialized with some special services
         name = "module"
         for module in modulesFiles:
@@ -743,13 +755,14 @@ class moduleRules:
 
         apiSrc = getApi(self.getNameRule(src),
                         self.getProfileRule(src), self.indent)
-        apiSrc.setPostsType('posts')
+        apiSrc.setPostsType(src[-1])
         # apiSrc.fileNameBase(src)
         # if self.getNameRule(src) == 'cache':
         #     # apiSrc.fileName = apiSrc.fileNameBase(src[1:])
         #     apiSrc.postaction = 'delete'
         # else:
-        apiSrc.setMoreValues(more)
+        if more:
+            apiSrc.setMoreValues(more)
 
         msgLog = f"{self.indent} Url: {apiSrc.getUrl()}" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
@@ -781,7 +794,7 @@ class moduleRules:
 
         apiDst = getApi(self.getNameAction(action),
                         self.getDestAction(action), self.indent)
-        apiSrc.setPostsType('posts')
+        apiDst.setPostsType('posts')
         apiSrc.fileNameBase(action)
         # if self.getNameAction(action) == 'cache':
         #     apiDst.fileName = apiDst.fileNameBase(action[1:])
@@ -1029,6 +1042,8 @@ class moduleRules:
                 sys.stderr.write(f"Error: {msgLog}\n")
             return f"End: {msgLog}"
 
+        msgLog = f"{self.indent} Start postsType {apiSrc.getPostsType()}" #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
         if ((apiDst.getPostsType() != self.getTypeAction(action))
             and (apiDst.getPostsType()[:-1] != self.getTypeAction(action))
             and (self.getNameAction(action) != 'cache')):
