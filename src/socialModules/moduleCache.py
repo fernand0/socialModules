@@ -373,13 +373,19 @@ class moduleCache(Content): #,Queue):
         maxVal = 0
         if hasattr(self, "max"): # and self.max:
             maxVal = int(self.max)
+        msgLog = f"{self.indent} maxVal {maxVal}"
+        logMsg(msgLog, 2, 0)
         self.setPosts()
         lenMax = len(self.getPosts())
+        msgLog = f"{self.indent} len {lenMax}"
+        logMsg(msgLog, 2, 0)
         num = 1
         if maxVal > 1:
             num = maxVal - lenMax
         if num < 0:
             num = 0
+        msgLog = f"{self.indent} num {num}"
+        logMsg(msgLog, 2, 0)
         return num
 
     def getPosNextPost(self):

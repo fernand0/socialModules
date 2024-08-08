@@ -817,7 +817,9 @@ class moduleRules:
 
         # if more and ('time' in more):
         #     apiDst.setTime(more['time'])
-
+        if more:
+            apiDst.setMoreValues(more)
+            
         if apiSrc:
             apiDst.setUrl(apiSrc.getUrl())
             # if apiSrc.getPostsType() == 'drafts':
@@ -1074,6 +1076,8 @@ class moduleRules:
         msgLog = ''
         if nextPost:
             num = apiDst.getMax()
+            msgLog = f"{indent} getMax {num}"
+            logMsg(msgLog, 2, 0)
         else:
             num = 1
 

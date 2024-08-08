@@ -190,6 +190,8 @@ class Content:
                     # setting url, time, max, posts,
                     # setCache ¿?
                     cmd = getattr(self, nameMethod)
+                    msgLog = f"{self.indent} {cmd} value {more[option]}"
+                    logMsg(msgLog, 2, 0)
                     if inspect.ismethod(cmd):
                         cmd(more[option])
                 else:
@@ -1327,6 +1329,8 @@ class Content:
 
     def getMax(self):
         maxVal = 1
+        if hasattr(self, 'max'):
+            maxVal = int(self.max)
         return maxVal
 
     def getProgram(self):
@@ -1336,6 +1340,12 @@ class Content:
         program = program.split("\n")
         self.program = program
         self.setCache()
+
+    def setBuffermax(self, bufMax):
+        #FIXME: ????
+        self.bufMax = bufMax
+        self.max = bufMax
+
 
     def setBufMax(self, bufMax):
         self.bufMax = bufMax
