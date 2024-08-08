@@ -637,14 +637,14 @@ class Content:
 
     def getPost(self, i):
         self.indent = f"{self.indent} "
-        msgLog = (f"{self.indent} start getpost pos {i}.")
+        msgLog = (f"{self.indent} start getPost pos {i}.")
         logMsg(msgLog, 2, 0)
         post = None
         posts = self.getPosts()
         if posts and (i >= 0) and (i < len(posts)):
             post = posts[i]
 
-        msgLog = (f"{self.indent} end getpost pos {i}.")
+        msgLog = (f"{self.indent} end getPost pos {i}.")
         logMsg(msgLog, 2, 0)
         self.indent = self.indent[:-1]
         return post
@@ -653,7 +653,7 @@ class Content:
         return self.extractimages(post)
 
     def getImagesTags(self, i):
-        res = self.getimages(i)
+        res = self.getImages(i)
         tags = []
         for iimg in res:
             for tag in iimg[3]:
