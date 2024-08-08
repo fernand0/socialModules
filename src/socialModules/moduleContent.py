@@ -387,7 +387,7 @@ class Content:
                 else:
                     f.write(link[0])
 
-        self.setlastLink(dst)
+        self.setLastLink(dst)
 
         return f"updated {msgupdate}"
 
