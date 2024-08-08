@@ -95,13 +95,14 @@ class moduleRss(Content): #, Queue):
         posts = self.setApiPosts()
         search = self.getSearch()
         selPosts = []
-        for post in posts:
-            if search.startswith('!'):
-                if not (search[1:] in self.getPostLink(post)):
-                    selPosts.append(post)
-            else:
-                if search in  self.getPostLink(post):
-                    selPosts.append(post)
+        if search:
+            for post in posts:
+                if search.startswith('!'):
+                    if not (search[1:] in self.getPostLink(post)):
+                        selPosts.append(post)
+                else:
+                    if search in  self.getPostLink(post):
+                        selPosts.append(post)
 
         return selPosts
 

@@ -212,6 +212,7 @@ class moduleRules:
                                             "posts",
                                             )
                                     impRuls.append((fromSrvSp, toAppend))
+
                                     if fromSrvSp not in mor:
                                         mor[fromSrvSp] = moreS
                                     if fromSrvSp in ruls:
@@ -221,14 +222,18 @@ class moduleRules:
                                         ruls[fromSrvSp] = []
                                         ruls[fromSrvSp].append(toAppend)
                                 else:
-                                    if fromSrv not in mor:
-                                        mor[fromSrv] = moreS
-                                    if fromSrv in ruls:
-                                        if not toAppend in ruls[fromSrv]:
+                                    if not (fromSrv[2] != toAppend[3]
+                                            and fromSrv[3][:-1] != toAppend[1]):
+                                        # We do not want to add the origin as
+                                        # destination
+                                        if fromSrv not in mor:
+                                            mor[fromSrv] = moreS
+                                        if fromSrv in ruls:
+                                            if not toAppend in ruls[fromSrv]:
+                                                ruls[fromSrv].append(toAppend)
+                                        else:
+                                            ruls[fromSrv] = []
                                             ruls[fromSrv].append(toAppend)
-                                    else:
-                                        ruls[fromSrv] = []
-                                        ruls[fromSrv].append(toAppend)
 
             orig = None
             dest = None
@@ -326,7 +331,7 @@ class moduleRules:
         # Now we can add the sources not added.
 
         for src in srcsA:
-            logging.info(f"-> {src}")
+            # logging.info(f"-> {src}")
             if src:
                 if not (src in rulesNew):
                     # Adding more rules
@@ -1072,7 +1077,11 @@ class moduleRules:
         else:
             num = 1
 
-        msgLog = (f"{indent} I'll publish {num} post")
+        theAction = self.getTypeAction(action)
+        msgLog = (f"{indent} I'll publish {num} post "
+                  f"from {apiSrc.getUrl()} "
+                  f"in {self.getNickAction(action)}@"
+                  f"{self.getProfileAction(action)} ({theAction})")
         logMsg(msgLog, 1, 1)
 
         if (num > 0):
@@ -1105,7 +1114,7 @@ class moduleRules:
 
                 for i in range(num):
                     time.sleep(tSleep)
-                    msgLog = (f"{indent} End Waiting. {apiSrc} -> {apiDst}")
+                    msgLog = (f"{indent} End Waiting.")
                     logMsg(msgLog, 1, 1)
                     res = self.executePublishAction(indent, msgAction,
                                                     apiSrc, apiDst,
@@ -1152,11 +1161,12 @@ class moduleRules:
 
                 nameAction =f"[{self.getNameAction(src)}{i}]"
                 indent = f"{nameAction:->12}>"
+                msgIni = (f"{self.getNickSrc(src)} ({self.getNickAction(src)})")
 
                 if src in self.more:
                     if (('hold' in self.more[src])
                         and (self.more[src]['hold'] == 'yes')):
-                        msgHold = f"{indent} On hold."
+                        msgHold = f"{indent} On hold. {msgIni}"
                         logMsg(msgHold,1, 0)
                         continue
 
@@ -1244,28 +1254,26 @@ class moduleRules:
                     logMsg(msgLog, 1, 1)
                     textEnd = f"{textEnd}\n{msgLog}"
                     nameA = f"{indent} {name}"
-                    if "Skip" in actionMsg:
-                        #FIXME "In hold"
-                        continue
-                    timeSlots = args.timeSlots
-                    noWait = args.noWait
+                    if not "Skip" in actionMsg:
+                        timeSlots = args.timeSlots
+                        noWait = args.noWait
 
-                    # Is this the correct place?
-                    if ((self.getNameAction(action) in 'cache') or
-                        ((self.getNameAction(action) == 'direct')
-                         and (self.getProfileAction(action) == 'pocket'))
-                        ):
-                        # We will always load new items in the cache
-                        timeSlots = 0
-                        noWait=True
+                        # Is this the correct place?
+                        if ((self.getNameAction(action) in 'cache') or
+                            ((self.getNameAction(action) == 'direct')
+                             and (self.getProfileAction(action) == 'pocket'))
+                            ):
+                            # We will always load new items in the cache
+                            timeSlots = 0
+                            noWait=True
 
-                    threads = threads + 1
-                    delayedPosts.append(pool.submit(self.executeAction,
-                                        src, more, action,
-                                        noWait,
-                                        timeSlots,
-                                        args.simmulate,
-                                        nameA, threads))
+                        threads = threads + 1
+                        delayedPosts.append(pool.submit(self.executeAction,
+                                            src, more, action,
+                                            noWait,
+                                            timeSlots,
+                                            args.simmulate,
+                                            nameA, threads))
                     indent = f"{indent[:-1]}"
                 indent = f"{indent[:-1]}"
 

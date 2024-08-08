@@ -206,17 +206,17 @@ class Content:
         msgLog = f"{self.indent} End setMoreValues" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
 
-    def apiCall(self, commandname, api = None, **kwargs):
+    def apiCall(self, commandName, api = None, **kwargs):
         if api:
             client = api
         else:
-            client = self.getclient()
-        msgLog = (f"{self.indent} calling: {commandname}"
+            client = self.getClient()
+        msgLog = (f"{self.indent} calling: {commandName}"
                   f" with arguments {kwargs}")
         logMsg(msgLog, 2, 0)
         res = []
 
-        command = getattr(client, commandname)
+        command = getattr(client, commandName)
         error = None
         try:
             msgLog = f"{self.indent}command {command} "
