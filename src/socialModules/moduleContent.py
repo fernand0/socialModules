@@ -362,7 +362,7 @@ class Content:
             link = self.getPostLink(link[-1])
         elif not link:
             # fixme could post be a parameter?
-            post = self.getnextpost()
+            post = self.getNextPost()
             msgLog = f"{self.indent} nextpost {post}"
             logMsg(msgLog, 2, 0)
             link = self.getPostLink(post)
