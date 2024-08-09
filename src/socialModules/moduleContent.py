@@ -1329,8 +1329,8 @@ class Content:
 
     def getMax(self):
         maxVal = 1
-        if hasattr(self, 'max'):
-            maxVal = int(self.max)
+        # if hasattr(self, 'max'):
+        #     maxVal = int(self.max)
         return maxVal
 
     def getProgram(self):
