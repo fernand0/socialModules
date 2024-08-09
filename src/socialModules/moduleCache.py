@@ -75,6 +75,7 @@ class moduleCache(Content): #,Queue):
             nameSrc = 'Cache'
             typeSrc = typeDst = 'posts'
             if isinstance(self, socialModules.moduleCache.moduleCache):
+                logging.info(f"{self.indent} aquí")
                 user = self.url
                 if 'slack' in self.url:
                     #FIXME
@@ -86,9 +87,12 @@ class moduleCache(Content): #,Queue):
                 else:
                     service = self.service.capitalize()
                 userD = self.user
+                logging.info(f"myDst: {myDst}")
+                logging.info(f"userD: {userD} - {myDst[-1]}")
                 serviceD = self.socialNetwork
                 nameDst = self.socialNetwork.capitalize()
             elif isinstance(myDst, tuple):
+                logging.info(f"{self.indent} allí")
                 # logging.info(f"{self.indent} tuple {myDst}")
                 #FIXME
                 user = self.getUrl()
@@ -99,7 +103,8 @@ class moduleCache(Content): #,Queue):
                 nameDst = self.socialNetwork.capitalize()
                 typeDst = 'cache'
 
-            user = self.url
+            # user = self.url
+            user = self.url.split("/")[2].split('.')[0] #FIXME
             if 'slack' in self.url:
                 #FIXME
                 service = 'Slack'
@@ -165,7 +170,7 @@ class moduleCache(Content): #,Queue):
     def setClient(self, param):
         self.indent = f"{self.indent} "
         self.service = 'Cache'
-        msgLog = (f"{self.indent} Start setClient: {param}")
+        msgLog = (f"{self.indent} Start setClient account: {param}")
         logMsg(msgLog, 2, 0)
         self.postaction = 'delete'
 
@@ -336,6 +341,7 @@ class moduleCache(Content): #,Queue):
         # msgLog = f"{self.indent} Url: {url} service {service} nick {nick}"
         # logMsg(msgLog, 2, 0)
         if not fileNameQ:
+            # nick = self.getNick()
             self.fileName = self.fileNameBase((service, nick))
             fileNameQ = self.fileName+".queue"
         else:
