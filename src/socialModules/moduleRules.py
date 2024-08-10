@@ -424,6 +424,7 @@ class moduleRules:
 
         self.rules = {}
         for key in rulesNew:
+            # FIXME Is this ok?
             if rulesNew[key]:
                 self.rules[key] = rulesNew[key]
 

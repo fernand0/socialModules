@@ -87,8 +87,6 @@ class moduleCache(Content): #,Queue):
                 else:
                     service = self.service.capitalize()
                 userD = self.user
-                logging.info(f"myDst: {myDst}")
-                logging.info(f"userD: {userD} - {myDst[-1]}")
                 serviceD = self.socialNetwork
                 nameDst = self.socialNetwork.capitalize()
             elif isinstance(myDst, tuple):
