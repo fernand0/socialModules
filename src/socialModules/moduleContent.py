@@ -178,13 +178,15 @@ class Content:
             # Setting values available in more
             for option in more:
                 if option == 'service': continue #FIXME
-                msgLog = f"{self.indent}  Option: {option}" #: {src[1:]}"
+                msgLog = f"{self.indent}  OOption: {option}" #: {src[1:]}"
                 logMsg(msgLog, 2, 0)
                 if option == 'posts':
                     nameMethod = f"setPostsType"
                 else:
                     nameMethod = f"set{option.capitalize()}"
 
+                msgLog = f"{self.indent}  nameMethod: {nameMethod}"
+                logMsg(msgLog, 2, 0)
                 if  nameMethod in self.__dir__():
                     # Simple names setUrl, setTime, ...
                     # setting url, time, max, posts,

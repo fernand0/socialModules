@@ -422,6 +422,8 @@ class moduleRules:
 
         msgLog = (f"RulesNew: {rulesNew}")
         logMsg(msgLog, 2, 0)
+        msgLog = (f"More: {mor}")
+        logMsg(msgLog, 2, 0)
         if hasattr(self, 'args') and self.args.rules:
             self.printDict(rulesNew, "Rules")
 
@@ -444,6 +446,7 @@ class moduleRules:
         iAct = input("Which action? ")
         src = selActions[int(iAct)]
         apiDst = self.readConfigDst("", act, None, None)
+        import inspect
 
         return apiDst
 
@@ -798,7 +801,6 @@ class moduleRules:
 
         apiDst = getApi(self.getNameAction(action),
                         self.getDestAction(action), indent)
-        apiDst.setPostsType('posts')
         apiSrc.fileNameBase(action)
         # if self.getNameAction(action) == 'cache':
         #     apiDst.fileName = apiDst.fileNameBase(action[1:])
@@ -819,6 +821,7 @@ class moduleRules:
         #     apiDst.setTime(more['time'])
         if more:
             apiDst.setMoreValues(more)
+        apiDst.setPostsType('posts')
             
         if apiSrc:
             apiDst.setUrl(apiSrc.getUrl())
@@ -1050,11 +1053,11 @@ class moduleRules:
 
         msgLog = f"{indent} Start postsType {apiSrc.getPostsType()}" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        msgLog = f"---> {apiDst.getPostsType()} != {self.getTypeAction(action)}"
+        msgLog = f"{indent} ---> {apiDst.getPostsType()} != {self.getTypeAction(action)}"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{apiDst.getPostsType()[:-1]} != {self.getTypeAction(action)}"
+        msgLog = f"{indent} {apiDst.getPostsType()[:-1]} != {self.getTypeAction(action)}"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{self.getNameAction(action)} != {'cache'}"
+        msgLog = f"{indent} {self.getNameAction(action)} != {'cache'}"
         logMsg(msgLog, 2, 0)
         if ((apiDst.getPostsType() != self.getTypeAction(action))
             and (apiDst.getPostsType()[:-1] != self.getTypeAction(action))
@@ -1102,6 +1105,8 @@ class moduleRules:
 
             numAvailable = 0
 
+            msgLog = f"{indent} diffTime: {diffTime} hours {hours}"
+            logMsg(msgLog, 2, 0)
             if (noWait or (diffTime>hours)):
                 tSleep = random.random()*float(timeSlots)*60
 
