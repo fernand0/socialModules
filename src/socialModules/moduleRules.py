@@ -326,6 +326,7 @@ class moduleRules:
                                 else:
                                     #print(f"destRule: {destRule}")
                                     rulesNew[fromSrv].append(destRule)
+                                mor[fromSrv] = moreS
 
         logging.info(f"Rules: {rulesNew}")
         # Now we can add the sources not added.
@@ -769,6 +770,8 @@ class moduleRules:
         #     # apiSrc.fileName = apiSrc.fileNameBase(src[1:])
         #     apiSrc.postaction = 'delete'
         # else:
+        msgLog = f"{indent} More: {more}" #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
         if more:
             apiSrc.setMoreValues(more)
 
@@ -822,7 +825,7 @@ class moduleRules:
         if more:
             apiDst.setMoreValues(more)
         apiDst.setPostsType('posts')
-            
+
         if apiSrc:
             apiDst.setUrl(apiSrc.getUrl())
             # if apiSrc.getPostsType() == 'drafts':
