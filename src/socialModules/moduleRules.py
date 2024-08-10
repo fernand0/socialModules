@@ -1117,10 +1117,13 @@ class moduleRules:
 
             numAvailable = 0
 
-            msgLog = f"{indent} diffTime: {diffTime} hours {hours}"
-            logMsg(msgLog, 2, 0)
+            # msgLog = f"{indent} diffTime: {diffTime} hours {hours}"
+            # logMsg(msgLog, 2, 0)
             if (noWait or (diffTime>hours)):
                 tSleep = random.random()*float(timeSlots)*60
+                # msgLog = f"{indent} tSleep {tSleep}"
+                # logMsg(msgLog, 2, 0)
+                
 
                 apiSrc.setNextTime(tNow, tSleep, apiDst)
 
@@ -1280,6 +1283,9 @@ class moduleRules:
                         noWait = args.noWait
 
                         # Is this the correct place?
+                        msgLog = (f"{indent} NameAction " 
+                                  f"{self.getNameAction(action)}")
+                        logMsg(msgLog, 2, 0)
                         if ((self.getNameAction(action) in 'cache') or
                             ((self.getNameAction(action) == 'direct')
                              and (self.getProfileAction(action) == 'pocket'))
@@ -1288,6 +1294,10 @@ class moduleRules:
                             timeSlots = 0
                             noWait=True
 
+                        # msgLog = (f"{indent} timeSlots {timeSlots}")
+                        # logMsg(msgLog, 2 ,0)
+                        # msgLog = (f"{indent} noWait {noWait}")
+                        # logMsg(msgLog, 2 ,0)
                         threads = threads + 1
                         delayedPosts.append(pool.submit(self.executeAction,
                                             src, more, action,

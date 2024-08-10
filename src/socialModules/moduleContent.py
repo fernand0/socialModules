@@ -435,10 +435,8 @@ class Content:
 
     def setLastLink(self, dst = None):
         if hasattr(self, 'fileName') and self.fileName:
-            logging.info(f"aaaa")
             fileName = f"{self.fileName}.last"
         else:
-            logging.info(f"aaav")
             if dst:
                 self.fileName = self.fileNameBase(dst)
                 fileName = f"{self.fileName}.last"

@@ -75,7 +75,6 @@ class moduleCache(Content): #,Queue):
             nameSrc = 'Cache'
             typeSrc = typeDst = 'posts'
             if isinstance(self, socialModules.moduleCache.moduleCache):
-                logging.info(f"{self.indent} aquí")
                 user = self.url
                 if 'slack' in self.url:
                     #FIXME
@@ -90,7 +89,6 @@ class moduleCache(Content): #,Queue):
                 serviceD = self.socialNetwork
                 nameDst = self.socialNetwork.capitalize()
             elif isinstance(myDst, tuple):
-                logging.info(f"{self.indent} allí")
                 # logging.info(f"{self.indent} tuple {myDst}")
                 #FIXME
                 user = self.getUrl()
