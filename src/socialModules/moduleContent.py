@@ -178,15 +178,11 @@ class Content:
             # Setting values available in more
             for option in more:
                 if option == 'service': continue #FIXME
-                msgLog = f"{self.indent}  OOption: {option}" #: {src[1:]}"
-                logMsg(msgLog, 2, 0)
                 if option == 'posts':
                     nameMethod = f"setPostsType"
                 else:
                     nameMethod = f"set{option.capitalize()}"
 
-                msgLog = f"{self.indent}  nameMethod: {nameMethod}"
-                logMsg(msgLog, 2, 0)
                 if  nameMethod in self.__dir__():
                     # Simple names setUrl, setTime, ...
                     # setting url, time, max, posts,
@@ -1101,6 +1097,17 @@ class Content:
         reply = 'Fail!'
         try:
             nameMethod = 'Post'
+
+            if hasattr(api, 'getPostsType'):
+                msgLog = (f"{self.indent} getPostsType: {api.getPostsType()}")
+                logMsg(msgLog, 2, 0)
+                hassss = f"publishApi{api.getPostsType().capitalize()}"
+                hassss = hasattr(api, hassss)
+                msgLog = (f"Hassss: {hassss}")
+                logMsg(msgLog, 2, 0)
+            else:
+                msgLog = (f"No Hassss")
+                logMsg(msgLog, 2, 0)
 
             if (hasattr(self, 'getPostsType')
                     and (self.getPostsType())

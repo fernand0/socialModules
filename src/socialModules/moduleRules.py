@@ -299,10 +299,11 @@ class moduleRules:
                                 # cases is OK
                                 destRuleCache = ('direct', 'post',
                                                  key, moreS[key])
-                                if not (fromCacheNew in rulesNew):
-                                    rulesNew[fromCacheNew] = []
-                                rulesNew[fromCacheNew].append(destRuleCache)
-                                mor[fromCacheNew] = moreS
+                                if fromCacheNew and destRuleCache:
+                                    if not (fromCacheNew in rulesNew):
+                                        rulesNew[fromCacheNew] = []
+                                    rulesNew[fromCacheNew].append(destRuleCache)
+                                    mor[fromCacheNew] = moreS
                                 # print(f"fromCache: {fromCache}")
                                 # print(f"fromCacheNew: {fromCacheNew}")
                                 # print(f"destRule: {destRule}")
@@ -316,7 +317,7 @@ class moduleRules:
                             logMsg(msgLog, 2, 0)
                             msgLog = f"{self.indent}  dest Rule: {destRule}"
                             logMsg(msgLog, 2, 0)
-                            if fromSrv:
+                            if fromSrv and (destRuleNew or destRule):
                                 if not (fromSrv in rulesNew):
                                     rulesNew[fromSrv] = []
                                 #print(f".fromSrv: {fromSrv}")
@@ -421,6 +422,11 @@ class moduleRules:
         # logMsg(msgLog, 2, 0)
         # self.printDict(self.available, "Available")
 
+        self.rules = {}
+        for key in rulesNew:
+            if rulesNew[key]:
+                self.rules[key] = rulesNew[key]
+
         msgLog = (f"RulesNew: {rulesNew}")
         logMsg(msgLog, 2, 0)
         msgLog = (f"More: {mor}")
@@ -428,7 +434,9 @@ class moduleRules:
         if hasattr(self, 'args') and self.args.rules:
             self.printDict(rulesNew, "Rules")
 
-        self.rules = rulesNew
+        #self.rules = rulesNew
+        msgLog = (f"selfRulesNew: {self.rules}")
+        logMsg(msgLog, 2, 0)
         self.more = mor
 
         msgLog = "End Checking rules"
@@ -824,7 +832,7 @@ class moduleRules:
         #     apiDst.setTime(more['time'])
         if more:
             apiDst.setMoreValues(more)
-        apiDst.setPostsType('posts')
+        # apiDst.setPostsType('posts')
 
         if apiSrc:
             apiDst.setUrl(apiSrc.getUrl())
@@ -1054,21 +1062,21 @@ class moduleRules:
                 sys.stderr.write(f"Error: {msgLog}\n")
             return f"End: {msgLog}"
 
-        msgLog = f"{indent} Start postsType {apiSrc.getPostsType()}" #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
-        msgLog = f"{indent} ---> {apiDst.getPostsType()} != {self.getTypeAction(action)}"
-        logMsg(msgLog, 2, 0)
-        msgLog = f"{indent} {apiDst.getPostsType()[:-1]} != {self.getTypeAction(action)}"
-        logMsg(msgLog, 2, 0)
-        msgLog = f"{indent} {self.getNameAction(action)} != {'cache'}"
-        logMsg(msgLog, 2, 0)
-        if ((apiDst.getPostsType() != self.getTypeAction(action))
-            and (apiDst.getPostsType()[:-1] != self.getTypeAction(action))
-            and (self.getNameAction(action) != 'cache')):
-            # FIXME: Can we do better?
-            msgLog = f"{indent} Some problem with {action}"
-            logMsg(msgLog, 3, 0)
-            return msgLog
+        # msgLog = f"{indent} Start postsType {apiSrc.getPostsType()}" #: {src[1:]}"
+        # logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} ---> {apiDst.getPostsType()} != {self.getTypeAction(action)}"
+        # logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} {apiDst.getPostsType()[:-1]} != {self.getTypeAction(action)}"
+        # logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} {self.getNameAction(action)} != {'cache'}"
+        # logMsg(msgLog, 2, 0)
+        # if ((apiDst.getPostsType() != self.getTypeAction(action))
+        #     and (apiDst.getPostsType()[:-1] != self.getTypeAction(action))
+        #     and (self.getNameAction(action) != 'cache')):
+        #     # FIXME: Can we do better?
+        #     msgLog = f"{indent} Some problem with {action}"
+        #     logMsg(msgLog, 3, 0)
+        #     return msgLog
 
         apiSrc.setLastLink(apiDst)
         #FIXME: best in readConfigSrc ?
