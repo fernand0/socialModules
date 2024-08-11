@@ -366,7 +366,6 @@ class moduleRules:
         self.rules = rulesNew
         self.more = mor
 
-
     def selectActionInteractive(self, service = None):
         if not service:
             nameModule = os.path.basename(inspect.stack()[1].filename)
@@ -379,7 +378,10 @@ class moduleRules:
             print(f"{i}) {act}")
         iAct = input("Which action? ")
         src = selActions[int(iAct)]
-        apiDst = self.readConfigDst(indent, act, None, None)
+        try:
+            apiDst = self.readConfigDst(indent, act, None, None)
+        except:
+            apiDst = self.readConfigDst(act, None, None)
 
         return apiDst
 
@@ -397,7 +399,10 @@ class moduleRules:
         else:
             iRul = 0
         src = selRules[int(iRul)]
-        apiSrc = self.readConfigSrc("", src, self.more[src])
+        try: #FIXME 
+            apiSrc = self.readConfigSrc("", src, self.more[src])
+        except:
+            apiSrc = self.readConfigSrc(src, self.more[src])
 
         return apiSrc
 
@@ -1054,6 +1059,7 @@ class moduleRules:
                         and (self.more[src]['hold'] == 'yes')):
                         msgHold = f"{indent} On hold."
                         logMsg(msgHold,1, 0)
+                        onHold = True
                         continue
 
                 if src in self.more:

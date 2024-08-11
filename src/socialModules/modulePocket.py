@@ -294,16 +294,38 @@ def main():
                         print(f"Title: {apiSrc.getPostTitle(post)}")
         return
 
-    testingPublish = True
+    testingPublish = False
     if testingPublish:
         for key in rules.rules.keys():
             if ((key[0] == 'pocket')
-                    and (key[2] == 'fernand0')):
-                apiSrc = rules.readConfigSrc("", key, rules.more[key])
+                    and (key[2] == 'fernand0kobo')):
+                # apiSrc = rules.readConfigSrc("", key, rules.more[key])
+                apiSrc = rules.readConfigSrc(key, rules.more[key])
                 res = apiSrc.setPosts()
                 apiSrc.publishPost('titulo',
                                    'https://github.com/danielbrendel/hortusfox-web',
                                    '')
+        return
+
+    testingSlack = False
+    if testingSlack:
+        api = rules.selectActionInteractive('slack')
+        api.setPosts()
+        posts = api.getPosts()
+        pos = api.getLinkPosition('https://internetdelascosas.xyz/articulo.php?id=1159')
+        for key in rules.rules.keys():
+            if ((key[0] == 'pocket')
+                    and (key[2] == 'fernand0kobo')):
+                apiDst = rules.readConfigSrc(key, rules.more[key])
+        print(f"Posts: {pos}")
+        for post in range(pos+1, len(posts)):
+            print(f"Post: {posts[post]}")
+            title = api.getPostTitle(posts[post])
+            link = api.getPostLink(posts[post])
+            apiDst.publishPost(title, link, '')
+            import time
+            time.sleep(1)
+
         return
 
 

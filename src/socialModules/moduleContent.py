@@ -245,42 +245,48 @@ class Content:
         return url
 
     def fileNameBase(self, dst):
-        src = self
-        nameSrc = type(src).__name__
-        if 'module' in nameSrc:
-            nameSrc = nameSrc[len('module'):]
-        nameDst = type(dst).__name__
-        if 'module' in nameDst:
-            nameDst = nameDst[len('module'):]
-            userD = dst.getUser()
-            if hasattr(dst, 'socialNetwork'):
-                serviceD = dst.socialNetwork
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Start fileNameBase")
+        logMsg(msgLog, 2, 0)
+        if hasattr(self, 'fileName') and self.fileName:
+            fileName =  self.fileName
+        else:
+            src = self
+            nameSrc = type(src).__name__
+            if 'module' in nameSrc:
+                nameSrc = nameSrc[len('module'):]
+            nameDst = type(dst).__name__
+            if 'module' in nameDst:
+                nameDst = nameDst[len('module'):]
+                userD = dst.getUser()
+                if hasattr(dst, 'socialNetwork'):
+                    serviceD = dst.socialNetwork
+                else:
+                    serviceD = nameDst
+                user = src.getUser()
+                service = src.getService()
             else:
-                serviceD = nameDst
-            user = src.getUser()
-            service = src.getService()
-        else:
-            user = src.getUrl()
-            service = self.service
-            userD = dst[0]
-            serviceD = dst[1]
-            nameDst = serviceD.capitalize()
+                user = src.getUrl()
+                service = self.service
+                userD = dst[0]
+                serviceD = dst[1]
+                nameDst = serviceD.capitalize()
 
-        if hasattr(src, 'getPostsType'):
-            typeSrc = src.getPostsType()
-        else:
-            typeSrc = 'posts'
+            if hasattr(src, 'getPostsType'):
+                typeSrc = src.getPostsType()
+            else:
+                typeSrc = 'posts'
 
-        if hasattr(dst, 'getPostsType'):
-            typeDst = dst.getPostsType()
-        else:
-            typeDst = 'posts'
+            if hasattr(dst, 'getPostsType'):
+                typeDst = dst.getPostsType()
+            else:
+                typeDst = 'posts'
 
-        fileName = (f"{nameSrc}_{typeSrc}_"
-                    f"{user}_{service}__"
-                    f"{nameDst}_{typeDst}_"
-                    f"{userD}_{serviceD}")
-        fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
+            fileName = (f"{nameSrc}_{typeSrc}_"
+                        f"{user}_{service}__"
+                        f"{nameDst}_{typeDst}_"
+                        f"{userD}_{serviceD}")
+            fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
 
         return fileName
 
