@@ -314,7 +314,6 @@ class Content:
                 logMsg(msgLog, 2, 0)
                 # msgLog = (f"{self.indent} fileNameBase action: {}")
                 # logMsg(msgLog, 2, 0)
->>>>>>> devel
             else:
                 user = src.getUrl()
                 service = self.service

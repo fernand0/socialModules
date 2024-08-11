@@ -114,7 +114,6 @@ class moduleCache(Content): #,Queue):
         msgLog = (f"{self.indent} End fileNameBase")
         logMsg(msgLog, 2, 0)
         self.indent = self.indent[:-1]
-=======
         logMsg(msgLog, 2, 0)
         msgLog = (f"{self.indent}  dst {dst}")
         logMsg(msgLog, 2, 0)
@@ -185,7 +184,6 @@ class moduleCache(Content): #,Queue):
         msgLog = (f"{self.indent} End fileNameBase")
         logMsg(msgLog, 2, 0)
         self.indent = f"{self.indent[:-1]}"
->>>>>>> devel
         return fileName
 
     # def fileNameBase2(self, dst):
@@ -248,7 +246,6 @@ class moduleCache(Content): #,Queue):
         #     print(f"self.fileName {self.fileName}")
 
         msgLog = (f"{self.indent} End setClient")
->>>>>>> devel
         logMsg(msgLog, 2, 0)
 
 

@@ -513,7 +513,7 @@ class moduleRules:
             return []
 
         if service in hasSet:
-            msgLog = f"{msgIni} cached"
+            msgLog = f"{self.indent} Service {service} cached"
             logMsg(msgLog, 2, 0)
             listMethods = hasSet[service]
         else:
@@ -764,7 +764,7 @@ class moduleRules:
                       f"No client for {rule} ({action}). End.")
         return f"{msgLog}"
 
-    def readConfigSrc(self, src, more):
+    def readConfigSrc(self, indent, src, more):
         msgLog = f"{self.indent} Start readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         indent = f"{indent} "
@@ -795,7 +795,7 @@ class moduleRules:
             res = action[pos]
         return res
 
-    def readConfigDst(self, action, more, apiSrc):
+    def readConfigDst(self, indent, action, more, apiSrc):
         msgLog = f"{self.indent} Start readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         indent = f"{indent} "
