@@ -214,10 +214,10 @@ def getApi(profile, nick, indent=""):
 
     #indent = f"{indent} "
 
-    msgLog = (f"{indent}  Profile {profile}")
-    logMsg(msgLog, 2, 0)
-    msgLog = (f"{indent}  Nick {nick}")
-    logMsg(msgLog, 2, 0)
+    # msgLog = (f"{indent}  Profile {profile}")
+    # logMsg(msgLog, 2, 0)
+    # msgLog = (f"{indent}  Nick {nick}")
+    # logMsg(msgLog, 2, 0)
     api = getModule(profile, indent)
     api.indent = indent
     api.setClient(nick)

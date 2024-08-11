@@ -409,10 +409,10 @@ class moduleRules:
             if rulesNew[key]:
                 self.rules[key] = rulesNew[key]
 
-        msgLog = (f"RulesNew: {rulesNew}")
-        logMsg(msgLog, 2, 0)
-        msgLog = (f"More: {mor}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"RulesNew: {rulesNew}")
+        # logMsg(msgLog, 2, 0)
+        # msgLog = (f"More: {mor}")
+        # logMsg(msgLog, 2, 0)
         if hasattr(self, 'args') and self.args.rules:
             self.printDict(rulesNew, "Rules")
         sys.exit
@@ -654,12 +654,21 @@ class moduleRules:
         url = url.replace(':','').replace('/','')
         return url
 
-    def getNickSrc(self, src):
-        if isinstance(src[2], tuple):
-            res = src[-1]
+    def getNickSrc(self, src, indent=""):
+        orig = self.getSrcComponent(src, 2)
+        if isinstance(orig, tuple):
+            res = self.getSrcComponent(src, 3)
         else:
-            res = src[2]
+            res = orig
         return res
+
+    def getActionSrc(self, src, indent=""):
+        orig = self.getSrcComponent(src, 2)
+        if isinstance(orig, tuple):
+            nick = self.getSrcComponent(orig, 1)
+        else:
+            nick = self.getSrcComponent(src, 3)
+        return nick
 
     def getDestAction(self, action):
         if isinstance(self.getActionComponent(action, 2), tuple):
@@ -774,8 +783,8 @@ class moduleRules:
         #     # apiSrc.fileName = apiSrc.fileNameBase(src[1:])
         #     apiSrc.postaction = 'delete'
         # else:
-        msgLog = f"{indent} More: {more}" #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} More: {more}" #: {src[1:]}"
+        # logMsg(msgLog, 2, 0)
         if more:
             apiSrc.setMoreValues(more)
 
@@ -785,6 +794,10 @@ class moduleRules:
         msgLog = f"{indent} End readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         return apiSrc
+
+    def getSrcComponent(self, src, pos):
+        res = self.getActionComponent(src, pos)
+        return res
 
     def getActionComponent(self, action, pos):
         res = ''
@@ -1178,7 +1191,7 @@ class moduleRules:
 
                 nameAction =f"[{self.getNameAction(src)}{i}]"
                 indent = f"{nameAction:->12}>"
-                msgIni = (f"{self.getNickSrc(src)} ({self.getNickAction(src)})")
+                msgIni = (f"{self.getNickSrc(src)} ({self.getActionSrc(src)})")
 
                 if src in self.more:
                     if (('hold' in self.more[src])
@@ -1237,7 +1250,11 @@ class moduleRules:
                 #           and ('tumblr' in self.getNameAction(src))):
                 #         srcName = more['url']
                 #         srcName = f"{srcName.split('/')[2].split('.')[0]}"
-                msgIni = (f"{self.getNickSrc(src)} ({self.getNickAction(src)})")
+                msgIni = (f"{self.getNickSrc(src, indent)}"
+                          #f"@{self.getSocialSrc(src, indent) "
+                          f" ({self.getNickAction(src)})")
+                # Check when cache for origin.
+
                 # logging.info(f"{self.indent} msgIni... {msgIni} src {src}")
 
                 actions = self.rules[src]
@@ -1277,13 +1294,14 @@ class moduleRules:
                         noWait = args.noWait
 
                         # Is this the correct place?
-                        msgLog = (f"{indent} NameAction " 
-                                  f"{self.getNameAction(action)}")
-                        logMsg(msgLog, 2, 0)
+                        # msgLog = (f"{indent} NameAction " 
+                        #           f"{self.getNameAction(action)}")
+                        # logMsg(msgLog, 2, 0)
                         if ((self.getNameAction(action) in 'cache') or
                             ((self.getNameAction(action) == 'direct')
                              and (self.getProfileAction(action) == 'pocket'))
                             ):
+
                             # We will always load new items in the cache
                             timeSlots = 0
                             noWait=True
