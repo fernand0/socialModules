@@ -456,10 +456,7 @@ class moduleRules:
         else:
             iRul = 0
         src = selRules[int(iRul)]
-        try: #FIXME 
-            apiSrc = self.readConfigSrc("", src, self.more[src])
-        except:
-            apiSrc = self.readConfigSrc(src, self.more[src])
+        apiSrc = self.readConfigSrc("", src, self.more[src])
 
         return apiSrc
 
@@ -765,7 +762,7 @@ class moduleRules:
         return f"{msgLog}"
 
     def readConfigSrc(self, indent, src, more):
-        msgLog = f"{self.indent} Start readConfigSrc" #: {src[1:]}"
+        msgLog = f"{indent} Start readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         indent = f"{indent} "
 
@@ -796,7 +793,7 @@ class moduleRules:
         return res
 
     def readConfigDst(self, indent, action, more, apiSrc):
-        msgLog = f"{self.indent} Start readConfigDst" #: {src[1:]}"
+        msgLog = f"{indent} Start readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         indent = f"{indent} "
 
@@ -1048,7 +1045,7 @@ class moduleRules:
         textEnd = (f"{msgLog}")
 
         # Destination
-        apiDst = self.readConfigDst(action, more, apiSrc)
+        apiDst = self.readConfigDst("", action, more, apiSrc)
         if not apiDst.getClient():
             msgLog = self.clientErrorMsg(self.indent, apiDst, "Destination",
                                       (f"{self.getNameAction(action)}@"
