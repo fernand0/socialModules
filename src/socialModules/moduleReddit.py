@@ -50,6 +50,9 @@ class moduleReddit(Content): #, Queue):
 
         return posts
 
+    def setChannel(self, page=None):
+        self.setPage(page)
+
     def setPage(self, page=None):
         if page:
             self.page = page

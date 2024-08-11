@@ -26,23 +26,26 @@ from socialModules.moduleContent import *
 
 class moduleCache(Content): #,Queue):
 
+    def __init__(self, indent=''):
+        super().__init__(indent)
+        self.postaction = 'delete'
+
     def getProfileR(self, rule):
-        msgLog = (f"{self.indent} Service {self.service} getProfileR {rule}")
+        msgLog = (f"{self.indent} getProfileR {rule}")
         logMsg(msgLog, 2, 0)
         return rule[2:]
 
     def getService(self):
-        msgLog = (f"{self.indent} Service {self.service} getService")
+        msgLog = (f"{self.indent} getService")
         logMsg(msgLog, 2, 0)
         if hasattr(self, 'auxClass'):
-            msgLog = (f"{self.indent} Service {self.service} has "
-                      f"auxClass {self.auxClass}")
+            msgLog = (f"{self.indent} has auxClass {self.auxClass}")
             logMsg(msgLog, 2, 0)
             if isinstance(self.auxClass, tuple):
                 self.auxClass = self.auxClass[0]
             return self.auxClass
         else:
-            msgLog = f"{self.indent} Service {self.service} has not auxClass"
+            msgLog = f"{self.indent} has not auxClass"
             logMsg(msgLog, 2, 0)
             return self.service
 
@@ -53,7 +56,7 @@ class moduleCache(Content): #,Queue):
             self.postsType = postsType
 
     def getPostsType(self):
-        return 'cache'
+        return 'posts'
 
     def fileNameBase(self, dst):
         self.indent = f"{self.indent} "
@@ -111,6 +114,78 @@ class moduleCache(Content): #,Queue):
         msgLog = (f"{self.indent} End fileNameBase")
         logMsg(msgLog, 2, 0)
         self.indent = self.indent[:-1]
+=======
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent}  dst {dst}")
+        logMsg(msgLog, 2, 0)
+        if isinstance(dst, tuple) and len(dst)>2 and isinstance(dst[2], tuple):
+            myDst = dst[1:]
+        else:
+            myDst = dst
+        if hasattr(self, 'fileName') and self.fileName:
+            fileName =  self.fileName
+        else:
+            src = self
+            nameSrc = 'Cache'
+            typeSrc = typeDst = 'posts'
+            if isinstance(self, socialModules.moduleCache.moduleCache):
+                user = self.url
+                if 'slack' in self.url:
+                    #FIXME
+                    service = 'Slack'
+                elif 'gitter' in self.url:
+                    service = 'Gitter'
+                elif 'imgur' in self.url:
+                    service = 'Imgur'
+                else:
+                    service = self.service.capitalize()
+                userD = self.user
+                serviceD = self.socialNetwork
+                nameDst = self.socialNetwork.capitalize()
+            elif isinstance(myDst, tuple):
+                # logging.info(f"{self.indent} tuple {myDst}")
+                #FIXME
+                user = self.getUrl()
+                service = myDst[0].capitalize()
+                logging.info(f"SSSservice: {service} - {self.getService()}")
+                userD = self.user
+                serviceD = self.socialNetwork
+                nameDst = self.socialNetwork.capitalize()
+                typeDst = 'cache'
+
+            # user = self.url
+            user = self.url.split("/")[2].split('.')[0] #FIXME
+            if 'slack' in self.url:
+                #FIXME
+                service = 'Slack'
+            elif 'gitter' in self.url:
+                service = 'Gitter'
+            elif 'imgur' in self.url:
+                service = 'Imgur'
+            else:
+                service = self.service.capitalize()
+            userD = self.user
+            serviceD = self.socialNetwork
+            nameDst = self.socialNetwork.capitalize()
+
+        # user = self.url
+        # userD = self.user
+        # serviceD = self.socialNetwork
+        # nameDst = self.socialNetwork.capitalize()
+        # # msgLog = (f"{self.indent} fileNameBase serviceD {serviceD}")
+        # # logMsg(msgLog, 2, 0)
+
+            fileName = (f"{nameSrc}_{typeSrc}_"
+                        f"{user}_{service}__"
+                        f"{nameDst}_{typeDst}_"
+                        f"{userD}_{serviceD}")
+            fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
+            self.fileName = fileName
+
+        msgLog = (f"{self.indent} End fileNameBase")
+        logMsg(msgLog, 2, 0)
+        self.indent = f"{self.indent[:-1]}"
+>>>>>>> devel
         return fileName
 
     # def fileNameBase2(self, dst):
@@ -144,9 +219,10 @@ class moduleCache(Content): #,Queue):
     #     return fileName
 
     def setClient(self, param):
+        self.indent = f"{self.indent} "
         self.service = 'Cache'
-        msgLog = (f"{self.indent} Start Connecting {self.service}")
-        logMsg(msgLog, 1, 0)
+        msgLog = (f"{self.indent} Start setClient account: {param}")
+        logMsg(msgLog, 2, 0)
         self.postaction = 'delete'
 
         self.postsType = 'posts'
@@ -158,7 +234,7 @@ class moduleCache(Content): #,Queue):
         self.auxClass = param[0]
         self.fileName = self.fileNameBase((self.socialNetwork, self.nick))
         fileNameQ = f"{self.fileName}.queue"
-        msgLog = checkFile(fileNameQ, f"{self.indent} ")
+        msgLog = checkFile(fileNameQ, self.indent)
         if not 'OK' in msgLog:
             #with open(fileNameQ, "w") as f:
             msgLog = (f"{self.indent} File {fileNameQ} does not exist. "
@@ -166,7 +242,13 @@ class moduleCache(Content): #,Queue):
             logMsg(msgLog, 3, 0)
         self.client = self.service
 
-        msgLog = (f"{self.indent} End connecting {self.service}")
+        # if hasattr(self, 'fileName'):
+        #     msgLog = (f"{self.indent} self.fileName {self.fileName}")
+        #     logMsg(msgLog, 2, 0)
+        #     print(f"self.fileName {self.fileName}")
+
+        msgLog = (f"{self.indent} End setClient")
+>>>>>>> devel
         logMsg(msgLog, 2, 0)
 
 
@@ -179,7 +261,7 @@ class moduleCache(Content): #,Queue):
         return(self.setApiPosts())
 
     def setApiPosts(self):
-        msgLog = f"{self.indent} Service {self.service} Start setApiPosts"
+        msgLog = f"{self.indent} Start setApiPosts"
         logMsg(msgLog, 2, 0)
         fileNameQ = ''
         url = self.getUrl()
@@ -197,6 +279,7 @@ class moduleCache(Content): #,Queue):
         # msgLog = f"{self.indent} Url: {url} service {service} nick {nick}"
         # logMsg(msgLog, 2, 0)
         if not fileNameQ:
+            # nick = self.getNick()
             self.fileName = self.fileNameBase((service, nick))
             fileNameQ = self.fileName+".queue"
         else:
@@ -225,7 +308,7 @@ class moduleCache(Content): #,Queue):
         # msgLog = f"{self.indent} listP: {listP}"
         # logMsg(msgLog, 2, 0)
 
-        msgLog = f"{self.indent} Service {self.service} End setApiPosts"
+        msgLog = f"{self.indent} End setApiPosts"
         logMsg(msgLog, 2, 0)
 
         return(listP)
@@ -234,13 +317,19 @@ class moduleCache(Content): #,Queue):
         maxVal = 0
         if hasattr(self, "max"): # and self.max:
             maxVal = int(self.max)
+        msgLog = f"{self.indent} maxVal {maxVal}"
+        logMsg(msgLog, 2, 0)
         self.setPosts()
         lenMax = len(self.getPosts())
+        msgLog = f"{self.indent} len {lenMax}"
+        logMsg(msgLog, 2, 0)
         num = 1
         if maxVal > 1:
             num = maxVal - lenMax
         if num < 0:
             num = 0
+        msgLog = f"{self.indent} num {num}"
+        logMsg(msgLog, 2, 0)
         return num
 
     def getPosNextPost(self):
@@ -440,6 +529,9 @@ class moduleCache(Content): #,Queue):
             return post
 
     def getPostTitle(self, post):
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Start getPostTitle.")
+        logMsg(msgLog, 2, 0)
         title = ''
         if post:
             if hasattr(self, 'auxClass'):
@@ -460,9 +552,15 @@ class moduleCache(Content): #,Queue):
             else:
                 # Old style
                 title = post[0]
+        msgLog = (f"{self.indent} End getPostTitle.")
+        logMsg(msgLog, 2, 0)
+        self.indent = self.indent[:-1]
         return(title)
 
     def getPostLink(self, post):
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Start getPostLink.")
+        logMsg(msgLog, 2, 0)
         link = ''
         if post:
             if hasattr(self, 'auxClass'):
@@ -479,6 +577,9 @@ class moduleCache(Content): #,Queue):
                 link = apiCmd(post)
             else:
                 link = post[1]
+        msgLog = (f"{self.indent} End getPostLink.")
+        logMsg(msgLog, 2, 0)
+        self.indent = self.indent[:-1]
         return (link)
 
     def getPostContentHtml(self, post):
@@ -552,8 +653,7 @@ class moduleCache(Content): #,Queue):
         # We just store the post, we need more information than the title,
         # link and so on.
         reply = ''
-        msgLog = (f"{self.indent} Service {self.service} publishing "
-                  f"next post in {self.service}")
+        msgLog = (f"{self.indent} publishing next post in {self.service}")
         logMsg(msgLog, 1, 0)
         try:
             post = apiSrc.getNextPost()

@@ -24,7 +24,6 @@ class moduleBlsk(Content): #, Queue):
         # FIXME: Do we call this method directly?
         self.base_url = 'https://bsky.app'
         self.url = f"{self.base_url}/profile/{self.user}"
-        logging.info("Initializing API")
         # self.authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
         # client = Twitter(auth=self.authentication)
 
@@ -36,7 +35,7 @@ class moduleBlsk(Content): #, Queue):
             else:
                 self.me = None
         except:
-            res = self.report(self.indent, 'Error in initApi', 
+            res = self.report(self.indent, 'Error in initApi',
                               '', sys.exc_info())
             client = None
         self.api = client
@@ -54,6 +53,12 @@ class moduleBlsk(Content): #, Queue):
             api = self.api
         return api
 
+    def setNick(self, nick=None):
+        if not nick:
+            nick = self.getUrl()
+            nick = nick.split("/")[-1].split('.')[0]
+        self.nick = nick
+
     def setApiPosts(self):
         posts = []
 
@@ -68,7 +73,7 @@ class moduleBlsk(Content): #, Queue):
     def setApiFavs(self):
         posts = []
 
-        posts, error = self.apiCall('get_actor_likes', 
+        posts, error = self.apiCall('get_actor_likes',
                                     params={'actor':self.me.did})
 
         if not error:
@@ -121,8 +126,8 @@ class moduleBlsk(Content): #, Queue):
         if hasattr(post.post.record, 'uri'):
             logging.debug(f"Uri")
             result = post.post.record.uri
-        elif (hasattr(post.post.record, 'facets') 
-              and post.post.record.facets 
+        elif (hasattr(post.post.record, 'facets')
+              and post.post.record.facets
               and hasattr(post.post.record.facets[0].features[0], 'uri')):
             logging.debug(f"Facets > Uri")
             result = post.post.record.facets[0].features[0].uri
@@ -135,7 +140,7 @@ class moduleBlsk(Content): #, Queue):
             result = self.getPostUrl(post)
 
         return result
- 
+
     def publishApiImage(self, *args, **kwargs):
         res = None
         if len(args) == 2:
@@ -152,12 +157,12 @@ class moduleBlsk(Content): #, Queue):
                                       f" in image {imageName}")
                         imgAlt = more['alt']
                     res, error = self.apiCall('send_image', api=self.api,
-                                              text=post, 
-                                              image=imagedata, 
+                                              text=post,
+                                              image=imagedata,
                                               image_alt=imgAlt)
 
-                except: 
-                    res = self.report(self.service, post, 
+                except:
+                    res = self.report(self.service, post,
                                       imageName, sys.exc_info())
             else:
                 logging.info(f"No image available")
@@ -208,17 +213,17 @@ class moduleBlsk(Content): #, Queue):
         if link:
             title = title[:(300 - (len(link)+1))]
 
-            embed_external = models.AppBskyEmbedExternal.Main( 
-                              external=models.AppBskyEmbedExternal.External( 
-                                title=title, 
-                                description='', 
+            embed_external = models.AppBskyEmbedExternal.Main(
+                              external=models.AppBskyEmbedExternal.External(
+                                title=title,
+                                description='',
                                 uri=link,
                             )
                         )
-            # facets.append(models.AppBskyRichtextFacet.Main( 
+            # facets.append(models.AppBskyRichtextFacet.Main(
             #     features=[models.AppBskyRichtextFacet.Link(uri=link)],
             #     index=models.AppBskyRichtextFacet.ByteSlice(
-            #         byte_start=len(title)+1, 
+            #         byte_start=len(title)+1,
             #         byte_end=len(title)+len(link)+1),
             #     )
             # )
@@ -230,29 +235,29 @@ class moduleBlsk(Content): #, Queue):
 
 
         msgLog = f"{self.indent}Publishing {title} ({len(title)}"
-        logMsg(msgLog, 2, 0) 
+        logMsg(msgLog, 2, 0)
         client = self.api
         #try:
-        res, error = self.apiCall('send_post', api=client, 
+        res, error = self.apiCall('send_post', api=client,
                                text=title, embed=embed_external)
         #    # res = client.com.atproto.repo.create_record(
         #    #         models.ComAtprotoRepoCreateRecord.Data(
-        #    #          repo=client.me.did, 
-        #    #          collection=models.ids.AppBskyFeedPost, 
+        #    #          repo=client.me.did,
+        #    #          collection=models.ids.AppBskyFeedPost,
         #    #          record=models.AppBskyFeedPost.Main(
-        #    #              created_at=client.get_current_time_iso(), 
+        #    #              created_at=client.get_current_time_iso(),
         #    #              text=title, facets=facets),
         #    #          )
         #    #         )
-        #except: 
-        #    res = self.report(self.service, 
+        #except:
+        #    res = self.report(self.service,
         #                        f"{title} {link}", title, sys.exc_info())
 
         msgLog = f"{self.indent}Res: {res} "
         logMsg(msgLog, 2, 0)
         return res
 
-    def deleteApiPosts(self, idPost): 
+    def deleteApiPosts(self, idPost):
         res = None
 
         msgLog = f"{self.indent} deleteApiPosts deleting: {idPost}"
@@ -261,7 +266,7 @@ class moduleBlsk(Content): #, Queue):
 
         return (res)
 
-    def deleteApiFavs(self, idPost): 
+    def deleteApiFavs(self, idPost):
         res = None
         logging.info(f"Deleting: {idPost}")
         res = self.api.delete_like(idPost)
@@ -381,7 +386,7 @@ def main():
         return
 
 
-    return 
+    return
 
     testingPost = False
     if testingPost:

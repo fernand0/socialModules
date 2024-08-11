@@ -23,7 +23,7 @@ from socialModules.moduleContent import *
 
 class moduleXmlrpc(Content):
 
-    def setClient(self, nick): 
+    def setClient(self, nick):
         self.url = ""
         self.name = ""
         self.rssFeed = ''
@@ -40,48 +40,55 @@ class moduleXmlrpc(Content):
         #self.logger = logging.getLogger(__name__)
         self.user = nick
         self.setXmlRpc()
-        
+
     def addLastLinkPublished(self, socialNetwork, lastLink, lastTime):
         self.lastLinkPublished[socialNetwork] = (lastLink, lastTime)
 
     def getLastLinkPublished(self):
         return(self.lastLinkPublished)
- 
+
     def getLinksToAvoid(self):
         return(self.linksToAvoid)
- 
+
     def setLinksToAvoid(self,linksToAvoid):
         self.linksToAvoid = linksToAvoid
- 
+
     def getTime(self):
         return(self.time)
- 
+
     def setTime(self, time):
         self.time = time
 
     def getBufferapp(self):
         return(self.bufferapp)
- 
+
     def setBufferapp(self, bufferapp):
         self.bufferapp = bufferapp
 
     def getProgram(self):
         return(self.program)
- 
+
     def setProgram(self, program):
         self.program = program
 
     def getXmlRpc(self):
+        return self.getXmlrpc()
+
+    def getXmlrpc(self):
         return(self.xmlrpc)
+
+    def setXmlrpc(self, xmlrpc=None):
+        self.xmlrpc = xmlrpc
 
     def setXmlRpc(self, xmlrpc=None):
         #FIXME: ???
+        # We need to fix this
         logging.info(f"{self.indent} Xmlrpc: {xmlrpc}")
-        conf = configparser.ConfigParser() 
+        conf = configparser.ConfigParser()
         conf.read(CONFIGDIR + '/.blogaliarc')
-        for section in conf.sections(): 
-            usr = conf.get(section,'login') 
-            pwd = conf.get(section,'password') 
+        for section in conf.sections():
+            usr = conf.get(section,'login')
+            pwd = conf.get(section,'password')
             srv = conf.get(section,'server')
             domain = self.url[self.url.find('.'):]
             if srv.find(domain)>0:
@@ -97,13 +104,13 @@ class moduleXmlrpc(Content):
     def setPosts(self):
         self.setPostsXmlRpc()
         self.posts = self.postsXmlRpc
- 
+
     def setPostsXmlRpc(self):
         logging.info("xml %s" % self.xmlrpc)
         logging.info("xml %s" % self.Id)
         if self.xmlrpc and self.Id:
             logging.info("Yes")
-            self.postsXmlRpc = self.xmlrpc[0].blogger.getRecentPosts('', self.Id, 
+            self.postsXmlRpc = self.xmlrpc[0].blogger.getRecentPosts('', self.Id,
                     self.xmlrpc[1], self.xmlrpc[2], 10)
 
     def getId(self):
@@ -112,15 +119,15 @@ class moduleXmlrpc(Content):
     def setId(self, Id):
         self.Id = Id
 
-    def blogId(self, srv, usr, pwd): 
+    def blogId(self, srv, usr, pwd):
         server = self.xmlrpc[0]
         usr = self.xmlrpc[1]
         pwd = self.xmlrpc[2]
 
-        listMet = server.system.listMethods() 
+        listMet = server.system.listMethods()
         if 'wp' in listMet[-1]:
             userBlogs = server.wp.getUsersBlogs(usr,pwd)
-        else: 
+        else:
             userBlogs = server.blogger.getUsersBlogs('',usr,pwd)
         for blog in userBlogs:
             identifier = self.url[self.url.find('/')+2:self.url.find('.')]
@@ -140,16 +147,16 @@ class moduleXmlrpc(Content):
         # To be done
         return(i)
 
-    def newPost(self, title, content): 
+    def newPost(self, title, content):
         server = self.xmlrpc
         data = { 'title': title, 'description': content}
         server[0].metaWeblog.newPost(self.Id, server[1], server[2], data, True)
 
-    def editPost(self, idPost, title, content): 
+    def editPost(self, idPost, title, content):
         server = self.xmlrpc
         data = { 'title': title, 'description': content}
         server[0].metaWeblog.editPost(idPost, server[1], server[2], data, True)
-    
+
     def selectPost(self):
         logging.info("Selecting post")
         server = self.xmlrpc
@@ -165,7 +172,7 @@ class moduleXmlrpc(Content):
         print("Post ... %s - %s" % (posts[thePost - 1]['title'], posts[thePost - 1]['postid']))
         return posts[thePost - 1]['title'], posts[thePost - 1]['postid']
 
-    def deletePost(self, idPost): 
+    def deletePost(self, idPost):
         logging.info("Deleting id %s" % idPost)
         result = None
         if self.xmlrpc:
@@ -181,7 +188,7 @@ class moduleXmlrpc(Content):
             imageLink = (pageImage[0]["src"])
         else:
             imageLink = ""
-    
+
         if imageLink.find('?') > 0:
             return imageLink[:imageLink.find('?')]
         else:
@@ -193,22 +200,22 @@ class moduleXmlrpc(Content):
         links = soup.find_all(["a","iframe"])
         for link in soup.find_all(["a","iframe"]):
             theLink = ""
-            if len(link.contents) > 0: 
+            if len(link.contents) > 0:
                 if not isinstance(link.contents[0], Tag):
                     # We want to avoid embdeded tags (mainly <img ... )
                     if link.has_attr('href'):
                         theLink = link['href']
                     else:
-                        if 'src' in link: 
+                        if 'src' in link:
                             theLink = link['src']
                         else:
                             continue
             else:
-                if 'src' in link: 
+                if 'src' in link:
                     theLink = link['src']
                 else:
                     continue
-    
+
             if ((linksToAvoid == "") or
                (not re.search(linksToAvoid, theLink))):
                     if theLink:
@@ -217,12 +224,12 @@ class moduleXmlrpc(Content):
                             link.contents[0] + "\n"
                         linksTxt = linksTxt + "    " + theLink + "\n"
                         j = j + 1
-    
+
         if linksTxt != "":
             theSummaryLinks = linksTxt
         else:
             theSummaryLinks = ""
-    
+
         return (soup.get_text().strip('\n'), theSummaryLinks)
 
     def obtainPostData(self, i, debug=False):
@@ -248,7 +255,7 @@ class moduleXmlrpc(Content):
                 if theLink.find('tumblr')>0:
                     theTitle = post['text']
                 firstLink = theLink
-                if 'text' in post: 
+                if 'text' in post:
                     content = post['text']
                 else:
                     content = theLink
@@ -267,7 +274,7 @@ class moduleXmlrpc(Content):
                     # It's an url
                     url = post['text'][1:-1]
                     req = requests.get(url)
-                        
+
                     if req.text.find('403 Forbidden')>=0:
                         theTitle = url
                         theSummary = url
@@ -311,9 +318,9 @@ class moduleXmlrpc(Content):
                 content = post['title']
                 theDescription = post['title']
 
-            if 'original_url' in post: 
+            if 'original_url' in post:
                 theLink = post['original_url']
-            elif url: 
+            elif url:
                 theLink = url
             else:
                 theLink = post['text']
@@ -329,13 +336,13 @@ class moduleXmlrpc(Content):
             soup = BeautifulSoup(content, 'lxml')
             if not content.startswith('http'):
                 link = soup.a
-                if link: 
+                if link:
                     firstLink = link.get('href')
                     if firstLink:
-                        if firstLink[0] != 'h': 
+                        if firstLink[0] != 'h':
                             firstLink = theLink
 
-            if not firstLink: 
+            if not firstLink:
                 firstLink = theLink
 
             if 'image_url' in post:
@@ -344,12 +351,12 @@ class moduleXmlrpc(Content):
                 theImage = None
             theLinks = theSummaryLinks
             theSummaryLinks = theContent + theLinks
-            
+
             if self.getLinksToAvoid():
                 (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinkstoavoid())
             else:
-                (theContent, theSummaryLinks) = self.extractLinks(soup, "") 
-                
+                (theContent, theSummaryLinks) = self.extractLinks(soup, "")
+
             if 'image_url' in post:
                 theImage = post['image_url']
             else:
@@ -371,13 +378,13 @@ class moduleXmlrpc(Content):
         logging.debug("Post       ", theTitle + " " + theLink)
         logging.debug("==============================================")
         logging.debug("")
-   
+
 
         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
 def main():
     import socialModules.moduleXmlrpc
-    
+
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + '/.rssBlogs')
 
@@ -419,7 +426,7 @@ def main():
                 blog.addSocialNetwork((option, config.get(section, option)))
         blogs.append(blog)
 
-    
+
     blogs[7].setPostsXmlrpc()
     #print(blogs[7].getPostsXmlrpc().entries)
     numPosts = len(blogs[7].getPostsXmlrpc().entries)

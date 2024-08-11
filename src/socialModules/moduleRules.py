@@ -51,48 +51,66 @@ class moduleRules:
             msgLog = f"  Section: {section} Url: {url}"
             logMsg(msgLog, 1, 1)
             self.indent = f"  {section}>"
+            toAppend = ""
             # Sources
             moreS = dict(config.items(section))
             moreSS = None
-            # FIXME Could we avoid the last part for rules, 
+            # FIXME Could we avoid the last part for rules,
             # selecting services here?
-            if "rss" in config.options(section):
-                #FIXME: Why is it managed separately?
-                rss = config.get(section, "rss")
-                msgLog = (f"{self.indent} Service rss -> {rss}")
-                logMsg(msgLog, 2, 0)
-                toAppend = ("rss", "set",
-                            urllib.parse.urljoin(url, rss), "posts")
-                srcs.append(toAppend)
-                more.append(moreS)
-            else:
+            # if "rss" in config.options(section):
+            #     #FIXME: Why is it managed separately?
+            #     rss = config.get(section, "rss")
+            #     msgLog = (f"{self.indent} Service rss -> {rss}")
+            #     logMsg(msgLog, 2, 0)
+            #     toAppend = ("rss", "set",
+            #                 urllib.parse.urljoin(url, rss), "posts")
+            #     srcs.append(toAppend)
+            #     more.append(moreS)
+            # else:
+            if True:
                 for service in services["regular"]:
                     if (
                         ("service" in config[section])
                         and (service == config[section]["service"])
-                    ) or (url.find(service) >= 0):
-                        methods = self.hasSetMethods(service)
-                        for method in methods:
-                            if service in config[section]:
-                                nick = config[section][service]
-                            else:
-                                nick = url
-                                if ((nick.find("slack") < 0)
-                                        and (nick.find("gitter") < 0)):
-                                    nick = nick.split("/")[-1]
-                            if (service == 'imdb') or (service == 'imgur'):
-                                nick = url
-                            elif ('twitter' in url) or ('flickr' in url):
-                                nick = url.split("/")[-1]
-                            elif ('blsk' in url):
-                                nick = url.split(".")[0]
+                    ):
+                        msgLog = f"{self.indent} Service: {service}"
+                        logMsg(msgLog, 1, 1)
+                        theService = service
+                        api = getModule(service, self.indent)
+                        api.setUrl(url)
+                        # msgLog = f"{self.indent} Api: {api}"
+                        # logMsg(msgLog, 1, 1)
+                        if service in config[section]:
+                            serviceData = config.get(section, service)
+                            api.setService(service, serviceData)
+                            nameGet = f"get{service.capitalize()}"
+                            # msgLog = f"{self.indent} nameGet: {nameGet}"
+                            # logMsg(msgLog, 1, 1)
+                            if nameGet in api.__dir__():
+                                cmd =  getattr(api, nameGet)
+                                # msgLog = f"{self.indent} Service: {cmd()}"
+                                # logMsg(msgLog, 1, 1)
 
+                        if service in config[section]:
+                            api.setNick(config[section][service])
+                        else:
+                            api.setNick()
+                            # logging.info(f"url: {api.getUrl()}")
+
+                        msgLog = (f"{self.indent}  Nick: {api.getNick()}")
+                        logMsg(msgLog, 2, 0)
+
+                        methods = self.hasSetMethods(service)
+                        msgLog = (f"{self.indent}  Service {service} has "
+                                  f"set {methods}")
+                        logMsg(msgLog, 2, 0)
+                        for method in methods:
                             if 'posts' in moreS:
                                 if moreS['posts'] == method[1]:
-                                   toAppend = (service, "set",
-                                               nick, method[1])
+                                   toAppend = (theService, "set",
+                                               api.getNick(), method[1])
                             else:
-                               toAppend = (service, "set", nick, method[1])
+                               toAppend = (theService, "set", api.getNick(), method[1])
                             if not (toAppend in srcs):
                                 if (('posts' in moreS)
                                     and (moreS['posts'] == method[1])):
@@ -102,6 +120,8 @@ class moduleRules:
                                     # Available, but with no rules
                                     srcsA.append(toAppend)
             fromSrv = toAppend
+            msgLog = (f"{self.indent} fromSrv toAppend: {toAppend}")
+            logMsg(msgLog, 2, 0)
 
             if "time" in config.options(section):
                 timeW = config.get(section, "time")
@@ -129,12 +149,16 @@ class moduleRules:
                     if service in config.options(section):
                         valueE = config.get(section, service).split("\n")
                         for val in valueE:
-                            nick = config.get(section, val)
+                            if val in config[section]:
+                                nick = config.get(section, val)
+                            else:
+                                nick = api.getNick()
                             if service == "direct":
                                 url = "posts"
-                            toAppend = (service, url, val, nick)
+                            toAppend = (service, url, val, nick) #, timeW, bufferMax)
                             if toAppend not in dsts:
-                                dsts.append(toAppend)
+                                if 'service' not in toAppend:
+                                    dsts.append(toAppend)
                             if toAppend:
                                 if fromSrv not in mor:
                                     mor[fromSrv] = moreS
@@ -147,18 +171,19 @@ class moduleRules:
                                 if service == 'cache':
                                     hasSpecial = True
 
-                self.indent = f"{self.indent}"
+                self.indent = f"{self.indent} "
                 for service in services["regular"]:
-                    if (service == 'cache'):
+                    if ((service == 'cache')
+                        or (service == 'xmlrpc')
+                        or (service == theService)):
                         continue
                     toAppend = ""
                     if service in config.options(section):
-                        msgLog = (f"{self.indent} [{service}] "
-                                  f"Checking service ")
+                        msgLog = (f"{self.indent} Service [{service}] checking ")
                         logMsg(msgLog, 2, 0)
                         methods = self.hasPublishMethod(service)
-                        msgLog = (f"{self.indent} [{service}] "
-                                  f"Checking service methods")
+                        msgLog = (f"{self.indent} Service {service} has "
+                                  f"publish {methods}")
                         logMsg(msgLog, 2, 0)
                         for method in methods:
                             if not method[1]:
@@ -184,6 +209,7 @@ class moduleRules:
                                             "posts",
                                             )
                                     impRuls.append((fromSrvSp, toAppend))
+
                                     if fromSrvSp not in mor:
                                         mor[fromSrvSp] = moreS
                                     if fromSrvSp in ruls:
@@ -193,14 +219,18 @@ class moduleRules:
                                         ruls[fromSrvSp] = []
                                         ruls[fromSrvSp].append(toAppend)
                                 else:
-                                    if fromSrv not in mor:
-                                        mor[fromSrv] = moreS
-                                    if fromSrv in ruls:
-                                        if not toAppend in ruls[fromSrv]:
+                                    if not (fromSrv[2] != toAppend[3]
+                                            and fromSrv[3][:-1] != toAppend[1]):
+                                        # We do not want to add the origin as
+                                        # destination
+                                        if fromSrv not in mor:
+                                            mor[fromSrv] = moreS
+                                        if fromSrv in ruls:
+                                            if not toAppend in ruls[fromSrv]:
+                                                ruls[fromSrv].append(toAppend)
+                                        else:
+                                            ruls[fromSrv] = []
                                             ruls[fromSrv].append(toAppend)
-                                    else:
-                                        ruls[fromSrv] = []
-                                        ruls[fromSrv].append(toAppend)
 
             orig = None
             dest = None
@@ -213,15 +243,15 @@ class moduleRules:
                 if not orig:
                     msgLog = (f"{self.indent} [{service}]")
                     if service in services['special']:
-                        msgLog = (f"{msgLog} special") 
+                        msgLog = (f"{self.indent} Service {service} special")
                         logMsg(msgLog, 2, 0)
                         orig = service
                     elif service in services['regular']:
-                        msgLog = (f"{msgLog} regular") 
+                        msgLog = (f"{self.indent} Service {service} regular")
                         logMsg(msgLog, 2, 0)
                         orig = service
                     else:
-                        msgLog = (f"{msgLog} not interesting") 
+                        msgLog = (f"{self.indent} Service {service} not interesting")
                         logMsg(msgLog, 2, 0)
                 else:
                     if ((key in services['special'])
@@ -229,7 +259,9 @@ class moduleRules:
                         msgIni = (f"{self.indent} [{orig}]  ")
                         if key in ['cache', 'direct']:
                             dest = key
-                        else:
+                        elif self.hasPublishMethod(key):
+                            # If it has no publish methods it can not be a
+                            # destination
                             if not dest:
                                 dest = 'direct'
                             destRuleNew = ''
@@ -260,49 +292,64 @@ class moduleRules:
                                 # cases is OK
                                 destRuleCache = ('direct', 'post',
                                                  key, moreS[key])
-                                if fromCacheNew:
+                                if fromCacheNew and destRuleCache:
                                     if not (fromCacheNew in rulesNew):
                                         rulesNew[fromCacheNew] = []
                                     rulesNew[fromCacheNew].append(destRuleCache)
                                     mor[fromCacheNew] = moreS
+                                # print(f"fromCache: {fromCache}")
+                                # print(f"fromCacheNew: {fromCacheNew}")
+                                # print(f"destRule: {destRule}")
+                                # print(f"destRuleCache: {destRuleCache}")
+                                # print(f"destRuleNew: {destRuleNew}")
 
-                            if fromSrv:
-                                # msgLog = (f"{msgIni} Action: -> {key}"
-                                #           f"({fromSrv[3]})")
-                                # logMsg(msgLog, 2, 0)
-                                msgLog = (f"{msgIni} Source: {fromSrv[2]} "
-                                          f"({fromSrv[3]}) ({fromSrv})")
-                                logMsg(msgLog, 2, 0)
-                                msgLog = (f"{msgIni}  Action: {destRule[3]}@"
-                                          f"{destRule[2]} {destRule[1]} "
-                                          f"({destRule})")
-                                logMsg(msgLog, 2, 0)
-                            # msgLog = (f"{msgIni}  from Srv: {fromSrv}")
-                            # logMsg(msgLog, 2, 0)
-                            # msgLog = (f"{msgIni}  dest Rule: {destRule}")
-                            # logMsg(msgLog, 2, 0)
-                            if fromSrv:
+                            msgLog = (f"{self.indent} Rule: {orig} -> "
+                                        f"{key}({dest})")
+                            logMsg(msgLog, 2, 0)
+                            msgLog = f"{self.indent}  from Srv: {fromSrv}"
+                            logMsg(msgLog, 2, 0)
+                            msgLog = f"{self.indent}  dest Rule: {destRule}"
+                            logMsg(msgLog, 2, 0)
+                            if fromSrv and (destRuleNew or destRule):
                                 if not (fromSrv in rulesNew):
                                     rulesNew[fromSrv] = []
+                                #print(f".fromSrv: {fromSrv}")
                                 if destRuleNew:
+                                    #print(f".destRuleNew: {destRuleNew}")
                                     rulesNew[fromSrv].append(destRuleNew)
                                 else:
+                                    #print(f"destRule: {destRule}")
                                     rulesNew[fromSrv].append(destRule)
+                                mor[fromSrv] = moreS
 
+        logging.info(f"Rules: {rulesNew}")
         # Now we can add the sources not added.
 
         for src in srcsA:
-            if not src in srcs:
-                srcs.append(src)
-                more.append({})
+            # logging.info(f"-> {src}")
+            if src:
+                if not (src in rulesNew):
+                    # Adding more rules
+                    rulesNew[src] = []
+                if not src in srcs:
+                    # msgLog = (f"Adding implicit {src}")
+                    # logMsg(msgLog, 2, 0)
+                    srcs.append(src)
+                    more.append({})
 
         # Now we can see which destinations can be also sources
+        # msgLog = f"Dsts: {dsts}"
+        # logMsg(msgLog, 2, 0)
+        logging.info(f"Srcs: {srcs}")
+        logging.info(f"SrcsA: {srcsA}")
 
-        self.indent = f" Destinations:"
+        self.indent = f"{self.indent} Destinations:"
         for dst in dsts:
+            msgLog = f"{self.indent} Dest: {dst}"
+            logMsg(msgLog, 2, 0)
             if dst[0] == "direct":
                 service = dst[2]
-                #FIXME 
+                #FIXME
                 methods = self.hasSetMethods(service)
                 for method in methods:
                     toAppend = (service, "set", dst[3], method[1])#, dst[4])
@@ -356,15 +403,27 @@ class moduleRules:
         msgLog = f"End {operation}"
         logMsg(msgLog, 1, 2)
 
+        self.rules = {}
+        for key in rulesNew:
+            # FIXME Is this ok?
+            if rulesNew[key]:
+                self.rules[key] = rulesNew[key]
+
         msgLog = (f"RulesNew: {rulesNew}")
         logMsg(msgLog, 2, 0)
-
+        msgLog = (f"More: {mor}")
+        logMsg(msgLog, 2, 0)
         if hasattr(self, 'args') and self.args.rules:
             self.printDict(rulesNew, "Rules")
         sys.exit
 
-        self.rules = rulesNew
+        #self.rules = rulesNew
+        msgLog = (f"selfRulesNew: {self.rules}")
+        logMsg(msgLog, 2, 0)
         self.more = mor
+
+        msgLog = "End Checking rules"
+        logMsg(msgLog, 1, 2)
 
     def selectActionInteractive(self, service = None):
         if not service:
@@ -378,10 +437,8 @@ class moduleRules:
             print(f"{i}) {act}")
         iAct = input("Which action? ")
         src = selActions[int(iAct)]
-        try:
-            apiDst = self.readConfigDst(indent, act, None, None)
-        except:
-            apiDst = self.readConfigDst(act, None, None)
+        apiDst = self.readConfigDst("", act, None, None)
+        import inspect
 
         return apiDst
 
@@ -449,8 +506,8 @@ class moduleRules:
         return rules
 
     def hasSetMethods(self, service):
-        msgIni = f"{self.indent} [{service}] service"
-        msgLog = f"{msgIni} checking set methods"
+        self.indent = f"{self.indent} "
+        msgLog = f"{self.indent} Service {service} checking set methods"
         logMsg(msgLog, 2, 0)
         if service == "social":
             return []
@@ -489,14 +546,12 @@ class moduleRules:
                     toAppend = (action, target)
                     if not (toAppend in methods):
                         methods.append(toAppend)
-
-        msgLog = (f"{self.indent} [{service}] service has set {methods}")
-        logMsg(msgLog, 2, 0)
-
+        self.indent = self.indent[:-1]
         return methods
 
     def hasPublishMethod(self, service):
-        msgLog = (f"{self.indent} [{service}] " 
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Start "
                   f"Checking service publish methods")
         logMsg(msgLog, 2, 0)
         if service in hasPublish:
@@ -505,7 +560,12 @@ class moduleRules:
             listMethods = hasPublish[service]
         else:
             clsService = getModule(service, self.indent)
+            msgLog = f"{self.indent} Service cls: {clsService}"
+            logMsg(msgLog, 2, 0)
+
             listMethods = clsService.__dir__()
+            # msgLog = f"{self.indent} Service listMethods: {listMethods}"
+            # logMsg(msgLog, 2, 0)
             hasPublish[service] = listMethods
 
         methods = []
@@ -516,17 +576,21 @@ class moduleRules:
                 target = ""
                 if method.find("Api") >= 0:
                     target = method[len("publishApi"):].lower()
-                else: 
-                    target = method[len("publish"):].lower()
+                # else:
+                #     target = method[len("publish"):].lower()
+
                 if target and (target!='image'):
+                    msgLog = f"{self.indent} Service target: {target}"
+                    logMsg(msgLog, 2, 0)
                     toAppend = (action, target)
                     if not (toAppend in methods):
                         methods.append(toAppend)
+        self.indent = self.indent[:-1]
         return methods
 
     def getServices(self):
         modulesFiles = os.listdir(path)
-        modules = {"special": ["cache", "direct"], "regular": []}
+        modules = {"special": ["cache", "direct"], "regular": [], "other": ['service']}
         # Initialized with some special services
         name = "module"
         for module in modulesFiles:
@@ -593,14 +657,24 @@ class moduleRules:
         url = url.replace(':','').replace('/','')
         return url
 
-    def getNickSrc(self, action):
-        src = self.getActionComponent(action, 0)
-        return src
+    def getNickSrc(self, src):
+        if isinstance(src[2], tuple):
+            res = src[-1]
+        else:
+            res = src[2]
+        return res
+
+    def getDestAction(self, action):
+        if isinstance(self.getActionComponent(action, 2), tuple):
+            destAction = action[1:]
+        else:
+            destAction = self.getActionComponent(action, 3)
+        return destAction
 
     def getNickAction(self, action):
         if isinstance(self.getActionComponent(action, 2), tuple):
             nick = self.getActionComponent(self.getActionComponent(action, 2),
-                                           3)
+                                           1)
         else:
             nick = self.getActionComponent(action, 3)
         return nick
@@ -693,20 +767,25 @@ class moduleRules:
     def readConfigSrc(self, src, more):
         msgLog = f"{self.indent} Start readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        self.indent = f"{self.indent} "
+        indent = f"{indent} "
 
-        apiSrc = getApi(self.getNameRule(src), 
-                        self.getProfileRule(src), self.indent)
-        if self.getNameRule(src) == 'cache':
-            apiSrc.fileName = apiSrc.fileNameBase(src[1:])
-            apiSrc.postaction = 'delete'
-        else:
-            apiSrc.setPostsType('posts')
+        apiSrc = getApi(self.getNameRule(src),
+                        self.getProfileRule(src), indent)
+        apiSrc.setPostsType(src[-1])
+        # apiSrc.fileNameBase(src)
+        # if self.getNameRule(src) == 'cache':
+        #     # apiSrc.fileName = apiSrc.fileNameBase(src[1:])
+        #     apiSrc.postaction = 'delete'
+        # else:
+        msgLog = f"{indent} More: {more}" #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
+        if more:
+            apiSrc.setMoreValues(more)
 
-        apiSrc.setMoreValues(more)
-
-        self.indent = self.indent[:-1]
-        msgLog = f"{self.indent} End readConfigSrc" #: {src[1:]}"
+        msgLog = f"{indent} Url: {apiSrc.getUrl()}" #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
+        indent = f"{indent[:-1]}"
+        msgLog = f"{indent} End readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         return apiSrc
 
@@ -719,20 +798,46 @@ class moduleRules:
     def readConfigDst(self, action, more, apiSrc):
         msgLog = f"{self.indent} Start readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        self.indent = f"{self.indent} "
-        
-        apiDst = getApi(self.getNameAction(action),
-                        self.getDestAction(action), self.indent)
-        if self.getNameAction(action) == 'cache':
-            apiDst.fileName = apiDst.fileNameBase(action[1:])
-            apiDst.postaction = 'delete'
-        else:
-            apiDst.setPostsType('posts')
+        indent = f"{indent} "
 
-        apiDst.setMoreValues(more)
+        # msgLog = f"{indent} AAction: {action}"
+        # logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} AAction: {self.getNameAction(action)} - {self.getDestAction(action)}"
+        # logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} AAction cache: {self.getNameRule(action)} - {self.getProfileRule(action)}"
+        # logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} AAction else: {self.getProfileAction(action)} - {self.getNickAction(action)}"
+        # logMsg(msgLog, 2, 0)
+
+        apiDst = getApi(self.getNameAction(action),
+                        self.getDestAction(action), indent)
+        apiSrc.fileNameBase(action)
+        # if self.getNameAction(action) == 'cache':
+        #     apiDst.fileName = apiDst.fileNameBase(action[1:])
+        #     apiDst.postaction = 'delete'
+        # else:
+        #     apiDst.setPostsType('posts')
+
+        # if more and ('max' in more):
+        #     mmax = more['max']
+        # elif more and ('buffermax' in more):
+        #     mmax = more['buffermax']
+        # else:
+        #     mmax = 0
+
+        # apiDst.setMax(mmax)
+
+        # if more and ('time' in more):
+        #     apiDst.setTime(more['time'])
+        if more:
+            apiDst.setMoreValues(more)
+        # apiDst.setPostsType('posts')
 
         if apiSrc:
             apiDst.setUrl(apiSrc.getUrl())
+            # if apiSrc.getPostsType() == 'drafts':
+            #     #FIXME
+            #     apiDst.setPostsType('drafts')
         else:
             apiDst.setUrl(None)
 
@@ -829,18 +934,13 @@ class moduleRules:
                             simmulate, nextPost=True, pos=-1):
         res = ''
 
-        msgLog = (f"{indent} End Waiting.")
-        logMsg(msgLog, 1, 1)
-
         # The source of data can have changes while we were waiting
         resMsg = ''
         postaction = ''
         apiSrc.setPosts()
         if nextPost:
-            msgLog = (f"next post in service {apiDst.service}")
             post = apiSrc.getNextPost()
         else:
-            msgLog = (f"post in pos {pos} in service {apiDst.service}")
             post = apiSrc.getPost(pos)
         if post:
             title = apiSrc.getPostTitle(post)
@@ -851,7 +951,7 @@ class moduleRules:
                 msgLog = (f"{msgLog} Recording Link: {link} "
                           f"in file {apiSrc.fileNameBase(apiDst)}.last")
         else:
-            msgLog = f"{indent}No post to schedule with {msgLog}."
+            msgLog = f"{indent}No post to schedule."
 
         if simmulate:
             if post:
@@ -901,28 +1001,29 @@ class moduleRules:
         return resMsg
 
     def executeAction(self, src, more, action,
-                    noWait, timeSlots, simmulate, name="",
-                    numAct = 1, nextPost = True, pos = -1, delete=False):
+                      noWait, timeSlots, simmulate, name="",
+                      numAct = 1, nextPost = True, pos = -1, delete=False):
 
         indent = f"{name}"
 
-        numAct = max(3, numAct) # Less than 3 is too small
         tL = random.random()*numAct
-        msgLog = (f"{indent}  Sleeping {tL:.2f} seconds ({numAct} actions) "
-                  f"to launch all processes") 
+        indent = f"{indent} "
+        msgLog = (f"{indent} Sleeping {tL:.2f} seconds ({numAct} actions) "
+                  f"to launch all processes")
         logMsg(msgLog, 1, 0)
+        numAct = max(3, numAct) # Less than 3 is too small
         # 'Cosmetic' waiting to allow all the processes to be launched.
         # Randomization is a way to avoid calling several times the same
         # service (almost) as the same time.
         time.sleep(tL)
 
-        msgLog = (f"{indent}  Go!")
+        msgLog = (f"{indent} Go!")
         logMsg(msgLog, 1, 0)
         indent = f"{indent} "
 
         # Source
-        self.indent = indent
-        apiSrc = self.readConfigSrc(src, more)
+        #self.indent = indent
+        apiSrc = self.readConfigSrc(indent, src, more)
         if not apiSrc.getClient():
             msgLog = self.clientErrorMsg(indent, apiSrc, "Source",
                                       self.getProfileRule(src),
@@ -958,23 +1059,43 @@ class moduleRules:
                 sys.stderr.write(f"Error: {msgLog}\n")
             return f"End: {msgLog}"
 
-        indent = f"{indent} "
+        # msgLog = f"{indent} Start postsType {apiSrc.getPostsType()}" #: {src[1:]}"
+        # logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} ---> {apiDst.getPostsType()} != {self.getTypeAction(action)}"
+        # logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} {apiDst.getPostsType()[:-1]} != {self.getTypeAction(action)}"
+        # logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} {self.getNameAction(action)} != {'cache'}"
+        # logMsg(msgLog, 2, 0)
+        # if ((apiDst.getPostsType() != self.getTypeAction(action))
+        #     and (apiDst.getPostsType()[:-1] != self.getTypeAction(action))
+        #     and (self.getNameAction(action) != 'cache')):
+        #     # FIXME: Can we do better?
+        #     msgLog = f"{indent} Some problem with {action}"
+        #     logMsg(msgLog, 3, 0)
+        #     return msgLog
 
         apiSrc.setLastLink(apiDst)
 
-        if apiSrc.getPostsType() == 'drafts':
-            #FIXME
-            apiDst.setPostsType('drafts')
+        # if apiSrc.getPostsType() == 'drafts':
+        #     #FIXME
+        #     apiDst.setPostsType('drafts')
 
         time.sleep(1)
 
         msgLog = ''
         if nextPost:
             num = apiDst.getMax()
+            msgLog = f"{indent} getMax {num}"
+            logMsg(msgLog, 2, 0)
         else:
             num = 1
 
-        msgLog = (f"{indent} I'll publish {num} post in {apiDst.getService()}")
+        theAction = self.getTypeAction(action)
+        msgLog = (f"{indent} I'll publish {num} post "
+                  f"from {apiSrc.getUrl()} "
+                  f"in {self.getNickAction(action)}@"
+                  f"{self.getProfileAction(action)} ({theAction})")
         logMsg(msgLog, 1, 1)
 
         if (num > 0):
@@ -991,8 +1112,13 @@ class moduleRules:
 
             numAvailable = 0
 
+            # msgLog = f"{indent} diffTime: {diffTime} hours {hours}"
+            # logMsg(msgLog, 2, 0)
             if (noWait or (diffTime>hours)):
                 tSleep = random.random()*float(timeSlots)*60
+                # msgLog = f"{indent} tSleep {tSleep}"
+                # logMsg(msgLog, 2, 0)
+                
 
                 apiSrc.setNextTime(tNow, tSleep, apiDst)
 
@@ -1007,6 +1133,8 @@ class moduleRules:
 
                 for i in range(num):
                     time.sleep(tSleep)
+                    msgLog = (f"{indent} End Waiting.")
+                    logMsg(msgLog, 1, 1)
                     res = self.executePublishAction(indent, msgAction,
                                                     apiSrc, apiDst,
                                                     simmulate,
@@ -1053,11 +1181,12 @@ class moduleRules:
 
                 nameAction =f"[{self.getNameAction(src)}{i}]"
                 indent = f"{nameAction:->12}>"
+                msgIni = (f"{self.getNickSrc(src)} ({self.getNickAction(src)})")
 
                 if src in self.more:
                     if (('hold' in self.more[src])
                         and (self.more[src]['hold'] == 'yes')):
-                        msgHold = f"{indent} On hold."
+                        msgHold = f"{indent} On hold. {msgIni}"
                         logMsg(msgHold,1, 0)
                         onHold = True
                         continue
@@ -1067,50 +1196,63 @@ class moduleRules:
                 else:
                     more = None
 
-                if self.getNameAction(src) in ['cache']:
-                    srcName = src[2][2]
-                    # FIXME Better access?
+                # if self.getNameAction(src) in ['cache']:
+                #     srcName = self.getProfileAction(src) # src[2][2]
+                #     # # FIXME Better access?
+                #     # msgLog = f"{self.indent} srcName: {srcName}"
+                #     # logMsg(msgLog,2, 0)
+                #     # msgLog = f"{self.indent} getDestAction: {self.getDestAction(src)}"
+                #     # logMsg(msgLog,2, 0)
+                #     # msgLog = f"{self.indent} getProfileAction: {self.getProfileAction(src)}"
+                #     # logMsg(msgLog,2, 0)
 
-                    # FIXME Names?
-                    if 'slack' in srcName:
-                        srcName = (f"{srcName.split('/')[2].split('.')[0]}"
-                                  f"@slack")
-                    elif 'gitter' in srcName:
-                        srcName = f"{srcName.split('/')[-2]}@gitter"
-                    elif 'imgur' in srcName:
-                        srcName = f"{srcName.split('/')[-1]}@imgur"
-                    elif '.com' in srcName:
-                        if 'gmail' in more:
-                            srcName = more['gmail']
-                        srcName = f"{srcName}@gmail"
-                else:
-                    #FIXME self.identifier
-                    srcName = self.getProfileRule(src)
-                    if 'slack' in srcName:
-                        srcName = f"{srcName.split('/')[2].split('.')[0]}"
-                    elif 'imgur' in srcName:
-                        srcName = more['url']
-                        srcName = f"{srcName.split('/')[-1]}"
-                    elif 'gitter' in srcName:
-                        srcName = f"{srcName.split('/')[-2]}"
-                    elif ((not srcName)
-                          and ('tumblr' in self.getNameAction(src))):
-                        srcName = more['url']
-                        srcName = f"{srcName.split('/')[2].split('.')[0]}"
-                msgIni = (f"Source: {srcName} ({self.getNickAction(src)})")
+                #     # FIXME Names?
+                #     if 'slack' in srcName:
+                #         srcName = (f"{srcName.split('/')[2].split('.')[0]}"
+                #                   f"@slack")
+                #         # msgLog = f"{self.indent} ssrcName: {srcName} - {self.getNick()}"
+                #         # logMsg(msgLog,2, 0)
+                #     elif 'gitter' in srcName:
+                #         srcName = f"{srcName.split('/')[-2]}@gitter"
+                #         # msgLog = f"{self.indent} ssrcName: {srcName} - {self.getNick()}"
+                #         # logMsg(msgLog,2, 0)
+                #     elif 'imgur' in srcName:
+                #         srcName = f"{srcName.split('/')[-1]}@imgur"
+                #         # msgLog = f"{self.indent} ssrcName: {srcName} - {self.getNick()}"
+                #         # logMsg(msgLog,2, 0)
+                #     elif '.com' in srcName:
+                #         if 'gmail' in more:
+                #             srcName = more['gmail']
+                #         srcName = f"{srcName}@gmail"
+                #         # msgLog = f"{self.indent} ssrcName: {srcName} - {self.getNick()}"
+                #         # logMsg(msgLog,2, 0)
+                # else:
+                #     #FIXME self.identifier
+                #     srcName = self.getProfileRule(src)
+                #     if 'slack' in srcName:
+                #         srcName = f"{srcName.split('/')[2].split('.')[0]}"
+                #     elif 'imgur' in srcName:
+                #         srcName = more['url']
+                #         srcName = f"{srcName.split('/')[-1]}"
+                #     elif 'gitter' in srcName:
+                #         srcName = f"{srcName.split('/')[-2]}"
+                #     elif ((not srcName)
+                #           and ('tumblr' in self.getNameAction(src))):
+                #         srcName = more['url']
+                #         srcName = f"{srcName.split('/')[2].split('.')[0]}"
+                msgIni = (f"{self.getNickSrc(src)} ({self.getNickAction(src)})")
+                # logging.info(f"{self.indent} msgIni... {msgIni} src {src}")
 
                 actions = self.rules[src]
 
-                # print(f"Select: {select} - {src[0]}{i}")
                 if (select and
                     (select.lower() !=
                      f"{self.getNameRule(src).lower()}{i}")):
-                    actionMsg = f"Skip."
+                    actionMsg = f"Skip {msgIni}"
                 else:
-                    actionMsg = (f"Scheduling.")
-                msgLog = f"{indent} {msgIni}"
-                logMsg(msgLog, 1, 1)
-                indent = f"{indent} "
+                    actionMsg = (f"Scheduling {msgIni}")
+                # msgLog = f"{indent} {msgIni}"
+                # logMsg(msgLog, 1, 1)
                 msgLog = f"{indent} {actionMsg}"
                 logMsg(msgLog, 1, 1)
                 if actionMsg == "Skip.":
@@ -1133,28 +1275,33 @@ class moduleRules:
                     logMsg(msgLog, 1, 1)
                     textEnd = f"{textEnd}\n{msgLog}"
                     nameA = f"{indent} {name}"
-                    if actionMsg == "Skip.":
-                        #FIXME "In hold"
-                        continue
-                    timeSlots = args.timeSlots
-                    noWait = args.noWait
+                    if not "Skip" in actionMsg:
+                        timeSlots = args.timeSlots
+                        noWait = args.noWait
 
-                    # Is this the correct place?
-                    if ((self.getNameAction(action) in 'cache') or
-                        ((self.getNameAction(action) == 'direct')
-                         and (self.getProfileAction(action) == 'pocket'))
-                        ):
-                        # We will always load new items in the cache
-                        timeSlots = 0
-                        noWait=True
+                        # Is this the correct place?
+                        msgLog = (f"{indent} NameAction " 
+                                  f"{self.getNameAction(action)}")
+                        logMsg(msgLog, 2, 0)
+                        if ((self.getNameAction(action) in 'cache') or
+                            ((self.getNameAction(action) == 'direct')
+                             and (self.getProfileAction(action) == 'pocket'))
+                            ):
+                            # We will always load new items in the cache
+                            timeSlots = 0
+                            noWait=True
 
-                    threads = threads + 1
-                    delayedPosts.append(pool.submit(self.executeAction,
-                                        src, more, action,
-                                        noWait,
-                                        timeSlots,
-                                        args.simmulate,
-                                        name = nameA, numAct=len(actions)))
+                        # msgLog = (f"{indent} timeSlots {timeSlots}")
+                        # logMsg(msgLog, 2 ,0)
+                        # msgLog = (f"{indent} noWait {noWait}")
+                        # logMsg(msgLog, 2 ,0)
+                        threads = threads + 1
+                        delayedPosts.append(pool.submit(self.executeAction,
+                                            src, more, action,
+                                            noWait,
+                                            timeSlots,
+                                            args.simmulate,
+                                            nameA, threads))
                     indent = f"{indent[:-1]}"
                 indent = f"{indent[:-1]}"
 

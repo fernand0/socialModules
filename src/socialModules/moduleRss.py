@@ -21,20 +21,55 @@ from socialModules.moduleContent import *
 class moduleRss(Content): #, Queue):
 
     def getRssFeed(self):
-        return(self.rssFeed)
+        return self.getRss()
+
+    def getRss(self):
+        rssFeed= ''
+        if hasattr(self, 'rssFeed'):
+            rssFeed = self.rssFeed
+        return(rssFeed)
+
+    def setUrl(self, url):
+        self.url = url
+        if self.getRss():
+            self.setRssFeed(urllib.parse.urljoin(self.getUrl(),self.getRss()))
+
+    def setUser(self, nick=''):
+        if not nick:
+            feed = self.getRss()
+            if (not 'flickr' in feed) and (not 'dev.to' in feed):
+                self.user = urllib.parse.urlparse(feed).netloc
+            elif 'dev.to' in feed:
+                self.user = feed.replace('feed/','')
+            else:
+                self.user = feed
 
     def setRssFeed(self, feed):
         self.rssFeed = feed
+
+    def setRss(self, feed):
+        self.rssFeed = feed
         self.max = None
         self.bufMax = None
+        if self.getRss():
+            self.setRssFeed(urllib.parse.urljoin(self.getUrl(),self.getRss()))
+
+    def setNick(self, nick=None):
+        if not nick:
+            nick = self.geRss()
+        if not nick.startswith('http'):
+            if hasattr(self, 'url'):
+                nick = urllib.parse.urljoin(self.url,self.getRssFeed())
+        self.nick = nick
+
 
     def setClient(self, feed):
         self.service = None
         self.rssFeed = ''
         self.feed = None
         self.title = None
-        # msgLog = (f"{self.indent} Feed {feed}")
-        # logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} Feed {feed}")
+        logMsg(msgLog, 2, 0)
         if isinstance(feed, str):
             self.rssFeed = feed
         elif isinstance(feed, tuple):
@@ -60,13 +95,14 @@ class moduleRss(Content): #, Queue):
         posts = self.setApiPosts()
         search = self.getSearch()
         selPosts = []
-        for post in posts:
-            if search.startswith('!'):
-                if not (search[1:] in self.getPostLink(post)):
-                    selPosts.append(post)
-            else:
-                if search in  self.getPostLink(post):
-                    selPosts.append(post)
+        if search:
+            for post in posts:
+                if search.startswith('!'):
+                    if not (search[1:] in self.getPostLink(post)):
+                        selPosts.append(post)
+                else:
+                    if search in  self.getPostLink(post):
+                        selPosts.append(post)
 
         return selPosts
 
