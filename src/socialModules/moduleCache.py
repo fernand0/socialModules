@@ -856,10 +856,11 @@ def main():
         print(f"{i}) {rule}")
 
     sel = int(input(f"Which one? "))
-    src = caches[sel]
+    src = rulesList[sel]
+
     more = rules.more[src]
     indent = ""
-    apiSrc = rules.readConfigSrc(src, more)
+    apiSrc = rules.readConfigSrc(indent, src, more)
 
     testingPosts = True
     if testingPosts:

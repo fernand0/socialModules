@@ -69,6 +69,7 @@ class Content:
             self.user = account
         else:
             msgLog = f"{self.indent} setClient else. This shouldn't happen"
+            logMsg(msgLog, 2, 0)
             # Deprecated
             self.user = account[1][1]
 
