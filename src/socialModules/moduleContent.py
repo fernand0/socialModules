@@ -101,7 +101,7 @@ class Content:
                           f"in {configFile}?")
                 logMsg(msgLog, 3, 0)
 
-        if keys:
+        if True:
             try:
                 client = self.initApi(keys)
             except:
