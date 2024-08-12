@@ -54,6 +54,7 @@ class moduleSlack(Content): #, Queue):
     def setNick(self, nick=None):
         if not nick:
             nick = self.getUrl()
+            logging.info(f"NNnick: {nick}")
             nick = nick.split("/")[2].split('.')[0]
         self.nick = nick
 
@@ -349,6 +350,20 @@ def main():
     rules = moduleRules.moduleRules()
     rules.checkRules()
 
+    name = nameModule()
+    print(f"Name: {name}")
+
+    rulesList = rules.selectRule(name)
+    for i, rule in enumerate(rulesList):
+        print(f"{i}) {rule}")
+
+    sel = int(input(f"Which one? "))
+    src = rulesList[sel]
+    print(f"Selected: {src}")
+    more = rules.more[src]
+    indent = ""
+    apiSrc = rules.readConfigSrc(indent, src, more)
+
     # Example:
     #
     # src: ('slack', 'set', 'http://fernand0-errbot.slack.com/', 'posts')
@@ -358,7 +373,7 @@ def main():
 
     indent = ""
 
-    testingInit = True
+    testingInit = False
     if testingInit:
         import moduleRules
         src = ('slack', 'set', 'http://fernand0-errbot.slack.com/', 'posts')
@@ -423,7 +438,7 @@ def main():
         print("Testing posts")
         apiSrc.setPostsType("posts")
         apiSrc.setChannel('links')
-        apiSrc.setChannel('tavern-of-the-bots')
+        # apiSrc.setChannel('tavern-of-the-bots')
         apiSrc.setPosts()
 
         print("Testing title and link")
@@ -441,7 +456,7 @@ def main():
                   f"Url: {url}\nId: {theId}\n"
                   f"Content: {summary} {image}")
 
-        if input("All? (y/n) ") == 'y':
+        if input("See all channels? (y/n) ") == 'y':
             print(f"Channels: {apiSrc.getChannels()}")
             for channel in apiSrc.getChannels():
                 print(f"Name: {channel['name']}")

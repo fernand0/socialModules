@@ -71,25 +71,26 @@ class Content:
             msgLog = f"{self.indent} setClient else. This shouldn't happen"
             logMsg(msgLog, 2, 0)
             # Deprecated
-            # self.user = account[1][1]
-            self.src = account
+            self.url = account[2]
+            self.user = account[2]
+            self.nick = self.user
+        self.src = account
 
         msgLog = f"{self.indent} Configuring Service"
         logMsg(msgLog, 2, 0)
 
-        # configFile = f"{CONFIGDIR}/.rss{self.service}"
-        # try:
-        #     config = configparser.RawConfigParser()
-        #     config.read(f"{configFile}")
-        # except:
-        #     msgLog = (f"Does file {configFile} exist?")
-        #     self.report({self.indent}, msgLog, 0, '')
+        configFile = f"{CONFIGDIR}/.rss{self.service}"
+        try:
+            config = configparser.RawConfigParser()
+            config.read(f"{configFile}")
+        except:
+            msgLog = (f"Does file {configFile} exist?")
+            self.report({self.indent}, msgLog, 0, '')
 
-        # msgLog = (f"{self.indent} Getting keys"
-        #           f" {config}")
-        # logMsg(msgLog, 1, 0)
+        msgLog = (f"{self.indent} Getting keys"
+                  f" {config}")
+        logMsg(msgLog, 1, 0)
         keys = ''
-        config = ''
         try:
             keys = self.getKeys(config)
             # logging.debug(f"{self.indent} user {self.user}")

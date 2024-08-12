@@ -30,6 +30,19 @@ class moduleCache(Content): #,Queue):
         super().__init__(indent)
         self.postaction = 'delete'
 
+    def getApiAux(self):
+        api = None
+        if hasattr(self, 'auxClass'):
+            myModule = f"module{self.auxClass.capitalize()}"
+            importlib.import_module(myModule)
+            mod = sys.modules.get(myModule)
+            cls = getattr(mod, myModule)
+            logging.info(f"Class: {cls}")
+            myModule = f"{self.indent} {cls}"
+            api = cls()
+            logging.info(f"Api: {api}")
+        return api
+
     def getProfileR(self, rule):
         msgLog = (f"{self.indent} getProfileR {rule}")
         logMsg(msgLog, 2, 0)
@@ -64,7 +77,10 @@ class moduleCache(Content): #,Queue):
         self.auxClass = self.src[0]
         logging.info(f"{self.indent} auxClass: {self.auxClass}")
         if not nick:
-            nick = self.src[2].split('/')[2].split('.')[0]
+            apiAux = self.getApiAux()
+            apiAux.setClient(self.src)
+            apiAux.setNick() #self.src[2].split('/')[2].split('.')[0]
+            nick = apiAux.getNick()
         self.nick = nick
 
 
@@ -80,7 +96,6 @@ class moduleCache(Content): #,Queue):
             nameSrc = 'Cache'
             typeSrc = typeDst = 'posts'
             if isinstance(self, socialModules.moduleCache.moduleCache):
-                logging.info(f"{self.indent} aquí")
                 user = self.url
                 if 'slack' in self.url:
                     #FIXME
@@ -645,7 +660,6 @@ class moduleCache(Content): #,Queue):
         if post:
             if hasattr(self, 'auxClass'):
                 myModule = f"module{self.auxClass.capitalize()}"
-                import importlib
                 importlib.import_module(myModule)
                 mod = sys.modules.get(myModule)
                 cls = getattr(mod, myModule)
