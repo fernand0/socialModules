@@ -37,10 +37,8 @@ class moduleCache(Content): #,Queue):
             importlib.import_module(myModule)
             mod = sys.modules.get(myModule)
             cls = getattr(mod, myModule)
-            logging.info(f"Class: {cls}")
             myModule = f"{self.indent} {cls}"
             api = cls()
-            logging.info(f"Api: {api}")
         return api
 
     def getProfileR(self, rule):
@@ -63,12 +61,14 @@ class moduleCache(Content): #,Queue):
             return self.service
 
     def setPostsType(self, postsType):
+        # FIXME. Is this ok?
         if postsType == 'posts':
             self.postsType = 'cache'
         else:
             self.postsType = postsType
 
     def getPostsType(self):
+        logging.info(f"getPostsTypeeee: {self.postsType}")
         return 'posts'
 
     def setNick(self, nick=None):
@@ -79,10 +79,9 @@ class moduleCache(Content): #,Queue):
         if not nick:
             apiAux = self.getApiAux()
             apiAux.setClient(self.src)
-            apiAux.setNick() #self.src[2].split('/')[2].split('.')[0]
+            apiAux.setNick()
             nick = apiAux.getNick()
         self.nick = nick
-
 
     def fileNameBase(self, dst):
         self.indent = f"{self.indent} "
@@ -200,13 +199,6 @@ class moduleCache(Content): #,Queue):
             serviceD = self.socialNetwork
             nameDst = self.socialNetwork.capitalize()
 
-        # user = self.url
-        # userD = self.user
-        # serviceD = self.socialNetwork
-        # nameDst = self.socialNetwork.capitalize()
-        # # msgLog = (f"{self.indent} fileNameBase serviceD {serviceD}")
-        # # logMsg(msgLog, 2, 0)
-
             fileName = (f"{nameSrc}_{typeSrc}_"
                         f"{user}_{service}__"
                         f"{nameDst}_{typeDst}_"
@@ -218,36 +210,6 @@ class moduleCache(Content): #,Queue):
         logMsg(msgLog, 2, 0)
         self.indent = f"{self.indent[:-1]}"
         return fileName
-
-    # def fileNameBase2(self, dst):
-    #     logging.debug(f"dst: {dst}")
-    #     if hasattr(self, 'fileName') and self.fileName:
-    #         return self.fileName
-    #     src = self
-    #     nameSrc = 'Cache'
-    #     typeSrc = typeDst = 'posts'
-    #     if isinstance(dst, tuple):
-    #         user = self.getUrl()
-    #         service = self.getService().capitalize()
-    #         serviceD = dst[0]
-    #         userD = dst[1]
-    #         # serviceD = dst[1][:pos]
-    #         nameDst = dst[0].capitalize()
-    #     elif isinstance(self, moduleCache):
-    #         user = dst.getUser()
-    #         service = dst.getService().capitalize()
-    #         pos = src.getUser().find('@')
-    #         userD = src.nick
-    #         serviceD = src.socialNetwork
-    #         nameDst = serviceD.capitalize()
-
-    #     fileName = (f"{nameSrc}_{typeSrc}_"
-    #                 f"{user}_{service}__"
-    #                 f"{nameDst}_{typeDst}_"
-    #                 f"{userD}_{serviceD}")
-    #     fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
-    #     self.fileName = fileName
-    #     return fileName
 
     def initApi(self, keys):
         self.indent = ""
