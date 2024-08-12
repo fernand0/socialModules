@@ -58,9 +58,80 @@ class moduleCache(Content): #,Queue):
     def getPostsType(self):
         return 'posts'
 
+    def setNick(self, nick=None):
+        # Many services are like https://service.com/.../nick
+        logging.info(f"{self.indent} {self.src}")
+        self.auxClass = self.src[0]
+        logging.info(f"{self.indent} auxClass: {self.auxClass}")
+        if not nick:
+            nick = self.src[2].split('/')[2].split('.')[0]
+        self.nick = nick
+
+
     def fileNameBase(self, dst):
         self.indent = f"{self.indent} "
         msgLog = (f"{self.indent} Start fileNameBase")
+        logMsg(msgLog, 2, 0)
+        self.setNick()
+        if hasattr(self, 'fileName') and self.fileName:
+            fileName =  self.fileName
+        else:
+            src = self
+            nameSrc = 'Cache'
+            typeSrc = typeDst = 'posts'
+            if isinstance(self, socialModules.moduleCache.moduleCache):
+                logging.info(f"{self.indent} aquí")
+                user = self.url
+                if 'slack' in self.url:
+                    #FIXME
+                    service = 'Slack'
+                elif 'gitter' in self.url:
+                    service = 'Gitter'
+                elif 'imgur' in self.url:
+                    service = 'Imgur'
+                else:
+                    service = self.service.capitalize()
+                userD = self.user
+                # serviceD = self.socialNetwork
+                serviceD = self.src[1][2]
+                # nameDst = self.socialNetwork.capitalize()
+                nameDst = serviceD.capitalize()
+            elif isinstance(dst, tuple):
+                logging.info("allí")
+                # logging.info(f"{self.indent} tuple {dst}")
+                #FIXME
+                # user = self.url
+                user = self.getNick()
+                # service = dst[0][0].capitalize()
+                service = dst[0].capitalize()
+                userD = self.user
+                serviceD = self.socialNetwork
+                nameDst = self.socialNetwork.capitalize()
+                typeDst = 'cache'
+
+            # user = self.url
+            user = self.getNick()
+            # userD = self.user
+            userD = self.src[1][3]
+            # serviceD = self.socialNetwork
+            serviceD = self.src[1][2]
+            # nameDst = self.socialNetwork.capitalize()
+            nameDst = serviceD.capitalize()
+            # msgLog = (f"{self.indent} fileNameBase serviceD {serviceD}")
+            # logMsg(msgLog, 2, 0)
+
+            fileName = (f"{nameSrc}_{typeSrc}_"
+                        f"{user}_{service}__"
+                        f"{nameDst}_{typeDst}_"
+                        f"{userD}_{serviceD}")
+            fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
+            self.fileName = fileName
+
+        msgLog = f"{self.indent}  fileName: {fileName}"
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} End fileNameBase")
+        logMsg(msgLog, 2, 0)
+        self.indent = self.indent[:-1]
         logMsg(msgLog, 2, 0)
         msgLog = (f"{self.indent}  dst {dst}")
         logMsg(msgLog, 2, 0)
@@ -163,38 +234,54 @@ class moduleCache(Content): #,Queue):
     #     self.fileName = fileName
     #     return fileName
 
-    def setClient(self, param):
-        self.indent = f"{self.indent} "
+    def initApi(self, keys):
+        self.indent = ""
         self.service = 'Cache'
-        msgLog = (f"{self.indent} Start setClient account: {param}")
-        logMsg(msgLog, 2, 0)
         self.postaction = 'delete'
-
         self.postsType = 'posts'
-        # FIXME. There should be methods available for checking these values.
-        self.url = param[-1]
-        self.socialNetwork = param[1][2]
-        self.user = param[1][3]
-        self.nick = param[1][3]
-        self.auxClass = param[0]
-        self.fileName = self.fileNameBase((self.socialNetwork, self.nick))
-        fileNameQ = f"{self.fileName}.queue"
-        msgLog = checkFile(fileNameQ, self.indent)
-        if not 'OK' in msgLog:
-            #with open(fileNameQ, "w") as f:
-            msgLog = (f"{self.indent} File {fileNameQ} does not exist. "
-                      f"I'll need to create it.")
-            logMsg(msgLog, 3, 0)
-        self.client = self.service
-        #self.fileName = self.fileNameBase((self.user, self.socialNetwork))
+        self.url = ""
+        self.socialNetwork = ""
+        self.user = ""
+        self.nick = ""
+        self.auxClass = None
+        self.fileName = ""
 
-        # if hasattr(self, 'fileName'):
-        #     msgLog = (f"{self.indent} self.fileName {self.fileName}")
-        #     logMsg(msgLog, 2, 0)
-        #     print(f"self.fileName {self.fileName}")
+        return self
 
-        msgLog = (f"{self.indent} End setClient")
-        logMsg(msgLog, 2, 0)
+    def getKeys(self, config):
+        return None
+
+    # def setClient(self, param):
+    #     self.indent = f"{self.indent} "
+    #     self.service = 'Cache'
+    #     msgLog = (f"{self.indent} Start setClient account: {param}")
+    #     logMsg(msgLog, 2, 0)
+    #     self.postaction = 'delete'
+
+    #     self.postsType = 'posts'
+    #     # FIXME. There should be methods available for checking these values.
+    #     self.url = param[-1]
+    #     self.socialNetwork = param[1][2]
+    #     self.user = param[1][3]
+    #     self.nick = param[1][3]
+    #     self.auxClass = param[0]
+    #     self.fileName = self.fileNameBase((self.socialNetwork, self.nick))
+    #     fileNameQ = f"{self.fileName}.queue"
+    #     msgLog = checkFile(fileNameQ, self.indent)
+    #     if not 'OK' in msgLog:
+    #         #with open(fileNameQ, "w") as f:
+    #         msgLog = (f"{self.indent} File {fileNameQ} does not exist. "
+    #                   f"I'll need to create it.")
+    #         logMsg(msgLog, 3, 0)
+    #     self.client = self.service
+
+    #     # if hasattr(self, 'fileName'):
+    #     #     msgLog = (f"{self.indent} self.fileName {self.fileName}")
+    #     #     logMsg(msgLog, 2, 0)
+    #     #     print(f"self.fileName {self.fileName}")
+
+    #     msgLog = (f"{self.indent} End setClient")
+    #     logMsg(msgLog, 2, 0)
 
     # def setClient2(self, param):
     #     msgLog = (f"{self.indent} Connecting Cache {self.service}: {param}")
@@ -604,7 +691,8 @@ class moduleCache(Content): #,Queue):
                     api = cls(self.indent)
                 else:
                     api = self.auxClass
-                # logging.debug(f"  Api: {api}")
+                logging.debug(f"  Api: {api}")
+                logging.debug(f"  Post: {post}")
                 apiCmd = getattr(api, 'getPostTitle')
                 title  = apiCmd(post)
             else:
@@ -917,7 +1005,8 @@ def main():
         print(f"{i}) {rule}")
 
     sel = int(input(f"Which one? "))
-    src = caches[sel]
+    src = rulesList[sel]
+    print(f"Selected: {src}")
     more = rules.more[src]
     indent = ""
     apiSrc = rules.readConfigSrc(indent, src, more)
