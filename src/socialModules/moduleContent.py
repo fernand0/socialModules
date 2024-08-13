@@ -929,6 +929,9 @@ class Content:
 
         posLast = self.getPosNextPost()
         post = self.getPost(posLast - 1)
+        msgLog = (f"{self.indent} post: {self.getPostTitle(post)}"
+                  f" {self.getPostLink(post)}")
+        logMsg(msgLog, 2, 0)
 
         msgLog = (f"{self.indent} End getNextPost.")
         logMsg(msgLog, 2, 0)
