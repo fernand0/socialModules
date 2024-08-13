@@ -219,13 +219,13 @@ def getApi(profile, nick, indent=""):
     msgLog = (f"{indent} Start getApi")
     logMsg(msgLog, 2, 0)
 
-    #indent = f"{indent} "
-
-    msgLog = (f"{indent}  Profile {profile}")
-    logMsg(msgLog, 2, 0)
-    msgLog = (f"{indent}  Nick {nick}")
+    msgLog = (f"{indent}  Profile {profile} "
+              f"Nick {nick}")
     logMsg(msgLog, 2, 0)
     api = getModule(profile, indent)
+    msgLog = (f"{indent}  Api {api}")
+    logMsg(msgLog, 2, 0)
+
     api.indent = indent
     api.setClient(nick)
     api.setPostsType('posts')

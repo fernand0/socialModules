@@ -68,7 +68,6 @@ class moduleCache(Content): #,Queue):
             self.postsType = postsType
 
     def getPostsType(self):
-        logging.info(f"getPostsTypeeee: {self.postsType}")
         return 'posts'
 
     def setNick(self, nick=None):
@@ -78,126 +77,38 @@ class moduleCache(Content): #,Queue):
         logging.info(f"{self.indent} auxClass: {self.auxClass}")
         if not nick:
             apiAux = self.getApiAux()
-            apiAux.setClient(self.src)
+            # apiAux.setNick(self.src[-1])
+            # nick = apiAux.getNick()
+            # nick = self.src[2]
+            apiAux.setClient(self.src[2])
+            apiAux.setUrl(self.src[2])
             apiAux.setNick()
-            nick = apiAux.getNick()
-        self.nick = nick
+        self.nick = apiAux.getNick()
 
     def fileNameBase(self, dst):
         self.indent = f"{self.indent} "
-        msgLog = (f"{self.indent} Start fileNameBase")
+        msgLog = (f"{self.indent} Start fileNameBase (c)")
         logMsg(msgLog, 2, 0)
         self.setNick()
         if hasattr(self, 'fileName') and self.fileName:
             fileName =  self.fileName
         else:
             src = self
-            nameSrc = 'Cache'
-            typeSrc = typeDst = 'posts'
+            msgLog = f"{self.indent} f(c) api src: {src}"
+            logMsg(msgLog, 2, 0)
+            typeSrc = 'posts'
             if isinstance(self, socialModules.moduleCache.moduleCache):
-                user = self.url
-                if 'slack' in self.url:
-                    #FIXME
-                    service = 'Slack'
-                elif 'gitter' in self.url:
-                    service = 'Gitter'
-                elif 'imgur' in self.url:
-                    service = 'Imgur'
-                else:
-                    service = self.service.capitalize()
-                userD = self.user
-                # serviceD = self.socialNetwork
-                serviceD = self.src[1][2]
-                # nameDst = self.socialNetwork.capitalize()
-                nameDst = serviceD.capitalize()
+                typeDst = 'posts'
             elif isinstance(dst, tuple):
-                logging.info("allí")
-                # logging.info(f"{self.indent} tuple {dst}")
-                #FIXME
-                # user = self.url
-                user = self.getNick()
-                # service = dst[0][0].capitalize()
-                service = dst[0].capitalize()
-                userD = self.user
-                serviceD = self.socialNetwork
-                nameDst = self.socialNetwork.capitalize()
                 typeDst = 'cache'
 
-            # user = self.url
-            user = self.getNick()
-            # userD = self.user
-            userD = self.src[1][3]
-            # serviceD = self.socialNetwork
-            serviceD = self.src[1][2]
-            # nameDst = self.socialNetwork.capitalize()
-            nameDst = serviceD.capitalize()
-            # msgLog = (f"{self.indent} fileNameBase serviceD {serviceD}")
-            # logMsg(msgLog, 2, 0)
-
-            fileName = (f"{nameSrc}_{typeSrc}_"
-                        f"{user}_{service}__"
-                        f"{nameDst}_{typeDst}_"
-                        f"{userD}_{serviceD}")
-            fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
-            self.fileName = fileName
-
-        msgLog = f"{self.indent}  fileName: {fileName}"
-        logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent} End fileNameBase")
-        logMsg(msgLog, 2, 0)
-        self.indent = self.indent[:-1]
-        logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent}  dst {dst}")
-        logMsg(msgLog, 2, 0)
-        if isinstance(dst, tuple) and len(dst)>2 and isinstance(dst[2], tuple):
-            myDst = dst[1:]
-        else:
-            myDst = dst
-        if hasattr(self, 'fileName') and self.fileName:
-            fileName =  self.fileName
-        else:
-            src = self
+            logging.info(f"{self.indent} Ccache: {self.src}")
             nameSrc = 'Cache'
-            typeSrc = typeDst = 'posts'
-            if isinstance(self, socialModules.moduleCache.moduleCache):
-                user = self.url
-                if 'slack' in self.url:
-                    #FIXME
-                    service = 'Slack'
-                elif 'gitter' in self.url:
-                    service = 'Gitter'
-                elif 'imgur' in self.url:
-                    service = 'Imgur'
-                else:
-                    service = self.service.capitalize()
-                userD = self.user
-                serviceD = self.socialNetwork
-                nameDst = self.socialNetwork.capitalize()
-            elif isinstance(myDst, tuple):
-                # logging.info(f"{self.indent} tuple {myDst}")
-                #FIXME
-                user = self.getUrl()
-                service = myDst[0].capitalize()
-                logging.info(f"SSSservice: {service} - {self.getService()}")
-                userD = self.user
-                serviceD = self.socialNetwork
-                nameDst = self.socialNetwork.capitalize()
-                typeDst = 'cache'
-
-            # user = self.url
-            user = self.url.split("/")[2].split('.')[0] #FIXME
-            if 'slack' in self.url:
-                #FIXME
-                service = 'Slack'
-            elif 'gitter' in self.url:
-                service = 'Gitter'
-            elif 'imgur' in self.url:
-                service = 'Imgur'
-            else:
-                service = self.service.capitalize()
-            userD = self.user
-            serviceD = self.socialNetwork
-            nameDst = self.socialNetwork.capitalize()
+            user = self.getNick()
+            userD = self.src[1][3]
+            service = self.auxClass.capitalize()
+            serviceD = self.src[1][2]
+            nameDst = serviceD.capitalize()
 
             fileName = (f"{nameSrc}_{typeSrc}_"
                         f"{user}_{service}__"
@@ -205,6 +116,7 @@ class moduleCache(Content): #,Queue):
                         f"{userD}_{serviceD}")
             fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
             self.fileName = fileName
+            logging.info(f"{self.indent} Ccache file: {fileName}")
 
         msgLog = (f"{self.indent} End fileNameBase")
         logMsg(msgLog, 2, 0)

@@ -57,7 +57,6 @@ class Content:
             # logMsg(msgLog, 1, 1)
             cmd(serviceData)
 
-
     def setClient(self, account):
         msgLog = (f"{self.indent} Start setClient account: {account}")
         logMsg(msgLog, 1, 0)
@@ -71,9 +70,15 @@ class Content:
             msgLog = f"{self.indent} setClient else. This shouldn't happen"
             logMsg(msgLog, 2, 0)
             # Deprecated
-            self.url = account[2]
-            self.user = account[2]
-            self.nick = self.user
+            self.url = account[2] #FIXME
+            #self.user = account[1][3]
+            #self.nick = self.user
+            self.auxClass = account[1][2]
+            self.auxClass = self.getApiAux()
+            self.auxClass.setClient(account[1][3])
+
+            msgLog = (f"{self.indent}  ApiAux {self.auxClass}")
+            logMsg(msgLog, 2, 0)
         self.src = account
 
         msgLog = f"{self.indent} Configuring Service"
@@ -283,26 +288,60 @@ class Content:
         self.indent = f"{self.indent} "
         msgLog = (f"{self.indent} Start fileNameBase")
         logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent} dst {dst}")
+        msgLog = (f"{self.indent}  dst {dst}")
         logMsg(msgLog, 2, 0)
         if hasattr(self, 'fileName') and self.fileName:
             fileName =  self.fileName
         else:
             src = self
+            msgLog = f"{self.indent} f api self: {src}"
+            logMsg(msgLog, 2, 0)
             nameSrc = type(src).__name__
             if 'module' in nameSrc:
                 nameSrc = nameSrc[len('module'):]
                 msgLog = (f"{self.indent} fileNameBase module src: {nameSrc}")
                 logMsg(msgLog, 2, 0)
             nameDst = type(dst).__name__
+            msgLog = (f"{self.indent} fileNameBase nameDst: {nameDst}")
+            logMsg(msgLog, 2, 0)
+            serviceD = ""
             if 'module' in nameDst:
                 nameDst = nameDst[len('module'):]
-                msgLog = (f"{self.indent} fileNameBase module dst: {nameDst}")
+                msgLog = (f"{self.indent} fileNameBase module nameDst: {nameDst}")
                 logMsg(msgLog, 2, 0)
+                msgLog = (f"{self.indent} dst user: {dst.user}")
+                logMsg(msgLog, 2, 0)
+                msgLog = (f"{self.indent} dst name: {dst.name}")
+                logMsg(msgLog, 2, 0)
+                msgLog = (f"{self.indent} dst url: {dst.url}")
+                logMsg(msgLog, 2, 0)
+                dst.setNick()
+                msgLog = (f"{self.indent} dst nick: {dst.getNick()}")
+                logMsg(msgLog, 2, 0)
+
                 userD = dst.getUser()
-                if hasattr(dst, 'socialNetwork'):
-                    serviceD = dst.socialNetwork
+                if hasattr(dst, 'src'):
+                    msgLog = (f"{self.indent} hassss src {dst})")
+                    logMsg(msgLog, 2, 0)
+                    msgLog = (f"{self.indent} dst.src {dst.src}")
+                    logMsg(msgLog, 2, 0)
+                    if isinstance(dst.src, tuple):
+                        msgLog = (f"{self.indent} yesssss)")
+                        logMsg(msgLog, 2, 0)
+                        userD = dst.src[1][3]
+                        serviceD = dst.src[1][2]
                 else:
+                    msgLog = (f"{self.indent} hasnot src")
+                    logMsg(msgLog, 2, 0)
+
+                if not userD:
+                    # FIXME FIXME FIXME
+                    dst.setNick()
+                    userD = dst.getNick()
+                if not serviceD and hasattr(dst, 'socialNetwork'):
+                    logging.info(f"Hhhhass")
+                    serviceD = dst.socialNetwork
+                if not serviceD:
                     serviceD = nameDst
                 user = src.getUser()
                 service = src.getService()
@@ -316,13 +355,15 @@ class Content:
                 logMsg(msgLog, 2, 0)
                 msgLog = (f"{self.indent} fileNameBase serviceD: {dst.getService()}")
                 logMsg(msgLog, 2, 0)
+                if not serviceD:
+                    serviceD = dst.getService()
                 # msgLog = (f"{self.indent} fileNameBase action: {}")
                 # logMsg(msgLog, 2, 0)
             else:
                 user = src.getUrl()
                 service = self.service
-                userD = dst[0]
-                serviceD = dst[1]
+                userD = dst[3]
+                serviceD = dst[2]
                 nameDst = serviceD.capitalize()
 
             if hasattr(src, 'getPostsType'):
@@ -350,6 +391,7 @@ class Content:
                         f"{nameDst}_{typeDst}_"
                         f"{userD}_{serviceD}")
             fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
+            logging.info(f"{self.indent} Ccache ffile: {fileName}")
             # msgLog = (f"{self.indent} end fileNameBase fileName: {fileName}")
             # logMsg(msgLog, 2, 0)
 
@@ -436,6 +478,8 @@ class Content:
         return lastLink
 
     def setLastLink(self, dst = None):
+        msgLog = (f"{self.indent} Start setLastLink dst: {dst}")
+        logMsg(msgLog, 1, 0)
         if hasattr(self, 'fileName') and self.fileName:
             fileName = f"{self.fileName}.last"
         else:
@@ -467,6 +511,8 @@ class Content:
 
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime
+        msgLog = (f"{self.indent} End setLastLink")
+        logMsg(msgLog, 1, 0)
 
     def getLastTime(self, other = None):
         lastTime = 0.0

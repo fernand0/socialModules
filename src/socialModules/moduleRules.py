@@ -802,18 +802,11 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         indent = f"{indent} "
 
-        # msgLog = f"{indent} AAction: {action}"
-        # logMsg(msgLog, 2, 0)
-        # msgLog = f"{indent} AAction: {self.getNameAction(action)} - {self.getDestAction(action)}"
-        # logMsg(msgLog, 2, 0)
-        # msgLog = f"{indent} AAction cache: {self.getNameRule(action)} - {self.getProfileRule(action)}"
-        # logMsg(msgLog, 2, 0)
-        # msgLog = f"{indent} AAction else: {self.getProfileAction(action)} - {self.getNickAction(action)}"
-        # logMsg(msgLog, 2, 0)
-
+        msgLog = f"{indent} action {action}"
+        logMsg(msgLog, 2, 0)
         apiDst = getApi(self.getNameAction(action),
                         self.getDestAction(action), indent)
-        apiSrc.fileNameBase(action)
+        # apiDst.fileNameBase(action)
         # if self.getNameAction(action) == 'cache':
         #     apiDst.fileName = apiDst.fileNameBase(action[1:])
         #     apiDst.postaction = 'delete'
@@ -1046,6 +1039,8 @@ class moduleRules:
         msgLog = (f"{indent} Source: {theName}-{self.getNickAction(src)}"
                   f"-> Action: {msgAction}")
 
+        msgLog = f"{self.indent} apiSrc: {apiSrc}"
+        logMsg(msgLog, 2, 0)
         res = ""
         textEnd = (f"{msgLog}")
 
@@ -1079,6 +1074,10 @@ class moduleRules:
         #     logMsg(msgLog, 3, 0)
         #     return msgLog
 
+        msgLog = f"{self.indent} apiSrc: {apiSrc}"
+        logMsg(msgLog, 2, 0)
+        msgLog = f"{self.indent} apiDst: {apiDst}"
+        logMsg(msgLog, 2, 0)
         apiSrc.setLastLink(apiDst)
         #FIXME: best in readConfigSrc ?
 
@@ -1123,7 +1122,7 @@ class moduleRules:
                 tSleep = random.random()*float(timeSlots)*60
                 # msgLog = f"{indent} tSleep {tSleep}"
                 # logMsg(msgLog, 2, 0)
-                
+
 
                 apiSrc.setNextTime(tNow, tSleep, apiDst)
 
@@ -1283,7 +1282,7 @@ class moduleRules:
                         noWait = args.noWait
 
                         # Is this the correct place?
-                        msgLog = (f"{indent} NameAction " 
+                        msgLog = (f"{indent} NameAction "
                                   f"{self.getNameAction(action)}")
                         logMsg(msgLog, 2, 0)
                         if ((self.getNameAction(action) in 'cache') or
