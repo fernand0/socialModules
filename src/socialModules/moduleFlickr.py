@@ -23,7 +23,6 @@ class moduleFlickr(Content): #, Queue):
         # FIXME: Do we call this method directly?
         self.base_url = 'https://flickr.com'
         self.url = f"{self.base_url}/photos/{self.user}"
-        logging.info("Initializing API")
 
         try:
             flickr = flickrapi.FlickrAPI(keys[0], keys[1], format='parsed-json',
@@ -44,7 +43,7 @@ class moduleFlickr(Content): #, Queue):
                 # Trade the request token for an access token
                 flickr.get_access_token(verifier)
         except:
-            res = self.report(self.indent, 'Error in initApi', 
+            res = self.report(self.indent, 'Error in initApi',
                               '', sys.exc_info())
             client = None
         self.api = flickr
@@ -104,7 +103,7 @@ class moduleFlickr(Content): #, Queue):
     def getPostContentLink(self, post):
         result = ''
         return result
- 
+
     def publishApiImage(self, *args, **kwargs):
         res = None
         return res
@@ -131,19 +130,19 @@ class moduleFlickr(Content): #, Queue):
             post = kwargs.get('post', '')
             api = kwargs.get('api', '')
         logging.debug(f"Post: {post} Api: {api}")
-        res = self.apiCall('photos.setPerms', photo_id=post['id'], 
+        res = self.apiCall('photos.setPerms', photo_id=post['id'],
                      is_public=1, is_friend=1, is_family=1)
         logging.debug(f"Res: {res}")
         if not res:
             res = "OK. Published!"
         return res
 
-    def deleteApiPosts(self, idPost): 
+    def deleteApiPosts(self, idPost):
         res = None
 
         return (res)
 
-    def deleteApiFavs(self, idPost): 
+    def deleteApiFavs(self, idPost):
         res = None
 
         return (res)
@@ -232,7 +231,7 @@ def main():
         return
 
 
-    return 
+    return
 
     testingPost = False
     if testingPost:
