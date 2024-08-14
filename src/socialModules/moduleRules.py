@@ -391,15 +391,8 @@ class moduleRules:
             if not (iniK in available):
                 available[iniK] = {"name": self.getNameRule(src),
                                    "data": [], "social": []}
-                # available[iniK]["data"] = [{'src': src[1:], 'more': more[i]}]
-                available[iniK]["data"] = [{'src': src, 'more': more[i]}]
-            else:
-                # available[iniK]["data"].append({'src': src[1:],
-                available[iniK]["data"].append({'src': src,
-                                                'more': more[i]})
-            # srcC = (src[0], "set", src[1], src[2])
-            # if srcC not in ruls:
-            #     ruls[srcC] =
+                available[iniK]["data"] = [] #{'src': src, 'more': more[i]}]
+            available[iniK]["data"].append({'src': src, 'more': more[i]})
 
         myList = []
         for elem in available:
@@ -417,10 +410,6 @@ class moduleRules:
 
         self.available = available
         self.availableList = availableList
-
-        # msgLog = (f"Avail: {self.available}")
-        # logMsg(msgLog, 2, 0)
-        # self.printDict(self.available, "Available")
 
         self.rules = {}
         for key in rulesNew:
@@ -799,38 +788,16 @@ class moduleRules:
         #logMsg(msgLog, 2, 0)
         apiDst = getApi(self.getNameAction(action),
                         self.getDestAction(action), indent)
-        # apiDst.fileNameBase(action)
-        # if self.getNameAction(action) == 'cache':
-        #     apiDst.fileName = apiDst.fileNameBase(action[1:])
-        #     apiDst.postaction = 'delete'
-        # else:
-        #     apiDst.setPostsType('posts')
-
-        # if more and ('max' in more):
-        #     mmax = more['max']
-        # elif more and ('buffermax' in more):
-        #     mmax = more['buffermax']
-        # else:
-        #     mmax = 0
-
-        # apiDst.setMax(mmax)
-
-        # if more and ('time' in more):
-        #     apiDst.setTime(more['time'])
         apiDst.setMoreValues(more)
-        # apiDst.setPostsType('posts')
 
         if apiSrc:
             apiDst.setUrl(apiSrc.getUrl())
-            # if apiSrc.getPostsType() == 'drafts':
-            #     #FIXME
-            #     apiDst.setPostsType('drafts')
         else:
             apiDst.setUrl(None)
 
+        indent = f"{indent[:-1]}"
         msgLog = f"{indent} End readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        indent = f"{indent[:-1]}"
         apiDst.indent = indent
         return apiDst
 
@@ -943,7 +910,9 @@ class moduleRules:
 
         if simmulate:
             if post:
-                msgLog = f"{indent}Would schedule {msgLog} "
+                msgLog = (f"{indent}Would schedule in " 
+                          f" {msgAction} "
+                          f"{msgLog}")
             logMsg(msgLog, 1, 1)
 
             indent = f"{indent[:-1]}"
@@ -1062,16 +1031,14 @@ class moduleRules:
         msgLog = ''
         if nextPost:
             num = apiDst.getMax()
-            msgLog = f"{indent} getMax {num}"
-            logMsg(msgLog, 2, 0)
         else:
             num = 1
 
         theAction = self.getTypeAction(action)
-        msgLog = (f"{indent} I'll publish {num} post "
+        msgLog = (f"{indent} I'll publish {num} {theAction} "
                   f"from {apiSrc.getUrl()} "
                   f"in {self.getNickAction(action)}@"
-                  f"{self.getProfileAction(action)} ({theAction})")
+                  f"{self.getProfileAction(action)}")
         logMsg(msgLog, 1, 1)
 
         if (num > 0):
@@ -1088,13 +1055,8 @@ class moduleRules:
 
             numAvailable = 0
 
-            # msgLog = f"{indent} diffTime: {diffTime} hours {hours}"
-            # logMsg(msgLog, 2, 0)
             if (noWait or (diffTime>hours)):
                 tSleep = random.random()*float(timeSlots)*60
-                # msgLog = f"{indent} tSleep {tSleep}"
-                # logMsg(msgLog, 2, 0)
-
 
                 apiSrc.setNextTime(tNow, tSleep, apiDst)
 

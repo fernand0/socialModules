@@ -75,7 +75,7 @@ class Content:
             #self.nick = self.user
             self.auxClass = account[1][2]
             self.auxClass = self.getApiAux()
-            self.auxClass.indent = f"{self.indent} "
+            self.auxClass.indent = f"{self.indent} (aux) "
             self.auxClass.setClient(account[1][3])
 
             # msgLog = (f"{self.indent}  ApiAux {self.auxClass}")
@@ -93,8 +93,7 @@ class Content:
             msgLog = (f"Does file {configFile} exist?")
             self.report({self.indent}, msgLog, 0, '')
 
-        msgLog = (f"{self.indent} Getting keys"
-                  f" {config}")
+        msgLog = (f"{self.indent} Getting keys")
         logMsg(msgLog, 1, 0)
         keys = ''
         try:
@@ -128,6 +127,8 @@ class Content:
         else:
             self.report(self.service, "No keys", "", '')
             self.client = None
+        msgLog = (f"{self.indent} End setClientt")
+        logMsg(msgLog, 1, 0)
         self.indent = self.indent[:-1]
         msgLog = (f"{self.indent} End setClient")
         logMsg(msgLog, 1, 0)
@@ -184,6 +185,7 @@ class Content:
     def setMoreValues(self, more):
         # We have a dictionary of values and we check for methods for
         # setting these values in our object
+        self.indent = f"{self.indent} "
         msgLog = f"{self.indent} Start setMoreValues" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         msgLog = f"{self.indent}  moreValues: {more}" #: {src[1:]}"
@@ -219,6 +221,7 @@ class Content:
             self.setUser()
         msgLog = f"{self.indent} End setMoreValues"
         logMsg(msgLog, 2, 0)
+        self.indent = f"self.indent[:-1]"
 
     def apiCall(self, commandName, api = None, **kwargs):
         if api:
@@ -469,7 +472,6 @@ class Content:
         lastTime = ''
         linkLast = ''
         msgLog = checkFile(fileName, self.indent)
-        logMsg(f"{self.indent} {msgLog}", 2, 0)
         if 'OK' in msgLog:
             with open(fileName, "rb") as f:
                 linkLast = f.read().decode().split()  # last published
@@ -522,8 +524,8 @@ class Content:
             fileNameNext = f"{self.fileNameBase(dst)}.timeavailable"
             msgLog = checkFile(fileNameNext, self.indent)
             if not "OK" in msgLog:
-                msgLog = (f"file {fileNameNext} does not exist. "
-                          f"i'm going to create it.")
+                msgLog = (f"{self.indent} File does not exist. {fileNameNext}"
+                          f"I'm going to create it.")
                 logMsg(msgLog, 2, 0)
             with open(fileNameNext,'wb') as f:
                 pickle.dump((tnow, tSleep), f)
@@ -535,14 +537,13 @@ class Content:
         if dst:
             fileNameNext = f"{self.fileNameBase(dst)}.timeNext"
             msgLog = checkFile(fileNameNext, self.indent)
-            logMsg(f"{self.indent} fileNameNext: {msgLog}", 2, 0)
             if not 'OK' in msgLog:
                 msgLog = (f"file {fileNameNext} does not exist. "
-                          f"i'm going to create it.")
+                          f"I'm going to create it.")
                 self.report('', msgLog, '', '')
             with open(fileNameNext,'wb') as f:
                 pickle.dump((tnow, tSleep), f)
-            msgLog = (f"file {fileNameNext} updated.")
+            msgLog = (f"{self.indent} File updated: {fileNameNext}")
             logMsg(msgLog, 2, 0)
         else:
             msgLog = (f"not implemented!")
@@ -661,7 +662,7 @@ class Content:
         if posts and (i >= 0) and (i < len(posts)):
             post = posts[i]
 
-        msgLog = (f"{self.indent} end getPost pos {i}.")
+        msgLog = (f"{self.indent} End getPost pos {i}.")
         logMsg(msgLog, 2, 0)
         self.indent = self.indent[:-1]
         return post
@@ -839,17 +840,9 @@ class Content:
 
         if posts and (len(posts) > 0):
             if self.getPostsType() in ['favs', 'queue']:
-                # msgLog = f"{self.indent} favs, queue"
-                # logMsg(msgLog, 2, 0)
-                # # This is not the correct condition, it should be independent
-                # # of social network
                 posLast = 1
             else:
-                # msgLog = f"{self.indent} others"
-                # logMsg(msgLog, 2, 0)
                 lastLink = self.getLastLinkPublished()
-                # msgLog = f"{self.indent} lastLink: {lastLink}"
-                # logMsg(msgLog, 2, 0)
                 if lastLink:
                     posLast = self.getLinkPosition(lastLink)
                 else:
@@ -866,7 +859,6 @@ class Content:
         listPosts = []
         posLast = self.getPosNextPost()
         i = posLast
-        # print(f"iiii: {i}")
         for j in range(num, 0, -1):
             i = i - 1
             if i < 0:
@@ -1424,25 +1416,19 @@ class Content:
         if posts:
             pos = len(posts)
             if not link:
-                #logging.debug(self.getPosts())
                 return len(self.getPosts())
             for i, entry in enumerate(posts):
                 linkS = link
                 if isinstance(link, bytes):
                     linkS = linkS.decode()
                 url = self.getPostLink(entry)
-                logging.debug(f"Url: {url} Link: {linkS}")
-                # msgLog = (f"{self.indent} Url: {url}"
-                # logMsg(msgLog, 2, 0)
-                # msgLog = (f"{self.indent} Link:{linkS}"
+                # msgLog = (f"{self.indent} Url: {url} Link: {linkS}")
                 # logMsg(msgLog, 2, 0)
                 lenCmp = min(len(url), len(linkS))
-                # if url[:lenCmp] == linkS[:lenCmp]:
                 if url == linkS:
                     # When there are duplicates (there shouldn't be) it returns
                     # the last one
                     pos = i
-                    # print(url[:lenCmp],linkS[:lenCmp])
         else:
             pos = -1
         return pos

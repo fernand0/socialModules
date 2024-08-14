@@ -76,8 +76,10 @@ def getNextTime(blog, socialNetwork, indent=""):
         return 0, 0
 
 def checkFile(fileName, indent=""):
-    msgLog = f"{indent} Start Checking {fileName} "
-    logMsg(msgLog, 2, 0)
+    msgLog = f"{indent} Start checkFile"
+    logMsg(msgLog, 2, 0) 
+    msgLog = f"{indent}  File: {fileName}"
+    logMsg(msgLog, 2, 0) 
     dirName = os.path.dirname(fileName)
 
     msgRes = f"OK {fileName}"
@@ -86,7 +88,8 @@ def checkFile(fileName, indent=""):
     elif not os.path.isfile(fileName):
         msgRes = f"File {fileName} does not exist."
 
-    msgLog = f"{indent} End Checking"
+    logMsg(f"{indent}  {msgRes}", 2, 0)
+    msgLog = f"{indent} End checkFile"
     logMsg(msgLog, 2, 0)
     return msgRes
 
@@ -219,8 +222,9 @@ def getApi(profile, nick, indent=""):
     # msgLog = (f"{indent}  Api {api}")
     # logMsg(msgLog, 2, 0)
 
-    api.indent = indent
+    api.indent = f"{indent} "
     api.setClient(nick)
+    api.indent = f"{indent[:-1]}"
     api.setPostsType('posts')
 
     #indent = indent[:-1]
