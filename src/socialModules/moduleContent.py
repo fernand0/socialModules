@@ -1059,7 +1059,8 @@ class Content:
         return reply
 
     def publishPost(self, *args, **more):
-        logging.debug(f"{self.indent} Args: {args} More: {more}")
+        msgLog = (f"{self.indent} Args: {args} More: {more}")
+        logMsg(msgLog, 2, 0)
         api = ''
         post = ''
         # Do we need these?
@@ -1072,25 +1073,18 @@ class Content:
             title = args[0]
             link = args[1]
             comment = args[2]
-            msgLog = (f"{self.indent} "
-                      f"publishing post {title}, {link} with "
-                      f"comment: {comment}")
+            msgLog = (f"{self.indent} Publishing post with title, link,... "
+                      f"{title}, {link} with comment: {comment}")
             logMsg(msgLog, 2, 0)
         elif len(args) == 1:
             # apiSrc= args[0]
             listPosts = args#[1]
-            msgLog = (f"{self.indent} publishing post {listPosts}")
+            msgLog = (f"{self.indent} Publishing post {listPosts}"
+                      f" len(args) == 1")
             logMsg(msgLog, 2, 0)
-            # print(f"    Publishing in {self.service}: posts {listPosts}")
-            # for post in listPosts:
-            #     # title = self.getPostTitle(post)
-            #     # link = self.getPostLink(post)
-            #     comment = ''
-            #     #more = {'api': apiSrc, 'post': post}
-            #     # print(f"Title: {title}\nLink: {link}")
             return
         if more:
-            msgLog = (f"{self.indent} publishing post with more")
+            msgLog = (f"{self.indent} Publishing post with more")
             logMsg(msgLog, 2, 0)
             # if 'tags' in more:
             #     print(f"    Publishing in {self.service}: {type(more['tags'])}")
@@ -1100,23 +1094,20 @@ class Content:
             # title = api.getPostTitle(post)
             # link = api.getPostLink(post)
 
-        # print(f"    Publishing in {self.service}: {title}")
-        # print(f"    Publishing in {self.service}:  {link}")
-        # print(f"    Publishing in {self.service}: {comment}")
         reply = 'Fail!'
         try:
             nameMethod = 'Post'
 
-            if hasattr(api, 'getPostsType'):
-                msgLog = (f"{self.indent} getPostsType: {api.getPostsType()}")
-                logMsg(msgLog, 2, 0)
-                hassss = f"publishApi{api.getPostsType().capitalize()}"
-                hassss = hasattr(api, hassss)
-                msgLog = (f"Hassss: {hassss}")
-                logMsg(msgLog, 2, 0)
-            else:
-                msgLog = (f"No Hassss")
-                logMsg(msgLog, 2, 0)
+            # if hasattr(api, 'getPostsType'):
+            #     msgLog = (f"{self.indent} getPostsType: {api.getPostsType()}")
+            #     logMsg(msgLog, 2, 0)
+            #     hassss = f"publishApi{api.getPostsType().capitalize()}"
+            #     hassss = hasattr(api, hassss)
+            #     msgLog = (f"Hassss: {hassss}")
+            #     logMsg(msgLog, 2, 0)
+            # else:
+            #     msgLog = (f"No Hassss")
+            #     logMsg(msgLog, 2, 0)
 
             if (hasattr(self, 'getPostsType')
                     and (self.getPostsType())
@@ -1124,12 +1115,13 @@ class Content:
                         f"publishApi{self.getPostsType().capitalize()}"))):
                 nameMethod = self.getPostsType().capitalize()
             else:
-                msgLog = (f"{self.indent} No api for getPostsType")
+                msgLog = (f"{self.indent} No api for "
+                          f"{self.getPostsType()}")
                 logMsg(msgLog, 2, 0)
 
             method = getattr(self, f"publishApi{nameMethod}")
-            logging.debug(f"{self.indent} nMethod: {method}")
-            logging.debug(f"{self.indent} nApi: {api}")
+            msgLog = (f"{self.indent} Method: {method}")
+            logMsg(msgLog, 2, 0)
 
             if listPosts:
                 for post in listPosts:
