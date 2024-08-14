@@ -774,21 +774,14 @@ class moduleRules:
         apiSrc = getApi(self.getNameRule(src),
                         self.getProfileRule(src), indent)
         apiSrc.setPostsType(src[-1])
-        # apiSrc.fileNameBase(src)
-        # if self.getNameRule(src) == 'cache':
-        #     # apiSrc.fileName = apiSrc.fileNameBase(src[1:])
-        #     apiSrc.postaction = 'delete'
-        # else:
-        msgLog = f"{indent} More: {more}" #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
-        if more:
-            apiSrc.setMoreValues(more)
+        apiSrc.setMoreValues(more)
 
-        msgLog = f"{indent} Url: {apiSrc.getUrl()}" #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent} Url: {apiSrc.getUrl()}" #: {src[1:]}"
+        # logMsg(msgLog, 2, 0)
         indent = f"{indent[:-1]}"
         msgLog = f"{indent} End readConfigSrc" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
+        apiSrc.indent = indent
         return apiSrc
 
     def getActionComponent(self, action, pos):
@@ -802,8 +795,8 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         indent = f"{indent} "
 
-        msgLog = f"{indent} action {action}"
-        logMsg(msgLog, 2, 0)
+        #msgLog = f"{indent} action {action}"
+        #logMsg(msgLog, 2, 0)
         apiDst = getApi(self.getNameAction(action),
                         self.getDestAction(action), indent)
         # apiDst.fileNameBase(action)
@@ -824,8 +817,7 @@ class moduleRules:
 
         # if more and ('time' in more):
         #     apiDst.setTime(more['time'])
-        if more:
-            apiDst.setMoreValues(more)
+        apiDst.setMoreValues(more)
         # apiDst.setPostsType('posts')
 
         if apiSrc:
@@ -839,6 +831,7 @@ class moduleRules:
         msgLog = f"{indent} End readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         indent = f"{indent[:-1]}"
+        apiDst.indent = indent
         return apiDst
 
     def testDifferPosts(self, apiSrc, lastLink, listPosts):
@@ -1027,20 +1020,18 @@ class moduleRules:
                 logMsg(msgLog, 3, 1)
             return f"{msgLog} End."
 
-        if apiSrc.getName():
-            theName = apiSrc.getName()
-        else:
-            theName = self.getProfileAction(src)
-
         msgAction = (f"{self.getNameAction(action)} "
                      f"{self.getNickAction(action)}@"
                      f"{self.getProfileAction(action)} "
                      f"({self.getTypeAction(action)})")
-        msgLog = (f"{indent} Source: {theName}-{self.getNickAction(src)}"
-                  f"-> Action: {msgAction}")
 
-        msgLog = f"{self.indent} apiSrc: {apiSrc}"
-        logMsg(msgLog, 2, 0)
+        if apiSrc.getName():
+            theName = apiSrc.getName()
+        else:
+            theName = self.getProfileAction(src)
+        msgLog = (f"Source: {theName}-{self.getNickAction(src)}"
+                  f" -> Action: {msgAction}")
+
         res = ""
         textEnd = (f"{msgLog}")
 
@@ -1058,32 +1049,13 @@ class moduleRules:
                 sys.stderr.write(f"Error: {msgLog}\n")
             return f"End: {msgLog}"
 
-        # msgLog = f"{indent} Start postsType {apiSrc.getPostsType()}" #: {src[1:]}"
-        # logMsg(msgLog, 2, 0)
-        # msgLog = f"{indent} ---> {apiDst.getPostsType()} != {self.getTypeAction(action)}"
-        # logMsg(msgLog, 2, 0)
-        # msgLog = f"{indent} {apiDst.getPostsType()[:-1]} != {self.getTypeAction(action)}"
-        # logMsg(msgLog, 2, 0)
-        # msgLog = f"{indent} {self.getNameAction(action)} != {'cache'}"
-        # logMsg(msgLog, 2, 0)
-        # if ((apiDst.getPostsType() != self.getTypeAction(action))
-        #     and (apiDst.getPostsType()[:-1] != self.getTypeAction(action))
-        #     and (self.getNameAction(action) != 'cache')):
-        #     # FIXME: Can we do better?
-        #     msgLog = f"{indent} Some problem with {action}"
-        #     logMsg(msgLog, 3, 0)
-        #     return msgLog
+        msgLog = f"{indent}  apiSrc: {apiSrc}"
+        logMsg(msgLog, 2, 0)
+        msgLog = f"{indent}  apiDst: {apiDst}"
+        logMsg(msgLog, 2, 0)
 
-        msgLog = f"{self.indent} apiSrc: {apiSrc}"
-        logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent} apiDst: {apiDst}"
-        logMsg(msgLog, 2, 0)
         apiSrc.setLastLink(apiDst)
-        #FIXME: best in readConfigSrc ?
-
-        # if apiSrc.getPostsType() == 'drafts':
-        #     #FIXME
-        #     apiDst.setPostsType('drafts')
+        #FIXME: best in readConfigSrc (readConfigDst, since we need it)?
 
         time.sleep(1)
 
@@ -1282,9 +1254,6 @@ class moduleRules:
                         noWait = args.noWait
 
                         # Is this the correct place?
-                        msgLog = (f"{indent} NameAction "
-                                  f"{self.getNameAction(action)}")
-                        logMsg(msgLog, 2, 0)
                         if ((self.getNameAction(action) in 'cache') or
                             ((self.getNameAction(action) == 'direct')
                              and (self.getProfileAction(action) == 'pocket'))

@@ -67,7 +67,7 @@ class Content:
         if isinstance(account, str):
             self.user = account
         else:
-            msgLog = f"{self.indent} setClient else. This shouldn't happen"
+            msgLog = f"{self.indent} setClient else"
             logMsg(msgLog, 2, 0)
             # Deprecated
             self.url = account[2] #FIXME
@@ -75,10 +75,11 @@ class Content:
             #self.nick = self.user
             self.auxClass = account[1][2]
             self.auxClass = self.getApiAux()
+            self.auxClass.indent = f"{self.indent} "
             self.auxClass.setClient(account[1][3])
 
-            msgLog = (f"{self.indent}  ApiAux {self.auxClass}")
-            logMsg(msgLog, 2, 0)
+            # msgLog = (f"{self.indent}  ApiAux {self.auxClass}")
+            # logMsg(msgLog, 2, 0)
         self.src = account
 
         msgLog = f"{self.indent} Configuring Service"
@@ -105,6 +106,12 @@ class Content:
                 msgLog = (f"{self.indent} Do the adequate keys exist "
                           f"in {configFile}?")
                 logMsg(msgLog, 3, 0)
+
+        msgLog = (f"{self.indent} Starting initApi")
+        logMsg(msgLog, 2, 0)
+        # To avoid submodules logging. 
+        # logger = logging.getLogger('my_module_name')
+        # https://stackoverflow.com/questions/35325042/python-logging-disable-logging-from-imported-modules
 
         if True:
             try:
@@ -179,7 +186,7 @@ class Content:
         # setting these values in our object
         msgLog = f"{self.indent} Start setMoreValues" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent}  moreValues {more}" #: {src[1:]}"
+        msgLog = f"{self.indent}  moreValues: {more}" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         if more:
             # Setting values available in more
@@ -202,15 +209,15 @@ class Content:
                 else:
                     for name in self.__dir__():
                         if name.lower() == nameMethod.lower():
-                            # Composed names setPostAction, setLinksToAvoid, ...
-                            # setting postaction, linkstoavoid
+                            # Composed names setPostAction, setLinksToAvoid,
+                            # setting postaction, linkstoavoid, ...
                             cmd = getattr(self, name)
                             if inspect.ismethod(cmd):
                                 cmd(more[option])
                                 break
         if not self.getUser():
             self.setUser()
-        msgLog = f"{self.indent} End setMoreValues" #: {src[1:]}"
+        msgLog = f"{self.indent} End setMoreValues"
         logMsg(msgLog, 2, 0)
 
     def apiCall(self, commandName, api = None, **kwargs):
@@ -288,110 +295,72 @@ class Content:
         self.indent = f"{self.indent} "
         msgLog = (f"{self.indent} Start fileNameBase")
         logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent}  dst {dst}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent}  dst {dst}")
+        # logMsg(msgLog, 2, 0)
         if hasattr(self, 'fileName') and self.fileName:
             fileName =  self.fileName
         else:
             src = self
-            msgLog = f"{self.indent} f api self: {src}"
-            logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent} f api self: {src}"
+            # logMsg(msgLog, 2, 0)
             nameSrc = type(src).__name__
             if 'module' in nameSrc:
                 nameSrc = nameSrc[len('module'):]
-                msgLog = (f"{self.indent} fileNameBase module src: {nameSrc}")
-                logMsg(msgLog, 2, 0)
-            nameDst = type(dst).__name__
-            msgLog = (f"{self.indent} fileNameBase nameDst: {nameDst}")
-            logMsg(msgLog, 2, 0)
-            serviceD = ""
-            if 'module' in nameDst:
-                nameDst = nameDst[len('module'):]
-                msgLog = (f"{self.indent} fileNameBase module nameDst: {nameDst}")
-                logMsg(msgLog, 2, 0)
-                msgLog = (f"{self.indent} dst user: {dst.user}")
-                logMsg(msgLog, 2, 0)
-                msgLog = (f"{self.indent} dst name: {dst.name}")
-                logMsg(msgLog, 2, 0)
-                msgLog = (f"{self.indent} dst url: {dst.url}")
-                logMsg(msgLog, 2, 0)
-                dst.setNick()
-                msgLog = (f"{self.indent} dst nick: {dst.getNick()}")
-                logMsg(msgLog, 2, 0)
-
-                userD = dst.getUser()
-                if hasattr(dst, 'src'):
-                    msgLog = (f"{self.indent} hassss src {dst})")
-                    logMsg(msgLog, 2, 0)
-                    msgLog = (f"{self.indent} dst.src {dst.src}")
-                    logMsg(msgLog, 2, 0)
-                    if isinstance(dst.src, tuple):
-                        msgLog = (f"{self.indent} yesssss)")
-                        logMsg(msgLog, 2, 0)
-                        userD = dst.src[1][3]
-                        serviceD = dst.src[1][2]
-                else:
-                    msgLog = (f"{self.indent} hasnot src")
-                    logMsg(msgLog, 2, 0)
-
-                if not userD:
-                    # FIXME FIXME FIXME
-                    dst.setNick()
-                    userD = dst.getNick()
-                if not serviceD and hasattr(dst, 'socialNetwork'):
-                    logging.info(f"Hhhhass")
-                    serviceD = dst.socialNetwork
-                if not serviceD:
-                    serviceD = nameDst
-                user = src.getUser()
-                service = src.getService()
-                msgLog = (f"{self.indent} fileNameBase userD: {userD}")
-                logMsg(msgLog, 2, 0)
-                msgLog = (f"{self.indent} fileNameBase serviceD: {serviceD}")
-                logMsg(msgLog, 2, 0)
-                msgLog = (f"{self.indent} fileNameBase user: {user}")
-                logMsg(msgLog, 2, 0)
-                msgLog = (f"{self.indent} fileNameBase service: {service}")
-                logMsg(msgLog, 2, 0)
-                msgLog = (f"{self.indent} fileNameBase serviceD: {dst.getService()}")
-                logMsg(msgLog, 2, 0)
-                if not serviceD:
-                    serviceD = dst.getService()
-                # msgLog = (f"{self.indent} fileNameBase action: {}")
+                # msgLog = (f"{self.indent} fileNameBase module src:"
+                #           f"{nameSrc}")
                 # logMsg(msgLog, 2, 0)
-            else:
-                user = src.getUrl()
-                service = self.service
-                userD = dst[3]
-                serviceD = dst[2]
-                nameDst = serviceD.capitalize()
+            nameDst = type(dst).__name__
+            # msgLog = (f"{self.indent} fileNameBase nameDst: {nameDst}")
+            # logMsg(msgLog, 2, 0)
+            serviceD = ""
+            # msgLog = (f"{self.indent} nameDst: {nameDst}")
+            # logMsg(msgLog, 2, 0)
+            # if 'module' in nameDst:
+            nameDst = nameDst[len('module'):]
+            dst.setNick()
+            userD = dst.getUser()
+            if hasattr(dst, 'src'):
+                if isinstance(dst.src, tuple):
+                    userD = dst.src[1][3]
+                    serviceD = dst.src[1][2]
+            # else:
+            #     msgLog = (f"{self.indent} hasnot src")
+            #     logMsg(msgLog, 2, 0)
 
+            if not userD:
+                # FIXME FIXME FIXME
+                dst.setNick()
+                userD = dst.getNick()
+            if not serviceD and hasattr(dst, 'socialNetwork'):
+                serviceD = dst.socialNetwork
+            if not serviceD:
+                serviceD = nameDst
+            user = src.getUser()
+            service = src.getService()
+            if not serviceD:
+                serviceD = dst.getService()
+            # else:
+            #     msgLog = (f"{self.indent} else module")
+            #     logMsg(msgLog, 2, 0)
+            #     user = src.getUrl()
+            #     service = self.service
+            #     userD = dst[3]
+            #     serviceD = dst[2]
+            #     nameDst = serviceD.capitalize()
+
+            typeSrc = 'posts'
             if hasattr(src, 'getPostsType'):
-                msgLog = (f"{self.indent} getPostsType {src.getPostsType()}")
-                logMsg(msgLog, 2, 0)
                 typeSrc = src.getPostsType()
-            else:
-                typeSrc = 'posts'
 
+            typeDst = 'posts'
             if hasattr(dst, 'getPostsType'):
                 typeDst = dst.getPostsType()
-            else:
-                typeDst = 'posts'
 
-            # msgLog = (f"{self.indent} fileNameBase typeSrc: {typeSrc}")
-            # logMsg(msgLog, 2, 0)
-            # msgLog = (f"{self.indent} fileNameBase typeDst: {typeDst}")
-            # logMsg(msgLog, 2, 0)
-            # print(f"user: {user}")
-            # if not user:
-            #     user = dst.getUrl()
-            # print(f"user: {user}")
             fileName = (f"{nameSrc}_{typeSrc}_"
                         f"{user}_{service}__"
                         f"{nameDst}_{typeDst}_"
                         f"{userD}_{serviceD}")
             fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
-            logging.info(f"{self.indent} Ccache ffile: {fileName}")
             # msgLog = (f"{self.indent} end fileNameBase fileName: {fileName}")
             # logMsg(msgLog, 2, 0)
 
@@ -420,7 +389,7 @@ class Content:
         msgLog = checkFile(fileName, self.indent)
         if not 'OK' in msgLog:
             msgLog = (f"file {fileName} does not exist. "
-                      f"i'm going to create it.")
+                      f"I'm going to create it.")
             logMsg(msgLog, 3, 0)
         with open(fileName, "w") as f:
             if link:
@@ -478,7 +447,7 @@ class Content:
         return lastLink
 
     def setLastLink(self, dst = None):
-        msgLog = (f"{self.indent} Start setLastLink dst: {dst}")
+        msgLog = (f"{self.indent} Start setLastLink")
         logMsg(msgLog, 1, 0)
         if hasattr(self, 'fileName') and self.fileName:
             fileName = f"{self.fileName}.last"
@@ -487,6 +456,8 @@ class Content:
                 self.fileName = self.fileNameBase(dst)
                 fileName = f"{self.fileName}.last"
             else:
+                msgLog = (f"{self.indent} No dst")
+                logMsg(msgLog, 2, 0)
                 url = self.getUrl()
                 service = self.service.lower()
                 nick = self.getNick()

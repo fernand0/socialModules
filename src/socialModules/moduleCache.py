@@ -71,15 +71,13 @@ class moduleCache(Content): #,Queue):
         return 'posts'
 
     def setNick(self, nick=None):
+        msgLog = (f"{self.indent} Start setNick (c)")
+        logMsg(msgLog, 2, 0)
         # Many services are like https://service.com/.../nick
-        logging.info(f"{self.indent} {self.src}")
         self.auxClass = self.src[0]
-        logging.info(f"{self.indent} auxClass: {self.auxClass}")
         if not nick:
             apiAux = self.getApiAux()
-            # apiAux.setNick(self.src[-1])
-            # nick = apiAux.getNick()
-            # nick = self.src[2]
+            apiAux.indent = f"{self.indent} "
             apiAux.setClient(self.src[2])
             apiAux.setUrl(self.src[2])
             apiAux.setNick()
@@ -94,15 +92,12 @@ class moduleCache(Content): #,Queue):
             fileName =  self.fileName
         else:
             src = self
-            msgLog = f"{self.indent} f(c) api src: {src}"
-            logMsg(msgLog, 2, 0)
             typeSrc = 'posts'
             if isinstance(self, socialModules.moduleCache.moduleCache):
                 typeDst = 'posts'
             elif isinstance(dst, tuple):
                 typeDst = 'cache'
 
-            logging.info(f"{self.indent} Ccache: {self.src}")
             nameSrc = 'Cache'
             user = self.getNick()
             userD = self.src[1][3]
@@ -116,7 +111,6 @@ class moduleCache(Content): #,Queue):
                         f"{userD}_{serviceD}")
             fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
             self.fileName = fileName
-            logging.info(f"{self.indent} Ccache file: {fileName}")
 
         msgLog = (f"{self.indent} End fileNameBase")
         logMsg(msgLog, 2, 0)

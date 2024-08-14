@@ -54,7 +54,6 @@ class moduleSlack(Content): #, Queue):
     def setNick(self, nick=None):
         if not nick:
             nick = self.getUrl()
-            logging.info(f"NNnick: {nick}")
             nick = nick.split("/")[2].split('.')[0]
         self.nick = nick
 

@@ -62,11 +62,11 @@ def setNextTime(blog, socialNetwork, tNow, tSleep):
         pickle.dump((tNow, tSleep), f)
     return fileNameNext
 
-def getNextTime(blog, socialNetwork):
+def getNextTime(blog, socialNetwork, indent=""):
     fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext'
     msgLog = (f"fileNameNext {fileNameNext}")
     logMsg(msgLog, 2, 0)
-    msgLog = checkFile(fileNameNext)
+    msgLog = checkFile(fileNameNext, indent)
     if 'OK' in msgLog:
         with open(fileNameNext,'rb') as f:
             tNow, tSleep = pickle.load(f)
@@ -95,21 +95,14 @@ def getLastLink(fileName, indent=''):
     logMsg(msgLog, 2, 0)
     linkLast = ''
     timeLast = 0
-    msgLog = checkFile(fileName)
+    msgLog = checkFile(fileName, indent)
     if not "OK" in msgLog:
-        logging.info(msgLog)
+        msgLog = f"{indent} {msgLog}"
+        logMsg(msgLog, 3, 0)
     else:
         with open(fileName, "rb") as f:
             linkLast = f.read().decode().split()  # Last published
         timeLast = os.path.getmtime(fileName)
-    # else:
-    #     # File does not exist, we need to create it.
-    #     # Should we create it here? It is a reading function!!
-    #     with open(fileName, "wb") as f:
-    #         msgLog = f"File {fileName} does not exist. Creating it."
-    #         logMsg(msgLog, 3, 0)
-    #         linkLast = ''
-    #         # None published, or non-existent file
     if len(linkLast) == 1:
         return(linkLast[0], timeLast)
     else:
@@ -157,7 +150,7 @@ def updateLastLink(url, link, socialNetwork=()):
 
     msgLog = (f"fileName: {fileName}")
     logMsg(msgLog, 2, 0)
-    msgLog = checkFile(fileName)
+    msgLog = checkFile(fileName, indent)
     logMsg(msgLog, 2, 0)
     if not 'OK' in msgLog:
         msgLog = (f"fileName: {fileName} does not exist, I'll create it")
@@ -219,12 +212,12 @@ def getApi(profile, nick, indent=""):
     msgLog = (f"{indent} Start getApi")
     logMsg(msgLog, 2, 0)
 
-    msgLog = (f"{indent}  Profile {profile} "
-              f"Nick {nick}")
-    logMsg(msgLog, 2, 0)
+    # msgLog = (f"{indent}  Profile {profile} "
+    #           f"Nick {nick}")
+    # logMsg(msgLog, 2, 0)
     api = getModule(profile, indent)
-    msgLog = (f"{indent}  Api {api}")
-    logMsg(msgLog, 2, 0)
+    # msgLog = (f"{indent}  Api {api}")
+    # logMsg(msgLog, 2, 0)
 
     api.indent = indent
     api.setClient(nick)
