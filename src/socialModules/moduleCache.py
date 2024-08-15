@@ -46,7 +46,8 @@ class moduleCache(Content): #,Queue):
         logMsg(msgLog, 2, 0)
         return rule[2:]
 
-    def getService(self):
+    def setServiceAux(self):
+        serviceAux = ''
         msgLog = (f"{self.indent} getService")
         logMsg(msgLog, 2, 0)
         if hasattr(self, 'auxClass'):
@@ -54,11 +55,15 @@ class moduleCache(Content): #,Queue):
             logMsg(msgLog, 2, 0)
             if isinstance(self.auxClass, tuple):
                 self.auxClass = self.auxClass[0]
-            return self.auxClass
+            serviceAux = self.auxClass
         else:
             msgLog = f"{self.indent} has not auxClass"
             logMsg(msgLog, 2, 0)
-            return self.service
+            serviceAux =  self.service
+        self.serviceAux = serviceAux.capitalize()
+
+    def getServiceAux(self):
+        return self.serviceAux
 
     def setPostsType(self, postsType):
         # FIXME. Is this ok?
@@ -87,21 +92,23 @@ class moduleCache(Content): #,Queue):
         self.indent = f"{self.indent} "
         msgLog = (f"{self.indent} Start fileNameBase (c)")
         logMsg(msgLog, 2, 0)
-        self.setNick()
+
         if hasattr(self, 'fileName') and self.fileName:
             fileName =  self.fileName
         else:
             src = self
             typeSrc = 'posts'
-            if isinstance(self, socialModules.moduleCache.moduleCache):
-                typeDst = 'posts'
-            elif isinstance(dst, tuple):
-                typeDst = 'cache'
+            typeDst = 'posts'
 
-            nameSrc = 'Cache'
+            #nameSrc = type(src).__name__
+            nameSrc = src.getNameModule()
+
+            self.setNick()
             user = self.getNick()
+            self.setServiceAux()
+            service = self.getServiceAux()
+
             userD = self.src[1][3]
-            service = self.auxClass.capitalize()
             serviceD = self.src[1][2]
             nameDst = serviceD.capitalize()
 

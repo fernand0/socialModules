@@ -53,8 +53,8 @@ class Content:
         # logMsg(msgLog, 1, 1)
         if nameSet in self.__dir__():
             cmd =  getattr(self, nameSet)
-            # msgLog = f"{self.indent} Cmd set: {cmd}"
-            # logMsg(msgLog, 1, 1)
+            msgLog = f"{self.indent} Cmd set: {cmd}"
+            logMsg(msgLog, 1, 1)
             cmd(serviceData)
 
     def setClient(self, account):
@@ -108,7 +108,7 @@ class Content:
 
         msgLog = (f"{self.indent} Starting initApi")
         logMsg(msgLog, 2, 0)
-        # To avoid submodules logging. 
+        # To avoid submodules logging.
         # logger = logging.getLogger('my_module_name')
         # https://stackoverflow.com/questions/35325042/python-logging-disable-logging-from-imported-modules
 
@@ -134,16 +134,16 @@ class Content:
         logMsg(msgLog, 1, 0)
 
     def getService(self):
-        if hasattr(self, 'auxClass'):
-            return self.auxClass
-        else:
-            return self.service
-
-    def getService(self):
-        if hasattr(self, "service"):
-            return self.service
-        else:
-            return ""
+        msgLog = (f"{self.indent} getService")
+        logMsg(msgLog, 2, 0)
+        # if hasattr(self, 'auxClass'):
+        #     msgLog = (f"{self.indent} has auxClass {self.auxClass}")
+        #     logMsg(msgLog, 2, 0)
+        #     return self.auxClass
+        # else:
+        #     msgLog = f"{self.indent} has not auxClass"
+        #     logMsg(msgLog, 2, 0)
+        return self.service
 
     def setUser(self, nick=''):
         self.user = nick
@@ -298,59 +298,11 @@ class Content:
         self.indent = f"{self.indent} "
         msgLog = (f"{self.indent} Start fileNameBase")
         logMsg(msgLog, 2, 0)
-        # msgLog = (f"{self.indent}  dst {dst}")
-        # logMsg(msgLog, 2, 0)
+
         if hasattr(self, 'fileName') and self.fileName:
             fileName =  self.fileName
         else:
             src = self
-            # msgLog = f"{self.indent} f api self: {src}"
-            # logMsg(msgLog, 2, 0)
-            nameSrc = type(src).__name__
-            if 'module' in nameSrc:
-                nameSrc = nameSrc[len('module'):]
-                # msgLog = (f"{self.indent} fileNameBase module src:"
-                #           f"{nameSrc}")
-                # logMsg(msgLog, 2, 0)
-            nameDst = type(dst).__name__
-            # msgLog = (f"{self.indent} fileNameBase nameDst: {nameDst}")
-            # logMsg(msgLog, 2, 0)
-            serviceD = ""
-            # msgLog = (f"{self.indent} nameDst: {nameDst}")
-            # logMsg(msgLog, 2, 0)
-            # if 'module' in nameDst:
-            nameDst = nameDst[len('module'):]
-            dst.setNick()
-            userD = dst.getUser()
-            if hasattr(dst, 'src'):
-                if isinstance(dst.src, tuple):
-                    userD = dst.src[1][3]
-                    serviceD = dst.src[1][2]
-            # else:
-            #     msgLog = (f"{self.indent} hasnot src")
-            #     logMsg(msgLog, 2, 0)
-
-            if not userD:
-                # FIXME FIXME FIXME
-                dst.setNick()
-                userD = dst.getNick()
-            if not serviceD and hasattr(dst, 'socialNetwork'):
-                serviceD = dst.socialNetwork
-            if not serviceD:
-                serviceD = nameDst
-            user = src.getUser()
-            service = src.getService()
-            if not serviceD:
-                serviceD = dst.getService()
-            # else:
-            #     msgLog = (f"{self.indent} else module")
-            #     logMsg(msgLog, 2, 0)
-            #     user = src.getUrl()
-            #     service = self.service
-            #     userD = dst[3]
-            #     serviceD = dst[2]
-            #     nameDst = serviceD.capitalize()
-
             typeSrc = 'posts'
             if hasattr(src, 'getPostsType'):
                 typeSrc = src.getPostsType()
@@ -359,13 +311,29 @@ class Content:
             if hasattr(dst, 'getPostsType'):
                 typeDst = dst.getPostsType()
 
+            # nameSrc = type(src).__name__
+            #if 'module' in nameSrc:
+            #    nameSrc = nameSrc[len('module'):]
+            nameSrc = src.getNameModule()
+            nameDst = dst.getNameModule()
+
+            user = src.getUser()
+            service = src.getService()
+
+            dst.setNick()
+            if hasattr(dst, 'src') and isinstance(dst.src, tuple):
+                # It is a cache
+                userD = dst.src[1][3]
+                serviceD = dst.src[1][2]
+            else:
+                userD = dst.getUser()
+                serviceD = nameDst
+
             fileName = (f"{nameSrc}_{typeSrc}_"
                         f"{user}_{service}__"
                         f"{nameDst}_{typeDst}_"
                         f"{userD}_{serviceD}")
             fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
-            # msgLog = (f"{self.indent} end fileNameBase fileName: {fileName}")
-            # logMsg(msgLog, 2, 0)
 
         msgLog = (f"{self.indent} End fileNameBase")
         logMsg(msgLog, 2, 0)
@@ -565,6 +533,13 @@ class Content:
         name = ""
         if hasattr(self, "search"):
             name = self.search
+        return name
+
+    def getNameModule(self):
+        name = type(self).__name__
+        if 'module' in name:
+            name = name[len('module'):]
+
         return name
 
     def getName(self):
