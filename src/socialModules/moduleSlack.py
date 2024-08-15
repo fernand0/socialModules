@@ -183,7 +183,11 @@ class moduleSlack(Content): #, Queue):
             else:
                 # Some people include URLs in the title of the page
                 pos = text.rfind("<")
-                text[pos + 1 : -1] = newLink
+                # text[pos + 1 : -1] = newLink
+                text = f"{text[:pos]} {newLink} (n)"
+                post['text'] = text
+            msgLog = f"PPost: {post}"
+            logMsg(msgLog, 2, 0)
 
     def getPostId(self, post):
         return (post.get('ts',''))
@@ -241,6 +245,8 @@ class moduleSlack(Content): #, Queue):
                     title = text[:pos]
                 else:
                     title = text
+            msgLog = (f"{self.indent} Post text: {text}")
+            logMsg(msgLog, 2, 0)
             return title
         else:
             return "No title"
@@ -418,6 +424,20 @@ def main():
             time.sleep(5+random.random()*5)
         return
 
+    testingEditLink = True
+    if testingEditTrue:
+        print("Testing edit link poss")
+        site.setPostsType("posts")
+        site.setPosts()
+        print(site.getPostTitle(site.getPosts()[1]))
+        print(site.getPostLink(site.getPosts()[1]))
+        input("Edit? ")
+        site.setPostTitle(site.getPosts()[0], "prueba")
+        print(site.getPostTitle(site.getPosts()[0]))
+        print(site.getPostLink(site.getPosts()[0]))
+        return
+
+
     testingEditTitle = False
     if testingEditTitle:
         print("Testing edit posts")
@@ -432,7 +452,7 @@ def main():
         return
 
 
-    testingPosts = True
+    testingPosts = False
     if testingPosts:
         print("Testing posts")
         apiSrc.setPostsType("posts")

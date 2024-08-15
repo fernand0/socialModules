@@ -471,17 +471,17 @@ class moduleCache(Content): #,Queue):
     def updatePostsCache(self):
         # fileNameQ = fileNamePath(self.url,
         #         (self.socialNetwork, self.nick)) + ".queue"
-        fileNameQ = ''
+        fileNameQ = f"{self.fileNameBase(None)}.queue"
 
-        if hasattr(self, 'fileName'):
-            fileNameQ = f"{self.fileName}.queue"
-        elif hasattr(self, "socialNetwork"):
-            url = self.getUrl()
-            service = self.socialNetwork
-            nick = self.nick
-        else:
-            service = self.getService()
-            nick = self.getUser()
+        #if hasattr(self, 'fileName'):
+        #    fileNameQ = f"{self.fileName}.queue"
+        #elif hasattr(self, "socialNetwork"):
+        #    url = self.getUrl()
+        #    service = self.socialNetwork
+        #    nick = self.nick
+        #else:
+        #    service = self.getService()
+        #    nick = self.getUser()
 
         # msgLog = (f"{self.indent} Url: {url} service {service} nick {nick}")
         # logMsg(msgLog, 2, 0)
@@ -494,8 +494,8 @@ class moduleCache(Content): #,Queue):
 
         with open(fileNameQ, 'wb') as f:
             posts = self.getPosts()
-            # msgLog = f"{self.indent} Posts {self.service} {posts}"
-            # logMsg(msgLog, 2, 0)
+            msgLog = f"{self.indent} Posts updating {self.service} {posts}"
+            logMsg(msgLog, 2, 0)
             pickle.dump(posts, f)
 
         # msgLog = (f"Posts: {str(self.getPosts())}")
@@ -525,6 +525,7 @@ class moduleCache(Content): #,Queue):
     #     return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
     def setPostLink(self, post, newLink):
+        #FIXME. This should be similar to setPostTitle
         if post:
             if hasattr(self, 'auxClass'):
                 myModule = f"module{self.auxClass.capitalize()}"
@@ -646,24 +647,15 @@ class moduleCache(Content): #,Queue):
         return(idPost)
 
     def editApiTitle(self, post, newTitle=''):
-        msgLog = (f"{self.indent} ApiTitle: {newTitle}. Post: {post}")
-        logMsg(msgLog, 1, 0)
         oldLink = self.getPostLink(post)
         idPost = self.getLinkPosition(oldLink)
         oldTitle = self.getPostTitle(post)
         if not newTitle:
             newTitle = self.reorderTitle(oldTitle)
         self.setPostTitle(post, newTitle)
-        msgLog = (f"New post: {post}")
-        logMsg(msgLog, 1, 0)
-        # msgLog = (f"New post id: {self.getPost(idPost)}")
-        # logMsg(msgLog, 2, 0)
-        # post = (newTitle,) + post[1:]
-        # posts = self.getPosts()
-        # posts[idPost] = post
-        # self.assignPosts(posts)
         self.updatePostsCache()
-        return(idPost)
+        # FIXME. Twice?
+        return(self.getPosts())
 
     def insert(self, j, text):
         msgLog = (f"{self.indent} Inserting {text}")
@@ -893,23 +885,6 @@ def main():
     indent = ""
     apiSrc = rules.readConfigSrc(indent, src, more)
 
-    testingPosts = True
-    if testingPosts:
-        print("Testing Posts")
-        cmd = getattr(apiSrc, 'setApiPosts')
-        posts = cmd
-        posts = cmd()
-        for i, post in enumerate(posts):
-            print(f"{i}) {apiSrc.getPostTitle(post)}")
-        return
-        apiSrc.setPosts()
-        for i, post in enumerate(apiSrc.getPosts()):
-            print(f"{i}) {apiSrc.getPostTitle(post)}")
-
-        return
-
-
-
     testingFiles = False
 
     if testingFiles:
@@ -1039,37 +1014,59 @@ def main():
             siteDst.publishPosPost(site, pos)
         return
 
-    testingEditPos = True
-
+    testingEditPos = False
     if testingEditPos:
-        cache = input("Which cache? ").capitalize()
-        url = 'http://fernand0-errbot.slack.com/'
-        nickDst = dataCaches[cache]['nick']
-        snDst = dataCaches[cache]['sn']
-        print(nickDst,snDst)
-        url = 'http://fernand0-errbot.slack.com/'
-        siteDst = getApi(snDst, nickDst)
-        if hasattr(siteDst, 'setPage'):
-            siteDst.setPage(nickDst)
-        site = getApi('cache', ('slack', url, f"{snDst}@{nickDst}"))
-        site.socialNetwork = snDst
-        site.nick = nickDst
-        site.setPostsType('posts')
-        site.auxClass = 'slack'
-        site.setPosts()
+        print("Testing edit Posts")
+        apiSrc.setPosts()
 
-        [ print(f"{i}) {site.getPostTitle(post)}")
-                for i, post in enumerate(site.getPosts()) ]
+        [ print(f"{i}) {apiSrc.getPostTitle(post)}")
+                for i, post in enumerate(apiSrc.getPosts()) ]
         pos = int(input("Which post? "))
-        post = site.getPost(pos)
-        print(post)
+        post = apiSrc.getPost(pos)
+        print(apiSrc)
         newTitle = input("New title? ")
-        newPost = site.editApiTitle(post, newTitle)
-        posts = site.getPosts()
-        posts[pos] = newPost
-        print(f"new: {newPost}")
-        site.assignPosts(posts)
-        print(site.updatePostsCache())
+        newPosts = apiSrc.editApiTitle(post, newTitle)
+        # FIXME. It has been recorded
+        # posts = apiSrc.getPosts()
+        # posts[pos] = newPost
+        print(f"new: {newPosts}")
+        #apiSrc.assignPosts(posts)
+        print(apiSrc.updatePostsCache())
+
+        return
+
+    testingEditLink = True
+    if testingEditLink:
+        print("Testing edit Post link")
+        apiSrc.setPosts()
+
+        [ print(f"{i}) {apiSrc.getPostTitle(post)}")
+                for i, post in enumerate(apiSrc.getPosts()) ]
+        pos = int(input("Which post? "))
+        post = apiSrc.getPost(pos)
+        print(apiSrc)
+        newLink = input("New link? ")
+        newPosts = apiSrc.editApiLink(post, newLink)
+        # FIXME. It has been recorded
+        # posts = apiSrc.getPosts()
+        # posts[pos] = newPost
+        print(f"new: {newPosts}")
+        #apiSrc.assignPosts(posts)
+        print(apiSrc.updatePostsCache())
+
+
+    testingPosts = True
+    if testingPosts:
+        print("Testing Posts")
+        cmd = getattr(apiSrc, 'setApiPosts')
+        posts = cmd
+        posts = cmd()
+        for i, post in enumerate(posts):
+            print(f"{i}) {apiSrc.getPostTitle(post)}")
+        return
+        apiSrc.setPosts()
+        for i, post in enumerate(apiSrc.getPosts()):
+            print(f"{i}) {apiSrc.getPostTitle(post)}")
 
         return
 
