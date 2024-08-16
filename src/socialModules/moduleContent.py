@@ -326,8 +326,10 @@ class Content:
                 # It is a cache
                 # userD = dst.src[1][3]
                 # serviceD = dst.src[1][2]
+                # logging.info(f"Uuuuuu: {userD} - {serviceD}")
                 userD = dst.apiAux.getUser()
                 serviceD = dst.apiAux.getService()
+                # logging.info(f"Uuuuuu: {userD} - {serviceD}")
             else:
                 userD = dst.getUser()
                 serviceD = nameDst

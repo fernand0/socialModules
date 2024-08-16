@@ -103,13 +103,16 @@ class moduleCache(Content): #,Queue):
             #nameSrc = type(src).__name__
             nameSrc = src.getNameModule()
 
-            self.setNick()
+            # self.setNick()
             user = self.getNick()
+            logging.info(f"Userrrrrrr: {user} - {self.getUser()}")
             self.setServiceAux()
             service = self.getServiceAux()
 
-            userD = self.src[1][3]
-            serviceD = self.src[1][2]
+            userD = self.apiAux.getUser()
+            serviceD = self.apiAux.getService()
+            # userD = self.src[1][3]
+            # serviceD = self.src[1][2]
             nameDst = serviceD.capitalize()
 
             fileName = (f"{nameSrc}_{typeSrc}_"
@@ -134,6 +137,11 @@ class moduleCache(Content): #,Queue):
         self.nick = ""
         self.auxClass = self.src[1][2]
         self.apiAux = getApi(self.auxClass, self.src[1][3])
+        self.apiAux.url = self.src[2]
+        self.apiAux.setUser()
+        self.apiAux.setNick()
+        self.setNick()
+        # We are instatiating (but not configuring) the aux api
         self.fileName = ""
 
         return self

@@ -31,15 +31,16 @@ class moduleSlack(Content): #, Queue):
         self.postaction = None
         self.service = "Slack"
 
-        if self.user and self.user.find('/')>=0:
-            self.name = self.user.split('/')[2].split('.')[0]
-            self.nick = self.user.split('/')[2]
-        else:
-            self.name = self.user
-        if self.user.find('@')>=0:
-            channel, user = self.user.split('@')
-            self.user = user
-            #self.setChannel(channel)
+        self.setUser()
+        #if self.user and self.user.find('/')>=0:
+        #    self.name = self.user.split('/')[2].split('.')[0]
+        #    self.nick = self.user.split('/')[2]
+        #else:
+        #    self.name = self.user
+        #if self.user.find('@')>=0:
+        #    channel, user = self.user.split('@')
+        #    self.user = user
+        #    #self.setChannel(channel)
 
         client = WebClient(keys[0])
         self.slack_token = keys[0]
@@ -56,6 +57,18 @@ class moduleSlack(Content): #, Queue):
             nick = self.getUrl()
             nick = nick.split("/")[2].split('.')[0]
         self.nick = nick
+
+    def setUser(self):
+        if self.user and self.user.find('/')>=0:
+            self.name = self.user.split('/')[2].split('.')[0]
+            self.nick = self.user.split('/')[2]
+        else:
+            self.name = self.user
+        if self.user.find('@')>=0:
+            channel, user = self.user.split('@')
+            self.user = user
+            #self.setChannel(channel)
+
 
     def setChannel(self, channel=''):
         # setPage in Facebook
