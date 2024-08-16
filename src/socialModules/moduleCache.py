@@ -31,14 +31,14 @@ class moduleCache(Content): #,Queue):
         self.postaction = 'delete'
 
     def getApiAux(self):
-        api = None
-        if hasattr(self, 'auxClass'):
-            myModule = f"module{self.auxClass.capitalize()}"
-            importlib.import_module(myModule)
-            mod = sys.modules.get(myModule)
-            cls = getattr(mod, myModule)
-            myModule = f"{self.indent} {cls}"
-            api = cls()
+        api = self.apiAux
+        # if hasattr(self, 'auxClass'):
+        #     myModule = f"module{self.auxClass.capitalize()}"
+        #     importlib.import_module(myModule)
+        #     mod = sys.modules.get(myModule)
+        #     cls = getattr(mod, myModule)
+        #     myModule = f"{self.indent} {cls}"
+        #     api = cls()
         return api
 
     def getProfileR(self, rule):
@@ -75,18 +75,19 @@ class moduleCache(Content): #,Queue):
     def getPostsType(self):
         return 'posts'
 
-    def setNick(self, nick=None):
-        msgLog = (f"{self.indent} Start setNick (c)")
-        logMsg(msgLog, 2, 0)
-        # Many services are like https://service.com/.../nick
-        self.auxClass = self.src[0]
-        if not nick:
-            apiAux = self.getApiAux()
-            apiAux.indent = f"{self.indent} "
-            apiAux.setClient(self.src[2])
-            apiAux.setUrl(self.src[2])
-            apiAux.setNick()
-        self.nick = apiAux.getNick()
+    # def setNick(self, nick=None):
+    #     msgLog = (f"{self.indent} Start setNick (c)")
+    #     logMsg(msgLog, 2, 0)
+    #     # Many services are like https://service.com/.../nick
+    #     # self.auxClass = self.src[0]
+    #     logging.info(f"urlll: {self.getUser()}")
+    #     # if not nick:
+    #     #     apiAux = self.getApiAux()
+    #     #     apiAux.indent = f"{self.indent} "
+    #     #     apiAux.setClient(self.src[2])
+    #     #     apiAux.setUrl(self.src[2])
+    #     #     apiAux.setNick()
+    #     self.nick = apiAux.getNick()
 
     def fileNameBase(self, dst):
         self.indent = f"{self.indent} "
@@ -133,14 +134,11 @@ class moduleCache(Content): #,Queue):
         self.postsType = 'posts'
         self.url = ""
         self.socialNetwork = ""
-        self.user = ""
-        self.nick = ""
+        self.user = self.src[2]
+        self.nick = self.user
         self.auxClass = self.src[1][2]
+        logging.info(f"auxClass: {self.auxClass}")
         self.apiAux = getApi(self.auxClass, self.src[1][3])
-        self.apiAux.url = self.src[2]
-        self.apiAux.setUser()
-        self.apiAux.setNick()
-        self.setNick()
         # We are instatiating (but not configuring) the aux api
         self.fileName = ""
 
@@ -899,6 +897,10 @@ def main():
     more = rules.more[src]
     indent = ""
     apiSrc = rules.readConfigSrc(indent, src, more)
+    print(f"Url: {apiSrc.getUrl()}")
+    print(f"apiAux: {apiSrc.getApiAux()}")
+    print(f"User apiAux: {apiSrc.getApiAux().getUser()}")
+    print(f"User: {apiSrc.getUser()}")
 
     testingFiles = False
 
@@ -986,10 +988,10 @@ def main():
         return
 
     dataSources = {'S0': {'sn':'slack',
-                            'nick':'http://fernand0-errbot.slack.com/'},
+                          'nick':'http://fernand0-errbot.slack.com/'},
                    'G0': {'sn':'gitter',
-                            'nick':'https://gitter.im/fernand0errbot/'},
-        }
+                          'nick':'https://gitter.im/fernand0errbot/'},
+                   }
 
     dataCaches = {'S0': {'sn':'slack', 'nick':'http://fernand0-errbot.slack.com/'},
                   'H0': {'sn':'linkedin', 'nick':'Fernando Tricas'},
@@ -1012,7 +1014,7 @@ def main():
         site = getApi(snDst, nickDst)
         site.setPosts()
         [ print(f"{i}) {site.getPostTitle(post)}")
-                for i, post in enumerate(site.getPosts()) ]
+         for i, post in enumerate(site.getPosts()) ]
         pos = int(input("Which post? "))
         for cache in dataCaches.keys():
             print(f"Cache: {cache}) - {dataCaches[cache]}")
@@ -1035,7 +1037,7 @@ def main():
         apiSrc.setPosts()
 
         [ print(f"{i}) {apiSrc.getPostTitle(post)}")
-                for i, post in enumerate(apiSrc.getPosts()) ]
+         for i, post in enumerate(apiSrc.getPosts()) ]
         pos = int(input("Which post? "))
         post = apiSrc.getPost(pos)
         print(apiSrc)
@@ -1050,13 +1052,13 @@ def main():
 
         return
 
-    testingEditLink = True
+    testingEditLink = False
     if testingEditLink:
         print("Testing edit Post link")
         apiSrc.setPosts()
 
         [ print(f"{i}) {apiSrc.getPostTitle(post)}")
-                for i, post in enumerate(apiSrc.getPosts()) ]
+         for i, post in enumerate(apiSrc.getPosts()) ]
         pos = int(input("Which post? "))
         post = apiSrc.getPost(pos)
         print(apiSrc)

@@ -67,20 +67,20 @@ class Content:
 
         if isinstance(account, str):
             self.user = account
-        else:
-            msgLog = f"{self.indent} setClient else"
-            logMsg(msgLog, 2, 0)
-            # Deprecated
-            self.url = account[2] #FIXME
-            #self.user = account[1][3]
-            #self.nick = self.user
-            self.auxClass = account[1][2]
-            self.auxClass = self.getApiAux()
-            self.auxClass.indent = f"{self.indent} (aux) "
-            self.auxClass.setClient(account[1][3])
+        # else:
+        #     msgLog = f"{self.indent} setClient else"
+        #     logMsg(msgLog, 2, 0)
+        #     # Deprecated
+        #     self.url = account[2] #FIXME
+        #     #self.user = account[1][3]
+        #     #self.nick = self.user
+        #     self.auxClass = account[1][2]
+        #     self.auxClass = self.getApiAux()
+        #     self.auxClass.indent = f"{self.indent} (aux) "
+        #     self.auxClass.setClient(account[1][3])
 
-            # msgLog = (f"{self.indent}  ApiAux {self.auxClass}")
-            # logMsg(msgLog, 2, 0)
+        #     # msgLog = (f"{self.indent}  ApiAux {self.auxClass}")
+        #     # logMsg(msgLog, 2, 0)
 
         msgLog = f"{self.indent} Configuring Service"
         logMsg(msgLog, 2, 0)
