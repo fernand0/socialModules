@@ -132,7 +132,8 @@ class moduleCache(Content): #,Queue):
         self.socialNetwork = ""
         self.user = ""
         self.nick = ""
-        self.auxClass = None
+        self.auxClass = self.src[1][2]
+        self.apiAux = getApi(self.auxClass, self.src[1][3])
         self.fileName = ""
 
         return self

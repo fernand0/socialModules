@@ -63,6 +63,7 @@ class Content:
         self.indent = f"{self.indent} "
 
         client = None
+        self.src = account
 
         if isinstance(account, str):
             self.user = account
@@ -80,7 +81,6 @@ class Content:
 
             # msgLog = (f"{self.indent}  ApiAux {self.auxClass}")
             # logMsg(msgLog, 2, 0)
-        self.src = account
 
         msgLog = f"{self.indent} Configuring Service"
         logMsg(msgLog, 2, 0)
@@ -261,7 +261,7 @@ class Content:
         logMsg(msgLog, 2, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
             typeposts = self.getPostsType()
-            if self.getPostsType() in ['posts', 'drafts', 'draft', 
+            if self.getPostsType() in ['posts', 'drafts', 'draft',
                                        'favs', 'search']:
                 cmd = getattr(
                     self, f"setApi{self.getPostsType().capitalize()}"
@@ -323,13 +323,11 @@ class Content:
 
             dst.setNick()
             if hasattr(dst, 'src') and isinstance(dst.src, tuple):
-                logging.info(f"Ssssservice: {dst.service}")
-                logging.info(f"Ssssservice: {dst.auxClass.getUser()}"
-                             f" - {dst.auxClass.getService()}")
                 # It is a cache
-                userD = dst.src[1][3]
-                serviceD = dst.src[1][2]
-                logging.info(f"Ssssservice: {userD} - {serviceD}")
+                # userD = dst.src[1][3]
+                # serviceD = dst.src[1][2]
+                userD = dst.apiAux.getUser()
+                serviceD = dst.apiAux.getService()
             else:
                 userD = dst.getUser()
                 serviceD = nameDst
