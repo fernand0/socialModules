@@ -906,7 +906,10 @@ class moduleRules:
                 msgLog = (f"{msgLog} Recording Link: {link} "
                           f"in file {apiSrc.fileNameBase(apiDst)}.last")
         else:
-            msgLog = f"{indent}No post to schedule."
+            msgLog = (f"{indent}No post to schedule " 
+                      f"from {apiSrc.getUrl()} " 
+                      f"in {self.getNickAction(action)}@" 
+                      f"{self.getProfileAction(action)}")
 
         if simmulate:
             if post:
@@ -945,11 +948,13 @@ class moduleRules:
                                                 apiSrc, apiDst,
                                                 simmulate, nextPost,
                                                 pos, res)
-            msgLog = (f"{indent}End publish, reply: {resMsg}")
+            msgLog = (f"{indent}End publish")
+            if resMsg:
+                msgLog = f"{msgLog}, reply: {resMsg}")
             logMsg(msgLog, 1, 1)
         if postaction == 'delete':
-            #FIXME: not always len is the available number. We should consider
-            # the last published and so on.
+            #FIXME: not always len is the available number. We should
+            # consider the last published and so on.
             msgLog = (f"{indent}Available {len(apiSrc.getPosts())-1}")
         else:
             msgLog = (f"{indent}Available {len(apiSrc.getPosts())}")

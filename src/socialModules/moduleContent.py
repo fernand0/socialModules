@@ -903,16 +903,16 @@ class Content:
         return listPosts
 
     def getNextPost(self):
-        self.indent = f"{self.indent} "
         msgLog = (f"{self.indent} Start getNextPost.")
         logMsg(msgLog, 2, 0)
+        self.indent = f"{self.indent} "
 
         posLast = self.getPosNextPost()
         post = self.getPost(posLast - 1)
 
+        self.indent = self.indent[:-1]
         msgLog = (f"{self.indent} End getNextPost.")
         logMsg(msgLog, 2, 0)
-        self.indent = self.indent[:-1]
         return post
 
     def getTitle(self, i):

@@ -100,9 +100,9 @@ class moduleImgur(Content): #, Queue):
                 albums = []
 
             for album in albums:
-                info = f"{time.ctime(album.datetime)} {album.title}"
-                msgLog = (f"{self.indent} Info: {info}")
-                logMsg(msgLog, 2, 0)
+                # info = f"{time.ctime(album.datetime)} {album.title}"
+                # msgLog = (f"{self.indent} Info: {info}")
+                # logMsg(msgLog, 2, 0)
                 if not album.in_gallery:
                     posts.append(album)
                     # logging.info(f"Draft: {info}")
