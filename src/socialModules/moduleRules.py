@@ -1066,12 +1066,18 @@ class moduleRules:
                     tSleep = 2.0
                     msgLog= f"{indent} No Waiting"
 
-                msgLog = f"{msgLog} for action." #: {msgAction}"
+                msgLog = (f"{msgLog} for {theAction}  " 
+                          f"from {apiSrc.getUrl()} " 
+                          f"in {self.getNickAction(action)}@" 
+                          f"{self.getProfileAction(action)}")
                 logMsg(msgLog, 1, 1)
 
                 for i in range(num):
                     time.sleep(tSleep)
-                    msgLog = (f"{indent} End Waiting.")
+                    msgLog = (f"{indent} End Waiting {theAction} " 
+                              f"from {apiSrc.getUrl()} " 
+                              f"in {self.getNickAction(action)}@" 
+                              f"{self.getProfileAction(action)}")
                     logMsg(msgLog, 1, 1)
                     res = self.executePublishAction(indent, msgAction,
                                                     apiSrc, apiDst,

@@ -250,18 +250,19 @@ class Content:
         pass
 
     def setPosts(self):
-        msgLog = f"{self.indent} start setPosts"
+        msgLog = f"{self.indent} Start setPosts"
         logMsg(msgLog, 2, 0)
         nick = self.getNick()
         self.indent = f"{self.indent} "
         identifier = nick
 
         typeposts = self.getPostsType()
-        msgLog = (f"{self.indent} setting type {self.getPostsType()}")
+        msgLog = (f"{self.indent} Setting type {self.getPostsType()}")
         logMsg(msgLog, 2, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
             typeposts = self.getPostsType()
-            if self.getPostsType() in ['posts', 'drafts', 'draft', 'favs', 'search']:
+            if self.getPostsType() in ['posts', 'drafts', 'draft', 
+                                       'favs', 'search']:
                 cmd = getattr(
                     self, f"setApi{self.getPostsType().capitalize()}"
                 )

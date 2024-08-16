@@ -44,15 +44,16 @@ class moduleImgur(Content): #, Queue):
     def setApiPosts(self):
         posts = []
         client = self.getClient()
-        msgLog = (f"{self.indent} Client: {client} {self.user} ")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} Client: {client} {self.user} ")
+        # logMsg(msgLog, 2, 0)
         if self.user.find('https')>=0:
+            # FIXME. This should be a method
             user = self.user.split('/')[-1]
         else:
             user = self.user
 
-        msgLog = (f"{self.indent} User: {user}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} User: {user}")
+        # logMsg(msgLog, 2, 0)
 
         if client:
             albums = None
@@ -64,7 +65,8 @@ class moduleImgur(Content): #, Queue):
 
             if albums:
                 for album in albums:
-                    # msgLog = (f"{self.indent} Title: {time.ctime(album.datetime)} "
+                    # msgLog = (f"{self.indent} Title: "
+                    #           f"{time.ctime(album.datetime)} "
                     #           f"{album.title}")
                     # logMsg(msgLog, 2, 0)
                     if album.in_gallery:
@@ -77,10 +79,10 @@ class moduleImgur(Content): #, Queue):
     def setApiDrafts(self):
         posts = []
         client = self.getClient()
-        msgLog = (f"{self.indent} Client: {client}")
-        logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent} User: {self.user}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} Client: {client}")
+        # logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} User: {self.user}")
+        # logMsg(msgLog, 2, 0)
 
         if client:
             if self.user.find('http')>= 0:
@@ -88,8 +90,8 @@ class moduleImgur(Content): #, Queue):
             else:
                 user = self.user
 
-            msgLog = (f"{self.indent} User: {user}")
-            logMsg(msgLog, 2, 0)
+            # msgLog = (f"{self.indent} User: {user}")
+            # logMsg(msgLog, 2, 0)
             try:
                 albums = client.get_account_albums(user)
             except:
