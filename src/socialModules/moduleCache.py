@@ -125,7 +125,6 @@ class moduleCache(Content): #,Queue):
         return fileName
 
     def initApi(self, keys):
-        self.indent = ""
         self.service = 'Cache'
         self.postaction = 'delete'
         self.postsType = 'posts'
