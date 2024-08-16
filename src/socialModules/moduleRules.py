@@ -906,7 +906,8 @@ class moduleRules:
                 msgLog = (f"{msgLog} Recording Link: {link} "
                           f"in file {apiSrc.fileNameBase(apiDst)}.last")
         else:
-            msgLog = (f"{indent}No post to schedule " )
+            msgLog = (f"{indent}No post to schedule in " 
+                      f" {msgAction}")
                       #f"from {apiSrc.getUrl()} " 
                       #f"in {self.getNickAction(action)}@" 
                       #f"{self.getProfileAction(action)}")
