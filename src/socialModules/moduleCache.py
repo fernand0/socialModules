@@ -143,8 +143,8 @@ class moduleCache(Content): #,Queue):
         self.socialNetwork = ""
         self.user = self.src[2]
         self.nick = self.user
-        self.auxClass = self.src[1][2]
-        logging.info(f"{self.indent} auxClass: {self.auxClass}")
+        # self.auxClass = self.src[1][2]
+        # logging.info(f"{self.indent} auxClass: {self.auxClass}")
         #self.apiDst = getApi(self.auxClass, self.src[1][3])
         self.apiDst = getModule(self.src[1][2], self.indent)
         logging.info(f"{self.indent} dstClass: {self.apiDst}")
@@ -562,35 +562,38 @@ class moduleCache(Content): #,Queue):
     #     return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
     def setPostLink(self, post, newLink):
+        logging.info(f"{self.indent} setPostLink ")
         #FIXME. This should be similar to setPostTitle
         if post:
-            if hasattr(self, 'auxClass'):
-                myModule = f"module{self.auxClass.capitalize()}"
-                importlib.import_module(myModule)
-                mod = sys.modules.get(myModule)
-                cls = getattr(mod, myModule)
-                api = cls(self.indent)
-                apiCmd = getattr(api, 'setPostLink')
-                post  = apiCmd(post, newLink)
-            # else:
-            #     # Old style
-            #     title = post[0]
+            post = self.apiSrc.setPostLink(post, newLink)
+            # if hasattr(self, 'auxClass'):
+            #     myModule = f"module{self.auxClass.capitalize()}"
+            #     importlib.import_module(myModule)
+            #     mod = sys.modules.get(myModule)
+            #     cls = getattr(mod, myModule)
+            #     api = cls(self.indent)
+            #     apiCmd = getattr(api, 'setPostLink')
+            #     post  = apiCmd(post, newLink)
+            # # else:
+            # #     # Old style
+            # #     title = post[0]
             return post
 
     def setPostTitle(self, post, newTitle):
         if post:
-            if hasattr(self, 'auxClass'):
-                myModule = f"module{self.auxClass.capitalize()}"
-                import importlib
-                importlib.import_module(myModule)
-                mod = sys.modules.get(myModule)
-                cls = getattr(mod, myModule)
-                api = cls(self.indent)
-                apiCmd = getattr(api, 'setPostTitle')
-                post  = apiCmd(post, newTitle)
-            # else:
-            #     # Old style
-            #     title = post[0]
+            post = self.apiSrc.setPostTitle(post, newTitle)
+            # if hasattr(self, 'auxClass'):
+            #     myModule = f"module{self.auxClass.capitalize()}"
+            #     import importlib
+            #     importlib.import_module(myModule)
+            #     mod = sys.modules.get(myModule)
+            #     cls = getattr(mod, myModule)
+            #     api = cls(self.indent)
+            #     apiCmd = getattr(api, 'setPostTitle')
+            #     post  = apiCmd(post, newTitle)
+            # # else:
+            # #     # Old style
+            # #     title = post[0]
             return post
 
     def getPostTitle(self, post):
@@ -668,22 +671,21 @@ class moduleCache(Content): #,Queue):
 
     def editApiLink(self, post, newLink=''):
         oldLink = self.getPostLink(post)
-        if hasattr(self, 'auxClass'):
-            myModule = f"module{self.auxClass.capitalize()}"
-            import importlib
-            importlib.import_module(myModule)
-            mod = sys.modules.get(myModule)
-            cls = getattr(mod, myModule)
-            api = cls(self.indent)
-            apiCmd = getattr(api, 'editApiLink')
-            content  = apiCmd(post, newLink)
-        else:
-            post = post[:1] + ( newLink, ) + post[2:]
         idPost = self.getLinkPosition(oldLink)
-        posts = self.getPosts()
-        self.assignPosts(posts)
+        oldTitle = self.getPostTitle(post)
+        self.setPostLink(post, newLink)
         self.updatePostsCache()
-        return(idPost)
+        # if hasattr(self, 'auxClass'):
+        #     myModule = f"module{self.auxClass.capitalize()}"
+        #     import importlib
+        #     importlib.import_module(myModule)
+        #     mod = sys.modules.get(myModule)
+        #     cls = getattr(mod, myModule)
+        #     api = cls(self.indent)
+        #     apiCmd = getattr(api, 'editApiLink')
+        #     content  = apiCmd(post, newLink)
+        # else:
+        #     post = post[:1] + ( newLink, ) + post[2:]
 
     def editApiTitle(self, post, newTitle=''):
         oldLink = self.getPostLink(post)
@@ -694,7 +696,6 @@ class moduleCache(Content): #,Queue):
         self.setPostTitle(post, newTitle)
         self.updatePostsCache()
         # FIXME. Twice?
-        return(self.getPosts())
 
     def insert(self, j, text):
         msgLog = (f"{self.indent} Inserting {text}")
@@ -1080,12 +1081,12 @@ def main():
 
         return
 
-    testingEditLink = False
+    testingEditLink = True
     if testingEditLink:
         print("Testing edit Post link")
         apiSrc.setPosts()
 
-        [ print(f"{i}) {apiSrc.getPostTitle(post)}")
+        [ print(f"{i}) {apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
          for i, post in enumerate(apiSrc.getPosts()) ]
         pos = int(input("Which post? "))
         post = apiSrc.getPost(pos)
@@ -1097,8 +1098,7 @@ def main():
         # posts[pos] = newPost
         print(f"new: {newPosts}")
         #apiSrc.assignPosts(posts)
-        print(apiSrc.updatePostsCache())
-
+        # print(apiSrc.updatePostsCache())
 
     testingPosts = True
     if testingPosts:
@@ -1107,7 +1107,7 @@ def main():
         posts = cmd
         posts = cmd()
         for i, post in enumerate(posts):
-            print(f"{i}) {apiSrc.getPostTitle(post)}")
+            print(f"{i}) {apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
         return
         apiSrc.setPosts()
         for i, post in enumerate(apiSrc.getPosts()):
@@ -1117,7 +1117,6 @@ def main():
 
 
     testingPublishPos = True
-
     if testingPublishPos:
         snDst = 'facebook'
         nickDst = 'Enlaces de fernand0'

@@ -165,7 +165,7 @@ class Content:
         nick = ''
         if hasattr(self, 'nick'):
             nick = getattr(self, 'nick')#, '')
-        elif hasattr(self, 'user'):
+        if not nick and hasattr(self, 'user'):
             nick = getattr(self, 'user')#, '')
         return nick
 
@@ -319,7 +319,9 @@ class Content:
             nameSrc = src.getNameModule()
             nameDst = dst.getNameModule()
 
-            user = src.getUser()
+            # user = src.getUser()
+            user = src.getNick()
+            logging.info(f"{self.indent} Userrrrrrr: {user} - {self.getUser()}")
             service = src.getService()
 
             dst.setNick()
