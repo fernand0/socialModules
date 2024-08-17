@@ -906,15 +906,15 @@ class moduleRules:
                 msgLog = (f"{msgLog} Recording Link: {link} "
                           f"in file {apiSrc.fileNameBase(apiDst)}.last")
         else:
-            msgLog = (f"{indent}No post to schedule in " 
+            msgLog = (f"{indent}No post to schedule in "
                       f" {msgAction}")
-                      #f"from {apiSrc.getUrl()} " 
-                      #f"in {self.getNickAction(action)}@" 
+                      #f"from {apiSrc.getUrl()} "
+                      #f"in {self.getNickAction(action)}@"
                       #f"{self.getProfileAction(action)}")
 
         if simmulate:
             if post:
-                msgLog = (f"{indent}Would schedule in " 
+                msgLog = (f"{indent}Would schedule in "
                           f" {msgAction} "
                           f"{msgLog}")
             logMsg(msgLog, 1, 1)
@@ -1072,17 +1072,17 @@ class moduleRules:
                     tSleep = 2.0
                     msgLog= f"{indent} No Waiting"
 
-                msgLog = (f"{msgLog} for {theAction}  " 
-                          f"from {apiSrc.getUrl()} " 
-                          f"in {self.getNickAction(action)}@" 
+                msgLog = (f"{msgLog} for {theAction}  "
+                          f"from {apiSrc.getUrl()} "
+                          f"in {self.getNickAction(action)}@"
                           f"{self.getProfileAction(action)}")
                 logMsg(msgLog, 1, 1)
 
                 for i in range(num):
                     time.sleep(tSleep)
-                    msgLog = (f"{indent} End Waiting {theAction} " 
-                              f"from {apiSrc.getUrl()} " 
-                              f"in {self.getNickAction(action)}@" 
+                    msgLog = (f"{indent} End Waiting {theAction} "
+                              f"from {apiSrc.getUrl()} "
+                              f"in {self.getNickAction(action)}@"
                               f"{self.getProfileAction(action)}")
                     logMsg(msgLog, 1, 1)
                     res = self.executePublishAction(indent, msgAction,

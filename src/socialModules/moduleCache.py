@@ -30,8 +30,8 @@ class moduleCache(Content): #,Queue):
         super().__init__(indent)
         self.postaction = 'delete'
 
-    def getApiAux(self):
-        api = self.apiAux
+    def getApiDst(self):
+        api = self.apiDst
         # if hasattr(self, 'auxClass'):
         #     myModule = f"module{self.auxClass.capitalize()}"
         #     importlib.import_module(myModule)
@@ -40,6 +40,12 @@ class moduleCache(Content): #,Queue):
         #     myModule = f"{self.indent} {cls}"
         #     api = cls()
         return api
+
+    def getUser(self):
+        user = ''
+        if hasattr(self, 'apiSrc'):
+            user = self.apiSrc.getUser()
+        return user
 
     def getProfileR(self, rule):
         msgLog = (f"{self.indent} getProfileR {rule}")
@@ -82,12 +88,12 @@ class moduleCache(Content): #,Queue):
     #     # self.auxClass = self.src[0]
     #     logging.info(f"urlll: {self.getUser()}")
     #     # if not nick:
-    #     #     apiAux = self.getApiAux()
-    #     #     apiAux.indent = f"{self.indent} "
-    #     #     apiAux.setClient(self.src[2])
-    #     #     apiAux.setUrl(self.src[2])
-    #     #     apiAux.setNick()
-    #     self.nick = apiAux.getNick()
+    #     #     apiDst = self.getApiDst()
+    #     #     apiDst.indent = f"{self.indent} "
+    #     #     apiDst.setClient(self.src[2])
+    #     #     apiDst.setUrl(self.src[2])
+    #     #     apiDst.setNick()
+    #     self.nick = apiDst.getNick()
 
     def fileNameBase(self, dst):
         self.indent = f"{self.indent} "
@@ -105,13 +111,14 @@ class moduleCache(Content): #,Queue):
             nameSrc = src.getNameModule()
 
             # self.setNick()
-            user = self.getNick()
+            #user = self.getNick()
+            user = self.apiSrc.getNick()
             logging.info(f"Userrrrrrr: {user} - {self.getUser()}")
-            self.setServiceAux()
-            service = self.getServiceAux()
+            # self.setServiceAux()
+            service = self.apiSrc.getService()
 
-            userD = self.apiAux.getUser()
-            serviceD = self.apiAux.getService()
+            userD = self.apiDst.getUser()
+            serviceD = self.apiDst.getService()
             # userD = self.src[1][3]
             # serviceD = self.src[1][2]
             nameDst = serviceD.capitalize()
@@ -137,8 +144,25 @@ class moduleCache(Content): #,Queue):
         self.user = self.src[2]
         self.nick = self.user
         self.auxClass = self.src[1][2]
-        logging.info(f"auxClass: {self.auxClass}")
-        self.apiAux = getApi(self.auxClass, self.src[1][3])
+        logging.info(f"{self.indent} auxClass: {self.auxClass}")
+        #self.apiDst = getApi(self.auxClass, self.src[1][3])
+        self.apiDst = getModule(self.src[1][2], self.indent)
+        logging.info(f"{self.indent} dstClass: {self.apiDst}")
+        self.apiDst.setUser(self.src[1][3])
+        self.apiSrc = getModule(self.src[0], self.indent)
+        logging.info(f"{self.indent} srcClass: {self.apiSrc}")
+        self.apiSrc.setUrl(self.src[2])
+        self.apiSrc.setUser()
+        self.apiSrc.setNick()
+        logging.info(f"{self.indent} Dst: {self.apiDst.getUser()}")
+        logging.info(f"{self.indent} Dst: {self.apiDst.getNick()}")
+        logging.info(f"{self.indent} Dst: {self.apiDst.getName()}")
+        logging.info(f"{self.indent} Src: {self.apiSrc.getUser()}")
+        logging.info(f"{self.indent} Src: {self.apiSrc.getNick()}")
+        logging.info(f"{self.indent} Src: {self.apiSrc.getName()}")
+        logging.info(f"{self.indent} Src: {self.apiSrc.getUrl()}")
+        #FIXME. Do we need three?
+
         # We are instatiating (but not configuring) the aux api
         self.fileName = ""
 
@@ -575,25 +599,26 @@ class moduleCache(Content): #,Queue):
         logMsg(msgLog, 2, 0)
         title = ''
         if post:
-            if hasattr(self, 'auxClass'):
-                # msgLog = (f"{self.indent} auxClass: {self.auxClass}")
-                # logMsg(msgLog, 2, 0)
-                if isinstance(self.auxClass, str):
-                    myModule = f"module{self.auxClass.capitalize()}"
-                    import importlib
-                    importlib.import_module(myModule)
-                    mod = sys.modules.get(myModule)
-                    cls = getattr(mod, myModule)
-                    api = cls(self.indent)
-                else:
-                    api = self.auxClass
-                logging.debug(f"  Api: {api}")
-                logging.debug(f"  Post: {post}")
-                apiCmd = getattr(api, 'getPostTitle')
-                title  = apiCmd(post)
-            else:
-                # Old style
-                title = post[0]
+            title = self.apiSrc.getPostTitle(post)
+            # if hasattr(self, 'auxClass'):
+            #     # msgLog = (f"{self.indent} auxClass: {self.auxClass}")
+            #     # logMsg(msgLog, 2, 0)
+            #     if isinstance(self.auxClass, str):
+            #         myModule = f"module{self.auxClass.capitalize()}"
+            #         import importlib
+            #         importlib.import_module(myModule)
+            #         mod = sys.modules.get(myModule)
+            #         cls = getattr(mod, myModule)
+            #         api = cls(self.indent)
+            #     else:
+            #         api = self.auxClass
+            #     logging.debug(f"  Api: {api}")
+            #     logging.debug(f"  Post: {post}")
+            #     apiCmd = getattr(api, 'getPostTitle')
+            #     title  = apiCmd(post)
+            # else:
+            #     # Old style
+            #     title = post[0]
         msgLog = (f"{self.indent} End getPostTitle.")
         logMsg(msgLog, 2, 0)
         self.indent = self.indent[:-1]
@@ -605,20 +630,21 @@ class moduleCache(Content): #,Queue):
         logMsg(msgLog, 2, 0)
         link = ''
         if post:
-            if hasattr(self, 'auxClass'):
-                if isinstance(self.auxClass, str):
-                    myModule = f"module{self.auxClass.capitalize()}"
-                    import importlib
-                    importlib.import_module(myModule)
-                    mod = sys.modules.get(myModule)
-                    cls = getattr(mod, myModule)
-                    api = cls(self.indent)
-                else:
-                    api = self.auxClass
-                apiCmd = getattr(api, 'getPostLink')
-                link = apiCmd(post)
-            else:
-                link = post[1]
+            link = self.apiSrc.getPostLink(post)
+            # if hasattr(self, 'auxClass'):
+            #     if isinstance(self.auxClass, str):
+            #         myModule = f"module{self.auxClass.capitalize()}"
+            #         import importlib
+            #         importlib.import_module(myModule)
+            #         mod = sys.modules.get(myModule)
+            #         cls = getattr(mod, myModule)
+            #         api = cls(self.indent)
+            #     else:
+            #         api = self.auxClass
+            #     apiCmd = getattr(api, 'getPostLink')
+            #     link = apiCmd(post)
+            # else:
+            #     link = post[1]
         msgLog = (f"{self.indent} End getPostLink.")
         logMsg(msgLog, 2, 0)
         self.indent = self.indent[:-1]
@@ -898,9 +924,11 @@ def main():
     indent = ""
     apiSrc = rules.readConfigSrc(indent, src, more)
     print(f"Url: {apiSrc.getUrl()}")
-    print(f"apiAux: {apiSrc.getApiAux()}")
-    print(f"User apiAux: {apiSrc.getApiAux().getUser()}")
+    print(f"apiDst: {apiSrc.getApiDst()}")
+    print(f"User apiDst: {apiSrc.getApiDst().getUser()}")
     print(f"User: {apiSrc.getUser()}")
+    print(f"User src: {apiSrc.apiSrc.getUser()}")
+    print(f"User src: {apiSrc.apiSrc.getNick()}")
 
     testingFiles = False
 

@@ -359,8 +359,19 @@ def main():
             # break
     apiSrc = rules.readConfigSrc(indent, mySrc, more)
 
-    testingEditLink = False
-    if testingEditLink:
+    testingDrafts = True
+    if testingDrafts:
+        apiSrc.setPostsType('drafts')
+        apiSrc.setPosts()
+        print(f"Posts: {apiSrc.getPosts()}")
+        for i, post in enumerate(apiSrc.getPosts()):
+            print(f"{i}) {apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
+
+        return
+
+
+    testingPosts = True
+    if testingPosts:
         apiSrc.setPosts()
         print(f"Posts: {apiSrc.getPosts()}")
 
@@ -413,7 +424,7 @@ def main():
         cache.publishPost(api=apiSrc, post=post)
         return
 
-    extractImages = True
+    extractImages = False
     if extractImages:
         apiSrc.setPostsType('drafts')
         apiSrc.setPosts()

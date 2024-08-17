@@ -58,17 +58,19 @@ class moduleSlack(Content): #, Queue):
             nick = nick.split("/")[2].split('.')[0]
         self.nick = nick
 
-    def setUser(self):
-        if self.user and self.user.find('/')>=0:
-            self.name = self.user.split('/')[2].split('.')[0]
-            self.nick = self.user.split('/')[2]
-        else:
-            self.name = self.user
-        if self.user.find('@')>=0:
-            channel, user = self.user.split('@')
-            self.user = user
-            #self.setChannel(channel)
+    def setUser(self, user=''):
+        self.user = user
+        self.setNick()
 
+    def setNick(self, nick=''):
+        if not nick:
+            nick = self.getUrl()
+            if nick and nick.find('/')>=0:
+                nick = nick.split('/')[2].split('.')[0]
+            elif nick and nick.find('@')>=0:
+                channel, nick = nick.split('@')
+                #self.setChannel(channel)
+            self.nick = nick
 
     def setChannel(self, channel=''):
         # setPage in Facebook

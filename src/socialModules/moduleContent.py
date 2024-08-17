@@ -162,10 +162,11 @@ class Content:
         self.nick = nick
 
     def getNick(self):
+        nick = ''
         if hasattr(self, 'nick'):
             nick = getattr(self, 'nick')#, '')
-        else:
-            nick = ''
+        elif hasattr(self, 'user'):
+            nick = getattr(self, 'user')#, '')
         return nick
 
     def getAttribute(self, post, selector):
@@ -262,7 +263,7 @@ class Content:
         if hasattr(self, "getPostsType") and self.getPostsType():
             typeposts = self.getPostsType()
             if self.getPostsType() in ['posts', 'drafts', 'draft',
-                                       'favs', 'search']:
+                                       'favs', 'search', 'queue']:
                 cmd = getattr(
                     self, f"setApi{self.getPostsType().capitalize()}"
                 )
@@ -327,8 +328,8 @@ class Content:
                 # userD = dst.src[1][3]
                 # serviceD = dst.src[1][2]
                 # logging.info(f"Uuuuuu: {userD} - {serviceD}")
-                userD = dst.apiAux.getUser()
-                serviceD = dst.apiAux.getService()
+                userD = dst.apiDst.getUser()
+                serviceD = dst.apiDst.getService()
                 # logging.info(f"Uuuuuu: {userD} - {serviceD}")
             else:
                 userD = dst.getUser()
@@ -425,29 +426,36 @@ class Content:
     def setLastLink(self, dst = None):
         msgLog = (f"{self.indent} Start setLastLink")
         logMsg(msgLog, 1, 0)
-        if hasattr(self, 'fileName') and self.fileName:
-            fileName = f"{self.fileName}.last"
-        else:
-            if dst:
-                self.fileName = self.fileNameBase(dst)
-                fileName = f"{self.fileName}.last"
-            else:
-                msgLog = (f"{self.indent} No dst")
-                logMsg(msgLog, 2, 0)
-                url = self.getUrl()
-                service = self.service.lower()
-                nick = self.getNick()
-                page = self.getPage()
-                if page:
-                    nick = f"{nick}-{page}"
-                fileName = (f"{fileNamePath(url, (service, nick))}.last")
+        fileName = (f"{self.fileNameBase(dst)}.last")
+        # if hasattr(self, 'fileName') and self.fileName:
+        #     fileName = f"{self.fileName}.last"
+        # else:
+        #     if dst:
+        #         self.fileName = self.fileNameBase(dst)
+        #         fileName = f"{self.fileName}.last"
+        #     else:
+        #         msgLog = (f"{self.indent} No dst")
+        #         logMsg(msgLog, 2, 0)
+        #         url = self.getUrl()
+        #         service = self.service.lower()
+        #         nick = self.getNick()
+        #         page = self.getPage()
+        #         if page:
+        #             nick = f"{nick}-{page}"
+        #         fileName = (f"{fileNamePath(url, (service, nick))}.last")
 
         lastTime = ''
         linkLast = ''
         msgLog = checkFile(fileName, self.indent)
+        logMsg(msgLog, 2, 0)
         if 'OK' in msgLog:
-            with open(fileName, "rb") as f:
-                linkLast = f.read().decode().split()  # last published
+            try:
+                with open(fileName, "rb") as f:
+                    linkLast = f.read()
+                    linkLast = linkLast.decode().split()  # last published
+            except:
+                self.report(self.service, self.indent, f"fileName: {fileName}", sys.exc_info())
+
             lastTime = os.path.getctime(fileName)
         else:
             lastTime = 0
