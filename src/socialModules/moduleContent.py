@@ -113,15 +113,13 @@ class Content:
         else:
             self.report(self.service, "No keys", "", '')
             self.client = None
-        msgLog = (f"{self.indent} End setClientt")
-        logMsg(msgLog, 1, 0)
         self.indent = self.indent[:-1]
-        msgLog = (f"{self.indent} End setClient")
+        msgLog = (f"{self.indent} End setClientt")
         logMsg(msgLog, 1, 0)
 
     def getService(self):
-        msgLog = (f"{self.indent} getService")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} getService")
+        # logMsg(msgLog, 2, 0)
         # if hasattr(self, 'auxClass'):
         #     msgLog = (f"{self.indent} has auxClass {self.auxClass}")
         #     logMsg(msgLog, 2, 0)
@@ -239,12 +237,12 @@ class Content:
     def setPosts(self):
         msgLog = f"{self.indent} Start setPosts"
         logMsg(msgLog, 2, 0)
-        nick = self.getNick()
+        # nick = self.getNick()
         self.indent = f"{self.indent} "
-        identifier = nick
+        # identifier = nick
 
         typeposts = self.getPostsType()
-        msgLog = (f"{self.indent} Setting type {self.getPostsType()}")
+        msgLog = (f"{self.indent}  Posts type {self.getPostsType()}")
         logMsg(msgLog, 2, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
             typeposts = self.getPostsType()
@@ -262,6 +260,8 @@ class Content:
         else:
             cmd = getattr(self, "setApiPosts")
 
+        msgLog = f"{self.indent}  Command: {cmd}"
+        logMsg(msgLog, 2, 0)
         posts = cmd()
         # msgLog = (f"{self.indent} service {self.service} posts: {posts}")
         # logMsg(msgLog, 2, 0)
@@ -435,7 +435,8 @@ class Content:
 
         lastTime = ''
         linkLast = ''
-        msgLog = checkFile(fileName, self.indent)
+        checkR = checkFile(fileName, "{self.indent} ")
+        msgLog = f"{self.indent} {checkR}"
         logMsg(msgLog, 2, 0)
         if 'OK' in msgLog:
             try:
@@ -507,14 +508,14 @@ class Content:
         fileNameNext = ''
         if dst:
             fileNameNext = f"{self.fileNameBase(dst)}.timeNext"
-            msgLog = checkFile(fileNameNext, self.indent)
+            msgLog = checkFile(fileNameNext, f"{self.indent} ")
             if not 'OK' in msgLog:
                 msgLog = (f"file {fileNameNext} does not exist. "
                           f"I'm going to create it.")
                 self.report('', msgLog, '', '')
             with open(fileNameNext,'wb') as f:
                 pickle.dump((tnow, tSleep), f)
-            msgLog = (f"{self.indent} File updated: {fileNameNext}")
+            msgLog = (f"{self.indent}  File updated: {fileNameNext}")
             logMsg(msgLog, 2, 0)
         else:
             msgLog = (f"not implemented!")
@@ -633,14 +634,14 @@ class Content:
 
     def getPost(self, i):
         self.indent = f"{self.indent} "
-        msgLog = (f"{self.indent} start getPost pos {i}.")
+        msgLog = (f"{self.indent} Start getPost pos {i}.")
         logMsg(msgLog, 2, 0)
         post = None
         posts = self.getPosts()
         if posts and (i >= 0) and (i < len(posts)):
             post = posts[i]
 
-        msgLog = (f"{self.indent} End getPost pos {i}.")
+        msgLog = (f"{self.indent} End getPost")
         logMsg(msgLog, 2, 0)
         self.indent = self.indent[:-1]
         return post
@@ -810,7 +811,6 @@ class Content:
         return text
 
     def getPosNextPost(self):
-        self.indent = f"{self.indent} "
         msgLog = (f"{self.indent} Start getPosNextPost.")
         logMsg(msgLog, 2, 0)
         posts = self.getPosts()
@@ -830,7 +830,6 @@ class Content:
             # logMsg(msgLog, 2, 0)
         msgLog = (f"{self.indent} End getPosNextPost.")
         logMsg(msgLog, 2, 0)
-        self.indent = self.indent[:-1]
         return posLast
 
     def getNumNextPosts(self, num):

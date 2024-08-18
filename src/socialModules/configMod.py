@@ -198,7 +198,7 @@ def updateLastLink(url, link, socialNetwork=()):
 def getModule(profile, indent=''):
     # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
     indent = f"{indent} "
-    msgLog = (f"{indent} Start getModule")
+    msgLog = (f"{indent} Start getModule {profile}")
     logMsg(msgLog, 2, 0)
     serviceName = profile.capitalize()
 

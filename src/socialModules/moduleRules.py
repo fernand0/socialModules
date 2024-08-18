@@ -889,7 +889,6 @@ class moduleRules:
                             simmulate, nextPost=True, pos=-1):
         res = ''
 
-        # The source of data can have changes while we were waiting
         resMsg = ''
         postaction = ''
         apiSrc.setPosts()
@@ -1024,10 +1023,10 @@ class moduleRules:
                 sys.stderr.write(f"Error: {msgLog}\n")
             return f"End: {msgLog}"
 
-        msgLog = f"{indent}  apiSrc: {apiSrc}"
-        logMsg(msgLog, 2, 0)
-        msgLog = f"{indent}  apiDst: {apiDst}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent}  apiSrc: {apiSrc}"
+        # logMsg(msgLog, 2, 0)
+        # msgLog = f"{indent}  apiDst: {apiDst}"
+        # logMsg(msgLog, 2, 0)
 
         apiSrc.setLastLink(apiDst)
         #FIXME: best in readConfigSrc (readConfigDst, since we need it)?

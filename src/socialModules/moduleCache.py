@@ -68,8 +68,8 @@ class moduleCache(Content): #,Queue):
     #         serviceAux =  self.service
     #     self.serviceAux = serviceAux.capitalize()
 
-    def getServiceAux(self):
-        return self.serviceAux
+    # def getServiceAux(self):
+    #     return self.serviceAux
 
     def setPostsType(self, postsType):
         # FIXME. Is this ok?
@@ -113,7 +113,7 @@ class moduleCache(Content): #,Queue):
             # self.setNick()
             #user = self.getNick()
             user = self.apiSrc.getNick()
-            logging.info(f"Userrrrrrr: {user} - {self.getUser()}")
+            # logging.info(f"Userrrrrrr: {user} - {self.getUser()}")
             # self.setServiceAux()
             service = self.apiSrc.getService()
 
@@ -143,24 +143,20 @@ class moduleCache(Content): #,Queue):
         self.socialNetwork = ""
         self.user = self.src[2]
         self.nick = self.user
-        # self.auxClass = self.src[1][2]
-        # logging.info(f"{self.indent} auxClass: {self.auxClass}")
-        #self.apiDst = getApi(self.auxClass, self.src[1][3])
-        self.apiDst = getModule(self.src[1][2], self.indent)
-        logging.info(f"{self.indent} dstClass: {self.apiDst}")
+        self.apiDst = getModule(self.src[1][2], f"{self.indent}  (c)")
         self.apiDst.setUser(self.src[1][3])
-        self.apiSrc = getModule(self.src[0], self.indent)
-        logging.info(f"{self.indent} srcClass: {self.apiSrc}")
+        self.apiSrc = getModule(self.src[0], f"{self.indent}  (c)")
+        # logging.info(f"{self.indent} srcClass: {self.apiSrc}")
         self.apiSrc.setUrl(self.src[2])
         self.apiSrc.setUser()
         self.apiSrc.setNick()
-        logging.info(f"{self.indent} Dst: {self.apiDst.getUser()}")
-        logging.info(f"{self.indent} Dst: {self.apiDst.getNick()}")
-        logging.info(f"{self.indent} Dst: {self.apiDst.getName()}")
-        logging.info(f"{self.indent} Src: {self.apiSrc.getUser()}")
-        logging.info(f"{self.indent} Src: {self.apiSrc.getNick()}")
-        logging.info(f"{self.indent} Src: {self.apiSrc.getName()}")
-        logging.info(f"{self.indent} Src: {self.apiSrc.getUrl()}")
+        # logging.info(f"{self.indent} Dst: {self.apiDst.getUser()}")
+        # logging.info(f"{self.indent} Dst: {self.apiDst.getNick()}")
+        # logging.info(f"{self.indent} Dst: {self.apiDst.getName()}")
+        # logging.info(f"{self.indent} Src: {self.apiSrc.getUser()}")
+        # logging.info(f"{self.indent} Src: {self.apiSrc.getNick()}")
+        # logging.info(f"{self.indent} Src: {self.apiSrc.getName()}")
+        # logging.info(f"{self.indent} Src: {self.apiSrc.getUrl()}")
         #FIXME. Do we need three?
 
         # We are instatiating (but not configuring) the aux api
@@ -326,36 +322,30 @@ class moduleCache(Content): #,Queue):
         return(self.setApiPosts())
 
     def setApiPosts(self):
+        self.indent = f"{self.indent} "
         msgLog = f"{self.indent} Start setApiPosts"
         logMsg(msgLog, 2, 0)
-        fileNameQ = ''
-        url = self.getUrl()
-        service = self.getService()
-        nick = self.getNick()
-
-        if hasattr(self, 'fileName'):
-            fileNameQ = self.fileName
-        elif hasattr(self, "socialNetwork"):
-            service = self.socialNetwork
-            nick = self.nick
-        else:
-            service = self.getService()
-            nick = self.getUser()
-        # msgLog = f"{self.indent} Url: {url} service {service} nick {nick}"
-        # logMsg(msgLog, 2, 0)
-        if not fileNameQ:
-            # nick = self.getNick()
-            self.fileName = self.fileNameBase((service, nick))
-            fileNameQ = self.fileName+".queue"
-        else:
-            fileNameQ = fileNameQ+".queue"
-
+        # fileNameQ = ''
+        # service = self.getService()
+        # nick = self.getNick()
+        # if hasattr(self, 'fileName'):
+        #     fileNameQ = self.fileName
+        # elif hasattr(self, "socialNetwork"):
+        #     service = self.socialNetwork
+        #     nick = self.nick
+        # else:
+        #     service = self.getService()
+        #     nick = self.getUser()
+        # # msgLog = f"{self.indent} Url: {url} service {service} nick {nick}"
+        # # logMsg(msgLog, 2, 0)
+        # nick = self.getNick()
+        fileNameQ = f"{self.fileNameBase(self.apiDst)}.queue"
         msgLog = (f"{self.indent} File: %s" % fileNameQ)
         logMsg(msgLog, 2, 0)
         listP = []
         try:
-            msgLog = checkFile(fileNameQ)
-            logMsg(f"{self.indent} --- {msgLog}", 2, 0)
+            msgLog = checkFile(fileNameQ, f"{self.indent} ")
+            logMsg(f"{self.indent}  {msgLog}", 2, 0)
             if "OK" in msgLog:
                 with open(fileNameQ,'rb') as f:
                     try:
@@ -375,6 +365,7 @@ class moduleCache(Content): #,Queue):
 
         msgLog = f"{self.indent} End setApiPosts"
         logMsg(msgLog, 2, 0)
+        self.indent = self.indent[:-1]
 
         return(listP)
 
