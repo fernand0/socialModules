@@ -78,8 +78,9 @@ class Content:
         except:
             msgLog = (f"Does file {configFile} exist?")
             self.report({self.indent}, msgLog, 0, '')
-
-        msgLog = (f"{self.indent}  Getting keys")
+    
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Getting keys")
         logMsg(msgLog, 1, 0)
         keys = ''
         try:
@@ -92,27 +93,26 @@ class Content:
                           f"in {configFile}?")
                 logMsg(msgLog, 3, 0)
 
+        self.indent = f"{self.indent} "
         msgLog = (f"{self.indent} Starting initApi")
         logMsg(msgLog, 2, 0)
         # To avoid submodules logging.
         # logger = logging.getLogger('my_module_name')
         # https://stackoverflow.com/questions/35325042/python-logging-disable-logging-from-imported-modules
 
-        if True:
-            try:
-                client = self.initApi(keys)
-            except:
-                msgLog(f"{self.indent} Exception")
-                logMsg(msgLog, 2, 0)
-                if not config.sections and not keys:
-                    self.report({self.service}, "No keys", "", '')
-                else:
-                    self.report({self.service}, "Some problem", "", '')
+        try:
+            client = self.initApi(keys)
+        except:
+            msgLog(f"{self.indent} Exception")
+            logMsg(msgLog, 2, 0)
+            if not config.sections and not keys:
+                self.report({self.service}, "No keys", "", '')
+            else:
+                self.report({self.service}, "Some problem", "", '')
 
-            self.client = client
-        else:
-            self.report(self.service, "No keys", "", '')
-            self.client = None
+        self.client = client
+        self.indent = self.indent[:-1]
+        self.indent = self.indent[:-1]
         self.indent = self.indent[:-1]
         msgLog = (f"{self.indent} End setClientt")
         logMsg(msgLog, 1, 0)
@@ -242,7 +242,7 @@ class Content:
         # identifier = nick
 
         typeposts = self.getPostsType()
-        msgLog = (f"{self.indent}  Posts type {self.getPostsType()}")
+        msgLog = (f"{self.indent} Posts type {self.getPostsType()}")
         logMsg(msgLog, 2, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
             typeposts = self.getPostsType()
@@ -256,16 +256,17 @@ class Content:
                 cmd = getattr(
                     self, f"setApiPosts"
                 )
-
         else:
             cmd = getattr(self, "setApiPosts")
 
-        msgLog = f"{self.indent}  Command: {cmd}"
+        self.indent = f"{self.indent} "
+        msgLog = f"{self.indent} Command: {cmd}"
         logMsg(msgLog, 2, 0)
         posts = cmd()
         # msgLog = (f"{self.indent} service {self.service} posts: {posts}")
         # logMsg(msgLog, 2, 0)
         self.assignPosts(posts)
+        self.indent = self.indent[:-1]
         self.indent = self.indent[:-1]
         msgLog = f"{self.indent} end setPosts"
         logMsg(msgLog, 2, 0)
@@ -307,7 +308,6 @@ class Content:
 
             # user = src.getUser()
             user = src.getNick()
-            logging.info(f"{self.indent} Userrrrrrr: {user} - {self.getUser()}")
             service = src.getService()
 
             dst.setNick()
@@ -435,7 +435,7 @@ class Content:
 
         lastTime = ''
         linkLast = ''
-        checkR = checkFile(fileName, "{self.indent} ")
+        checkR = checkFile(fileName, f"{self.indent} ")
         msgLog = f"{self.indent} {checkR}"
         logMsg(msgLog, 2, 0)
         if 'OK' in msgLog:
@@ -1036,6 +1036,8 @@ class Content:
         return reply
 
     def publishPost(self, *args, **more):
+        msgLog = (f"{self.indent} Start publishPost")
+        logMsg(msgLog, 2, 0)
         msgLog = (f"{self.indent} Args: {args} More: {more}")
         logMsg(msgLog, 2, 0)
         api = ''
