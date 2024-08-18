@@ -159,8 +159,10 @@ class moduleImgur(Content): #, Queue):
         return self.getPostId(post)
 
     def getPostId(self, post):
-        print(f"Post: {post}")
-        return post.id
+        idPost = ''
+        if post:
+            idPost = post.id
+        return idPost
 
     def processReply(self, reply):
         res = ''
@@ -205,15 +207,15 @@ class moduleImgur(Content): #, Queue):
             api = more.get('api', '')
             title = api.getPostTitle(post)
             idPost = api.getPostId(post)
-        print(f"post: {post}")
-        print(f"api: {api}")
+        # print(f"post: {post}")
+        # print(f"api: {api}")
         # print(f"api: {api.auxClass}")
-        print(f"tit: {title} id: {idPost}")
-        # This method publishes (as public post) some gallery that is in draft
+        # print(f"tit: {title} id: {idPost}")
+        # # This method publishes (as public post) some gallery that is in draft
         # mode
         msgLog = (f"{self.indent} Publishing in: {self.service}")
         logMsg(msgLog, 1, 0)
-        msgLog = (f"{self.indent}  {post}")
+        msgLog = (f"{self.indent}  Post: {post}")
         logMsg(msgLog, 1, 0)
         api = self.getClient()
         # idPost = self.getPostId(post)

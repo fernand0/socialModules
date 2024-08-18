@@ -52,21 +52,21 @@ class moduleCache(Content): #,Queue):
         logMsg(msgLog, 2, 0)
         return rule[2:]
 
-    def setServiceAux(self):
-        serviceAux = ''
-        msgLog = (f"{self.indent} getService")
-        logMsg(msgLog, 2, 0)
-        if hasattr(self, 'auxClass'):
-            msgLog = (f"{self.indent} has auxClass {self.auxClass}")
-            logMsg(msgLog, 2, 0)
-            if isinstance(self.auxClass, tuple):
-                self.auxClass = self.auxClass[0]
-            serviceAux = self.auxClass
-        else:
-            msgLog = f"{self.indent} has not auxClass"
-            logMsg(msgLog, 2, 0)
-            serviceAux =  self.service
-        self.serviceAux = serviceAux.capitalize()
+    # def setServiceAux(self):
+    #     serviceAux = ''
+    #     msgLog = (f"{self.indent} getService")
+    #     logMsg(msgLog, 2, 0)
+    #     if hasattr(self, 'auxClass'):
+    #         msgLog = (f"{self.indent} has auxClass {self.auxClass}")
+    #         logMsg(msgLog, 2, 0)
+    #         if isinstance(self.auxClass, tuple):
+    #             self.auxClass = self.auxClass[0]
+    #         serviceAux = self.auxClass
+    #     else:
+    #         msgLog = f"{self.indent} has not auxClass"
+    #         logMsg(msgLog, 2, 0)
+    #         serviceAux =  self.service
+    #     self.serviceAux = serviceAux.capitalize()
 
     def getServiceAux(self):
         return self.serviceAux
@@ -746,19 +746,20 @@ class moduleCache(Content): #,Queue):
     def getPostId(self, post):
         idPost = ''
         if post:
-            if hasattr(self, 'auxClass'):
-                myModule = f"module{self.auxClass.capitalize()}"
-                import importlib
-                importlib.import_module(myModule)
-                mod = sys.modules.get(myModule)
-                cls = getattr(mod, myModule)
-                api = cls(self.indent)
-                apiCmd = getattr(api, 'getPostId')
-                idPost  = apiCmd(post)
-            else:
-                # Old style
-                link = self.getPostLink(post)
-                idPost = self.getLinkPosition(link)
+            idPost = self.apiSrc.getPostId(post)
+            #if hasattr(self, 'auxClass'):
+            #    myModule = f"module{self.auxClass.capitalize()}"
+            #    import importlib
+            #    importlib.import_module(myModule)
+            #    mod = sys.modules.get(myModule)
+            #    cls = getattr(mod, myModule)
+            #    api = cls(self.indent)
+            #    apiCmd = getattr(api, 'getPostId')
+            #    idPost  = apiCmd(post)
+            #else:
+            #    # Old style
+            #    link = self.getPostLink(post)
+            #    idPost = self.getLinkPosition(link)
         return idPost
 
     def deleteApiCache(self, idPost):
