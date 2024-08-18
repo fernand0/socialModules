@@ -376,10 +376,11 @@ class Content:
         url = self.getUrl()
         service = self.service.lower()
         nick = self.getUser()
-        if hasattr(self, 'fileName') and self.fileName:
-            fileName = f"{self.fileName}.last"
-        else:
-            fileName = (f"{fileNamePath(url, (service, nick))}.last")
+        fileName = (f"{self.fileNameBase()}.last")
+        #if hasattr(self, 'fileName') and self.fileName:
+        #    fileName = f"{self.fileName}.last"
+        #else:
+        #    fileName = (f"{fileNamePath(url, (service, nick))}.last")
         linkLast = ''
 
         # logging.debug(f"urll: {url}")
@@ -473,7 +474,8 @@ class Content:
                 url = self.getUrl()
                 service = self.service.lower()
                 nick = self.getUser()
-                fn = (f"{fileNamePath(url, (service, nick))}.last")
+                fn = f"{self.fileNameBase(other)}.last"
+                # fn = (f"{fileNamePath(url, (service, nick))}.last")
                 lastTime = os.path.getctime(fn)
                 myLastLink = self.getLastLink()
         except:

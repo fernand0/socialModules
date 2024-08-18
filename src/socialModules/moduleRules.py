@@ -760,8 +760,9 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         indent = f"{indent} "
 
-        apiSrc = getApi(self.getNameRule(src),
-                        self.getProfileRule(src), indent)
+        profile = self.getNameRule(src)
+        account = self.getProfileRule(src)
+        apiSrc = getApi(profile, account, indent)
         apiSrc.setPostsType(src[-1])
         apiSrc.setMoreValues(more)
 
@@ -784,10 +785,9 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         indent = f"{indent} "
 
-        #msgLog = f"{indent} action {action}"
-        #logMsg(msgLog, 2, 0)
-        apiDst = getApi(self.getNameAction(action),
-                        self.getDestAction(action), indent)
+        profile = self.getNameAction(action)
+        account = self.getDestAction(action)
+        apiDst = getApi(profile, account, indent)
         apiDst.setMoreValues(more)
 
         if apiSrc:
