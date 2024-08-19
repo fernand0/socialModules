@@ -647,17 +647,18 @@ class moduleCache(Content): #,Queue):
     def getPostContentHtml(self, post):
         content = ''
         if post:
-            if hasattr(self, 'auxClass'):
-                myModule = f"module{self.auxClass.capitalize()}"
-                import importlib
-                importlib.import_module(myModule)
-                mod = sys.modules.get(myModule)
-                cls = getattr(mod, myModule)
-                api = cls(self.indent)
-                apiCmd = getattr(api, 'getPostContentHtml')
-                content  = apiCmd(post)
-            else:
-                content = post[4]
+            content = self.apiSrc.getPostContentHtml()
+            #if hasattr(self, 'auxClass'):
+            #    myModule = f"module{self.auxClass.capitalize()}"
+            #    import importlib
+            #    importlib.import_module(myModule)
+            #    mod = sys.modules.get(myModule)
+            #    cls = getattr(mod, myModule)
+            #    api = cls(self.indent)
+            #    apiCmd = getattr(api, 'getPostContentHtml')
+            #    content  = apiCmd(post)
+            #else:
+            #    content = post[4]
         return content
 
     def editApiLink(self, post, newLink=''):
