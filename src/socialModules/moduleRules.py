@@ -22,6 +22,15 @@ myModuleList = {}
 
 class moduleRules:
 
+    def indentPlus(self):
+        if not hasattr(self, 'indent'):
+            self.indent = " "
+        else:
+            self.indent = f"{self.indent} "
+
+    def indentLess(self):
+        self.indent = self.indent[:-1]
+        
     def checkRules(self, configFile = None, select=None):
         msgLog = "Checking rules"
         logMsg(msgLog, 1, 2)
@@ -31,12 +40,12 @@ class moduleRules:
         configFile = f"{CONFIGDIR}/{configFile}"
         res = config.read(configFile)
 
+        self.indentPlus()
         services = self.getServices()
-        logging.debug(f"Services: {services}")
+        logging.debug(f"{self.indent}Services: {services}")
         services['regular'].append('cache')
         # cache objects can be considered as regular for publishing elements
         # stored there
-        indent = 3*"  "+4*" "
 
         srcs = []
         srcsA = []
@@ -50,7 +59,7 @@ class moduleRules:
             if select and (section != select):
                 continue
             url = config.get(section, "url")
-            msgLog = f"Section: {section} Url: {url}"
+            msgLog = f" Section: {section} Url: {url}"
             logMsg(msgLog, 1, 1)
             self.indent = f"  {section}>"
             toAppend = ""
@@ -59,71 +68,56 @@ class moduleRules:
             moreSS = None
             # FIXME Could we avoid the last part for rules,
             # selecting services here?
-            # if "rss" in config.options(section):
-            #     #FIXME: Why is it managed separately?
-            #     rss = config.get(section, "rss")
-            #     msgLog = (f"{self.indent} Service rss -> {rss}")
-            #     logMsg(msgLog, 2, 0)
-            #     toAppend = ("rss", "set",
-            #                 urllib.parse.urljoin(url, rss), "posts")
-            #     srcs.append(toAppend)
-            #     more.append(moreS)
-            # else:
-            if True:
-                for service in services["regular"]:
-                    if (
-                        ("service" in config[section])
-                        and (service == config[section]["service"])
-                    ):
-                        msgLog = f"{self.indent} Service: {service}"
-                        logMsg(msgLog, 1, 1)
-                        theService = service
-                        api = getModule(service, self.indent)
-                        api.setUrl(url)
-                        # msgLog = f"{self.indent} Api: {api}"
-                        # logMsg(msgLog, 1, 1)
-                        if service in config[section]:
-                            serviceData = config.get(section, service)
-                            api.setService(service, serviceData)
-                            nameGet = f"get{service.capitalize()}"
-                            # msgLog = f"{self.indent} nameGet: {nameGet}"
-                            # logMsg(msgLog, 1, 1)
-                            if nameGet in api.__dir__():
-                                cmd =  getattr(api, nameGet)
-                                # msgLog = f"{self.indent} Service: {cmd()}"
-                                # logMsg(msgLog, 1, 1)
+            for service in services["regular"]:
+                if (
+                    ("service" in config[section])
+                    and (service == config[section]["service"])
+                ):
+                    msgLog = f"{self.indent} Service: {service}"
+                    logMsg(msgLog, 1, 1)
+                    theService = service
+                    api = getModule(service, self.indent)
+                    api.setUrl(url)
+                    if service in config[section]:
+                        serviceData = config.get(section, service)
+                        api.setService(service, serviceData)
+                        nameGet = f"get{service.capitalize()}"
+                        if nameGet in api.__dir__():
+                            cmd =  getattr(api, nameGet)
 
-                        if service in config[section]:
-                            api.setNick(config[section][service])
+                    if service in config[section]:
+                        api.setNick(config[section][service])
+                    else:
+                        api.setNick()
+
+                    self.indentPlus()
+                    msgLog = (f"{self.indent} Nick: {api.getNick()}")
+                    logMsg(msgLog, 2, 0)
+
+                    methods = self.hasSetMethods(service)
+                    msgLog = (f"{self.indent} Service {service} has "
+                              f"set {methods}")
+                    logMsg(msgLog, 2, 0)
+                    for method in methods:
+                        if 'posts' in moreS:
+                            if moreS['posts'] == method[1]:
+                               toAppend = (theService, "set",
+                                           api.getNick(), method[1])
                         else:
-                            api.setNick()
-                            # logging.info(f"url: {api.getUrl()}")
-
-                        msgLog = (f"{self.indent}  Nick: {api.getNick()}")
-                        logMsg(msgLog, 2, 0)
-
-                        methods = self.hasSetMethods(service)
-                        msgLog = (f"{self.indent}  Service {service} has "
-                                  f"set {methods}")
-                        logMsg(msgLog, 2, 0)
-                        for method in methods:
-                            if 'posts' in moreS:
-                                if moreS['posts'] == method[1]:
-                                   toAppend = (theService, "set",
-                                               api.getNick(), method[1])
+                           toAppend = (theService, "set", api.getNick(), method[1])
+                        if not (toAppend in srcs):
+                            if (('posts' in moreS)
+                                and (moreS['posts'] == method[1])):
+                                srcs.append(toAppend)
+                                more.append(moreS)
                             else:
-                               toAppend = (theService, "set", api.getNick(), method[1])
-                            if not (toAppend in srcs):
-                                if (('posts' in moreS)
-                                    and (moreS['posts'] == method[1])):
-                                    srcs.append(toAppend)
-                                    more.append(moreS)
-                                else:
-                                    # Available, but with no rules
-                                    srcsA.append(toAppend)
+                                # Available, but with no rules
+                                srcsA.append(toAppend)
             fromSrv = toAppend
-            msgLog = (f"{self.indent} fromSrv toAppend: {toAppend}")
+            msgLog = (f"{self.indent} We will append: {toAppend}")
             logMsg(msgLog, 2, 0)
+            if toAppend:
+                service = toAppend[0]
 
             if "time" in config.options(section):
                 timeW = config.get(section, "time")
@@ -142,22 +136,22 @@ class moduleRules:
                 postsType = config[section]["posts"]
             else:
                 postsType = "posts"
-            msgLog = f"{self.indent} Type post {postsType}"
+            msgLog = f"{self.indent} Type {postsType}"
             logMsg(msgLog, 2, 0)
             if fromSrv:
                 fromSrv = ( fromSrv[0], fromSrv[1], fromSrv[2], postsType,)
-                for service in services["special"]:
+                for serviceS in services["special"]:
                     toAppend = ""
-                    if service in config.options(section):
-                        valueE = config.get(section, service).split("\n")
+                    if serviceS in config.options(section):
+                        valueE = config.get(section, serviceS).split("\n")
                         for val in valueE:
                             if val in config[section]:
                                 nick = config.get(section, val)
                             else:
                                 nick = api.getNick()
-                            if service == "direct":
+                            if serviceS == "direct":
                                 url = "posts"
-                            toAppend = (service, url, val, nick) #, timeW, bufferMax)
+                            toAppend = (serviceS, url, val, nick) #, timeW, bufferMax)
                             if toAppend not in dsts:
                                 if 'service' not in toAppend:
                                     dsts.append(toAppend)
@@ -171,23 +165,27 @@ class moduleRules:
                                     ruls[fromSrv] = []
                                     ruls[fromSrv].append(toAppend)
 
-                                if service == 'cache':
+                                if serviceS == 'cache':
                                     hasSpecial = True
 
-                self.indent = f"{self.indent} "
-                for service in services["regular"]:
-                    if ((service == 'cache')
-                        or (service == 'xmlrpc')
-                        or (service == theService)):
+                msgLog = f"{self.indent} Checking actions for {service}"
+                logMsg(msgLog, 2, 0)
+                self.indentPlus()
+                for serviceD in services["regular"]:
+                    if ((serviceD == 'cache')
+                        or (serviceD == 'xmlrpc')
+                        or (serviceD == theService)):
                         continue
                     toAppend = ""
-                    if service in config.options(section):
-                        msgLog = (f"{self.indent} Service [{service}] checking ")
+                    if serviceD in config.options(section):
+                        msgLog = (f"{self.indent} Service {service} -> {serviceD} checking ")
                         logMsg(msgLog, 2, 0)
-                        methods = self.hasPublishMethod(service)
-                        msgLog = (f"{self.indent} Service {service} has "
+                        self.indentPlus()
+                        methods = self.hasPublishMethod(serviceD)
+                        msgLog = (f"{self.indent} Service {serviceD} has "
                                   f"publish {methods}")
                         logMsg(msgLog, 2, 0)
+                        self.indentLess()
                         for method in methods:
                             if not method[1]:
                                 mmethod = 'post'
@@ -196,8 +194,8 @@ class moduleRules:
                             toAppend = (
                                     "direct",
                                     mmethod,
-                                    service,
-                                    config.get(section, service)
+                                    serviceD,
+                                    config.get(section, serviceD)
                                     )
 
                             if not (toAppend in dsts):
@@ -429,6 +427,7 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         self.more = mor
 
+        self.indentLess()
         msgLog = "End Checking rules"
         logMsg(msgLog, 1, 2)
 
@@ -510,7 +509,7 @@ class moduleRules:
         return rules
 
     def hasSetMethods(self, service):
-        self.indent = f"{self.indent} "
+        self.indentPlus() 
         msgLog = f"{self.indent} Service {service} checking set methods"
         logMsg(msgLog, 2, 0)
         if service == "social":
@@ -550,11 +549,11 @@ class moduleRules:
                     toAppend = (action, target)
                     if not (toAppend in methods):
                         methods.append(toAppend)
-        self.indent = self.indent[:-1]
+        self.indentLess()
         return methods
 
     def hasPublishMethod(self, service):
-        self.indent = f"{self.indent} "
+        self.indentPlus() 
         msgLog = (f"{self.indent} Start "
                   f"Checking service publish methods")
         logMsg(msgLog, 2, 0)
@@ -564,12 +563,10 @@ class moduleRules:
             listMethods = hasPublish[service]
         else:
             clsService = getModule(service, self.indent)
-            msgLog = f"{self.indent} Service cls: {clsService}"
-            logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent} Service cls: {clsService}"
+            # logMsg(msgLog, 2, 0)
 
             listMethods = clsService.__dir__()
-            # msgLog = f"{self.indent} Service listMethods: {listMethods}"
-            # logMsg(msgLog, 2, 0)
             hasPublish[service] = listMethods
 
         methods = []
@@ -578,11 +575,8 @@ class moduleRules:
             if method.find("publish") >= 0:
                 action = "publish"
                 target = ""
-                # moduleService = clsService.publishPost.__module__
                 if method.find("Api") >= 0:
                     target = method[len("publishApi"):].lower()
-                # else:
-                #     target = method[len("publish"):].lower()
 
                 if target and (target!='image'):
                     msgLog = f"{self.indent} Service target: {target}"
@@ -590,10 +584,12 @@ class moduleRules:
                     toAppend = (action, target)
                     if not (toAppend in methods):
                         methods.append(toAppend)
-        self.indent = self.indent[:-1]
+        self.indentLess()
         return methods
 
     def getServices(self):
+        msgLog = f"{self.indent} Start getServices"
+        logMsg(msgLog, 2, 0)
         modulesFiles = os.listdir(path)
         modules = {"special": ["cache", "direct"], "regular": [], "other": ['service']}
         # Initialized with some special services
@@ -605,6 +601,8 @@ class moduleRules:
                     # We drop the 'module' and the '.py' parts
                     modules["regular"].append(moduleName)
 
+        msgLog = f"{self.indent} End getServices"
+        logMsg(msgLog, 2, 0)
         return modules
 
     def printDict(self, myList, title):

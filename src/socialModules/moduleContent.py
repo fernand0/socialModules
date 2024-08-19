@@ -53,8 +53,8 @@ class Content:
         # logMsg(msgLog, 1, 1)
         if nameSet in self.__dir__():
             cmd =  getattr(self, nameSet)
-            msgLog = f"{self.indent} Cmd set: {cmd}"
-            logMsg(msgLog, 1, 1)
+            # msgLog = f"{self.indent} Cmd set: {cmd}"
+            # logMsg(msgLog, 1, 1)
             cmd(serviceData)
 
     def setClient(self, account):
