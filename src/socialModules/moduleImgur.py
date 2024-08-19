@@ -44,27 +44,29 @@ class moduleImgur(Content): #, Queue):
     def setApiPosts(self):
         posts = []
         client = self.getClient()
-        msgLog = (f"{self.indent} Client: {client} {self.user} ")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} Client: {client} {self.user} ")
+        # logMsg(msgLog, 2, 0)
         if self.user.find('https')>=0:
+            # FIXME. This should be a method
             user = self.user.split('/')[-1]
         else:
             user = self.user
 
-        msgLog = (f"{self.indent} User: {user}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} User: {user}")
+        # logMsg(msgLog, 2, 0)
 
         if client:
             albums = None
             try:
                 albums = client.get_account_albums(user)
-            except: 
-                msgLog = (f"{self.indent} Failed connection") 
+            except:
+                msgLog = (f"{self.indent} Failed connection")
                 logMsg(msgLog, 1, 1)
 
             if albums:
                 for album in albums:
-                    # msgLog = (f"{self.indent} Title: {time.ctime(album.datetime)} "
+                    # msgLog = (f"{self.indent} Title: "
+                    #           f"{time.ctime(album.datetime)} "
                     #           f"{album.title}")
                     # logMsg(msgLog, 2, 0)
                     if album.in_gallery:
@@ -77,10 +79,10 @@ class moduleImgur(Content): #, Queue):
     def setApiDrafts(self):
         posts = []
         client = self.getClient()
-        msgLog = (f"{self.indent} Client: {client}")
-        logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent} User: {self.user}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} Client: {client}")
+        # logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent} User: {self.user}")
+        # logMsg(msgLog, 2, 0)
 
         if client:
             if self.user.find('http')>= 0:
@@ -88,8 +90,8 @@ class moduleImgur(Content): #, Queue):
             else:
                 user = self.user
 
-            msgLog = (f"{self.indent} User: {user}")
-            logMsg(msgLog, 2, 0)
+            # msgLog = (f"{self.indent} User: {user}")
+            # logMsg(msgLog, 2, 0)
             try:
                 albums = client.get_account_albums(user)
             except:
@@ -98,9 +100,9 @@ class moduleImgur(Content): #, Queue):
                 albums = []
 
             for album in albums:
-                info = f"{time.ctime(album.datetime)} {album.title}"
-                msgLog = (f"{self.indent} Info: {info}")
-                logMsg(msgLog, 2, 0)
+                # info = f"{time.ctime(album.datetime)} {album.title}"
+                # msgLog = (f"{self.indent} Info: {info}")
+                # logMsg(msgLog, 2, 0)
                 if not album.in_gallery:
                     posts.append(album)
                     # logging.info(f"Draft: {info}")
@@ -157,8 +159,10 @@ class moduleImgur(Content): #, Queue):
         return self.getPostId(post)
 
     def getPostId(self, post):
-        print(f"Post: {post}")
-        return post.id
+        idPost = ''
+        if post:
+            idPost = post.id
+        return idPost
 
     def processReply(self, reply):
         res = ''
@@ -203,15 +207,15 @@ class moduleImgur(Content): #, Queue):
             api = more.get('api', '')
             title = api.getPostTitle(post)
             idPost = api.getPostId(post)
-        print(f"post: {post}")
-        print(f"api: {api}")
+        # print(f"post: {post}")
+        # print(f"api: {api}")
         # print(f"api: {api.auxClass}")
-        print(f"tit: {title} id: {idPost}")
-        # This method publishes (as public post) some gallery that is in draft
+        # print(f"tit: {title} id: {idPost}")
+        # # This method publishes (as public post) some gallery that is in draft
         # mode
         msgLog = (f"{self.indent} Publishing in: {self.service}")
         logMsg(msgLog, 1, 0)
-        msgLog = (f"{self.indent}  {post}")
+        msgLog = (f"{self.indent}  Post: {post}")
         logMsg(msgLog, 1, 0)
         api = self.getClient()
         # idPost = self.getPostId(post)
@@ -357,8 +361,19 @@ def main():
             # break
     apiSrc = rules.readConfigSrc(indent, mySrc, more)
 
-    testingEditLink = False
-    if testingEditLink:
+    testingDrafts = True
+    if testingDrafts:
+        apiSrc.setPostsType('drafts')
+        apiSrc.setPosts()
+        print(f"Posts: {apiSrc.getPosts()}")
+        for i, post in enumerate(apiSrc.getPosts()):
+            print(f"{i}) {apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
+
+        return
+
+
+    testingPosts = True
+    if testingPosts:
         apiSrc.setPosts()
         print(f"Posts: {apiSrc.getPosts()}")
 
@@ -411,7 +426,7 @@ def main():
         cache.publishPost(api=apiSrc, post=post)
         return
 
-    extractImages = True
+    extractImages = False
     if extractImages:
         apiSrc.setPostsType('drafts')
         apiSrc.setPosts()

@@ -55,7 +55,7 @@ class modulePocket(Content): #,Queue):
         except: # PocketException as exc:
             msgLog = (f"Authorize request exception: {sys.info_exc()}")
             logMsg(msgLog, 1, 0)
-        
+
         # Now exchange the request_token for an access_token
         try:
             response2 = requests.post(
@@ -284,7 +284,7 @@ def main():
         for key in rules.rules.keys():
             if ((key[0] == 'pocket')
                     and (key[2] == 'fernand0')):
-                apiSrc = rules.readConfigSrc("", key, rules.more[key])
+                apiSrc = rules.readConfigSrc(key, rules.more[key])
 
                 try:
                     apiSrc.setPosts()
@@ -294,12 +294,12 @@ def main():
                         print(f"Title: {apiSrc.getPostTitle(post)}")
         return
 
-    testingPublish = True
+    testingPublish = False
     if testingPublish:
         for key in rules.rules.keys():
             if ((key[0] == 'pocket')
                     and (key[2] == 'fernand0')):
-                apiSrc = rules.readConfigSrc("", key, rules.more[key])
+                apiSrc = rules.readConfigSrc(key, rules.more[key])
                 res = apiSrc.setPosts()
                 apiSrc.publishPost('titulo',
                                    'https://github.com/danielbrendel/hortusfox-web',
@@ -320,11 +320,10 @@ def main():
             if ((key[0] == 'pocket')
                     and (key[2] == 'fernand0kobo')):
 
-                apiSrc = rules.readConfigSrc("", key, rules.more[key])
+                apiSrc = rules.readConfigSrc("",key, rules.more[key])
 
                 apiSrc.setPosts()
                 print(f"Posts: {apiSrc.getPosts()}")
-                # return
                 for pos, post in enumerate(reversed(apiSrc.getPosts())):
                     title = apiSrc.getPostTitle(post)
                     print(f"Title: {title}")
@@ -345,7 +344,7 @@ def main():
                         import requests
                         from readabilipy import simple_json_from_html_string
                         try:
-                            req = requests.get(link)
+                            req = requests.get(link, headers={"User-Agent":"Mozilla/5.0"})
                             error = False
                             if req.status_code < 400:
                                 msg = title
@@ -383,7 +382,7 @@ def main():
                                 src = src[0]
                                 more = None
                                 indent = ''
-                                apiAux = rules.readConfigSrc(indent, src, more)
+                                apiAux = rules.readConfigSrc(src, more)
                                 action =  rules.rules[src][0]
                                 msgLog = (f"Action: {action}")
                                 logMsg(msgLog, 2, 0)

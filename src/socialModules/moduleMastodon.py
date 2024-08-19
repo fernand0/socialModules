@@ -67,11 +67,11 @@ class moduleMastodon(Content): #, Queue):
         try:
             logging.info(f"{self.indent} First, the image")
             res = self.getClient().media_post(image, "image/png")
-            self.lastRes = res 
+            self.lastRes = res
             logging.info(f"{self.indent} res {res}")
             logging.info(f"{self.indent} Now the post")
             res = self.getClient().status_post(post, media_ids = res['id'])
-            self.lastRes = res 
+            self.lastRes = res
         except:
             res = self.getClient().status_post(post+" "+link,
                     visibility='private')
@@ -258,11 +258,10 @@ def main():
     logging.debug(f"Key: {rulesList}")
     key = rulesList[0]
 
-
-    testingPosts = False
+    testingPosts = True
     if testingPosts:
         print("Testing Posts")
-        mastodon = rules.reacConfigSrc("", key, None)
+        mastodon = rules.readConfigSrc("", key, None)
         mastodon.setPosts()
         if mastodon.getPosts():
             toot = mastodon.getPosts()[0]
@@ -274,7 +273,7 @@ def main():
             print(f" -Post link {mastodon.extractPostLinks(toot)}")
         return
 
-    testingFav = True
+    testingFav = False
     if testingFav:
         print("Testing Fav")
         mastodon = rules.readConfigSrc("", key, None)

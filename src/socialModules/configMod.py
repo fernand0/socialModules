@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import importlib
 import logging
 import os
 import pickle
@@ -62,11 +63,11 @@ def setNextTime(blog, socialNetwork, tNow, tSleep):
         pickle.dump((tNow, tSleep), f)
     return fileNameNext
 
-def getNextTime(blog, socialNetwork):
+def getNextTime(blog, socialNetwork, indent=""):
     fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext'
     msgLog = (f"fileNameNext {fileNameNext}")
     logMsg(msgLog, 2, 0)
-    msgLog = checkFile(fileNameNext)
+    msgLog = checkFile(fileNameNext, indent)
     if 'OK' in msgLog:
         with open(fileNameNext,'rb') as f:
             tNow, tSleep = pickle.load(f)
@@ -75,39 +76,37 @@ def getNextTime(blog, socialNetwork):
         self.report(self.service, msgLog, '', '')
         return 0, 0
 
-def checkFile(fileName):
-    msgLog = f"Checking {fileName} "
-    logMsg(msgLog, 2, 0)
+def checkFile(fileName, indent=""):
+    msgLog = f"{indent} Start checkFile"
+    logMsg(msgLog, 2, 0) 
+    msgLog = f"{indent}  File: {fileName}"
+    logMsg(msgLog, 2, 0) 
     dirName = os.path.dirname(fileName)
 
-    msgLog = f"OK {fileName}"
+    msgRes = f"OK {fileName}"
     if not os.path.isdir(dirName):
-        msgLog = f"Directory {dirName} does not exist."
+        msgRes = f"Directory {dirName} does not exist."
     elif not os.path.isfile(fileName):
-        msgLog = f"File {fileName} does not exist."
+        msgRes = f"File {fileName} does not exist."
 
-    return msgLog
+    logMsg(f"{indent}  {msgRes}", 2, 0)
+    msgLog = f"{indent} End checkFile"
+    logMsg(msgLog, 2, 0)
+    return msgRes
 
 def getLastLink(fileName, indent=''):
     msgLog = (f"fileName: {fileName}")
     logMsg(msgLog, 2, 0)
     linkLast = ''
     timeLast = 0
-    msgLog = checkFile(fileName)
+    msgLog = checkFile(fileName, indent)
     if not "OK" in msgLog:
-        logging.info(msgLog)
+        msgLog = f"{indent} {msgLog}"
+        logMsg(msgLog, 3, 0)
     else:
         with open(fileName, "rb") as f:
             linkLast = f.read().decode().split()  # Last published
         timeLast = os.path.getmtime(fileName)
-    # else:
-    #     # File does not exist, we need to create it.
-    #     # Should we create it here? It is a reading function!!
-    #     with open(fileName, "wb") as f:
-    #         msgLog = f"File {fileName} does not exist. Creating it."
-    #         logMsg(msgLog, 3, 0)
-    #         linkLast = ''
-    #         # None published, or non-existent file
     if len(linkLast) == 1:
         return(linkLast[0], timeLast)
     else:
@@ -155,7 +154,7 @@ def updateLastLink(url, link, socialNetwork=()):
 
     msgLog = (f"fileName: {fileName}")
     logMsg(msgLog, 2, 0)
-    msgLog = checkFile(fileName)
+    msgLog = checkFile(fileName, indent)
     logMsg(msgLog, 2, 0)
     if not 'OK' in msgLog:
         msgLog = (f"fileName: {fileName} does not exist, I'll create it")
@@ -199,25 +198,39 @@ def updateLastLink(url, link, socialNetwork=()):
 
 def getModule(profile, indent=''):
     # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
-    import importlib
-    serviceName = profile.capitalize()
-    msgLog = (f"{indent} service {serviceName} getModule")
+    indent = f"{indent} "
+    msgLog = (f"{indent} Start getModule {profile}")
     logMsg(msgLog, 2, 0)
+    serviceName = profile.capitalize()
 
     mod = importlib.import_module('socialModules.module' + serviceName)
     cls = getattr(mod, 'module' + serviceName)
     # logging.debug(f"Class: {cls}")
     api = cls(indent)
+    msgLog = (f"{indent} End getModule")
+    logMsg(msgLog, 2, 0)
+    indent = indent[:-1]
     return api
 
 def getApi(profile, nick, indent=""):
-    msgLog = (f"{indent} Service {profile} getApi {nick}")
+    msgLog = (f"{indent} Start getApi")
     logMsg(msgLog, 2, 0)
 
+    # msgLog = (f"{indent}  Profile {profile} "
+    #           f"Nick {nick}")
+    # logMsg(msgLog, 2, 0)
     api = getModule(profile, indent)
-    api.indent = indent
-    api.setClient(nick)
+    # msgLog = (f"{indent}  Api {api}")
+    # logMsg(msgLog, 2, 0)
 
+    api.indent = f"{indent} "
+    api.setClient(nick)
+    api.indent = f"{indent[:-1]}"
+    api.setPostsType('posts')
+
+    #indent = indent[:-1]
+    msgLog = (f"{indent} End getApi")
+    logMsg(msgLog, 2, 0)
     return api
 
 def nameModule():

@@ -31,15 +31,16 @@ class moduleSlack(Content): #, Queue):
         self.postaction = None
         self.service = "Slack"
 
-        if self.user and self.user.find('/')>=0:
-            self.name = self.user.split('/')[2].split('.')[0]
-            self.nick = self.user.split('/')[2]
-        else:
-            self.name = self.user
-        if self.user.find('@')>=0:
-            channel, user = self.user.split('@')
-            self.user = user
-            #self.setChannel(channel)
+        self.setUser()
+        #if self.user and self.user.find('/')>=0:
+        #    self.name = self.user.split('/')[2].split('.')[0]
+        #    self.nick = self.user.split('/')[2]
+        #else:
+        #    self.name = self.user
+        #if self.user.find('@')>=0:
+        #    channel, user = self.user.split('@')
+        #    self.user = user
+        #    #self.setChannel(channel)
 
         client = WebClient(keys[0])
         self.slack_token = keys[0]
@@ -50,6 +51,26 @@ class moduleSlack(Content): #, Queue):
         response = self.getClient().conversations_list()
         conversations = response.get("channels", '')
         return conversations
+
+    def setNick(self, nick=None):
+        if not nick:
+            nick = self.getUrl()
+            nick = nick.split("/")[2].split('.')[0]
+        self.nick = nick
+
+    def setUser(self, user=''):
+        self.user = user
+        self.setNick()
+
+    def setNick(self, nick=''):
+        if not nick:
+            nick = self.getUrl()
+            if nick and nick.find('/')>=0:
+                nick = nick.split('/')[2].split('.')[0]
+            elif nick and nick.find('@')>=0:
+                channel, nick = nick.split('@')
+                #self.setChannel(channel)
+            self.nick = nick
 
     def setChannel(self, channel=''):
         # setPage in Facebook
@@ -108,7 +129,7 @@ class moduleSlack(Content): #, Queue):
         theChannel = self.getChannel()
         self.getClient().token = self.slack_token
         data = {"limit": 1000, "channel": theChannel}
-        history = self.getClient().api_call("conversations.history", 
+        history = self.getClient().api_call("conversations.history",
                                             data=data)
         try:
             posts = history["messages"]
@@ -167,6 +188,13 @@ class moduleSlack(Content): #, Queue):
         return result
 
     def editApiLink(self, post, newLink):
+        oldLink = self.getPostLink(post)
+        idPost = self.getLinkPosition(oldLink)
+        oldTitle = self.getPostTitle(post)
+        self.setPostLink(post, newLink)
+        self.updatePostsCache()
+
+    def setPostLink(self, post, newLink):
         if "attachments" in post:
             post["attachments"][0]["original_url"] = newLink
         else:
@@ -177,8 +205,12 @@ class moduleSlack(Content): #, Queue):
             else:
                 # Some people include URLs in the title of the page
                 pos = text.rfind("<")
-                text[pos + 1 : -1] = newLink
- 
+                # text[pos + 1 : -1] = newLink
+                text = f"{text[:pos]} {newLink} (n)"
+                post['text'] = text
+            msgLog = f"PPost: {post}"
+            logMsg(msgLog, 2, 0)
+
     def getPostId(self, post):
         return (post.get('ts',''))
 
@@ -235,6 +267,8 @@ class moduleSlack(Content): #, Queue):
                     title = text[:pos]
                 else:
                     title = text
+            msgLog = (f"{self.indent} Post text: {text}")
+            logMsg(msgLog, 2, 0)
             return title
         else:
             return "No title"
@@ -333,8 +367,8 @@ class moduleSlack(Content): #, Queue):
 def main():
 
     import logging
-    logging.basicConfig(stream=sys.stdout, 
-            level=logging.DEBUG, 
+    logging.basicConfig(stream=sys.stdout,
+            level=logging.DEBUG,
             format="%(asctime)s %(message)s"
     )
 
@@ -343,16 +377,30 @@ def main():
     rules = moduleRules.moduleRules()
     rules.checkRules()
 
+    name = nameModule()
+    print(f"Name: {name}")
+
+    rulesList = rules.selectRule(name)
+    for i, rule in enumerate(rulesList):
+        print(f"{i}) {rule}")
+
+    sel = int(input(f"Which one? "))
+    src = rulesList[sel]
+    print(f"Selected: {src}")
+    more = rules.more[src]
+    indent = ""
+    apiSrc = rules.readConfigSrc(indent, src, more)
+
     # Example:
-    # 
+    #
     # src: ('slack', 'set', 'http://fernand0-errbot.slack.com/', 'posts')
     #
     # More: {'url': 'http://fernand0-errbot.slack.com/', 'service': 'slack', 'cache': 'linkedin\ntwitter\nfacebook\nmastodon\ntumblr', 'twitter': 'fernand0Test', 'facebook': 'Fernand0Test', 'mastodon': '@fernand0@mastodon.social', 'linkedin': 'Fernando Tricas', 'tumblr': 'fernand0', 'buffermax': '9'}
     # It can be empty: {}
-    
+
     indent = ""
-    
-    testingInit = True
+
+    testingInit = False
     if testingInit:
         import moduleRules
         src = ('slack', 'set', 'http://fernand0-errbot.slack.com/', 'posts')
@@ -398,6 +446,20 @@ def main():
             time.sleep(5+random.random()*5)
         return
 
+    testingEditLink = True
+    if testingEditTrue:
+        print("Testing edit link poss")
+        site.setPostsType("posts")
+        site.setPosts()
+        print(site.getPostTitle(site.getPosts()[1]))
+        print(site.getPostLink(site.getPosts()[1]))
+        input("Edit? ")
+        site.setPostTitle(site.getPosts()[0], "prueba")
+        print(site.getPostTitle(site.getPosts()[0]))
+        print(site.getPostLink(site.getPosts()[0]))
+        return
+
+
     testingEditTitle = False
     if testingEditTitle:
         print("Testing edit posts")
@@ -412,12 +474,12 @@ def main():
         return
 
 
-    testingPosts = True
+    testingPosts = False
     if testingPosts:
         print("Testing posts")
         apiSrc.setPostsType("posts")
         apiSrc.setChannel('links')
-        apiSrc.setChannel('tavern-of-the-bots')
+        # apiSrc.setChannel('tavern-of-the-bots')
         apiSrc.setPosts()
 
         print("Testing title and link")
@@ -435,7 +497,7 @@ def main():
                   f"Url: {url}\nId: {theId}\n"
                   f"Content: {summary} {image}")
 
-        if input("All? (y/n) ") == 'y':
+        if input("See all channels? (y/n) ") == 'y':
             print(f"Channels: {apiSrc.getChannels()}")
             for channel in apiSrc.getChannels():
                 print(f"Name: {channel['name']}")
@@ -458,7 +520,7 @@ def main():
         input(f"Delete {site.getPostTitle(post)}? ")
         site.delete(0)
         return
-        
+
     testingDelete = False
     if testingDelete:
         # print("Testing posting and deleting")
