@@ -308,6 +308,8 @@ class moduleRules:
                                 # print(f"destRuleCache: {destRuleCache}")
                                 # print(f"destRuleNew: {destRuleNew}")
 
+                            #FIXME. Can this be done before? 
+                            # Look at previous arrow " -> "
                             msgLog = (f"{self.indent} Rule: {orig} -> "
                                         f"{key}({dest})")
                             logMsg(msgLog, 2, 0)
