@@ -647,7 +647,7 @@ class moduleCache(Content): #,Queue):
     def getPostContentHtml(self, post):
         content = ''
         if post:
-            content = self.apiSrc.getPostContentHtml()
+            content = self.apiSrc.getPostContentHtml(post)
             #if hasattr(self, 'auxClass'):
             #    myModule = f"module{self.auxClass.capitalize()}"
             #    import importlib
