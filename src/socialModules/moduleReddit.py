@@ -26,7 +26,6 @@ class moduleReddit(Content): #, Queue):
         print(f"Base: {self.rssFeedAll}")
 
         self.setPages()
-
         self.setPage()
 
         blog = socialModules.moduleRss.moduleRss()

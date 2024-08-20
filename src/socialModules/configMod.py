@@ -213,7 +213,7 @@ def getModule(profile, indent=''):
     return api
 
 def getApi(profile, nick, indent="", channel = None):
-    msgLog = (f"{indent} Start getApi with channel {channel}")
+    msgLog = (f"{indent} Start getApi with channel")
     logMsg(msgLog, 2, 0)
 
     # msgLog = (f"{indent}  Profile {profile} "
@@ -226,7 +226,7 @@ def getApi(profile, nick, indent="", channel = None):
     api.indent = f"{indent} "
     api.setClient(nick)
     if channel:
-        api.setChannel(channel)
+        api.setPage(channel)
     api.indent = f"{indent[:-1]}"
     api.setPostsType('posts')
 
