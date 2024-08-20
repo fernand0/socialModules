@@ -339,6 +339,8 @@ class moduleRules:
                                     else:
                                         #print(f"destRule: {destRule}")
                                         rulesNew[fromSrvN].append(destRule)
+                                    if chan != 'set':
+                                        moreS['channel'] = chan
                                     mor[fromSrvN] = moreS
 
         logging.info(f"Rules: {rulesNew}")
