@@ -343,8 +343,10 @@ class moduleRules:
                                     msgLog = f"{self.indent}  moreS: {moreS}"
                                     logMsg(msgLog, 2, 0)
                                     mor[fromSrvN] = dict(moreS)
+                                    msgLog = f"{self.indent}  chan: {chan}"
+                                    logMsg(msgLog, 2, 0)
                                     if chan != 'set':
-                                        mor[fromSrvN].update({'posts':chan}) 
+                                        mor[fromSrvN].update({'posts':chan, 'channel':chan}) 
                                     msgLog = f"{self.indent}  mormor: {mor}"
                                     logMsg(msgLog, 2, 0)
 
