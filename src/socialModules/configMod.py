@@ -213,7 +213,7 @@ def getModule(profile, indent=''):
     return api
 
 def getApi(profile, nick, indent="", channel = None):
-    msgLog = (f"{indent} Start getApi")
+    msgLog = (f"{indent} Start getApi with channel {channel}")
     logMsg(msgLog, 2, 0)
 
     # msgLog = (f"{indent}  Profile {profile} "

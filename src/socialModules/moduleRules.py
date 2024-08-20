@@ -781,8 +781,8 @@ class moduleRules:
 
         profile = self.getNameRule(src)
         account = self.getProfileRule(src)
-        if 'channel' in src: 
-            apiSrc = getApi(profile, account, indent, channel)
+        if 'channel' in more: 
+            apiSrc = getApi(profile, account, indent, more['channel'])
         else:
             apiSrc = getApi(profile, account, indent)
         apiSrc.setPostsType(src[-1])
