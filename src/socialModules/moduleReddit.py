@@ -66,6 +66,8 @@ class moduleReddit(Content): #, Queue):
         return posts
 
     def setChannel(self, page=None):
+        msgLog = (f"{self.indent} Start setChannel with channel {page}")
+        logMsg(msgLog, 2, 0)
         self.setPage(page)
 
     def setPage(self, page=None):
