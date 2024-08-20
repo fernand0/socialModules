@@ -345,6 +345,8 @@ class moduleRules:
                                     mor[fromSrvN] = dict(moreS)
                                     if chan != 'set':
                                         mor[fromSrvN].update({'posts':chan}) 
+                                    msgLog = f"{self.indent}  mormor: {mor}"
+                                    logMsg(msgLog, 2, 0)
 
         logging.info(f"Rules: {rulesNew}")
         # Now we can add the sources not added.
