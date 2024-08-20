@@ -62,7 +62,7 @@ class moduleReddit(Content): #, Queue):
         logging.info(f"Position: {pos} Len: {len(posts)}")
         if pos<0:
             pos = 0
-        posts = self.posts[pos:]
+        posts = self.posts[:pos]
 
         return posts
 
