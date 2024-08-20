@@ -341,6 +341,9 @@ class moduleRules:
                                         rulesNew[fromSrvN].append(destRule)
                                     if chan != 'set':
                                         moreS['channel'] = chan
+
+                                    msgLog = f"{self.indent}  moreS: {moreS}"
+                                    logMsg(msgLog, 2, 0)
                                     mor[fromSrvN] = moreS
 
         logging.info(f"Rules: {rulesNew}")
