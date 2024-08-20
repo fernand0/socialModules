@@ -70,6 +70,8 @@ class moduleReddit(Content): #, Queue):
         self.setPage(page)
 
     def setPage(self, page=None):
+        msgLog = (f"{self.indent} Start setPage with page {page}")
+        logMsg(msgLog, 2, 0)
         if page:
             self.page = page
         else:
