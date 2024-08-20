@@ -49,6 +49,7 @@ class moduleReddit(Content): #, Queue):
             self.clientRss.setRssFeed(self.rssFeed)
             self.clientRss.setPosts()
             posts = self.clientRss.getPosts()
+            logging.info(f"Postssss: {posts}")
             posts.reverse()
             #FIXME: This should not be here
             self.posts = posts[:-1] # The last one seems to be the always the

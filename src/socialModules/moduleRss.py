@@ -120,6 +120,7 @@ class moduleRss(Content): #, Queue):
         else:
             self.feed = feedparser.parse(urlRss)
         posts = self.feed.entries
+        logging.info(f"Postssss: {posts}")
         if hasattr(self.feed.feed, 'title'):
             self.title = self.feed.feed.title
         else:
