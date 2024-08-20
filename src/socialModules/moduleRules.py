@@ -317,17 +317,29 @@ class moduleRules:
                             logMsg(msgLog, 2, 0)
                             msgLog = f"{self.indent}  dest Rule: {destRule}"
                             logMsg(msgLog, 2, 0)
-                            if fromSrv and (destRuleNew or destRule):
-                                if not (fromSrv in rulesNew):
-                                    rulesNew[fromSrv] = []
-                                #print(f".fromSrv: {fromSrv}")
-                                if destRuleNew:
-                                    #print(f".destRuleNew: {destRuleNew}")
-                                    rulesNew[fromSrv].append(destRuleNew)
-                                else:
-                                    #print(f"destRule: {destRule}")
-                                    rulesNew[fromSrv].append(destRule)
-                                mor[fromSrv] = moreS
+                            msgLog = f"{self.indent}  moreS: {moreS}"
+                            logMsg(msgLog, 2, 0)
+                            if 'channel' in moreS:
+                                msgLog = f"{self.indent}  moreSC: {moreS['channel']}"
+                                logMsg(msgLog, 2, 0)
+                                channels = moreS['channel'].split(',')
+                            else:
+                                msgLog = f"{self.indent}  moreSC: No"
+                                logMsg(msgLog, 2, 0)
+                                channels = ['set']
+                            for chan in channels:
+                                if fromSrv and (destRuleNew or destRule):
+                                    fromSrvN = (fromSrv[0], chan, fromSrv[2], fromSrv[3])
+                                    if not (fromSrvN in rulesNew):
+                                        rulesNew[fromSrvN] = []
+                                    #print(f".fromSrv: {fromSrv}")
+                                    if destRuleNew:
+                                        #print(f".destRuleNew: {destRuleNew}")
+                                        rulesNew[fromSrvN].append(destRuleNew)
+                                    else:
+                                        #print(f"destRule: {destRule}")
+                                        rulesNew[fromSrvN].append(destRule)
+                                    mor[fromSrvN] = moreS
 
         logging.info(f"Rules: {rulesNew}")
         # Now we can add the sources not added.
@@ -767,7 +779,10 @@ class moduleRules:
 
         profile = self.getNameRule(src)
         account = self.getProfileRule(src)
-        apiSrc = getApi(profile, account, indent)
+        if 'channel' in src: 
+            apiSrc = getApi(profile, account, indent, channel)
+        else:
+            apiSrc = getApi(profile, account, indent)
         apiSrc.setPostsType(src[-1])
         apiSrc.setMoreValues(more)
 
