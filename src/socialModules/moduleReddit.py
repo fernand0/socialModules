@@ -216,9 +216,11 @@ def main():
 
     testingPosts = True
     if testingPosts:
-        apiSrc.setPage('hifiaudio')
+        print("aquí")
         apiSrc.setPosts()
+        print("ahora")
         print(apiSrc.getPosts())
+        print("después")
         for i,post in enumerate(apiSrc.getPosts()):
             logging.debug(f"Post {i}): {post}")
             try:
