@@ -775,7 +775,7 @@ class moduleRules:
         return f"{msgLog}"
 
     def readConfigSrc(self, indent, src, more):
-        msgLog = f"{indent} Start readConfigSrc" #: {src[1:]}"
+        msgLog = f"{indent} Start readConfigSrc {src}"
         logMsg(msgLog, 2, 0)
         indent = f"{indent} "
 
