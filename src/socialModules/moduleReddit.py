@@ -23,15 +23,13 @@ class moduleReddit(Content): #, Queue):
         self.nick = self.user.split('/')[-1]
         self.rssFeedAll = (f"{self.base_url}/.rss?feed="
                            f"{self.id}&user={self.nick}")
-        print(f"Base: {self.rssFeedAll}")
 
-        self.setPages()
-
-        self.setPage()
+        # logging.info(f"Srcccc: {self.src}")
+        #     self.setPage()
 
         blog = socialModules.moduleRss.moduleRss()
-        blog.setUrl(self.base_url)
-        blog.setRssFeed(self.rssFeed)
+        # blog.setUrl(self.base_url)
+        # blog.setRssFeed(self.rssFeed)
 
         self.clientRss = blog
         client = None
@@ -48,8 +46,12 @@ class moduleReddit(Content): #, Queue):
         posts = []
         if self.page:
             self.clientRss.setRssFeed(self.rssFeed)
+            self.clientRss.setUrl(self.url)
+            self.clientRss.setRss(self.rssFeed)
             self.clientRss.setPosts()
             posts = self.clientRss.getPosts()
+            msgLog = (f"{self.indent} Postsssssr: {posts}")
+            logMsg(msgLog, 2, 0)
             posts.reverse()
             #FIXME: This should not be here
             self.posts = posts[:-1] # The last one seems to be the always the
@@ -66,9 +68,13 @@ class moduleReddit(Content): #, Queue):
         return posts
 
     def setChannel(self, page=None):
+        msgLog = (f"{self.indent} Start setChannel with channel {page}")
+        logMsg(msgLog, 2, 0)
         self.setPage(page)
 
     def setPage(self, page=None):
+        msgLog = (f"{self.indent} Start setPage with page {page}")
+        logMsg(msgLog, 2, 0)
         if page:
             self.page = page
         else:
@@ -81,6 +87,7 @@ class moduleReddit(Content): #, Queue):
 
     def getUrl(self):
         url = self.url
+        logging.info(f"Uuuuurl: {url}")
         page = self.getPage()
         if page:
             url = f"{url}/r/{page}"
@@ -96,7 +103,11 @@ class moduleReddit(Content): #, Queue):
         blog = socialModules.moduleRss.moduleRss()
         blog.setUrl(self.base_url)
         blog.setRssFeed(self.rssFeedAll)
+        blog.setRss(self.rssFeedAll)
+        indent = self.indent
+        self.indent = f"{self.indent} Checking Pages"
         blog.setPosts()
+        self.indent = indent
         groups = []
         for post in blog.getPosts():
             link = post['link']
@@ -106,7 +117,7 @@ class moduleReddit(Content): #, Queue):
             if not group in groups:
                 groups.append(group)
         self.groups = groups
-        logging.info(f"Groups: {self.groups}")
+        logging.info(f"{self.indent} Groups: {self.groups}")
 
     def getPages(self):
         return self.groups
@@ -211,9 +222,11 @@ def main():
 
     testingPosts = True
     if testingPosts:
-        apiSrc.setPage('hifiaudio')
+        print("aquí")
         apiSrc.setPosts()
+        print("ahora")
         print(apiSrc.getPosts())
+        print("después")
         for i,post in enumerate(apiSrc.getPosts()):
             logging.debug(f"Post {i}): {post}")
             try:

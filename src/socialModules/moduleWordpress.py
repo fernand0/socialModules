@@ -43,6 +43,12 @@ class moduleWordpress(Content): #,Queue):
 
         return 'client'
 
+    def setNick(self, nick=None):
+        if not nick:
+            nick = self.getUrl()
+            nick = nick.split("/")[2].split('.')[0]
+        self.nick = nick
+
     #def setClient(self, user):
     #    logging.info(f"     Connecting Wordpress {user}")
     #    if isinstance(user, str):
@@ -115,7 +121,7 @@ class moduleWordpress(Content): #,Queue):
         except KeyError:
             logging.warning("KeyError probably API Key expired")
             logging.warning("Unexpected error:", sys.exc_info()[0])
-            return(self.report(f'{self.service} API expired', 
+            return(self.report(f'{self.service} API expired',
                                '' , '', sys.exc_info()))
         except:
             return(self.report(f'{self.service} API', '' , '', sys.exc_info()))

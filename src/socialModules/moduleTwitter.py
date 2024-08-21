@@ -32,7 +32,6 @@ class moduleTwitter(Content): #, Queue):
         # FIXME: Do we call this method directly?
         self.base_url = 'https://twitter.com'
         self.url = f"{self.base_url}/{self.user}"
-        logging.info("Initializing API")
         # self.authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
         # client = Twitter(auth=self.authentication)
 
@@ -268,6 +267,7 @@ class moduleTwitter(Content): #, Queue):
         return (res)
 
     def getPostId(self, post):
+        logging.info(f"Postttt: {post}")
         if isinstance(post, str) or isinstance(post, int):
             # It is the tweet URL
             idPost = post

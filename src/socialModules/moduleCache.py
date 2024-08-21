@@ -26,161 +26,178 @@ from socialModules.moduleContent import *
 
 class moduleCache(Content): #,Queue):
 
+    def __init__(self, indent=''):
+        super().__init__(indent)
+        self.postaction = 'delete'
+
+    def getApiDst(self):
+        api = self.apiDst
+        # if hasattr(self, 'auxClass'):
+        #     myModule = f"module{self.auxClass.capitalize()}"
+        #     importlib.import_module(myModule)
+        #     mod = sys.modules.get(myModule)
+        #     cls = getattr(mod, myModule)
+        #     myModule = f"{self.indent} {cls}"
+        #     api = cls()
+        return api
+
+    def getUser(self):
+        user = ''
+        if hasattr(self, 'apiSrc'):
+            user = self.apiSrc.getUser()
+        return user
+
     def getProfileR(self, rule):
-        msgLog = (f"{self.indent} Service {self.service} getProfileR {rule}")
+        msgLog = (f"{self.indent} getProfileR {rule}")
         logMsg(msgLog, 2, 0)
         return rule[2:]
 
-    def getService(self):
-        msgLog = (f"{self.indent} Service {self.service} getService")
-        logMsg(msgLog, 2, 0)
-        if hasattr(self, 'auxClass'):
-            msgLog = (f"{self.indent} Service {self.service} has "
-                      f"auxClass {self.auxClass}")
-            logMsg(msgLog, 2, 0)
-            if isinstance(self.auxClass, tuple):
-                self.auxClass = self.auxClass[0]
-            return self.auxClass
-        else:
-            msgLog = f"{self.indent} Service {self.service} has not auxClass"
-            logMsg(msgLog, 2, 0)
-            return self.service
+    # def setServiceAux(self):
+    #     serviceAux = ''
+    #     msgLog = (f"{self.indent} getService")
+    #     logMsg(msgLog, 2, 0)
+    #     if hasattr(self, 'auxClass'):
+    #         msgLog = (f"{self.indent} has auxClass {self.auxClass}")
+    #         logMsg(msgLog, 2, 0)
+    #         if isinstance(self.auxClass, tuple):
+    #             self.auxClass = self.auxClass[0]
+    #         serviceAux = self.auxClass
+    #     else:
+    #         msgLog = f"{self.indent} has not auxClass"
+    #         logMsg(msgLog, 2, 0)
+    #         serviceAux =  self.service
+    #     self.serviceAux = serviceAux.capitalize()
+
+    # def getServiceAux(self):
+    #     return self.serviceAux
 
     def setPostsType(self, postsType):
+        # FIXME. Is this ok?
         if postsType == 'posts':
             self.postsType = 'cache'
         else:
             self.postsType = postsType
 
     def getPostsType(self):
-        return 'cache'
+        return 'posts'
+
+    # def setNick(self, nick=None):
+    #     msgLog = (f"{self.indent} Start setNick (c)")
+    #     logMsg(msgLog, 2, 0)
+    #     # Many services are like https://service.com/.../nick
+    #     # self.auxClass = self.src[0]
+    #     logging.info(f"urlll: {self.getUser()}")
+    #     # if not nick:
+    #     #     apiDst = self.getApiDst()
+    #     #     apiDst.indent = f"{self.indent} "
+    #     #     apiDst.setClient(self.src[2])
+    #     #     apiDst.setUrl(self.src[2])
+    #     #     apiDst.setNick()
+    #     self.nick = apiDst.getNick()
 
     def fileNameBase(self, dst):
-        # msgLog = (f"{self.indent} fileNameBase src: {self}")
-        # logMsg(msgLog, 2, 0)
-        # msgLog = (f"{self.indent} fileNameBase dst: {dst}")
-        # logMsg(msgLog, 2, 0)
-        # msgLog = (f"{self.indent} fileNameBase is {isinstance(self, socialModules.moduleCache.moduleCache)}")
-        # logMsg(msgLog, 2, 0)
-        # msgLog = (f"{self.indent} fileNameBase is {isinstance(self, socialModules.moduleSlack.moduleSlack)}")
-        # logMsg(msgLog, 2, 0)
-        if hasattr(self, 'fileName') and self.fileName:
-            # msgLog = f"{self.indent} has fileName attr {self.fileName}"
-            # logMsg(msgLog, 2, 0)
-            return self.fileName
-        src = self
-        nameSrc = 'Cache'
-        typeSrc = typeDst = 'posts'
-        # logging.info(f"{self.indent} self url {self.url} socialN "
-        #              f"{self.socialNetwork} user {self.user} "
-        #              f"nick {self.nick} auxClass {self.auxClass} "
-        #              f"client {self.client} service {self.service}")
-        if isinstance(self, socialModules.moduleCache.moduleCache):
-            # logging.info(f"{self.indent} cache")
-            # logging.info(f"{self.indent} {src} is not tuple")
-            user = self.url
-            if 'slack' in self.url:
-                #FIXME
-                service = 'Slack'
-            elif 'gitter' in self.url:
-                service = 'Gitter'
-            elif 'imgur' in self.url:
-                service = 'Imgur'
-            else:
-                service = self.service.capitalize()
-            userD = self.user
-            serviceD = self.socialNetwork
-            nameDst = self.socialNetwork.capitalize()
-        elif isinstance(dst, tuple):
-            # logging.info(f"{self.indent} tuple {dst}")
-            #FIXME
-            user = self.url
-            # service = dst[0][0].capitalize()
-            service = dst[0].capitalize()
-            userD = self.user
-            serviceD = self.socialNetwork
-            nameDst = self.socialNetwork.capitalize()
-            typeDst = 'cache'
-
-        user = self.url
-        userD = self.user
-        serviceD = self.socialNetwork
-        nameDst = self.socialNetwork.capitalize()
-        # msgLog = (f"{self.indent} fileNameBase serviceD {serviceD}")
-        # logMsg(msgLog, 2, 0)
-
-        fileName = (f"{nameSrc}_{typeSrc}_"
-                    f"{user}_{service}__"
-                    f"{nameDst}_{typeDst}_"
-                    f"{userD}_{serviceD}")
-        fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
-        msgLog = (f"{self.indent} End fileNameBase fileName: {fileName}")
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Start fileNameBase (c)")
         logMsg(msgLog, 2, 0)
-        self.fileName = fileName
 
+        if hasattr(self, 'fileName') and self.fileName:
+            fileName =  self.fileName
+        else:
+            src = self
+            typeSrc = 'posts'
+            typeDst = 'posts'
+
+            #nameSrc = type(src).__name__
+            nameSrc = src.getNameModule()
+
+            # self.setNick()
+            #user = self.getNick()
+            user = self.apiSrc.getNick()
+            # logging.info(f"Userrrrrrr: {user} - {self.getUser()}")
+            # self.setServiceAux()
+            service = self.apiSrc.getService()
+
+            userD = self.apiDst.getUser()
+            serviceD = self.apiDst.getService()
+            # userD = self.src[1][3]
+            # serviceD = self.src[1][2]
+            nameDst = serviceD.capitalize()
+
+            fileName = (f"{nameSrc}_{typeSrc}_"
+                        f"{user}_{service}__"
+                        f"{nameDst}_{typeDst}_"
+                        f"{userD}_{serviceD}")
+            fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
+            self.fileName = fileName
+
+        msgLog = (f"{self.indent} End fileNameBase")
+        logMsg(msgLog, 2, 0)
+        self.indent = f"{self.indent[:-1]}"
         return fileName
 
-    # def fileNameBase2(self, dst):
-    #     logging.debug(f"dst: {dst}")
-    #     if hasattr(self, 'fileName') and self.fileName:
-    #         return self.fileName
-    #     src = self
-    #     nameSrc = 'Cache'
-    #     typeSrc = typeDst = 'posts'
-    #     if isinstance(dst, tuple):
-    #         user = self.getUrl()
-    #         service = self.getService().capitalize()
-    #         serviceD = dst[0]
-    #         userD = dst[1]
-    #         # serviceD = dst[1][:pos]
-    #         nameDst = dst[0].capitalize()
-    #     elif isinstance(self, moduleCache):
-    #         user = dst.getUser()
-    #         service = dst.getService().capitalize()
-    #         pos = src.getUser().find('@')
-    #         userD = src.nick
-    #         serviceD = src.socialNetwork
-    #         nameDst = serviceD.capitalize()
-
-    #     fileName = (f"{nameSrc}_{typeSrc}_"
-    #                 f"{user}_{service}__"
-    #                 f"{nameDst}_{typeDst}_"
-    #                 f"{userD}_{serviceD}")
-    #     fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
-    #     self.fileName = fileName
-    #     return fileName
-
-    def setClient(self, param):
+    def initApi(self, keys):
         self.service = 'Cache'
-        msgLog = (f"{self.indent} Connecting {self.service}: {param}")
-        logMsg(msgLog, 1, 0)
         self.postaction = 'delete'
-
         self.postsType = 'posts'
-        # FIXME. There should be methods available for checking these values.
-        self.url = param[-1]
-        self.socialNetwork = param[1][2]
-        self.user = param[1][3]
-        self.nick = param[1][3]
-        self.auxClass = param[0]
-        self.fileName = self.fileNameBase((self.socialNetwork, self.nick))
-        fileNameQ = f"{self.fileName}.queue"
-        msgLog = checkFile(fileNameQ)
-        if not 'OK' in msgLog:
-            #with open(fileNameQ, "w") as f:
-            msgLog = (f"File {fileNameQ} does not exist. "
-                      f"I'll need to create it.")
-            logMsg(msgLog, 3, 0)
-        self.client = self.service
-        #self.fileName = self.fileNameBase((self.user, self.socialNetwork))
+        self.url = ""
+        self.socialNetwork = ""
+        self.user = self.src[2]
+        self.nick = self.user
+        self.apiDst = getModule(self.src[1][2], f"{self.indent}  (c)")
+        self.apiDst.setUser(self.src[1][3])
+        self.apiSrc = getModule(self.src[0], f"{self.indent}  (c)")
+        # logging.info(f"{self.indent} srcClass: {self.apiSrc}")
+        self.apiSrc.setUrl(self.src[2])
+        self.apiSrc.setUser()
+        self.apiSrc.setNick()
+        # logging.info(f"{self.indent} Dst: {self.apiDst.getUser()}")
+        # logging.info(f"{self.indent} Dst: {self.apiDst.getNick()}")
+        # logging.info(f"{self.indent} Dst: {self.apiDst.getName()}")
+        # logging.info(f"{self.indent} Src: {self.apiSrc.getUser()}")
+        # logging.info(f"{self.indent} Src: {self.apiSrc.getNick()}")
+        # logging.info(f"{self.indent} Src: {self.apiSrc.getName()}")
+        # logging.info(f"{self.indent} Src: {self.apiSrc.getUrl()}")
+        #FIXME. Do we need three?
 
-        # if hasattr(self, 'fileName'):
-        #     msgLog = (f"{self.indent} self.fileName {self.fileName}")
-        #     logMsg(msgLog, 2, 0)
-        #     print(f"self.fileName {self.fileName}")
+        # We are instatiating (but not configuring) the aux api
+        self.fileName = ""
 
-        msgLog = (f"{self.indent} End connecting {self.service}: {param}")
-        logMsg(msgLog, 2, 0)
+        return self
+
+    def getKeys(self, config):
+        return None
+
+    # def setClient(self, param):
+    #     self.indent = f"{self.indent} "
+    #     self.service = 'Cache'
+    #     msgLog = (f"{self.indent} Start setClient account: {param}")
+    #     logMsg(msgLog, 2, 0)
+    #     self.postaction = 'delete'
+
+    #     self.postsType = 'posts'
+    #     # FIXME. There should be methods available for checking these values.
+    #     self.url = param[-1]
+    #     self.socialNetwork = param[1][2]
+    #     self.user = param[1][3]
+    #     self.nick = param[1][3]
+    #     self.auxClass = param[0]
+    #     self.fileName = self.fileNameBase((self.socialNetwork, self.nick))
+    #     fileNameQ = f"{self.fileName}.queue"
+    #     msgLog = checkFile(fileNameQ, self.indent)
+    #     if not 'OK' in msgLog:
+    #         #with open(fileNameQ, "w") as f:
+    #         msgLog = (f"{self.indent} File {fileNameQ} does not exist. "
+    #                   f"I'll need to create it.")
+    #         logMsg(msgLog, 3, 0)
+    #     self.client = self.service
+
+    #     # if hasattr(self, 'fileName'):
+    #     #     msgLog = (f"{self.indent} self.fileName {self.fileName}")
+    #     #     logMsg(msgLog, 2, 0)
+    #     #     print(f"self.fileName {self.fileName}")
+
+    #     msgLog = (f"{self.indent} End setClient")
+    #     logMsg(msgLog, 2, 0)
 
     # def setClient2(self, param):
     #     msgLog = (f"{self.indent} Connecting Cache {self.service}: {param}")
@@ -305,35 +322,30 @@ class moduleCache(Content): #,Queue):
         return(self.setApiPosts())
 
     def setApiPosts(self):
-        msgLog = f"{self.indent} Service {self.service} Start setApiPosts"
+        self.indent = f"{self.indent} "
+        msgLog = f"{self.indent} Start setApiPosts"
         logMsg(msgLog, 2, 0)
-        fileNameQ = ''
-        url = self.getUrl()
-        service = self.getService()
-        nick = self.getNick()
-
-        if hasattr(self, 'fileName'):
-            fileNameQ = self.fileName
-        elif hasattr(self, "socialNetwork"):
-            service = self.socialNetwork
-            nick = self.nick
-        else:
-            service = self.getService()
-            nick = self.getUser()
-        # msgLog = f"{self.indent} Url: {url} service {service} nick {nick}"
-        # logMsg(msgLog, 2, 0)
-        if not fileNameQ:
-            self.fileName = self.fileNameBase((service, nick))
-            fileNameQ = self.fileName+".queue"
-        else:
-            fileNameQ = fileNameQ+".queue"
-
+        # fileNameQ = ''
+        # service = self.getService()
+        # nick = self.getNick()
+        # if hasattr(self, 'fileName'):
+        #     fileNameQ = self.fileName
+        # elif hasattr(self, "socialNetwork"):
+        #     service = self.socialNetwork
+        #     nick = self.nick
+        # else:
+        #     service = self.getService()
+        #     nick = self.getUser()
+        # # msgLog = f"{self.indent} Url: {url} service {service} nick {nick}"
+        # # logMsg(msgLog, 2, 0)
+        # nick = self.getNick()
+        fileNameQ = f"{self.fileNameBase(self.apiDst)}.queue"
         msgLog = (f"{self.indent} File: %s" % fileNameQ)
         logMsg(msgLog, 2, 0)
         listP = []
         try:
-            msgLog = checkFile(fileNameQ)
-            logMsg(f"{self.indent} --- {msgLog}", 2, 0)
+            msgLog = checkFile(fileNameQ, f"{self.indent} ")
+            logMsg(f"{self.indent}  {msgLog}", 2, 0)
             if "OK" in msgLog:
                 with open(fileNameQ,'rb') as f:
                     try:
@@ -351,8 +363,9 @@ class moduleCache(Content): #,Queue):
         # msgLog = f"{self.indent} listP: {listP}"
         # logMsg(msgLog, 2, 0)
 
-        msgLog = f"{self.indent} Service {self.service} End setApiPosts"
+        msgLog = f"{self.indent} End setApiPosts"
         logMsg(msgLog, 2, 0)
+        self.indent = self.indent[:-1]
 
         return(listP)
 
@@ -360,13 +373,19 @@ class moduleCache(Content): #,Queue):
         maxVal = 0
         if hasattr(self, "max"): # and self.max:
             maxVal = int(self.max)
+        # msgLog = f"{self.indent} maxVal {maxVal}"
+        # logMsg(msgLog, 2, 0)
         self.setPosts()
         lenMax = len(self.getPosts())
+        # msgLog = f"{self.indent} len {lenMax}"
+        # logMsg(msgLog, 2, 0)
         num = 1
         if maxVal > 1:
             num = maxVal - lenMax
         if num < 0:
             num = 0
+        # msgLog = f"{self.indent} num {num}"
+        # logMsg(msgLog, 2, 0)
         return num
 
     def getPosNextPost(self):
@@ -480,17 +499,17 @@ class moduleCache(Content): #,Queue):
     def updatePostsCache(self):
         # fileNameQ = fileNamePath(self.url,
         #         (self.socialNetwork, self.nick)) + ".queue"
-        fileNameQ = ''
+        fileNameQ = f"{self.fileNameBase(None)}.queue"
 
-        if hasattr(self, 'fileName'):
-            fileNameQ = f"{self.fileName}.queue"
-        elif hasattr(self, "socialNetwork"):
-            url = self.getUrl()
-            service = self.socialNetwork
-            nick = self.nick
-        else:
-            service = self.getService()
-            nick = self.getUser()
+        #if hasattr(self, 'fileName'):
+        #    fileNameQ = f"{self.fileName}.queue"
+        #elif hasattr(self, "socialNetwork"):
+        #    url = self.getUrl()
+        #    service = self.socialNetwork
+        #    nick = self.nick
+        #else:
+        #    service = self.getService()
+        #    nick = self.getUser()
 
         # msgLog = (f"{self.indent} Url: {url} service {service} nick {nick}")
         # logMsg(msgLog, 2, 0)
@@ -503,8 +522,8 @@ class moduleCache(Content): #,Queue):
 
         with open(fileNameQ, 'wb') as f:
             posts = self.getPosts()
-            # msgLog = f"{self.indent} Posts {self.service} {posts}"
-            # logMsg(msgLog, 2, 0)
+            msgLog = f"{self.indent} Posts updating {self.service} {posts}"
+            logMsg(msgLog, 2, 0)
             pickle.dump(posts, f)
 
         # msgLog = (f"Posts: {str(self.getPosts())}")
@@ -534,133 +553,141 @@ class moduleCache(Content): #,Queue):
     #     return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
     def setPostLink(self, post, newLink):
+        logging.info(f"{self.indent} setPostLink ")
+        #FIXME. This should be similar to setPostTitle
         if post:
-            if hasattr(self, 'auxClass'):
-                myModule = f"module{self.auxClass.capitalize()}"
-                import importlib
-                importlib.import_module(myModule)
-                mod = sys.modules.get(myModule)
-                cls = getattr(mod, myModule)
-                api = cls(self.indent)
-                apiCmd = getattr(api, 'setPostLink')
-                post  = apiCmd(post, newLink)
-            # else:
-            #     # Old style
-            #     title = post[0]
+            post = self.apiSrc.setPostLink(post, newLink)
+            # if hasattr(self, 'auxClass'):
+            #     myModule = f"module{self.auxClass.capitalize()}"
+            #     importlib.import_module(myModule)
+            #     mod = sys.modules.get(myModule)
+            #     cls = getattr(mod, myModule)
+            #     api = cls(self.indent)
+            #     apiCmd = getattr(api, 'setPostLink')
+            #     post  = apiCmd(post, newLink)
+            # # else:
+            # #     # Old style
+            # #     title = post[0]
             return post
 
     def setPostTitle(self, post, newTitle):
         if post:
-            if hasattr(self, 'auxClass'):
-                myModule = f"module{self.auxClass.capitalize()}"
-                import importlib
-                importlib.import_module(myModule)
-                mod = sys.modules.get(myModule)
-                cls = getattr(mod, myModule)
-                api = cls(self.indent)
-                apiCmd = getattr(api, 'setPostTitle')
-                post  = apiCmd(post, newTitle)
-            # else:
-            #     # Old style
-            #     title = post[0]
+            post = self.apiSrc.setPostTitle(post, newTitle)
+            # if hasattr(self, 'auxClass'):
+            #     myModule = f"module{self.auxClass.capitalize()}"
+            #     import importlib
+            #     importlib.import_module(myModule)
+            #     mod = sys.modules.get(myModule)
+            #     cls = getattr(mod, myModule)
+            #     api = cls(self.indent)
+            #     apiCmd = getattr(api, 'setPostTitle')
+            #     post  = apiCmd(post, newTitle)
+            # # else:
+            # #     # Old style
+            # #     title = post[0]
             return post
 
     def getPostTitle(self, post):
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Start getPostTitle.")
+        logMsg(msgLog, 2, 0)
         title = ''
         if post:
-            if hasattr(self, 'auxClass'):
-                # msgLog = (f"{self.indent} auxClass: {self.auxClass}")
-                # logMsg(msgLog, 2, 0)
-                if isinstance(self.auxClass, str):
-                    myModule = f"module{self.auxClass.capitalize()}"
-                    import importlib
-                    importlib.import_module(myModule)
-                    mod = sys.modules.get(myModule)
-                    cls = getattr(mod, myModule)
-                    api = cls(self.indent)
-                else:
-                    api = self.auxClass
-                # logging.debug(f"  Api: {api}")
-                apiCmd = getattr(api, 'getPostTitle')
-                title  = apiCmd(post)
-            else:
-                # Old style
-                title = post[0]
+            title = self.apiSrc.getPostTitle(post)
+            # if hasattr(self, 'auxClass'):
+            #     # msgLog = (f"{self.indent} auxClass: {self.auxClass}")
+            #     # logMsg(msgLog, 2, 0)
+            #     if isinstance(self.auxClass, str):
+            #         myModule = f"module{self.auxClass.capitalize()}"
+            #         import importlib
+            #         importlib.import_module(myModule)
+            #         mod = sys.modules.get(myModule)
+            #         cls = getattr(mod, myModule)
+            #         api = cls(self.indent)
+            #     else:
+            #         api = self.auxClass
+            #     logging.debug(f"  Api: {api}")
+            #     logging.debug(f"  Post: {post}")
+            #     apiCmd = getattr(api, 'getPostTitle')
+            #     title  = apiCmd(post)
+            # else:
+            #     # Old style
+            #     title = post[0]
+        msgLog = (f"{self.indent} End getPostTitle.")
+        logMsg(msgLog, 2, 0)
+        self.indent = self.indent[:-1]
         return(title)
 
     def getPostLink(self, post):
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Start getPostLink.")
+        logMsg(msgLog, 2, 0)
         link = ''
         if post:
-            if hasattr(self, 'auxClass'):
-                if isinstance(self.auxClass, str):
-                    myModule = f"module{self.auxClass.capitalize()}"
-                    import importlib
-                    importlib.import_module(myModule)
-                    mod = sys.modules.get(myModule)
-                    cls = getattr(mod, myModule)
-                    api = cls(self.indent)
-                else:
-                    api = self.auxClass
-                apiCmd = getattr(api, 'getPostLink')
-                link = apiCmd(post)
-            else:
-                link = post[1]
+            link = self.apiSrc.getPostLink(post)
+            # if hasattr(self, 'auxClass'):
+            #     if isinstance(self.auxClass, str):
+            #         myModule = f"module{self.auxClass.capitalize()}"
+            #         import importlib
+            #         importlib.import_module(myModule)
+            #         mod = sys.modules.get(myModule)
+            #         cls = getattr(mod, myModule)
+            #         api = cls(self.indent)
+            #     else:
+            #         api = self.auxClass
+            #     apiCmd = getattr(api, 'getPostLink')
+            #     link = apiCmd(post)
+            # else:
+            #     link = post[1]
+        msgLog = (f"{self.indent} End getPostLink.")
+        logMsg(msgLog, 2, 0)
+        self.indent = self.indent[:-1]
         return (link)
 
     def getPostContentHtml(self, post):
         content = ''
         if post:
-            if hasattr(self, 'auxClass'):
-                myModule = f"module{self.auxClass.capitalize()}"
-                import importlib
-                importlib.import_module(myModule)
-                mod = sys.modules.get(myModule)
-                cls = getattr(mod, myModule)
-                api = cls(self.indent)
-                apiCmd = getattr(api, 'getPostContentHtml')
-                content  = apiCmd(post)
-            else:
-                content = post[4]
+            content = self.apiSrc.getPostContentHtml(post)
+            #if hasattr(self, 'auxClass'):
+            #    myModule = f"module{self.auxClass.capitalize()}"
+            #    import importlib
+            #    importlib.import_module(myModule)
+            #    mod = sys.modules.get(myModule)
+            #    cls = getattr(mod, myModule)
+            #    api = cls(self.indent)
+            #    apiCmd = getattr(api, 'getPostContentHtml')
+            #    content  = apiCmd(post)
+            #else:
+            #    content = post[4]
         return content
 
     def editApiLink(self, post, newLink=''):
         oldLink = self.getPostLink(post)
-        if hasattr(self, 'auxClass'):
-            myModule = f"module{self.auxClass.capitalize()}"
-            import importlib
-            importlib.import_module(myModule)
-            mod = sys.modules.get(myModule)
-            cls = getattr(mod, myModule)
-            api = cls(self.indent)
-            apiCmd = getattr(api, 'editApiLink')
-            content  = apiCmd(post, newLink)
-        else:
-            post = post[:1] + ( newLink, ) + post[2:]
         idPost = self.getLinkPosition(oldLink)
-        posts = self.getPosts()
-        self.assignPosts(posts)
+        oldTitle = self.getPostTitle(post)
+        self.setPostLink(post, newLink)
         self.updatePostsCache()
-        return(idPost)
+        # if hasattr(self, 'auxClass'):
+        #     myModule = f"module{self.auxClass.capitalize()}"
+        #     import importlib
+        #     importlib.import_module(myModule)
+        #     mod = sys.modules.get(myModule)
+        #     cls = getattr(mod, myModule)
+        #     api = cls(self.indent)
+        #     apiCmd = getattr(api, 'editApiLink')
+        #     content  = apiCmd(post, newLink)
+        # else:
+        #     post = post[:1] + ( newLink, ) + post[2:]
 
     def editApiTitle(self, post, newTitle=''):
-        msgLog = (f"{self.indent} ApiTitle: {newTitle}. Post: {post}")
-        logMsg(msgLog, 1, 0)
         oldLink = self.getPostLink(post)
         idPost = self.getLinkPosition(oldLink)
         oldTitle = self.getPostTitle(post)
         if not newTitle:
             newTitle = self.reorderTitle(oldTitle)
         self.setPostTitle(post, newTitle)
-        msgLog = (f"New post: {post}")
-        logMsg(msgLog, 1, 0)
-        # msgLog = (f"New post id: {self.getPost(idPost)}")
-        # logMsg(msgLog, 2, 0)
-        # post = (newTitle,) + post[1:]
-        # posts = self.getPosts()
-        # posts[idPost] = post
-        # self.assignPosts(posts)
         self.updatePostsCache()
-        return(idPost)
+        # FIXME. Twice?
 
     def insert(self, j, text):
         msgLog = (f"{self.indent} Inserting {text}")
@@ -678,8 +705,7 @@ class moduleCache(Content): #,Queue):
         # We just store the post, we need more information than the title,
         # link and so on.
         reply = ''
-        msgLog = (f"{self.indent} Service {self.service} publishing "
-                  f"next post in {self.service}")
+        msgLog = (f"{self.indent} publishing next post in {self.service}")
         logMsg(msgLog, 1, 0)
         try:
             post = apiSrc.getNextPost()
@@ -712,19 +738,20 @@ class moduleCache(Content): #,Queue):
     def getPostId(self, post):
         idPost = ''
         if post:
-            if hasattr(self, 'auxClass'):
-                myModule = f"module{self.auxClass.capitalize()}"
-                import importlib
-                importlib.import_module(myModule)
-                mod = sys.modules.get(myModule)
-                cls = getattr(mod, myModule)
-                api = cls(self.indent)
-                apiCmd = getattr(api, 'getPostId')
-                idPost  = apiCmd(post)
-            else:
-                # Old style
-                link = self.getPostLink(post)
-                idPost = self.getLinkPosition(link)
+            idPost = self.apiSrc.getPostId(post)
+            #if hasattr(self, 'auxClass'):
+            #    myModule = f"module{self.auxClass.capitalize()}"
+            #    import importlib
+            #    importlib.import_module(myModule)
+            #    mod = sys.modules.get(myModule)
+            #    cls = getattr(mod, myModule)
+            #    api = cls(self.indent)
+            #    apiCmd = getattr(api, 'getPostId')
+            #    idPost  = apiCmd(post)
+            #else:
+            #    # Old style
+            #    link = self.getPostLink(post)
+            #    idPost = self.getLinkPosition(link)
         return idPost
 
     def deleteApiCache(self, idPost):
@@ -885,27 +912,17 @@ def main():
         print(f"{i}) {rule}")
 
     sel = int(input(f"Which one? "))
-    src = caches[sel]
+    src = rulesList[sel]
+    print(f"Selected: {src}")
     more = rules.more[src]
     indent = ""
     apiSrc = rules.readConfigSrc(indent, src, more)
-
-    testingPosts = True
-    if testingPosts:
-        print("Testing Posts")
-        cmd = getattr(apiSrc, 'setApiPosts')
-        posts = cmd
-        posts = cmd()
-        for i, post in enumerate(posts):
-            print(f"{i}) {apiSrc.getPostTitle(post)}")
-        return
-        apiSrc.setPosts()
-        for i, post in enumerate(apiSrc.getPosts()):
-            print(f"{i}) {apiSrc.getPostTitle(post)}")
-
-        return
-
-
+    print(f"Url: {apiSrc.getUrl()}")
+    print(f"apiDst: {apiSrc.getApiDst()}")
+    print(f"User apiDst: {apiSrc.getApiDst().getUser()}")
+    print(f"User: {apiSrc.getUser()}")
+    print(f"User src: {apiSrc.apiSrc.getUser()}")
+    print(f"User src: {apiSrc.apiSrc.getNick()}")
 
     testingFiles = False
 
@@ -993,10 +1010,10 @@ def main():
         return
 
     dataSources = {'S0': {'sn':'slack',
-                            'nick':'http://fernand0-errbot.slack.com/'},
+                          'nick':'http://fernand0-errbot.slack.com/'},
                    'G0': {'sn':'gitter',
-                            'nick':'https://gitter.im/fernand0errbot/'},
-        }
+                          'nick':'https://gitter.im/fernand0errbot/'},
+                   }
 
     dataCaches = {'S0': {'sn':'slack', 'nick':'http://fernand0-errbot.slack.com/'},
                   'H0': {'sn':'linkedin', 'nick':'Fernando Tricas'},
@@ -1019,7 +1036,7 @@ def main():
         site = getApi(snDst, nickDst)
         site.setPosts()
         [ print(f"{i}) {site.getPostTitle(post)}")
-                for i, post in enumerate(site.getPosts()) ]
+         for i, post in enumerate(site.getPosts()) ]
         pos = int(input("Which post? "))
         for cache in dataCaches.keys():
             print(f"Cache: {cache}) - {dataCaches[cache]}")
@@ -1036,43 +1053,63 @@ def main():
             siteDst.publishPosPost(site, pos)
         return
 
-    testingEditPos = True
-
+    testingEditPos = False
     if testingEditPos:
-        cache = input("Which cache? ").capitalize()
-        url = 'http://fernand0-errbot.slack.com/'
-        nickDst = dataCaches[cache]['nick']
-        snDst = dataCaches[cache]['sn']
-        print(nickDst,snDst)
-        url = 'http://fernand0-errbot.slack.com/'
-        siteDst = getApi(snDst, nickDst)
-        if hasattr(siteDst, 'setPage'):
-            siteDst.setPage(nickDst)
-        site = getApi('cache', ('slack', url, f"{snDst}@{nickDst}"))
-        site.socialNetwork = snDst
-        site.nick = nickDst
-        site.setPostsType('posts')
-        site.auxClass = 'slack'
-        site.setPosts()
+        print("Testing edit Posts")
+        apiSrc.setPosts()
 
-        [ print(f"{i}) {site.getPostTitle(post)}")
-                for i, post in enumerate(site.getPosts()) ]
+        [ print(f"{i}) {apiSrc.getPostTitle(post)}")
+         for i, post in enumerate(apiSrc.getPosts()) ]
         pos = int(input("Which post? "))
-        post = site.getPost(pos)
-        print(post)
+        post = apiSrc.getPost(pos)
+        print(apiSrc)
         newTitle = input("New title? ")
-        newPost = site.editApiTitle(post, newTitle)
-        posts = site.getPosts()
-        posts[pos] = newPost
-        print(f"new: {newPost}")
-        site.assignPosts(posts)
-        print(site.updatePostsCache())
+        newPosts = apiSrc.editApiTitle(post, newTitle)
+        # FIXME. It has been recorded
+        # posts = apiSrc.getPosts()
+        # posts[pos] = newPost
+        print(f"new: {newPosts}")
+        #apiSrc.assignPosts(posts)
+        print(apiSrc.updatePostsCache())
+
+        return
+
+    testingEditLink = True
+    if testingEditLink:
+        print("Testing edit Post link")
+        apiSrc.setPosts()
+
+        [ print(f"{i}) {apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
+         for i, post in enumerate(apiSrc.getPosts()) ]
+        pos = int(input("Which post? "))
+        post = apiSrc.getPost(pos)
+        print(apiSrc)
+        newLink = input("New link? ")
+        newPosts = apiSrc.editApiLink(post, newLink)
+        # FIXME. It has been recorded
+        # posts = apiSrc.getPosts()
+        # posts[pos] = newPost
+        print(f"new: {newPosts}")
+        #apiSrc.assignPosts(posts)
+        # print(apiSrc.updatePostsCache())
+
+    testingPosts = True
+    if testingPosts:
+        print("Testing Posts")
+        cmd = getattr(apiSrc, 'setApiPosts')
+        posts = cmd
+        posts = cmd()
+        for i, post in enumerate(posts):
+            print(f"{i}) {apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
+        return
+        apiSrc.setPosts()
+        for i, post in enumerate(apiSrc.getPosts()):
+            print(f"{i}) {apiSrc.getPostTitle(post)}")
 
         return
 
 
     testingPublishPos = True
-
     if testingPublishPos:
         snDst = 'facebook'
         nickDst = 'Enlaces de fernand0'

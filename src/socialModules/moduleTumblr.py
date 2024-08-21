@@ -49,6 +49,13 @@ class moduleTumblr(Content): #, Queue):
         name = self.getUrl().split('/')[2]
         return name
 
+    def setNick(self, nick=None):
+        if not nick:
+            nick = self.getUrl()
+            nick = nick.split("/")[2].split('.')[0]
+        self.nick = nick
+
+
     def setApiPosts(self):
         posts = self.setApiPublished()
         return posts
@@ -275,8 +282,8 @@ def main():
 
     import logging
     logging.basicConfig(
-        stream=sys.stdout, 
-        level=logging.INFO, 
+        stream=sys.stdout,
+        level=logging.INFO,
         format='%(asctime)s %(message)s'
         )
 
@@ -293,7 +300,18 @@ def main():
         print(t.publishPost(title, link, ''))
         return
 
-    testingPosts = True
+    testingDrafts = True
+    if testingDrafts:
+        print("Testing drafts")
+        t.setPostsType('drafts')
+        t.setPosts()
+        print(t.getPosts())
+        for i, post in enumerate(t.getPosts()):
+            print(f"{i}) {t.getPostTitle(post)}")
+        return
+
+
+    testingPosts = False
     if testingPosts:
         print("Testing posts")
         t.setPosts()
