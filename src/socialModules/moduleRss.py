@@ -62,7 +62,6 @@ class moduleRss(Content): #, Queue):
                 nick = urllib.parse.urljoin(self.url,self.getRssFeed())
         self.nick = nick
 
-
     def setClient(self, feed):
         msgLog = (f"{self.indent} Start setClient account: {feed}")
         logMsg(msgLog, 1, 0)

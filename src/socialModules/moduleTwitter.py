@@ -271,6 +271,7 @@ class moduleTwitter(Content): #, Queue):
         return (res)
 
     def getPostId(self, post):
+        logging.info(f"Postttt: {post}")
         if isinstance(post, str) or isinstance(post, int):
             # It is the tweet URL
             idPost = post

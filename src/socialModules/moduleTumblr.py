@@ -300,7 +300,18 @@ def main():
         print(t.publishPost(title, link, ''))
         return
 
-    testingPosts = True
+    testingDrafts = True
+    if testingDrafts:
+        print("Testing drafts")
+        t.setPostsType('drafts')
+        t.setPosts()
+        print(t.getPosts())
+        for i, post in enumerate(t.getPosts()):
+            print(f"{i}) {t.getPostTitle(post)}")
+        return
+
+
+    testingPosts = False
     if testingPosts:
         print("Testing posts")
         t.setPosts()

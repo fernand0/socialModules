@@ -46,10 +46,11 @@ def fileNamePath(url, socialNetwork=()):
     myNetloc = urlParsed.netloc
     if not myNetloc:
         myNetloc=url
-    if 'twitter' in myNetloc:
+    if ('twitter' in myNetloc) or ('reddit' in myNetloc):
         myNetloc = f"{myNetloc}_{urlParsed.path[1:]}"
     if myNetloc.endswith('/'):
         myNetloc = myNetloc[:-1]
+    myNetloc = myNetloc.replace('/','_')
     if not socialNetwork:
         theName = (f"{DATADIR}/{myNetloc}")
     else:
@@ -64,11 +65,11 @@ def setNextTime(blog, socialNetwork, tNow, tSleep):
         pickle.dump((tNow, tSleep), f)
     return fileNameNext
 
-def getNextTime(blog, socialNetwork):
+def getNextTime(blog, socialNetwork, indent=""):
     fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext'
     msgLog = (f"fileNameNext {fileNameNext}")
     logMsg(msgLog, 2, 0)
-    msgLog = checkFile(fileNameNext)
+    msgLog = checkFile(fileNameNext, indent)
     if 'OK' in msgLog:
         with open(fileNameNext,'rb') as f:
             tNow, tSleep = pickle.load(f)
@@ -78,7 +79,9 @@ def getNextTime(blog, socialNetwork):
         return 0, 0
 
 def checkFile(fileName, indent=""):
-    msgLog = f"{indent} Start Checking {fileName} "
+    msgLog = f"{indent} Start checkFile"
+    logMsg(msgLog, 2, 0)
+    msgLog = f"{indent}  File: {fileName}"
     logMsg(msgLog, 2, 0)
     dirName = os.path.dirname(fileName)
 
@@ -88,7 +91,8 @@ def checkFile(fileName, indent=""):
     elif not os.path.isfile(fileName):
         msgRes = f"File {fileName} does not exist."
 
-    msgLog = f"{indent} End Checking"
+    logMsg(f"{indent}  {msgRes}", 2, 0)
+    msgLog = f"{indent} End checkFile"
     logMsg(msgLog, 2, 0)
     return msgRes
 
@@ -99,7 +103,8 @@ def getLastLink(fileName, indent=''):
     timeLast = 0
     msgLog = checkFile(fileName, indent)
     if not "OK" in msgLog:
-        logging.info(msgLog)
+        msgLog = f"{indent} {msgLog}"
+        logMsg(msgLog, 3, 0)
     else:
         with open(fileName, "rb") as f:
             linkLast = f.read().decode().split()  # Last published
@@ -151,7 +156,7 @@ def updateLastLink(url, link, socialNetwork=()):
 
     msgLog = (f"fileName: {fileName}")
     logMsg(msgLog, 2, 0)
-    msgLog = checkFile(fileName)
+    msgLog = checkFile(fileName, indent)
     logMsg(msgLog, 2, 0)
     if not 'OK' in msgLog:
         msgLog = (f"fileName: {fileName} does not exist, I'll create it")
@@ -196,7 +201,7 @@ def updateLastLink(url, link, socialNetwork=()):
 def getModule(profile, indent=''):
     # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
     indent = f"{indent} "
-    msgLog = (f"{indent} Start getModule")
+    msgLog = (f"{indent} Start getModule {profile}")
     logMsg(msgLog, 2, 0)
     serviceName = profile.capitalize()
 
@@ -208,19 +213,22 @@ def getModule(profile, indent=''):
     indent = indent[:-1]
     return api
 
-def getApi(profile, nick, indent=""):
-    msgLog = (f"{indent} Start getApi")
+def getApi(profile, nick, indent="", channel = None):
+    msgLog = (f"{indent} Start getApi with channel {channel}")
     logMsg(msgLog, 2, 0)
 
-    #indent = f"{indent} "
-
-    # msgLog = (f"{indent}  Profile {profile}")
-    # logMsg(msgLog, 2, 0)
-    # msgLog = (f"{indent}  Nick {nick}")
+    # msgLog = (f"{indent}  Profile {profile} "
+    #           f"Nick {nick}")
     # logMsg(msgLog, 2, 0)
     api = getModule(profile, indent)
-    api.indent = indent
+    # msgLog = (f"{indent}  Api {api}")
+    # logMsg(msgLog, 2, 0)
+
+    api.indent = f"{indent} "
     api.setClient(nick)
+    if channel:
+        api.setPage(channel)
+    api.indent = f"{indent[:-1]}"
     api.setPostsType('posts')
 
     #indent = indent[:-1]
