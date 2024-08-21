@@ -25,8 +25,9 @@ class moduleReddit(Content): #, Queue):
                            f"{self.id}&user={self.nick}")
         print(f"Base: {self.rssFeedAll}")
 
-        self.setPages()
-        self.setPage()
+        if not self.getPage():
+            self.setPages()
+            self.setPage()
 
         blog = socialModules.moduleRss.moduleRss()
         blog.setUrl(self.base_url)
@@ -101,7 +102,10 @@ class moduleReddit(Content): #, Queue):
         blog = socialModules.moduleRss.moduleRss()
         blog.setUrl(self.base_url)
         blog.setRssFeed(self.rssFeedAll)
+        indent = self.indent
+        self.indent = f"{self.indent} Checking Pages"
         blog.setPosts()
+        self.indent = indent
         groups = []
         for post in blog.getPosts():
             link = post['link']
@@ -111,7 +115,7 @@ class moduleReddit(Content): #, Queue):
             if not group in groups:
                 groups.append(group)
         self.groups = groups
-        logging.info(f"Groups: {self.groups}")
+        logging.info(f"{self.indent} Groups: {self.groups}")
 
     def getPages(self):
         return self.groups

@@ -113,14 +113,12 @@ class moduleRss(Content): #, Queue):
             urlRss = self.getRssFeed()
         else:
             urlRss = urllib.parse.urljoin(self.url,self.getRssFeed())
-        logging.info(f"Rss: -----> {urlRss}")
         if 'github.com' in urlRss:
             self.feed = feedparser.parse(urlRss,
                     request_headers={'Accept':'application/atom+xml'})
         else:
             self.feed = feedparser.parse(urlRss)
         posts = self.feed.entries
-        logging.info(f"Postssss: {posts}")
         if hasattr(self.feed.feed, 'title'):
             self.title = self.feed.feed.title
         else:
