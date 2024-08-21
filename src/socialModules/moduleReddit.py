@@ -46,6 +46,7 @@ class moduleReddit(Content): #, Queue):
         posts = []
         if self.page:
             self.clientRss.setRssFeed(self.rssFeed)
+            self.clientRss.setRss(self.rssFeed)
             self.clientRss.setPosts()
             posts = self.clientRss.getPosts()
             msgLog = (f"{self.indent} Postsssssr: {posts}")
