@@ -24,12 +24,12 @@ class moduleReddit(Content): #, Queue):
         self.rssFeedAll = (f"{self.base_url}/.rss?feed="
                            f"{self.id}&user={self.nick}")
 
-        logging.info(f"Srcccc: {src}")
+        # logging.info(f"Srcccc: {self.src}")
         #     self.setPage()
 
         blog = socialModules.moduleRss.moduleRss()
-        blog.setUrl(self.base_url)
-        blog.setRssFeed(self.rssFeed)
+        # blog.setUrl(self.base_url)
+        # blog.setRssFeed(self.rssFeed)
 
         self.clientRss = blog
         client = None
