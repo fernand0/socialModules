@@ -78,9 +78,9 @@ def getNextTime(blog, socialNetwork, indent=""):
 
 def checkFile(fileName, indent=""):
     msgLog = f"{indent} Start checkFile"
-    logMsg(msgLog, 2, 0) 
+    logMsg(msgLog, 2, 0)
     msgLog = f"{indent}  File: {fileName}"
-    logMsg(msgLog, 2, 0) 
+    logMsg(msgLog, 2, 0)
     dirName = os.path.dirname(fileName)
 
     msgRes = f"OK {fileName}"
@@ -213,7 +213,7 @@ def getModule(profile, indent=''):
     return api
 
 def getApi(profile, nick, indent="", channel = None):
-    msgLog = (f"{indent} Start getApi with channel")
+    msgLog = (f"{indent} Start getApi with channel {channel}")
     logMsg(msgLog, 2, 0)
 
     # msgLog = (f"{indent}  Profile {profile} "

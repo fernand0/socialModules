@@ -28,7 +28,7 @@ class moduleReddit(Content): #, Queue):
         #     self.setPage()
 
         blog = socialModules.moduleRss.moduleRss()
-        # blog.setUrl(self.base_url)
+        blog.base_url = self.base_url
         # blog.setRssFeed(self.rssFeed)
 
         self.clientRss = blog
@@ -46,17 +46,15 @@ class moduleReddit(Content): #, Queue):
         posts = []
         if self.page:
             self.clientRss.setRssFeed(self.rssFeed)
-            self.clientRss.setUrl(self.url)
+            self.clientRss.setUrl(self.base_url)
             self.clientRss.setRss(self.rssFeed)
             self.clientRss.setPosts()
             posts = self.clientRss.getPosts()
-            msgLog = (f"{self.indent} Postsssssr: {posts}")
-            logMsg(msgLog, 2, 0)
             posts.reverse()
             #FIXME: This should not be here
             self.posts = posts[:-1] # The last one seems to be the always the
                                     # same post
-            
+
         lastLink, lastTime = checkLastLink(self.getUrl())
         logging.info(f"Last: {lastLink} |  {lastTime}")
         pos = self.getLinkPosition(lastLink)
@@ -84,10 +82,10 @@ class moduleReddit(Content): #, Queue):
                 self.warning("You need to join, at least, one group")
         if self.page:
             self.rssFeed = f"r/{self.page}/new/.rss?sort=new"
+            self.clientRss.setRss(urllib.parse.urljoin(self.clientRss.base_url, self.rssFeed))
 
     def getUrl(self):
         url = self.url
-        logging.info(f"Uuuuurl: {url}")
         page = self.getPage()
         if page:
             url = f"{url}/r/{page}"
@@ -219,6 +217,21 @@ def main():
     rules.checkRules()
 
     apiSrc = rules.selectRuleInteractive()
+
+    testingErrbot = True
+    if testingErrbot:
+        print(f"Src: {apiSrc.src}")
+        print(f"More: {rules.more[apiSrc.src]}")
+        print(f"Base url: {apiSrc.base_url}")
+        print(f"Base url rss: {apiSrc.clientRss.base_url}")
+        print(f"Rss: {apiSrc.getPage()}")
+        print(f"Rss: {apiSrc.clientRss.getRss()}")
+        apiSrc.setPostsType(apiSrc.src[3])
+        apiSrc.setPosts()
+        for i, post in enumerate(apiSrc.getPosts()):
+            print(f"{i}) {apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
+
+        return
 
     testingPosts = True
     if testingPosts:
