@@ -113,7 +113,7 @@ class moduleRss(Content): #, Queue):
             urlRss = self.getRssFeed()
         else:
             urlRss = urllib.parse.urljoin(self.url,self.getRssFeed())
-        logging.info(f"Urlllll: {urlRss} - {self.url} - {self.base_url}")
+        logging.info(f"Urlllll: {urlRss} - {self.url}")
         if 'github.com' in urlRss:
             self.feed = feedparser.parse(urlRss,
                     request_headers={'Accept':'application/atom+xml'})
