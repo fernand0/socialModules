@@ -619,9 +619,9 @@ class moduleCache(Content): #,Queue):
         return(title)
 
     def getPostLink(self, post):
-        self.indent = f"{self.indent} "
-        msgLog = (f"{self.indent} Start getPostLink.")
-        logMsg(msgLog, 2, 0)
+        # self.indent = f"{self.indent} "
+        # msgLog = (f"{self.indent} Start getPostLink.")
+        # logMsg(msgLog, 2, 0)
         link = ''
         if post:
             link = self.apiSrc.getPostLink(post)
@@ -639,9 +639,9 @@ class moduleCache(Content): #,Queue):
             #     link = apiCmd(post)
             # else:
             #     link = post[1]
-        msgLog = (f"{self.indent} End getPostLink.")
-        logMsg(msgLog, 2, 0)
-        self.indent = self.indent[:-1]
+        # msgLog = (f"{self.indent} End getPostLink.")
+        # logMsg(msgLog, 2, 0)
+        # self.indent = self.indent[:-1]
         return (link)
 
     def getPostContentHtml(self, post):
