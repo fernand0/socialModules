@@ -100,6 +100,7 @@ class moduleReddit(Content): #, Queue):
         blog = socialModules.moduleRss.moduleRss()
         blog.setUrl(self.base_url)
         blog.setRssFeed(self.rssFeedAll)
+        blog.setRss(self.rssFeedAll)
         indent = self.indent
         self.indent = f"{self.indent} Checking Pages"
         blog.setPosts()
