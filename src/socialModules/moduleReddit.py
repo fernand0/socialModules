@@ -24,10 +24,9 @@ class moduleReddit(Content): #, Queue):
         self.rssFeedAll = (f"{self.base_url}/.rss?feed="
                            f"{self.id}&user={self.nick}")
 
-        logging.info(f"{self.indent} Pageeee: {self.getPage()}")
-        if not self.getPage():
-            self.setPages()
-            self.setPage()
+        # if not self.getPage():
+        #     self.setPages()
+        #     self.setPage()
 
         blog = socialModules.moduleRss.moduleRss()
         blog.setUrl(self.base_url)
