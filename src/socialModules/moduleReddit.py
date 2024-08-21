@@ -87,6 +87,7 @@ class moduleReddit(Content): #, Queue):
 
     def getUrl(self):
         url = self.url
+        logging.info(f"Uuuuurl: {url}")
         page = self.getPage()
         if page:
             url = f"{url}/r/{page}"
