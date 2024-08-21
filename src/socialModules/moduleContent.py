@@ -103,7 +103,7 @@ class Content:
         try:
             client = self.initApi(keys)
         except:
-            msgLog = (f"{self.indent} Exception")
+            msgLog(f"{self.indent} Exception")
             logMsg(msgLog, 2, 0)
             if not config.sections and not keys:
                 self.report({self.service}, "No keys", "", '')
@@ -263,8 +263,8 @@ class Content:
         msgLog = f"{self.indent} Command: {cmd}"
         logMsg(msgLog, 2, 0)
         posts = cmd()
-        # msgLog = (f"{self.indent} service {self.service} posts: {posts}")
-        # logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} service {self.service} posts: {posts}")
+        logMsg(msgLog, 2, 0)
         self.assignPosts(posts)
         self.indent = self.indent[:-1]
         self.indent = self.indent[:-1]
@@ -457,10 +457,6 @@ class Content:
         self.lastTimePublished = lastTime
         msgLog = (f"{self.indent} End setLastLink")
         logMsg(msgLog, 1, 0)
-
-        msgLog = (f"{self.indent} End setLastLink")
-        logMsg(msgLog, 1, 0)
-        self.indent = self.indent[:-1]
 
     def getLastTime(self, other = None):
         lastTime = 0.0
@@ -914,9 +910,6 @@ class Content:
 
         posLast = self.getPosNextPost()
         post = self.getPost(posLast - 1)
-        msgLog = (f"{self.indent} post: {self.getPostTitle(post)}"
-                  f" {self.getPostLink(post)}")
-        logMsg(msgLog, 2, 0)
 
         self.indent = self.indent[:-1]
         msgLog = (f"{self.indent} End getNextPost.")
@@ -1055,9 +1048,6 @@ class Content:
         nameMethod = 'Post'
         listPosts = []
         if len(args) == 3:
-            msgLog = (f"{self.indent} With args.")
-            logMsg(msgLog, 2, 0)
-
             title = args[0]
             link = args[1]
             comment = args[2]
@@ -1065,8 +1055,7 @@ class Content:
                       f"{title}, {link} with comment: {comment}")
             logMsg(msgLog, 2, 0)
         elif len(args) == 1:
-            msgLog = (f"{sefl.indent} What's happening here?")
-            logMsg(msgLog, 2, 0)
+            # apiSrc= args[0]
             listPosts = args#[1]
             msgLog = (f"{self.indent} Publishing post {listPosts}"
                       f" len(args) == 1")
@@ -1080,6 +1069,8 @@ class Content:
 
             post = more.get('post', '')
             api = more.get('api', '')
+            # title = api.getPostTitle(post)
+            # link = api.getPostLink(post)
 
         reply = 'Fail!'
         try:
@@ -1114,7 +1105,7 @@ class Content:
                 for post in listPosts:
                     reply = method(title, link, comment, api=api, post=post)
             else:
-                logging.debug(f"{self.indent} No listposts")
+                logging.debug(f"{self.indent} no listposts")
                 if api and post:
                     msgLog = (f"{self.indent} Calling method "
                               f"with api and post")
@@ -1126,14 +1117,11 @@ class Content:
                     logMsg(msgLog, 2, 0)
                     reply = method(title, link, comment)
 
-            msgLog = (f"{self.indent} Reply publish: {reply}")
-            logMsg(msgLog, 2, 0)
+            logging.info(f"Reply publish: {reply}")
             reply = self.processReply(reply)
         except:
             reply = self.report(self.service, title, link, sys.exc_info())
 
-        msgLog = (f"{self.indent} End publishPost.")
-        logMsg(msgLog, 2, 0)
         return reply
 
     def deletePostId(self, idPost):
@@ -1346,8 +1334,8 @@ class Content:
         self.bufMax = bufMax
         self.max = bufMax
 
+
     def setBufMax(self, bufMax):
-        #FIXME: ????
         self.bufMax = bufMax
 
     def getBufMax(self):
