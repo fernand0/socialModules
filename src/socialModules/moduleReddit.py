@@ -23,8 +23,8 @@ class moduleReddit(Content): #, Queue):
         self.nick = self.user.split('/')[-1]
         self.rssFeedAll = (f"{self.base_url}/.rss?feed="
                            f"{self.id}&user={self.nick}")
-        print(f"Base: {self.rssFeedAll}")
 
+        logging.info(f"{self.indent} Pageeee: {self.getPage()}")
         if not self.getPage():
             self.setPages()
             self.setPage()
