@@ -76,7 +76,7 @@ class modulePocket(Content): #,Queue):
             print(f"Something failed")
 
     def initApi(self, keys):
-        msgLog = (f"{self.indent} service {self.service} Start initApi {self.user}")
+        msgLog = (f"{self.indent} Service {self.service} Start initApi {self.user}")
         logMsg(msgLog, 2, 0)
         self.postaction='archive'
 
@@ -304,6 +304,27 @@ def main():
                 apiSrc.publishPost('titulo',
                                    'https://github.com/danielbrendel/hortusfox-web',
                                    '')
+        return
+
+    testingSlack = False
+    if testingSlack:
+        api = rules.selectActionInteractive('slack')
+        api.setPosts()
+        posts = api.getPosts()
+        pos = api.getLinkPosition('https://internetdelascosas.xyz/articulo.php?id=1159')
+        for key in rules.rules.keys():
+            if ((key[0] == 'pocket')
+                    and (key[2] == 'fernand0kobo')):
+                apiDst = rules.readConfigSrc(key, rules.more[key])
+        print(f"Posts: {pos}")
+        for post in range(pos+1, len(posts)):
+            print(f"Post: {posts[post]}")
+            title = api.getPostTitle(posts[post])
+            link = api.getPostLink(posts[post])
+            apiDst.publishPost(title, link, '')
+            import time
+            time.sleep(1)
+
         return
 
 

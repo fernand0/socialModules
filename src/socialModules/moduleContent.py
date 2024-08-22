@@ -103,7 +103,7 @@ class Content:
         try:
             client = self.initApi(keys)
         except:
-            msgLog = (f"{self.indent} Exception")
+            msgLog(f"{self.indent} Exception")
             logMsg(msgLog, 2, 0)
             if not config.sections and not keys:
                 self.report({self.service}, "No keys", "", '')
@@ -263,8 +263,8 @@ class Content:
         msgLog = f"{self.indent} Command: {cmd}"
         logMsg(msgLog, 2, 0)
         posts = cmd()
-        # msgLog = (f"{self.indent} service {self.service} posts: {posts}")
-        # logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} service {self.service} posts: {posts}")
+        logMsg(msgLog, 2, 0)
         self.assignPosts(posts)
         self.indent = self.indent[:-1]
         self.indent = self.indent[:-1]

@@ -40,6 +40,8 @@ def logMsg(msgLog, log=1, output=1):
         print("====================================")
 
 def fileNamePath(url, socialNetwork=()):
+    logging.info(f" ----> Url: {url}")
+    logging.info(f"socialNetwork: {socialNetwork}")
     urlParsed = urllib.parse.urlparse(url)
     myNetloc = urlParsed.netloc
     if not myNetloc:
@@ -205,7 +207,6 @@ def getModule(profile, indent=''):
 
     mod = importlib.import_module('socialModules.module' + serviceName)
     cls = getattr(mod, 'module' + serviceName)
-    # logging.debug(f"Class: {cls}")
     api = cls(indent)
     msgLog = (f"{indent} End getModule")
     logMsg(msgLog, 2, 0)

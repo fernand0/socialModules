@@ -96,6 +96,7 @@ class moduleXmlrpc(Content):
                 blogId, blogName = self.blogId(srv, usr, pwd)
                 self.setId(blogId)
                 self.setName(blogName)
+        self.client = self.xmlrpc
 
     def getPostsXmlRpc(self):
         return(self.postsXmlRpc)

@@ -29,6 +29,8 @@ class moduleTwitter(Content): #, Queue):
                 TOKEN_SECRET, BEARER_TOKEN)
 
     def initApi(self, keys):
+        msgLog = (f"{self.indent} Service {self.service} Start initApi {self.user}")
+        logMsg(msgLog, 2, 0)
         # FIXME: Do we call this method directly?
         self.base_url = 'https://twitter.com'
         self.url = f"{self.base_url}/{self.user}"
@@ -47,6 +49,8 @@ class moduleTwitter(Content): #, Queue):
 
         self.api = api
 
+        msgLog = (f"{self.indent} service {self.service} End initApi")
+        logMsg(msgLog, 2, 0)
         return client
 
     def apiCall(self, command, **kwargs):
