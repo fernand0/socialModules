@@ -142,7 +142,12 @@ class moduleReddit(Content): #, Queue):
 
     def getPostContent(self, post):
         result = post['content'][0]['value']
-        return result
+                soup = BeautifulSoup(result,'lxml')
+        title = self.getPostTitle(post)
+        (theContent, theSummaryLinks) = self.extractLinks(soup, "")
+        content = f"{title}\n{theContent}\n{theSummaryLinks}"
+
+        return content
 
     def getPostContentLink(self, post):
         result = ''
