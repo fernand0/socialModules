@@ -185,6 +185,9 @@ class moduleImap(Content): #, Queue):
         name = str(channel).split(f'"{self.separator}"')[-1][1:-1]
         return name
 
+    def setPage(self, channel=''):
+        self.setChannel(channel)
+
     def setChannel(self, channel=''):
         # setPage in Facebook
         if not channel:
