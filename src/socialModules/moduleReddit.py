@@ -230,6 +230,18 @@ def main():
         apiSrc.setPosts()
         for i, post in enumerate(apiSrc.getPosts()):
             print(f"{i}) {apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
+        show = "yes"
+        while show:
+            show = input("Do you want to see some post? ")
+            if show:
+                post = apiSrc.getPosts()[int(show)]
+                contentHtml = apiSrc.getPostContent(post)
+                soup = BeautifulSoup(contentHtml,'lxml')
+                (theContent, theSummaryLinks) = apiSrc.extractLinks(soup, "")
+                content = f"{theContent}\n{theSummaryLinks}"
+
+                print(f"{apiSrc.getPostTitle(post)}\n"
+                      f"{content}")
 
         return
 
