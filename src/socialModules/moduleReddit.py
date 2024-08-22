@@ -147,7 +147,7 @@ class moduleReddit(Content): #, Queue):
         (theContent, theSummaryLinks) = self.extractLinks(soup, "")
         content = f"{title}\n{theContent}\n{theSummaryLinks}"
 
-        return result
+        return content
 
     def getPostContentLink(self, post):
         result = ''
