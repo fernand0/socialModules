@@ -3,7 +3,6 @@ import importlib
 import logging
 import os
 import pickle
-import shutil
 import sys
 import urllib
 

@@ -30,7 +30,7 @@ class moduleRules:
 
     def indentLess(self):
         self.indent = self.indent[:-1]
-        
+
     def checkRules(self, configFile = None, select=None):
         msgLog = "Checking rules"
         logMsg(msgLog, 1, 2)
@@ -308,7 +308,7 @@ class moduleRules:
                                 # print(f"destRuleCache: {destRuleCache}")
                                 # print(f"destRuleNew: {destRuleNew}")
 
-                            #FIXME. Can this be done before? 
+                            #FIXME. Can this be done before?
                             # Look at previous arrow " -> "
                             msgLog = (f"{self.indent} Rule: {orig} -> "
                                         f"{key}({dest})")
@@ -343,8 +343,12 @@ class moduleRules:
                                     msgLog = f"{self.indent}  moreS: {moreS}"
                                     logMsg(msgLog, 2, 0)
                                     mor[fromSrvN] = dict(moreS)
+                                    msgLog = f"{self.indent}  chan: {chan}"
+                                    logMsg(msgLog, 2, 0)
                                     if chan != 'set':
-                                        mor[fromSrvN].update({'posts':chan}) 
+                                        mor[fromSrvN].update({'posts':chan, 'channel':chan})
+                                    msgLog = f"{self.indent}  mormor: {mor}"
+                                    logMsg(msgLog, 2, 0)
 
         logging.info(f"Rules: {rulesNew}")
         # Now we can add the sources not added.
@@ -533,7 +537,7 @@ class moduleRules:
         return rules
 
     def hasSetMethods(self, service):
-        self.indentPlus() 
+        self.indentPlus()
         msgLog = f"{self.indent} Service {service} checking set methods"
         logMsg(msgLog, 2, 0)
         if service == "social":
@@ -577,7 +581,7 @@ class moduleRules:
         return methods
 
     def hasPublishMethod(self, service):
-        self.indentPlus() 
+        self.indentPlus()
         msgLog = (f"{self.indent} Start "
                   f"Checking service publish methods")
         logMsg(msgLog, 2, 0)
@@ -784,10 +788,11 @@ class moduleRules:
 
         profile = self.getNameRule(src)
         account = self.getProfileRule(src)
-        if 'channel' in more: 
+        if 'channel' in more:
             apiSrc = getApi(profile, account, indent, more['channel'])
         else:
             apiSrc = getApi(profile, account, indent)
+        apiSrc.src = src
         apiSrc.setPostsType(src[-1])
         apiSrc.setMoreValues(more)
 
