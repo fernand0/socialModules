@@ -1171,52 +1171,7 @@ class moduleRules:
                 else:
                     more = None
 
-                # if self.getNameAction(src) in ['cache']:
-                #     srcName = self.getProfileAction(src) # src[2][2]
-                #     # # FIXME Better access?
-                #     # msgLog = f"{self.indent} srcName: {srcName}"
-                #     # logMsg(msgLog,2, 0)
-                #     # msgLog = f"{self.indent} getDestAction: {self.getDestAction(src)}"
-                #     # logMsg(msgLog,2, 0)
-                #     # msgLog = f"{self.indent} getProfileAction: {self.getProfileAction(src)}"
-                #     # logMsg(msgLog,2, 0)
-
-                #     # FIXME Names?
-                #     if 'slack' in srcName:
-                #         srcName = (f"{srcName.split('/')[2].split('.')[0]}"
-                #                   f"@slack")
-                #         # msgLog = f"{self.indent} ssrcName: {srcName} - {self.getNick()}"
-                #         # logMsg(msgLog,2, 0)
-                #     elif 'gitter' in srcName:
-                #         srcName = f"{srcName.split('/')[-2]}@gitter"
-                #         # msgLog = f"{self.indent} ssrcName: {srcName} - {self.getNick()}"
-                #         # logMsg(msgLog,2, 0)
-                #     elif 'imgur' in srcName:
-                #         srcName = f"{srcName.split('/')[-1]}@imgur"
-                #         # msgLog = f"{self.indent} ssrcName: {srcName} - {self.getNick()}"
-                #         # logMsg(msgLog,2, 0)
-                #     elif '.com' in srcName:
-                #         if 'gmail' in more:
-                #             srcName = more['gmail']
-                #         srcName = f"{srcName}@gmail"
-                #         # msgLog = f"{self.indent} ssrcName: {srcName} - {self.getNick()}"
-                #         # logMsg(msgLog,2, 0)
-                # else:
-                #     #FIXME self.identifier
-                #     srcName = self.getProfileRule(src)
-                #     if 'slack' in srcName:
-                #         srcName = f"{srcName.split('/')[2].split('.')[0]}"
-                #     elif 'imgur' in srcName:
-                #         srcName = more['url']
-                #         srcName = f"{srcName.split('/')[-1]}"
-                #     elif 'gitter' in srcName:
-                #         srcName = f"{srcName.split('/')[-2]}"
-                #     elif ((not srcName)
-                #           and ('tumblr' in self.getNameAction(src))):
-                #         srcName = more['url']
-                #         srcName = f"{srcName.split('/')[2].split('.')[0]}"
                 msgIni = (f"{self.getNickSrc(src)} ({self.getNickAction(src)})")
-                # logging.info(f"{self.indent} msgIni... {msgIni} src {src}")
 
                 actions = self.rules[src]
 
