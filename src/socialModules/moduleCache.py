@@ -62,20 +62,6 @@ class moduleCache(Content): #,Queue):
     def getPostsType(self):
         return 'posts'
 
-    # def setNick(self, nick=None):
-    #     msgLog = (f"{self.indent} Start setNick (c)")
-    #     logMsg(msgLog, 2, 0)
-    #     # Many services are like https://service.com/.../nick
-    #     # self.auxClass = self.src[0]
-    #     logging.info(f"urlll: {self.getUser()}")
-    #     # if not nick:
-    #     #     apiDst = self.getApiDst()
-    #     #     apiDst.indent = f"{self.indent} "
-    #     #     apiDst.setClient(self.src[2])
-    #     #     apiDst.setUrl(self.src[2])
-    #     #     apiDst.setNick()
-    #     self.nick = apiDst.getNick()
-
     def fileNameBase(self, dst):
         self.indent = f"{self.indent} "
         msgLog = (f"{self.indent} Start fileNameBase (c)")
