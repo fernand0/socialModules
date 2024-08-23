@@ -823,6 +823,11 @@ class moduleRules:
         else:
             apiDst.setUrl(None)
 
+        apiSrc.setLastLink(apiDst)
+        #FIXME: best in readConfigSrc (readConfigDst, since we need it)?
+        # PROBLEMS -> the same lastLink for each action ????
+        apiDst.lastLinkSrc = apiSrc.getLastLink()
+
         indent = f"{indent[:-1]}"
         msgLog = f"{indent} End readConfigDst" #: {src[1:]}"
         logMsg(msgLog, 2, 0)
@@ -897,7 +902,7 @@ class moduleRules:
 
                 if nextPost:
                     cmdPost = getattr(apiSrc, f"{postaction}NextPost")
-                    resPost = cmdPost()
+                    resPost = cmdPost(apiDst)
                 else:
                     cmdPost = getattr(apiSrc, f"{postaction}")
                     resPost = cmdPost(pos)
@@ -921,7 +926,7 @@ class moduleRules:
         postaction = ''
         apiSrc.setPosts()
         if nextPost:
-            post = apiSrc.getNextPost()
+            post = apiSrc.getNextPost(apiDst)
         else:
             post = apiSrc.getPost(pos)
         if post:
@@ -990,7 +995,8 @@ class moduleRules:
 
         return resMsg
 
-    def executeAction(self, src, more, action,
+    def executeAction(self, src, more, action, msgAction,
+                      apiSrc, apiDst,
                       noWait, timeSlots, simmulate, name="",
                       numAct = 1, nextPost = True, pos = -1, delete=False):
 
@@ -1011,53 +1017,8 @@ class moduleRules:
         logMsg(msgLog, 1, 0)
         indent = f"{indent} "
 
-        # Source
-        #self.indent = indent
-        apiSrc = self.readConfigSrc(indent, src, more)
-        if not apiSrc.getClient():
-            msgLog = self.clientErrorMsg(indent, apiSrc, "Source",
-                                      self.getProfileRule(src),
-                                      self.getNickAction(src))
-            if msgLog:
-                logMsg(msgLog, 3, 1)
-            return f"{msgLog} End."
-
-        msgAction = (f"{self.getNameAction(action)} "
-                     f"{self.getNickAction(action)}@"
-                     f"{self.getProfileAction(action)} "
-                     f"({self.getTypeAction(action)})")
-
-        if apiSrc.getName():
-            theName = apiSrc.getName()
-        else:
-            theName = self.getProfileAction(src)
-        msgLog = (f"Source: {theName}-{self.getNickAction(src)}"
-                  f" -> Action: {msgAction}")
-
         res = ""
         textEnd = (f"{msgLog}")
-
-        # Destination
-        apiDst = self.readConfigDst(indent, action, more, apiSrc)
-        if not apiDst.getClient():
-            msgLog = self.clientErrorMsg(indent, apiDst, "Destination",
-                                      (f"{self.getNameRule(src)}@"
-                                       f"{self.getProfileRule(src)}"),
-                                      self.getNickAction(src))
-            # msgLog = (f"{indent} Destination Error. No client for "
-            #           f"{self.getProfileRule(action)}")
-            if msgLog:
-                logMsg(msgLog, 3, 1)
-                sys.stderr.write(f"Error: {msgLog}\n")
-            return f"End: {msgLog}"
-
-        # msgLog = f"{indent}  apiSrc: {apiSrc}"
-        # logMsg(msgLog, 2, 0)
-        # msgLog = f"{indent}  apiDst: {apiDst}"
-        # logMsg(msgLog, 2, 0)
-
-        apiSrc.setLastLink(apiDst)
-        #FIXME: best in readConfigSrc (readConfigDst, since we need it)?
 
         time.sleep(1)
 
@@ -1078,7 +1039,7 @@ class moduleRules:
             tNow = time.time()
             hours = float(apiDst.getTime())*60*60
 
-            lastTime = apiSrc.getLastTimePublished(f"{indent} ")
+            lastTime = apiDst.getLastTimePublished(f"{indent} ")
 
             if lastTime:
                 diffTime = tNow - lastTime
@@ -1181,13 +1142,26 @@ class moduleRules:
                     actionMsg = f"Skip {msgIni}"
                 else:
                     actionMsg = (f"Scheduling {msgIni}")
-                # msgLog = f"{indent} {msgIni}"
-                # logMsg(msgLog, 1, 1)
                 msgLog = f"{indent} {actionMsg}"
                 logMsg(msgLog, 1, 1)
                 if actionMsg == "Skip.":
                     #FIXME ?
                     continue
+                # Source
+                apiSrc = self.readConfigSrc(indent, src, more)
+                if not apiSrc.getClient():
+                    msgLog = self.clientErrorMsg(indent, apiSrc, "Source",
+                                              self.getProfileRule(src),
+                                              self.getNickAction(src))
+                    if msgLog:
+                        logMsg(msgLog, 3, 1)
+                    return f"{msgLog} End."
+
+                if apiSrc.getName():
+                    theName = apiSrc.getName()
+                else:
+                    theName = self.getProfileAction(src)
+
                 for k, action in enumerate(actions):
                     name = f"{self.getNameRule(src)}{i}>"
                     theAction = 'posts'
@@ -1217,14 +1191,30 @@ class moduleRules:
                             # We will always load new items in the cache
                             timeSlots = 0
                             noWait=True
+                        msgAction = (f"{self.getNameAction(action)} "
+                             f"{self.getNickAction(action)}@"
+                             f"{self.getProfileAction(action)} "
+                             f"({self.getTypeAction(action)})")
 
-                        # msgLog = (f"{indent} timeSlots {timeSlots}")
-                        # logMsg(msgLog, 2 ,0)
-                        # msgLog = (f"{indent} noWait {noWait}")
-                        # logMsg(msgLog, 2 ,0)
+                        msgLog = (f"Source: {theName}-{self.getNickAction(src)}"
+                                  f" -> Action: {msgAction}")
+                        # Destination
+                        apiDst = self.readConfigDst(indent, action, more, apiSrc)
+                        if not apiDst.getClient():
+                            msgLog = self.clientErrorMsg(indent, apiDst, "Destination",
+                                                      (f"{self.getNameRule(src)}@"
+                                                       f"{self.getProfileRule(src)}"),
+                                                      self.getNickAction(src))
+                            if msgLog:
+                                logMsg(msgLog, 3, 1)
+                                sys.stderr.write(f"Error: {msgLog}\n")
+                            return f"End: {msgLog}"
+
+
                         threads = threads + 1
                         delayedPosts.append(pool.submit(self.executeAction,
-                                            src, more, action,
+                                            src, more, action, msgAction,
+                                            apiSrc, apiDst,
                                             noWait,
                                             timeSlots,
                                             args.simmulate,

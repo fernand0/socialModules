@@ -78,7 +78,7 @@ class Content:
         except:
             msgLog = (f"Does file {configFile} exist?")
             self.report({self.indent}, msgLog, 0, '')
-    
+
         self.indent = f"{self.indent} "
         msgLog = (f"{self.indent} Getting keys")
         logMsg(msgLog, 1, 0)
@@ -283,7 +283,7 @@ class Content:
             url = self.url
         return url
 
-    def fileNameBase(self, dst):
+    def fileNameBase(self, dst=None):
         self.indent = f"{self.indent} "
         msgLog = (f"{self.indent} Start fileNameBase")
         logMsg(msgLog, 2, 0)
@@ -328,6 +328,7 @@ class Content:
                         f"{nameDst}_{typeDst}_"
                         f"{userD}_{serviceD}")
             fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
+            self.fileName = fileName
 
         msgLog = (f"{self.indent} End fileNameBase")
         logMsg(msgLog, 2, 0)
@@ -340,7 +341,8 @@ class Content:
             link = self.getPostLink(link[-1])
         elif not link:
             # fixme could post be a parameter?
-            post = self.getNextPost()
+            # Unused ?
+            post = self.getNextPost(dst)
             msgLog = f"{self.indent} nextpost {post}"
             logMsg(msgLog, 2, 0)
             link = self.getPostLink(post)
@@ -416,23 +418,6 @@ class Content:
         msgLog = (f"{self.indent} Start setLastLink")
         logMsg(msgLog, 1, 0)
         fileName = (f"{self.fileNameBase(dst)}.last")
-        # if hasattr(self, 'fileName') and self.fileName:
-        #     fileName = f"{self.fileName}.last"
-        # else:
-        #     if dst:
-        #         self.fileName = self.fileNameBase(dst)
-        #         fileName = f"{self.fileName}.last"
-        #     else:
-        #         msgLog = (f"{self.indent} No dst")
-        #         logMsg(msgLog, 2, 0)
-        #         url = self.getUrl()
-        #         service = self.service.lower()
-        #         nick = self.getNick()
-        #         page = self.getPage()
-        #         if page:
-        #             nick = f"{nick}-{page}"
-        #         fileName = (f"{fileNamePath(url, (service, nick))}.last")
-
         lastTime = ''
         linkLast = ''
         checkR = checkFile(fileName, f"{self.indent} ")
@@ -455,6 +440,9 @@ class Content:
 
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime
+        if dst:
+            dst.lastLinkPublished = linkLast
+            dst.lastTimePublished = lastTime
         msgLog = (f"{self.indent} End setLastLink")
         logMsg(msgLog, 1, 0)
 
@@ -810,7 +798,7 @@ class Content:
                     )
         return text
 
-    def getPosNextPost(self):
+    def getPosNextPost(self, apiDst=None):
         msgLog = (f"{self.indent} Start getPosNextPost.")
         logMsg(msgLog, 2, 0)
         posts = self.getPosts()
@@ -820,7 +808,12 @@ class Content:
             if self.getPostsType() in ['favs', 'queue']:
                 posLast = 1
             else:
-                lastLink = self.getLastLinkPublished()
+                if apiDst:
+                    # We are moving this information to apiDst, since there can
+                    # be several destinations for one source
+                    lastLink = apiDst.getLastLinkPublished()
+                else:
+                    lastLink = self.getLastLinkPublished()
                 if lastLink:
                     posLast = self.getLinkPosition(lastLink)
                 else:
@@ -903,12 +896,12 @@ class Content:
 
         return listPosts
 
-    def getNextPost(self):
+    def getNextPost(self, apiDst=None):
         msgLog = (f"{self.indent} Start getNextPost.")
         logMsg(msgLog, 2, 0)
         self.indent = f"{self.indent} "
 
-        posLast = self.getPosNextPost()
+        posLast = self.getPosNextPost(apiDst)
         post = self.getPost(posLast - 1)
 
         self.indent = self.indent[:-1]
@@ -1005,12 +998,12 @@ class Content:
     def deleteApiNextPost(self):
         pass
 
-    def deleteNextPost(self):
+    def deleteNextPost(self, apiDst=None):
         reply = ''
         msgLog = (f"{self.indent} deleting next post")
         logMsg(msgLog, 2, 0)
         try:
-            post = self.getNextPost()
+            post = self.getNextPost(apiDst)
             if post:
                 msgLog = (f"{self.indent} deleting post {post}")
                 logMsg(msgLog, 2, 0)

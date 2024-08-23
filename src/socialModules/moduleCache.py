@@ -62,7 +62,7 @@ class moduleCache(Content): #,Queue):
     def getPostsType(self):
         return 'posts'
 
-    def fileNameBase(self, dst):
+    def fileNameBase(self, dst=None):
         self.indent = f"{self.indent} "
         msgLog = (f"{self.indent} Start fileNameBase (c)")
         logMsg(msgLog, 2, 0)
