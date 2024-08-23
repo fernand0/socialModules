@@ -209,7 +209,7 @@ class moduleCache(Content): #,Queue):
         # logMsg(msgLog, 2, 0)
         return num
 
-    def getPosNextPost(self):
+    def getPosNextPost(self, apiDst=None):
         # cache always shows the first item
         # Some standard contition?
         posLast = 1
