@@ -52,25 +52,6 @@ class moduleCache(Content): #,Queue):
         logMsg(msgLog, 2, 0)
         return rule[2:]
 
-    # def setServiceAux(self):
-    #     serviceAux = ''
-    #     msgLog = (f"{self.indent} getService")
-    #     logMsg(msgLog, 2, 0)
-    #     if hasattr(self, 'auxClass'):
-    #         msgLog = (f"{self.indent} has auxClass {self.auxClass}")
-    #         logMsg(msgLog, 2, 0)
-    #         if isinstance(self.auxClass, tuple):
-    #             self.auxClass = self.auxClass[0]
-    #         serviceAux = self.auxClass
-    #     else:
-    #         msgLog = f"{self.indent} has not auxClass"
-    #         logMsg(msgLog, 2, 0)
-    #         serviceAux =  self.service
-    #     self.serviceAux = serviceAux.capitalize()
-
-    # def getServiceAux(self):
-    #     return self.serviceAux
-
     def setPostsType(self, postsType):
         # FIXME. Is this ok?
         if postsType == 'posts':
