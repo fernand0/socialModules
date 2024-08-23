@@ -176,7 +176,6 @@ def getModule(profile, indent=''):
 
     mod = importlib.import_module('socialModules.module' + serviceName)
     cls = getattr(mod, 'module' + serviceName)
-    # logging.debug(f"Class: {cls}")
     api = cls(indent)
     msgLog = (f"{indent} End getModule")
     logMsg(msgLog, 2, 0)
