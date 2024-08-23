@@ -104,6 +104,8 @@ class moduleImgur(Content): #, Queue):
                 # msgLog = (f"{self.indent} Info: {info}")
                 # logMsg(msgLog, 2, 0)
                 if not album.in_gallery:
+                    info = f"{time.ctime(album.datetime)} {album.title}"
+                    msgLog = (f"{self.indent} Info: {info}")
                     posts.append(album)
                     # logging.info(f"Draft: {info}")
         else:
@@ -379,20 +381,24 @@ def main():
 
         return
 
-    testingDrafts = False
+    testingDrafts = True
     if testingDrafts:
+        apiSrc.setPostsType('drafts')
         apiSrc.setPosts()
-        lastLink = 'https://imgur.com/a/q5zyNtS'
+        lastLink = 'https://imgur.com/a/plNolxs'
         # img.lastLinkPublished = lastLink
         # i = img.getLinkPosition(lastLink)
         # num = 1
         listPosts = apiSrc.getPosts()
         print(listPosts)
-        listPosts2 = apiSrc.getNumNextPost(1)
-        print(listPosts2)
-        print(f"post: {apiSrc.getNextPost()}")
-        print(f"Title: {apiSrc.getPostTitle(apiSrc.getNextPost())}")
-        print(f"Id: {apiSrc.getPostId(apiSrc.getNextPost())}")
+        for i, post in enumerate(listPosts):
+            print(f"{i}) {apiSrc.getPostTitle(post)}"
+                  f" {apiSrc.getPostLink(post)}")
+        #listPosts2 = apiSrc.getNumNextPost(1)
+        #print(listPosts2)
+        #print(f"post: {apiSrc.getNextPost()}")
+        #print(f"Title: {apiSrc.getPostTitle(apiSrc.getNextPost())}")
+        #print(f"Id: {apiSrc.getPostId(apiSrc.getNextPost())}")
         return
 
     publishCache = False

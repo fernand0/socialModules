@@ -110,6 +110,7 @@ class moduleBlsk(Content): #, Queue):
         return (self.getPostContent(post), self.getPostContentLink(post))
 
     def getPostContent(self, post):
+        logging.info(f"Postttt: {post}")
         result = post.post.record.text
         # if 'full_text' in post:
         #     result = post.get('full_text')

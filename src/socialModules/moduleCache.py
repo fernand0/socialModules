@@ -99,7 +99,7 @@ class moduleCache(Content): #,Queue):
         self.indent = f"{self.indent} "
         msgLog = (f"{self.indent} Start fileNameBase (c)")
         logMsg(msgLog, 2, 0)
-
+        myDst = dst
         if hasattr(self, 'fileName') and self.fileName:
             fileName =  self.fileName
         else:

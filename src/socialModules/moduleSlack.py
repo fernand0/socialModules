@@ -25,6 +25,9 @@ class moduleSlack(Content): #, Queue):
         return (slack_token, user_slack_token)
 
     def initApi(self, keys):
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Start initApi")
+        logMsg(msgLog, 2, 0)
         self.slack_token = None
         self.user_slack_token = None
         self.channel = None
@@ -45,6 +48,10 @@ class moduleSlack(Content): #, Queue):
         client = WebClient(keys[0])
         self.slack_token = keys[0]
         self.user_slack_token = keys[1]
+
+        msgLog = (f"{self.indent} End initApi")
+        logMsg(msgLog, 2, 0)
+        self.indent = self.indent[:-1]
         return client
 
     def getChannels(self):

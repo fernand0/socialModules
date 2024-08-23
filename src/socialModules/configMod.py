@@ -3,7 +3,6 @@ import importlib
 import logging
 import os
 import pickle
-import shutil
 import sys
 import urllib
 
@@ -40,6 +39,8 @@ def logMsg(msgLog, log=1, output=1):
         print("====================================")
 
 def fileNamePath(url, socialNetwork=()):
+    logging.info(f" ----> Url: {url}")
+    logging.info(f"socialNetwork: {socialNetwork}")
     urlParsed = urllib.parse.urlparse(url)
     myNetloc = urlParsed.netloc
     if not myNetloc:
