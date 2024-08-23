@@ -28,7 +28,7 @@ class moduleTelegram(Content):
         try:
             bot = telepot.Bot(TOKEN)
             logging.info("     token: {TOKEN}")
-            
+
             meMySelf = bot.getMe()
         except:
             logging.warning("Telegram authentication failed!")
@@ -39,7 +39,9 @@ class moduleTelegram(Content):
         return bot
 
     def setClient(self, channel):
-        logging.info(f"     Connecting Telegram, channel: {channel}")
+        msgLog = (f"{self.indent} Start setClient account: {channel}")
+        logMsg(msgLog, 1, 0)
+        self.indent = f"{self.indent} "
         try:
             config = configparser.ConfigParser()
             config.read(CONFIGDIR + '/.rssTelegram')
@@ -60,6 +62,9 @@ class moduleTelegram(Content):
         self.client = bot
         self.user = channel
         self.channel = channel
+        self.indent = self.indent[:-1]
+        msgLog = (f"{self.indent} End setClientt")
+        logMsg(msgLog, 1, 0)
 
     def setChannel(self, channel):
         self.channel = channel
@@ -135,7 +140,7 @@ class moduleTelegram(Content):
         textToPublish = text
         while textToPublish:
             try:
-                res = bot.sendMessage('@'+channel, textToPublish[:4080], 
+                res = bot.sendMessage('@'+channel, textToPublish[:4080],
                                       parse_mode='HTML')
                 textToPublish = textToPublish[4080:]
             except:
@@ -154,9 +159,9 @@ class moduleTelegram(Content):
             origReply = [reply, ]
         else:
             origReply = reply
-        for rep in origReply: 
-            if isinstance(rep, str): 
-                rep = rep.replace("'",'"') 
+        for rep in origReply:
+            if isinstance(rep, str):
+                rep = rep.replace("'",'"')
                 rep = json.loads(rep)
             else:
                 rep = reply
@@ -192,12 +197,12 @@ def main():
     # tel.setChannel('testFernand-1')
 
     msgAlt = "hola"
-    
+
     testingImage = False
     if testingImage:
         res = tel.publishImage("Prueba imagen", "/tmp/prueba.png", alt=msgAlt)
         return
-    
+
     testingRssPost = True
     if testingRssPost:
         selRules = rules.selectRule('rss', '')
@@ -210,7 +215,7 @@ def main():
         apiSrc = rules.readConfigSrc("", src, rules.more[src])
         apiSrc.setPosts()
         posts = apiSrc.getPosts()
-        if posts: 
+        if posts:
             tel.publishPost(api=apiSrc, post=posts[0])
 
         return
@@ -497,7 +502,7 @@ Tapa El Lince from Huesca.
 Diocese of Huesca"""
 
     if testingLongPost:
-        res = tel.publishPost(longText[:24], "https://t.me/testFernand0", 
+        res = tel.publishPost(longText[:24], "https://t.me/testFernand0",
                               longText)
         print(f"Res: {res}")
         return
