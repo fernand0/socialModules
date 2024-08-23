@@ -6,6 +6,8 @@ import binascii
 import chardet
 import click
 import configparser
+import dateutil
+import distance
 import email
 import email.message
 import email.policy
@@ -13,6 +15,7 @@ import getpass
 import hashlib
 import imaplib
 import io
+import keyring
 import os
 import pickle
 import re
@@ -26,19 +29,15 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from email.mime.text import MIMEText
 
-import smtplib
-#FIXME should we have another module?
-
-import click
-import dateutil
-import distance
-import keyring
 from apiclient.http import MediaIoBaseUpload
 from bs4 import BeautifulSoup
 from dateutil.parser import parse
 from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import client, file, tools
+
+import smtplib
+#FIXME should we have another module?
 
 import socialModules.moduleGmail
 import socialModules.moduleSieve
@@ -116,14 +115,14 @@ class moduleImap(Content): #, Queue):
 
         self.separator = separator
 
-        specialFolders = ['Trash', 'Junk', 'Sent', 'Drafts'] 
+        specialFolders = ['Trash', 'Junk', 'Sent', 'Drafts']
         self.special = {}
         for folder in folders:
             parts = str(folder).split(self.separator)
             for special in specialFolders:
                 if special in parts[0]:
                     self.special[special] = self.getChannelName(folder)
-        
+
         return client
 
     def setApiNew(self):
@@ -1206,7 +1205,7 @@ class moduleImap(Content): #, Queue):
     def deleteApiPosts(self, idPost):
         try:
             res = self.moveMails(self.getClient(), str(idPost).encode(), self.special['Trash'])
-        except: 
+        except:
             logging.warning("Some error moving mails to Trash")
 
     def moveMails(self, M, msgs, folder):
@@ -1472,7 +1471,7 @@ class moduleImap(Content): #, Queue):
             # logging.info(f"Post id: {idPost}")
         res = 'Fail!'
         try:
-            if (isinstance(post, tuple) 
+            if (isinstance(post, tuple)
                 and isinstance(post[1], email.message.Message)):
                 msg = post[1]
             else:
