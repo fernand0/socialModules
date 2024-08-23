@@ -167,39 +167,6 @@ class moduleCache(Content): #,Queue):
     def getKeys(self, config):
         return None
 
-    # def setClient(self, param):
-    #     self.indent = f"{self.indent} "
-    #     self.service = 'Cache'
-    #     msgLog = (f"{self.indent} Start setClient account: {param}")
-    #     logMsg(msgLog, 2, 0)
-    #     self.postaction = 'delete'
-
-    #     self.postsType = 'posts'
-    #     # FIXME. There should be methods available for checking these values.
-    #     self.url = param[-1]
-    #     self.socialNetwork = param[1][2]
-    #     self.user = param[1][3]
-    #     self.nick = param[1][3]
-    #     self.auxClass = param[0]
-    #     self.fileName = self.fileNameBase((self.socialNetwork, self.nick))
-    #     fileNameQ = f"{self.fileName}.queue"
-    #     msgLog = checkFile(fileNameQ, self.indent)
-    #     if not 'OK' in msgLog:
-    #         #with open(fileNameQ, "w") as f:
-    #         msgLog = (f"{self.indent} File {fileNameQ} does not exist. "
-    #                   f"I'll need to create it.")
-    #         logMsg(msgLog, 3, 0)
-    #     self.client = self.service
-
-    #     # if hasattr(self, 'fileName'):
-    #     #     msgLog = (f"{self.indent} self.fileName {self.fileName}")
-    #     #     logMsg(msgLog, 2, 0)
-    #     #     print(f"self.fileName {self.fileName}")
-
-    #     msgLog = (f"{self.indent} End setClient")
-    #     logMsg(msgLog, 2, 0)
-
-
     def setApiDrafts(self):
         msgLog = f"{self.indent} setApiDrafts"
         # Every cache is the same, even the origin are drafts ??
