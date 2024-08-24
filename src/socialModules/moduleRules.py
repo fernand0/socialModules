@@ -823,10 +823,11 @@ class moduleRules:
         else:
             apiDst.setUrl(None)
 
-        apiSrc.setLastLink(apiDst)
+        apiDst.setLastLink(apiSrc)
+
         #FIXME: best in readConfigSrc (readConfigDst, since we need it)?
         # PROBLEMS -> the same lastLink for each action ????
-        apiDst.lastLinkSrc = apiSrc.getLastLink()
+        # apiDst.lastLinkSrc = apiSrc.getLastLink()
 
         indent = f"{indent[:-1]}"
         msgLog = f"{indent} End readConfigDst" #: {src[1:]}"
@@ -936,7 +937,7 @@ class moduleRules:
             msgLog = f"Title: {title}."
             if link:
                 msgLog = (f"{msgLog} Recording Link: {link} "
-                          f"in file {apiSrc.fileNameBase(apiDst)}.last")
+                          f"in file {apiDst.fileNameBase(apiSrc)}.last")
         else:
             msgLog = (f"{indent}No post to schedule in "
                       f" {msgAction}")
@@ -967,7 +968,7 @@ class moduleRules:
                     #((not res) or ('SAVELINK' in res) or
                     #              (not ('Fail!' in res)) or
                     #              (not ('failed!' in res)))):
-                    resUpdate = apiSrc.updateLastLink(apiDst, '')
+                    resUpdate = apiDst.updateLastLink(apiSrc, '')
                     resMsg += f" Update: {resUpdate}"
 
             logMsg(msgLog, 1, 1)
@@ -1052,7 +1053,7 @@ class moduleRules:
             if (noWait or (diffTime>hours)):
                 tSleep = random.random()*float(timeSlots)*60
 
-                apiSrc.setNextTime(tNow, tSleep, apiDst)
+                apiDst.setNextTime(tNow, tSleep, apiSrc)
 
                 if (tSleep>0.0):
                     msgLog= f"{indent} Waiting {tSleep/60:2.2f} minutes"
@@ -1209,7 +1210,6 @@ class moduleRules:
                                 logMsg(msgLog, 3, 1)
                                 sys.stderr.write(f"Error: {msgLog}\n")
                             return f"End: {msgLog}"
-
 
                         threads = threads + 1
                         delayedPosts.append(pool.submit(self.executeAction,

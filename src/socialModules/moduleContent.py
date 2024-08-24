@@ -374,26 +374,14 @@ class Content:
     def getLastLinkNew(self, dst):
         return self.lastLinkPublished
 
-    def getLastLink(self):
+    def getLastLink(self, apiSrc=None):
         url = self.getUrl()
         service = self.service.lower()
         nick = self.getUser()
-        fileName = (f"{self.fileNameBase()}.last")
-        #if hasattr(self, 'fileName') and self.fileName:
-        #    fileName = f"{self.fileName}.last"
-        #else:
-        #    fileName = (f"{fileNamePath(url, (service, nick))}.last")
+        fileName = (f"{apiSrc.fileNameBase(self)}.last")
         linkLast = ''
 
-        # logging.debug(f"urll: {url}")
-        # logging.debug(f"nickl: {nick}")
-        # logging.debug(f"servicel: {service}")
-        # logging.debug(f"fileName: {fileName}")
         msgLog = checkFile(fileName, self.indent)
-        # dirname = os.path.dirname(fileName)
-        # if not os.path.isdir(dirname):
-        #     return ""
-        #     sys.exit("no directory {dirname} exists")
         if service in ['html']:
             #fixme: not here
             linkLast = ''
@@ -414,10 +402,10 @@ class Content:
         self.lastLink = lastLink
         return lastLink
 
-    def setLastLink(self, dst = None):
+    def setLastLink(self, src = None):
         msgLog = (f"{self.indent} Start setLastLink")
         logMsg(msgLog, 1, 0)
-        fileName = (f"{self.fileNameBase(dst)}.last")
+        fileName = (f"{src.fileNameBase(self)}.last")
         lastTime = ''
         linkLast = ''
         checkR = checkFile(fileName, f"{self.indent} ")
@@ -440,9 +428,7 @@ class Content:
 
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime
-        if dst:
-            dst.lastLinkPublished = linkLast
-            dst.lastTimePublished = lastTime
+        self.lastLink = linkLast
         msgLog = (f"{self.indent} End setLastLink")
         logMsg(msgLog, 1, 0)
 
@@ -492,22 +478,18 @@ class Content:
         else:
             print(f"not implemented!")
 
-    def setNextTime(self, tnow, tSleep, dst = None):
+    def setNextTime(self, tnow, tSleep, src = None):
         fileNameNext = ''
-        if dst:
-            fileNameNext = f"{self.fileNameBase(dst)}.timeNext"
-            msgLog = checkFile(fileNameNext, f"{self.indent} ")
-            if not 'OK' in msgLog:
-                msgLog = (f"file {fileNameNext} does not exist. "
-                          f"I'm going to create it.")
-                self.report('', msgLog, '', '')
-            with open(fileNameNext,'wb') as f:
-                pickle.dump((tnow, tSleep), f)
-            msgLog = (f"{self.indent}  File updated: {fileNameNext}")
-            logMsg(msgLog, 2, 0)
-        else:
-            msgLog = (f"not implemented!")
-            logMsg(msgLog, 3, 0)
+        fileNameNext = f"{src.fileNameBase(self)}.timeNext"
+        msgLog = checkFile(fileNameNext, f"{self.indent} ")
+        if not 'OK' in msgLog:
+            msgLog = (f"file {fileNameNext} does not exist. "
+                      f"I'm going to create it.")
+            self.report('', msgLog, '', '')
+        with open(fileNameNext,'wb') as f:
+            pickle.dump((tnow, tSleep), f)
+        msgLog = (f"{self.indent}  File updated: {fileNameNext}")
+        logMsg(msgLog, 2, 0)
 
     def setNumPosts(self, numposts):
         self.numposts = numposts
@@ -813,6 +795,8 @@ class Content:
                     # be several destinations for one source
                     lastLink = apiDst.getLastLinkPublished()
                 else:
+                    msgLog = (f"{self.indent} This shouldn't happen?")
+                    logMsg(msgLog, 2, 0)
                     lastLink = self.getLastLinkPublished()
                 if lastLink:
                     posLast = self.getLinkPosition(lastLink)
