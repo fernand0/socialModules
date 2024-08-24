@@ -206,7 +206,7 @@ class Content:
             self.setUser()
         msgLog = f"{self.indent} End setMoreValues"
         logMsg(msgLog, 2, 0)
-        self.indent = f"self.indent[:-1]"
+        self.indent = f"{self.indent[:-1]}"
 
     def apiCall(self, commandName, api = None, **kwargs):
         if api:
@@ -288,9 +288,13 @@ class Content:
         msgLog = (f"{self.indent} Start fileNameBase")
         logMsg(msgLog, 2, 0)
 
-        if hasattr(self, 'fileName') and self.fileName:
-            fileName =  self.fileName
+        if hasattr(dst, 'fileName') and dst.fileName:
+            msgLog = f"{self.indent} hasssss"
+            logMsg(msgLog, 2, 0)
+            fileName =  dst.fileName
         else:
+            msgLog = f"{self.indent} hasssss not"
+            logMsg(msgLog, 2, 0)
             src = self
             typeSrc = 'posts'
             if hasattr(src, 'getPostsType'):
@@ -312,6 +316,8 @@ class Content:
 
             dst.setNick()
             if hasattr(dst, 'src') and isinstance(dst.src, tuple):
+                msgLog = f"{self.indent} hasssss 2 {dst.src}"
+                logMsg(msgLog, 2, 0)
                 # It is a cache
                 # userD = dst.src[1][3]
                 # serviceD = dst.src[1][2]
@@ -320,6 +326,8 @@ class Content:
                 serviceD = dst.apiDst.getService()
                 # logging.info(f"Uuuuuu: {userD} - {serviceD}")
             else:
+                msgLog = f"{self.indent} hasssss not 2"
+                logMsg(msgLog, 2, 0)
                 userD = dst.getUser()
                 serviceD = nameDst
 
@@ -479,6 +487,9 @@ class Content:
             print(f"not implemented!")
 
     def setNextTime(self, tnow, tSleep, src = None):
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Start setNextTime {self}")
+        logMsg(msgLog, 2, 0)
         fileNameNext = ''
         fileNameNext = f"{src.fileNameBase(self)}.timeNext"
         msgLog = checkFile(fileNameNext, f"{self.indent} ")
@@ -794,6 +805,8 @@ class Content:
                     # We are moving this information to apiDst, since there can
                     # be several destinations for one source
                     lastLink = apiDst.getLastLinkPublished()
+                    msgLog =f"Last linkkkk for {apiDst} is {lastLink}"
+                    logMsg(msgLog, 2, 0)
                 else:
                     msgLog = (f"{self.indent} This shouldn't happen?")
                     logMsg(msgLog, 2, 0)
@@ -1245,7 +1258,7 @@ class Content:
                                         time.localtime(lastTime))
             else:
                 myTime = "No time"
-            msgLog = (f"{indent} Last time: {myTime}")
+            msgLog = (f"{indent} {self} Last time: {myTime}")
         logMsg(msgLog, 1, 1)
         return lastTime
 

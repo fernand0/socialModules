@@ -68,8 +68,12 @@ class moduleCache(Content): #,Queue):
         logMsg(msgLog, 2, 0)
         myDst = dst
         if hasattr(self, 'fileName') and self.fileName:
+            msgLog = f"{self.indent} hasssss"
+            logMsg(msgLog, 2, 0)
             fileName =  self.fileName
         else:
+            msgLog = f"{self.indent} hasssss not"
+            logMsg(msgLog, 2, 0)
             src = self
             typeSrc = 'posts'
             typeDst = 'posts'

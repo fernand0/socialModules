@@ -997,11 +997,23 @@ class moduleRules:
         return resMsg
 
     def executeAction(self, src, more, action, msgAction,
-                      apiSrc, apiDst,
+                      apiSrc,
                       noWait, timeSlots, simmulate, name="",
                       numAct = 1, nextPost = True, pos = -1, delete=False):
 
         indent = f"{name}"
+
+        # Destination
+        apiDst = self.readConfigDst(indent, action, more, apiSrc)
+        if not apiDst.getClient():
+            msgLog = self.clientErrorMsg(indent, apiDst, "Destination",
+                                      (f"{self.getNameRule(src)}@"
+                                       f"{self.getProfileRule(src)}"),
+                                      self.getNickAction(src))
+            if msgLog:
+                logMsg(msgLog, 3, 1)
+                sys.stderr.write(f"Error: {msgLog}\n")
+            return f"End: {msgLog}"
 
         tL = random.random()*numAct
         indent = f"{indent} "
@@ -1199,22 +1211,11 @@ class moduleRules:
 
                         msgLog = (f"Source: {theName}-{self.getNickAction(src)}"
                                   f" -> Action: {msgAction}")
-                        # Destination
-                        apiDst = self.readConfigDst(indent, action, more, apiSrc)
-                        if not apiDst.getClient():
-                            msgLog = self.clientErrorMsg(indent, apiDst, "Destination",
-                                                      (f"{self.getNameRule(src)}@"
-                                                       f"{self.getProfileRule(src)}"),
-                                                      self.getNickAction(src))
-                            if msgLog:
-                                logMsg(msgLog, 3, 1)
-                                sys.stderr.write(f"Error: {msgLog}\n")
-                            return f"End: {msgLog}"
 
                         threads = threads + 1
                         delayedPosts.append(pool.submit(self.executeAction,
                                             src, more, action, msgAction,
-                                            apiSrc, apiDst,
+                                            apiSrc, # apiDst[-1],
                                             noWait,
                                             timeSlots,
                                             args.simmulate,
@@ -1296,7 +1297,7 @@ class moduleRules:
 
 def main():
 
-    mode = logging.INFO
+    mode = logging.DEBUG
     logging.basicConfig(filename=f"{LOGDIR}/rssSocial.log",
                         # stream=sys.stdout,
                         level=mode,

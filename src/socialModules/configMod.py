@@ -58,11 +58,11 @@ def fileNamePath(url, socialNetwork=()):
         theName = os.path.expanduser(myFile)
     return(theName)
 
-def setNextTime(blog, socialNetwork, tNow, tSleep):
-    fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext'
-    with open(fileNameNext,'wb') as f:
-        pickle.dump((tNow, tSleep), f)
-    return fileNameNext
+# def setNextTime(blog, socialNetwork, tNow, tSleep):
+#     fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext'
+#     with open(fileNameNext,'wb') as f:
+#         pickle.dump((tNow, tSleep), f)
+#     return fileNameNext
 
 def getNextTime(blog, socialNetwork, indent=""):
     fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext'
