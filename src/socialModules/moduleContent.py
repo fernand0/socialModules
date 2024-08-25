@@ -343,22 +343,23 @@ class Content:
         self.indent = f"{self.indent[:-1]}"
         return fileName
 
-    def updateLastLink(self, dst, link):
+    def updateLastLink(self, src, link):
         if link and isinstance(link, list):
             #fixme: this will be removed
-            link = self.getPostLink(link[-1])
+            link = src.getPostLink(link[-1])
         elif not link:
             # fixme could post be a parameter?
             # Unused ?
-            post = self.getNextPost(dst)
+            post = src.getNextPost(self)
             msgLog = f"{self.indent} nextpost {post}"
             logMsg(msgLog, 2, 0)
-            link = self.getPostLink(post)
-        msgupdate = f"last link {link} in {self.service}"
+            link = src.getPostLink(post)
+        msgupdate = f"last link {link} in {src.service}"
         msgLog = f"{self.indent} updating {msgupdate}"
         logMsg(msgLog, 1, 0)
 
-        fileName = f"{self.fileNameBase(dst)}.last"
+        self.fileName = ''
+        fileName = f"{src.fileNameBase(self)}.last"
         msgLog = f"{self.indent} fileName {fileName}"
         logMsg(msgLog, 2, 0)
         msgLog = checkFile(fileName, self.indent)
@@ -375,7 +376,7 @@ class Content:
                 else:
                     f.write(link[0])
 
-        self.setLastLink(dst)
+        self.setLastLink(src)
 
         return f"updated {msgupdate}"
 

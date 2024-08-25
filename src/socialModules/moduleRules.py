@@ -641,7 +641,7 @@ class moduleRules:
 
     def printList(self, myList, title):
         print(f"{title}:")
-        for i, element in enumerate(myList):
+        for i, element in eumerate(myList):
             print(f"  {i}) {element}")
 
     def getIniKey(self, key, myKeys, myIniKeys):
@@ -930,6 +930,7 @@ class moduleRules:
             post = apiSrc.getNextPost(apiDst)
         else:
             post = apiSrc.getPost(pos)
+        link = ''
         if post:
             title = apiSrc.getPostTitle(post)
             link = apiSrc.getPostLink(post)
@@ -968,7 +969,7 @@ class moduleRules:
                     #((not res) or ('SAVELINK' in res) or
                     #              (not ('Fail!' in res)) or
                     #              (not ('failed!' in res)))):
-                    resUpdate = apiDst.updateLastLink(apiSrc, '')
+                    resUpdate = apiDst.updateLastLink(apiSrc, link)
                     resMsg += f" Update: {resUpdate}"
 
             logMsg(msgLog, 1, 1)
