@@ -150,20 +150,6 @@ class moduleCache(Content): #,Queue):
         self.indent = f"{self.indent} "
         msgLog = f"{self.indent} Start setApiPosts"
         logMsg(msgLog, 2, 0)
-        # fileNameQ = ''
-        # service = self.getService()
-        # nick = self.getNick()
-        # if hasattr(self, 'fileName'):
-        #     fileNameQ = self.fileName
-        # elif hasattr(self, "socialNetwork"):
-        #     service = self.socialNetwork
-        #     nick = self.nick
-        # else:
-        #     service = self.getService()
-        #     nick = self.getUser()
-        # # msgLog = f"{self.indent} Url: {url} service {service} nick {nick}"
-        # # logMsg(msgLog, 2, 0)
-        # nick = self.getNick()
         fileNameQ = f"{self.fileNameBase(self.apiDst)}.queue"
         msgLog = (f"{self.indent} File: %s" % fileNameQ)
         logMsg(msgLog, 2, 0)
@@ -553,6 +539,7 @@ class moduleCache(Content): #,Queue):
             post = more['post']
         # logging.debug(f"more: {more}")
         self.setPosts()
+        # FIXME. Do we need this?
         posts = self.getPosts()
         # logging.debug(f"pppposts: {posts}")
         posts.append(more['post'])

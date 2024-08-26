@@ -1066,7 +1066,9 @@ class moduleRules:
             if (noWait or (diffTime>hours)):
                 tSleep = random.random()*float(timeSlots)*60
 
+                apiDst.fileName = ''
                 apiDst.setNextTime(tNow, tSleep, apiSrc)
+                apiDst.fileName = ''
 
                 if (tSleep>0.0):
                     msgLog= f"{indent} Waiting {tSleep/60:2.2f} minutes"

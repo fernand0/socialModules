@@ -289,12 +289,8 @@ class Content:
         logMsg(msgLog, 2, 0)
 
         if hasattr(dst, 'fileName') and dst.fileName:
-            msgLog = f"{self.indent} hasssss"
-            logMsg(msgLog, 2, 0)
             fileName =  dst.fileName
         else:
-            msgLog = f"{self.indent} hasssss not"
-            logMsg(msgLog, 2, 0)
             src = self
             typeSrc = 'posts'
             if hasattr(src, 'getPostsType'):
@@ -316,8 +312,6 @@ class Content:
 
             dst.setNick()
             if hasattr(dst, 'src') and isinstance(dst.src, tuple):
-                msgLog = f"{self.indent} hasssss 2 {dst.src}"
-                logMsg(msgLog, 2, 0)
                 # It is a cache
                 # userD = dst.src[1][3]
                 # serviceD = dst.src[1][2]
@@ -326,8 +320,6 @@ class Content:
                 serviceD = dst.apiDst.getService()
                 # logging.info(f"Uuuuuu: {userD} - {serviceD}")
             else:
-                msgLog = f"{self.indent} hasssss not 2"
-                logMsg(msgLog, 2, 0)
                 userD = dst.getUser()
                 serviceD = nameDst
 
@@ -489,7 +481,7 @@ class Content:
 
     def setNextTime(self, tnow, tSleep, src = None):
         self.indent = f"{self.indent} "
-        msgLog = (f"{self.indent} Start setNextTime {self}")
+        msgLog = (f"{self.indent} Start setNextTime")
         logMsg(msgLog, 2, 0)
         fileNameNext = ''
         fileNameNext = f"{src.fileNameBase(self)}.timeNext"
@@ -806,8 +798,6 @@ class Content:
                     # We are moving this information to apiDst, since there can
                     # be several destinations for one source
                     lastLink = apiDst.getLastLinkPublished()
-                    msgLog =f"Last linkkkk for {apiDst} is {lastLink}"
-                    logMsg(msgLog, 2, 0)
                 else:
                     msgLog = (f"{self.indent} This shouldn't happen?")
                     logMsg(msgLog, 2, 0)
@@ -1067,17 +1057,6 @@ class Content:
         try:
             nameMethod = 'Post'
 
-            # if hasattr(api, 'getPostsType'):
-            #     msgLog = (f"{self.indent} getPostsType: {api.getPostsType()}")
-            #     logMsg(msgLog, 2, 0)
-            #     hassss = f"publishApi{api.getPostsType().capitalize()}"
-            #     hassss = hasattr(api, hassss)
-            #     msgLog = (f"Hassss: {hassss}")
-            #     logMsg(msgLog, 2, 0)
-            # else:
-            #     msgLog = (f"No Hassss")
-            #     logMsg(msgLog, 2, 0)
-
             if (hasattr(self, 'getPostsType')
                     and (self.getPostsType())
                     and (hasattr(self,
@@ -1096,7 +1075,7 @@ class Content:
                 for post in listPosts:
                     reply = method(title, link, comment, api=api, post=post)
             else:
-                logging.debug(f"{self.indent} no listposts")
+                logging.debug(f"{self.indent} no listPosts")
                 if api and post:
                     msgLog = (f"{self.indent} Calling method "
                               f"with api and post")
@@ -1237,15 +1216,8 @@ class Content:
         lastLink = ''
         if self.lastLinkPublished and (len(self.lastLinkPublished) == 1):
             lastLink = self.lastLinkPublished[0]
-            # msgLog = (f"{self.indent} Last link (len 1) ")
         else:
-            # msgLog = (f"{self.indent} Last link (len >1) ")
             lastLink = self.lastLinkPublished
-        # if lastLink:
-        #     msgLog = f"{msgLog} {lastLink}"
-        # else:
-        #     msgLog = f"{msgLog} No lastLink"
-        # logMsg(msgLog, 1, 1)
         return lastLink
 
     def getLastTimePublished(self, indent=''):
@@ -1259,7 +1231,7 @@ class Content:
                                         time.localtime(lastTime))
             else:
                 myTime = "No time"
-            msgLog = (f"{indent} {self} Last time: {myTime}")
+            msgLog = (f"{indent} Last time: {myTime}")
         logMsg(msgLog, 1, 1)
         return lastTime
 
