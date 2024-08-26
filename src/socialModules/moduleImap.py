@@ -1209,7 +1209,6 @@ class moduleImap(Content): #, Queue):
             logging.warning("Some error moving mails to Trash")
 
     def moveMails(self, M, msgs, folder):
-        msgLog = f"Dirrrr: {self.__dir__()}"
         logMsg(msgLog, 2, 0)
         if hasattr(self, 'channel'): # in self: 
             msgLog = f"Hassss "
@@ -1218,6 +1217,8 @@ class moduleImap(Content): #, Queue):
         else:
             msgLog = f"Hassss not"
             logMsg(msgLog, 2, 0)
+            channel = self.getPostsType()
+            M.select(channel)
         msgLog = ("Copying %s in %s" % (msgs, folder))
         logMsg(msgLog, 2, 0)
         (status, resultMsg) = M.copy(msgs, folder)
