@@ -1218,7 +1218,9 @@ class moduleImap(Content): #, Queue):
             msgLog = f"Hassss not"
             logMsg(msgLog, 2, 0)
             channel = self.getPostsType()
-            M.select(channel)
+            msgLog = f"Hassss not channel {channel}"
+            logMsg(msgLog, 2, 0)
+            M.select(channel.capitalize())
         msgLog = ("Copying %s in %s" % (msgs, folder))
         logMsg(msgLog, 2, 0)
         (status, resultMsg) = M.copy(msgs, folder)
