@@ -1215,7 +1215,7 @@ class moduleImap(Content): #, Queue):
             logMsg(msgLog, 2, 0)
             M.select(self.channel)
         else:
-            msgLog = f"Hassss not"
+            msgLog = f"Hassss not {self.getPostsType()}"
             logMsg(msgLog, 2, 0)
             channel = self.getPostsType()
             msgLog = f"Hassss not channel {channel}"
