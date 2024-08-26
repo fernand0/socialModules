@@ -1209,6 +1209,8 @@ class moduleImap(Content): #, Queue):
             logging.warning("Some error moving mails to Trash")
 
     def moveMails(self, M, msgs, folder):
+        if 'channel' in self: 
+            M.select(self.channel)
         msgLog = ("Copying %s in %s" % (msgs, folder))
         logMsg(msgLog, 2, 0)
         (status, resultMsg) = M.copy(msgs, folder)
@@ -1313,8 +1315,8 @@ class moduleImap(Content): #, Queue):
         post = msg[1]
         theLink = ''
         if post:
-            msgLog = (f"Post: {post}")
-            logMsg(msgLog, 2, 0)
+            # msgLog = (f"Post: {post}")
+            # logMsg(msgLog, 2, 0)
             links = self.getPostLinks(post)
             if links:
                 theLink = links[0]
@@ -1463,7 +1465,7 @@ class moduleImap(Content): #, Queue):
             # FIXME: We need to do something here
             post = more.get('post', '')
             api = more.get('api', '')
-            logging.debug(f"Post: {post}")
+            # logging.debug(f"Post: {post}")
             # idPost = api.getPostId(post)
             # logging.info(f"Postt: {post['meta']}")
             # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]
