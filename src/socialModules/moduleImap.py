@@ -1210,7 +1210,12 @@ class moduleImap(Content): #, Queue):
 
     def moveMails(self, M, msgs, folder):
         if hasattr(self, 'channel'): # in self: 
+            msgLog = f"Hassss "
+            logMsg(msgLog, 2, 0)
             M.select(self.channel)
+        else:
+            msgLog = f"Hassss not"
+            logMsg(msgLog, 2, 0)
         msgLog = ("Copying %s in %s" % (msgs, folder))
         logMsg(msgLog, 2, 0)
         (status, resultMsg) = M.copy(msgs, folder)
