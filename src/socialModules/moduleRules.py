@@ -868,7 +868,7 @@ class moduleRules:
                             simmulate, nextPost, pos, res):
         resPost = ''
         resMsg = ''
-        msgLog = (f"{indent}Trying to excecute Post Action")
+        msgLog = (f"{indent}Trying to execute Post Action")
         logMsg(msgLog, 1, 1)
         postaction = apiSrc.getPostAction()
         if postaction:
@@ -914,10 +914,13 @@ class moduleRules:
                 logMsg(msgLog, 1, 1)
                 resMsg += f"Post Action: {resPost}"
             else:
-                msgLog = (f"{indent}No Post Action")
+                msgLog = (f"{indent}Something went wrong")
                 logMsg(msgLog, 1, 1)
+        else:
+            msgLog = (f"{indent}No Post Action")
+            logMsg(msgLog, 1, 1)
 
-            return resMsg
+        return resMsg
 
     def executePublishAction(self, indent, msgAction, apiSrc, apiDst,
                             simmulate, nextPost=True, pos=-1):
@@ -1004,6 +1007,7 @@ class moduleRules:
 
         indent = f"{name}"
 
+        # FIXME. What happens when src and dst are the same service (drafts, mainly)?
         # Destination
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
         if not apiDst.getClient():
@@ -1300,7 +1304,7 @@ class moduleRules:
 
 def main():
 
-    mode = logging.DEBUG
+    mode = logging.INFO
     logging.basicConfig(filename=f"{LOGDIR}/rssSocial.log",
                         # stream=sys.stdout,
                         level=mode,
