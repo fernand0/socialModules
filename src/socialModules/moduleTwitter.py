@@ -378,12 +378,13 @@ def main():
     import socialModules.moduleRules
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
+    #apiSrc = rules.selectRuleInteractive()
 
-    name = nameModule()
-    rulesList = rules.selectRule(name, 'fernand0', 'posts')
-    logging.debug(f"Key: {rulesList}")
-    key = rulesList[0]
-    logging.debug(f"Key: {key}")
+    # name = nameModule()
+    # rulesList = rules.selectRule(name, 'fernand0', 'posts')
+    # logging.debug(f"Key: {rulesList}")
+    # key = rulesList[0]
+    # logging.debug(f"Key: {key}")
 
 
     testingPosts = False
@@ -430,26 +431,19 @@ def main():
         print(f"Len: {len(apiSrc.getPosts())}")
         return
 
-    testingPost = False
+    testingPost = True
     if testingPost:
         print("Testing Post")
-        # for key in rules.rules.keys():
-        #     if ((key[0] == 'twitter')
-        #         and ('reflexioneseir' in key[2])
-        #         and (key[3] == 'posts')):
-        #             break
-        key = ('twitter', 'set', 'fernand0', 'posts')
-        print(key)
-        print(rules.more[key])
+        key = ('direct', 'post', 'twitter', 'fernand0Test')
         # more = {'url': 'https://twitter.com/fernand0', 'service': 'twitter', 'posts': 'posts', 'direct': 'twitter', 'twitter': 'fernand0', 'time': '23.1', 'max': '1', 'hold': 'no'}
 
-        apiSrc = rules.readConfigSrc("", key, rules.more[key])
+        apiDst = rules.readConfigDst("", key, None, None)
         title = "Test"
         link = "https://twitter.com/fernand0Test"
-        print(f"Publishing {apiSrc.publishPost(title, link, '')}")
+        print(f"Publishing {apiDst.publishPost(title, link, '')}")
         delete = input("Delete (write the id)? ")
         if delete:
-            print(f"Deleting: {apiSrc.deleteApiPosts(delete)}")
+            print(f"Deleting: {apiDst.deleteApiPosts(delete)}")
 
         return
 
