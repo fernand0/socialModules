@@ -823,7 +823,10 @@ class moduleRules:
         else:
             apiDst.setUrl(None)
 
-        apiDst.setLastLink(apiSrc)
+        if apiSrc:
+            apiDst.setLastLink(apiSrc)
+        else:
+            apiDst.setLastLink(apiDst)
 
         #FIXME: best in readConfigSrc (readConfigDst, since we need it)?
         # PROBLEMS -> the same lastLink for each action ????
