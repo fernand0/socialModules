@@ -49,9 +49,11 @@ class moduleBlsk(Content): #, Queue):
         return api
 
     def setNick(self, nick=None):
+        nick = ''
         if not nick:
             nick = self.getUrl()
-            nick = nick.split("/")[-1].split('.')[0]
+            if nick: 
+                nick = nick.split("/")[-1].split('.')[0]
         self.nick = nick
 
     def setApiPosts(self):
