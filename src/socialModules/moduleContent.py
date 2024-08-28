@@ -142,6 +142,7 @@ class Content:
         # Many services are like https://service.com/.../nick
         if not nick:
             nick = self.getUrl()
+            logging.info(f"Nick: {nick}")
             nick = nick.split("/")[-1]
         self.nick = nick
 
