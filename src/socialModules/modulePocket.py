@@ -135,8 +135,10 @@ class modulePocket(Content): #,Queue):
             tags = [comment, ]
         # logging.info(f"ll: {link}")
         # This belongs here?
+        if title and not link:
+            link = title
         if not link.startswith('http'):
-            msgLog = (f"Link that does not stat with < {link}")
+            msgLog = (f"Link that does not start with < {link}")
             logMsg(msgLog, 3, 0)
             pos = link.find('http')
             link = link[pos:]
