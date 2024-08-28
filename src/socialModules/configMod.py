@@ -139,34 +139,34 @@ def newUpdateLastLink(url, link, lastLink, socialNetwork=()):
             else:
                 f.write(link[0])
 
-# def updateLastLink(url, link, socialNetwork=()):
-#     try:
-#         #FIXME: not self here
-#         indent = self.indent
-#     except:
-#         indent = ''
-#     msgLog = (f"{indent} updateLastLink {socialNetwork}")
-#     logMsg(msgLog, 1, 0)
-#     msgLog = (f"{indent} Url: {url} Link: {link} "
-#               f"SocialNetwork: {socialNetwork}")
-#     logMsg(msgLog, 2, 0)
-#     fileName = fileNamePath(url, socialNetwork) + ".last"
-# 
-# 
-#     msgLog = (f"fileName: {fileName}")
-#     logMsg(msgLog, 2, 0)
-#     msgLog = checkFile(fileName, indent)
-#     logMsg(msgLog, 2, 0)
-#     if not 'OK' in msgLog:
-#         msgLog = (f"fileName: {fileName} does not exist, I'll create it")
-#         logMsg(msgLog, 2, 0)
-#     with open(fileName, "w") as f:
-#         if isinstance(link, bytes):
-#             f.write(link.decode())
-#         elif isinstance(link, str):
-#             f.write(link)
-#         else:
-#             f.write(link[0])
+def updateLastLink(url, link, socialNetwork=(),indent=''):
+    try:
+        #FIXME: not self here
+        indent = self.indent
+    except:
+        indent = ''
+    msgLog = (f"{indent} updateLastLink {socialNetwork}")
+    logMsg(msgLog, 1, 0)
+    msgLog = (f"{indent} Url: {url} Link: {link} "
+              f"SocialNetwork: {socialNetwork}")
+    logMsg(msgLog, 2, 0)
+    fileName = fileNamePath(url, socialNetwork) + ".last"
+
+
+    msgLog = (f"fileName: {fileName}")
+    logMsg(msgLog, 2, 0)
+    msgLog = checkFile(fileName, indent)
+    logMsg(msgLog, 2, 0)
+    if not 'OK' in msgLog:
+        msgLog = (f"fileName: {fileName} does not exist, I'll create it")
+        logMsg(msgLog, 2, 0)
+    with open(fileName, "w") as f:
+        if isinstance(link, bytes):
+            f.write(link.decode())
+        elif isinstance(link, str):
+            f.write(link)
+        else:
+            f.write(link[0])
 
 def getModule(profile, indent=''):
     # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
