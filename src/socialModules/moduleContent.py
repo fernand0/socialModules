@@ -140,10 +140,11 @@ class Content:
 
     def setNick(self, nick=None):
         # Many services are like https://service.com/.../nick
+        nick = ''
         if not nick:
             nick = self.getUrl()
-            logging.info(f"Nick: {nick}")
-            nick = nick.split("/")[-1]
+            if nick:
+                nick = nick.split("/")[-1]
         self.nick = nick
 
     def getNick(self):
