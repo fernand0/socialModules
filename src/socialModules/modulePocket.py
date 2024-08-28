@@ -120,6 +120,8 @@ class modulePocket(Content): #,Queue):
             post, link, comment = args
             msgLog=(f"args: {args} in {self}")
             logMsg(msgLog, 2, 0)
+            msgLog=(f"post: {post} link {link}")
+            logMsg(msgLog, 2, 0)
         if kwargs:
             more = kwargs
             api = more['api']
@@ -135,8 +137,8 @@ class modulePocket(Content): #,Queue):
             tags = [comment, ]
         # logging.info(f"ll: {link}")
         # This belongs here?
-        if title and not link:
-            link = title
+        if post and not link:
+            link = post
         if not link.startswith('http'):
             msgLog = (f"Link that does not start with < {link}")
             logMsg(msgLog, 3, 0)
