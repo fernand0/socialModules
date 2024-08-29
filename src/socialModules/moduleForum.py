@@ -26,7 +26,6 @@ from socialModules.moduleContent import *
 class moduleForum(Content): #, Queue):
 
     def setClient(self, forumData):
-        self.url = ""
         self.selected = None
         self.selector = None
         self.idSeparator = None
@@ -48,7 +47,6 @@ class moduleForum(Content): #, Queue):
                  topictitle
         idSeparator:=
         """
-        self.url = ""
         self.selected = None
         self.selector = None
         self.idSeparator = None
@@ -273,6 +271,14 @@ def main():
         stream=sys.stdout, level=logging.DEBUG, 
         format="%(asctime)s %(message)s"
     )
+    import socialModules.moduleRules
+    rules = socialModules.moduleRules.moduleRules()
+    rules.checkRules()
+
+    apiSrc = rules.selectRuleInteractive()
+
+    return
+
 
     forums = [
          "http://foro.infojardin.com/",

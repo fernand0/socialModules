@@ -140,7 +140,6 @@ class Content:
 
     def setNick(self, nick=None):
         # Many services are like https://service.com/.../nick
-        nick = ''
         if not nick:
             nick = self.getUrl()
             if nick:
