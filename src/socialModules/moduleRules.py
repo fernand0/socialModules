@@ -1319,7 +1319,7 @@ def main():
 
     rules.readArgs()
     rules.checkRules()
-
+    
     rules.executeRules()
 
     return
