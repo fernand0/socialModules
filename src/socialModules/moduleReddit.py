@@ -65,7 +65,6 @@ class moduleReddit(Content): #, Queue):
                     else:
                         title = f"{title} (*)" 
                     self.clientRss.getPosts()[pos]['title'] = title
-                    print(f"Title: {self.clientRss.getPosts()[pos]['title']}")
 
 
             posts = self.clientRss.getPosts()
