@@ -70,11 +70,16 @@ class moduleBlsk(Content): #, Queue):
     def setApiFavs(self):
         posts = []
 
-        posts, error = self.apiCall('get_actor_likes',
-                                    params={'actor':self.me.did})
+        try:
+            posts, error = self.apiCall('get_actor_likes',
+                                        params={'actor':self.me.did})
 
-        if not error:
-            posts = posts['feed']
+            if not error:
+                posts = posts['feed']
+        except: 
+            self.report(self.service, 'Error en setApiFavs', 
+                        '', sys.exc_info())
+            
 
         return posts
 

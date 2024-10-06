@@ -49,6 +49,25 @@ class moduleReddit(Content): #, Queue):
             self.clientRss.setUrl(self.base_url)
             self.clientRss.setRss(self.rssFeed)
             self.clientRss.setPosts()
+            comments = socialModules.moduleRss.moduleRss()
+            #self.rssFeed = f"r/{self.page}/new/.rss?sort=new"
+            comments.setUrl(self.base_url)
+            comments.setRssFeed(f"r/{self.page}/comments/.rss")
+            comments.setPosts()
+            for com in comments.getPosts():
+                link = comments.getPostLink(com)
+                linkN = link[:link[:-1].rfind('/')+1]
+                pos = self.clientRss.getLinkPosition(linkN)
+                if pos>=0:
+                    title = self.clientRss.getPosts()[pos]['title']
+                    if title.endswith('*)'):
+                        title = f"{title[:-1]}*)"
+                    else:
+                        title = f"{title} (*)" 
+                    self.clientRss.getPosts()[pos]['title'] = title
+                    print(f"Title: {self.clientRss.getPosts()[pos]['title']}")
+
+
             posts = self.clientRss.getPosts()
             posts.reverse()
             #FIXME: This should not be here

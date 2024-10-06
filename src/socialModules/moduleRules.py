@@ -532,6 +532,13 @@ class moduleRules:
                             rules.append(src)
                         elif  (selector3 in self.getTypeRule(src)):
                             rules.append(src)
+        if not rules:
+            for src in self.rules.keys():
+                for action in self.rules[src]:
+                    print(f"Action: {action}")
+                    if self.getNameAction(action).capitalize() == name.capitalize():
+                        rules.append(src)
+
         return rules
 
     def hasSetMethods(self, service):
@@ -641,7 +648,7 @@ class moduleRules:
 
     def printList(self, myList, title):
         print(f"{title}:")
-        for i, element in eumerate(myList):
+        for i, element in enumerate(myList):
             print(f"  {i}) {element}")
 
     def getIniKey(self, key, myKeys, myIniKeys):
@@ -1083,7 +1090,7 @@ class moduleRules:
                     tSleep = 2.0
                     msgLog= f"{indent} No Waiting"
 
-                msgLog = (f"{msgLog} for {theAction}  "
+                msgLog = (f"{msgLog} for {theAction} "
                           f"from {apiSrc.getUrl()} "
                           f"in {self.getNickAction(action)}@"
                           f"{self.getProfileAction(action)}")
@@ -1178,7 +1185,7 @@ class moduleRules:
                                               self.getNickAction(src))
                     if msgLog:
                         logMsg(msgLog, 3, 1)
-                    return f"{msgLog} End."
+                    # return f"{msgLog} End."
 
                 if apiSrc.getName():
                     theName = apiSrc.getName()

@@ -3,6 +3,7 @@
 # in other programs
 
 import configparser
+import datetime
 import html
 import inspect
 import re
@@ -1448,7 +1449,8 @@ class Content:
 
     def report(self, profile, post, link, data):
         if post:
-            msg = [f"Report: failed!",
+            msg = [f"Report: failed! "
+                   f"{datetime.datetime.now().isoformat()}",
                   f"Post: {post}"]
         else:
             msg = [f"Report: failed!"]
