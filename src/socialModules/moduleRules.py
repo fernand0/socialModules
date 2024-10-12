@@ -348,7 +348,8 @@ class moduleRules:
                                     if chan != 'set':
                                         mor[fromSrvN].update({'posts':chan, 'channel':chan})
 
-        logging.info(f"Rules: {rulesNew}")
+        # logging.info(f"Rules: {rulesNew}")
+
         # Now we can add the sources not added.
 
         for src in srcsA:
@@ -436,15 +437,17 @@ class moduleRules:
             if rulesNew[key]:
                 self.rules[key] = rulesNew[key]
 
-        msgLog = (f"RulesNew: {rulesNew}")
-        logMsg(msgLog, 2, 0)
+        # msgLog = (f"RulesNew: {rulesNew}")
+        # logMsg(msgLog, 2, 0)
         msgLog = (f"More: {mor}")
         logMsg(msgLog, 2, 0)
         if hasattr(self, 'args') and self.args.rules:
             self.printDict(rulesNew, "Rules")
 
         #self.rules = rulesNew
-        msgLog = (f"selfRulesNew: {self.rules}")
+        msgLog = (f"Available: {self.available}")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"Rules: {self.rules}")
         logMsg(msgLog, 2, 0)
         self.more = mor
 
@@ -817,7 +820,7 @@ class moduleRules:
         account = self.getDestAction(action)
         apiDst = getApi(profile, account, indent)
         apiDst.setMoreValues(more)
-        
+
         if apiSrc:
             apiDst.setUrl(apiSrc.getUrl())
         else:
@@ -1319,7 +1322,7 @@ def main():
 
     rules.readArgs()
     rules.checkRules()
-    
+
     rules.executeRules()
 
     return

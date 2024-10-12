@@ -89,7 +89,7 @@ class modulePocket(Content): #,Queue):
     def setApiPosts(self):
         posts = []
         try:
-            dictPosts = self.client.retrieve()
+            dictPosts = self.client.retrieve(state="unread")
             dictPosts = dictPosts['list']
             for post in dictPosts:
                 posts.append(dictPosts[post])
@@ -342,17 +342,20 @@ def main():
     testingPostsArticle = True
     if testingPostsArticle:
         for key in rules.rules.keys():
-            if ((key[0] == 'pocket')
-                    and (key[2] == 'fernand0kobo')):
+            if (key
+                and (key[0] == 'pocket')
+                and (key[2] == 'fernand0kobo')
+                ):
 
                 apiSrc = rules.readConfigSrc("",key, rules.more[key])
 
                 apiSrc.setPosts()
-                print(f"Posts: {apiSrc.getPosts()}")
+                print(f"Posts({len(apiSrc.getPosts())}): {apiSrc.getPosts()}")
                 for pos, post in enumerate(reversed(apiSrc.getPosts())):
                     title = apiSrc.getPostTitle(post)
                     print(f"Title: {title}")
                     link = apiSrc.getPostLink(post)
+                    print(f"Link: {link}")
                     idPost = post['item_id']
                     # if 'word_count' in post:
                     #     print(f"Word: {post['word_count']}")
@@ -361,6 +364,7 @@ def main():
                         archive = True
                     elif ((('is_article' in post)
                           and (post['is_article'] == '0'))
+                          # and (post['status'] != '1')
                           or (('word_count' in post)
                               and (post['word_count'] == '0'))
                           or ((title == '') and (not (('word_count' in post))))):
@@ -369,13 +373,35 @@ def main():
                         import requests
                         from readabilipy import simple_json_from_html_string
                         try:
-                            req = requests.get(link, headers={"User-Agent":"Mozilla/5.0"})
+                            req = requests.get(link,
+                                               headers={"User-Agent":"Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84"})
                             error = False
                             if req.status_code < 400:
                                 msg = title
                                 article = simple_json_from_html_string(req.text,
                                                            use_readability=True)
-                                if article['content']:
+                                if not article['content']:
+                                    print(f"Nottttt")
+                                    res = ""
+                                    from playwright.sync_api import sync_playwright
+                                    with sync_playwright() as p:
+                                        browser = p.chromium.launch()
+                                        page = browser.new_page()
+
+                                        # Abrir la URL
+                                        page.goto(link)
+                                        page.wait_for_timeout(5000)
+
+                                        paragraphs = page.locator("p").all_text_contents()
+                                        for p in paragraphs:
+                                            res = f"{res}\n {p}"
+
+                                    print(f"Res: {res}")
+
+                                else:
+                                    res = article['content']
+
+                                if res:
                                     from ebooklib import epub
                                     book = epub.EpubBook()
 
@@ -384,7 +410,7 @@ def main():
                                     c = epub.EpubHtml(title='Page',
                                                       file_name='page.xhtml',
                                                       lang='en')
-                                    c.content= article['content']
+                                    c.content= res
                                     book.add_item(c)
                                     book.add_item(epub.EpubNcx())
                                     book.add_item(epub.EpubNav())
