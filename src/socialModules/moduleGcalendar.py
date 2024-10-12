@@ -162,27 +162,30 @@ class moduleGcalendar(Content,socialGoogle):
 
     def setPosts(self, date=''):
         logging.info(f"{self.indent} Setting posts")
-        logging.info(f"{self.indent} Setting posts date %s"%date)
+        logging.info(f"{self.indent} Setting posts date {date}")
         api = self.getClient()
-        theDate = ''
-        if date:
+        if not date: 
+            theDate= datetime.datetime.now()
+            theDate = theDate.isoformat(timespec='seconds')+'Z'
+        else:
             theDate = dateparser.parse(date)
             if theDate: 
                 theDate = theDate.isoformat()+'Z'
-        if not theDate: 
-            theDate= datetime.datetime.utcnow().isoformat() + 'Z' 
 
         # 'Z' indicates UTC time
         page_token = None
+        logging.info(f"{self.indent} Setting posts date {theDate}")
 
         self.posts = []
         if hasattr(self, 'active'):
             events_result = api.events().list(calendarId=self.active,
                 timeMin=theDate, maxResults=10, singleEvents=True,
                 orderBy='startTime').execute() 
-            self.posts = events_result.get('items',[])
+            self.posts = events_result.get('items', [])
         else:
             self.posts = None
+        # logging.info(f"{self.indent} Results: {events_result}")
+        # logging.info(f"{self.indent} Results: {self.posts}")
 
         return("orig. "+date+" Translated." + theDate)
 
@@ -249,24 +252,41 @@ def main():
         option = input("Select one: ")
 
         apiSrc.setActive(apiSrc.getCalendarList()[int(option)].get('id'))
-        apiSrc.setPosts('2022-07-11')
-        print("Citas:")
+        import datetime
+        from dateutil import parser
+        import pytz
+        today = datetime.datetime.combine(datetime.date.today(), 
+                datetime.datetime.min.time())
+        today = pytz.utc.localize(today)
+        # today = pytz.utc.localize(parser.parse("2022-07-11"))
+        
+        date = input("Date? (today)")
+        print(f"Date: *{date}*")
+        apiSrc.setPosts(date)
+        print(f"\nHoy: {str(today)[:10]}")
+        print(f"Citas [{apiSrc.getCalendarList()[int(option)].get('summary')}]:")
+        
+        prevDifTime = ""
         for i, event in enumerate(apiSrc.getPosts()):
-            import datetime
+            if event['eventType'] == 'workingLocation':
+                continue
+            if 'start' in event:
+                if 'dateTime' in event['start']:
+                    dd = event['start']['dateTime']
+                    d1 = parser.parse(dd)
+                else:
+                    if 'date' in event['start']:
+                        dd = event['start']['date']
+                        d1 = parser.parse(dd)
+                        d1 = pytz.utc.localize(d1)
+            else:
+                d1 = today
 
-            import pytz
-            from dateutil import parser
-
-            d1 = parser.parse(event['updated'])
-            today = datetime.datetime.combine(datetime.date.today(), 
-                    datetime.datetime.min.time())
-            today = pytz.utc.localize(today)
-            today = pytz.utc.localize(parser.parse("2022-07-11"))
-
-            # print(f"Hoy: {today}")
-
-            # print (f"{event['created']} {event['updated']}")
-            # print(f"{d1 - today}")
+            difTime = str(d1 - today).split(',')[0]
+            if difTime != prevDifTime:
+                # difTimeP = parser.parse(difTime)
+                print(f"In {difTime} ({str(d1)[:10]})")
+                prevDifTime = difTime
             if abs((d1 - today).days) < 7:
                 import pprint
 
@@ -274,10 +294,11 @@ def main():
                 description = event.get('description') 
                 if description:
                     description = description[:60]
-                print (f"{event['start']['dateTime']} "
+                text = (f"{dd[11:16]} "
                        f"{event.get('summary')} "
                        f"{description} "
-                       f"{event.get('hangoutLink')}")
+                       f"{event.get('hangoutLink','')}")
+                print(f"{text.replace('\n',' ')}")
 
  
     return 
