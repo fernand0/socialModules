@@ -298,7 +298,8 @@ def main():
                        f"{event.get('summary')} "
                        f"{description} "
                        f"{event.get('hangoutLink','')}")
-                print(f"{text.replace('\n',' ')}")
+                text = text.replace('\n',' ')
+                print(f"{text}")
 
  
     return 
