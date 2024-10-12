@@ -7,10 +7,16 @@
 from __future__ import print_function
 
 import os
+import pathlib
 
 from googleapiclient.discovery import build
 from httplib2 import Http
-from oauth2client import client, file, tools, clientsecrets
+
+import google
+from google.auth.transport.requests import Request
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.oauth2.credentials import Credentials
+from google.oauth2 import service_account
 
 from socialModules.configMod import *
 
@@ -41,15 +47,22 @@ class socialGoogle:
         fileTokenStore = self.confTokenName((self.server, self.nick))
         creds = None
 
-        store = file.Storage(fileTokenStore)
-        msgLog = (f"{self.indent} filetokenstore: {fileTokenStore}")
-        logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent} fileCred: {fileCredStore}")
-        logMsg(msgLog, 2, 0)
-        # creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-        creds = store.get()
+        try:
+            store = file.Storage(fileTokenStore)
+            msgLog = (f"{self.indent}  filetokenstore: {fileTokenStore}")
+            logMsg(msgLog, 2, 0)
+            msgLog = (f"{self.indent}  fileCred: {fileCredStore}")
+            logMsg(msgLog, 2, 0)
+            # creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+            creds = store.get()
+            msgLog = (f"{self.indent}  creds: {creds.to_json()}")
+            logMsg(msgLog, 2, 0)
+        except:
+            creds = None
 
         if not creds:
+            msgLog = (f"{self.indent} No creds")
+            logMsg(msgLog, 2, 0)
             if creds and creds.expired and creds.refresh_token:
                 msgLog = (f"{self.indent} Needs to refresh token GMail")
                 logMsg(msgLog, 2, 0)
@@ -62,10 +75,33 @@ class socialGoogle:
                     if not os.path.exists(fileCredStore):
                         with open(fileCredStore, 'w') as fHash:
                             pass
-                    flow = client.flow_from_clientsecrets(fileCredStore, 
-                                                         SCOPES)
-                    creds = tools.run_flow(flow, store, 
-                           tools.argparser.parse_args(args=['--noauth_local_webserver']))
+                    else:
+                        import json
+                        with open(fileCredStore, 'r') as fHash:
+                            client_config = json.load(fHash) #.read()
+                            logging.info(f"Config: {client_config}")
+                            logging.info(f"Config: {client_config['installed']}")
+                            client_config['installed']['token_uri'] = 'https://oauth2.googleapis.com/token'
+                            client_config['installed']['redirect_uris'] = ["http://localhost/"]
+                            logging.info(f"Config: {client_config['installed']}")
+                    # flow = client.flow_from_clientsecrets(fileCredStore, 
+                    #                                      SCOPES)
+                    logging.info(f"1111")
+                    logging.info(f"Scopes: {SCOPES}")
+                    # flow = InstalledAppFlow.from_client_config(
+                    #         client_config=client_config,
+                    #         scopes=SCOPES)
+                    logging.info(f"2111")
+                    # creds = flow.run_local_server(open_browser=False#,
+                    #                               #port=59185#,
+                    #                               #timeout_seconds=5
+                    #                               )
+                    p = pathlib.PosixPath('~/.config/gcloud/application_default_credentials.json')
+ 
+                    creds = service_account.Credentials.from_service_account_file(p.expanduser() , scopes=SCOPES)
+
+                    #creds = tools.run_flow(flow, store, 
+                    #       tools.argparser.parse_args(args=['--noauth_local_webserver']))
 
                     # credentials = run_flow(flow, storage, args)
 
@@ -87,8 +123,6 @@ class socialGoogle:
                     #creds = 'Fail!'
         msgLog = (f"{self.indent} Storing creds")
         logMsg(msgLog, 2, 0)
-        # with open(fileTokenStore, 'wb') as token:
-        #     pickle.dump(creds, token)
 
         return(creds)
 

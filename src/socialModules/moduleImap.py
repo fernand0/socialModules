@@ -836,9 +836,11 @@ class moduleImap(Content): #, Queue):
                 listFoldersS = ""
                 if (listFolders.count('\n') > 1):
                     print(listFolders, end = "")
-                    iFolder = input("Folder number ("+str(numberFolder)+") [-cf] Create Folder // A string to select a smaller set of folders ")
+                    iFolder = input("Folder number ("+str(numberFolder)+") [-cf] Create Folder // A string to select a smaller set of folders ({folderM})")
                     if not iFolder: iFolder = str(numberFolder)
-                    if (len(iFolder) > 0) and not(iFolder.isdigit()) and (iFolder[0] != '-'):
+                    if ((len(iFolder) > 0) 
+                        and not(iFolder.isdigit()) 
+                        and (iFolder[0] != '-')):
                         listFoldersS = ""
                         for line in listFolders.split('\n'):
                              if line.find(iFolder)>0:
@@ -905,7 +907,8 @@ class moduleImap(Content): #, Queue):
         resp, data = self.getClient().list('""', '*')
         return data
 
-    def selectFolder(self, M, moreMessages = "", newFolderName='', folderM=''):
+    def selectFolder(self, M, moreMessages = "", 
+                     newFolderName='', folderM=''):
         data = self.listFolders()
         #print(data)
         listAllFolders = self.listFolderNames(data, moreMessages)
@@ -922,7 +925,9 @@ class moduleImap(Content): #, Queue):
                 click.echo_via_pager(listFolders)
             else:
                 print(listFolders)
-            inNameFolder = input("Folder number [-cf] Create Folder // A string to select a smaller set of folders ")
+            inNameFolder = input(f"Folder number [-cf] Create Folder // A string to select a smaller set of folders ({folderM}) ")
+            if not inNameFolder and folderM:
+                inNameFolder = folderM
 
             if (len(inNameFolder) > 0) and (inNameFolder == '-cf'):
                 if newFolderName:
@@ -935,7 +940,8 @@ class moduleImap(Content): #, Queue):
                 iFolder = createFolder(M, nfn, moreMessages)
                 return(iFolder)
                 #listFolders = iFolder
-            listFolders = self.listFolderNames(listFolders.split('\n'), inNameFolder)
+            listFolders = self.listFolderNames(listFolders.split('\n'), 
+                                               inNameFolder)
             if (not inNameFolder):
                 print("Entra")
                 listAllFolders = self.listFolderNames(data, "")

@@ -46,8 +46,9 @@ class moduleGcalendar(Content,socialGoogle):
         #     service = None
         # else:
         if True:
-            service = build('calendar', 'v3', 
-                         credentials=creds) #, cache_discovery=False)
+            service = build('calendar', 'v3', credentials=creds) #, cache_discovery=False)
+            msgLog = (f"{self.indent} Service: {service}")
+            logMsg(msgLog, 2, 0)
         return service
 
     # def confTokenName(self, acc): 
@@ -153,7 +154,8 @@ class moduleGcalendar(Content,socialGoogle):
         logging.info(f"{self.indent} Setting calendar list")
         api = self.getClient()
         page_token = None
-        self.calendars = api.calendarList().list(pageToken=page_token).execute().get('items',[])
+        self.calendars = api.calendarList().list(
+                pageToken=page_token).execute().get('items',[])
 
     def getCalendarList(self): 
         return(self.calendars)
@@ -232,50 +234,50 @@ def main():
     rules = moduleRules.moduleRules()
     rules.checkRules()
 
+    print(f"Selecting rule")
+    apiSrc = rules.selectRuleInteractive()
+
+    print(f"State: {apiSrc.getClient().__getstate__()}")
+
+    print(f"Testing list")
     testingList = True
     if testingList:
-        for key in rules.rules.keys():
-            if (key[0] == 'gcalendar'):
-                print(f"SKey: {key}\n"
-                      f"SRule: {rules.rules[key]}\n"
-                      f"SMore: {rules.more[key]}")
-                apiSrc = rules.readConfigSrc("", key, rules.more[key])
-                apiSrc.setCalendarList()
-                print(f"List: {apiSrc.getCalendarList()}")
-                for i, cal in enumerate(apiSrc.getCalendarList()): 
-                    print(f"{i}) {cal.get('summary')}")
-                option = input("Select one: ")
+        apiSrc.setCalendarList()
+        print(f"List: {apiSrc.getCalendarList()}")
+        for i, cal in enumerate(apiSrc.getCalendarList()): 
+            print(f"{i}) {cal.get('summary')}")
+        option = input("Select one: ")
 
-                apiSrc.setActive(apiSrc.getCalendarList()[int(option)].get('id'))
-                apiSrc.setPosts('2022-07-11')
-                print("Citas:")
-                for i, event in enumerate(apiSrc.getPosts()):
-                    import datetime
+        apiSrc.setActive(apiSrc.getCalendarList()[int(option)].get('id'))
+        apiSrc.setPosts('2022-07-11')
+        print("Citas:")
+        for i, event in enumerate(apiSrc.getPosts()):
+            import datetime
 
-                    import pytz
-                    from dateutil import parser
+            import pytz
+            from dateutil import parser
 
-                    d1 = parser.parse(event['updated'])
-                    today = datetime.datetime.combine(datetime.date.today(), 
-                            datetime.datetime.min.time())
-                    today = pytz.utc.localize(today)
-                    today = pytz.utc.localize(parser.parse("2022-07-11"))
+            d1 = parser.parse(event['updated'])
+            today = datetime.datetime.combine(datetime.date.today(), 
+                    datetime.datetime.min.time())
+            today = pytz.utc.localize(today)
+            today = pytz.utc.localize(parser.parse("2022-07-11"))
 
-                    # print(f"Hoy: {today}")
+            # print(f"Hoy: {today}")
 
-                    # print (f"{event['created']} {event['updated']}")
-                    # print(f"{d1 - today}")
-                    if abs((d1 - today).days) < 7:
-                        import pprint
+            # print (f"{event['created']} {event['updated']}")
+            # print(f"{d1 - today}")
+            if abs((d1 - today).days) < 7:
+                import pprint
 
-                        # print (f"{i}) {event}")
-                        description = event.get('description') 
-                        if description:
-                            description = description[:60]
-                        print (f"{event['start']['dateTime']} "
-                               f"{event.get('summary')} "
-                               f"{description} "
-                               f"{event.get('hangoutLink')}")
+                # print (f"{i}) {event}")
+                description = event.get('description') 
+                if description:
+                    description = description[:60]
+                print (f"{event['start']['dateTime']} "
+                       f"{event.get('summary')} "
+                       f"{description} "
+                       f"{event.get('hangoutLink')}")
 
  
     return 

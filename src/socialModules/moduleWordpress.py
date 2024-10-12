@@ -1,8 +1,10 @@
 import configparser
 import json
 import logging
+import shutil
 import sys
 import urllib
+import urllib.parse
 
 import requests
 from bs4 import BeautifulSoup
@@ -94,8 +96,14 @@ class moduleWordpress(Content): #,Queue):
 
             resUrl =  input('Paste the resulting URL: ')
             splitUrl = urllib.parse.urlsplit(resUrl)
+            print(f"split: {splitUrl}")
+            print(f"split: {splitUrl.fragment}")
             result = urllib.parse.parse_qsl(splitUrl.fragment)
-            token = result[0][1]
+            print(f"result: {result}")
+            result = urllib.parse.parse_qsl(splitUrl.fragment)
+            token = urllib.parse.unquote(result[0][1])
+            print(f"token: {token}")
+            print(f"name: {name}")
             config.set(name, 'access_token', token)
             # Make a backup
             shutil.copyfile(configWordpress, '{}.bak'.format(configWordpress))

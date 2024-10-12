@@ -218,6 +218,23 @@ class moduleSlack(Content): #, Queue):
             msgLog = f"PPost: {post}"
             logMsg(msgLog, 2, 0)
 
+    def getPost(self, i):
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Start getPost pos {i}.")
+        logMsg(msgLog, 2, 0)
+        post = None
+        posts = self.getPosts()
+        if posts and (i >= 0) and (i < len(posts)):
+            post = posts[i]
+        elif posts and (i<0):
+            post = posts[len(posts)-1]
+
+        msgLog = (f"{self.indent} End getPost")
+        logMsg(msgLog, 2, 0)
+        self.indent = self.indent[:-1]
+        return post
+
+
     def getPostId(self, post):
         return (post.get('ts',''))
 
@@ -453,8 +470,8 @@ def main():
             time.sleep(5+random.random()*5)
         return
 
-    testingEditLink = True
-    if testingEditTrue:
+    testingEditLink = False
+    if testingEditLink:
         print("Testing edit link poss")
         site.setPostsType("posts")
         site.setPosts()
@@ -481,7 +498,7 @@ def main():
         return
 
 
-    testingPosts = False
+    testingPosts = True
     if testingPosts:
         print("Testing posts")
         apiSrc.setPostsType("posts")
