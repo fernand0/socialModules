@@ -1457,6 +1457,8 @@ class Content:
 
         if link:
                msg.append(f"Link: {link}")
+        if profile:
+               msg.append(f"Profile: {profile}")
         if data:
                logMsg(f"{self.indent} Data error: {data}", 2, 0)
                if isinstance(data,list) or isinstance(data,tuple):

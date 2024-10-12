@@ -142,8 +142,8 @@ class moduleLinkedin(Content):
             title, imageName = args
             more = kwargs
             if imageName:
-                with open(imageName, "rb") as imagefile:
-                        imagedata = imagefile.read()
+                with open(imageName, "rb") as imagefile: 
+                    imagedata = imagefile.read()
 
                 try:
                     res = self.getClient().submit_share(comment=None,
@@ -176,8 +176,10 @@ class moduleLinkedin(Content):
                 me_response = self.getClient().get(resource_path="/me", 
                                                    access_token=self.TOKEN)
 
+                msgLog = (f"{self.indent} Response: {me_response}")
+                logMsg(msgLog, 2, 0)
                 POSTS_RESOURCE = "/posts"
-                if link:
+                if link and 'id' in me_response.entity:
                     entity = { 
                                 "author": 
                                 f"urn:li:person:{me_response.entity['id']}", 
