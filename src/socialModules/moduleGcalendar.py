@@ -191,6 +191,24 @@ class moduleGcalendar(Content,socialGoogle):
         return("orig. "+date+" Translated." + theDate)
 
 
+    def getPostTitle(self, post):
+        if 'start' in post:
+            if 'dateTime' in post['start']:
+                dd = post['start']['dateTime']
+            else:
+                if 'date' in post['start']:
+                    dd = post['start']['date']
+
+        description = post.get('description') 
+        if description:
+            description = description[:60]
+        text = (f"{dd[11:16]} "
+               f"{post.get('summary')} "
+               f"{description} "
+               )
+        text = text.replace('\n',' ')
+        return text
+ 
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)
 
@@ -300,6 +318,8 @@ def main():
                        f"{description} "
                        f"{event.get('hangoutLink','')}")
                 text = text.replace('\n',' ')
+                print(f"{text}")
+                text = apiSrc.getPostTitle(event)
                 print(f"{text}")
     return
 
