@@ -49,6 +49,7 @@ class moduleGcalendar(Content,socialGoogle):
             service = build('calendar', 'v3', credentials=creds) #, cache_discovery=False)
             msgLog = (f"{self.indent} Service: {service}")
             logMsg(msgLog, 2, 0)
+            self.active = 'primary'
         return service
 
     # def confTokenName(self, acc): 
@@ -300,33 +301,9 @@ def main():
                        f"{event.get('hangoutLink','')}")
                 text = text.replace('\n',' ')
                 print(f"{text}")
+    return
 
  
-    return 
-    calendar = moduleGcalendar()
-    calendar.setClient('ACC0')
-    calendar.setCalendarList()
-    print(calendar.getCalendarList())
-    for i, cal in enumerate(calendar.getCalendarList()):
-        print (f"{i}) {cal}")
-    return
-    print(calendar.getCalendarList()[10])
-    sys.exit()
-    calendar.setActive('dpi6ce608h8j09ocolamshl8kk@group.calendar.google.com')
-    sys.exit()
-    calendar.setPosts()
-
-    print(calendar.getPosts())
-    print(calendar.extractDataMessage(1))
-    print(calendar.nick)
-    print(len(calendar.getPosts()))
-    calendar.setCalendarList()
-    print(calendar.getCalendarList())
-    for i, cal in enumerate(calendar.getCalendarList()):
-        print(i, cal['summary'],cal['id'])
-    calendar.setActive(calendar.getCalendarList()[10]['id'])
-    calendar.setPosts()
-    print(calendar.getPosts())
 
 
 if __name__ == "__main__":
