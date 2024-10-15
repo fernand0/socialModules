@@ -182,7 +182,12 @@ class moduleGcalendar(Content,socialGoogle):
             events_result = api.events().list(calendarId=self.active,
                 timeMin=theDate, maxResults=10, singleEvents=True,
                 orderBy='startTime').execute() 
-            self.posts = events_result.get('items', [])
+            self.posts = []
+            for item in events_result.get('items', []): 
+                if item['eventType'] == 'workingLocation':
+                    continue
+                else: 
+                    self.posts.append(item)
         else:
             self.posts = None
         # logging.info(f"{self.indent} Results: {events_result}")
@@ -287,8 +292,8 @@ def main():
         
         prevDifTime = ""
         for i, event in enumerate(apiSrc.getPosts()):
-            if event['eventType'] == 'workingLocation':
-                continue
+            # if event['eventType'] == 'workingLocation':
+            #     continue
             if 'start' in event:
                 if 'dateTime' in event['start']:
                     dd = event['start']['dateTime']
