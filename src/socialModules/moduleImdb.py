@@ -94,7 +94,8 @@ class moduleImdb(Content): #,Queue):
                         # horaFin = data['data'][i]['PROGRAMAS'][j]['HORA_FIN'] 
                         hini = datetime.datetime.fromtimestamp(e['hi']) 
                         hfin = datetime.datetime.fromtimestamp(e['hf'])
-                        self.data.append((horaIni,horaFin, title, '-', cadName, genero)) 
+                        # self.data.append((horaIni,horaFin, title, '-', cadName, genero)) 
+                        self.data.append((hini,hfin, title, '-', cadName, genero)) 
                         # FIXME: ¿Todos o sólo estos?
                         posts.append(i)
                         posts[-1]['CADENA'] = cadName
