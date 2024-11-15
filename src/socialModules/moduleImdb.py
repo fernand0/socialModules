@@ -120,6 +120,7 @@ class moduleImdb(Content): #,Queue):
                     res = ""
                 j = j + 1
         # self.posts = sorted(posts, key = lambda d: d['HORA_INICIO'])
+        logging.info(f"Posts: {posts}")
         self.posts = sorted(posts, key = lambda d: d['hi'])
 
     def getPostTitle(self, post):
