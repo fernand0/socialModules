@@ -112,7 +112,8 @@ class moduleImdb(Content): #,Queue):
         useCache = False
         j = 0
         for i, post in enumerate(posts): 
-            if ((hh <= self.getPostTimeIni(post)) 
+            hhIni = datetime.datetime.fromtimeSapm(self.getPostTimeIni(post))
+            if ((hh <= hhIni) 
                     and (post['g'] == self.gen)):
                 try:
                     res = self.setPostMoreDataNew(post)
