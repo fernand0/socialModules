@@ -80,19 +80,23 @@ class moduleImdb(Content): #,Queue):
 
         data = json.loads(json_data) 
         logging.info("Data read...")
-        for i in data['data'].keys(): 
-            if i[:-5] in self.channels: 
-                cadName = data['data'][i]['DATOS_CADENA']['NOMBRE'] 
-                for j in range(len(data['data'][i]['PROGRAMAS'])): 
+        for i in data: 
+            cadName = i['name']
+            for e in i['events']:
+                # for j in range(len(data['data'][i]['PROGRAMAS'])): 
                     #print(j) 
-                    genero = data['data'][i]['PROGRAMAS'][j]['GENERO'] 
-                    if genero == self.gen:
-                        title = data['data'][i]['PROGRAMAS'][j]['TITULO'] 
-                        horaIni = data['data'][i]['PROGRAMAS'][j]['HORA_INICIO']
-                        horaFin = data['data'][i]['PROGRAMAS'][j]['HORA_FIN'] 
+                    # genero = data['data'][i]['PROGRAMAS'][j]['GENERO'] 
+                    genero = ""
+                    if True: #genero == self.gen:
+                        # title = data['data'][i]['PROGRAMAS'][j]['TITULO'] 
+                        title = e['t']
+                        # horaIni = data['data'][i]['PROGRAMAS'][j]['HORA_INICIO']
+                        # horaFin = data['data'][i]['PROGRAMAS'][j]['HORA_FIN'] 
+                        hini = datetime.datetime.fromtimestamp(e['hi']) 
+                        hfin = datetime.datetime.fromtimestamp(e['hf'])
                         self.data.append((horaIni,horaFin, title, '-', cadName, genero)) 
                         # FIXME: ¿Todos o sólo estos?
-                        posts.append(data['data'][i]['PROGRAMAS'][j])
+                        posts.append(i)
                         posts[-1]['CADENA'] = cadName
         return posts
 
