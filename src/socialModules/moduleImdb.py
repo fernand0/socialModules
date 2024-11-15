@@ -81,7 +81,7 @@ class moduleImdb(Content): #,Queue):
         data = json.loads(json_data) 
         logging.info("Data read...")
         for i in data: 
-            cadName = i['name']
+            cadName = i['name'][:-3]
             for e in i['events']:
                 # for j in range(len(data['data'][i]['PROGRAMAS'])): 
                     #print(j) 
@@ -112,8 +112,8 @@ class moduleImdb(Content): #,Queue):
         useCache = False
         j = 0
         for i, post in enumerate(posts): 
-            if True: #((hh <= self.getPostTimeIni(post)) 
-                    #and (post['GENERO'] == 'Cine')):
+            if ((hh <= self.getPostTimeIni(post)) 
+                    and (post['g'] == self.gen)):
                 try:
                     res = self.setPostMoreDataNew(post)
                 except:
@@ -156,7 +156,7 @@ class moduleImdb(Content): #,Queue):
         return content
 
     def getPostLine(self, post): 
-        logging.info(f"Post: {post}")
+        # logging.info(f"Post: {post}")
         if post['g'] == 'CN': #True: #post['GENERO'] == 'Cine':
             logging.info("Post line {}".format(post))
             hini = datetime.datetime.fromtimestamp(self.getPostTimeIni(post))
@@ -238,8 +238,8 @@ class moduleImdb(Content): #,Queue):
         postMore = None 
         mySearch = self.getClient().Search() 
         title = self.getPostTitle(post)
-        print(f"Post: {post}")
-        print (f"Title: {title}")
+        logging.info(f"Post: {post}")
+        logging.info(f"Title: {title}")
         import hashlib
         m = hashlib.md5()
         m.update(title.encode())
