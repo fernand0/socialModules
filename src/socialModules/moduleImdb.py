@@ -164,7 +164,7 @@ class moduleImdb(Content): #,Queue):
             hfin = f"{hfin.hour}:{hfin.minute}"
             line = (f"> [{self.getPostAvg(post)}] - "
                    f"({self.getPostCode(post)}) "
-                   f"{hini)}-{hfin}: "
+                   f"{hini}-{hfin}: "
                    f"{self.getPostTitle(post)}")
             logging.info("Post line formatted {}".format(line))
 
