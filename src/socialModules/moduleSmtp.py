@@ -37,6 +37,7 @@ class moduleSmtp(Content): #, Queue):
         self.password = keys[3]
         self.to = ''
 
+        client = None
         try:
             import ssl
             context = ssl.SSLContext(ssl.PROTOCOL_TLS)

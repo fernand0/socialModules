@@ -69,7 +69,10 @@ class moduleImdb(Content): #,Queue):
 
         if not self.cache: 
             logging.info("Downloading data {}".format(self.url)) 
-            request = urllib.request.urlopen(self.url) 
+            my_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36"
+            request = urllib.request.urlopen(self.url, headers={
+                                "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84"
+                            }) 
             json_data = request.read().decode() 
             f = open(self.fileTV, 'w') 
             f.write(json_data) 
