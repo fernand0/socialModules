@@ -156,7 +156,7 @@ class moduleImdb(Content): #,Queue):
         return content
 
     def getPostLine(self, post): 
-        if post['GENERO'] == 'Cine':
+        if True: #post['GENERO'] == 'Cine':
             logging.info("Post line {}".format(post))
             line = (f"> [{self.getPostAvg(post)}] - "
                    f"({self.getPostCode(post)}) "
