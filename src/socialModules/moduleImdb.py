@@ -115,7 +115,8 @@ class moduleImdb(Content): #,Queue):
         for i, post in enumerate(posts): 
             hhIni = datetime.datetime.fromtimestamp(self.getPostTimeIni(post))
             hhIni, ddIni = hhIni.hour, hhIni.day
-            logging.info(f"dd: {ddIni}, hh: {hhIni}")
+            logging.info(f"ddIni: {ddIni}, hhIni: {hhIni}")
+            logging.info(f"dd: {dd}, hh: {hh}")
             if ((dd == str(ddIni) and hh <= str(hhIni))
                     and (post['g'] == self.gen)):
                 try:
