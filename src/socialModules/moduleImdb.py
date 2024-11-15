@@ -82,7 +82,8 @@ class moduleImdb(Content): #,Queue):
         logging.info("Data read...")
         for i in data: 
             cadName = i['name'][:-3]
-            for e in i['events']:
+            if cadName in self.channels:
+                for e in i['events']:
                 # for j in range(len(data['data'][i]['PROGRAMAS'])): 
                     #print(j) 
                     # genero = data['data'][i]['PROGRAMAS'][j]['GENERO'] 
@@ -115,8 +116,6 @@ class moduleImdb(Content): #,Queue):
         for i, post in enumerate(posts): 
             hhIni = datetime.datetime.fromtimestamp(self.getPostTimeIni(post))
             hhIni, ddIni = hhIni.hour, hhIni.day
-            logging.info(f"ddIni: {ddIni}, hhIni: {hhIni}")
-            logging.info(f"dd: {dd}, hh: {hh}")
             if ((dd == str(ddIni) and hh <= str(hhIni))
                     and (post['g'] == self.gen)):
                 try:
