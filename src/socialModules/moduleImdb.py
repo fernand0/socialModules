@@ -108,13 +108,14 @@ class moduleImdb(Content): #,Queue):
         # print(f"Posts: {posts}")
 
         hh = time.strftime('%H:00') 
+        dd = time.strftime('%d') 
         firstPost = True
         useCache = False
         j = 0
         for i, post in enumerate(posts): 
             hhIni = datetime.datetime.fromtimestamp(self.getPostTimeIni(post))
-            hhIni = hhIni.hour
-            if ((hh <= str(hhIni))
+            hhIni, ddIni = hhIni.hour, hhIni.day
+            if ((dd == ddIni and hh <= str(hhIni))
                     and (post['g'] == self.gen)):
                 try:
                     res = self.setPostMoreDataNew(post)
