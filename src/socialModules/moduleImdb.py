@@ -88,7 +88,7 @@ class moduleImdb(Content): #,Queue):
                     #print(j) 
                     # genero = data['data'][i]['PROGRAMAS'][j]['GENERO'] 
                     genero = e['g']
-                    if ('Cine' in e['titulo'] or genero == self.gen):
+                    if ('Cine' in e['t'] or genero == self.gen):
                         # title = data['data'][i]['PROGRAMAS'][j]['TITULO'] 
                         title = e['t']
                         # horaIni = data['data'][i]['PROGRAMAS'][j]['HORA_INICIO']
