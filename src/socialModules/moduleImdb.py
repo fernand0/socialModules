@@ -97,7 +97,7 @@ class moduleImdb(Content): #,Queue):
                         # self.data.append((horaIni,horaFin, title, '-', cadName, genero)) 
                         self.data.append((hini,hfin, title, '-', cadName, genero)) 
                         # FIXME: ¿Todos o sólo estos?
-                        posts.append(i)
+                        posts.append(e)
                         posts[-1]['CADENA'] = cadName
         return posts
 
