@@ -91,8 +91,7 @@ class moduleImdb(Content): #,Queue):
                     if ('Cine' in e['t'] or genero == self.gen):
                         # title = data['data'][i]['PROGRAMAS'][j]['TITULO'] 
                         title = e['t']
-                        if not title:
-                            title = 'Cine'
+                        genero = self.gen
                         # horaIni = data['data'][i]['PROGRAMAS'][j]['HORA_INICIO']
                         # horaFin = data['data'][i]['PROGRAMAS'][j]['HORA_FIN'] 
                         hini = datetime.datetime.fromtimestamp(e['hi']) 
