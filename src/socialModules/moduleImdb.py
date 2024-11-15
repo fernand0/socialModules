@@ -113,6 +113,7 @@ class moduleImdb(Content): #,Queue):
         j = 0
         for i, post in enumerate(posts): 
             hhIni = datetime.datetime.fromtimestamp(self.getPostTimeIni(post))
+            hhIni = hhIni.hour
             if ((hh <= hhIni) 
                     and (post['g'] == self.gen)):
                 try:
