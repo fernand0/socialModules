@@ -121,7 +121,7 @@ class moduleImdb(Content): #,Queue):
                 j = j + 1
         # self.posts = sorted(posts, key = lambda d: d['HORA_INICIO'])
         # logging.info(f"Posts: {posts}")
-        self.posts = sorted(posts, key = lambda d: d['hi'])[:100]
+        self.posts = sorted(posts, key = lambda d: d['hi'])
 
     def getPostTitle(self, post):
         logging.debug("getPostTitle {}".format(post))
@@ -156,7 +156,7 @@ class moduleImdb(Content): #,Queue):
         return content
 
     def getPostLine(self, post): 
-        if True: #post['GENERO'] == 'Cine':
+        if post['g'] == 'CN': #True: #post['GENERO'] == 'Cine':
             logging.info("Post line {}".format(post))
             line = (f"> [{self.getPostAvg(post)}] - "
                    f"({self.getPostCode(post)}) "
