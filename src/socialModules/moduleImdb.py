@@ -210,8 +210,8 @@ class moduleImdb(Content): #,Queue):
 
     def getPostPlot(self, post):
         if isinstance(post, dict):
-            if 'RESULT' in post:
-                return post.get('RESULT')[0].get('overview', '')
+            if 'd' in post:
+                return post.get('d')
             else:
                 return ''
         if post:
