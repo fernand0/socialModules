@@ -23,7 +23,7 @@ class moduleImdb(Content): #,Queue):
         self.client = None
         self.url=None
         self.fileTV = '/tmp/tv.json'
-        self.gen = 'Cine'
+        self.gen = 'CN'
         self.cache = False
         self.channels = None
         self.posts = []
@@ -86,8 +86,8 @@ class moduleImdb(Content): #,Queue):
                 # for j in range(len(data['data'][i]['PROGRAMAS'])): 
                     #print(j) 
                     # genero = data['data'][i]['PROGRAMAS'][j]['GENERO'] 
-                    genero = ""
-                    if True: #genero == self.gen:
+                    genero = e['g']
+                    if genero == self.gen:
                         # title = data['data'][i]['PROGRAMAS'][j]['TITULO'] 
                         title = e['t']
                         # horaIni = data['data'][i]['PROGRAMAS'][j]['HORA_INICIO']
