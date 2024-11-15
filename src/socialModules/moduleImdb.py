@@ -120,8 +120,8 @@ class moduleImdb(Content): #,Queue):
                     res = ""
                 j = j + 1
         # self.posts = sorted(posts, key = lambda d: d['HORA_INICIO'])
-        logging.info(f"Posts: {posts}")
-        self.posts = sorted(posts, key = lambda d: d['hi'])
+        # logging.info(f"Posts: {posts}")
+        self.posts = sorted(posts, key = lambda d: d['hi'])[:100]
 
     def getPostTitle(self, post):
         logging.debug("getPostTitle {}".format(post))
@@ -131,7 +131,7 @@ class moduleImdb(Content): #,Queue):
             else:
                 return("")
         else:
-            return post.get('TITULO','')
+            return post.get('t','')
 
     def getPostLink(self, post):
         if isinstance(post, dict):
@@ -179,7 +179,7 @@ class moduleImdb(Content): #,Queue):
 
     def getPostTimeIni(self, post):
         if isinstance(post, dict):
-            return post.get('HORA_INICIO', '')
+            return post.get('hi', '')
         if post:
             return(post[0])
         else:
@@ -312,7 +312,7 @@ class moduleImdb(Content): #,Queue):
 
     def getPostTimeEnd(self, post):
         if isinstance(post, dict):
-            return post.get('HORA_FIN', '')
+            return post.get('hf', '')
         if post:
             return(post[1])
         else:
