@@ -112,7 +112,7 @@ class moduleImdb(Content): #,Queue):
         useCache = False
         j = 0
         for i, post in enumerate(posts): 
-            if ((hh <= self.getPostTimeIni(post)) 
+            if True: #((hh <= self.getPostTimeIni(post)) 
                     and (post['GENERO'] == 'Cine')):
                 try:
                     res = self.setPostMoreDataNew(post)
