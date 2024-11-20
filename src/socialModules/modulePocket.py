@@ -89,7 +89,7 @@ class modulePocket(Content): #,Queue):
     def setApiPosts(self):
         posts = []
         try:
-            dictPosts = self.client.retrieve(state="unread")
+            dictPosts = self.client.retrieve(state="unread", sort="oldest")
             dictPosts = dictPosts['list']
             for post in dictPosts:
                 posts.append(dictPosts[post])
@@ -339,120 +339,121 @@ def main():
         logging.info(f"Creation of the directory {PATH} failed. "
                      f"It exists")
 
-    testingPostsArticle = True
-    if testingPostsArticle:
-        for key in rules.rules.keys():
-            if (key
-                and (key[0] == 'pocket')
-                and (key[2] == 'fernand0kobo')
-                ):
+    # Moved to a program
+    # testingPostsArticle = True
+    # if testingPostsArticle:
+    #     for key in rules.rules.keys():
+    #         if (key
+    #             and (key[0] == 'pocket')
+    #             and (key[2] == 'fernand0kobo')
+    #             ):
 
-                apiSrc = rules.readConfigSrc("",key, rules.more[key])
+    #             apiSrc = rules.readConfigSrc("",key, rules.more[key])
 
-                apiSrc.setPosts()
-                print(f"Posts({len(apiSrc.getPosts())}): {apiSrc.getPosts()}")
-                for pos, post in enumerate(reversed(apiSrc.getPosts())):
-                    title = apiSrc.getPostTitle(post)
-                    print(f"Title: {title}")
-                    link = apiSrc.getPostLink(post)
-                    print(f"Link: {link}")
-                    idPost = post['item_id']
-                    # if 'word_count' in post:
-                    #     print(f"Word: {post['word_count']}")
-                    archive = False
-                    if (('youtube' in  link) or link.endswith('pdf')):
-                        archive = True
-                    elif ((('is_article' in post)
-                          and (post['is_article'] == '0'))
-                          # and (post['status'] != '1')
-                          or (('word_count' in post)
-                              and (post['word_count'] == '0'))
-                          or ((title == '') and (not (('word_count' in post))))):
-                        msg = (f"No data in the article '{title}'")
-                        print(msg)
-                        import requests
-                        from readabilipy import simple_json_from_html_string
-                        try:
-                            req = requests.get(link,
-                                               headers={"User-Agent":"Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84"})
-                            error = False
-                            if req.status_code < 400:
-                                msg = title
-                                article = simple_json_from_html_string(req.text,
-                                                           use_readability=True)
-                                if not article['content']:
-                                    print(f"Nottttt")
-                                    res = ""
-                                    from playwright.sync_api import sync_playwright
-                                    with sync_playwright() as p:
-                                        browser = p.chromium.launch()
-                                        page = browser.new_page()
+    #             apiSrc.setPosts()
+    #             print(f"Posts({len(apiSrc.getPosts())}): {apiSrc.getPosts()}")
+    #             for pos, post in enumerate(reversed(apiSrc.getPosts())):
+    #                 title = apiSrc.getPostTitle(post)
+    #                 print(f"Title: {title}")
+    #                 link = apiSrc.getPostLink(post)
+    #                 print(f"Link: {link}")
+    #                 idPost = post['item_id']
+    #                 # if 'word_count' in post:
+    #                 #     print(f"Word: {post['word_count']}")
+    #                 archive = False
+    #                 if (('youtube' in  link) or link.endswith('pdf')):
+    #                     archive = True
+    #                 elif ((('is_article' in post)
+    #                       and (post['is_article'] == '0'))
+    #                       # and (post['status'] != '1')
+    #                       or (('word_count' in post)
+    #                           and (post['word_count'] == '0'))
+    #                       or ((title == '') and (not (('word_count' in post))))):
+    #                     msg = (f"No data in the article '{title}'")
+    #                     print(msg)
+    #                     import requests
+    #                     from readabilipy import simple_json_from_html_string
+    #                     try:
+    #                         req = requests.get(link,
+    #                                            headers={"User-Agent":"Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84"})
+    #                         error = False
+    #                         if req.status_code < 400:
+    #                             msg = title
+    #                             article = simple_json_from_html_string(req.text,
+    #                                                        use_readability=True)
+    #                             if not article['content']:
+    #                                 print(f"Nottttt")
+    #                                 res = ""
+    #                                 from playwright.sync_api import sync_playwright
+    #                                 with sync_playwright() as p:
+    #                                     browser = p.chromium.launch()
+    #                                     page = browser.new_page()
 
-                                        # Abrir la URL
-                                        page.goto(link)
-                                        page.wait_for_timeout(5000)
+    #                                     # Abrir la URL
+    #                                     page.goto(link)
+    #                                     page.wait_for_timeout(5000)
 
-                                        paragraphs = page.locator("p").all_text_contents()
-                                        for p in paragraphs:
-                                            res = f"{res}\n {p}"
+    #                                     paragraphs = page.locator("p").all_text_contents()
+    #                                     for p in paragraphs:
+    #                                         res = f"{res}\n {p}"
 
-                                    print(f"Res: {res}")
+    #                                 print(f"Res: {res}")
 
-                                else:
-                                    res = article['content']
+    #                             else:
+    #                                 res = article['content']
 
-                                if res:
-                                    from ebooklib import epub
-                                    book = epub.EpubBook()
+    #                             if res:
+    #                                 from ebooklib import epub
+    #                                 book = epub.EpubBook()
 
-                                    book.set_title(title)
-                                    book.set_identifier(idPost)
-                                    c = epub.EpubHtml(title='Page',
-                                                      file_name='page.xhtml',
-                                                      lang='en')
-                                    c.content= res
-                                    book.add_item(c)
-                                    book.add_item(epub.EpubNcx())
-                                    book.add_item(epub.EpubNav())
-                                    book.spine = ['nav', c]
-                                    name = re.sub(r'[^a-zA-Z0-9]+', '-', title)
-                                    epub.write_epub(f"{PATH}/{post['time_added']}_{name}.epub",
-                                                    book, {})
-                                    archive = True
-                                else:
-                                    print(f"No content in article")
-                                    error = True
-                            else:
-                                error = True
-                            if error:
-                                print(f"Something is wrong "
-                                      f"{req.status_code}")
+    #                                 book.set_title(title)
+    #                                 book.set_identifier(idPost)
+    #                                 c = epub.EpubHtml(title='Page',
+    #                                                   file_name='page.xhtml',
+    #                                                   lang='en')
+    #                                 c.content= res
+    #                                 book.add_item(c)
+    #                                 book.add_item(epub.EpubNcx())
+    #                                 book.add_item(epub.EpubNav())
+    #                                 book.spine = ['nav', c]
+    #                                 name = re.sub(r'[^a-zA-Z0-9]+', '-', title)
+    #                                 epub.write_epub(f"{PATH}/{post['time_added']}_{name}.epub",
+    #                                                 book, {})
+    #                                 archive = True
+    #                             else:
+    #                                 print(f"No content in article")
+    #                                 error = True
+    #                         else:
+    #                             error = True
+    #                         if error:
+    #                             print(f"Something is wrong "
+    #                                   f"{req.status_code}")
 
-                                src = rules.selectRule('cache', 'smtp')
-                                indent = ''
-                                src = src[0]
-                                more = None
-                                indent = ''
-                                apiAux = rules.readConfigSrc(src, more)
-                                action =  rules.rules[src][0]
-                                msgLog = (f"Action: {action}")
-                                logMsg(msgLog, 2, 0)
-                                newAction = (action[:3] +
-                                    ('fernand0Pocket@elmundoesimperfecto.com',))
+    #                             src = rules.selectRule('cache', 'smtp')
+    #                             indent = ''
+    #                             src = src[0]
+    #                             more = None
+    #                             indent = ''
+    #                             apiAux = rules.readConfigSrc(src, more)
+    #                             action =  rules.rules[src][0]
+    #                             msgLog = (f"Action: {action}")
+    #                             logMsg(msgLog, 2, 0)
+    #                             newAction = (action[:3] +
+    #                                 ('fernand0Pocket@elmundoesimperfecto.com',))
 
-                                apiDst = rules.readConfigDst(indent,
-                                                             newAction,
-                                                             more, apiAux)
-                                msgLog = (f"apiDst: {apiDst}")
-                                logMsg(msgLog, 2, 0)
-                                apiDst.publishPost(f"Fail Pocket! {title}",
-                                                      link, f"{req.text}")
-                                archive = True
-                        except:
-                            print(f"Problem with link: {link}")
-                    if archive:
-                        input(f"Archive ({msg})? ")
-                        apiSrc.archiveId(idPost)
+    #                             apiDst = rules.readConfigDst(indent,
+    #                                                          newAction,
+    #                                                          more, apiAux)
+    #                             msgLog = (f"apiDst: {apiDst}")
+    #                             logMsg(msgLog, 2, 0)
+    #                             apiDst.publishPost(f"Fail Pocket! {title}",
+    #                                                   link, f"{req.text}")
+    #                             archive = True
+    #                     except:
+    #                         print(f"Problem with link: {link}")
+    #                 if archive:
+    #                     input(f"Archive ({msg})? ")
+    #                     apiSrc.archiveId(idPost)
 
     return
 
