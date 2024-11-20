@@ -438,30 +438,18 @@ def main():
         logging.info(f"Channels: {apiSrc.getChannels()}")
         return
 
-    testingPublishing = False
+    testingPublishing = True
     if testingPublishing:
-        links  = [
-'https://til.simonwillison.net/python/inlining-binary-data',
-'https://www.bleepingcomputer.com/news/security/winrar-flaw-lets-hackers-run-programs-when-you-open-rar-archives/',
-'https://blog.infoempleo.com/a/relevo-generacional-solo-un-28-de-las-empresas-cuenta-con-estrategias-para-fomentar-el-reclutamiento-de-jovenes/',
-'https://www.genbeta.com/actualidad/a-esta-diputada-han-captado-introduciendo-codigo-desbloqueo-iphone-habia-elegido-123456',
-'https://www.error500.net/p/la-gran-tendencia-tecnologica-del',
-'https://rickwash.com/papers/journal/phishing-experts.html',
-'https://www.bbc.com/news/technology-66304002',
-'https://www.xn--vietario-e3a.com/huescomic-2023-programa-e-invitados/',
-'https://www.aragonmusical.com/2023/08/pirineos-sur-nominado-por-segunda-a-los-music-cities-awards/',
-'https://turelin.medium.com/embracing-nomad-life-and-the-innovations-old-and-new-that-helped-us-along-the-way-dcdb9e73229d',
-'https://cacm.acm.org/magazines/2023/8/274942-large-language-models/fulltext',
-'https://www.iiot-world.com/industrial-iot/connected-industry/securing-the-automotive-industry-with-pki-and-identity-management/',
-'https://thehackernews.com/2023/08/google-introduces-first-quantum.html',
-'https://efe.com/espana/2023-08-17/espana-pide-catalan-euskera-gallego-sean-lenguas-oficiales-en-la-ue/',
-'https://dev.to/claudbytes/build-a-web-scraper-with-go-3jod',
-'https://we-make-money-not-art.com/what-re-engineering-the-chicken-and-the-cow-says-about-us-an-interview-with-daniel-szalai/',
-'https://globalvoices.org/2023/08/12/cultural-appropriation-and-the-erasure-of-cultural-diversity/',
-'https://github.com/readme/guides/fix-accessibility-bugs',
-'https://firstmonday.org/ojs/index.php/fm/article/download/12873/11291',
-'https://bits.debian.org/2023/08/debian-turns-30.html',
+        links  = [ 
+        'https://blog.thunderbird.net/2024/10/thunderbird-for-android-8-0-takes-flight/',
+        'https://practicalbetterments.com/order-and-orient-the-keys-on-your-keychain/',
+                  'https://www.microsiervos.com/archivo/ciencia/50-snos-envio-mensaje-arecibo.html',
+                  'https://lifehacker.com/tech/the-weakest-passwords-people-often-use',
+                  'https://www.thetimes.com/business-money/economics/article/how-spain-is-outperforming-its-european-peers-f0stljzcf', 
+                  'https://www.huffingtonpost.es/virales/en-reino-unido-dicen-espana-supera-otros-paises-europeos-razon-dan-levantara-ampollas.html',
+                  'https://historiatelefonia.com/2024/11/13/sobre-el-concepto-de-dominio-publico-en-documentos-historicos-de-empresas/',
                 ]
+
         apiSrc.setChannel('links')
         for link in links:
             apiSrc.publishPost('', link, '')
