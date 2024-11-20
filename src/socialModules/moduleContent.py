@@ -101,6 +101,7 @@ class Content:
         # logger = logging.getLogger('my_module_name')
         # https://stackoverflow.com/questions/35325042/python-logging-disable-logging-from-imported-modules
 
+        client = None
         try:
             client = self.initApi(keys)
         except:
