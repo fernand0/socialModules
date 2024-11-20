@@ -6,18 +6,20 @@ import configparser
 import datetime
 import html
 import inspect
+import logging
+import os
+import pickle
 import re
 import sys
 from html.parser import HTMLParser
 
 from bs4 import BeautifulSoup, Tag
 
-from socialModules.configMod import *
+from socialModules.configMod import logMsg, fileNamePath, checkFile, DATADIR, CONFIGDIR
 
 
 class Content:
-
-    def __init__(self, indent=''):
+    def __init__(self, indent=""):
         self.url = ""
         self.name = ""
         self.nick = ""
@@ -39,10 +41,10 @@ class Content:
         self.numPosts = 0
         self.user = None
         self.client = None
-        ser = self.__class__.__name__
+        # ser = self.__class__.__name__
         self.service = self.__class__.__name__[6:]
         self.indent = indent
-        self.postsType = 'posts'
+        self.postsType = "posts"
         # msgLog = (f"{self.indent} Service {self.service} initializing")
         # logMsg(msgLog, 1, 0)
         # They start with module
@@ -53,13 +55,13 @@ class Content:
         # msgLog = f"{self.indent} nameSet: {nameSet}"
         # logMsg(msgLog, 1, 1)
         if nameSet in self.__dir__():
-            cmd =  getattr(self, nameSet)
+            cmd = getattr(self, nameSet)
             # msgLog = f"{self.indent} Cmd set: {cmd}"
             # logMsg(msgLog, 1, 1)
             cmd(serviceData)
 
     def setClient(self, account):
-        msgLog = (f"{self.indent} Start setClient account: {account}")
+        msgLog = f"{self.indent} Start setClient account: {account}"
         logMsg(msgLog, 1, 0)
         self.indent = f"{self.indent} "
 
@@ -77,25 +79,26 @@ class Content:
             config = configparser.RawConfigParser()
             config.read(f"{configFile}")
         except:
-            msgLog = (f"Does file {configFile} exist?")
-            self.report({self.indent}, msgLog, 0, '')
+            msgLog = f"Does file {configFile} exist?"
+            self.report({self.indent}, msgLog, 0, "")
 
         self.indent = f"{self.indent} "
-        msgLog = (f"{self.indent} Getting keys")
+        msgLog = f"{self.indent} Getting keys"
         logMsg(msgLog, 1, 0)
-        keys = ''
+        keys = ""
         try:
             keys = self.getKeys(config)
             # logging.debug(f"{self.indent} user {self.user}")
         except:
             if not config.sections():
                 # FIXME: Are you sure?
-                msgLog = (f"{self.indent} Do the adequate keys exist "
-                          f"in {configFile}?")
+                msgLog = (
+                    f"{self.indent} Do the adequate keys exist " f"in {configFile}?"
+                )
                 logMsg(msgLog, 3, 0)
 
         self.indent = f"{self.indent} "
-        msgLog = (f"{self.indent} Starting initApi")
+        msgLog = f"{self.indent} Starting initApi"
         logMsg(msgLog, 2, 0)
         # To avoid submodules logging.
         # logger = logging.getLogger('my_module_name')
@@ -108,15 +111,15 @@ class Content:
             msgLog(f"{self.indent} Exception")
             logMsg(msgLog, 2, 0)
             if not config.sections and not keys:
-                self.report({self.service}, "No keys", "", '')
+                self.report({self.service}, "No keys", "", "")
             else:
-                self.report({self.service}, "Some problem", "", '')
+                self.report({self.service}, "Some problem", "", "")
 
         self.client = client
         self.indent = self.indent[:-1]
         self.indent = self.indent[:-1]
         self.indent = self.indent[:-1]
-        msgLog = (f"{self.indent} End setClientt")
+        msgLog = f"{self.indent} End setClientt"
         logMsg(msgLog, 1, 0)
 
     def getService(self):
@@ -131,7 +134,7 @@ class Content:
         #     logMsg(msgLog, 2, 0)
         return self.service
 
-    def setUser(self, nick=''):
+    def setUser(self, nick=""):
         self.user = nick
 
     def getUser(self):
@@ -149,16 +152,16 @@ class Content:
         self.nick = nick
 
     def getNick(self):
-        nick = ''
-        if hasattr(self, 'nick'):
-            nick = getattr(self, 'nick')#, '')
-        if not nick and hasattr(self, 'user'):
-            nick = getattr(self, 'user')#, '')
+        nick = ""
+        if hasattr(self, "nick"):
+            nick = getattr(self, "nick")  # , '')
+        if not nick and hasattr(self, "user"):
+            nick = getattr(self, "user")  # , '')
         return nick
 
     def getAttribute(self, post, selector):
         try:
-            return post.get(selector, '')
+            return post.get(selector, "")
         except:
             print(f"Attribute: {post}")
             return ""
@@ -174,20 +177,21 @@ class Content:
         # We have a dictionary of values and we check for methods for
         # setting these values in our object
         self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Start setMoreValues" #: {src[1:]}"
+        msgLog = f"{self.indent} Start setMoreValues"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent}  moreValues: {more}" #: {src[1:]}"
+        msgLog = f"{self.indent}  moreValues: {more}"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         if more:
             # Setting values available in more
             for option in more:
-                if option == 'service': continue #FIXME
-                if option == 'posts':
-                    nameMethod = f"setPostsType"
+                if option == "service":
+                    continue  # FIXME
+                if option == "posts":
+                    nameMethod = "setPostsType"
                 else:
                     nameMethod = f"set{option.capitalize()}"
 
-                if  nameMethod in self.__dir__():
+                if nameMethod in self.__dir__():
                     # Simple names setUrl, setTime, ...
                     # setting url, time, max, posts,
                     # setCache ¿?
@@ -211,13 +215,12 @@ class Content:
         logMsg(msgLog, 2, 0)
         self.indent = f"{self.indent[:-1]}"
 
-    def apiCall(self, commandName, api = None, **kwargs):
+    def apiCall(self, commandName, api=None, **kwargs):
         if api:
             client = api
         else:
             client = self.getClient()
-        msgLog = (f"{self.indent} calling: {commandName}"
-                  f" with arguments {kwargs}")
+        msgLog = f"{self.indent} calling: {commandName}" f" with arguments {kwargs}"
         logMsg(msgLog, 2, 0)
         res = []
 
@@ -229,10 +232,9 @@ class Content:
             res = command(**kwargs)
         except:
             res = "fail!"
-            error = self.report('', res, '', sys.exc_info())
+            error = self.report("", res, "", sys.exc_info())
 
         return res, error
-
 
     def setApiPosts(self):
         pass
@@ -244,21 +246,23 @@ class Content:
         self.indent = f"{self.indent} "
         # identifier = nick
 
-        typeposts = self.getPostsType()
-        msgLog = (f"{self.indent} Posts type {self.getPostsType()}")
+        # typeposts = self.getPostsType()
+        msgLog = f"{self.indent} Posts type {self.getPostsType()}"
         logMsg(msgLog, 2, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
-            typeposts = self.getPostsType()
-            if self.getPostsType() in ['posts', 'drafts', 'draft',
-                                       'favs', 'search', 'queue']:
-                cmd = getattr(
-                    self, f"setApi{self.getPostsType().capitalize()}"
-                )
+            # typeposts = self.getPostsType()
+            if self.getPostsType() in [
+                "posts",
+                "drafts",
+                "draft",
+                "favs",
+                "search",
+                "queue",
+            ]:
+                cmd = getattr(self, f"setApi{self.getPostsType().capitalize()}")
             else:
                 self.setChannel(self.getPostsType())
-                cmd = getattr(
-                    self, f"setApiPosts"
-                )
+                cmd = getattr(self, "setApiPosts")
         else:
             cmd = getattr(self, "setApiPosts")
 
@@ -266,7 +270,7 @@ class Content:
         msgLog = f"{self.indent} Command: {cmd}"
         logMsg(msgLog, 2, 0)
         posts = cmd()
-        msgLog = (f"{self.indent} service {self.service} posts: {posts}")
+        msgLog = f"{self.indent} service {self.service} posts: {posts}"
         logMsg(msgLog, 2, 0)
         self.assignPosts(posts)
         self.indent = self.indent[:-1]
@@ -288,23 +292,23 @@ class Content:
 
     def fileNameBase(self, dst=None):
         self.indent = f"{self.indent} "
-        msgLog = (f"{self.indent} Start fileNameBase")
+        msgLog = f"{self.indent} Start fileNameBase"
         logMsg(msgLog, 2, 0)
 
-        if hasattr(dst, 'fileName') and dst.fileName:
-            fileName =  dst.fileName
+        if hasattr(dst, "fileName") and dst.fileName:
+            fileName = dst.fileName
         else:
             src = self
-            typeSrc = 'posts'
-            if hasattr(src, 'getPostsType'):
+            typeSrc = "posts"
+            if hasattr(src, "getPostsType"):
                 typeSrc = src.getPostsType()
 
-            typeDst = 'posts'
-            if hasattr(dst, 'getPostsType'):
+            typeDst = "posts"
+            if hasattr(dst, "getPostsType"):
                 typeDst = dst.getPostsType()
 
             # nameSrc = type(src).__name__
-            #if 'module' in nameSrc:
+            # if 'module' in nameSrc:
             #    nameSrc = nameSrc[len('module'):]
             nameSrc = src.getNameModule()
             nameDst = dst.getNameModule()
@@ -314,7 +318,7 @@ class Content:
             service = src.getService()
 
             dst.setNick()
-            if hasattr(dst, 'src') and isinstance(dst.src, tuple):
+            if hasattr(dst, "src") and isinstance(dst.src, tuple):
                 # It is a cache
                 # userD = dst.src[1][3]
                 # serviceD = dst.src[1][2]
@@ -326,21 +330,23 @@ class Content:
                 userD = dst.getUser()
                 serviceD = nameDst
 
-            fileName = (f"{nameSrc}_{typeSrc}_"
-                        f"{user}_{service}__"
-                        f"{nameDst}_{typeDst}_"
-                        f"{userD}_{serviceD}")
-            fileName = (f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}")
+            fileName = (
+                f"{nameSrc}_{typeSrc}_"
+                f"{user}_{service}__"
+                f"{nameDst}_{typeDst}_"
+                f"{userD}_{serviceD}"
+            )
+            fileName = f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}"
             self.fileName = fileName
 
-        msgLog = (f"{self.indent} End fileNameBase")
+        msgLog = f"{self.indent} End fileNameBase"
         logMsg(msgLog, 2, 0)
         self.indent = f"{self.indent[:-1]}"
         return fileName
 
     def updateLastLink(self, src, link):
         if link and isinstance(link, list):
-            #fixme: this will be removed
+            # fixme: this will be removed
             link = src.getPostLink(link[-1])
         elif not link:
             # fixme could post be a parameter?
@@ -353,14 +359,13 @@ class Content:
         msgLog = f"{self.indent} updating {msgupdate}"
         logMsg(msgLog, 1, 0)
 
-        self.fileName = ''
+        self.fileName = ""
         fileName = f"{src.fileNameBase(self)}.last"
         msgLog = f"{self.indent} fileName {fileName}"
         logMsg(msgLog, 2, 0)
         msgLog = checkFile(fileName, self.indent)
-        if not 'OK' in msgLog:
-            msgLog = (f"file {fileName} does not exist. "
-                      f"I'm going to create it.")
+        if "OK" not in msgLog:
+            msgLog = f"file {fileName} does not exist. " f"I'm going to create it."
             logMsg(msgLog, 3, 0)
         with open(fileName, "w") as f:
             if link:
@@ -379,22 +384,22 @@ class Content:
         return self.lastLinkPublished
 
     def getLastLink(self, apiSrc=None):
-        url = self.getUrl()
+        # url = self.getUrl()
         service = self.service.lower()
-        nick = self.getUser()
-        fileName = (f"{apiSrc.fileNameBase(self)}.last")
-        linkLast = ''
+        # nick = self.getUser()
+        fileName = f"{apiSrc.fileNameBase(self)}.last"
+        linkLast = ""
 
         msgLog = checkFile(fileName, self.indent)
-        if service in ['html']:
-            #fixme: not here
-            linkLast = ''
+        if service in ["html"]:
+            # fixme: not here
+            linkLast = ""
         elif "OK" in msgLog:
             with open(fileName, "rb") as f:
                 linkLast = f.read().decode().split()  # last published
         else:
             logMsg(msgLog, 3, 0)
-        lastLink = ''
+        lastLink = ""
         if len(linkLast) == 1:
             lastLink = linkLast[0]
         else:
@@ -406,40 +411,42 @@ class Content:
         self.lastLink = lastLink
         return lastLink
 
-    def setLastLink(self, src = None):
-        msgLog = (f"{self.indent} Start setLastLink")
+    def setLastLink(self, src=None):
+        msgLog = f"{self.indent} Start setLastLink"
         logMsg(msgLog, 1, 0)
         if src:
-            fileName = (f"{src.fileNameBase(self)}.last")
+            fileName = f"{src.fileNameBase(self)}.last"
         else:
-            fileName = (f"{self.fileNameBase(self)}.last")
-        lastTime = ''
-        linkLast = ''
+            fileName = f"{self.fileNameBase(self)}.last"
+        lastTime = ""
+        linkLast = ""
         checkR = checkFile(fileName, f"{self.indent} ")
         msgLog = f"{self.indent} {checkR}"
         logMsg(msgLog, 2, 0)
-        if 'OK' in msgLog:
+        if "OK" in msgLog:
             try:
                 with open(fileName, "rb") as f:
                     linkLast = f.read()
                     linkLast = linkLast.decode().split()  # last published
             except:
-                self.report(self.service, self.indent, f"fileName: {fileName}", sys.exc_info())
+                self.report(
+                    self.service, self.indent, f"fileName: {fileName}", sys.exc_info()
+                )
 
             lastTime = os.path.getctime(fileName)
         else:
             lastTime = 0
-            self.report(self.service, msgLog, '', '')
+            self.report(self.service, msgLog, "", "")
         # msgLog = f"{self.indent} {msgLog}"
         # logMsg(msgLog, 2, 0)
 
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime
         self.lastLink = linkLast
-        msgLog = (f"{self.indent} End setLastLink")
+        msgLog = f"{self.indent} End setLastLink"
         logMsg(msgLog, 1, 0)
 
-    def getLastTime(self, other = None):
+    def getLastTime(self, other=None):
         lastTime = 0.0
         myLastLink = ""
         # you always need to check lastLink?
@@ -453,52 +460,53 @@ class Content:
             print(f"myLastLink2: {myLastLink2} {lastTime2}")
             return myLastLink2, lastTime2
         try:
-                url = self.getUrl()
-                service = self.service.lower()
-                nick = self.getUser()
-                fn = f"{self.fileNameBase(other)}.last"
-                # fn = (f"{fileNamePath(url, (service, nick))}.last")
-                lastTime = os.path.getctime(fn)
-                myLastLink = self.getLastLink()
+            # url = self.getUrl()
+            # service = self.service.lower()
+            # nick = self.getUser()
+            fn = f"{self.fileNameBase(other)}.last"
+            # fn = (f"{fileNamePath(url, (service, nick))}.last")
+            lastTime = os.path.getctime(fn)
+            myLastLink = self.getLastLink()
         except:
-                fn = ""
-                msgLog = (f"no last link")
-                logMsg(msgLog, 2, 0)
+            fn = ""
+            msgLog = "no last link"
+            logMsg(msgLog, 2, 0)
 
         self.lastLinkPublished = myLastLink
         self.lastTimePublished = lastTime
 
-        logMsg(f"myLastLink: {myLastLink} {lastTime}",2 , 0)
+        logMsg(f"myLastLink: {myLastLink} {lastTime}", 2, 0)
         return myLastLink, lastTime
 
-    def setNextAvailableTime(self, tnow, tSleep, dst = None):
-        fileNameNext = ''
+    def setNextAvailableTime(self, tnow, tSleep, dst=None):
+        fileNameNext = ""
         if dst:
             fileNameNext = f"{self.fileNameBase(dst)}.timeavailable"
             msgLog = checkFile(fileNameNext, self.indent)
-            if not "OK" in msgLog:
-                msgLog = (f"{self.indent} File does not exist. {fileNameNext}"
-                          f"I'm going to create it.")
+            if "OK" not in msgLog:
+                msgLog = (
+                    f"{self.indent} File does not exist. {fileNameNext}"
+                    f"I'm going to create it."
+                )
                 logMsg(msgLog, 2, 0)
-            with open(fileNameNext,'wb') as f:
+            with open(fileNameNext, "wb") as f:
                 pickle.dump((tnow, tSleep), f)
         else:
-            print(f"not implemented!")
+            print("not implemented!")
 
-    def setNextTime(self, tnow, tSleep, src = None):
+    def setNextTime(self, tnow, tSleep, src=None):
         self.indent = f"{self.indent} "
-        msgLog = (f"{self.indent} Start setNextTime")
+        msgLog = f"{self.indent} Start setNextTime"
         logMsg(msgLog, 2, 0)
-        fileNameNext = ''
+        fileNameNext = ""
         fileNameNext = f"{src.fileNameBase(self)}.timeNext"
         msgLog = checkFile(fileNameNext, f"{self.indent} ")
-        if not 'OK' in msgLog:
-            msgLog = (f"file {fileNameNext} does not exist. "
-                      f"I'm going to create it.")
-            self.report('', msgLog, '', '')
-        with open(fileNameNext,'wb') as f:
+        if "OK" not in msgLog:
+            msgLog = f"file {fileNameNext} does not exist. " f"I'm going to create it."
+            self.report("", msgLog, "", "")
+        with open(fileNameNext, "wb") as f:
             pickle.dump((tnow, tSleep), f)
-        msgLog = (f"{self.indent}  File updated: {fileNameNext}")
+        msgLog = f"{self.indent}  File updated: {fileNameNext}"
         logMsg(msgLog, 2, 0)
 
     def setNumPosts(self, numposts):
@@ -521,8 +529,8 @@ class Content:
 
     def getNameModule(self):
         name = type(self).__name__
-        if 'module' in name:
-            name = name[len('module'):]
+        if "module" in name:
+            name = name[len("module") :]
 
         return name
 
@@ -537,7 +545,6 @@ class Content:
 
     def setPostAction(self, action):
         self.postaction = action
-
 
     def getSiteTitle(self):
         return self.getName()
@@ -583,12 +590,12 @@ class Content:
             "file",
             "kindle",
         ]
-        msgLog =("  snc {socialNetworksConfig}")
+        msgLog = "  snc {socialNetworksConfig}"
         logMsg(msgLog, 2, 0)
         for sn in socialNetworksConfig:
             if sn in socialNetworksOpt:
                 self.addSocialNetwork((sn, socialNetworksConfig[sn]))
-        msgLog = ("  snn {self.getSocialNetworks()}")
+        msgLog = "  snn {self.getSocialNetworks()}"
         logMsg(msgLog, 2, 0)
 
     def addSocialNetwork(self, socialNetwork):
@@ -602,26 +609,26 @@ class Content:
 
     def getPosts2(self):
         posts = None
-        if hasattr(self, 'posts2'):
+        if hasattr(self, "posts2"):
             posts = self.posts2
         return posts
 
     def getPosts(self):
         posts = None
-        if hasattr(self, 'posts'):
+        if hasattr(self, "posts"):
             posts = self.posts
         return posts
 
     def getPost(self, i):
         self.indent = f"{self.indent} "
-        msgLog = (f"{self.indent} Start getPost pos {i}.")
+        msgLog = f"{self.indent} Start getPost pos {i}."
         logMsg(msgLog, 2, 0)
         post = None
         posts = self.getPosts()
         if posts and (i >= 0) and (i < len(posts)):
             post = posts[i]
 
-        msgLog = (f"{self.indent} End getPost")
+        msgLog = f"{self.indent} End getPost"
         logMsg(msgLog, 2, 0)
         self.indent = self.indent[:-1]
         return post
@@ -656,8 +663,7 @@ class Content:
                 if description:
                     import string
 
-                    if (iimg[1] and iimg[1].endswith(" ")
-                            or iimg[1].endswith("\xa0")):
+                    if iimg[1] and iimg[1].endswith(" ") or iimg[1].endswith("\xa0"):
                         # \xa0 is actually non-breaking space in Latin1 (ISO
                         # 8859-1), also chr(160).
                         # https://stackoverflow.com/questions/10993612/how-to-remove-xa0-from-string-in-python
@@ -667,51 +673,59 @@ class Content:
                             title = iimg[1]
                         else:
                             title = "No title"
-                    if iimg[0].endswith('mp4'):
-                        srcTxt = (f"<video width='640' height='360' controls "#"class='alignnone size-full "
-                                  #f"wp-image-3306'>
-                                  f'src="{iimg[0]}" '
-                                  f'type="video/mp4"></video>')
+                    if iimg[0].endswith("mp4"):
+                        srcTxt = (
+                            f"<video width='640' height='360' controls "  # "class='alignnone size-full "
+                            # f"wp-image-3306'>
+                            f'src="{iimg[0]}" '
+                            f'type="video/mp4"></video>'
+                        )
                     else:
-                        srcTxt = (f"<img class='alignnone size-full "
-                                  f"wp-image-3306' src='{iimg[0]}' "
-                                  f"alt='{title} {description}' "
-                                  f"width='776' height='1035' />")
+                        srcTxt = (
+                            f"<img class='alignnone size-full "
+                            f"wp-image-3306' src='{iimg[0]}' "
+                            f"alt='{title} {description}' "
+                            f"width='776' height='1035' />"
+                        )
 
                     if title[-1] in string.punctuation:
                         text = (
                             '{}\n<p><h4>{}</h4></p><p><a href="{}">'
                             #'<img class="alignnone size-full '
                             #'wp-image-3306" src="{}"
-                            '{} </a></p>'.format( text, description, url, srcTxt)
-                            )
+                            "{} </a></p>".format(text, description, url, srcTxt)
+                        )
                     else:
                         text = (
                             '{}\n<p><h4>{}</h4></p><p><a href="{}">'
                             #'<img class="alignnone size-full '
                             #'wp-image-3306" src="{}"
-                            '{} /></a></p>'.format( text, description, url, srcTxt)
-                            )
+                            "{} /></a></p>".format(text, description, url, srcTxt)
+                        )
                 else:
                     title = iimg[1]
-                    if iimg[0].endswith('mp4'):
-                        srcTxt = (f"<video width='640' height='360' controls " #class='alignnone size-full "
-                                  #f"wp-image-3306'>
-                                  f" src='{iimg[0]}' "
-                                  f"type='video/mp4'></video>")
+                    if iimg[0].endswith("mp4"):
+                        srcTxt = (
+                            f"<video width='640' height='360' controls "  # class='alignnone size-full "
+                            # f"wp-image-3306'>
+                            f" src='{iimg[0]}' "
+                            f"type='video/mp4'></video>"
+                        )
                     else:
-                        srcTxt = (f"<a href='{url}'><img class='alignnone size-full "
-                                  f"wp-image-3306' src='{iimg[0]}' "
-                                  f"alt='{title} {description}' "
-                                  f"width='776' height='1035' /></a>")
+                        srcTxt = (
+                            f"<a href='{url}'><img class='alignnone size-full "
+                            f"wp-image-3306' src='{iimg[0]}' "
+                            f"alt='{title} {description}' "
+                            f"width='776' height='1035' /></a>"
+                        )
                     text = (
-                        '{}\n<p>'#<img class="alignnone '
+                        "{}\n<p>"  # <img class="alignnone '
                         #'size-full wp-image-3306" src="{}"
-                        '{} '
+                        "{} "
                         #'alt="{} {}"'
                         #'width="776" height="1035" />
-                        '</p>'.format(text, srcTxt )
-                        )
+                        "</p>".format(text, srcTxt)
+                    )
         return text
 
     def getImagesCode(self, i):
@@ -732,8 +746,7 @@ class Content:
             if description:
                 import string
 
-                if (iimg[1] and iimg[1].endswith(" ")
-                        or iimg[1].endswith("\xa0")):
+                if iimg[1] and iimg[1].endswith(" ") or iimg[1].endswith("\xa0"):
                     # \xa0 is actually non-breaking space in Latin1 (ISO
                     # 8859-1), also chr(160).
                     # https://stackoverflow.com/questions/10993612/how-to-remove-xa0-from-string-in-python
@@ -743,61 +756,69 @@ class Content:
                         title = iimg[1]
                     else:
                         title = "No title"
-                if iimg[0].endswith('mp4'):
-                    srcTxt = (f"<video width='640' height='360' controls "#"class='alignnone size-full "
-                              #f"wp-image-3306'>
-                              f'src="{iimg[0]}" '
-                              f'type="video/mp4"></video>')
+                if iimg[0].endswith("mp4"):
+                    srcTxt = (
+                        f"<video width='640' height='360' controls "  # "class='alignnone size-full "
+                        # f"wp-image-3306'>
+                        f'src="{iimg[0]}" '
+                        f'type="video/mp4"></video>'
+                    )
                 else:
-                    srcTxt = (f"<img class='alignnone size-full "
-                              f"wp-image-3306' src='{iimg[0]}' "
-                              f"alt='{title} {description}' "
-                              f"width='776' height='1035' />")
+                    srcTxt = (
+                        f"<img class='alignnone size-full "
+                        f"wp-image-3306' src='{iimg[0]}' "
+                        f"alt='{title} {description}' "
+                        f"width='776' height='1035' />"
+                    )
 
                 if title[-1] in string.punctuation:
                     text = (
                         '{}\n<p><h4>{}</h4></p><p><a href="{}">'
                         #'<img class="alignnone size-full '
                         #'wp-image-3306" src="{}"
-                        '{} </a></p>'.format( text, description, url, srcTxt)
-                        )
+                        "{} </a></p>".format(text, description, url, srcTxt)
+                    )
                 else:
                     text = (
                         '{}\n<p><h4>{}</h4></p><p><a href="{}">'
                         #'<img class="alignnone size-full '
                         #'wp-image-3306" src="{}"
-                        '{} /></a></p>'.format( text, description, url, srcTxt)
-                        )
+                        "{} /></a></p>".format(text, description, url, srcTxt)
+                    )
             else:
                 title = iimg[1]
-                if iimg[0].endswith('mp4'):
-                    srcTxt = (f"<video width='640' height='360' controls " #class='alignnone size-full "
-                              #f"wp-image-3306'>
-                              f" src='{iimg[0]}' "
-                              f"type='video/mp4'></video>")
+                if iimg[0].endswith("mp4"):
+                    srcTxt = (
+                        f"<video width='640' height='360' controls "  # class='alignnone size-full "
+                        # f"wp-image-3306'>
+                        f" src='{iimg[0]}' "
+                        f"type='video/mp4'></video>"
+                    )
                 else:
-                    srcTxt = (f"<a href='{url}'><img class='alignnone size-full "
-                              f"wp-image-3306' src='{iimg[0]}' "
-                              f"alt='{title} {description}' "
-                              f"width='776' height='1035' /></a>")
+                    srcTxt = (
+                        f"<a href='{url}'><img class='alignnone size-full "
+                        f"wp-image-3306' src='{iimg[0]}' "
+                        f"alt='{title} {description}' "
+                        f"width='776' height='1035' /></a>"
+                    )
                 text = (
-                    '{}\n<p>'#<img class="alignnone '
+                    "{}\n<p>"  # <img class="alignnone '
                     #'size-full wp-image-3306" src="{}"
-                    '{} '
+                    "{} "
                     #'alt="{} {}"'
                     #'width="776" height="1035" />
-                    '</p>'.format(text, srcTxt )
-                    )
+                    "</p>".format(text, srcTxt)
+                )
         return text
 
     def getPosNextPost(self, apiDst=None):
-        msgLog = (f"{self.indent} Start getPosNextPost.")
+        msgLog = f"{self.indent} Start getPosNextPost."
         logMsg(msgLog, 2, 0)
         posts = self.getPosts()
         posLast = -1
 
         if posts and (len(posts) > 0):
-            if self.getPostsType() in ['favs', 'queue']:
+            if self.getPostsType() in ["favs", "queue"]:
                 posLast = 1
             else:
                 if apiDst:
@@ -805,7 +826,7 @@ class Content:
                     # be several destinations for one source
                     lastLink = apiDst.getLastLinkPublished()
                 else:
-                    msgLog = (f"{self.indent} This shouldn't happen?")
+                    msgLog = f"{self.indent} This shouldn't happen?"
                     logMsg(msgLog, 2, 0)
                     lastLink = self.getLastLinkPublished()
                 if lastLink:
@@ -815,7 +836,7 @@ class Content:
 
             # msgLog = f"{self.indent} posLast: {posLast}"
             # logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent} End getPosNextPost.")
+        msgLog = f"{self.indent} End getPosNextPost."
         logMsg(msgLog, 2, 0)
         return posLast
 
@@ -847,51 +868,53 @@ class Content:
             # print("p",post)
             if post:
                 contentHtml = self.getPostContentHtml(post)
-                if contentHtml.startswith('http'):
+                if contentHtml.startswith("http"):
                     (theContent, theSummaryLinks) = ("", "")
                 else:
-                    soup = BeautifulSoup(contentHtml,'lxml')
-                    if hasattr(self, 'getLinksToAvoid') and self.getLinksToAvoid():
-                        (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinksToAvoid())
-                        #logging.debug("theC %s" % theContent)
-                        if theContent.startswith('Anuncios'):
-                            theContent = ''
+                    soup = BeautifulSoup(contentHtml, "lxml")
+                    if hasattr(self, "getLinksToAvoid") and self.getLinksToAvoid():
+                        (theContent, theSummaryLinks) = self.extractLinks(
+                            soup, self.getLinksToAvoid()
+                        )
+                        # logging.debug("theC %s" % theContent)
+                        if theContent.startswith("Anuncios"):
+                            theContent = ""
                             # logging.debug("theC %s"% theContent)
                     else:
                         (theContent, theSummaryLinks) = self.extractLinks(soup, "")
                         # logging.debug("theC %s"% theContent)
-                        if theContent.startswith('Anuncios'):
-                            theContent = ''
+                        if theContent.startswith("Anuncios"):
+                            theContent = ""
                         # logging.debug("theC %s"% theContent)
                     # theSummaryLinks = theContent + '\n' + theSummaryLinks
 
-                field0 =self.getPostTitle(post)
+                field0 = self.getPostTitle(post)
                 field1 = self.getPostLink(post)
                 field2 = self.getPostContentLink(post)
                 field3 = self.getPostImage(post)
-                field4 =self.getPostContent(post)
+                field4 = self.getPostContent(post)
                 field5 = self.getPostContentHtml(post)
-                field6 =f"{theContent}\n{theSummaryLinks}"
+                field6 = f"{theContent}\n{theSummaryLinks}"
                 field7 = self.getPostImagesTags(post)
                 field8 = self.getPostImagesCode(post)
                 postData = (
-                    field0,            #0
-                    field1,             #1
-                    field2,      #2
-                    field3,            #3
-                    field4,          #4
-                    field5,      #5
-                    field6, #6
-                    field7,       #7
-                    field8        #8
-                    )
+                    field0,  # 0
+                    field1,  # 1
+                    field2,  # 2
+                    field3,  # 3
+                    field4,  # 4
+                    field5,  # 5
+                    field6,  # 6
+                    field7,  # 7
+                    field8,  # 8
+                )
                 if postData:
                     listPosts.append(postData)
 
         return listPosts
 
     def getNextPost(self, apiDst=None):
-        msgLog = (f"{self.indent} Start getNextPost.")
+        msgLog = f"{self.indent} Start getNextPost."
         logMsg(msgLog, 2, 0)
         self.indent = f"{self.indent} "
 
@@ -899,7 +922,7 @@ class Content:
         post = self.getPost(posLast - 1)
 
         self.indent = self.indent[:-1]
-        msgLog = (f"{self.indent} End getNextPost.")
+        msgLog = f"{self.indent} End getNextPost."
         logMsg(msgLog, 2, 0)
         return post
 
@@ -921,7 +944,7 @@ class Content:
         idPost = -1
         if j < len(self.getPosts()):
             post = self.getPost(j)
-            msgLog = (f"{self.indent} Post: {post}")
+            msgLog = f"{self.indent} Post: {post}"
             logMsg(msgLog, 2, 0)
             idPost = self.getPostId(post)
         return idPost
@@ -959,7 +982,7 @@ class Content:
         self.postsType = postsType
 
     def getPostsType(self):
-        postsType = 'posts'
+        postsType = "posts"
         if hasattr(self, "postsType"):
             postsType = self.postsType
         return postsType
@@ -978,10 +1001,9 @@ class Content:
     def publishImage(self, *args, **kwargs):
         post, image = args
         more = kwargs
-        msgLog = (f"{self.indent} publishing image "
-                  f"{image}: {post}")
+        msgLog = f"{self.indent} publishing image " f"{image}: {post}"
         logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent} more {more}")
+        msgLog = f"{self.indent} more {more}"
         logMsg(msgLog, 2, 0)
         try:
             reply = self.publishApiImage(post, image, **kwargs)
@@ -993,22 +1015,22 @@ class Content:
         pass
 
     def deleteNextPost(self, apiDst=None):
-        reply = ''
-        msgLog = (f"{self.indent} deleting next post")
+        reply = ""
+        msgLog = f"{self.indent} deleting next post"
         logMsg(msgLog, 2, 0)
         try:
             post = self.getNextPost(apiDst)
             if post:
-                msgLog = (f"{self.indent} deleting post {post}")
+                msgLog = f"{self.indent} deleting post {post}"
                 logMsg(msgLog, 2, 0)
                 idPost = self.getPostId(post)
-                msgLog = (f"{self.indent} post Id post {idPost}")
+                msgLog = f"{self.indent} post Id post {idPost}"
                 logMsg(msgLog, 2, 0)
-                if (hasattr(self, 'getPostsType')
+                if (
+                    hasattr(self, "getPostsType")
                     and (self.getPostsType())
-                    and (hasattr(self,
-                            f"deleteApi{self.getPostsType().capitalize()}"))):
-
+                    and (hasattr(self, f"deleteApi{self.getPostsType().capitalize()}"))
+                ):
                     nameMethod = self.getPostsType().capitalize()
 
                     method = getattr(self, f"deleteApi{nameMethod}")
@@ -1022,59 +1044,60 @@ class Content:
         return reply
 
     def publishPost(self, *args, **more):
-        msgLog = (f"{self.indent} Start publishPost")
+        msgLog = f"{self.indent} Start publishPost"
         logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent} Args: {args} More: {more}")
+        msgLog = f"{self.indent} Args: {args} More: {more}"
         logMsg(msgLog, 2, 0)
-        api = ''
-        post = ''
+        api = ""
+        post = ""
         # Do we need these?
-        title = ''
-        link = ''
-        comment = ''
-        nameMethod = 'Post'
+        title = ""
+        link = ""
+        comment = ""
+        nameMethod = "Post"
         listPosts = []
         if len(args) == 3:
             title = args[0]
             link = args[1]
             comment = args[2]
-            msgLog = (f"{self.indent} Publishing post with title, link,... "
-                      f"{title}, {link} with comment: {comment}")
+            msgLog = (
+                f"{self.indent} Publishing post with title, link,... "
+                f"{title}, {link} with comment: {comment}"
+            )
             logMsg(msgLog, 2, 0)
         elif len(args) == 1:
             # apiSrc= args[0]
-            listPosts = args#[1]
-            msgLog = (f"{self.indent} Publishing post {listPosts}"
-                      f" len(args) == 1")
+            listPosts = args  # [1]
+            msgLog = f"{self.indent} Publishing post {listPosts}" f" len(args) == 1"
             logMsg(msgLog, 2, 0)
             return
         if more:
-            msgLog = (f"{self.indent} Publishing post with more")
+            msgLog = f"{self.indent} Publishing post with more"
             logMsg(msgLog, 2, 0)
             # if 'tags' in more:
             #     print(f"    Publishing in {self.service}: {type(more['tags'])}")
 
-            post = more.get('post', '')
-            api = more.get('api', '')
+            post = more.get("post", "")
+            api = more.get("api", "")
             # title = api.getPostTitle(post)
             # link = api.getPostLink(post)
 
-        reply = 'Fail!'
+        reply = "Fail!"
         try:
-            nameMethod = 'Post'
+            nameMethod = "Post"
 
-            if (hasattr(self, 'getPostsType')
-                    and (self.getPostsType())
-                    and (hasattr(self,
-                        f"publishApi{self.getPostsType().capitalize()}"))):
+            if (
+                hasattr(self, "getPostsType")
+                and (self.getPostsType())
+                and (hasattr(self, f"publishApi{self.getPostsType().capitalize()}"))
+            ):
                 nameMethod = self.getPostsType().capitalize()
             else:
-                msgLog = (f"{self.indent} No api for "
-                          f"{self.getPostsType()}")
+                msgLog = f"{self.indent} No api for " f"{self.getPostsType()}"
                 logMsg(msgLog, 2, 0)
 
             method = getattr(self, f"publishApi{nameMethod}")
-            msgLog = (f"{self.indent} Method: {method}")
+            msgLog = f"{self.indent} Method: {method}"
             logMsg(msgLog, 2, 0)
 
             if listPosts:
@@ -1083,13 +1106,13 @@ class Content:
             else:
                 logging.debug(f"{self.indent} no listPosts")
                 if api and post:
-                    msgLog = (f"{self.indent} Calling method "
-                              f"with api and post")
+                    msgLog = f"{self.indent} Calling method " f"with api and post"
                     logMsg(msgLog, 2, 0)
                     reply = method(api=api, post=post)
                 else:
-                    msgLog = (f"{self.indent} Calling method "
-                              f"with title, link, comment")
+                    msgLog = (
+                        f"{self.indent} Calling method " f"with title, link, comment"
+                    )
                     logMsg(msgLog, 2, 0)
                     reply = method(title, link, comment)
 
@@ -1109,9 +1132,7 @@ class Content:
             if typePosts == "cache":
                 cmd = getattr(self, "deleteApi")
             else:
-                cmd = getattr(
-                    self, "deleteApi" + self.getPostsType().capitalize()
-                )
+                cmd = getattr(self, "deleteApi" + self.getPostsType().capitalize())
         else:
             cmd = getattr(self, "deleteApiPosts")
         reply = cmd(idPost)
@@ -1129,15 +1150,15 @@ class Content:
         return result
 
     def delete(self, j):
-        msgLog = (f"{self.indent} deleting post pos: {j}")
+        msgLog = f"{self.indent} deleting post pos: {j}"
         logMsg(msgLog, 2, 0)
         post = self.getPost(j)
-        idPost = self.getPostId(self.getPost(j))
+        idPost = self.getPostId(post)
         result = self.deletePostId(idPost)
         return result
 
     def processReply(self, reply):
-        msgLog = (f"{self.indent} res {reply}")
+        msgLog = f"{self.indent} res {reply}"
         logMsg(msgLog, 2, 0)
         return reply
 
@@ -1148,7 +1169,7 @@ class Content:
             if ("newTitle" in kwargs) and kwargs["newTitle"]:
                 oldTitle = self.getPostTitle(post)
                 newTitle = kwargs["newTitle"]
-                msgLog = (f"{self.indent} new title {newTitle}")
+                msgLog = f"{self.indent} new title {newTitle}"
                 logMsg(msgLog, 1, 0)
                 res = self.editApiTitle(post, newTitle)
                 res = self.processReply(res)
@@ -1156,7 +1177,7 @@ class Content:
             if ("newState" in kwargs) and kwargs["newState"]:
                 oldState = self.getPostState(post)
                 newState = kwargs["newState"]
-                msgLog = (f"{self.indent} new state {newState}")
+                msgLog = f"{self.indent} new state {newState}"
                 logMsg(msgLog, 2, 0)
                 res = self.editApiState(post, newState)
                 res = self.processReply(res)
@@ -1164,7 +1185,7 @@ class Content:
             if ("newLink" in kwargs) and kwargs["newLink"]:
                 oldLink = self.getPostLink(post)
                 newLink = kwargs["newLink"]
-                msgLog = (f"{self.indent} new link {newLink}")
+                msgLog = f"{self.indent} new link {newLink}"
                 logMsg(msgLog, 2, 0)
                 res = self.editApiLink(post, newLink)
                 res = self.processReply(res)
@@ -1172,7 +1193,7 @@ class Content:
             return update
 
     def edita(self, j, addTitle):
-        msgLog = (f"{self.indent} do edita {j} - {addTitle}")
+        msgLog = f"{self.indent} do edita {j} - {addTitle}"
         logMsg(msgLog, 2, 0)
         post = self.getPost(j)
         oldTitle = self.getPostTitle(post)
@@ -1181,7 +1202,7 @@ class Content:
         return update
 
     def edit(self, j, newTitle):
-        msgLog = (f"{self.indent} do edit {j} - {newTitle}")
+        msgLog = f"{self.indent} do edit {j} - {newTitle}"
         logMsg(msgLog, 2, 0)
         update = self.do_edit(j, newTitle=newTitle)
         return update
@@ -1197,7 +1218,7 @@ class Content:
 
         with open(fileNameQ, "wb") as f:
             pickle.dump(self.nextPosts, f)
-        msgLog = ("{self.indent} Writing in {fileNameQ}")
+        msgLog = "{self.indent} Writing in {fileNameQ}"
         logMsg(msgLog, 2, 0)
 
         return "Ok"
@@ -1219,25 +1240,25 @@ class Content:
         self.lastLinkPublished[socialNetwork] = (lastLink, lastTime)
 
     def getLastLinkPublished(self):
-        lastLink = ''
+        lastLink = ""
         if self.lastLinkPublished and (len(self.lastLinkPublished) == 1):
             lastLink = self.lastLinkPublished[0]
         else:
             lastLink = self.lastLinkPublished
         return lastLink
 
-    def getLastTimePublished(self, indent=''):
-        lastTime = ''
-        msgLog = (f"{indent} No lastTimePublished")
-        if hasattr(self, 'lastTimePublished'):
+    def getLastTimePublished(self, indent=""):
+        lastTime = ""
+        msgLog = f"{indent} No lastTimePublished"
+        if hasattr(self, "lastTimePublished"):
             lastTime = self.lastTimePublished
             if lastTime:
                 import time
-                myTime = time.strftime("%Y-%m-%d %H:%M:%S",
-                                        time.localtime(lastTime))
+
+                myTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastTime))
             else:
                 myTime = "No time"
-            msgLog = (f"{indent} Last time: {myTime}")
+            msgLog = f"{indent} Last time: {myTime}"
         logMsg(msgLog, 1, 1)
         return lastTime
 
@@ -1299,10 +1320,9 @@ class Content:
         self.setCache()
 
     def setBuffermax(self, bufMax):
-        #FIXME: ????
+        # FIXME: ????
         self.bufMax = bufMax
         self.max = bufMax
-
 
     def setBufMax(self, bufMax):
         self.bufMax = bufMax
@@ -1332,12 +1352,12 @@ class Content:
             return None
 
     def getIdPosition(self, idPost):
-        #FIXME equal to getLinkPosition?
+        # FIXME equal to getLinkPosition?
         posts = self.getPosts()
         if posts:
             pos = len(posts)
             if not idPost:
-                #logging.debug(self.getPosts())
+                # logging.debug(self.getPosts())
                 return len(self.getPosts())
             for i, entry in enumerate(posts):
                 idEntry = self.getPostId(entry)
@@ -1352,7 +1372,7 @@ class Content:
 
     def getLinkPosition(self, link):
         posts = self.getPosts()
-        pos = -1 # len(posts)
+        pos = -1  # len(posts)
         if posts:
             if not link:
                 return len(self.getPosts())
@@ -1363,7 +1383,7 @@ class Content:
                 url = self.getPostLink(entry)
                 # msgLog = (f"{self.indent} Url: {url} Link: {linkS}")
                 # logMsg(msgLog, 2, 0)
-                lenCmp = min(len(url), len(linkS))
+                # lenCmp = min(len(url), len(linkS))
                 if url == linkS:
                     # When there are duplicates (there shouldn't be) it returns
                     # the last one
@@ -1396,21 +1416,21 @@ class Content:
         links = []
         if post:
             content = self.getPostContentHtml(post)
-            if content.startswith('http'):
+            if content.startswith("http"):
                 links = []
             else:
-                soup = BeautifulSoup(content, 'lxml')
+                soup = BeautifulSoup(content, "lxml")
                 links = self.extractLinks(soup, linksToAvoid)
-        return  links
+        return links
 
     def extractLinks(self, soup, linksToAvoid=""):
         # This should go to the moduleHtml
         j = 0
         linksTxt = ""
 
-        for node in soup.find_all('blockquote'):
+        for node in soup.find_all("blockquote"):
             nodeT = node.get_text()
-            node.parent.insert(node.parent.index(node)+1, f'"{nodeT[1:-1]}"')
+            node.parent.insert(node.parent.index(node) + 1, f'"{nodeT[1:-1]}"')
             # We need to delete before and after \n
 
         links = soup.find_all(["a", "iframe"])
@@ -1450,26 +1470,27 @@ class Content:
 
     def report(self, profile, post, link, data):
         if post:
-            msg = [f"Report: failed! "
-                   f"{datetime.datetime.now().isoformat()}",
-                  f"Post: {post}"]
+            msg = [
+                f"Report: failed! " f"{datetime.datetime.now().isoformat()}",
+                f"Post: {post}",
+            ]
         else:
-            msg = [f"Report: failed!"]
+            msg = ["Report: failed!"]
 
         if link:
-               msg.append(f"Link: {link}")
+            msg.append(f"Link: {link}")
         if profile:
-               msg.append(f"Profile: {profile}")
+            msg.append(f"Profile: {profile}")
         if data:
-               logMsg(f"{self.indent} Data error: {data}", 2, 0)
-               if isinstance(data,list) or isinstance(data,tuple):
-                   for line in data:
-                       msg.append(f"Unexpected error: {line}")
-               else:
-                   msg.append(f"Unexpected error: {data}")
+            logMsg(f"{self.indent} Data error: {data}", 2, 0)
+            if isinstance(data, list) or isinstance(data, tuple):
+                for line in data:
+                    msg.append(f"Unexpected error: {line}")
+            else:
+                msg.append(f"Unexpected error: {data}")
         res = ""
         for line in msg:
-            msgLog = (f"{self.indent} {line}")
+            msgLog = f"{self.indent} {line}"
             logMsg(msgLog, 3, 1)
             res = f"{res}{line}\n"
             sys.stderr.write(f"Error: {msgLog}\n")
@@ -1482,20 +1503,20 @@ class Content:
             title = self.getPostTitle(post)
             link = self.getPostLink(post)
             content = self.getPostContent(post)
-            if (title == content):
-                content = ''
+            if title == content:
+                content = ""
 
-            reply = ''
+            reply = ""
             if title:
-                reply = reply + ' ' + title
+                reply = reply + " " + title
             if content:
-                reply = reply + ' ' + content
+                reply = reply + " " + content
             if link:
-                reply = reply + '\n' + link
+                reply = reply + "\n" + link
         else:
-            reply = ''
+            reply = ""
 
-        return(reply)
+        return reply
 
     def getPostComment(self, post):
         return ""
@@ -1516,12 +1537,12 @@ class Content:
         return ""
 
     def getPostContent(self, post):
-        res = ''
+        res = ""
         summary = self.getPostContentHtml(post)
-        if not summary.startswith('http'):
-            soup = BeautifulSoup(summary, 'lxml')
+        if not summary.startswith("http"):
+            soup = BeautifulSoup(summary, "lxml")
             res = soup.get_text()
-        return  res
+        return res
 
     def extractImages(self, post):
         return None
@@ -1549,10 +1570,10 @@ class Content:
     def getPostImage(self, post):
         return ""
 
-    def getPostImagesTags(self, post):
-        res = self.extractImages(post)
-        tags = self.getTags(res)
-        return tags
+    # def getPostImagesTags(self, post):
+    #     res = self.extractImages(post)
+    #     tags = self.getTags(res)
+    #     return tags
 
     def getPostImagesTags(self, post):
         # Dirty trick. This whould not be here. Needs work
@@ -1568,9 +1589,7 @@ class Content:
         return tags
 
 
-
 def main():
-
     logging.basicConfig(
         stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s"
     )
