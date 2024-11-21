@@ -145,27 +145,6 @@ class moduleTumblr(Content):  # , Queue):
 
         return res
 
-    # def publishNextPost(self, apiSrc):
-    #     #FIXME: duplicate?
-    #     # We just store the post, we need more information than the title,
-    #     # link and so on.
-    #     reply = ''
-    #     msgLog = (f"{self.indent} Publishing next post from {apiSrc} in "
-    #                 f"{self.service}")
-    #     logMsg(msgLog, 2, 0)
-    #     try:
-    #         post = apiSrc.getNextPost()
-    #         msgLog = (f"{self.indent} Next post from {apiSrc} is {post}")
-    #         logMsg(msgLog, 2, 0)
-    #         if post:
-    #             reply = self.publishApiPost(api=apiSrc, post=post)
-    #         else:
-    #             reply = f"Fail! No posts available"
-    #     except:
-    #         reply = self.report(self.service, apiSrc, sys.exc_info())
-
-    #     return reply
-
     def publishNextPost(self, apiSrc):
         # We just store the post, we need more information than the title,
         # link and so on.
