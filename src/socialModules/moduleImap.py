@@ -163,6 +163,7 @@ class moduleImap(Content): #, Queue):
             logging.info(f"Re-identifying")
             self.setClient(f"{self.user}")
         channel = self.getChannel()
+        logging.info(f"getChannel: {channel}")
         if not channel:
             self.setChannel()
             channel = self.getChannel()
