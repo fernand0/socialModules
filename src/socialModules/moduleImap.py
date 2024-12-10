@@ -838,8 +838,8 @@ class moduleImap(Content): #, Queue):
                     print(listFolders, end = "")
                     iFolder = input("Folder number ("+str(numberFolder)+") [-cf] Create Folder // A string to select a smaller set of folders ({folderM})")
                     if not iFolder: iFolder = str(numberFolder)
-                    if ((len(iFolder) > 0) 
-                        and not(iFolder.isdigit()) 
+                    if ((len(iFolder) > 0)
+                        and not(iFolder.isdigit())
                         and (iFolder[0] != '-')):
                         listFoldersS = ""
                         for line in listFolders.split('\n'):
@@ -907,7 +907,7 @@ class moduleImap(Content): #, Queue):
         resp, data = self.getClient().list('""', '*')
         return data
 
-    def selectFolder(self, M, moreMessages = "", 
+    def selectFolder(self, M, moreMessages = "",
                      newFolderName='', folderM=''):
         data = self.listFolders()
         #print(data)
@@ -940,7 +940,7 @@ class moduleImap(Content): #, Queue):
                 iFolder = createFolder(M, nfn, moreMessages)
                 return(iFolder)
                 #listFolders = iFolder
-            listFolders = self.listFolderNames(listFolders.split('\n'), 
+            listFolders = self.listFolderNames(listFolders.split('\n'),
                                                inNameFolder)
             if (not inNameFolder):
                 print("Entra")
@@ -1215,7 +1215,7 @@ class moduleImap(Content): #, Queue):
             logging.warning("Some error moving mails to Trash")
 
     def moveMails(self, M, msgs, folder):
-        if hasattr(self, 'channel'): # in self: 
+        if hasattr(self, 'channel'): # in self:
             M.select(self.channel)
         else:
             channel = self.getPostsType()
@@ -1292,6 +1292,9 @@ class moduleImap(Content): #, Queue):
                     text = part.get_payload(decode=True)
                     soup = BeautifulSoup(text, "html.parser")
                     mail_content += soup.get_text('\n')
+                elif part.get_content_type() == 'multipart/alternative':
+                    for partt in part.get_payload():
+                        mail_content += partt.get_payload()
         else:
             mail_content = post.get_payload()
 

@@ -57,16 +57,24 @@ class moduleGmail(Content,socialGoogle): #Queue,socialGoogle):
         logMsg(msgLog, 2, 0)
         self.service = "Gmail"
         self.nick = None
-        self.scopes = ['https://www.googleapis.com/auth/gmail.modify']
-        self.scopes = ['https://mail.google.com/']
+        self.scopes = ['https://www.googleapis.com/auth/gmail.readonly',
+                       'https://www.googleapis.com/auth/gmail.labels',
+                       'https://www.googleapis.com/auth/gmail.modify',
+                       #'https://mail.google.com/']
+                       ]
 
         SCOPES = self.scopes
         creds = self.authorize()
+        fileTokenStore = '/home/ftricas/.mySocial/config/tokenGmail.json'
+        creds = Credentials.from_authorized_user_file(fileTokenStore, SCOPES)
+        msgLog = (f"{self.indent}  creds: {creds}")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent}  creds after: {creds}")
+        logMsg(msgLog, 2, 0)
         if isinstance(creds, str) and ("Fail!" in creds):
             service = None
         else:
-            service = build('gmail', 'v1', http=creds.authorize(Http()))
-                        # credentials=creds, cache_discovery=False)
+            service = build('gmail', 'v1', credentials=creds, cache_discovery=False)
         return service
 
     # def authorize(self):
@@ -136,6 +144,8 @@ class moduleGmail(Content,socialGoogle): #Queue,socialGoogle):
     def deleteLabel(self, labelName):
         api = self.getClient()
         label_id = self.getLabelId(labelName)
+        msgLog = (f"{self.indent} Label id: {label_id}")
+        logMsg(msgLog, 2, 0)
         return(api.users().labels().delete(userId='me', id=label_id).execute())
 
     def updateLabel(self, label_id, labelName):
@@ -159,7 +169,9 @@ class moduleGmail(Content,socialGoogle): #Queue,socialGoogle):
             self.labels = response['labels']
 
     def getLabels(self, sel=''):
-        return(list(filter(lambda x: sel in x['name'] ,self.labels)))
+        if not hasattr(self, 'labels') or not self.labels:
+            self.setLabels()
+        return(list(filter(lambda x: sel in x['name'], self.labels)))
 
 
     def getLabelsNames(self, sel=''):
@@ -258,6 +270,14 @@ class moduleGmail(Content,socialGoogle): #Queue,socialGoogle):
         return self.setApiMessages(label, mode)
 
     def setApiMessages(self, label=None, mode=''):
+        msgLog = (f"{self.indent} Label: {label}")
+        logMsg(msgLog, 2, 0)
+        if isinstance(label, str):
+            self.setLabels()
+            label = self.getLabels(label)
+            label = label[0]
+            msgLog = (f"{self.indent} Label: {label}")
+            logMsg(msgLog, 2, 0)
         if label:
             posts = self.getListLabel(label['id'])
         else:
@@ -486,8 +506,39 @@ class moduleGmail(Content,socialGoogle): #Queue,socialGoogle):
         messageEmail = email.message_from_bytes(base64.urlsafe_b64decode(messageRaw['raw']))
         return(messageEmail)
 
-    def getBody(self, message):
-        return(message['payload']['parts'])
+    def getPostBody(self, message):
+        res = self.getHeader(message, 'payload')
+        if not res:
+            print("No ressss")
+            res = message
+        print(f"Res: {res}")
+        if "parts" in res:
+            if "parts" in res["parts"]:
+                print("parts 1 parts")
+                text = res["parts"]["parts"][0]["parts"]
+            else:
+                text = res["parts"][0]
+                if "parts" in text:
+                    print("parts 2 parts")
+                    text = text["parts"][0]
+        else:
+            print("No partssss")
+            text = res
+        print(f"Headers: {text['headers']}")
+
+        dataB = ""
+        if 'body' in text and 'data' in text['body']:
+            dataB = text['body']['data']
+        else:
+            if 'parts' in text['body']:
+                dataB = text['body']['parts'][0]
+
+        if dataB:
+            text = base64.urlsafe_b64decode(dataB)
+        else:
+            text = self.getHeader(message, 'snippet')
+
+        return text
 
     def getLabelList(self):
         api = self.getClient()
@@ -504,6 +555,10 @@ class moduleGmail(Content,socialGoogle): #Queue,socialGoogle):
     def getLabelId(self, name):
         api = self.getClient()
         results = self.getLabelList()
+        msgLog = (f"{self.indent} Labels: {results}")
+        logMsg(msgLog, 2, 0)
+        msgLog = (f"{self.indent} Name: {name}")
+        logMsg(msgLog, 2, 0)
         labelId = None
         for label in results:
             if (label['name'].lower() == name.lower()) or (label['name'].lower() == name.lower().replace('-',' ')):
@@ -770,32 +825,43 @@ def main():
     rules = moduleRules.moduleRules()
     rules.checkRules()
 
-    testingPostsLabel = True
+    print(f"Selecting rule")
+    apiSrc = rules.selectRuleInteractive()
+
+    print(f"State: {apiSrc.getClient().__getstate__()}")
+
+    testingBody = True
+    if testingBody:
+        apiSrc.setPostsType("posts")
+        apiSrc.setChannel('INBOX')
+        apiSrc.setPosts()
+        for i, post in enumerate(apiSrc.getPosts()):
+            # print(f"Post: {post}")
+            title = apiSrc.getPostTitle(post)
+            print(f"{i}) Subject: {title}")
+            content = apiSrc.getPostContent(post)
+            print(f"Text: {content}")
+            idPost = apiSrc.getPostId(post)
+            print(f"Id: {idPost}")
+            res = (
+                apiSrc.getClient().users().messages().get(userId="me", id=idPost).execute()
+            )
+            body = apiSrc.getPostBody(res)
+            print(f"Body: {body}")
+        return
+
+    testingPostsLabel = False
     if testingPostsLabel:
-        for key in rules.rules.keys():
-            print(f"Key: {key}")
-            if ((key[0] == 'gmail')
-                    and ('reflexiones' in key[2])
-                    and (key[3] == 'posts')):
-                print(f"SKey: {key}\n"
-                      f"SRule: {rules.rules[key]}\n"
-                      f"SMore: {rules.more[key]}")
-                apiSrc = rules.readConfigSrc("", key, rules.more[key])
-                print(f"{apiSrc.listFolders()}")
-                print(f"{apiSrc.getLabels('Unizar/firma')}")
-                labelId = apiSrc.getLabels('Unizar/firma')[0]
-                apiSrc.assignPosts(apiSrc.setApiMessages(label=labelId))
-                for i, post in enumerate(apiSrc.getPosts()):
-                    title = apiSrc.getPostTitle(post)
-                    print(f"{i}) {title}")
-                    if '570281' in title:
-                        links = apiSrc.getPostLinks(post)
-                        theLink = links[0]
-                        print(f"link: {theLink}")
-                        import moduleHtml
-                        htm = moduleHtml.moduleHtml()
-                        htm.click(theLink)
-                        return
+        print(f"{apiSrc.listFolders()}")
+        print(f"{apiSrc.getLabels('zAgenda')}")
+        labelId = apiSrc.getLabels('zAgenda')[0]
+        apiSrc.assignPosts(apiSrc.setApiMessages(label=labelId))
+        for i, post in enumerate(apiSrc.getPosts()):
+            title = apiSrc.getPostTitle(post)
+            print(f"{i}) {title}")
+            print(f"{post}")
+            print(f"{apiSrc.getMessageId(apiSrc.getPostId(post))}")
+        return
 
 
     testingDrafts = False
@@ -820,6 +886,7 @@ def main():
 
         return
 
+    return
     import moduleGmail
 
     # instantiate the api object

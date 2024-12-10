@@ -108,7 +108,7 @@ class Content:
         try:
             client = self.initApi(keys)
         except:
-            msgLog(f"{self.indent} Exception")
+            msgLog = (f"{self.indent} Exception")
             logMsg(msgLog, 2, 0)
             if not config.sections and not keys:
                 self.report({self.service}, "No keys", "", "")
