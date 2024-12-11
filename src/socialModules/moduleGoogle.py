@@ -18,6 +18,7 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.oauth2.credentials import Credentials
 from google.oauth2 import service_account
+from googleapiclient.discovery import build
 
 from socialModules.configMod import *
 
@@ -91,6 +92,7 @@ class socialGoogle:
                 # creds = store.get()
                 # creds = Credentials.from_authorized_user_file(fileTokenStore, SCOPES)
                 msgLog = (f"{self.indent}  creds: {creds}")
+                logMsg(msgLog, 2, 0)
             else:
                 with open(fileTokenStore, 'rb') as fToken:
                     try:

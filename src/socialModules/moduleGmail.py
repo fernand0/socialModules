@@ -66,6 +66,8 @@ class moduleGmail(Content,socialGoogle): #Queue,socialGoogle):
         SCOPES = self.scopes
         creds = self.authorize()
         # fileTokenStore = '/home/ftricas/.mySocial/config/tokenGmail.json'
+        # msgLog = (f"{self.indent}  before creds: {creds}")
+        # logMsg(msgLog, 2, 0)
         # creds = Credentials.from_authorized_user_file(fileTokenStore, SCOPES)
         # msgLog = (f"{self.indent}  creds: {creds}")
         # logMsg(msgLog, 2, 0)
