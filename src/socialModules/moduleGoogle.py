@@ -11,9 +11,6 @@ import os
 import pathlib
 import pickle
 
-from googleapiclient.discovery import build
-from google.oauth2.credentials import Credentials
-
 from httplib2 import Http
 
 import google

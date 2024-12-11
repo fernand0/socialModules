@@ -65,12 +65,12 @@ class moduleGmail(Content,socialGoogle): #Queue,socialGoogle):
 
         SCOPES = self.scopes
         creds = self.authorize()
-        fileTokenStore = '/home/ftricas/.mySocial/config/tokenGmail.json'
-        creds = Credentials.from_authorized_user_file(fileTokenStore, SCOPES)
-        msgLog = (f"{self.indent}  creds: {creds}")
-        logMsg(msgLog, 2, 0)
-        msgLog = (f"{self.indent}  creds after: {creds}")
-        logMsg(msgLog, 2, 0)
+        # fileTokenStore = '/home/ftricas/.mySocial/config/tokenGmail.json'
+        # creds = Credentials.from_authorized_user_file(fileTokenStore, SCOPES)
+        # msgLog = (f"{self.indent}  creds: {creds}")
+        # logMsg(msgLog, 2, 0)
+        # msgLog = (f"{self.indent}  creds after: {creds}")
+        # logMsg(msgLog, 2, 0)
         if isinstance(creds, str) and ("Fail!" in creds):
             service = None
         else:
