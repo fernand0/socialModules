@@ -90,7 +90,7 @@ class socialGoogle:
                 + '.json')
                 msgLog = (f"{self.indent}  fileCredStore: {fileCredStore}")
                 logMsg(msgLog, 2, 0)
-                creds = Credentials.from_authorized_user_file(theName, SCOPES)
+                creds = Credentials.from_authorized_user_file(fileCredStore, SCOPES)
                 # creds = store.get()
                 # creds = Credentials.from_authorized_user_file(fileTokenStore, SCOPES)
                 msgLog = (f"{self.indent}  creds: {creds}")
