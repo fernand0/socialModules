@@ -129,28 +129,33 @@ class socialGoogle:
                     if not os.path.exists(fileCredStore):
                         msgLog = (f"{self.indent}  fileCred: {fileCredStore} does not exist")
                         logMsg(msgLog, 2, 0)
-                    else:
-                        with open(fileCredStore, 'r') as fHash:
-                            msgLog = (f"{self.indent}  fileCredStore: {fileCredStore}")
-                            logMsg(msgLog, 2, 0)
-                            client_config = json.load(fHash) #.read()
-                            logging.info(f"Config: {client_config}")
-                            logging.info(f"Config: {client_config['installed']}")
-                            client_config['installed']['token_uri'] = 'https://oauth2.googleapis.com/token'
-                            client_config['installed']['redirect_uris'] = ["http://localhost"]
-                            logging.info(f"Config: {client_config['installed']}")
-                        # flow = client.flow_from_clientsecrets(fileCredStore,
-                        #                                      SCOPES)
-                        logging.info(f"1111")
-                        logging.info(f"Scopes: {SCOPES}")
-                        flow = InstalledAppFlow.from_client_config(
-                                client_config=client_config,
-                                scopes=SCOPES)
-                        logging.info(f"2111")
-                        creds = flow.run_local_server(open_browser=False,
-                                                      port=59185#,
-                                                      #timeout_seconds=5
-                                                      )
+                    else: 
+                        flow = InstalledAppFlow.from_client_secrets_file( 
+                                                                         fileCredStore, SCOPES
+                                                                         ) 
+                        creds = flow.run_local_server(port=0)
+                        # Save the credentials for the next run
+                        #with open(fileCredStore, 'r') as fHash:
+                        #    msgLog = (f"{self.indent}  fileCredStore: {fileCredStore}")
+                        #    logMsg(msgLog, 2, 0)
+                        #    client_config = json.load(fHash) #.read()
+                        #    logging.info(f"Config: {client_config}")
+                        #    logging.info(f"Config: {client_config['installed']}")
+                        #    client_config['installed']['token_uri'] = 'https://oauth2.googleapis.com/token'
+                        #    client_config['installed']['redirect_uris'] = ["http://localhost"]
+                        #    logging.info(f"Config: {client_config['installed']}")
+                        ## flow = client.flow_from_clientsecrets(fileCredStore,
+                        ##                                      SCOPES)
+                        # logging.info(f"1111")
+                        # logging.info(f"Scopes: {SCOPES}")
+                        # flow = InstalledAppFlow.from_client_config(
+                        #         client_config=client_config,
+                        #         scopes=SCOPES)
+                        # logging.info(f"2111")
+                        # creds = flow.run_local_server() #open_browser=True,
+                        #                               # port=59185#,
+                        #                               # #timeout_seconds=5
+                        #                               # )
                 except FileNotFoundError:
                     print("noooo")
                     print(fileCredStore)
