@@ -56,58 +56,47 @@ class socialGoogle:
         #
         # GOOGLE_APPLICATION_CREDENTIALS environment variable
 
-
-
-
         SCOPES = self.scopes
 
         msgLog = (f"{self.indent} Authorizing...")
         logMsg(msgLog, 1, 0)
-        msgLog = (f"    Connecting {self.service}") #: {account}")
+        msgLog = (f"{self.indent}  Connecting {self.service}") #: {account}")
         logMsg(msgLog, 1, 0)
         pos = self.user.rfind('@')
         self.server = self.user[pos+1:]
         self.nick = self.user[:pos]
 
-        fileCredStore = self.confName((self.server, self.nick))
-        # It's a json file
-
         msgLog = (f"{self.indent}  server: {self.server} nick: {self.nick}")
         logMsg(msgLog, 2, 0)
-        fileTokenStore = self.confTokenName((self.server, self.nick))
-        # It's a pickled file
         creds = None
 
         try:
+            fileTokenStore = self.confTokenName((self.server, self.nick))
+            # It's a pickled file
             msgLog = (f"{self.indent}  filetokenstore: {fileTokenStore}")
             logMsg(msgLog, 2, 0)
             # store = file.Storage(fileTokenStore)
-            if 'gmail' in self.service.lower():
-                fileCredStore = os.path.expanduser(CONFIGDIR + '/'
-                + 'tokenGmail'
-                + '.json')
-                msgLog = (f"{self.indent}  fileCredStore: {fileCredStore}")
-                logMsg(msgLog, 2, 0)
-                creds = Credentials.from_authorized_user_file(fileCredStore, SCOPES)
-                # creds = store.get()
-                # creds = Credentials.from_authorized_user_file(fileTokenStore, SCOPES)
-                msgLog = (f"{self.indent}  creds: {creds}")
-                logMsg(msgLog, 2, 0)
-            else:
+            # if False: #'gmail' in self.service.lower():
+            #     fileCredStore = os.path.expanduser(CONFIGDIR + '/'
+            #     + 'tokenGmail'
+            #     + '.json')
+            #     msgLog = (f"{self.indent}  fileCredStore: {fileCredStore}")
+            #     logMsg(msgLog, 2, 0)
+            #     creds = Credentials.from_authorized_user_file(fileCredStore, SCOPES)
+            #     # creds = store.get()
+            #     # creds = Credentials.from_authorized_user_file(fileTokenStore, SCOPES)
+            #     msgLog = (f"{self.indent}  creds: {creds}")
+            #     logMsg(msgLog, 2, 0)
+            # else:
+            try:
                 with open(fileTokenStore, 'rb') as fToken:
-                    try:
-                        msgLog = (f"{self.indent} pickle")
-                        logMsg(msgLog, 2, 0)
-                        creds = pickle.load(fToken)
-                    except:
-                        msgLog = (f"{self.indent}  json")
-                        logMsg(msgLog, 2, 0)
-                        creds = json.load(fToken)
+                    msgLog = (f"{self.indent}   pickle")
+                    logMsg(msgLog, 2, 0)
+                    creds = pickle.load(fToken)
+            except:
+                msgLog = (f"{self.indent}  No credentials to pickle")
+                logMsg(msgLog, 2, 0)
 
-                msgLog = (f"{self.indent} pickle2")
-                logMsg(msgLog, 2, 0)
-                msgLog = (f"{self.indent}  fileCred: {fileCredStore}")
-                logMsg(msgLog, 2, 0)
         except:
             msgLog = (f"{self.indent}  creds except {sys.exc_info()}")
             logMsg(msgLog, 2, 0)
@@ -130,22 +119,26 @@ class socialGoogle:
                         msgLog =  sys.exc_info()
                         logMsg(msgLog, 2, 0)
             else:
-                    msgLog = (f"{self.indent} Needs to re-authorize token GMail")
-                    logMsg(msgLog, 2, 0)
-                    try:
-                        if not os.path.exists(fileCredStore):
-                            with open(fileCredStore, 'w') as fHash:
-                                pass
-                        else:
+                msgLog = (f"{self.indent} Needs to re-authorize token GMail")
+                logMsg(msgLog, 2, 0)
+                fileCredStore = self.confName((self.server, self.nick))
+                msgLog = (f"{self.indent}  fileCred: {fileCredStore}")
+                logMsg(msgLog, 2, 0)
+                # It's a json file
+                try:
+                    if not os.path.exists(fileCredStore):
+                        msgLog = (f"{self.indent}  fileCred: {fileCredStore} does not exist")
+                        logMsg(msgLog, 2, 0)
+                    else:
+                        with open(fileCredStore, 'r') as fHash:
                             msgLog = (f"{self.indent}  fileCredStore: {fileCredStore}")
                             logMsg(msgLog, 2, 0)
-                            with open(fileCredStore, 'r') as fHash:
-                                client_config = json.load(fHash) #.read()
-                                logging.info(f"Config: {client_config}")
-                                logging.info(f"Config: {client_config['installed']}")
-                                client_config['installed']['token_uri'] = 'https://oauth2.googleapis.com/token'
-                                client_config['installed']['redirect_uris'] = ["http://localhost"]
-                                logging.info(f"Config: {client_config['installed']}")
+                            client_config = json.load(fHash) #.read()
+                            logging.info(f"Config: {client_config}")
+                            logging.info(f"Config: {client_config['installed']}")
+                            client_config['installed']['token_uri'] = 'https://oauth2.googleapis.com/token'
+                            client_config['installed']['redirect_uris'] = ["http://localhost"]
+                            logging.info(f"Config: {client_config['installed']}")
                         # flow = client.flow_from_clientsecrets(fileCredStore,
                         #                                      SCOPES)
                         logging.info(f"1111")
@@ -158,18 +151,18 @@ class socialGoogle:
                                                       port=59185#,
                                                       #timeout_seconds=5
                                                       )
-                    except FileNotFoundError:
-                        print("noooo")
-                        print(fileCredStore)
-                        sys.exit()
-                    except ValueError:
-                        res = self.report('moduleGoogle', 'Wrong data in file', '', sys.exc_info())
-                        creds.refresh(Request())
-                        #creds = 'Fail!'
-        msgLog = (f"{self.indent} Storing creds")
-        logMsg(msgLog, 2, 0)
-        with open(fileTokenStore, 'wb') as token:
-            pickle.dump(creds, token)
+                except FileNotFoundError:
+                    print("noooo")
+                    print(fileCredStore)
+                    sys.exit()
+                except ValueError:
+                    res = self.report('moduleGoogle', 'Wrong data in file', '', sys.exc_info())
+                    creds.refresh(Request())
+                    #creds = 'Fail!'
+        # msgLog = (f"{self.indent} Storing creds")
+        # logMsg(msgLog, 2, 0)
+        # with open(fileTokenStore, 'wb') as token:
+        #     pickle.dump(creds, token)
 
         return(creds)
 
@@ -182,7 +175,8 @@ class socialGoogle:
 
     def confTokenName(self, acc):
         theName = os.path.expanduser(CONFIGDIR + '/' + '.'
+                + self.service + '_'
                 + acc[0]+ '_'
-                + acc[1]+ '.token.json')
+                + acc[1]+ '.pickle')
         return(theName)
 

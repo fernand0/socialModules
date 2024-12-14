@@ -30,27 +30,8 @@ import socialModules.moduleImap
 from socialModules.configMod import *
 from socialModules.moduleContent import *
 from socialModules.moduleGoogle import *
-# from socialModules.moduleQueue import *
-
-# from googleapiclient.discovery import build
-# from httplib2 import Http
-# from oauth2client import file, client, tools
-
-
-
-
-
-
-
 
 class moduleGmail(Content,socialGoogle): #Queue,socialGoogle):
-
-    # def API(self, Acc):
-    #     # Back compatibility
-    #     self.setClient(Acc)
-
-    # def getKeys(key, config):
-    #     return (())
 
     def initApi(self, keys):
         msgLog = f"{self.indent} initApi moduleGmail"
@@ -76,7 +57,15 @@ class moduleGmail(Content,socialGoogle): #Queue,socialGoogle):
         if isinstance(creds, str) and ("Fail!" in creds):
             service = None
         else:
-            service = build('gmail', 'v1', credentials=creds, cache_discovery=False)
+            try:
+                msgLog = (f"{self.indent}  building service")
+                logMsg(msgLog, 2, 0)
+                service = build('gmail', 'v1', credentials=creds, cache_discovery=False)
+            except:
+                service = self.report(self.service, "", "", sys.exc_info())
+            msgLog = (f"{self.indent}  service: {service}")
+            logMsg(msgLog, 2, 0)
+
         return service
 
     # def authorize(self):
@@ -830,7 +819,8 @@ def main():
     print(f"Selecting rule")
     apiSrc = rules.selectRuleInteractive()
 
-    print(f"State: {apiSrc.getClient().__getstate__()}")
+    if not apiSrc.getClient().__getstate__():
+        return
 
     testingBody = True
     if testingBody:

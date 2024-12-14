@@ -45,11 +45,17 @@ class moduleGcalendar(Content,socialGoogle):
         # if isinstance(creds, str) and ("Fail!" in creds):
         #     service = None
         # else:
-        if True:
-            service = build('calendar', 'v3', credentials=creds) #, cache_discovery=False)
-            msgLog = (f"{self.indent} Service: {service}")
+        # if True:
+        try:
+            msgLog = (f"{self.indent}  building service {self.service}")
             logMsg(msgLog, 2, 0)
-            self.active = 'primary'
+            service = build('calendar', 'v3', credentials=creds) #, cache_discovery=False)
+        except:
+            service = self.report(self.service, "", "", sys.exc_info())
+        msgLog = (f"{self.indent} Service: {service}")
+        logMsg(msgLog, 2, 0)
+        self.active = 'primary'
+
         return service
 
     # def confTokenName(self, acc): 
@@ -264,7 +270,8 @@ def main():
     print(f"Selecting rule")
     apiSrc = rules.selectRuleInteractive()
 
-    print(f"State: {apiSrc.getClient().__getstate__()}")
+    if not apiSrc.getClient().__getstate__():
+        return
 
     print(f"Testing list")
     testingList = True
