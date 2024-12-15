@@ -24,8 +24,8 @@ from socialModules.moduleContent import *
 from socialModules.moduleGoogle import *
 
 
-class moduleGcalendar(Content,socialGoogle):    
-    
+class moduleGcalendar(Content,socialGoogle):
+
     # def API(self, Acc):
     #     # Back compatibility
     #     self.setClient(Acc)
@@ -58,44 +58,44 @@ class moduleGcalendar(Content,socialGoogle):
 
         return service
 
-    # def confTokenName(self, acc): 
-    #     theName = os.path.expanduser(CONFIGDIR + '/' + '.' 
-    #             + acc[0]+ '_' 
+    # def confTokenName(self, acc):
+    #     theName = os.path.expanduser(CONFIGDIR + '/' + '.'
+    #             + acc[0]+ '_'
     #             + acc[1]+ '.token.json')
     #     return(theName)
- 
+
     # def confName(self, acc):
-    #     theName = os.path.expanduser(CONFIGDIR + '/' + '.' 
+    #     theName = os.path.expanduser(CONFIGDIR + '/' + '.'
     #             + self.service + '_'
-    #             + acc[0]+ '_' 
+    #             + acc[0]+ '_'
     #             + acc[1]+ '.json')
     #     return(theName)
- 
+
     # def setClient(self, Acc):
-    #     # based on get_credentials from 
+    #     # based on get_credentials from
     #     # Code from
     #     # https://developers.google.com/gmail/api/v1/reference/users/messages/list
     #     # and
     #     # http://stackoverflow.com/questions/30742943/create-a-desktop-application-using-gmail-api
-    # 
+    #
     #     SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
     #     self.url = SCOPES
     #     api = {}
-    # 
-    #     config = configparser.ConfigParser() 
+    #
+    #     config = configparser.ConfigParser()
     #     config.read(CONFIGDIR + '/.calendar.cfg')
-    #     
+    #
     #     self.service = 'gcalendar'
     #     self.nick = config.get(Acc,'user')+'@'+config.get(Acc,'server')
-    #     fileStore = self.confName((config.get(Acc,'server'), 
-    #         config.get(Acc,'user'))) 
-    # 
+    #     fileStore = self.confName((config.get(Acc,'server'),
+    #         config.get(Acc,'user')))
+    #
     #     logging.debug("Filestore %s"% fileStore)
     #     store = file.Storage(fileStore)
     #     credentials = store.get()
-    #     
+    #
     #     service = build('calendar', 'v3', http=credentials.authorize(Http()))
-    # 
+    #
     #     self.client = service
     #     self.name = 'GCalendar' + Acc[3:]
     #     self.active = 'primary'
@@ -108,37 +108,37 @@ class moduleGcalendar(Content,socialGoogle):
     #     SCOPES = self.scopes
 
     #     #logging.info(f"    Connecting {self.service}: {account}")
-    #     pos = self.user.rfind('@') 
+    #     pos = self.user.rfind('@')
     #     self.server = self.user[pos+1:]
     #     self.nick = self.user[:pos]
 
-    #     fileCredStore = self.confName((self.server, self.nick)) 
-    #     fileTokenStore = self.confTokenName((self.server, self.nick)) 
+    #     fileCredStore = self.confName((self.server, self.nick))
+    #     fileTokenStore = self.confTokenName((self.server, self.nick))
     #     creds = None
 
     #     store = file.Storage(fileTokenStore)
     #     logging.debug(f"filetokenstore: {fileTokenStore}")
     #     creds = store.get()
 
-    #     if not creds: 
-    #         if creds and creds.expired and creds.refresh_token: 
+    #     if not creds:
+    #         if creds and creds.expired and creds.refresh_token:
     #             logging.info("Needs to refresh token GMail")
-    #             creds.refresh(Request()) 
-    #         else: 
+    #             creds.refresh(Request())
+    #         else:
     #             logging.info("Needs to re-authorize token GMail")
 
     #             try:
-    #                 flow = client.flow_from_clientsecrets(fileCredStore, 
+    #                 flow = client.flow_from_clientsecrets(fileCredStore,
     #                                                      SCOPES)
-    #                 creds = tools.run_flow(flow, store, 
+    #                 creds = tools.run_flow(flow, store,
     #                        tools.argparser.parse_args(args=['--noauth_local_webserver']))
     #                 # creds = ServiceAccountCredentials.from_json_keyfile_name(
     #                 #                     key_file_location, scopes=SCOPES)
-    #                 # flow = InstalledAppFlow.from_client_secrets_file( 
-    #                 #     fileCredStore, SCOPES, 
+    #                 # flow = InstalledAppFlow.from_client_secrets_file(
+    #                 #     fileCredStore, SCOPES,
     #                 #     redirect_uri='urn:ietf:wg:oauth:2.0:oob')
     #                 # creds = flow.run_console(
-    #                 #         authorization_prompt_message='Please visit this URL: {url}', 
+    #                 #         authorization_prompt_message='Please visit this URL: {url}',
     #                 #         success_message='The auth flow is complete; you may close this window.')
     #                 # Save the credentials for the next run
     #             except FileNotFoundError:
@@ -157,26 +157,26 @@ class moduleGcalendar(Content,socialGoogle):
     def setActive(self, idCal):
         self.active = idCal
 
-    def setCalendarList(self): 
+    def setCalendarList(self):
         logging.info(f"{self.indent} Setting calendar list")
         api = self.getClient()
         page_token = None
         self.calendars = api.calendarList().list(
                 pageToken=page_token).execute().get('items',[])
 
-    def getCalendarList(self): 
+    def getCalendarList(self):
         return(self.calendars)
 
     def setPosts(self, date=''):
         logging.info(f"{self.indent} Setting posts")
         logging.info(f"{self.indent} Setting posts date {date}")
         api = self.getClient()
-        if not date: 
+        if not date:
             theDate= datetime.datetime.now()
             theDate = theDate.isoformat(timespec='seconds')+'Z'
         else:
             theDate = dateparser.parse(date)
-            if theDate: 
+            if theDate:
                 theDate = theDate.isoformat()+'Z'
 
         # 'Z' indicates UTC time
@@ -187,12 +187,12 @@ class moduleGcalendar(Content,socialGoogle):
         if hasattr(self, 'active'):
             events_result = api.events().list(calendarId=self.active,
                 timeMin=theDate, maxResults=10, singleEvents=True,
-                orderBy='startTime').execute() 
+                orderBy='startTime').execute()
             self.posts = []
-            for item in events_result.get('items', []): 
+            for item in events_result.get('items', []):
                 if item['eventType'] == 'workingLocation':
                     continue
-                else: 
+                else:
                     self.posts.append(item)
         else:
             self.posts = None
@@ -210,7 +210,7 @@ class moduleGcalendar(Content,socialGoogle):
                 if 'date' in post['start']:
                     dd = post['start']['date']
 
-        description = post.get('description') 
+        description = post.get('description')
         if description:
             description = description[:60]
         text = (f"{dd[11:16]} "
@@ -219,11 +219,11 @@ class moduleGcalendar(Content,socialGoogle):
                )
         text = text.replace('\n',' ')
         return text
- 
+
     def extractDataMessage(self, i):
         logging.info("Service %s"% self.service)
 
-        (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None) 
+        (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None)
 
         event = self.getPosts()[i]
         import pprint
@@ -259,8 +259,8 @@ class moduleGcalendar(Content,socialGoogle):
 
 
 def main():
-    logging.basicConfig(stream=sys.stdout, 
-            level=logging.DEBUG, 
+    logging.basicConfig(stream=sys.stdout,
+            level=logging.DEBUG,
             format='%(asctime)s %(message)s')
 
     import moduleRules
@@ -278,7 +278,7 @@ def main():
     if testingList:
         apiSrc.setCalendarList()
         print(f"List: {apiSrc.getCalendarList()}")
-        for i, cal in enumerate(apiSrc.getCalendarList()): 
+        for i, cal in enumerate(apiSrc.getCalendarList()):
             print(f"{i}) {cal.get('summary')}")
         option = input("Select one: ")
 
@@ -286,17 +286,17 @@ def main():
         import datetime
         from dateutil import parser
         import pytz
-        today = datetime.datetime.combine(datetime.date.today(), 
+        today = datetime.datetime.combine(datetime.date.today(),
                 datetime.datetime.min.time())
         today = pytz.utc.localize(today)
         # today = pytz.utc.localize(parser.parse("2022-07-11"))
-        
-        date = input("Date? (today)")
+
+        date = input("Date? (today) ")
         print(f"Date: *{date}*")
         apiSrc.setPosts(date)
         print(f"\nHoy: {str(today)[:10]}")
         print(f"Citas [{apiSrc.getCalendarList()[int(option)].get('summary')}]:")
-        
+
         prevDifTime = ""
         for i, event in enumerate(apiSrc.getPosts()):
             # if event['eventType'] == 'workingLocation':
@@ -322,7 +322,7 @@ def main():
                 import pprint
 
                 # print (f"{i}) {event}")
-                description = event.get('description') 
+                description = event.get('description')
                 if description:
                     description = description[:60]
                 text = (f"{dd[11:16]} "
@@ -335,7 +335,7 @@ def main():
                 print(f"{text}")
     return
 
- 
+
 
 
 if __name__ == "__main__":

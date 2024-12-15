@@ -90,7 +90,7 @@ class socialGoogle:
             # else:
             try:
                 with open(fileTokenStore, 'rb') as fToken:
-                    msgLog = (f"{self.indent}   pickle")
+                    msgLog = (f"{self.indent}   Unpickle: {fileTokenStore}")
                     logMsg(msgLog, 2, 0)
                     creds = pickle.load(fToken)
             except:
@@ -129,13 +129,20 @@ class socialGoogle:
                     if not os.path.exists(fileCredStore):
                         msgLog = (f"{self.indent}  fileCred: {fileCredStore} does not exist")
                         logMsg(msgLog, 2, 0)
-                    else: 
-                        flow = InstalledAppFlow.from_client_secrets_file( 
-                                                                         fileCredStore, SCOPES
-                                                                         ) 
+                    else:
+                        print(f"This won't work on remote, you need a local browser to pass the oauth process")
+                        flow = InstalledAppFlow.from_client_secrets_file(
+                                                                         fileCredStore, SCOPES,
+                                                                         redirect_uri='http://localhost'
+                                                                         )
                         creds = flow.run_local_server(port=0)
+
                         # Save the credentials for the next run
-                        #with open(fileCredStore, 'r') as fHash:
+                        with open(fileTokenStore, 'wb') as token:
+                            msgLog = (f"{self.indent}   Pickle: {fileTokenStore}")
+                            logMsg(msgLog, 2, 0)
+                            pickle.dump(creds, token)
+                        # with open(fileCredStore, 'r') as fHash:
                         #    msgLog = (f"{self.indent}  fileCredStore: {fileCredStore}")
                         #    logMsg(msgLog, 2, 0)
                         #    client_config = json.load(fHash) #.read()
@@ -166,8 +173,6 @@ class socialGoogle:
                     #creds = 'Fail!'
         # msgLog = (f"{self.indent} Storing creds")
         # logMsg(msgLog, 2, 0)
-        # with open(fileTokenStore, 'wb') as token:
-        #     pickle.dump(creds, token)
 
         return(creds)
 
