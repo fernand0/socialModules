@@ -119,6 +119,11 @@ class socialGoogle:
                         msgLog =  sys.exc_info()
                         logMsg(msgLog, 2, 0)
             else:
+                # This needs to have a desktop application created in
+                # https://console.cloud.google.com/auth/clients
+                # and some test user, since we are not passing the
+                # verification process in Google.
+                # It only works in local, since it launches a brower
                 msgLog = (f"{self.indent} Needs to re-authorize token GMail")
                 logMsg(msgLog, 2, 0)
                 fileCredStore = self.confName((self.server, self.nick))
