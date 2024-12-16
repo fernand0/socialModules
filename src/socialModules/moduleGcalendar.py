@@ -12,11 +12,6 @@ import sys
 
 # from dateutil.parser import parse
 import dateparser
-import googleapiclient
-from googleapiclient import http
-from httplib2 import Http
-from oauth2client import client, file, tools
-from oauth2client.service_account import ServiceAccountCredentials
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *

@@ -18,13 +18,7 @@ import pickle
 import sys
 from email.parser import BytesParser
 
-import googleapiclient
 from bs4 import BeautifulSoup
-from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from httplib2 import Http
-from oauth2client import client, file, tools
 
 import socialModules.moduleImap
 from socialModules.configMod import *
@@ -45,17 +39,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
             #'https://mail.google.com/']
         ]
 
-        creds = self.authorize()
-        try:
-            msgLog = f"{self.indent}  building service {self.service}"
-            logMsg(msgLog, 2, 0)
-            service = build(
-                    "gmail", "v1", credentials=creds#, cache_discovery=False
-                    )
-        except:
-            service = self.report(self.service, "", "", sys.exc_info())
-        msgLog = f"{self.indent}  service: {service}"
-        logMsg(msgLog, 2, 0)
+        service = self.authorize('gmail', 'v1')
 
         return service
 
