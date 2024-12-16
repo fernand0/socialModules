@@ -33,11 +33,11 @@ from socialModules.moduleGoogle import *
 
 
 class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
+
     def initApi(self, keys):
-        msgLog = f"{self.indent} initApi moduleGmail"
-        logMsg(msgLog, 2, 0)
         self.service = "Gmail"
-        self.nick = None
+        msgLog = f"{self.indent} initApi {self.service}"
+        logMsg(msgLog, 2, 0)
         self.scopes = [
             "https://www.googleapis.com/auth/gmail.readonly",
             "https://www.googleapis.com/auth/gmail.labels",
@@ -45,86 +45,19 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
             #'https://mail.google.com/']
         ]
 
-        SCOPES = self.scopes
         creds = self.authorize()
-        # fileTokenStore = '/home/ftricas/.mySocial/config/tokenGmail.json'
-        # msgLog = (f"{self.indent}  before creds: {creds}")
-        # logMsg(msgLog, 2, 0)
-        # creds = Credentials.from_authorized_user_file(fileTokenStore, SCOPES)
-        # msgLog = (f"{self.indent}  creds: {creds}")
-        # logMsg(msgLog, 2, 0)
-        # msgLog = (f"{self.indent}  creds after: {creds}")
-        # logMsg(msgLog, 2, 0)
-        if isinstance(creds, str) and ("Fail!" in creds):
-            service = None
-        else:
-            try:
-                msgLog = f"{self.indent}  building service"
-                logMsg(msgLog, 2, 0)
-                service = build("gmail", "v1", credentials=creds, cache_discovery=False)
-            except:
-                service = self.report(self.service, "", "", sys.exc_info())
-            msgLog = f"{self.indent}  service: {service}"
+        try:
+            msgLog = f"{self.indent}  building service {self.service}"
             logMsg(msgLog, 2, 0)
+            service = build(
+                    "gmail", "v1", credentials=creds#, cache_discovery=False
+                    )
+        except:
+            service = self.report(self.service, "", "", sys.exc_info())
+        msgLog = f"{self.indent}  service: {service}"
+        logMsg(msgLog, 2, 0)
 
         return service
-
-    # def authorize(self):
-    #     # based on Code from
-    #     # https://github.com/gsuitedevs/python-samples/blob/aacc00657392a7119808b989167130b664be5c27/gmail/quickstart/quickstart.py
-
-    #     SCOPES = self.scopes
-
-    #     #logging.info(f"    Connecting {self.service}: {account}")
-    #     pos = self.user.rfind('@')
-    #     self.server = self.user[pos+1:]
-    #     self.nick = self.user[:pos]
-
-    #     fileCredStore = self.confName((self.server, self.nick))
-    #     fileTokenStore = self.confTokenName((self.server, self.nick))
-    #     creds = None
-
-    #     store = file.Storage(fileTokenStore)
-    #     logging.debug(f"filetokenstore: {fileTokenStore}")
-    #     # creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    #     creds = store.get()
-
-    #     if not creds:
-    #         if creds and creds.expired and creds.refresh_token:
-    #             logging.info("Needs to refresh token GMail")
-    #             creds.refresh(Request())
-    #         else:
-    #             logging.info("Needs to re-authorize token GMail")
-
-    #             try:
-    #                 print(f"fileCred: {fileCredStore}")
-    #                 flow = client.flow_from_clientsecrets(fileCredStore,
-    #                                                      SCOPES)
-    #                 creds = tools.run_flow(flow, store,
-    #                        tools.argparser.parse_args(args=['--noauth_local_webserver']))
-
-    #                 # credentials = run_flow(flow, storage, args)
-
-    #                 # flow = InstalledAppFlow.from_client_secrets_file(
-    #                 #     fileCredStore, SCOPES)
-
-    #                 # creds = flow.run_local_server(port=0)
-    #                 # creds = flow.run_console(
-    #                 #         authorization_prompt_message='Please visit this URL: {url}',
-    #                 #         success_message='The auth flow is complete; you may close this window.')
-    #                 # Save the credentials for the next run
-    #             except FileNotFoundError:
-    #                 print("no")
-    #                 print(fileCredStore)
-    #                 sys.exit()
-    #             except ValueError:
-    #                 print("Error de valor")
-    #                 creds = 'Fail!'
-    #     logging.debug("Storing creds")
-    #     # with open(fileTokenStore, 'wb') as token:
-    #     #     pickle.dump(creds, token)
-
-    #     return(creds)
 
     def createLabel(self, labelName):
         api = self.getClient()

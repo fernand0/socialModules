@@ -31,7 +31,7 @@ class socialGoogle:
     def getKeys(key, config):
         return "keys"
 
-    def authorize(self):
+    def authorize(self, serviceName, version):
         # based on Code from
         # https://github.com/gsuitedevs/python-samples/blob/aacc00657392a7119808b989167130b664be5c27/gmail/quickstart/quickstart.py
         # Latest version based on code from:
@@ -55,6 +55,8 @@ class socialGoogle:
         #
         # GOOGLE_APPLICATION_CREDENTIALS environment variable
 
+        self.nick = None
+
         SCOPES = self.scopes
 
         msgLog = f"{self.indent} Authorizing..."
@@ -74,19 +76,6 @@ class socialGoogle:
             # It's a pickled file
             msgLog = f"{self.indent}  filetokenstore: {fileTokenStore}"
             logMsg(msgLog, 2, 0)
-            # store = file.Storage(fileTokenStore)
-            # if False: #'gmail' in self.service.lower():
-            #     fileCredStore = os.path.expanduser(CONFIGDIR + '/'
-            #     + 'tokenGmail'
-            #     + '.json')
-            #     msgLog = (f"{self.indent}  fileCredStore: {fileCredStore}")
-            #     logMsg(msgLog, 2, 0)
-            #     creds = Credentials.from_authorized_user_file(fileCredStore, SCOPES)
-            #     # creds = store.get()
-            #     # creds = Credentials.from_authorized_user_file(fileTokenStore, SCOPES)
-            #     msgLog = (f"{self.indent}  creds: {creds}")
-            #     logMsg(msgLog, 2, 0)
-            # else:
             try:
                 with open(fileTokenStore, "rb") as fToken:
                     msgLog = f"{self.indent}   Unpickle: {fileTokenStore}"
@@ -100,11 +89,6 @@ class socialGoogle:
             msgLog = f"{self.indent}  creds except {sys.exc_info()}"
             logMsg(msgLog, 2, 0)
             creds = None
-
-        # msgLog = (f"{self.indent} Read creds {creds}")
-        # logMsg(msgLog, 2, 0)
-        # msgLog = (f"{self.indent} Exp creds {creds.expired} - {creds.refresh_token}")
-        # logMsg(msgLog, 2, 0)
 
         if not creds:
             msgLog = f"{self.indent} No creds"
@@ -123,7 +107,7 @@ class socialGoogle:
                 # and some test user, since we are not passing the
                 # verification process in Google.
                 # It only works in local, since it launches a brower
-                msgLog = f"{self.indent} Needs to re-authorize token GMail"
+                msgLog = f"{self.indent} Needs to re-authorize token {self.service}"
                 logMsg(msgLog, 2, 0)
                 fileCredStore = self.confName((self.server, self.nick))
                 msgLog = f"{self.indent}  fileCred: {fileCredStore}"
@@ -149,27 +133,6 @@ class socialGoogle:
                             msgLog = f"{self.indent}   Pickle: {fileTokenStore}"
                             logMsg(msgLog, 2, 0)
                             pickle.dump(creds, token)
-                        # with open(fileCredStore, 'r') as fHash:
-                        #    msgLog = (f"{self.indent}  fileCredStore: {fileCredStore}")
-                        #    logMsg(msgLog, 2, 0)
-                        #    client_config = json.load(fHash) #.read()
-                        #    logging.info(f"Config: {client_config}")
-                        #    logging.info(f"Config: {client_config['installed']}")
-                        #    client_config['installed']['token_uri'] = 'https://oauth2.googleapis.com/token'
-                        #    client_config['installed']['redirect_uris'] = ["http://localhost"]
-                        #    logging.info(f"Config: {client_config['installed']}")
-                        ## flow = client.flow_from_clientsecrets(fileCredStore,
-                        ##                                      SCOPES)
-                        # logging.info(f"1111")
-                        # logging.info(f"Scopes: {SCOPES}")
-                        # flow = InstalledAppFlow.from_client_config(
-                        #         client_config=client_config,
-                        #         scopes=SCOPES)
-                        # logging.info(f"2111")
-                        # creds = flow.run_local_server() #open_browser=True,
-                        #                               # port=59185#,
-                        #                               # #timeout_seconds=5
-                        #                               # )
                 except FileNotFoundError:
                     print("noooo")
                     print(fileCredStore)
@@ -180,10 +143,20 @@ class socialGoogle:
                     )
                     creds.refresh(Request())
                     # creds = 'Fail!'
-        # msgLog = (f"{self.indent} Storing creds")
-        # logMsg(msgLog, 2, 0)
 
-        return creds
+        msgLog = f"{self.indent}  building service {creds} {type(creds)}" 
+        logMsg(msgLog, 2, 0) 
+        if isinstance(creds, google.oauth2.credentials.Credentials): 
+            try: 
+                msgLog = f"{self.indent}  building service {serviceName}" 
+                logMsg(msgLog, 2, 0) 
+                service = build(serviceName, version, credentials=creds) 
+            except:
+                service = self.report(self.service, "", "", sys.exc_info())
+
+        msgLog = f"{self.indent} Service: {service}"
+        logMsg(msgLog, 2, 0)
+        return service
 
     def confName(self, acc):
         theName = os.path.expanduser(
