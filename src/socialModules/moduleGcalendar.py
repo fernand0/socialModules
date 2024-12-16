@@ -214,6 +214,10 @@ class moduleGcalendar(Content, socialGoogle):
         return "orig. " + date + " Translated." + theDate
 
     def getPostTitle(self, post):
+        text = post.get('summary')
+        return text
+
+    def getPostAbstract(self, post):
         if "start" in post:
             if "dateTime" in post["start"]:
                 dd = post["start"]["dateTime"]
@@ -221,10 +225,12 @@ class moduleGcalendar(Content, socialGoogle):
                 if "date" in post["start"]:
                     dd = post["start"]["date"]
 
-        description = post.get("description")
+        description = post.get("description", "")
         if description:
             description = description[:60]
-        text = f"{dd[11:16]} " f"{post.get('summary')} " f"{description} "
+        text = f"{dd[11:16]} " f"{post.get('summary')}"
+        if description:
+            text = f"{text} {description}"
         text = text.replace("\n", " ")
         return text
 
@@ -352,22 +358,10 @@ def main():
                 print(f"In {difTime} ({str(d1)[:10]})")
                 prevDifTime = difTime
             if abs((d1 - today).days) < 7:
-                import pprint
-
-                # print (f"{i}) {event}")
-                description = event.get("description")
-                if description:
-                    description = description[:60]
-                text = (
-                    f"{dd[11:16]} "
-                    f"{event.get('summary')} "
-                    f"{description} "
-                    f"{event.get('hangoutLink','')}"
-                )
-                text = text.replace("\n", " ")
-                print(f"{text}")
-                text = apiSrc.getPostTitle(event)
-                print(f"{text}")
+                text = apiSrc.getPostAbstract(event)
+                print(f" Abstract: {text}")
+                # text = apiSrc.getPostTitle(event)
+                # print(f"Title: {text}*")
     return
 
 
