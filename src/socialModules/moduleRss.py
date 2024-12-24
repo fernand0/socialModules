@@ -116,15 +116,21 @@ class moduleRss(Content): #, Queue):
         msgLog = f"{self.indent} Service {self.service} Start setApiPosts"
         logMsg(msgLog, 2, 0)
 
+
         if self.rssFeed.find('http')>=0:
             urlRss = self.getRssFeed()
         else:
             urlRss = urllib.parse.urljoin(self.url,self.getRssFeed())
+        msgLog = f"{self.indent} Service {self.service} Feed: {urlRss}"
+        logMsg(msgLog, 2, 0)
         if 'github.com' in urlRss:
             self.feed = feedparser.parse(urlRss,
                     request_headers={'Accept':'application/atom+xml'})
         else:
             self.feed = feedparser.parse(urlRss)
+
+        msgLog = f"{self.indent} Service {self.service} Feed content: {self.feed}"
+        logMsg(msgLog, 2, 0)
         posts = self.feed.entries
         if hasattr(self.feed.feed, 'title'):
             self.title = self.feed.feed.title
@@ -227,6 +233,7 @@ def main():
     testingPosts = True
     if testingPosts:
         apiSrc.setPosts()
+        print(f"Posts: {apiSrc.getPosts()}")
         listPosts = {}
         for i,post in enumerate(apiSrc.getPosts()):
             print(f"Post {i}): {post}")

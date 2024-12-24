@@ -81,6 +81,8 @@ class moduleForum(Content): #, Queue):
             "Chrome/39.0.2171.95 Safari/537.36"
         }
 
+        headers.update({'referer': self.url})
+
         selector = self.selector[idSelector]
         response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.content, features="lxml")
@@ -277,38 +279,35 @@ def main():
 
     apiSrc = rules.selectRuleInteractive()
 
-    return
+    #return
 
 
-    forums = [
-         "http://foro.infojardin.com/",
-         'https://cactuspro.com/forum/',
-         'https://garden.org/forums/'
-         'http://www.agaveville.org/index.php'
-         "https://www.cactuseros.com/foro/index.php",
-         "https://mammillaria.forumotion.net/",
-         "https://cactiguide.com/forum/",
-     ]
-    for forumData in forums:
-        forum = moduleForum()
-        forum.setClient(forumData)
-        forum.setPosts()
-        logging.debug(f"Posts: {forum.getPosts()}")
-        lastLink, lastTime = checkLastLink(forum.url)
-        logging.debug(f"Last: {lastLink} - {lastTime}")
-        continue
-        pos = forum.getLinkPosition(lastLink)
-        logging.debug(f"Pos: {pos}")
+    #forums = [
+    #     #"http://foro.infojardin.com/",
+    #     'https://cactuspro.com/forum/',
+    #     #'https://garden.org/forums/'
+    #     #'http://www.agaveville.org/index.php'
+    #     #"https://www.cactuseros.com/foro/index.php",
+    #     #"https://mammillaria.forumotion.net/",
+    #     #"https://cactiguide.com/forum/",
+    # ]
+    forum = apiSrc
+    forum.setPosts()
+    logging.debug(f"Posts: {forum.getPosts()}")
+    lastLink, lastTime = checkLastLink(forum.url)
+    logging.debug(f"Last: {lastLink} - {lastTime}")
+    pos = forum.getLinkPosition(lastLink)
+    logging.debug(f"Pos: {pos}")
 
-        if pos > len(forum.getPosts()) - 1:
-            print("No new posts!\n")
-        else:
-            for post in forum.getPosts()[pos:]:
-                print("   {}".format(post[0]))
-                print("   {}".format(post[1]))
-            # updateLastLink(forum.url, forum.getPosts()[-1][1])
-        for i, post in enumerate(forum.getPosts()):
-            print(f"{i}) p0{post[0]}.\n   p1{post[1]}")
+    if pos > len(forum.getPosts()) - 1:
+        print("No new posts!\n")
+    else:
+        for post in forum.getPosts()[pos:]:
+            print("   {}".format(post[0]))
+            print("   {}".format(post[1]))
+        # updateLastLink(forum.url, forum.getPosts()[-1][1])
+    for i, post in enumerate(forum.getPosts()):
+        print(f"{i}) p0{post[0]}.\n   p1{post[1]}")
 
 
 if __name__ == "__main__":

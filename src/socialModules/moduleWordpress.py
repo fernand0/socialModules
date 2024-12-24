@@ -11,7 +11,6 @@ from bs4 import BeautifulSoup
 
 from socialModules.configMod import CONFIGDIR
 from socialModules.moduleContent import Content
-# from socialModules.moduleQueue import *
 
 
 class moduleWordpress(Content):  # ,Queue):
@@ -352,9 +351,14 @@ class moduleWordpress(Content):  # ,Queue):
             soup = BeautifulSoup(post["content"], "lxml")
             imgs = soup.find_all("img")
             for img in imgs:
-                logging.debug(img)
-                if img.has_attr("src"):
-                    res.append(img.get("src"))
+                logging.debug(f"extract img: {img}")
+                src = img.get("src","")
+                alt = img.get("alt","")
+                if '(' in alt and ')' in alt:
+                    posI = alt.find('(')
+                    posF = alt.find(')')+1
+                    title = alt[posI:posF]
+                    res.append((src, src, title, alt))
                 else:
                     res.append(img.get("data-large-file").split("?")[0])
         elif "attachments" in post:

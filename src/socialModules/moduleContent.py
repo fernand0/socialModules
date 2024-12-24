@@ -772,18 +772,18 @@ class Content:
                     )
 
                 if title[-1] in string.punctuation:
-                    text = (
-                        '{}\n<p><h4>{}</h4></p><p><a href="{}">'
+                    text = (f'{text}\n<p>'
+                            f'<h4>{description}</h4>\n<a href="{url}">'
                         #'<img class="alignnone size-full '
                         #'wp-image-3306" src="{}"
-                        "{} </a></p>".format(text, description, url, srcTxt)
+                            f"{srcTxt}</a></p>" #.format(text, description, url, srcTxt)
                     )
                 else:
-                    text = (
-                        '{}\n<p><h4>{}</h4></p><p><a href="{}">'
+                    text = (f'{text}\n<p><h4>{description}</h4>'
+                            f'<a href="{url}">'
                         #'<img class="alignnone size-full '
                         #'wp-image-3306" src="{}"
-                        "{} /></a></p>".format(text, description, url, srcTxt)
+                            f"{srcTxt}</a></p>" #.format(text, description, url, srcTxt)
                     )
             else:
                 title = iimg[1]
@@ -1057,6 +1057,7 @@ class Content:
         nameMethod = "Post"
         listPosts = []
         if len(args) == 3:
+            logging.info(f"Args: {args}")
             title = args[0]
             link = args[1]
             comment = args[2]
@@ -1106,7 +1107,7 @@ class Content:
             else:
                 logging.debug(f"{self.indent} no listPosts")
                 if api and post:
-                    msgLog = f"{self.indent} Calling method " f"with api and post"
+                    msgLog = f"{self.indent} Calling method with api and post"
                     logMsg(msgLog, 2, 0)
                     reply = method(api=api, post=post)
                 else:
