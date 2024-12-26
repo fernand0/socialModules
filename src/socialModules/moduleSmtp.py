@@ -35,12 +35,15 @@ class moduleSmtp(Content): #, Queue):
         self.port = keys[1]
         self.user = keys[2]
         self.password = keys[3]
+        self.to = ''
 
+        client = None
         try:
             import ssl
             context = ssl.SSLContext(ssl.PROTOCOL_TLS)
-            client = smtplib.SMTP(self.server, self.port)
-            client.starttls(context=context)
+            client = smtplib.SMTP_SSL(self.server, self.port)
+            #client.starttls() #context=context)
+            logging.info("     User: self.user")
             client.login(self.user, self.password)
             logging.info("     Logging OK")
         except:
@@ -61,9 +64,13 @@ class moduleSmtp(Content): #, Queue):
             post = api.getPostTitle(thePost)
             link = api.getPostLink(thePost)
         res = 'Fail!'
-        try:
-            destaddr = self.user
-            toaddrs = self.user
+        if True:
+            if self.to:
+                destaddr = self.to
+                toaddrs = self.to
+            else:
+                destaddr = self.user
+                toaddrs = self.user
             if hasattr(self, 'fromaddr') and self.fromaddr:
                 logging.info(f"{self.indent} 1")
                 fromaddr = self.fromaddr
@@ -100,10 +107,11 @@ class moduleSmtp(Content): #, Queue):
                 logMsg(msgLog, 2, 0)
 
 
-            if htmlDoc.startswith('<'):
-                subtype = 'html'
-            else:
-                subtype = 'plain'
+            subtype = 'html'
+            # if htmlDoc.startswith('<'):
+            #     subtype = 'html'
+            # else:
+            #     subtype = 'plain'
 
             adj = MIMEText(htmlDoc, _subtype=subtype)
             msg.attach(adj)
@@ -144,16 +152,20 @@ class moduleSmtp(Content): #, Queue):
             else:
                 server = self.client
                 respN = server.noop()
-                if not (respN == "250"):
+                logging.info(f"Noop: {respN}")
+                if isinstance(respN, tuple):
+                    respN = respN[0]
+                if not (respN == 250):
+                    logging.info(f"Noop: not")
                     import ssl
                     context = ssl.SSLContext(ssl.PROTOCOL_TLS)
-                    server = smtplib.SMTP(self.server, self.port)
-                    server.starttls(context=context)
+                    server = smtplib.SMTP_SSL(self.server, self.port)
+                    #server.starttls(context=context)
                     server.login(self.user, self.password)
 
             msgLog = (f"From: {fromaddr} To:{toaddrs}")
             logMsg(msgLog, 2, 0)
-            msgLog = (f"Msg: {msg.as_string()}")
+            msgLog = (f"Msg: {msg.as_string()[:250]}")
             logMsg(msgLog, 2, 0)
 
             try:
@@ -164,9 +176,9 @@ class moduleSmtp(Content): #, Queue):
 
             if not res:
                 res = "OK"
-            server.quit()
+            # server.quit()
 
-        except:
+        else:
             res = self.report(self.service, '', '', sys.exc_info())
 
         return(f"{res}")
@@ -179,20 +191,23 @@ def main():
     import socialModules.moduleRules
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
-    rules.printDict(rules.rules, "Rules")
 
+    name = nameModule()
+    rulesList = rules.selectRule(name)
+    for i, rule in enumerate(rulesList):
+        print(f"{i}) {rule}")
+
+    sel = int(input(f"Which one? "))
+    src = rulesList[sel]
+    print(f"Selected: {src}")
+    for i, action in enumerate(rules.rules[src]):
+        print(f"{i}) {action}")
+    sel = int(input(f"Which one? "))
+    more = rules.more[src]
     indent = ""
-    print(f"Rules: {rules}")
-    srcs = rules.selectRule('cache', '')
-    for i, src in enumerate(srcs): 
-        print(f"{i}) Src: {src}")
-
-    sel = input("Which one? ")
-    src = srcs[int(sel)]
-    print(f"Rule: {src}")
-    more = None
     apiSrc = rules.readConfigSrc(indent, src, more)
-    action =  rules.rules[src][0]
+
+    action =  rules.rules[src][sel]
     print(f"Action: {action}")
     apiDst = rules.readConfigDst(indent, action, more, apiSrc)
     print(f"Client: {apiDst.client}")
