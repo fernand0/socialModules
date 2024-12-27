@@ -510,13 +510,13 @@ class moduleRules:
             service = nameModule.split(".")[0][6:].casefold()
         selRules = self.selectRule(service, "")
         print("Rules:")
+        iRul = 0
         if len(selRules) > 1:
             for i, rul in enumerate(selRules):
                 print(f"{i}) {rul}")
             iRul = input("Which rule? ")
-        else:
-            iRul = 0
         src = selRules[int(iRul)]
+        print(f"\nSelected rule: {iRul}. Rule {src}")
         more = None
         if src in self.more:
             more = self.more[src]
