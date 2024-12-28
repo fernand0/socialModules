@@ -167,6 +167,8 @@ class moduleTumblr(Content):  # , Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
+        import logging
+        logging.debug(f"Args: {args} Kwargs: {kwargs}")
         if args and len(args) == 3 and args[0]:
             # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
@@ -180,16 +182,13 @@ class moduleTumblr(Content):  # , Queue):
             api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
-            comment = ""
+            comment = more.get("comment", "")
             idPost = api.getPostId(post)
 
-        # logging.info(f"Type: {api.getPostsType()}")
-        # logging.info(f"Id: {idPost}")
-        # msgLog = f"{self.indent} Service {self.service} User: "
-        #          f"{self.getUser()}"
-        # logMsg(msgLog, 2, 0)
         try:
             if api.getPostsType() == "posts":
+                logging.debug(f"Title: {title} Link: {link}")
+                logging.debug(f"Content: {comment}")
                 res = self.getClient().create_link(
                     self.getUser(),
                     state="queue",
@@ -277,7 +276,7 @@ def main():
     import logging
 
     logging.basicConfig(
-        stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s"
+        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
 
     import socialModules.moduleTumblr
@@ -286,6 +285,28 @@ def main():
 
     t.setClient("fernand0")
 
+    testingPostingWP = True
+    if testingPostingWP: 
+        import socialModules.moduleWordpress
+        wp = socialModules.moduleWordpress.moduleWordpress() 
+        wp.setClient("avecesunafoto") 
+        wp.setPostsType("posts")
+        wp.setPosts()
+        post = wp.getPost(0)
+        content = wp.getImagesCode(0)
+        print(f"Text: {content}")
+        return
+        title = wp.getPostTitle(post)
+        link = wp.getPostLink(post)
+        print(f"Title: {title}")
+        print(f"Link: {link}")
+        print(t.publishPost(title , link, content))
+
+
+
+        return
+    
+
     testingPosting = False
     if testingPosting:
         title = "Test"
@@ -293,7 +314,7 @@ def main():
         print(t.publishPost(title, link, ""))
         return
 
-    testingDrafts = True
+    testingDrafts = False
     if testingDrafts:
         print("Testing drafts")
         t.setPostsType("drafts")

@@ -164,7 +164,8 @@ class moduleLinkedin(Content):
             # FIXME: We need to do something here
             post = more.get('post', '')
             api = more.get('api', '')
-            title = api.getPostTitle(post)
+            title = api.getPostTitle(post)[:250]
+            # Title/content/article must be of lenght 0...400
             link = api.getPostLink(post)
             comment = api.getPostComment(title)
 

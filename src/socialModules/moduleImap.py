@@ -156,12 +156,7 @@ class moduleImap(Content): #, Queue):
         # Maybe we should check if this is needed
 
         logging.info(f"getChannel: {self.user}@{self.server}")
-        try:
-            # Trying to avoid re-authentication. Are ther better ways?
-            self.getClient().noop()
-        except:
-            logging.info(f"Re-identifying")
-            self.setClient(f"{self.user}")
+        self.checkConnected()
         channel = self.getChannel()
         logging.info(f"getChannel: {channel}")
         if not channel:
@@ -908,8 +903,17 @@ class moduleImap(Content): #, Queue):
         resp, data = self.getClient().list('""', '*')
         return data
 
+    def checkConnected(self):
+        try:
+            # Trying to avoid re-authentication. Are ther better ways?
+            self.getClient().noop()
+        except:
+            self.setClient(f"{self.user}")
+
     def selectFolder(self, M, moreMessages = "",
                      newFolderName='', folderM=''):
+
+        self.checkConnected()
         data = self.listFolders()
         #print(data)
         listAllFolders = self.listFolderNames(data, moreMessages)
