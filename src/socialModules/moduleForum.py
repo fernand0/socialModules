@@ -26,6 +26,7 @@ from socialModules.moduleContent import *
 class moduleForum(Content): #, Queue):
 
     def setClient(self, forumData):
+        logging.info(f"Ffffforum: {forumData}")
         self.selected = None
         self.selector = None
         self.idSeparator = None
@@ -181,58 +182,79 @@ class moduleForum(Content): #, Queue):
     def setPosts(self):
         url = self.url
 
-        try:
-            forums = self.getLinks(url, 0)
-        except:
-            forums = []
-
-        logging.debug(" Selected .... %s" % self.selected)
-        logging.info(" Reading in .... %s" % self.url)
+        print(f"Uuuuuurl: {url} {url.startswith('rss')}")
         listId = []
         posts = {}
-        for i, forum in enumerate(forums):
-            logging.debug("Forum html: %s" % forum)
-            logging.debug("Forum name: %s" % forum.name)
-            if forum.name != "a":
-                # It is inside some other tag
-                logging.debug(f"Forum contents:{forum.contents}")
-                if isinstance(forum.contents[0], bs4.element.Tag):
-                    forum = forum.contents[0]
-                else:
-                    forum = forum.contents[1]
+        if not url.startswith('rss'):
+            try:
+                forums = self.getLinks(url, 0)
+            except:
+                forums = []
 
-                logging.debug("Forum in html: %s" % forum)
-            text = forum.text
-            logging.debug(f"Text: {text}")
-            if ((text.lower() in self.selected)
-                    or (text in self.selected)):
-                logging.debug(f"Forum: {forum}")
-                link = self.extractLink(forum)
-                logging.info(f"  - {text} {link}")
-                links = self.getLinks(link, 1)
-                for j, post in enumerate(links):
-                    logging.info(f"Post {post}")
-                    linkF = self.extractLink(post)
-                    logging.info(f"linkF {linkF}")
-                    if linkF:
-                        if hasattr(self, 'selectorlink'):
-                            logging.info(f"Selectorrrr: {self.selectorlink}")
-                            if not self.selectorlink in linkF:
-                                linkF = None
+            logging.debug(" Selected .... %s" % self.selected)
+            logging.info(" Reading in .... %s" % self.url)
+            for i, forum in enumerate(forums):
+                logging.debug("Forum html: %s" % forum)
+                logging.debug("Forum name: %s" % forum.name)
+                if forum.name != "a":
+                    # It is inside some other tag
+                    logging.debug(f"Forum contents:{forum.contents}")
+                    if isinstance(forum.contents[0], bs4.element.Tag):
+                        forum = forum.contents[0]
+                    else:
+                        forum = forum.contents[1]
+
+                    logging.debug("Forum in html: %s" % forum)
+                text = forum.text
+                logging.debug(f"Text: {text}")
+                if ((text.lower() in self.selected)
+                        or (text in self.selected)):
+                    logging.debug(f"Forum: {forum}")
+                    link = self.extractLink(forum)
+                    logging.info(f"  - {text} {link}")
+                    links = self.getLinks(link, 1)
+                    for j, post in enumerate(links):
+                        logging.info(f"Post {post}")
+                        linkF = self.extractLink(post)
+                        logging.info(f"linkF {linkF}")
                         if linkF:
-                            idPost = self.extractId(linkF)
-                        else:
-                            idPost = None
-                        logging.info(f"idPost {idPost}")
-                        if idPost and post.text:
-                            if not idPost in listId:
-                                listId.append(idPost)
-                                logging.debug(f"Post: {post}")
-                                textF = post.text
-                                logging.debug(f"textF: {textF}")
-                                posts[idPost] = [textF, linkF]
+                            if hasattr(self, 'selectorlink'):
+                                logging.info(f"Selectorrrr: {self.selectorlink}")
+                                if not self.selectorlink in linkF:
+                                    linkF = None
+                            if linkF:
+                                idPost = self.extractId(linkF)
+                            else:
+                                idPost = None
+                            logging.info(f"idPost {idPost}")
+                            if idPost and post.text:
+                                if not idPost in listId:
+                                    listId.append(idPost)
+                                    logging.debug(f"Post: {post}")
+                                    textF = post.text
+                                    logging.debug(f"textF: {textF}")
+                                    posts[idPost] = [textF, linkF]
 
-                time.sleep(1)
+                    time.sleep(1)
+        else:
+            url = self.url.replace('rss', 'https')
+            src = ('rss', 'set', url, 'posts')
+            more = []
+            import socialModules.moduleRules
+            rules = socialModules.moduleRules.moduleRules()
+            apiAux = rules.readConfigSrc("", src, more)
+            print(f"Uuuuurl: {apiAux.url}")
+            apiAux.setPosts()
+            for post in apiAux.getPosts():
+                idPost = self.extractId(apiAux.getPostLink(post))
+                textF = apiAux.getPostTitle(post)
+                linkF = apiAux.getPostLink(post)
+                if idPost:
+                    if not idPost in listId:
+                        listId.append(idPost)
+                        logging.debug(f"Post: {post}")
+                        logging.debug(f"textF: {textF}")
+                        posts[idPost] = [textF, linkF]
 
         if listId:
             self.posts = []
@@ -298,6 +320,8 @@ def main():
     logging.debug(f"Last: {lastLink} - {lastTime}")
     pos = forum.getLinkPosition(lastLink)
     logging.debug(f"Pos: {pos}")
+
+    print(f"Fffffforum: {forum.getPosts()}")
 
     if pos > len(forum.getPosts()) - 1:
         print("No new posts!\n")

@@ -237,6 +237,8 @@ def main():
         listPosts = {}
         for i,post in enumerate(apiSrc.getPosts()):
             print(f"Post {i}): {post}")
+            print(f"{i}) {apiSrc.getPostTitle(post)}")
+            print(f"     {apiSrc.getPostLink(post)}")
         return
 
     testingSearch = False

@@ -815,7 +815,9 @@ class moduleRules:
             apiSrc = getApi(profile, account, indent)
         apiSrc.src = src
         apiSrc.setPostsType(src[-1])
+        print(f"Uuuuurlllll: {apiSrc.url}")
         apiSrc.setMoreValues(more)
+        print(f"Uuuuurlllll: {apiSrc.url}")
 
         # msgLog = f"{indent} Url: {apiSrc.getUrl()}" #: {src[1:]}"
         # logMsg(msgLog, 2, 0)
