@@ -182,7 +182,6 @@ class moduleForum(Content): #, Queue):
     def setPosts(self):
         url = self.url
 
-        print(f"Uuuuuurl: {url} {url.startswith('rss')}")
         listId = []
         posts = {}
         if not url.startswith('rss'):
@@ -243,13 +242,12 @@ class moduleForum(Content): #, Queue):
             import socialModules.moduleRules
             rules = socialModules.moduleRules.moduleRules()
             apiAux = rules.readConfigSrc("", src, more)
-            print(f"Uuuuurl: {apiAux.url}")
             apiAux.setPosts()
             for post in apiAux.getPosts():
                 idPost = self.extractId(apiAux.getPostLink(post))
                 textF = apiAux.getPostTitle(post)
                 linkF = apiAux.getPostLink(post)
-                if idPost:
+                if idPost and not "• Re: " in textF:
                     if not idPost in listId:
                         listId.append(idPost)
                         logging.debug(f"Post: {post}")
@@ -320,8 +318,6 @@ def main():
     logging.debug(f"Last: {lastLink} - {lastTime}")
     pos = forum.getLinkPosition(lastLink)
     logging.debug(f"Pos: {pos}")
-
-    print(f"Fffffforum: {forum.getPosts()}")
 
     if pos > len(forum.getPosts()) - 1:
         print("No new posts!\n")
