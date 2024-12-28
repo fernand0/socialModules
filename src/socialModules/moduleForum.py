@@ -147,7 +147,7 @@ class moduleForum(Content): #, Queue):
             # idPost = int(link[pos + 1 : -1])
             idPost = link[pos + 1 : -1]
         else:
-            if pos2>0: 
+            if pos2>0:
                 idPost = link[pos+1:pos2]
             else:
                 # idPost = int(link[pos + 1 :])
@@ -160,7 +160,7 @@ class moduleForum(Content): #, Queue):
         elif idPost.find('#')>=0:
             idPost = None # int(idPost.split('#')[0])
         else:
-            try: 
+            try:
                 idPost = int(idPost)
             except:
                 try:
@@ -270,7 +270,7 @@ class moduleForum(Content): #, Queue):
             logging.debug(f"Position: {pos} Len: {len(self.posts)}")
             # print(self.posts[pos][1])
             # print('>>>',pos, len(self.posts))
-            if pos == len(self.posts):  
+            if pos == len(self.posts):
                 # and (str(lastLink) != self.posts[pos][1]):
                 pos = 0
             if pos < len(self.posts):
@@ -290,7 +290,7 @@ class moduleForum(Content): #, Queue):
 def main():
 
     logging.basicConfig(
-        stream=sys.stdout, level=logging.DEBUG, 
+        stream=sys.stdout, level=logging.DEBUG,
         format="%(asctime)s %(message)s"
     )
     import socialModules.moduleRules
