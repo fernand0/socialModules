@@ -123,11 +123,11 @@ class moduleRss(Content): #, Queue):
             urlRss = urllib.parse.urljoin(self.url,self.getRssFeed())
         msgLog = f"{self.indent} Service {self.service} Feed: {urlRss}"
         logMsg(msgLog, 2, 0)
-        if 'github.com' in urlRss:
-            self.feed = feedparser.parse(urlRss,
-                    request_headers={'Accept':'application/atom+xml'})
-        else:
-            self.feed = feedparser.parse(urlRss)
+        # if 'github.com' in urlRss:
+        #     self.feed = feedparser.parse(urlRss,
+        #             request_headers={'Accept':'application/atom+xml'})
+        # else:
+        self.feed = feedparser.parse(urlRss)
 
         msgLog = f"{self.indent} Service {self.service} Feed content: {self.feed}"
         logMsg(msgLog, 2, 0)

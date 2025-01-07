@@ -42,6 +42,9 @@ class moduleFlickr(Content): #, Queue):
 
                 # Trade the request token for an access token
                 flickr.get_access_token(verifier)
+        except requests.exceptions.ConnectionError:
+            res = self.report(self.indent, 'Error in initApi. Connection Error',
+                              '', sys.exc_info())
         except:
             res = self.report(self.indent, 'Error in initApi',
                               '', sys.exc_info())

@@ -84,7 +84,7 @@ class Content:
 
         self.indent = f"{self.indent} "
         msgLog = f"{self.indent} Getting keys"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 2, 0)
         keys = ""
         try:
             keys = self.getKeys(config)
