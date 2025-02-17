@@ -251,6 +251,7 @@ class Content:
         logMsg(msgLog, 2, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
             # typeposts = self.getPostsType()
+            logging.info("hasattr")
             if self.getPostsType() in [
                 "posts",
                 "drafts",
@@ -259,11 +260,15 @@ class Content:
                 "search",
                 "queue",
             ]:
+                logging.info("hasattr known")
                 cmd = getattr(self, f"setApi{self.getPostsType().capitalize()}")
             else:
-                self.setChannel(self.getPostsType())
+                logging.info("hasattr else")
+                if not self.getChannel():
+                    self.setChannel(self.getPostsType())
                 cmd = getattr(self, "setApiPosts")
         else:
+            logging.info("no hasattr else")
             cmd = getattr(self, "setApiPosts")
 
         self.indent = f"{self.indent} "

@@ -89,7 +89,7 @@ class modulePocket(Content): #,Queue):
     def setApiPosts(self):
         posts = []
         try:
-            dictPosts = self.client.retrieve(state="unread", sort="oldest")
+            dictPosts = self.client.retrieve(state="unread", sort="new")
             dictPosts = dictPosts['list']
             for post in dictPosts:
                 posts.append(dictPosts[post])

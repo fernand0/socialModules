@@ -74,6 +74,9 @@ class moduleFlickr(Content): #, Queue):
 
         posts = []
         posts = self.apiCall('people.getPhotos', user_id='fernand0')
+        # logging.debug(f"Post: {posts[0]}")
+        # logging.debug(f"Post photos: {posts[0]['photos']}")
+        # logging.debug(f"Post photos photo: {posts[0]['photos']['photo']}")
         posts = posts[0]['photos']['photo']
         return posts
 
