@@ -200,7 +200,7 @@ class moduleImdb(Content): #,Queue):
 
     def getPostLine(self, post): 
         logging.info(f"Post: {post}")
-        if post['g'] == 'CN': #True: #post['GENERO'] == 'Cine':
+        if post['g'] == True: #post['GENERO'] == 'Cine':
             logging.info("Post line {}".format(post))
             hini = datetime.datetime.fromtimestamp(self.getPostTimeIni(post))
             hini = f"{hini.hour}:{hini.minute}"
