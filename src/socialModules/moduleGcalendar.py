@@ -37,6 +37,9 @@ class moduleGcalendar(Content, socialGoogle):
     def setActive(self, idCal):
         self.active = idCal
 
+    def getActive(self):
+        return self.active
+
     def setCalendarList(self):
         logging.info(f"{self.indent} Setting calendar list")
         api = self.getClient()
@@ -92,6 +95,11 @@ class moduleGcalendar(Content, socialGoogle):
 
     def getPostTitle(self, post):
         text = post.get('summary')
+        return text
+
+    def getPostId(self, post):
+        print(f"Post: {post}")
+        text = post.get('id')
         return text
 
     def getPostAbstract(self, post):

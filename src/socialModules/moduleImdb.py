@@ -22,7 +22,7 @@ class moduleImdb(Content): #,Queue):
         self.service = 'Imdb'
         self.client = None
         self.url=None
-        self.fileTV = '/tmp/tv.json'
+        self.fileTV = '/tmp/tv.html'
         self.gen = 'CN'
         self.cache = False
         self.channels = None
@@ -70,39 +70,62 @@ class moduleImdb(Content): #,Queue):
         if not self.cache: 
             logging.info("Downloading data {}".format(self.url)) 
             req = urllib.request.Request(self.url, headers={
-                                "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84"
-                            }) 
+                      "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84"
+                      }) 
             request = urllib.request.urlopen(req)
             json_data = request.read().decode() 
             f = open(self.fileTV, 'w') 
             f.write(json_data) 
             f.close() 
 
-        data = json.loads(json_data) 
+        soup = BeautifulSoup(json_data, features="lxml")
         logging.info("Data read...")
+        links = []
+        for link in soup.find_all("div", { "class" : "mc-image"}): 
+            links.append(link)
+        titles = []
+        for title in soup.find_all("div", { "class" : "mtitle"}): 
+            titles.append(title)
+        channels = []
+        for link in soup.find_all("div", { "class" : "canal-badge"}):
+            channels.append(link)
+        times = []
+        for time in soup.find_all("div", { "class" : "triangle-badge"}):
+            times.append(time)
+
+        for i, link in enumerate(links): 
+            cadName = channels[i].contents[1]['title']
+
+
         for i in data: 
             cadName = i['name'][:-3]
-            if cadName in self.channels:
-                for e in i['events']:
-                # for j in range(len(data['data'][i]['PROGRAMAS'])): 
-                    #print(j) 
-                    # genero = data['data'][i]['PROGRAMAS'][j]['GENERO'] 
-                    genero = e['g']
-                    if ('Cine' in e['t'] or genero == self.gen):
-                        # title = data['data'][i]['PROGRAMAS'][j]['TITULO'] 
-                        title = e['t']
-                        if not genero:
-                            e['g'] = self.gen
-                            genero = self.gen
-                        # horaIni = data['data'][i]['PROGRAMAS'][j]['HORA_INICIO']
-                        # horaFin = data['data'][i]['PROGRAMAS'][j]['HORA_FIN'] 
-                        hini = datetime.datetime.fromtimestamp(e['hi']) 
-                        hfin = datetime.datetime.fromtimestamp(e['hf'])
-                        # self.data.append((horaIni,horaFin, title, '-', cadName, genero)) 
-                        self.data.append((hini,hfin, title, '-', cadName, genero)) 
-                        # FIXME: ¿Todos o sólo estos?
-                        posts.append(e)
-                        posts[-1]['CADENA'] = cadName
+            genero = titles[i].contents[3].replace(' ', '')
+            title = titles[i].contents[0].contents[0]
+            hini = times[i].contents[0].contents[0].contents[0]
+            hfin = ""
+            self.data.append((hini, hfin, title, '-', cadName, genero))
+
+            #if cadName in self.channels:
+            #    for e in i['events']:
+            #    # for j in range(len(data['data'][i]['PROGRAMAS'])): 
+            #        #print(j) 
+            #        # genero = data['data'][i]['PROGRAMAS'][j]['GENERO'] 
+            #        genero = e['g']
+            #        if ('Cine' in e['t'] or genero == self.gen):
+            #            # title = data['data'][i]['PROGRAMAS'][j]['TITULO'] 
+            #            title = e['t']
+            #            if not genero:
+            #                e['g'] = self.gen
+            #                genero = self.gen
+            #            # horaIni = data['data'][i]['PROGRAMAS'][j]['HORA_INICIO']
+            #            # horaFin = data['data'][i]['PROGRAMAS'][j]['HORA_FIN'] 
+            #            hini = datetime.datetime.fromtimestamp(e['hi']) 
+            #            hfin = datetime.datetime.fromtimestamp(e['hf'])
+            #            # self.data.append((horaIni,horaFin, title, '-', cadName, genero)) 
+            #            self.data.append((hini,hfin, title, '-', cadName, genero)) 
+            #            # FIXME: ¿Todos o sólo estos?
+            #            posts.append(e)
+            #            posts[-1]['CADENA'] = cadName
         return posts
 
     def setPosts(self):
