@@ -52,11 +52,12 @@ class moduleImdb(Content): #,Queue):
             logging.info("Fail")
 
     def setInfoData(self): 
-        # This does not belong here it is the source of the data
+        # This does not belong here; it is the source of the data
         posts = []
         self.data = []
         logging.info("Reading data...") 
         if os.path.exists(self.fileTV): 
+            import time
             timeNow = time.time() 
             timeFile = os.path.getmtime(self.fileTV)
             dateFile = datetime.datetime.fromtimestamp(timeFile) 
@@ -94,15 +95,25 @@ class moduleImdb(Content): #,Queue):
             times.append(time)
 
         for i, link in enumerate(links): 
+            e = {}
             cadName = channels[i].contents[1]['title']
-
-
-        for i in data: 
-            cadName = i['name'][:-3]
             genero = titles[i].contents[3].replace(' ', '')
             title = titles[i].contents[0].contents[0]
+            theLink = link.contents[1]['href']
+            cadYear = titles[i].contents[1]#.contents
+            posY = cadYear.find('(')
+            year =  cadYear[posY+1:posY+5]
             hini = times[i].contents[0].contents[0].contents[0]
             hfin = ""
+            e['release_date'] = year
+            e['t'] = title
+            e['URL'] = theLink
+            e['CADENA'] = cadName
+            e['hi'] = hini
+            e['d'] = ""
+            e['GENERO'] = genero
+            posts.append(e)
+
             self.data.append((hini, hfin, title, '-', cadName, genero))
 
             #if cadName in self.channels:
@@ -140,15 +151,16 @@ class moduleImdb(Content): #,Queue):
         useCache = False
         j = 0
         for i, post in enumerate(posts): 
-            hhIni = datetime.datetime.fromtimestamp(self.getPostTimeIni(post))
-            hhIni, ddIni = hhIni.hour, hhIni.day
-            if ((dd == str(ddIni) and hh <= str(hhIni))
-                    and (post['g'] == self.gen)):
-                try:
-                    res = self.setPostMoreDataNew(post)
-                except:
-                    res = ""
-                j = j + 1
+            hhIni = self.getPostTimeIni(post)
+            # hhIni, ddIni = hhIni.hour, hhIni.day
+            #ddIni = ""
+            # if ((dd == str(ddIni) and hh <= str(hhIni))
+            #         and (post['g'] == self.gen)):
+            #     try:
+            res = self.setPostMoreDataNew(post)
+            #    except:
+            #        res = ""
+            j = j + 1
         # self.posts = sorted(posts, key = lambda d: d['HORA_INICIO'])
         # logging.info(f"Posts: {posts}")
         self.posts = sorted(posts, key = lambda d: d['hi'])
@@ -393,7 +405,6 @@ def main():
             level=logging.DEBUG, 
             format='%(asctime)s %(message)s')
 
-
     import moduleRules
     rules = moduleRules.moduleRules()
     rules.checkRules()
@@ -423,7 +434,7 @@ def main():
         print("Testing title and link")
 
         for i, post in enumerate(apiSrc.getPosts()):
-            if post['GENERO'] == 'Cine':
+            if True: #post['GENERO'] == 'Cine':
                 print(f"Post: {post}")
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
