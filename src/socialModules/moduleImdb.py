@@ -202,9 +202,9 @@ class moduleImdb(Content): #,Queue):
         logging.info(f"Post: {post}")
         if True: #post['g'] == 'CN': #True: #post['GENERO'] == 'Cine':
             logging.info("Post line {}".format(post))
-            hini = datetime.datetime.fromtimestamp(self.getPostTimeIni(post))
+            hini = self.getPostTimeIni(post)
             hini = f"{hini.hour}:{hini.minute}"
-            hfin = datetime.datetime.fromtimestamp(self.getPostTimeEnd(post))
+            hfin = self.getPostTimeEnd(post)
             hfin = f"{hfin.hour}:{hfin.minute}"
             line = (f"> [{self.getPostAvg(post)}] - "
                    f"({self.getPostCode(post)}) "
