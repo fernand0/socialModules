@@ -107,7 +107,7 @@ class moduleImdb(Content): #,Queue):
             hfin = ""
             e['release_date'] = year
             e['t'] = title
-            e['URL'] = theLink
+            e['URL'] = urllib.parse.urljoin(self.url, theLink)
             e['CADENA'] = cadName
             e['hi'] = hini
             e['d'] = ""
@@ -287,7 +287,7 @@ class moduleImdb(Content): #,Queue):
         m = hashlib.md5()
         m.update(title.encode())
         titleHash = m.hexdigest()
-        print(f"Hash: {titleHash}")
+        logging.debug(f"Hash: {titleHash}")
         fileNamePath = "/tmp/movies"
         fileNameHash = f"{fileNamePath}/{titleHash}"
         movieData = {}
