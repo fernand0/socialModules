@@ -1074,7 +1074,8 @@ class Content:
         elif len(args) == 1:
             # apiSrc= args[0]
             listPosts = args  # [1]
-            msgLog = f"{self.indent} Publishing post {listPosts}" f" len(args) == 1"
+            msgLog = (f"{self.indent} Publishing post {listPosts}" 
+                      f" len(args) == 1")
             logMsg(msgLog, 2, 0)
             return
         if more:
@@ -1117,7 +1118,8 @@ class Content:
                     reply = method(api=api, post=post)
                 else:
                     msgLog = (
-                        f"{self.indent} Calling method " f"with title, link, comment"
+                        f"{self.indent} Calling method " 
+                        f"with title, link, comment"
                     )
                     logMsg(msgLog, 2, 0)
                     reply = method(title, link, comment)

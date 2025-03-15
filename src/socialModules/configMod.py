@@ -194,6 +194,8 @@ def getApi(profile, nick, indent="", channel = None):
     # msgLog = (f"{indent}  Api {api}")
     # logMsg(msgLog, 2, 0)
 
+    api.profile = profile
+    api.nick = nick
     api.indent = f"{indent} "
     api.setClient(nick)
     if channel:
