@@ -128,6 +128,10 @@ class moduleRss(Content): #, Queue):
         #             request_headers={'Accept':'application/atom+xml'})
         # else:
         self.feed = feedparser.parse(urlRss)
+        if 'bozo_exception' in self.feed:
+            self.feed = feedparser.parse(urlRss,
+                                         request_headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36' })
+
 
         msgLog = f"{self.indent} Service {self.service} Feed content: {self.feed}"
         logMsg(msgLog, 2, 0)
