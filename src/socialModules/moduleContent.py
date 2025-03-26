@@ -251,6 +251,7 @@ class Content:
         logMsg(msgLog, 2, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
             # typeposts = self.getPostsType()
+            logging.info("hasattr")
             if self.getPostsType() in [
                 "posts",
                 "drafts",
@@ -259,11 +260,15 @@ class Content:
                 "search",
                 "queue",
             ]:
+                logging.info("hasattr known")
                 cmd = getattr(self, f"setApi{self.getPostsType().capitalize()}")
             else:
-                self.setChannel(self.getPostsType())
+                logging.info("hasattr else")
+                if not self.getChannel():
+                    self.setChannel(self.getPostsType())
                 cmd = getattr(self, "setApiPosts")
         else:
+            logging.info("no hasattr else")
             cmd = getattr(self, "setApiPosts")
 
         self.indent = f"{self.indent} "
@@ -1069,7 +1074,8 @@ class Content:
         elif len(args) == 1:
             # apiSrc= args[0]
             listPosts = args  # [1]
-            msgLog = f"{self.indent} Publishing post {listPosts}" f" len(args) == 1"
+            msgLog = (f"{self.indent} Publishing post {listPosts}" 
+                      f" len(args) == 1")
             logMsg(msgLog, 2, 0)
             return
         if more:
@@ -1112,7 +1118,8 @@ class Content:
                     reply = method(api=api, post=post)
                 else:
                     msgLog = (
-                        f"{self.indent} Calling method " f"with title, link, comment"
+                        f"{self.indent} Calling method " 
+                        f"with title, link, comment"
                     )
                     logMsg(msgLog, 2, 0)
                     reply = method(title, link, comment)

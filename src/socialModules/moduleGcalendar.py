@@ -37,6 +37,9 @@ class moduleGcalendar(Content, socialGoogle):
     def setActive(self, idCal):
         self.active = idCal
 
+    def getActive(self):
+        return self.active
+
     def setCalendarList(self):
         logging.info(f"{self.indent} Setting calendar list")
         api = self.getClient()
