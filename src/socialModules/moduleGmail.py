@@ -385,9 +385,13 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return links
 
     def getPostContentHtml(self, post):
+        msgLog = f"{self.indent} getPostDate"
+        logMsg(msgLog, 2, 0)
         # message = self.getMessageId(self.getPostId(post))
-        snippet = self.getHeader(post, "snippet")
-        return snippet
+        if post:
+            snippet = self.getHeader(post, "snippet")
+            return snippet
+        return None
 
     def getPostLinks(self, post):
         message = self.getMessageId(self.getPostId(post))
@@ -422,8 +426,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def getPostTitle(self, post):
         msgLog = f"{self.indent} getPostTitle"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent} {post}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} {post}"
+        # logMsg(msgLog, 2, 0)
         title = ""
         if post:
             title = self.getHeader(post)
@@ -432,8 +436,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def getPostDate(self, post):
         msgLog = f"{self.indent} getPostDate"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent} {post}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} Post: {post}"
+        # logMsg(msgLog, 2, 0)
         if post:
             date = self.getHeader(post, "internalDate")
             # date = int(self.getHeader(post,'internalDate'))/1000
@@ -443,7 +447,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return None
 
     def getHeader(self, message, header="Subject"):
-        msgLog = f"{self.indent} getHeader"
+        msgLog = f"{self.indent} getHeader {header}"
         logMsg(msgLog, 2, 0)
         msgLog = f"{self.indent} Message: {message}"
         logMsg(msgLog, 2, 0)
@@ -489,20 +493,20 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         if not res:
             print("No ressss")
             res = message
-        print(f"Res: {res}")
+        # print(f"Res: {res}")
         if "parts" in res:
             if "parts" in res["parts"]:
-                print("parts 1 parts")
+                # print("parts 1 parts")
                 text = res["parts"]["parts"][0]["parts"]
             else:
                 text = res["parts"][0]
                 if "parts" in text:
-                    print("parts 2 parts")
+                    # print("parts 2 parts")
                     text = text["parts"][0]
         else:
-            print("No partssss")
+            # print("No partssss")
             text = res
-        print(f"Headers: {text['headers']}")
+        # print(f"Headers: {text['headers']}")
 
         dataB = ""
         if "body" in text and "data" in text["body"]:

@@ -94,6 +94,11 @@ class moduleGcalendar(Content, socialGoogle):
         text = post.get('summary')
         return text
 
+    def getPostId(self, post):
+        print(f"Post: {post}")
+        text = post.get('id')
+        return text
+
     def getPostAbstract(self, post):
         if "start" in post:
             if "dateTime" in post["start"]:
