@@ -217,9 +217,9 @@ class moduleTwitter(Content): #, Queue):
         return res
 
     def publishApiPost(self, *args, **kwargs):
-        if args and len(args) == 3 and args[0]:
-            # logging.info(f"Tittt: args: {args}")
-            title, link, comment = args
+        # if args and len(args) == 3 and args[0]:
+        #     # logging.info(f"Tittt: args: {args}")
+        #     title, link, comment = args
         if kwargs:
             # logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs

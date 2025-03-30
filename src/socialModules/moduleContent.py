@@ -260,15 +260,15 @@ class Content:
                 "search",
                 "queue",
             ]:
-                logging.info("hasattr known")
+                logging.debug("hasattr known")
                 cmd = getattr(self, f"setApi{self.getPostsType().capitalize()}")
             else:
-                logging.info("hasattr else")
+                logging.debug("hasattr else")
                 if not self.getChannel():
                     self.setChannel(self.getPostsType())
                 cmd = getattr(self, "setApiPosts")
         else:
-            logging.info("no hasattr else")
+            logging.debug("no hasattr else")
             cmd = getattr(self, "setApiPosts")
 
         self.indent = f"{self.indent} "
