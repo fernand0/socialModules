@@ -32,6 +32,9 @@ class moduleBlsk(Content): #, Queue):
                 self.me = client.me
             else:
                 self.me = None
+        except atproto_client.exceptions.NetworkError:
+            self.report(self.service, 'Error en setApiFavs. Network Error. ', 
+                        '', sys.exc_info())
         except:
             res = self.report(self.indent, 'Error in initApi',
                               '', sys.exc_info())
@@ -76,7 +79,7 @@ class moduleBlsk(Content): #, Queue):
 
             if not error:
                 posts = posts['feed']
-        except atproto_client.exceptions.NetworkError:
+        except atproto.atproto_client.exceptions.NetworkError:
             self.report(self.service, 'Error en setApiFavs. Network Error. ', 
                         '', sys.exc_info())
         except: 

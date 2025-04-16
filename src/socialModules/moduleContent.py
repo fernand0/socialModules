@@ -260,15 +260,15 @@ class Content:
                 "search",
                 "queue",
             ]:
-                logging.info("hasattr known")
+                logging.debug("hasattr known")
                 cmd = getattr(self, f"setApi{self.getPostsType().capitalize()}")
             else:
-                logging.info("hasattr else")
+                logging.debug("hasattr else")
                 if not self.getChannel():
                     self.setChannel(self.getPostsType())
                 cmd = getattr(self, "setApiPosts")
         else:
-            logging.info("no hasattr else")
+            logging.debug("no hasattr else")
             cmd = getattr(self, "setApiPosts")
 
         self.indent = f"{self.indent} "
@@ -433,12 +433,12 @@ class Content:
                 with open(fileName, "rb") as f:
                     linkLast = f.read()
                     linkLast = linkLast.decode().split()  # last published
+                lastTime = os.path.getctime(fileName)
             except:
                 self.report(
                     self.service, self.indent, f"fileName: {fileName}", sys.exc_info()
                 )
 
-            lastTime = os.path.getctime(fileName)
         else:
             lastTime = 0
             self.report(self.service, msgLog, "", "")
