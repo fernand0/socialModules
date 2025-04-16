@@ -33,7 +33,6 @@ def logMsg(msgLog, log=1, output=1):
     if output == 1:
         print(f"{msgLog}")
     elif output == 2:
-        print("")
         print("====================================")
         print("{}".format(msgLog))
         print("====================================")

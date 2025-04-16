@@ -433,12 +433,12 @@ class Content:
                 with open(fileName, "rb") as f:
                     linkLast = f.read()
                     linkLast = linkLast.decode().split()  # last published
+                lastTime = os.path.getctime(fileName)
             except:
                 self.report(
                     self.service, self.indent, f"fileName: {fileName}", sys.exc_info()
                 )
 
-            lastTime = os.path.getctime(fileName)
         else:
             lastTime = 0
             self.report(self.service, msgLog, "", "")

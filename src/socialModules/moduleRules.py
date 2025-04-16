@@ -849,6 +849,7 @@ class moduleRules:
         if apiSrc:
             apiDst.setLastLink(apiSrc)
         else:
+            # FIXME. Do we need this? 
             apiDst.setLastLink(apiDst)
 
         # FIXME: best in readConfigSrc (readConfigDst, since we need it)?

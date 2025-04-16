@@ -95,9 +95,9 @@ class moduleSmtp(Content): #, Queue):
             msg['Subject'] = subject
 
             htmlDoc = (f"<html><body>"
-                       f"Title: {subject}\n"
-                       f"Url: {link}\n"
-                       f"{post}"
+                       f"Title: {subject}<br />\n"
+                       f"Url: {link}<br />\n"
+                       f"{post}<br />\n"
                        f"</body></html>\n")
 
             if comment:
