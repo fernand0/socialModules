@@ -108,7 +108,6 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         list_labels = [
             label,
         ]
-        logging.info(list_labels)
         response = (
             api.users()
             .messages()
@@ -489,20 +488,19 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         if not res:
             print("No ressss")
             res = message
-        print(f"Res: {res}")
         if "parts" in res:
             if "parts" in res["parts"]:
-                print("parts 1 parts")
+                logging.debug("parts 1 parts")
                 text = res["parts"]["parts"][0]["parts"]
             else:
                 text = res["parts"][0]
                 if "parts" in text:
-                    print("parts 2 parts")
+                    logging.debug("parts 2 parts")
                     text = text["parts"][0]
         else:
-            print("No partssss")
+            logging.debug("No partssss")
             text = res
-        print(f"Headers: {text['headers']}")
+        # print(f"Headers: {text['headers']}")
 
         dataB = ""
         if "body" in text and "data" in text["body"]:

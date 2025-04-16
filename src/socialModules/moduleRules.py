@@ -386,8 +386,8 @@ class moduleRules:
         # Now we can see which destinations can be also sources
         # msgLog = f"Dsts: {dsts}"
         # logMsg(msgLog, 2, 0)
-        logging.info(f"Srcs: {srcs}")
-        logging.info(f"SrcsA: {srcsA}")
+        # logging.info(f"Srcs: {srcs}")
+        # logging.info(f"SrcsA: {srcsA}")
 
         self.indent = f"{self.indent} Destinations:"
         for dst in dsts:
@@ -543,7 +543,7 @@ class moduleRules:
                 if not selector2:
                     rules.append(src)
                 else:
-                    if selector2 == self.getProfileAction(src):
+                    if selector2 in self.getProfileAction(src):
                         # FIXME: ??
                         logging.debug(f"Second Selector: {selector2}")
                         if not selector3:
