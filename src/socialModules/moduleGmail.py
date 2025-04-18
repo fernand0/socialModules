@@ -280,8 +280,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def getMessage(self, idPost):
         api = self.getClient()
-        logging.info(f"Type: {api.getPostsType()}")
-        if 'draft' in api.getPostsType(): 
+        if 'draft' in self.getPostsType(): 
             message = api.users().drafts().get(userId="me", id=idPost).execute()
         else:
             message = api.users().messages().get(userId="me", id=idPost).execute()
