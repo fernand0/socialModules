@@ -825,6 +825,33 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         # Undefined
         pass
 
+    def publishApiPost(self, *args, **kwargs):
+        if args and len(args) == 3:
+            # logging.info(f"Tittt: args: {args}")
+            title, link, comment = args
+        if kwargs:
+            logging.info(f"Tittt: kwargs: {kwargs}")
+            more = kwargs
+            # FIXME: We need to do something here
+            event = more.get("post", "")
+            api = more.get("api", "")
+            idCal = more.get("idCal", "")
+        res = "Fail!"
+        try:
+            # credentials = self.authorize()
+            res = (
+                api.getClient()
+                .events()
+                .insert(calendarId=idCal, body=event)
+                .execute()
+            )
+            # logging.info("Res: %s" % res)
+        except:
+            res = self.report("Gmail", idPost, "", sys.exc_info())
+
+        return f"Res: {res}"
+
+
 
 def main():
     logging.basicConfig(
