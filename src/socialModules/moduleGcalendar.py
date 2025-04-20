@@ -183,9 +183,11 @@ class moduleGcalendar(Content, socialGoogle):
             # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
         if kwargs:
-            logging.info(f"Tittt: kwargs: {kwargs}")
+            # logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
             # FIXME: We need to do something here
+            # Example:
+            # calendar_result = api_dst.publishPost(post={'event':event,'idCal':selected_calendar}, api=api_dst)
             event = more.get("post", "").get("event","")
             api = more.get("api", "")
             idCal = more.get("post", "").get("idCal")

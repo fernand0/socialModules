@@ -220,9 +220,13 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         if isinstance(label, str):
             self.setLabels()
             label = self.getLabels(label)
-            label = label[0]
-            msgLog = f"{self.indent} Label: {label}"
-            logMsg(msgLog, 2, 0)
+            if len(label)>0:
+                label = label[0]
+                msgLog = f"{self.indent} Label: {label}"
+                logMsg(msgLog, 2, 0)
+            else:
+                msgLog = f"{self.indent} The label does not exist"
+                logMsg(msgLog, 2, 0)
         if label:
             posts = self.getListLabel(label["id"])
         else:
