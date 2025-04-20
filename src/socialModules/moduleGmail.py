@@ -108,7 +108,6 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         list_labels = [
             label,
         ]
-        logging.info(list_labels)
         response = (
             api.users()
             .messages()
@@ -221,9 +220,13 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         if isinstance(label, str):
             self.setLabels()
             label = self.getLabels(label)
-            label = label[0]
-            msgLog = f"{self.indent} Label: {label}"
-            logMsg(msgLog, 2, 0)
+            if len(label)>0:
+                label = label[0]
+                msgLog = f"{self.indent} Label: {label}"
+                logMsg(msgLog, 2, 0)
+            else:
+                msgLog = f"{self.indent} The label does not exist"
+                logMsg(msgLog, 2, 0)
         if label:
             posts = self.getListLabel(label["id"])
         else:
@@ -281,7 +284,10 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def getMessage(self, idPost):
         api = self.getClient()
-        message = api.users().drafts().get(userId="me", id=idPost).execute()
+        if 'draft' in self.getPostsType(): 
+            message = api.users().drafts().get(userId="me", id=idPost).execute()
+        else:
+            message = api.users().messages().get(userId="me", id=idPost).execute()
         # print(message)
         # print(message['message'])
         return message
@@ -489,20 +495,19 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         if not res:
             print("No ressss")
             res = message
-        print(f"Res: {res}")
         if "parts" in res:
             if "parts" in res["parts"]:
-                print("parts 1 parts")
+                logging.debug("parts 1 parts")
                 text = res["parts"]["parts"][0]["parts"]
             else:
                 text = res["parts"][0]
                 if "parts" in text:
-                    print("parts 2 parts")
+                    logging.debug("parts 2 parts")
                     text = text["parts"][0]
         else:
-            print("No partssss")
+            logging.debug("No partssss")
             text = res
-        print(f"Headers: {text['headers']}")
+        # print(f"Headers: {text['headers']}")
 
         dataB = ""
         if "body" in text and "data" in text["body"]:
@@ -823,6 +828,33 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def movePost(self, log, pp, profiles, toMove, toWhere):
         # Undefined
         pass
+
+    def publishApiPost(self, *args, **kwargs):
+        if args and len(args) == 3:
+            # logging.info(f"Tittt: args: {args}")
+            title, link, comment = args
+        if kwargs:
+            logging.info(f"Tittt: kwargs: {kwargs}")
+            more = kwargs
+            # FIXME: We need to do something here
+            event = more.get("post", "")
+            api = more.get("api", "")
+            idCal = more.get("idCal", "")
+        res = "Fail!"
+        try:
+            # credentials = self.authorize()
+            res = (
+                api.getClient()
+                .events()
+                .insert(calendarId=idCal, body=event)
+                .execute()
+            )
+            # logging.info("Res: %s" % res)
+        except:
+            res = self.report("Gmail", idPost, "", sys.exc_info())
+
+        return f"Res: {res}"
+
 
 
 def main():

@@ -22,7 +22,7 @@ class moduleImdb(Content): #,Queue):
         self.service = 'Imdb'
         self.client = None
         self.url=None
-        self.fileTV = '/tmp/tv.json'
+        self.fileTV = '/tmp/tv.html'
         self.gen = 'CN'
         self.cache = False
         self.channels = None
@@ -52,11 +52,12 @@ class moduleImdb(Content): #,Queue):
             logging.info("Fail")
 
     def setInfoData(self): 
-        # This does not belong here it is the source of the data
+        # This does not belong here; it is the source of the data
         posts = []
         self.data = []
         logging.info("Reading data...") 
         if os.path.exists(self.fileTV): 
+            import time
             timeNow = time.time() 
             timeFile = os.path.getmtime(self.fileTV)
             dateFile = datetime.datetime.fromtimestamp(timeFile) 
@@ -70,39 +71,73 @@ class moduleImdb(Content): #,Queue):
         if not self.cache: 
             logging.info("Downloading data {}".format(self.url)) 
             req = urllib.request.Request(self.url, headers={
-                                "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84"
-                            }) 
+                      "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84"
+                      }) 
             request = urllib.request.urlopen(req)
             json_data = request.read().decode() 
             f = open(self.fileTV, 'w') 
             f.write(json_data) 
             f.close() 
 
-        data = json.loads(json_data) 
+        soup = BeautifulSoup(json_data, features="lxml")
         logging.info("Data read...")
-        for i in data: 
-            cadName = i['name'][:-3]
-            if cadName in self.channels:
-                for e in i['events']:
-                # for j in range(len(data['data'][i]['PROGRAMAS'])): 
-                    #print(j) 
-                    # genero = data['data'][i]['PROGRAMAS'][j]['GENERO'] 
-                    genero = e['g']
-                    if ('Cine' in e['t'] or genero == self.gen):
-                        # title = data['data'][i]['PROGRAMAS'][j]['TITULO'] 
-                        title = e['t']
-                        if not genero:
-                            e['g'] = self.gen
-                            genero = self.gen
-                        # horaIni = data['data'][i]['PROGRAMAS'][j]['HORA_INICIO']
-                        # horaFin = data['data'][i]['PROGRAMAS'][j]['HORA_FIN'] 
-                        hini = datetime.datetime.fromtimestamp(e['hi']) 
-                        hfin = datetime.datetime.fromtimestamp(e['hf'])
-                        # self.data.append((horaIni,horaFin, title, '-', cadName, genero)) 
-                        self.data.append((hini,hfin, title, '-', cadName, genero)) 
-                        # FIXME: ¿Todos o sólo estos?
-                        posts.append(e)
-                        posts[-1]['CADENA'] = cadName
+        links = []
+        for link in soup.find_all("div", { "class" : "mc-image"}): 
+            links.append(link)
+        titles = []
+        for title in soup.find_all("div", { "class" : "mtitle"}): 
+            titles.append(title)
+        channels = []
+        for link in soup.find_all("div", { "class" : "canal-badge"}):
+            channels.append(link)
+        times = []
+        for time in soup.find_all("div", { "class" : "triangle-badge"}):
+            times.append(time)
+
+        for i, link in enumerate(links): 
+            e = {}
+            cadName = channels[i].contents[1]['title']
+            genero = titles[i].contents[3].replace(' ', '')
+            title = titles[i].contents[0].contents[0]
+            theLink = link.contents[1]['href']
+            cadYear = titles[i].contents[1]#.contents
+            posY = cadYear.find('(')
+            year =  cadYear[posY+1:posY+5]
+            hini = times[i].contents[0].contents[0].contents[0]
+            hfin = ""
+            e['release_date'] = year
+            e['t'] = title
+            e['URL'] = urllib.parse.urljoin(self.url, theLink)
+            e['CADENA'] = cadName
+            e['hi'] = hini
+            e['d'] = ""
+            e['GENERO'] = genero
+            e['g'] = genero
+            posts.append(e)
+
+            self.data.append((hini, hfin, title, '-', cadName, genero))
+
+            #if cadName in self.channels:
+            #    for e in i['events']:
+            #    # for j in range(len(data['data'][i]['PROGRAMAS'])): 
+            #        #print(j) 
+            #        # genero = data['data'][i]['PROGRAMAS'][j]['GENERO'] 
+            #        genero = e['g']
+            #        if ('Cine' in e['t'] or genero == self.gen):
+            #            # title = data['data'][i]['PROGRAMAS'][j]['TITULO'] 
+            #            title = e['t']
+            #            if not genero:
+            #                e['g'] = self.gen
+            #                genero = self.gen
+            #            # horaIni = data['data'][i]['PROGRAMAS'][j]['HORA_INICIO']
+            #            # horaFin = data['data'][i]['PROGRAMAS'][j]['HORA_FIN'] 
+            #            hini = datetime.datetime.fromtimestamp(e['hi']) 
+            #            hfin = datetime.datetime.fromtimestamp(e['hf'])
+            #            # self.data.append((horaIni,horaFin, title, '-', cadName, genero)) 
+            #            self.data.append((hini,hfin, title, '-', cadName, genero)) 
+            #            # FIXME: ¿Todos o sólo estos?
+            #            posts.append(e)
+            #            posts[-1]['CADENA'] = cadName
         return posts
 
     def setPosts(self):
@@ -117,15 +152,16 @@ class moduleImdb(Content): #,Queue):
         useCache = False
         j = 0
         for i, post in enumerate(posts): 
-            hhIni = datetime.datetime.fromtimestamp(self.getPostTimeIni(post))
-            hhIni, ddIni = hhIni.hour, hhIni.day
-            if ((dd == str(ddIni) and hh <= str(hhIni))
-                    and (post['g'] == self.gen)):
-                try:
-                    res = self.setPostMoreDataNew(post)
-                except:
-                    res = ""
-                j = j + 1
+            hhIni = self.getPostTimeIni(post)
+            # hhIni, ddIni = hhIni.hour, hhIni.day
+            #ddIni = ""
+            # if ((dd == str(ddIni) and hh <= str(hhIni))
+            #         and (post['g'] == self.gen)):
+            #     try:
+            res = self.setPostMoreDataNew(post)
+            #    except:
+            #        res = ""
+            j = j + 1
         # self.posts = sorted(posts, key = lambda d: d['HORA_INICIO'])
         # logging.info(f"Posts: {posts}")
         self.posts = sorted(posts, key = lambda d: d['hi'])
@@ -163,13 +199,13 @@ class moduleImdb(Content): #,Queue):
         return content
 
     def getPostLine(self, post): 
-        # logging.info(f"Post: {post}")
-        if post['g'] == 'CN': #True: #post['GENERO'] == 'Cine':
+        logging.info(f"Post: {post}")
+        if True: #post['g'] == 'CN': #True: #post['GENERO'] == 'Cine':
             logging.info("Post line {}".format(post))
-            hini = datetime.datetime.fromtimestamp(self.getPostTimeIni(post))
-            hini = f"{hini.hour}:{hini.minute}"
-            hfin = datetime.datetime.fromtimestamp(self.getPostTimeEnd(post))
-            hfin = f"{hfin.hour}:{hfin.minute}"
+            hini = self.getPostTimeIni(post)
+            # hini = f"{hini}"
+            hfin = self.getPostTimeEnd(post)
+            # hfin = f"{hfin.hour}:{hfin.minute}"
             line = (f"> [{self.getPostAvg(post)}] - "
                    f"({self.getPostCode(post)}) "
                    f"{hini}-{hfin}: "
@@ -251,7 +287,7 @@ class moduleImdb(Content): #,Queue):
         m = hashlib.md5()
         m.update(title.encode())
         titleHash = m.hexdigest()
-        print(f"Hash: {titleHash}")
+        logging.debug(f"Hash: {titleHash}")
         fileNamePath = "/tmp/movies"
         fileNameHash = f"{fileNamePath}/{titleHash}"
         movieData = {}
@@ -370,7 +406,6 @@ def main():
             level=logging.DEBUG, 
             format='%(asctime)s %(message)s')
 
-
     import moduleRules
     rules = moduleRules.moduleRules()
     rules.checkRules()
@@ -400,7 +435,7 @@ def main():
         print("Testing title and link")
 
         for i, post in enumerate(apiSrc.getPosts()):
-            if post['GENERO'] == 'Cine':
+            if True: #post['GENERO'] == 'Cine':
                 print(f"Post: {post}")
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)

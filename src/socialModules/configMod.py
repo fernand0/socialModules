@@ -33,7 +33,6 @@ def logMsg(msgLog, log=1, output=1):
     if output == 1:
         print(f"{msgLog}")
     elif output == 2:
-        print("")
         print("====================================")
         print("{}".format(msgLog))
         print("====================================")
@@ -194,6 +193,8 @@ def getApi(profile, nick, indent="", channel = None):
     # msgLog = (f"{indent}  Api {api}")
     # logMsg(msgLog, 2, 0)
 
+    api.profile = profile
+    api.nick = nick
     api.indent = f"{indent} "
     api.setClient(nick)
     if channel:

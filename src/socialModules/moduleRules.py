@@ -386,8 +386,8 @@ class moduleRules:
         # Now we can see which destinations can be also sources
         # msgLog = f"Dsts: {dsts}"
         # logMsg(msgLog, 2, 0)
-        logging.info(f"Srcs: {srcs}")
-        logging.info(f"SrcsA: {srcsA}")
+        # logging.info(f"Srcs: {srcs}")
+        # logging.info(f"SrcsA: {srcsA}")
 
         self.indent = f"{self.indent} Destinations:"
         for dst in dsts:
@@ -536,6 +536,7 @@ class moduleRules:
 
     def selectRule(self, name="", selector2="", selector3=""):
         rules = []
+        logging.debug(f"Name: {name}, Selectors: {selector2}, {selector3}")
         for src in self.rules.keys():
             if self.getNameRule(src).capitalize() == name.capitalize():
                 logging.debug(f"profileR: {self.getProfileRule(src)}")
@@ -543,7 +544,7 @@ class moduleRules:
                 if not selector2:
                     rules.append(src)
                 else:
-                    if selector2 == self.getProfileAction(src):
+                    if selector2 in self.getProfileAction(src):
                         # FIXME: ??
                         logging.debug(f"Second Selector: {selector2}")
                         if not selector3:
@@ -815,9 +816,7 @@ class moduleRules:
             apiSrc = getApi(profile, account, indent)
         apiSrc.src = src
         apiSrc.setPostsType(src[-1])
-        print(f"Uuuuurlllll: {apiSrc.url}")
         apiSrc.setMoreValues(more)
-        print(f"Uuuuurlllll: {apiSrc.url}")
 
         # msgLog = f"{indent} Url: {apiSrc.getUrl()}" #: {src[1:]}"
         # logMsg(msgLog, 2, 0)
@@ -851,6 +850,7 @@ class moduleRules:
         if apiSrc:
             apiDst.setLastLink(apiSrc)
         else:
+            # FIXME. Do we need this? 
             apiDst.setLastLink(apiDst)
 
         # FIXME: best in readConfigSrc (readConfigDst, since we need it)?

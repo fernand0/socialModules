@@ -38,6 +38,7 @@ dependencies = [
 		'click',
 		'feedparser',
 		'pdfrw',
+		'praw',
 		'python-crontab',
 		'tmdbsimple',
 		'imgurpython',
