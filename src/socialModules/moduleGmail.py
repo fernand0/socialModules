@@ -120,7 +120,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         )
         return response
 
-    def modifyLabels(self, message, oldLabelId, labelId):
+    def modifyLabels(self, messageId, oldLabelId, labelId):
         api = self.getClient()
         list_labels = {
             "removeLabelIds": [
@@ -136,7 +136,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         message = (
             api.users()
             .messages()
-            .modify(userId="me", id=message["id"], body=list_labels)
+            .modify(userId="me", id=messageId, body=list_labels)
             .execute()
         )
         return message
