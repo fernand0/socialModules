@@ -73,18 +73,19 @@ class moduleBlsk(Content): #, Queue):
     def setApiFavs(self):
         posts = []
 
-        try:
-            posts, error = self.apiCall('get_actor_likes',
-                                        params={'actor':self.me.did})
+        if hasattr(self, 'me'):
+            try:
+                posts, error = self.apiCall('get_actor_likes',
+                                            params={'actor':self.me.did})
 
-            if not error:
-                posts = posts['feed']
-        except atproto.atproto_client.exceptions.NetworkError:
-            self.report(self.service, 'Error en setApiFavs. Network Error. ', 
-                        '', sys.exc_info())
-        except: 
-            self.report(self.service, 'Error en setApiFavs', 
-                        '', sys.exc_info())
+                if not error:
+                    posts = posts['feed']
+            except atproto.atproto_client.exceptions.NetworkError:
+                self.report(self.service, 'Error en setApiFavs. Network Error. ', 
+                            '', sys.exc_info())
+            except: 
+                self.report(self.service, 'Error en setApiFavs', 
+                            '', sys.exc_info())
             
 
         return posts

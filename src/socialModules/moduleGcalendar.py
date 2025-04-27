@@ -178,6 +178,33 @@ class moduleGcalendar(Content, socialGoogle):
             comment,
         )
 
+    def publishApiPost(self, *args, **kwargs):
+        if args and len(args) == 3:
+            # logging.info(f"Tittt: args: {args}")
+            title, link, comment = args
+        if kwargs:
+            # logging.info(f"Tittt: kwargs: {kwargs}")
+            more = kwargs
+            # FIXME: We need to do something here
+            # Example:
+            # calendar_result = api_dst.publishPost(post={'event':event,'idCal':selected_calendar}, api=api_dst)
+            event = more.get("post", "").get("event","")
+            api = more.get("api", "")
+            idCal = more.get("post", "").get("idCal")
+        res = "Fail!"
+        try:
+            # credentials = self.authorize()
+            res = (
+                api.getClient()
+                .events()
+                .insert(calendarId=idCal, body=event)
+                .execute()
+            )
+            # logging.info("Res: %s" % res)
+        except:
+            res = self.report("Gmail", idCal, "", sys.exc_info())
+
+        return f"Res: {res}"
 
 def main():
     logging.basicConfig(

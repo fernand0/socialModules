@@ -120,7 +120,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         )
         return response
 
-    def modifyLabels(self, message, oldLabelId, labelId):
+    def modifyLabels(self, messageId, oldLabelId, labelId):
         api = self.getClient()
         list_labels = {
             "removeLabelIds": [
@@ -136,7 +136,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         message = (
             api.users()
             .messages()
-            .modify(userId="me", id=message["id"], body=list_labels)
+            .modify(userId="me", id=messageId, body=list_labels)
             .execute()
         )
         return message
@@ -220,9 +220,13 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         if isinstance(label, str):
             self.setLabels()
             label = self.getLabels(label)
-            label = label[0]
-            msgLog = f"{self.indent} Label: {label}"
-            logMsg(msgLog, 2, 0)
+            if len(label)>0:
+                label = label[0]
+                msgLog = f"{self.indent} Label: {label}"
+                logMsg(msgLog, 2, 0)
+            else:
+                msgLog = f"{self.indent} The label does not exist"
+                logMsg(msgLog, 2, 0)
         if label:
             posts = self.getListLabel(label["id"])
         else:
@@ -280,7 +284,10 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def getMessage(self, idPost):
         api = self.getClient()
-        message = api.users().drafts().get(userId="me", id=idPost).execute()
+        if 'draft' in self.getPostsType(): 
+            message = api.users().drafts().get(userId="me", id=idPost).execute()
+        else:
+            message = api.users().messages().get(userId="me", id=idPost).execute()
         # print(message)
         # print(message['message'])
         return message
@@ -821,6 +828,33 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def movePost(self, log, pp, profiles, toMove, toWhere):
         # Undefined
         pass
+
+    def publishApiPost(self, *args, **kwargs):
+        if args and len(args) == 3:
+            # logging.info(f"Tittt: args: {args}")
+            title, link, comment = args
+        if kwargs:
+            logging.info(f"Tittt: kwargs: {kwargs}")
+            more = kwargs
+            # FIXME: We need to do something here
+            event = more.get("post", "")
+            api = more.get("api", "")
+            idCal = more.get("idCal", "")
+        res = "Fail!"
+        try:
+            # credentials = self.authorize()
+            res = (
+                api.getClient()
+                .events()
+                .insert(calendarId=idCal, body=event)
+                .execute()
+            )
+            # logging.info("Res: %s" % res)
+        except:
+            res = self.report("Gmail", idPost, "", sys.exc_info())
+
+        return f"Res: {res}"
+
 
 
 def main():
