@@ -740,7 +740,7 @@ class moduleImap(Content): #, Queue):
         soup = BeautifulSoup(html,'html.parser')
         for script in soup(["script", "style"]):
             script.extract()
-        return(re.sub("\n\s*\n*", "\n", soup.get_text()))
+        return(re.sub(r"\n\s*\n*", "\n", soup.get_text()))
 
     def getMessageBody(self, msg):
         # http://blog.magiksys.net/parsing-email-using-python-content
