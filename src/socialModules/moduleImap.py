@@ -740,7 +740,7 @@ class moduleImap(Content): #, Queue):
         soup = BeautifulSoup(html,'html.parser')
         for script in soup(["script", "style"]):
             script.extract()
-        return(re.sub("\n\s*\n*", "\n", soup.get_text()))
+        return(re.sub(r"\n\s*\n*", "\n", soup.get_text()))
 
     def getMessageBody(self, msg):
         # http://blog.magiksys.net/parsing-email-using-python-content
@@ -1547,16 +1547,17 @@ def main():
 
     apiSrc = rules.selectRuleInteractive()
 
-    testingFolders=False
+    testingFolders=True
     if testingFolders:
         folders=apiSrc.getChannels()
         for folder in folders:
             # print(f"Folder: {folder} Name: {name}")
             print(f"Folder: {apiSrc.getChannelName(folder)}")
         print(f"Special folders: {apiSrc.special}")
+        print(f"{apiSrc.selectFolder(apiSrc.getClient())}")
         return
 
-    testingPublishingDraft = True
+    testingPublishingDraft = False
     if testingPublishingDraft:
         apiSrc.setPostsType('drafts')
         apiSrc.setPosts()
