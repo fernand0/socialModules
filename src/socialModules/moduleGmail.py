@@ -284,7 +284,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def getMessage(self, idPost):
         api = self.getClient()
-        if 'draft' in self.getPostsType(): 
+        if 'draft' in self.getPostsType():
             message = api.users().drafts().get(userId="me", id=idPost).execute()
         else:
             message = api.users().messages().get(userId="me", id=idPost).execute()
@@ -391,9 +391,13 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return links
 
     def getPostContentHtml(self, post):
+        msgLog = f"{self.indent} getPostDate"
+        logMsg(msgLog, 2, 0)
         # message = self.getMessageId(self.getPostId(post))
-        snippet = self.getHeader(post, "snippet")
-        return snippet
+        if post:
+            snippet = self.getHeader(post, "snippet")
+            return snippet
+        return None
 
     def getPostLinks(self, post):
         message = self.getMessageId(self.getPostId(post))
@@ -428,8 +432,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def getPostTitle(self, post):
         msgLog = f"{self.indent} getPostTitle"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent} {post}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} {post}"
+        # logMsg(msgLog, 2, 0)
         title = ""
         if post:
             title = self.getHeader(post)
@@ -438,8 +442,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def getPostDate(self, post):
         msgLog = f"{self.indent} getPostDate"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent} {post}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} Post: {post}"
+        # logMsg(msgLog, 2, 0)
         if post:
             date = self.getHeader(post, "internalDate")
             # date = int(self.getHeader(post,'internalDate'))/1000
@@ -449,7 +453,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return None
 
     def getHeader(self, message, header="Subject"):
-        msgLog = f"{self.indent} getHeader"
+        msgLog = f"{self.indent} getHeader {header}"
         logMsg(msgLog, 2, 0)
         msgLog = f"{self.indent} Message: {message}"
         logMsg(msgLog, 2, 0)
