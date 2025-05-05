@@ -217,6 +217,17 @@ def nameModule():
     name = name[pos+len('module'):-3]
     return name
 
+
+def safe_get(data, keys, default=""):
+    """Safely retrieves nested values from a dictionary."""
+    try:
+        for key in keys:
+            data = data[key]
+        return data
+    except (KeyError, TypeError):
+        return default
+
+
 def select_from_list(options, identifier="", selector="", 
                      default="", more_options=[]):
     """selects an option form an iterable element, based on some identifier
