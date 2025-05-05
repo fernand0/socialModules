@@ -1547,16 +1547,17 @@ def main():
 
     apiSrc = rules.selectRuleInteractive()
 
-    testingFolders=False
+    testingFolders=True
     if testingFolders:
         folders=apiSrc.getChannels()
         for folder in folders:
             # print(f"Folder: {folder} Name: {name}")
             print(f"Folder: {apiSrc.getChannelName(folder)}")
         print(f"Special folders: {apiSrc.special}")
+        print(f"{apiSrc.selectFolder(apiSrc.getClient())}")
         return
 
-    testingPublishingDraft = True
+    testingPublishingDraft = False
     if testingPublishingDraft:
         apiSrc.setPostsType('drafts')
         apiSrc.setPosts()
