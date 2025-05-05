@@ -217,7 +217,6 @@ def nameModule():
     name = name[pos+len('module'):-3]
     return name
 
-
 def safe_get(data, keys, default=""):
     """Safely retrieves nested values from a dictionary."""
     try:
