@@ -168,10 +168,8 @@ class moduleImap(Content): #, Queue):
     def getChannels(self):
         msgLog = (f"{self.indent} getChannels")
         logMsg(msgLog, 1, 0)
-        resp, data = self.getClient().list('""', '*')
-        if resp != 'OK':
-            logging.warning("Some problem getting list of folders")
-        return data
+        labels = self.getLabels()
+        return labels
 
     def getChannelName(self, channel):
         # Examples:
@@ -786,11 +784,13 @@ class moduleImap(Content): #, Queue):
         wait = input("Any key to follow")
 
 
-    def createFolder(self, M, name, folder, search=True):
+    def createFolder(self, M="", name="", folder="", search=True):
         exclude = ['Trash']
+        if not M:
+            M = self.getClient()
         if search:
             print("We can select a folder where our new folder will be created")
-            folder = selectFolder(M, folder)
+            folder = self.selectFolder(newFolderName=folder)
             print(folder)
         #folder  = nameFolder(folder)
         if folder:
@@ -899,9 +899,21 @@ class moduleImap(Content): #, Queue):
 
         return(listFolders)
 
-    def listFolders(self):
+    def setLabels(self):
+        api = self.getClient()
         resp, data = self.getClient().list('""', '*')
-        return data
+        if 'OK' in resp and data:
+            self.labels = data
+
+    def getLabels(self, sel=""):
+        if not hasattr(self, "labels") or not self.labels:
+            self.setLabels()
+        return list(filter(lambda x: sel in str(x), self.labels))
+
+    def listFolders(self):
+        # resp, data = self.getClient().list('""', '*')
+        self.setLabels
+        return self.getLabels()
 
     def checkConnected(self):
         try:
@@ -910,10 +922,33 @@ class moduleImap(Content): #, Queue):
         except:
             self.setClient(f"{self.user}")
 
-    def selectFolder(self, M, moreMessages = "",
+    def selectFolderN(self, moreMessages ="",
+                      newFolderName = '', folderM=''):
+        self.checkConnected()
+        data = self.listFolders()
+        print(f"Data: {data}")
+        folders = [self.nameFolder(fol) for fol in data]
+        print(f"Folders: {folders}")
+        sel, folder = select_from_list(folders, more_options=['-cf'])
+        print(f"Sel: {sel} - {folder}")
+        if isinstance(sel, str) and '-cf' in sel:
+            nfn = input("New folder name? (%s)"% folderM)
+            if not nfn:
+                nfn = folderM
+            iFolder = self.createFolder(name=nfn, folder=moreMessages)
+            listFolders = iFolder
+            folder = iFolder
+
+        return folder
+
+
+    def selectFolder(self, M="", moreMessages = "",
                      newFolderName='', folderM=''):
 
         self.checkConnected()
+        if not M:
+            M = self.getClient()
+
         data = self.listFolders()
         #print(data)
         listAllFolders = self.listFolderNames(data, moreMessages)
@@ -1554,7 +1589,9 @@ def main():
             # print(f"Folder: {folder} Name: {name}")
             print(f"Folder: {apiSrc.getChannelName(folder)}")
         print(f"Special folders: {apiSrc.special}")
-        print(f"{apiSrc.selectFolder(apiSrc.getClient())}")
+        print(f"{apiSrc.selectFolderN()}")
+        # print(f"{apiSrc.selectFolder(apiSrc.getClient())}")
+
         return
 
     testingPublishingDraft = False
