@@ -228,7 +228,7 @@ def safe_get(data, keys, default=""):
 
 
 def select_from_list(options, identifier="", selector="", 
-                     default="", more_options=[]):
+                     negation_selector="", default="", more_options=[]):
     """selects an option form an iterable element, based on some identifier
 
     we can make an initial selection of elements that contain 'selector'
@@ -255,7 +255,10 @@ def select_from_list(options, identifier="", selector="",
     else:
         names = options
     sel = -1
-    names_sel = [opt for opt in names if selector in opt] + more_options
+    names_sel = [opt for opt in names if selector in opt]# + more_options
+    if negation_selector:
+        names_sel = [opt for opt in names if not (negation_selector in opt)] 
+    names_sel = names_sel + more_options
     options_sel = names_sel.copy()
     while options_sel:
         text_sel = ""
@@ -274,7 +277,7 @@ def select_from_list(options, identifier="", selector="",
             sel = names.index(default)
             options_sel = []
         elif not sel.isdigit():
-            options_sel = [opt for opt in options_sel if sel in opt]
+            options_sel = [opt for opt in options_sel if sel.lower() in opt.lower()]
             if len(options_sel) == 1:
                 if not options_sel[0] in more_options:
                     sel = names.index(options_sel[0])
