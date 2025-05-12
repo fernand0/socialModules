@@ -55,7 +55,7 @@ class moduleImdb(Content): #,Queue):
         # This does not belong here; it is the source of the data
         posts = []
         self.data = []
-        logging.info("Reading data from {self.fileTV} ...") 
+        logging.info(f"Reading data from {self.fileTV} ...") 
         if os.path.exists(self.fileTV): 
             import time
             timeNow = time.time() 
