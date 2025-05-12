@@ -290,6 +290,7 @@ class moduleImdb(Content): #,Queue):
         logging.debug(f"Hash: {titleHash}")
         fileNamePath = "/tmp/movies"
         fileNameHash = f"{fileNamePath}/{titleHash}"
+        logging.info = f"fileName: {fileNameHash}"
         movieData = {}
         dataUpdate = {}
         if not os.path.exists(fileNamePath):
