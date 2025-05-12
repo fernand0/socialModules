@@ -55,7 +55,7 @@ class moduleImdb(Content): #,Queue):
         # This does not belong here; it is the source of the data
         posts = []
         self.data = []
-        logging.info("Reading data...") 
+        logging.info("Reading data from {self.fileTV} ...") 
         if os.path.exists(self.fileTV): 
             import time
             timeNow = time.time() 
@@ -305,14 +305,15 @@ class moduleImdb(Content): #,Queue):
                     dataUpdate = json.loads(data)
         else:
             response = mySearch.movie(query=title) 
-            print (f"ResSearch: {response}")
+            logging.info(f"ResSearch: {response}")
             if len(mySearch.results) > 0: 
                 movie = tmdb.Movies(mySearch.results[0]['id']) 
                 movieData['info'] = movie.info()
                 movieData['credits'] = movie.credits()
                 dataUpdate.update({'RESULT': mySearch.results})
                 dataUpdate.update({'movie': movieData})
-                if os.path.exists(fileNameHash):
+                logging.info(f"Data: {dataUpdate}")
+                if os.path.exists(fileNamePath):
                     with open(fileNameHash, 'w') as fHash:
                         fHash.write(json.dumps(dataUpdate))
 
