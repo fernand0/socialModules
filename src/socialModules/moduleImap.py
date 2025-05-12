@@ -1599,7 +1599,7 @@ def main():
 
     apiSrc = rules.selectRuleInteractive()
 
-    testingFolders=True
+    testingFolders=False
     if testingFolders:
         folders=apiSrc.getChannels()
         for folder in folders:
@@ -1611,11 +1611,15 @@ def main():
 
         return
 
-    testingPublishingDraft = False
+    testingPublishingDraft = True
     if testingPublishingDraft:
         apiSrc.setPostsType('drafts')
         apiSrc.setPosts()
         if apiSrc.getPosts():
+            posts = [apiSrc.getPostSubject(post[1]) for post in apiSrc.getPosts()]
+            sel, post = select_from_list(posts, identifier='Subject')
+            print(sel)
+            return
             post = apiSrc.getPosts()[0]
             apiSrc.publishApiDraft(post)
 
