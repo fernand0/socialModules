@@ -24,7 +24,6 @@ dependencies = [
 		'facebook-sdk',
 		'requests',
 		'bs4',
-		'crontab',
 		'lxml',
 		'dateparser',
 		'google-api-python-client',
