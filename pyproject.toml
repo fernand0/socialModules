@@ -32,7 +32,6 @@ dependencies = [
 		'oauth2',
 		'oauth2client',
 		'distance',
-		'distutils',
 		'ebooklib',
 		'sievelib',
 		'gitpython',
@@ -51,6 +50,7 @@ dependencies = [
 		'pytumblr',
 		'telepot',
 		'gitterpy',
+		'setuptools',
 		'slack_sdk',
 		'readability-lxml',
 		'readabilipy'
