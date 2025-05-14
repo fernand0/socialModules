@@ -254,6 +254,7 @@ def select_from_list(options, identifier="", selector="",
         ]
     else:
         names = options
+    logging.info(f"Names: {names}")
     sel = -1
     names_sel = [opt for opt in names if selector in opt]# + more_options
     if negation_selector:
