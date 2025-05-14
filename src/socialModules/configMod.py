@@ -260,6 +260,7 @@ def select_from_list(options, identifier="", selector="",
         names_sel = [opt for opt in names if not (negation_selector in opt)] 
     names_sel = names_sel + more_options
     options_sel = names_sel.copy()
+    logging.info(f"Options: {options_sel}")
     while options_sel:
         text_sel = ""
         for i, elem in enumerate(options_sel):
