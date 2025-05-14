@@ -8,7 +8,7 @@ import sys
 import time
 
 import socialModules
-from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR
+from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR, select_from_list
 
 fileName = socialModules.__file__
 path = f"{os.path.dirname(fileName)}"
