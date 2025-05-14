@@ -511,6 +511,7 @@ class moduleRules:
         if not isinstance(service, tuple):
             service = [service, ]
         selRules = []
+        logging.info(f"Services: {service}")
         for ser in service:
             logging.info(f"Service: {ser}")
             selRules = selRules + self.selectRule(ser, "")
