@@ -508,7 +508,7 @@ class moduleRules:
         if not service:
             nameModule = os.path.basename(inspect.stack()[1].filename)
             service = nameModule.split(".")[0][6:].casefold()
-        if not isinstance(service, tuple):
+        if not isinstance(service, list):
             service = [service, ]
         selRules = []
         logging.info(f"Services: {service}")
