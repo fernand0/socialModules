@@ -517,7 +517,7 @@ class moduleRules:
             selRules = selRules + self.selectRule(ser, "")
 
         # selRules = self.selectRule(service, "")
-        print("Rules:")
+        print(f"Rules: {selRules}")
         iRul, src = select_from_list(selRules)
 
         print(f"\nSelected rule: {iRul}. Rule {src}")
