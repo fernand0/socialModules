@@ -512,8 +512,8 @@ class moduleRules:
             service = [service, ]
         selRules = []
         for ser in service:
-            logging.info(f"Service: {service}")
-            selRules = selRules + self.selectRule(service, "")
+            logging.info(f"Service: {ser}")
+            selRules = selRules + self.selectRule(ser, "")
 
         # selRules = self.selectRule(service, "")
         print("Rules:")
