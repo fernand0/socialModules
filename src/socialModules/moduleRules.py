@@ -518,15 +518,8 @@ class moduleRules:
 
         # selRules = self.selectRule(service, "")
         print("Rules:")
-        iRul, rul = select_from_list(selRules)
-        print(f"iRul: {iRul} - {rul}")
+        iRul, src = select_from_list(selRules)
 
-        iRul = 0
-        if len(selRules) > 1:
-            for i, rul in enumerate(selRules):
-                print(f"{i}) {rul}")
-            iRul = input("Which rule? ")
-        src = selRules[int(iRul)]
         print(f"\nSelected rule: {iRul}. Rule {src}")
         more = None
         if src in self.more:
