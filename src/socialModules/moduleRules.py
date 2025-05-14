@@ -508,7 +508,13 @@ class moduleRules:
         if not service:
             nameModule = os.path.basename(inspect.stack()[1].filename)
             service = nameModule.split(".")[0][6:].casefold()
-        selRules = self.selectRule(service, "")
+        if not isinstance(service, tuple):
+            service = [service, ]
+        selRules = []
+        for ser in service:
+            selRules = selRules + self.selectRule(service, "")
+
+        # selRules = self.selectRule(service, "")
         print("Rules:")
         iRul = 0
         if len(selRules) > 1:
