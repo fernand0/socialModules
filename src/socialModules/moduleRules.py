@@ -512,6 +512,7 @@ class moduleRules:
             service = [service, ]
         selRules = []
         for ser in service:
+            logging.info(f"Service: {service}")
             selRules = selRules + self.selectRule(service, "")
 
         # selRules = self.selectRule(service, "")
