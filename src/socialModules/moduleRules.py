@@ -518,6 +518,9 @@ class moduleRules:
 
         # selRules = self.selectRule(service, "")
         print("Rules:")
+        iRul, rul = selec_from_list(selRules)
+        print(f"iRul: {iRul} - {rul}")
+
         iRul = 0
         if len(selRules) > 1:
             for i, rul in enumerate(selRules):
