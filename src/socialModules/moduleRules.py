@@ -518,7 +518,7 @@ class moduleRules:
 
         # selRules = self.selectRule(service, "")
         print("Rules:")
-        iRul, rul = selec_from_list(selRules)
+        iRul, rul = select_from_list(selRules)
         print(f"iRul: {iRul} - {rul}")
 
         iRul = 0
