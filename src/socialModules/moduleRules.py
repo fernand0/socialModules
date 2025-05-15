@@ -540,7 +540,7 @@ class moduleRules:
 
     def selectRule(self, name="", selector2="", selector3=""):
         rules = []
-        if not isinsgtance(name, list):
+        if not isinstance(name, list):
             service = [name, ]
         selRules = []
         for name_ser in name:
