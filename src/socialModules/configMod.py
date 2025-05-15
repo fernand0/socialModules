@@ -262,7 +262,7 @@ def select_from_list(options, identifier="", selector="",
         names_sel = [opt for opt in names if not (negation_selector in opt)] 
     names_sel = names_sel + more_options
     options_sel = names_sel.copy()
-    while options_sel:
+    while options_sel and len(options_sel)>1:
         text_sel = ""
         for i, elem in enumerate(options_sel):
             text_sel = f"{text_sel}\n{i}) {elem}"
@@ -280,11 +280,12 @@ def select_from_list(options, identifier="", selector="",
             options_sel = []
         elif not sel.isdigit():
             options_sel = [opt for opt in options_sel if sel.lower() in opt.lower()]
-            if len(options_sel) == 1:
-                if not options_sel[0] in more_options:
-                    sel = names.index(options_sel[0])
-                options_sel = []
-            elif len(options_sel) == 0:
+            # if len(options_sel) == 1:
+            #     if not options_sel[0] in more_options:
+            #         sel = names.index(options_sel[0])
+            #     options_sel = []
+            # el
+            if len(options_sel) == 0:
                 options_sel = names_sel.copy()
         else:
             # Now we select the original number
@@ -293,6 +294,10 @@ def select_from_list(options, identifier="", selector="",
                 options_sel = []
             else:
                 options_sel = names_sel.copy()
+    
+    if len(options_sel) == 1:      
+        if not options_sel[0] in more_options: 
+            sel = names.index(options_sel[0])
 
     logging.info(f"Sel: {sel}")
     if isinstance(sel, int) and int(sel) < len(names): 
