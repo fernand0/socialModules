@@ -284,7 +284,7 @@ def select_from_list(options, identifier="", selector="",
             #     if not options_sel[0] in more_options:
             #         sel = names.index(options_sel[0])
             #     options_sel = []
-            # el
+            # elif
             if len(options_sel) == 0:
                 options_sel = names_sel.copy()
         else:
