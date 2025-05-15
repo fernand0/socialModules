@@ -254,17 +254,14 @@ def select_from_list(options, identifier="", selector="",
         ]
     else:
         names = options
-    logging.info(f"Names: {names}")
     sel = -1
     names_sel = names.copy()
     if selector:
         names_sel = [opt for opt in names if selector in opt]# + more_options
-    logging.info(f"Names sel: {names_sel}")
     if negation_selector:
         names_sel = [opt for opt in names if not (negation_selector in opt)] 
     names_sel = names_sel + more_options
     options_sel = names_sel.copy()
-    logging.info(f"Options: {options_sel}")
     while options_sel:
         text_sel = ""
         for i, elem in enumerate(options_sel):
