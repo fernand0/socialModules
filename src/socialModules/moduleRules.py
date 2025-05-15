@@ -8,7 +8,7 @@ import sys
 import time
 
 import socialModules
-from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR
+from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR, select_from_list
 
 fileName = socialModules.__file__
 path = f"{os.path.dirname(fileName)}"
@@ -508,14 +508,19 @@ class moduleRules:
         if not service:
             nameModule = os.path.basename(inspect.stack()[1].filename)
             service = nameModule.split(".")[0][6:].casefold()
-        selRules = self.selectRule(service, "")
-        print("Rules: {selRules}")
-        iRul = 0
-        if len(selRules) > 1:
-            for i, rul in enumerate(selRules):
-                print(f"{i}) {rul}")
-            iRul = input("Which rule? ")
-        src = selRules[int(iRul)]
+        if not isinstance(service, list):
+            service = [service, ]
+        selRules = []
+        logging.info(f"Services: {service}")
+        for ser in service:
+            logging.info(f"Service: {ser}")
+            selRules = selRules + self.selectRule(ser, "")
+
+        # selRules = self.selectRule(service, "")
+        print(f"Rules: {selRules}")
+        iRul, src = select_from_list(selRules)
+
+>>>>>>> 37a690d3bf331710e7edf1aeca889f8376f38d9f
         print(f"\nSelected rule: {iRul}. Rule {src}")
         more = None
         if src in self.more:
@@ -536,26 +541,31 @@ class moduleRules:
 
     def selectRule(self, name="", selector2="", selector3=""):
         rules = []
-        logging.debug(f"Name: {name}, Selectors: {selector2}, {selector3}")
-        for src in self.rules.keys():
-            if self.getNameRule(src).capitalize() == name.capitalize():
-                logging.debug(f"profileR: {self.getProfileRule(src)}")
-                logging.debug(f"profileR: {self.getProfileAction(src)}")
-                if not selector2:
-                    rules.append(src)
-                else:
-                    if selector2 in self.getProfileAction(src):
-                        # FIXME: ??
-                        logging.debug(f"Second Selector: {selector2}")
-                        if not selector3:
-                            rules.append(src)
-                        elif selector3 in self.getTypeRule(src):
-                            rules.append(src)
+        service = name
+        if not isinstance(name, list):
+            service = [name, ]
+        selRules = []
+        for name_ser in service:
+            logging.debug(f"Name: {name_ser}, Selectors: {selector2}, {selector3}")
+            for src in self.rules.keys():
+                if self.getNameRule(src).capitalize() == name_ser.capitalize():
+                    logging.debug(f"profileR: {self.getProfileRule(src)}")
+                    logging.debug(f"profileR: {self.getProfileAction(src)}")
+                    if not selector2:
+                        rules.append(src)
+                    else:
+                        if selector2 in self.getProfileAction(src):
+                            # FIXME: ??
+                            logging.debug(f"Second Selector: {selector2}")
+                            if not selector3:
+                                rules.append(src)
+                            elif selector3 in self.getTypeRule(src):
+                                rules.append(src)
         if not rules:
             for src in self.rules.keys():
                 for action in self.rules[src]:
                     print(f"Action: {action}")
-                    if self.getNameAction(action).capitalize() == name.capitalize():
+                    if self.getNameAction(action).capitalize() == name_ser.capitalize():
                         rules.append(src)
 
         return rules

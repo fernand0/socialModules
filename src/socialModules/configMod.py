@@ -255,7 +255,9 @@ def select_from_list(options, identifier="", selector="",
     else:
         names = options
     sel = -1
-    names_sel = [opt for opt in names if selector in opt]# + more_options
+    names_sel = names.copy()
+    if selector:
+        names_sel = [opt for opt in names if selector in opt]# + more_options
     if negation_selector:
         names_sel = [opt for opt in names if not (negation_selector in opt)] 
     names_sel = names_sel + more_options
