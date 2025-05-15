@@ -540,6 +540,7 @@ class moduleRules:
 
     def selectRule(self, name="", selector2="", selector3=""):
         rules = []
+        logging.info(f"Nameee: {name}  - {type(name)} - {isinstance(name,list)}")
         if not isinstance(name, list):
             service = [name, ]
         selRules = []
