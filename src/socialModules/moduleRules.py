@@ -509,7 +509,7 @@ class moduleRules:
             nameModule = os.path.basename(inspect.stack()[1].filename)
             service = nameModule.split(".")[0][6:].casefold()
         selRules = self.selectRule(service, "")
-        print("Rules:")
+        print("Rules: {selRules}")
         iRul = 0
         if len(selRules) > 1:
             for i, rul in enumerate(selRules):
