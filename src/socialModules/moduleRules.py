@@ -543,7 +543,7 @@ class moduleRules:
         if not isinstance(name, list):
             service = [name, ]
         selRules = []
-        for name_ser in name:
+        for name_ser in service:
             logging.debug(f"Name: {name_ser}, Selectors: {selector2}, {selector3}")
             for src in self.rules.keys():
                 if self.getNameRule(src).capitalize() == name_ser.capitalize():
