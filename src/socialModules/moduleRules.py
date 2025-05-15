@@ -520,7 +520,6 @@ class moduleRules:
         print(f"Rules: {selRules}")
         iRul, src = select_from_list(selRules)
 
->>>>>>> 37a690d3bf331710e7edf1aeca889f8376f38d9f
         print(f"\nSelected rule: {iRul}. Rule {src}")
         more = None
         if src in self.more:
