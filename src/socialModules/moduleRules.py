@@ -540,26 +540,30 @@ class moduleRules:
 
     def selectRule(self, name="", selector2="", selector3=""):
         rules = []
-        logging.debug(f"Name: {name}, Selectors: {selector2}, {selector3}")
-        for src in self.rules.keys():
-            if self.getNameRule(src).capitalize() == name.capitalize():
-                logging.debug(f"profileR: {self.getProfileRule(src)}")
-                logging.debug(f"profileR: {self.getProfileAction(src)}")
-                if not selector2:
-                    rules.append(src)
-                else:
-                    if selector2 in self.getProfileAction(src):
-                        # FIXME: ??
-                        logging.debug(f"Second Selector: {selector2}")
-                        if not selector3:
-                            rules.append(src)
-                        elif selector3 in self.getTypeRule(src):
-                            rules.append(src)
+        if not isinsgtance(name, list):
+            service = [name, ]
+        selRules = []
+        for name_ser in name:
+            logging.debug(f"Name: {name_ser}, Selectors: {selector2}, {selector3}")
+            for src in self.rules.keys():
+                if self.getNameRule(src).capitalize() == name_ser.capitalize():
+                    logging.debug(f"profileR: {self.getProfileRule(src)}")
+                    logging.debug(f"profileR: {self.getProfileAction(src)}")
+                    if not selector2:
+                        rules.append(src)
+                    else:
+                        if selector2 in self.getProfileAction(src):
+                            # FIXME: ??
+                            logging.debug(f"Second Selector: {selector2}")
+                            if not selector3:
+                                rules.append(src)
+                            elif selector3 in self.getTypeRule(src):
+                                rules.append(src)
         if not rules:
             for src in self.rules.keys():
                 for action in self.rules[src]:
                     print(f"Action: {action}")
-                    if self.getNameAction(action).capitalize() == name.capitalize():
+                    if self.getNameAction(action).capitalize() == name_ser.capitalize():
                         rules.append(src)
 
         return rules
