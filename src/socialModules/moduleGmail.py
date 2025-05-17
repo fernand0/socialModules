@@ -455,6 +455,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         logMsg(msgLog, 2, 0)
         msgLog = f"{self.indent} Message: {message}"
         logMsg(msgLog, 2, 0)
+        if "message" in message:
+            message = message["message"]
         if "meta" in message:
             message = message["meta"]
         for head in message:
