@@ -475,6 +475,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         elif isinstance(message, tuple):
             # logging.debug(message)
             idPost = message
+        elif hasattr(message, 'id'):
+            idPost = message.get('id')
 
         return idPost
 
