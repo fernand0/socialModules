@@ -465,7 +465,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 return head["value"]
 
     def getPostId(self, message):
-        # print(f"Message: {message}")
+        print(f"Message: {message}")
         # print(f"Message: {'list' in message}")
         if isinstance(message, str):
             idPost = message
