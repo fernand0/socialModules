@@ -126,7 +126,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def modifyLabels(self, messageId, oldLabelId, labelId):
         api = self.getClient()
-        if ininstance(labelId, dict):
+        if isinstance(labelId, dict):
             labelId = labelId.get('id')
         list_labels = {
             "removeLabelIds": [
