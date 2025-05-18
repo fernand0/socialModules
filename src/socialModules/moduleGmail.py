@@ -159,7 +159,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                     message["list"] = post
                     message["meta"] = meta
                     post_id = self.getPostId(post)
-                    message["message"] = self.getPostContent(post_id)
+                    message["body"] = self.getPostBody(post_id)
                 else:
                     raw = self.getMessageRaw(post["id"], typePosts)
                     message = {}
@@ -455,8 +455,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         logMsg(msgLog, 2, 0)
         msgLog = f"{self.indent} Message: {message}"
         logMsg(msgLog, 2, 0)
-        if "message" in message:
-            message = message["message"]
+        # if "message" in message:
+        #     message = message["message"]
         if "meta" in message:
             message = message["meta"]
         for head in message:
