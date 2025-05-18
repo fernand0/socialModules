@@ -762,7 +762,7 @@ class moduleImap(Content): #, Queue):
 
     def getMessageBody(self, msg):
         # http://blog.magiksys.net/parsing-email-using-python-content
-        body = msg.get_body()
+        body = msg
         try:
            bodyTxt = body.get_content()
            typeB = body.get_content_type()
