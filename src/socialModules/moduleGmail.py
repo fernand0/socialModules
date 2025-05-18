@@ -89,6 +89,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def getLabels(self, sel=""):
         if not hasattr(self, "labels") or not self.labels:
             self.setLabels()
+        logging.info(f"Labels: {self.labels}")
         return list(filter(lambda x: sel in x["name"], self.labels))
 
     def getLabelsNames(self, sel=""):
