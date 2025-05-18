@@ -1308,6 +1308,9 @@ class moduleImap(Content): #, Queue):
                         msgI = email.message_from_bytes(response_part[1])
                         print(headerToString(msgI['Subject']))
 
+    def getPostBody(self, msg):
+        return msg[1]
+
     def getPostContentHtml(self, msg):
         if isinstance(msg, tuple):
             post = msg[1]
