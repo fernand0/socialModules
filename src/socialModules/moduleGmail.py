@@ -497,7 +497,9 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return messageEmail
 
     def getPostBody(self, message):
-        res = self.getHeader(message, "payload")
+        if 'body' in message:
+            mess = message["body"]
+        res = self.getHeader(mess, "payload")
         if not res:
             print("No ressss")
             res = message
