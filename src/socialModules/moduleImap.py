@@ -1309,7 +1309,7 @@ class moduleImap(Content): #, Queue):
                         print(headerToString(msgI['Subject']))
 
     def getPostBody(self, msg):
-        return self.getMessageBody(msg[1])
+        return self.getPostContent(msg)
 
     def getPostContentHtml(self, msg):
         if isinstance(msg, tuple):
