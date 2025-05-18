@@ -159,7 +159,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                     message["list"] = post
                     message["meta"] = meta
                     post_id = self.getPostId(post)
-                    email_result = api_src.getMessage(post_id)
+                    email_result = self.getMessage(post_id)
                     message["body"] = self.getPostBody(email_result)
                 else:
                     raw = self.getMessageRaw(post["id"], typePosts)
