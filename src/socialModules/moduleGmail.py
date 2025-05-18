@@ -497,6 +497,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return messageEmail
 
     def getPostBody(self, message):
+        logging.info(f"Message: {message}")
         if 'body' in message:
             mess = message["body"]
         res = self.getHeader(mess, "payload")
