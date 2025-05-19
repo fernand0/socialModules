@@ -1271,6 +1271,13 @@ class moduleImap(Content): #, Queue):
         except:
             logging.warning("Some error moving mails to Trash")
 
+    def modifyLabels(self, messageId, oldLabelId, labelId):
+        M = self.getClient()
+        if labelId:
+            self.moveMails(M, messageId, labelId)
+        else:
+            self.moveMails(M, messageId, Trash)
+
     def moveMails(self, M, msgs, folder):
         if hasattr(self, 'channel'): # in self:
             M.select(self.channel)

@@ -479,7 +479,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 return head["value"]
 
     def getPostId(self, message):
-        print(f"Message: {message}")
+        logging.debug(f"Message: {message}")
         # print(f"Message: {'list' in message}")
         if isinstance(message, str):
             idPost = message
@@ -509,7 +509,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return messageEmail
 
     def getPostBody(self, message):
-        logging.info(f"Message: {message}")
+        logging.debug(f"Message: {message}")
         if 'body' in message:
             mess = message["body"]
         res = self.getHeader(mess, "payload")
