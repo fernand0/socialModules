@@ -139,12 +139,17 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         logging.info(list_labels)
         # print(message)
 
-        message = (
-            api.users()
-            .messages()
-            .modify(userId="me", id=messageId, body=list_labels)
-            .execute()
-        )
+        try:
+            message = (
+                api.users()
+                .messages()
+                .modify(userId="me", id=messageId, body=list_labels)
+                .execute()
+            )
+            except googleapiclient.errors.httperror as e:
+                logging.error(f"Error deleting email: {e}")
+                message = ""
+
         return message
 
     def getDrafts(self):
