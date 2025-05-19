@@ -1276,7 +1276,7 @@ class moduleImap(Content): #, Queue):
         if labelId:
             self.moveMails(M, messageId, labelId)
         else:
-            self.moveMails(M, messageId, Trash)
+            self.moveMails(M, messageId, 'Trash')
 
     def moveMails(self, M, msgs, folder):
         if hasattr(self, 'channel'): # in self:
