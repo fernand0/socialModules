@@ -146,9 +146,9 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 .modify(userId="me", id=messageId, body=list_labels)
                 .execute()
             )
-            except googleapiclient.errors.httperror as e:
-                logging.error(f"Error deleting email: {e}")
-                message = ""
+        except googleapiclient.errors.httperror as e:
+            logging.error(f"Error deleting email: {e}")
+            message = ""
 
         return message
 
