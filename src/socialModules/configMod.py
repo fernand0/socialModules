@@ -270,7 +270,7 @@ def select_from_list(options, identifier="", selector="",
         rows, columns = resPopen.split()
         logging.info(f"Rows: {rows} Columns: {columns}")
         if text_sel.count('\n') > int(rows) -2:
-            click.echo_via_pager(text_sel, use_pager=True) 
+            click.echo_via_pager(text_sel) 
         else:
             click.echo(text_sel)
         msg = "Selection"
