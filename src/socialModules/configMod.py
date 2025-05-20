@@ -280,7 +280,7 @@ def select_from_list(options, identifier="", selector="",
             sel = names.index(default)
             options_sel = []
         elif not sel.isdigit():
-            logging.info(f"Opt: {opt}")
+            logging.info(f"Opt: {sel}")
             options_sel = [opt for opt in options_sel if sel.lower() in opt.lower()]
             # if len(options_sel) == 1:
             #     if not options_sel[0] in more_options:
