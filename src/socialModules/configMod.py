@@ -268,6 +268,7 @@ def select_from_list(options, identifier="", selector="",
             text_sel = f"{text_sel}\n{i}) {elem}"
         resPopen = os.popen('stty size', 'r').read()
         rows, columns = resPopen.split()
+        logging.info(f"Rows: {rows} Columns: {columns}")
         if text_sel.count('\n') > int(rows) -2:
             click.echo_via_pager(text_sel) 
         else:
