@@ -79,7 +79,8 @@ class Content:
             config = configparser.RawConfigParser()
             config.read(f"{configFile}")
         except:
-            msgLog = (f"Does file {configFile} exist?"
+            msgLog = (f"Does file {configFile} exist?\n"
+                      f"It is well formatted?\n"
                       f" Does it contain an entry for your account?")
             res = self.report({self.indent}, msgLog, 0, "")
 
