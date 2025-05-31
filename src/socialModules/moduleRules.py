@@ -517,10 +517,11 @@ class moduleRules:
             selRules = selRules + self.selectRule(ser, "")
 
         # selRules = self.selectRule(service, "")
-        print(f"Rules: {selRules}")
+        logging.info(f"Rules: {selRules}")
         iRul, src = select_from_list(selRules)
 
-        print(f"\nSelected rule: {iRul}. Rule {src}")
+        logging.info(f"Selected rule: {iRul}. Rule {src}\n")
+        print(f"\nSelected rule: {iRul}. Rule {src}\n")
         more = None
         if src in self.more:
             more = self.more[src]
