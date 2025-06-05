@@ -78,7 +78,7 @@ class Content:
         res = None
         try:
             config = configparser.RawConfigParser()
-            config.read(f"{configFile}")
+            res = config.read(f"{configFile}")
         except:
             msgLog = (f"Does file {configFile} exist?\n"
                       f"It is well formatted?\n"
