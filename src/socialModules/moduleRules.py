@@ -93,7 +93,8 @@ class moduleRules:
                     logMsg(msgLog, 2, 0)
 
                     methods = self.hasSetMethods(service)
-                    msgLog = f"{self.indent} Service {service} has " f"set {methods}"
+                    msgLog = (f"{self.indent} Service {service} has " 
+                              f"set {methods}")
                     logMsg(msgLog, 2, 0)
                     for method in methods:
                         if "posts" in moreS:
@@ -362,7 +363,7 @@ class moduleRules:
                                     mor[fromSrvN] = dict(moreS)
                                     msgLog = f"{self.indent}  chan: {chan}"
                                     logMsg(msgLog, 2, 0)
-                                    if chan != "set":
+                                    if (chan != "set") and not 'imap' in moreS:
                                         mor[fromSrvN].update(
                                             {"posts": chan, "channel": chan}
                                         )
