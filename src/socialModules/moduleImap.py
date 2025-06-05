@@ -155,6 +155,7 @@ class moduleImap(Content): #, Queue):
         # IMAP accounts get disconnected when time passes.
         # Maybe we should check if this is needed
 
+        logging.info(f"setApiPosts")
         logging.info(f"getChannel: {self.user}@{self.server}")
         self.checkConnected()
         channel = self.getChannel()
