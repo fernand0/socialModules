@@ -158,7 +158,9 @@ class moduleImap(Content): #, Queue):
         logging.info(f"setApiPosts")
         # logging.info(f"getChannel: {self.user}@{self.server}")
         self.checkConnected()
+        logging.info(f"setApiPosts")
         channel = self.getChannel()
+        logging.info(f"setApiPosts")
         logging.info(f"getChannel: {channel}")
         if not channel:
             self.setChannel()
