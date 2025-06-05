@@ -165,6 +165,7 @@ class moduleImap(Content): #, Queue):
         if not channel:
             self.setChannel()
             channel = self.getChannel()
+        logging.info(f"setApiPostss")
         posts = self.listMessages(self.getClient(), channel)
         return posts
 
