@@ -160,6 +160,12 @@ class Content:
                 nick = nick.split("/")[-1]
         self.nick = nick
 
+    def getServer(self):
+        server = ''
+        if hasattr(self, 'server'):
+            server = self.server
+        return server
+
     def getNick(self):
         nick = ""
         if hasattr(self, "nick"):
