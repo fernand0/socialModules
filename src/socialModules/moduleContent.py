@@ -76,15 +76,21 @@ class Content:
 
         configFile = f"{CONFIGDIR}/.rss{self.service}"
         res = None
+        msgLog = f"{self.indent} Config: {configFile}"  #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
+        res = configFile
         try:
             config = configparser.RawConfigParser()
-            res = config.read(f"{configFile}")
+            config.read(configFile)
         except:
             msgLog = (f"Does file {configFile} exist?\n"
                       f"It is well formatted?\n"
                       f" Does it contain an entry for your account?")
             res = self.report({self.indent}, msgLog, 0, "")
 
+        
+        msgLog = f"{self.indent} Res: {res}"  #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
         if res and not "Fail" in res: 
             self.indent = f"{self.indent} "
             msgLog = f"{self.indent} Getting keys"
@@ -194,7 +200,9 @@ class Content:
                 else:
                     nameMethod = f"set{option.capitalize()}"
 
+
                 if nameMethod in self.__dir__():
+                    logMsg(msgLog, 2, 0)
                     # Simple names setUrl, setTime, ...
                     # setting url, time, max, posts,
                     # setCache ¿?
@@ -214,6 +222,8 @@ class Content:
                                 break
         if not self.getUser():
             self.setUser()
+        msgLog = f"{self.indent} End setMoreValues client {self.getClient()}"
+        logMsg(msgLog, 2, 0)
         msgLog = f"{self.indent} End setMoreValues"
         logMsg(msgLog, 2, 0)
         self.indent = f"{self.indent[:-1]}"

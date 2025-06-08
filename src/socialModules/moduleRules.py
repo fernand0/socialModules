@@ -826,6 +826,8 @@ class moduleRules:
             apiSrc = getApi(profile, account, indent, more["channel"])
         else:
             apiSrc = getApi(profile, account, indent)
+        msgLog = f"{indent} readConfigSrc clientttt {apiSrc.getClient()}"  #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
         apiSrc.src = src
         apiSrc.setPostsType(src[-1])
         apiSrc.setMoreValues(more)
@@ -1234,6 +1236,7 @@ class moduleRules:
                     continue
                 # Source
                 apiSrc = self.readConfigSrc(indent, src, more)
+                logging.info(f"{indent} Clientttt: {apiSrc.getClient()}")
                 if not apiSrc.getClient():
                     msgLog = self.clientErrorMsg(
                         indent,
