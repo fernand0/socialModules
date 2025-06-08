@@ -31,12 +31,6 @@ class socialGoogle:
     def getKeys(key, config):
         return "keys"
 
-    def getServer(self):
-        server = ''
-        if hasattr(self, 'server'):
-            server = self.server
-        return server
-
     def authorize(self, serviceName, version):
         # based on Code from
         # https://github.com/gsuitedevs/python-samples/blob/aacc00657392a7119808b989167130b664be5c27/gmail/quickstart/quickstart.py
