@@ -93,7 +93,8 @@ class moduleRules:
                     logMsg(msgLog, 2, 0)
 
                     methods = self.hasSetMethods(service)
-                    msgLog = f"{self.indent} Service {service} has " f"set {methods}"
+                    msgLog = (f"{self.indent} Service {service} has " 
+                              f"set {methods}")
                     logMsg(msgLog, 2, 0)
                     for method in methods:
                         if "posts" in moreS:
@@ -362,7 +363,7 @@ class moduleRules:
                                     mor[fromSrvN] = dict(moreS)
                                     msgLog = f"{self.indent}  chan: {chan}"
                                     logMsg(msgLog, 2, 0)
-                                    if chan != "set":
+                                    if (chan != "set") and not 'imap' in moreS:
                                         mor[fromSrvN].update(
                                             {"posts": chan, "channel": chan}
                                         )
@@ -522,6 +523,7 @@ class moduleRules:
 
         logging.info(f"Selected rule: {iRul}. Rule {src}\n")
         print(f"\nSelected rule: {iRul}. Rule {src}\n")
+        print(f"\nSelected more: {self.more}\n")
         more = None
         if src in self.more:
             more = self.more[src]
@@ -824,6 +826,8 @@ class moduleRules:
             apiSrc = getApi(profile, account, indent, more["channel"])
         else:
             apiSrc = getApi(profile, account, indent)
+        msgLog = f"{indent} readConfigSrc clientttt {apiSrc.getClient()}"  #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
         apiSrc.src = src
         apiSrc.setPostsType(src[-1])
         apiSrc.setMoreValues(more)
@@ -1232,6 +1236,7 @@ class moduleRules:
                     continue
                 # Source
                 apiSrc = self.readConfigSrc(indent, src, more)
+                logging.info(f"{indent} Clientttt: {apiSrc.getClient()}")
                 if not apiSrc.getClient():
                     msgLog = self.clientErrorMsg(
                         indent,
