@@ -202,9 +202,7 @@ class Content:
                 else:
                     nameMethod = f"set{option.capitalize()}"
 
-
                 if nameMethod in self.__dir__():
-                    logMsg(msgLog, 2, 0)
                     # Simple names setUrl, setTime, ...
                     # setting url, time, max, posts,
                     # setCache ¿?
