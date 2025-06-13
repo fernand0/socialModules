@@ -49,6 +49,7 @@ dependencies = [
 		'pytumblr',
 		'telepot',
 		'gitterpy',
+		'setuptools',
 		'slack_sdk',
 		'readability-lxml',
 		'readabilipy'

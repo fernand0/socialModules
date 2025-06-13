@@ -75,45 +75,54 @@ class Content:
         logMsg(msgLog, 2, 0)
 
         configFile = f"{CONFIGDIR}/.rss{self.service}"
+        res = None
+        msgLog = f"{self.indent} Config: {configFile}"  #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
+        res = configFile
         try:
             config = configparser.RawConfigParser()
-            config.read(f"{configFile}")
+            config.read(configFile)
         except:
-            msgLog = f"Does file {configFile} exist?"
-            self.report({self.indent}, msgLog, 0, "")
+            msgLog = (f"Does file {configFile} exist?\n"
+                      f"It is well formatted?\n"
+                      f" Does it contain an entry for your account?")
+            res = self.report({self.indent}, msgLog, 0, "")
 
-        self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Getting keys"
+        
+        msgLog = f"{self.indent} Res: {res}"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        keys = ""
-        try:
-            keys = self.getKeys(config)
-            # logging.debug(f"{self.indent} user {self.user}")
-        except:
-            if not config.sections():
-                # FIXME: Are you sure?
-                msgLog = (
-                    f"{self.indent} Do the adequate keys exist " f"in {configFile}?"
-                )
-                logMsg(msgLog, 3, 0)
-
-        self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Starting initApi"
-        logMsg(msgLog, 2, 0)
-        # To avoid submodules logging.
-        # logger = logging.getLogger('my_module_name')
-        # https://stackoverflow.com/questions/35325042/python-logging-disable-logging-from-imported-modules
-
-        client = None
-        try:
-            client = self.initApi(keys)
-        except:
-            msgLog = (f"{self.indent} Exception")
+        if res and not "Fail" in res: 
+            self.indent = f"{self.indent} "
+            msgLog = f"{self.indent} Getting keys"
             logMsg(msgLog, 2, 0)
-            if not config.sections and not keys:
-                self.report({self.service}, "No keys", "", "")
-            else:
-                self.report({self.service}, "Some problem", "", "")
+            keys = ""
+            try:
+                keys = self.getKeys(config)
+                # logging.debug(f"{self.indent} user {self.user}")
+            except:
+                if not config.sections():
+                    # FIXME: Are you sure?
+                    msgLog = (
+                        f"{self.indent} Do the adequate keys exist " f"in {configFile}?"
+                    )
+                    logMsg(msgLog, 3, 0)
+
+            self.indent = f"{self.indent} "
+            msgLog = f"{self.indent} Starting initApi"
+            logMsg(msgLog, 2, 0)
+            # To avoid submodules logging.
+            # logger = logging.getLogger('my_module_name')
+            # https://stackoverflow.com/questions/35325042/python-logging-disable-logging-from-imported-modules
+
+            try:
+                client = self.initApi(keys)
+            except:
+                msgLog = (f"{self.indent} Exception")
+                logMsg(msgLog, 2, 0)
+                if not config.sections and not keys:
+                    self.report({self.service}, "No keys", "", "")
+                else:
+                    self.report({self.service}, "Some problem", "", "")
 
         self.client = client
         self.indent = self.indent[:-1]
@@ -151,6 +160,12 @@ class Content:
                 nick = nick.split("/")[-1]
         self.nick = nick
 
+    def getServer(self):
+        server = ''
+        if hasattr(self, 'server'):
+            server = self.server
+        return server
+
     def getNick(self):
         nick = ""
         if hasattr(self, "nick"):
@@ -177,10 +192,6 @@ class Content:
         # We have a dictionary of values and we check for methods for
         # setting these values in our object
         self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Start setMoreValues"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent}  moreValues: {more}"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
         if more:
             # Setting values available in more
             for option in more:
@@ -211,6 +222,8 @@ class Content:
                                 break
         if not self.getUser():
             self.setUser()
+        msgLog = f"{self.indent} End setMoreValues client {self.getClient()}"
+        logMsg(msgLog, 2, 0)
         msgLog = f"{self.indent} End setMoreValues"
         logMsg(msgLog, 2, 0)
         self.indent = f"{self.indent[:-1]}"

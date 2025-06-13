@@ -98,7 +98,6 @@ class moduleGcalendar(Content, socialGoogle):
         return text
 
     def getPostId(self, post):
-        print(f"Post: {post}")
         text = post.get('id')
         return text
 

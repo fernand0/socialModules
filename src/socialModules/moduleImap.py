@@ -155,23 +155,26 @@ class moduleImap(Content): #, Queue):
         # IMAP accounts get disconnected when time passes.
         # Maybe we should check if this is needed
 
-        logging.info(f"getChannel: {self.user}@{self.server}")
+        logging.info(f"setApiPosts")
+        # logging.info(f"getChannel: {self.user}@{self.server}")
         self.checkConnected()
+        logging.info(f"setApiPosts")
         channel = self.getChannel()
+        logging.info(f"setApiPosts")
         logging.info(f"getChannel: {channel}")
         if not channel:
             self.setChannel()
             channel = self.getChannel()
+        logging.info(f"setApiPostss")
+        logging.info(f"setApiPostss {self.getClient()}")
         posts = self.listMessages(self.getClient(), channel)
         return posts
 
     def getChannels(self):
         msgLog = (f"{self.indent} getChannels")
         logMsg(msgLog, 1, 0)
-        resp, data = self.getClient().list('""', '*')
-        if resp != 'OK':
-            logging.warning("Some problem getting list of folders")
-        return data
+        labels = self.getLabels()
+        return labels
 
     def getChannelName(self, channel):
         # Examples:
@@ -489,6 +492,7 @@ class moduleImap(Content): #, Queue):
 
         return msg_data[int(msg_number)]  # messages[-10+int(msg_number)-1]
 
+
     def selectHeaderAuto(self, M, msg):
         i = 1
         print(f"Msg: {msg}")
@@ -496,20 +500,39 @@ class moduleImap(Content): #, Queue):
             return ('List-Id', msg['List-Id'][msg['List-Id'].find('<')+1:-1])
         else:
 
+            # print(f"{msg} - {type(msg)}")
+            # print(f"{msg[1].keys()}")
+
+            # headers = [f"{header}: {msg[1].get(header)}" for header in msg[1].keys()]
+
+            # print(f"Headers: {headers}")
+
+            # sel, sel_txt = select_from_list(headers, negation_selector="Received:")
+
+            # print(f"Sel: {sel} - {sel_txt}")
+            
+            textHeaders = []
+            nameHeaders = []
             for header in msgHeaders:
                 textHeader = M.getHeader(msg, header)
                 textHeader = email.header.decode_header(str(textHeader))
                 textHeader = str(email.header.make_header(textHeader))
                 if textHeader!='None':
-                    print(f"{i}) {header} {textHeader}")
-                i = i + 1
+                    #print(f"{i}) {header}: {textHeader}")
+                    textHeaders.append(f"{textHeader}")
+                    nameHeaders.append(f"{header}")
+                #i = i + 1
             import locale
-            header_num = input("Select header: ")
+            #header_num = input("Select header: ")
 
-            header = msgHeaders[int(header_num)-1]
-            textHeader = M.getHeader(msg, header)
-            textHeader = email.header.decode_header(str(textHeader))
-            textHeader = str(email.header.make_header(textHeader))
+            headers = [f"{cad1}: {cad2}" for cad1, cad2 in zip(nameHeaders, textHeaders)]
+            header_num, sel_txt = select_from_list(headers)
+
+            header = nameHeaders[header_num]
+            textHeader = textHeaders[header_num]
+            # textHeader = M.getHeader(msg, header)
+            # textHeader = email.header.decode_header(str(textHeader))
+            # textHeader = str(email.header.make_header(textHeader))
             pos = textHeader.find('<')
             if (pos >= 0):
                 textHeader = textHeader[pos+1:textHeader.find('>', pos + 1)]
@@ -744,7 +767,7 @@ class moduleImap(Content): #, Queue):
 
     def getMessageBody(self, msg):
         # http://blog.magiksys.net/parsing-email-using-python-content
-        body = msg.get_body()
+        body = msg
         try:
            bodyTxt = body.get_content()
            typeB = body.get_content_type()
@@ -786,11 +809,13 @@ class moduleImap(Content): #, Queue):
         wait = input("Any key to follow")
 
 
-    def createFolder(self, M, name, folder, search=True):
+    def createFolder(self, M="", name="", folder="", search=True):
         exclude = ['Trash']
+        if not M:
+            M = self.getClient()
         if search:
             print("We can select a folder where our new folder will be created")
-            folder = selectFolder(M, folder)
+            folder = self.selectFolder(newFolderName=folder)
             print(folder)
         #folder  = nameFolder(folder)
         if folder:
@@ -899,9 +924,21 @@ class moduleImap(Content): #, Queue):
 
         return(listFolders)
 
-    def listFolders(self):
+    def setLabels(self):
+        api = self.getClient()
         resp, data = self.getClient().list('""', '*')
-        return data
+        if 'OK' in resp and data:
+            self.labels = data
+
+    def getLabels(self, sel=""):
+        if not hasattr(self, "labels") or not self.labels:
+            self.setLabels()
+        return list(filter(lambda x: sel in str(x), self.labels))
+
+    def listFolders(self):
+        # resp, data = self.getClient().list('""', '*')
+        self.setLabels
+        return self.getLabels()
 
     def checkConnected(self):
         try:
@@ -910,10 +947,30 @@ class moduleImap(Content): #, Queue):
         except:
             self.setClient(f"{self.user}")
 
-    def selectFolder(self, M, moreMessages = "",
+    def selectFolderN(self, moreMessages ="",
+                      newFolderName = '', folderM=''):
+        self.checkConnected()
+        data = self.listFolders()
+        folders = [self.nameFolder(fol) for fol in data]
+        sel, folder = select_from_list(folders, more_options=['-cf'])
+        if isinstance(sel, str) and '-cf' in sel:
+            nfn = input("New folder name? (%s)"% folderM)
+            if not nfn:
+                nfn = folderM
+            iFolder = self.createFolder(name=nfn, folder=moreMessages)
+            listFolders = iFolder
+            folder = iFolder
+
+        return folder
+
+
+    def selectFolder(self, M="", moreMessages = "",
                      newFolderName='', folderM=''):
 
         self.checkConnected()
+        if not M:
+            M = self.getClient()
+
         data = self.listFolders()
         #print(data)
         listAllFolders = self.listFolderNames(data, moreMessages)
@@ -1219,6 +1276,13 @@ class moduleImap(Content): #, Queue):
         except:
             logging.warning("Some error moving mails to Trash")
 
+    def modifyLabels(self, messageId, oldLabelId, labelId):
+        M = self.getClient()
+        if labelId:
+            self.moveMails(M, messageId, labelId)
+        else:
+            self.moveMails(M, messageId, 'Trash')
+
     def moveMails(self, M, msgs, folder):
         if hasattr(self, 'channel'): # in self:
             M.select(self.channel)
@@ -1255,6 +1319,9 @@ class moduleImap(Content): #, Queue):
                     if isinstance(response_part, tuple):
                         msgI = email.message_from_bytes(response_part[1])
                         print(headerToString(msgI['Subject']))
+
+    def getPostBody(self, msg):
+        return self.getPostContent(msg)
 
     def getPostContentHtml(self, msg):
         if isinstance(msg, tuple):
@@ -1344,7 +1411,7 @@ class moduleImap(Content): #, Queue):
 
     def getHeader(self, msg, header):
         post = msg[1]
-        return post.get(header)
+        return safe_get(post, [header])
 
     def getPostDate(self, msg):
         post = msg[1]
@@ -1554,6 +1621,9 @@ def main():
             # print(f"Folder: {folder} Name: {name}")
             print(f"Folder: {apiSrc.getChannelName(folder)}")
         print(f"Special folders: {apiSrc.special}")
+        print(f"{apiSrc.selectFolderN()}")
+        # print(f"{apiSrc.selectFolder(apiSrc.getClient())}")
+
         return
 
     testingPublishingDraft = True
@@ -1561,6 +1631,10 @@ def main():
         apiSrc.setPostsType('drafts')
         apiSrc.setPosts()
         if apiSrc.getPosts():
+            posts = [apiSrc.getPostSubject(post[1]) for post in apiSrc.getPosts()]
+            sel, post = select_from_list(posts, identifier='Subject')
+            print(sel)
+            return
             post = apiSrc.getPosts()[0]
             apiSrc.publishApiDraft(post)
 

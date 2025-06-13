@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import click
 import importlib
 import logging
 import os
@@ -216,3 +217,96 @@ def nameModule():
     name = name[pos+len('module'):-3]
     return name
 
+def safe_get(data, keys, default=""):
+    """Safely retrieves nested values from a dictionary."""
+    try:
+        for key in keys:
+            data = data[key]
+        return data
+    except (KeyError, TypeError):
+        return default
+
+
+def select_from_list(options, identifier="", selector="", 
+                     negation_selector="", default="", more_options=[]):
+    """selects an option form an iterable element, based on some identifier
+
+    we can make an initial selection of elements that contain 'selector'
+    we can select based on numbers or in substrings of the elements
+    of the list.
+    """
+
+    if options and (
+        isinstance(options[0], dict)
+        or (hasattr(options[0], "__slots__"))
+        or hasattr(options[0], "name")
+    ):
+        names = [
+            safe_get(
+                el,
+                [
+                    identifier,
+                ],
+            )
+            if isinstance(el, dict)
+            else getattr(el, identifier)
+            for el in options
+        ]
+    else:
+        names = options
+    sel = -1
+    names_sel = names.copy()
+    if selector:
+        names_sel = [opt for opt in names if selector in opt]# + more_options
+    if negation_selector:
+        names_sel = [opt for opt in names if not (negation_selector in opt)] 
+    names_sel = names_sel + more_options
+    options_sel = names_sel.copy()
+    while options_sel and len(options_sel)>1:
+        text_sel = ""
+        for i, elem in enumerate(options_sel):
+            text_sel = f"{text_sel}\n{i}) {elem}"
+        resPopen = os.popen('stty size', 'r').read()
+        rows, columns = resPopen.split()
+        logging.info(f"Rows: {rows} Columns: {columns}")
+        if text_sel.count('\n') > int(rows) -2:
+            click.echo_via_pager(text_sel) 
+        else:
+            click.echo(text_sel)
+        msg = "Selection"
+        # msg += f"({default}) " if default else ""
+        sel = click.prompt(msg, default=default)
+        if sel == "" and default:
+            sel = names.index(default)
+            options_sel = []
+        elif not sel.isdigit():
+            logging.debug(f"Opt: {sel}")
+            options_sel = [opt for opt in options_sel if sel.lower() in opt.lower()]
+            # if len(options_sel) == 1:
+            #     if not options_sel[0] in more_options:
+            #         sel = names.index(options_sel[0])
+            #     options_sel = []
+            # elif
+            if len(options_sel) == 0:
+                options_sel = names_sel.copy()
+        else:
+            # Now we select the original number
+            if int(sel) < len(options_sel):
+                sel = names.index(options_sel[int(sel)])
+                options_sel = []
+            else:
+                options_sel = names_sel.copy()
+    
+    if len(options_sel) == 1:      
+        if not options_sel[0] in more_options: 
+            sel = names.index(options_sel[0])
+
+    logging.info(f"Sel: {sel}")
+    if isinstance(sel, int) and int(sel) < len(names): 
+        logging.info(f"- {names[int(sel)]}")
+        name = names[int(sel)]
+    else:
+        logging.info(f"- is an extra option")
+        name = sel
+
+    return sel, name
