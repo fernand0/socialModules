@@ -101,7 +101,7 @@ class socialGoogle:
                 except:
                     msgLog = sys.exc_info()
                     logMsg(msgLog, 2, 0)
-            else:
+        else:
                 # This needs to have a desktop application created in
                 # https://console.cloud.google.com/auth/clients
                 # and some test user, since we are not passing the
@@ -143,9 +143,6 @@ class socialGoogle:
                     )
                     creds.refresh(Request())
                     # creds = 'Fail!'
-        else:
-            msgLog = f"{self.indent}  else {creds} {type(creds)}" 
-            logMsg(msgLog, 2, 0) 
 
 
         msgLog = f"{self.indent}  building service {creds} {type(creds)}" 
