@@ -103,8 +103,8 @@ class socialGoogle:
                 except:
                     msgLog = sys.exc_info()
                     logMsg(msgLog, 2, 0)
-                    if os.path.exists(fileTokenStore):
-                          os.remove(fileTokenStore)
+                    if os.path.exists(fileTokenStore): 
+                        os.remove(fileTokenStore)
                         print(f"Archivo '{fileTokenStore}' eliminado para forzar una nueva autenticación.") 
                     raise # Es importante que el programa salga o relance para que el usuario pueda re-autenticar
         else:
