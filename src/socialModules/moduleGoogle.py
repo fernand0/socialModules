@@ -107,7 +107,7 @@ class socialGoogle:
                         os.remove(fileTokenStore)
                         print(f"Archivo '{fileTokenStore}' eliminado para forzar una nueva autenticación.") 
                     raise # Es importante que el programa salga o relance para que el usuario pueda re-autenticar
-        else:
+        elif not creds:
                 # This needs to have a desktop application created in
                 # https://console.cloud.google.com/auth/clients
                 # and some test user, since we are not passing the
