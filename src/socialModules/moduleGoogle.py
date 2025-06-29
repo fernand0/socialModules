@@ -93,7 +93,7 @@ class socialGoogle:
         if not creds:
             msgLog = f"{self.indent} No creds"
             logMsg(msgLog, 2, 0)
-            if creds and creds.expired and creds.refresh_token:
+        if creds and creds.expired and creds.refresh_token:
                 msgLog = f"{self.indent} Needs to refresh token GMail"
                 logMsg(msgLog, 2, 0)
                 try:
@@ -143,6 +143,10 @@ class socialGoogle:
                     )
                     creds.refresh(Request())
                     # creds = 'Fail!'
+        else:
+            msgLog = f"{self.indent}  else {creds} {type(creds)}" 
+            logMsg(msgLog, 2, 0) 
+
 
         msgLog = f"{self.indent}  building service {creds} {type(creds)}" 
         logMsg(msgLog, 2, 0) 
