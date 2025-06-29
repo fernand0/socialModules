@@ -95,13 +95,18 @@ class socialGoogle:
             logMsg(msgLog, 2, 0)
         if creds and creds.expired and creds.refresh_token:
                 msgLog = (f"{self.indent} Needs to refresh token GMail"
-                          f"Exp {creds.expired} - Ref {creds.refresh_token}")
+                          # f"Exp {creds.expired} - Ref {creds.refresh_token}"
+                          )
                 logMsg(msgLog, 2, 0)
                 try:
                     creds.refresh(Request())
                 except:
                     msgLog = sys.exc_info()
                     logMsg(msgLog, 2, 0)
+                    if os.path.exists(fileTokenStore):
+                          os.remove(fileTokenStore)
+                        print(f"Archivo '{fileTokenStore}' eliminado para forzar una nueva autenticación.") 
+                    raise # Es importante que el programa salga o relance para que el usuario pueda re-autenticar
         else:
                 # This needs to have a desktop application created in
                 # https://console.cloud.google.com/auth/clients
