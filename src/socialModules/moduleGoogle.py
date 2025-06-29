@@ -113,6 +113,9 @@ class socialGoogle:
                 # and some test user, since we are not passing the
                 # verification process in Google.
                 # It only works in local, since it launches a brower
+
+                msgLog = f"{self.indent}  building service {creds} {type(creds)}" 
+                logMsg(msgLog, 2, 0) 
                 msgLog = f"{self.indent} Needs to re-authorize token {self.service}"
                 logMsg(msgLog, 2, 0)
                 fileCredStore = self.confName((self.server, self.nick))
