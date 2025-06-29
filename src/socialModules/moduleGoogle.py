@@ -94,7 +94,8 @@ class socialGoogle:
             msgLog = f"{self.indent} No creds"
             logMsg(msgLog, 2, 0)
         if creds and creds.expired and creds.refresh_token:
-                msgLog = f"{self.indent} Needs to refresh token GMail"
+                msgLog = (f"{self.indent} Needs to refresh token GMail"
+                          f"Exp {creds.expired} - Ref {creds.refresh_token}")
                 logMsg(msgLog, 2, 0)
                 try:
                     creds.refresh(Request())
