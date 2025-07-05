@@ -39,6 +39,7 @@ class socialGoogle:
             creds = pickle.load(fToken)
             from googleapiclient.discovery import build
             oauth2_service = build('oauth2', 'v2', credentials=creds)
+            print(oauth2_service)
             user_info = oauth2_service.userinfo().get().execute()
             print(user_info)
 
