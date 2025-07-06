@@ -31,18 +31,6 @@ class socialGoogle:
     def getKeys(key, config):
         return "keys"
 
-    def info(self):
-        fileTokenStore = self.confTokenName((self.server, self.nick))
-        with open(fileTokenStore, "rb") as fToken:
-            msgLog = f"{self.indent}   Unpickle: {fileTokenStore}"
-            logMsg(msgLog, 2, 0)
-            creds = pickle.load(fToken)
-            from googleapiclient.discovery import build
-            oauth2_service = build('oauth2', 'v2', credentials=creds)
-            print(oauth2_service)
-            user_info = oauth2_service.userinfo().get().execute()
-            print(user_info)
-
     def authorize(self, serviceName, version):
         # based on Code from
         # https://github.com/gsuitedevs/python-samples/blob/aacc00657392a7119808b989167130b664be5c27/gmail/quickstart/quickstart.py
