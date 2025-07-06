@@ -523,7 +523,7 @@ class moduleRules:
 
         logging.info(f"Selected rule: {iRul}. Rule {src}\n")
         print(f"\nSelected rule: {iRul}. Rule {src}\n")
-        print(f"\nSelected more: {self.more}\n")
+        logging.debug(f"\nSelected more: {self.more}\n")
         more = None
         if src in self.more:
             more = self.more[src]

@@ -31,6 +31,18 @@ class socialGoogle:
     def getKeys(key, config):
         return "keys"
 
+    def info(self):
+        fileTokenStore = self.confTokenName((self.server, self.nick))
+        with open(fileTokenStore, "rb") as fToken:
+            msgLog = f"{self.indent}   Unpickle: {fileTokenStore}"
+            logMsg(msgLog, 2, 0)
+            creds = pickle.load(fToken)
+            from googleapiclient.discovery import build
+            oauth2_service = build('oauth2', 'v2', credentials=creds)
+            print(oauth2_service)
+            user_info = oauth2_service.userinfo().get().execute()
+            print(user_info)
+
     def authorize(self, serviceName, version):
         # based on Code from
         # https://github.com/gsuitedevs/python-samples/blob/aacc00657392a7119808b989167130b664be5c27/gmail/quickstart/quickstart.py
@@ -93,20 +105,27 @@ class socialGoogle:
         if not creds:
             msgLog = f"{self.indent} No creds"
             logMsg(msgLog, 2, 0)
-            if creds and creds.expired and creds.refresh_token:
-                msgLog = f"{self.indent} Needs to refresh token GMail"
+        if creds and creds.expired and creds.refresh_token:
+                msgLog = (f"{self.indent} Needs to refresh token GMail"
+                          # f"Exp {creds.expired} - Ref {creds.refresh_token}"
+                          )
                 logMsg(msgLog, 2, 0)
                 try:
                     creds.refresh(Request())
                 except:
                     msgLog = sys.exc_info()
                     logMsg(msgLog, 2, 0)
-            else:
+                    if os.path.exists(fileTokenStore):
+                        os.remove(fileTokenStore)
+                        print(f"Archivo '{fileTokenStore}' eliminado para forzar una nueva autenticación.")
+                    raise # Es importante que el programa salga o relance para que el usuario pueda re-autenticar
+        elif not creds:
                 # This needs to have a desktop application created in
                 # https://console.cloud.google.com/auth/clients
                 # and some test user, since we are not passing the
                 # verification process in Google.
                 # It only works in local, since it launches a brower
+
                 msgLog = f"{self.indent} Needs to re-authorize token {self.service}"
                 logMsg(msgLog, 2, 0)
                 fileCredStore = self.confName((self.server, self.nick))
@@ -143,6 +162,7 @@ class socialGoogle:
                     )
                     creds.refresh(Request())
                     # creds = 'Fail!'
+
 
         msgLog = f"{self.indent}  building service {creds} {type(creds)}"
         logMsg(msgLog, 2, 0)
