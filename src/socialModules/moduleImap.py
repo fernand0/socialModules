@@ -1355,9 +1355,10 @@ class moduleImap(Content): #, Queue):
     def getPostContent(self, msg):
         post = msg[1]
         if post.is_multipart():
-            print("multi")
             mail_content = ''
             for part in post.get_payload():
+
+                print(f"type: {part.get_content_type()}")
                 if part.get_content_type() == 'text/plain':
                     mail_content += part.get_payload()
                 elif part.get_content_type() == 'text/html':
@@ -1368,7 +1369,6 @@ class moduleImap(Content): #, Queue):
                     for partt in part.get_payload():
                         mail_content += partt.get_payload()
         else:
-            print("no multi")
             mail_content = post.get_payload()
 
         print(f"Mail: {mail_content}")
