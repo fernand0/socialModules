@@ -1367,7 +1367,7 @@ class moduleImap(Content): #, Queue):
                 elif part.get_content_type() in ['multipart/alternative', 'multipart/related']:
                     for partt in part.get_payload():
                         if partt.get_content_type() == 'text/html':
-                            text = part.get_payload(decode=True)
+                            text = partt.get_payload(decode=True)
                             soup = BeautifulSoup(text, "html.parser")
                             mail_content += soup.get_text('\n')
                         else:
