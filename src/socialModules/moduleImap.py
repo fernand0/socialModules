@@ -1358,8 +1358,9 @@ class moduleImap(Content): #, Queue):
             mail_content = ''
             for part in post.get_payload():
 
-                print(f"type: {part.get_content_type()}")
                 if part.get_content_type() == 'text/plain':
+                    mail_content += part.get_payload()
+                elif part.get_content_type() == "multipart/related":
                     mail_content += part.get_payload()
                 elif part.get_content_type() == 'text/html':
                     text = part.get_payload(decode=True)
