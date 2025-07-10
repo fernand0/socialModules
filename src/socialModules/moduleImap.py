@@ -510,7 +510,7 @@ class moduleImap(Content): #, Queue):
             # sel, sel_txt = select_from_list(headers, negation_selector="Received:")
 
             # print(f"Sel: {sel} - {sel_txt}")
-            
+
             textHeaders = []
             nameHeaders = []
             for header in msgHeaders:
@@ -926,7 +926,7 @@ class moduleImap(Content): #, Queue):
 
     def setLabels(self):
         api = self.getClient()
-        resp, data = self.getClient().list('""', '*')
+        resp, data = api.list('""', '*')
         if 'OK' in resp and data:
             self.labels = data
 
@@ -1349,7 +1349,7 @@ class moduleImap(Content): #, Queue):
         else:
             mail_content = post.get_payload()
 
-        # print(f"Mail: {mail_content}")
+        print(f"Mail: {mail_content}")
 
         return mail_content
 
