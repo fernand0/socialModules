@@ -1349,7 +1349,6 @@ class moduleImap(Content): #, Queue):
         else:
             mail_content = post.get_payload()
 
-        print(f"Mail: {mail_content}")
 
         return mail_content
 
@@ -1370,6 +1369,7 @@ class moduleImap(Content): #, Queue):
         else:
             mail_content = post.get_payload()
 
+        print(f"Mail: {mail_content}")
         return mail_content
 
     def getPostLinks(self, msg):
