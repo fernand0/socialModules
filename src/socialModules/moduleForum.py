@@ -26,7 +26,7 @@ from socialModules.moduleContent import *
 class moduleForum(Content): #, Queue):
 
     def setClient(self, forumData):
-        self.url = ""
+        logging.info(f"Ffffforum: {forumData}")
         self.selected = None
         self.selector = None
         self.idSeparator = None
@@ -48,7 +48,6 @@ class moduleForum(Content): #, Queue):
                  topictitle
         idSeparator:=
         """
-        self.url = ""
         self.selected = None
         self.selector = None
         self.idSeparator = None
@@ -82,6 +81,8 @@ class moduleForum(Content): #, Queue):
             "AppleWebKit/537.36 (KHTML, like Gecko) "
             "Chrome/39.0.2171.95 Safari/537.36"
         }
+
+        headers.update({'referer': self.url})
 
         selector = self.selector[idSelector]
         response = requests.get(url, headers=headers)
@@ -146,7 +147,7 @@ class moduleForum(Content): #, Queue):
             # idPost = int(link[pos + 1 : -1])
             idPost = link[pos + 1 : -1]
         else:
-            if pos2>0: 
+            if pos2>0:
                 idPost = link[pos+1:pos2]
             else:
                 # idPost = int(link[pos + 1 :])
@@ -159,7 +160,7 @@ class moduleForum(Content): #, Queue):
         elif idPost.find('#')>=0:
             idPost = None # int(idPost.split('#')[0])
         else:
-            try: 
+            try:
                 idPost = int(idPost)
             except:
                 try:
@@ -181,58 +182,77 @@ class moduleForum(Content): #, Queue):
     def setPosts(self):
         url = self.url
 
-        try:
-            forums = self.getLinks(url, 0)
-        except:
-            forums = []
-
-        logging.debug(" Selected .... %s" % self.selected)
-        logging.info(" Reading in .... %s" % self.url)
         listId = []
         posts = {}
-        for i, forum in enumerate(forums):
-            logging.debug("Forum html: %s" % forum)
-            logging.debug("Forum name: %s" % forum.name)
-            if forum.name != "a":
-                # It is inside some other tag
-                logging.debug(f"Forum contents:{forum.contents}")
-                if isinstance(forum.contents[0], bs4.element.Tag):
-                    forum = forum.contents[0]
-                else:
-                    forum = forum.contents[1]
+        if not url.startswith('rss'):
+            try:
+                forums = self.getLinks(url, 0)
+            except:
+                forums = []
 
-                logging.debug("Forum in html: %s" % forum)
-            text = forum.text
-            logging.debug(f"Text: {text}")
-            if ((text.lower() in self.selected)
-                    or (text in self.selected)):
-                logging.debug(f"Forum: {forum}")
-                link = self.extractLink(forum)
-                logging.info(f"  - {text} {link}")
-                links = self.getLinks(link, 1)
-                for j, post in enumerate(links):
-                    logging.info(f"Post {post}")
-                    linkF = self.extractLink(post)
-                    logging.info(f"linkF {linkF}")
-                    if linkF:
-                        if hasattr(self, 'selectorlink'):
-                            logging.info(f"Selectorrrr: {self.selectorlink}")
-                            if not self.selectorlink in linkF:
-                                linkF = None
+            logging.debug(" Selected .... %s" % self.selected)
+            logging.info(" Reading in .... %s" % self.url)
+            for i, forum in enumerate(forums):
+                logging.debug("Forum html: %s" % forum)
+                logging.debug("Forum name: %s" % forum.name)
+                if forum.name != "a":
+                    # It is inside some other tag
+                    logging.debug(f"Forum contents:{forum.contents}")
+                    if isinstance(forum.contents[0], bs4.element.Tag):
+                        forum = forum.contents[0]
+                    else:
+                        forum = forum.contents[1]
+
+                    logging.debug("Forum in html: %s" % forum)
+                text = forum.text
+                logging.debug(f"Text: {text}")
+                if ((text.lower() in self.selected)
+                        or (text in self.selected)):
+                    logging.debug(f"Forum: {forum}")
+                    link = self.extractLink(forum)
+                    logging.info(f"  - {text} {link}")
+                    links = self.getLinks(link, 1)
+                    for j, post in enumerate(links):
+                        logging.info(f"Post {post}")
+                        linkF = self.extractLink(post)
+                        logging.info(f"linkF {linkF}")
                         if linkF:
-                            idPost = self.extractId(linkF)
-                        else:
-                            idPost = None
-                        logging.info(f"idPost {idPost}")
-                        if idPost and post.text:
-                            if not idPost in listId:
-                                listId.append(idPost)
-                                logging.debug(f"Post: {post}")
-                                textF = post.text
-                                logging.debug(f"textF: {textF}")
-                                posts[idPost] = [textF, linkF]
+                            if hasattr(self, 'selectorlink'):
+                                logging.info(f"Selectorrrr: {self.selectorlink}")
+                                if not self.selectorlink in linkF:
+                                    linkF = None
+                            if linkF:
+                                idPost = self.extractId(linkF)
+                            else:
+                                idPost = None
+                            logging.info(f"idPost {idPost}")
+                            if idPost and post.text:
+                                if not idPost in listId:
+                                    listId.append(idPost)
+                                    logging.debug(f"Post: {post}")
+                                    textF = post.text
+                                    logging.debug(f"textF: {textF}")
+                                    posts[idPost] = [textF, linkF]
 
-                time.sleep(1)
+                    time.sleep(1)
+        else:
+            url = self.url.replace('rss', 'https')
+            src = ('rss', 'set', url, 'posts')
+            more = []
+            import socialModules.moduleRules
+            rules = socialModules.moduleRules.moduleRules()
+            apiAux = rules.readConfigSrc("", src, more)
+            apiAux.setPosts()
+            for post in apiAux.getPosts():
+                idPost = self.extractId(apiAux.getPostLink(post))
+                textF = apiAux.getPostTitle(post)
+                linkF = apiAux.getPostLink(post)
+                if idPost:
+                    if not idPost in listId:
+                        listId.append(idPost)
+                        logging.debug(f"Post: {post}")
+                        logging.debug(f"textF: {textF}")
+                        posts[idPost] = [textF, linkF]
 
         if listId:
             self.posts = []
@@ -250,7 +270,7 @@ class moduleForum(Content): #, Queue):
             logging.debug(f"Position: {pos} Len: {len(self.posts)}")
             # print(self.posts[pos][1])
             # print('>>>',pos, len(self.posts))
-            if pos == len(self.posts):  
+            if pos == len(self.posts):
                 # and (str(lastLink) != self.posts[pos][1]):
                 pos = 0
             if pos < len(self.posts):
@@ -270,39 +290,45 @@ class moduleForum(Content): #, Queue):
 def main():
 
     logging.basicConfig(
-        stream=sys.stdout, level=logging.DEBUG, 
+        stream=sys.stdout, level=logging.DEBUG,
         format="%(asctime)s %(message)s"
     )
+    import socialModules.moduleRules
+    rules = socialModules.moduleRules.moduleRules()
+    rules.checkRules()
 
-    forums = [
-         "http://foro.infojardin.com/",
-         'https://cactuspro.com/forum/',
-         'https://garden.org/forums/'
-         'http://www.agaveville.org/index.php'
-         "https://www.cactuseros.com/foro/index.php",
-         "https://mammillaria.forumotion.net/",
-         "https://cactiguide.com/forum/",
-     ]
-    for forumData in forums:
-        forum = moduleForum()
-        forum.setClient(forumData)
-        forum.setPosts()
-        logging.debug(f"Posts: {forum.getPosts()}")
-        lastLink, lastTime = checkLastLink(forum.url)
-        logging.debug(f"Last: {lastLink} - {lastTime}")
-        continue
-        pos = forum.getLinkPosition(lastLink)
-        logging.debug(f"Pos: {pos}")
+    apiSrc = rules.selectRuleInteractive()
 
-        if pos > len(forum.getPosts()) - 1:
-            print("No new posts!\n")
-        else:
-            for post in forum.getPosts()[pos:]:
-                print("   {}".format(post[0]))
-                print("   {}".format(post[1]))
-            # updateLastLink(forum.url, forum.getPosts()[-1][1])
-        for i, post in enumerate(forum.getPosts()):
-            print(f"{i}) p0{post[0]}.\n   p1{post[1]}")
+    #return
+
+
+    #forums = [
+    #     #"http://foro.infojardin.com/",
+    #     'https://cactuspro.com/forum/',
+    #     #'https://garden.org/forums/'
+    #     #'http://www.agaveville.org/index.php'
+    #     #"https://www.cactuseros.com/foro/index.php",
+    #     #"https://mammillaria.forumotion.net/",
+    #     #"https://cactiguide.com/forum/",
+    # ]
+    forum = apiSrc
+    forum.setPosts()
+    logging.debug(f"Posts: {forum.getPosts()}")
+    lastLink, lastTime = checkLastLink(forum.url)
+    logging.debug(f"Last: {lastLink} - {lastTime}")
+    pos = forum.getLinkPosition(lastLink)
+    logging.debug(f"Pos: {pos}")
+
+
+    if pos > len(forum.getPosts()) - 1:
+        print("No new posts!\n")
+    else:
+        for post in forum.getPosts()[pos:]:
+            print("   {}".format(post[0]))
+            print("   {}".format(post[1]))
+        # updateLastLink(forum.url, forum.getPosts()[-1][1])
+    for i, post in enumerate(forum.getPosts()):
+        print(f"{i}) p0{post[0]}.\n   p1{post[1]}")
 
 
 if __name__ == "__main__":

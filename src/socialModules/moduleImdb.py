@@ -23,7 +23,7 @@ class moduleImdb(Content): #,Queue):
         self.client = None
         self.url=None
         self.fileTV = '/tmp/tv.json'
-        self.gen = 'Cine'
+        self.gen = 'CN'
         self.cache = False
         self.channels = None
         self.posts = []
@@ -69,7 +69,10 @@ class moduleImdb(Content): #,Queue):
 
         if not self.cache: 
             logging.info("Downloading data {}".format(self.url)) 
-            request = urllib.request.urlopen(self.url) 
+            req = urllib.request.Request(self.url, headers={
+                                "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84"
+                            }) 
+            request = urllib.request.urlopen(req)
             json_data = request.read().decode() 
             f = open(self.fileTV, 'w') 
             f.write(json_data) 
@@ -77,19 +80,28 @@ class moduleImdb(Content): #,Queue):
 
         data = json.loads(json_data) 
         logging.info("Data read...")
-        for i in data['data'].keys(): 
-            if i[:-5] in self.channels: 
-                cadName = data['data'][i]['DATOS_CADENA']['NOMBRE'] 
-                for j in range(len(data['data'][i]['PROGRAMAS'])): 
+        for i in data: 
+            cadName = i['name'][:-3]
+            if cadName in self.channels:
+                for e in i['events']:
+                # for j in range(len(data['data'][i]['PROGRAMAS'])): 
                     #print(j) 
-                    genero = data['data'][i]['PROGRAMAS'][j]['GENERO'] 
-                    if genero == self.gen:
-                        title = data['data'][i]['PROGRAMAS'][j]['TITULO'] 
-                        horaIni = data['data'][i]['PROGRAMAS'][j]['HORA_INICIO']
-                        horaFin = data['data'][i]['PROGRAMAS'][j]['HORA_FIN'] 
-                        self.data.append((horaIni,horaFin, title, '-', cadName, genero)) 
+                    # genero = data['data'][i]['PROGRAMAS'][j]['GENERO'] 
+                    genero = e['g']
+                    if ('Cine' in e['t'] or genero == self.gen):
+                        # title = data['data'][i]['PROGRAMAS'][j]['TITULO'] 
+                        title = e['t']
+                        if not genero:
+                            e['g'] = self.gen
+                            genero = self.gen
+                        # horaIni = data['data'][i]['PROGRAMAS'][j]['HORA_INICIO']
+                        # horaFin = data['data'][i]['PROGRAMAS'][j]['HORA_FIN'] 
+                        hini = datetime.datetime.fromtimestamp(e['hi']) 
+                        hfin = datetime.datetime.fromtimestamp(e['hf'])
+                        # self.data.append((horaIni,horaFin, title, '-', cadName, genero)) 
+                        self.data.append((hini,hfin, title, '-', cadName, genero)) 
                         # FIXME: ¿Todos o sólo estos?
-                        posts.append(data['data'][i]['PROGRAMAS'][j])
+                        posts.append(e)
                         posts[-1]['CADENA'] = cadName
         return posts
 
@@ -100,18 +112,23 @@ class moduleImdb(Content): #,Queue):
         # print(f"Posts: {posts}")
 
         hh = time.strftime('%H:00') 
+        dd = time.strftime('%d') 
         firstPost = True
         useCache = False
         j = 0
         for i, post in enumerate(posts): 
-            if ((hh <= self.getPostTimeIni(post)) 
-                    and (post['GENERO'] == 'Cine')):
+            hhIni = datetime.datetime.fromtimestamp(self.getPostTimeIni(post))
+            hhIni, ddIni = hhIni.hour, hhIni.day
+            if ((dd == str(ddIni) and hh <= str(hhIni))
+                    and (post['g'] == self.gen)):
                 try:
                     res = self.setPostMoreDataNew(post)
                 except:
                     res = ""
                 j = j + 1
-        self.posts = sorted(posts, key = lambda d: d['HORA_INICIO'])
+        # self.posts = sorted(posts, key = lambda d: d['HORA_INICIO'])
+        # logging.info(f"Posts: {posts}")
+        self.posts = sorted(posts, key = lambda d: d['hi'])
 
     def getPostTitle(self, post):
         logging.debug("getPostTitle {}".format(post))
@@ -121,7 +138,7 @@ class moduleImdb(Content): #,Queue):
             else:
                 return("")
         else:
-            return post.get('TITULO','')
+            return post.get('t','')
 
     def getPostLink(self, post):
         if isinstance(post, dict):
@@ -146,11 +163,16 @@ class moduleImdb(Content): #,Queue):
         return content
 
     def getPostLine(self, post): 
-        if post['GENERO'] == 'Cine':
+        # logging.info(f"Post: {post}")
+        if post['g'] == 'CN': #True: #post['GENERO'] == 'Cine':
             logging.info("Post line {}".format(post))
+            hini = datetime.datetime.fromtimestamp(self.getPostTimeIni(post))
+            hini = f"{hini.hour}:{hini.minute}"
+            hfin = datetime.datetime.fromtimestamp(self.getPostTimeEnd(post))
+            hfin = f"{hfin.hour}:{hfin.minute}"
             line = (f"> [{self.getPostAvg(post)}] - "
                    f"({self.getPostCode(post)}) "
-                   f"{self.getPostTimeIni(post)}-{self.getPostTimeEnd(post)}: "
+                   f"{hini}-{hfin}: "
                    f"{self.getPostTitle(post)}")
             logging.info("Post line formatted {}".format(line))
 
@@ -169,7 +191,7 @@ class moduleImdb(Content): #,Queue):
 
     def getPostTimeIni(self, post):
         if isinstance(post, dict):
-            return post.get('HORA_INICIO', '')
+            return post.get('hi', '')
         if post:
             return(post[0])
         else:
@@ -188,8 +210,8 @@ class moduleImdb(Content): #,Queue):
 
     def getPostPlot(self, post):
         if isinstance(post, dict):
-            if 'RESULT' in post:
-                return post.get('RESULT')[0].get('overview', '')
+            if 'd' in post:
+                return post.get('d')
             else:
                 return ''
         if post:
@@ -223,8 +245,8 @@ class moduleImdb(Content): #,Queue):
         postMore = None 
         mySearch = self.getClient().Search() 
         title = self.getPostTitle(post)
-        print(f"Post: {post}")
-        print (f"Title: {title}")
+        logging.info(f"Post: {post}")
+        logging.info(f"Title: {title}")
         import hashlib
         m = hashlib.md5()
         m.update(title.encode())
@@ -302,7 +324,7 @@ class moduleImdb(Content): #,Queue):
 
     def getPostTimeEnd(self, post):
         if isinstance(post, dict):
-            return post.get('HORA_FIN', '')
+            return post.get('hf', '')
         if post:
             return(post[1])
         else:
