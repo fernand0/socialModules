@@ -91,6 +91,34 @@ TOKEN_SECRET = your_access_token_secret
 BEARER_TOKEN = your_bearer_token
 ```
 
+## Ejemplo de configuración: `.rssBlogs`
+
+El fichero `.rssBlogs` permite definir múltiples blogs y sus parámetros asociados para automatizar la publicación y gestión de contenido en diferentes servicios. Cada sección representa un blog distinto:
+
+```ini
+[Blog1]
+url = https://tublog.com/
+rss = https://tublog.com/feed.xml
+xmlrpc = https://tublog.com/xmlrpc.php
+twitterAC = tu_usuario_twitter
+pageFB = tu_pagina_facebook
+telegramAC = tu_usuario_telegram
+mediumAC = tu_usuario_medium
+linksToAvoid = https://tublog.com/evitar1,https://tublog.com/evitar2
+```
+
+**Campos típicos:**
+- `url`: URL principal del blog
+- `rss`: URL del feed RSS
+- `xmlrpc`: Endpoint XML-RPC para publicación remota (WordPress, etc.)
+- `twitterAC`: Cuenta de Twitter asociada
+- `pageFB`: Página de Facebook asociada
+- `telegramAC`: Usuario/canal de Telegram asociado
+- `mediumAC`: Cuenta de Medium asociada
+- `linksToAvoid`: Lista de enlaces a evitar (separados por comas)
+
+Puedes añadir tantas secciones `[BlogX]` como necesites, cada una con sus propios parámetros.
+
 ## Architecture
 
 ### Core Components
