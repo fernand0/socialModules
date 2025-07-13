@@ -30,39 +30,10 @@ class moduleGemini(Content):
         msgLog = f"{self.indent} Getting Gemini keys"
         logMsg(msgLog, 2, 0)
         
-        # Get Gemini API key from .rssGemini file
-        gemini_api_key = self._getGeminiApiKey()
+        # Read API key directly from config object
+        api_key = config.get(self.user, "api_key", fallback="")
         
-        return (gemini_api_key,)
-
-    def _getGeminiApiKey(self):
-        """Get Gemini API key from .rssGemini configuration file"""
-        try:
-            gemini_config_path = os.path.expanduser("~/.mySocial/config/.rssGemini")
-            if os.path.exists(gemini_config_path):
-                gemini_config = configparser.ConfigParser()
-                gemini_config.read(gemini_config_path)
-                
-                # Try to get API key from the first section
-                for section in gemini_config.sections():
-                    api_key = gemini_config.get(section, "api_key", fallback="")
-                    if api_key:
-                        msgLog = f"{self.indent} Found Gemini API key in .rssGemini"
-                        logMsg(msgLog, 2, 0)
-                        return api_key
-                
-                # If no api_key found, try api_key: format
-                for section in gemini_config.sections():
-                    for key, value in gemini_config.items(section):
-                        if key == "api_key" or key == "api_key:":
-                            msgLog = f"{self.indent} Found Gemini API key in .rssGemini"
-                            logMsg(msgLog, 2, 0)
-                            return value
-        except Exception as e:
-            msgLog = f"{self.indent} Error reading Gemini API key: {e}"
-            logMsg(msgLog, 3, 0)
-        
-        return ""
+        return (api_key,)
 
     def initApi(self, keys):
         """Initialize Gemini AI connection"""
@@ -73,46 +44,48 @@ class moduleGemini(Content):
         
         # Initialize Gemini AI
         self.gemini_api_key = gemini_api_key
-        self.gemini_client = self._initGeminiClient()
+        self.gemini_client = None
         
         # Set up URL for consistency with other modules
         self.url = "https://generativeai.google.com"
         
-        msgLog = f"{self.indent} service {self.service} End initApi"
-        logMsg(msgLog, 2, 0)
-        return self.gemini_client
-
-    def _initGeminiClient(self):
-        """Initialize Gemini AI client"""
+        # Initialize Gemini client if API key is available
         if not GEMINI_AVAILABLE:
             msgLog = f"{self.indent} Gemini AI not available"
             logMsg(msgLog, 2, 0)
-            return None
-        
-        if not self.gemini_api_key:
+        elif not self.gemini_api_key:
             msgLog = f"{self.indent} No Gemini API key provided"
             logMsg(msgLog, 2, 0)
-            return None
+        else:
+            try:
+                genai.configure(api_key=self.gemini_api_key)
+                self.gemini_client = genai.GenerativeModel('gemini-1.5-pro')
+                msgLog = f"{self.indent} Gemini AI initialized successfully"
+                logMsg(msgLog, 2, 0)
+            except Exception as e:
+                msgLog = f"{self.indent} Error initializing Gemini AI: {e}"
+                logMsg(msgLog, 3, 0)
         
-        try:
-            genai.configure(api_key=self.gemini_api_key)
-            model = genai.GenerativeModel('gemini-1.5-pro')
-            msgLog = f"{self.indent} Gemini AI initialized successfully"
-            logMsg(msgLog, 2, 0)
-            return model
-        except Exception as e:
-            msgLog = f"{self.indent} Error initializing Gemini AI: {e}"
-            logMsg(msgLog, 3, 0)
-            return None
+        msgLog = f"{self.indent} service {self.service} End initApi"
+        logMsg(msgLog, 2, 0)
+        return self.gemini_client
 
     def setApiPosts(self):
         """Get AI-generated content (not applicable for Gemini, returns empty list)"""
         # Gemini doesn't have posts like social networks, so return empty list
         return []
 
-    def publishPost(self, question, context="", *args, **kwargs):
+    def setPostsType(self, postsType="question"):
+        """Set the type of posts for Gemini (default: question)"""
+        self.postsType = postsType
+
+    def publishApiPost(self, *args, **kwargs):
         """Send a question to Gemini AI and get response"""
         try:
+            # Extract question and context from args/kwargs
+            question = args[0] if args else kwargs.get('question', '')
+            context = args[1] if len(args) > 1 else kwargs.get('context', '')
+            
             msgLog = f"{self.indent} Publishing question to Gemini: {question}"
             logMsg(msgLog, 1, 0)
             
@@ -127,6 +100,10 @@ class moduleGemini(Content):
                 
         except Exception as e:
             return f"Error in Gemini query: {e}"
+
+    def publishApiQuestion(self, *args, **kwargs):
+        """Alias for publishApiPost for clarity"""
+        return self.publishApiPost(*args, **kwargs)
 
     def _callGeminiAI(self, question, context=""):
         """
@@ -187,7 +164,15 @@ class moduleGemini(Content):
         try:
             if api_key:
                 self.gemini_api_key = api_key
-                self.gemini_client = self._initGeminiClient()
+                # Initialize Gemini client directly
+                if GEMINI_AVAILABLE and self.gemini_api_key:
+                    try:
+                        genai.configure(api_key=self.gemini_api_key)
+                        self.gemini_client = genai.GenerativeModel('gemini-1.5-pro')
+                    except Exception as e:
+                        msgLog = f"{self.indent} Error initializing Gemini AI: {e}"
+                        logMsg(msgLog, 3, 0)
+                        self.gemini_client = None
             
             msgLog = f"{self.indent} AI integration enabled with {ai_service}"
             logMsg(msgLog, 1, 0)
@@ -195,12 +180,12 @@ class moduleGemini(Content):
         except Exception as e:
             return f"Error enabling AI: {e}"
 
-    def askQuestion(self, question, context=""):
+    def askQuestion(self, *args, **kwargs):
         """
         Ask a question to Gemini AI
         This is a convenience method for other modules
         """
-        return self.publishPost(question, context)
+        return self.publishApiPost(*args, **kwargs)
 
 
 def main():
@@ -231,7 +216,7 @@ def main():
     for question, topic in questions:
         print(f"\n--- {topic} ---")
         print(f"Q: {question}")
-        response = gemini_api.publishPost(question, "")
+        response = gemini_api.publishApiPost(question, "")
         print(f"A: {response[:200]}...")
 
 if __name__ == "__main__":
