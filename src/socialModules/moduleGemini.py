@@ -22,6 +22,7 @@ class moduleGemini(Content):
     """
     Module for interacting with Google Gemini AI
     Provides AI-powered responses and can be used by other modules
+    Follows the same pattern as other modules in the project
     """
 
     def getKeys(self, config):
@@ -74,6 +75,9 @@ class moduleGemini(Content):
         self.gemini_api_key = gemini_api_key
         self.gemini_client = self._initGeminiClient()
         
+        # Set up URL for consistency with other modules
+        self.url = "https://generativeai.google.com"
+        
         msgLog = f"{self.indent} service {self.service} End initApi"
         logMsg(msgLog, 2, 0)
         return self.gemini_client
@@ -102,7 +106,8 @@ class moduleGemini(Content):
             return None
 
     def setApiPosts(self):
-        """Get AI-generated content (not applicable for Gemini)"""
+        """Get AI-generated content (not applicable for Gemini, returns empty list)"""
+        # Gemini doesn't have posts like social networks, so return empty list
         return []
 
     def publishPost(self, question, context="", *args, **kwargs):
