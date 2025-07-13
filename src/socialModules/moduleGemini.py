@@ -116,14 +116,14 @@ class moduleGemini(Content):
             msgLog = f"{self.indent} Publishing question to Gemini: {question}"
             logMsg(msgLog, 1, 0)
             
-            # Try Gemini AI first
+            # Try Gemini AI
             if self.gemini_client:
                 response = self._callGeminiAI(question, context)
                 if response:
                     return response
             
-            # Fallback to basic responses if AI is not available
-            return self._getBasicResponse(question, context)
+            # If no AI available, return error message
+            return "Error: Gemini AI not available or no API key configured"
                 
         except Exception as e:
             return f"Error in Gemini query: {e}"
@@ -159,98 +159,6 @@ class moduleGemini(Content):
             msgLog = f"{self.indent} Error calling Gemini AI: {e}"
             logMsg(msgLog, 3, 0)
             return None
-
-    def _getBasicResponse(self, question, context=""):
-        """
-        Fallback to basic responses when AI is not available
-        """
-        question_lower = question.lower()
-        
-        # Basic information queries
-        if "zaragoza" in question_lower:
-            return "Zaragoza es la capital de la provincia de Zaragoza y de la comunidad autónoma de Aragón en España. Es conocida por su rica historia, arquitectura mudéjar y la Basílica del Pilar."
-        
-        elif "python" in question_lower:
-            return "Python es un lenguaje de programación interpretado, de alto nivel y propósito general. Es conocido por su sintaxis clara y legible."
-        
-        elif "cursor" in question_lower:
-            return "Cursor es un editor de código impulsado por IA que combina las capacidades de VS Code con funcionalidades de IA avanzadas."
-        
-        elif "javascript" in question_lower:
-            return "JavaScript es un lenguaje de programación interpretado, orientado a objetos, utilizado principalmente en el desarrollo web para crear páginas interactivas."
-        
-        elif "java" in question_lower:
-            return "Java es un lenguaje de programación orientado a objetos, desarrollado por Sun Microsystems. Es conocido por su portabilidad y robustez."
-        
-        elif "c++" in question_lower or "c++" in question_lower:
-            return "C++ es un lenguaje de programación orientado a objetos que extiende C. Es ampliamente usado en desarrollo de software de sistemas."
-        
-        elif "html" in question_lower:
-            return "HTML (HyperText Markup Language) es el lenguaje estándar para crear páginas web. Define la estructura y el contenido de las páginas."
-        
-        elif "css" in question_lower:
-            return "CSS (Cascading Style Sheets) es un lenguaje de estilos usado para describir la presentación de documentos HTML."
-        
-        elif "sql" in question_lower:
-            return "SQL (Structured Query Language) es un lenguaje estándar para acceder y manipular bases de datos relacionales."
-        
-        elif "git" in question_lower:
-            return "Git es un sistema de control de versiones distribuido que permite a los desarrolladores rastrear cambios en el código fuente."
-        
-        elif "docker" in question_lower:
-            return "Docker es una plataforma para desarrollar, enviar y ejecutar aplicaciones en contenedores, facilitando el despliegue."
-        
-        elif "kubernetes" in question_lower or "k8s" in question_lower:
-            return "Kubernetes es una plataforma de orquestación de contenedores que automatiza el despliegue, escalado y gestión de aplicaciones."
-        
-        elif "react" in question_lower:
-            return "React es una biblioteca de JavaScript para construir interfaces de usuario, desarrollada por Facebook."
-        
-        elif "vue" in question_lower:
-            return "Vue.js es un framework progresivo de JavaScript para construir interfaces de usuario."
-        
-        elif "angular" in question_lower:
-            return "Angular es un framework de desarrollo web de Google para crear aplicaciones de una sola página."
-        
-        elif "node" in question_lower and "js" in question_lower:
-            return "Node.js es un entorno de ejecución de JavaScript que permite ejecutar código JavaScript en el servidor."
-        
-        elif "linux" in question_lower:
-            return "Linux es un sistema operativo de código abierto basado en Unix, ampliamente usado en servidores y desarrollo."
-        
-        elif "ubuntu" in question_lower:
-            return "Ubuntu es una distribución de Linux basada en Debian, conocida por su facilidad de uso y estabilidad."
-        
-        elif "debian" in question_lower:
-            return "Debian es una distribución de Linux conocida por su estabilidad y compromiso con el software libre."
-        
-        elif "fedora" in question_lower:
-            return "Fedora es una distribución de Linux patrocinada por Red Hat, conocida por su innovación y actualizaciones frecuentes."
-        
-        elif "arch" in question_lower:
-            return "Arch Linux es una distribución de Linux rolling release conocida por su simplicidad y personalización."
-        
-        elif "inteligencia artificial" in question_lower or "ia" in question_lower:
-            return "La inteligencia artificial (IA) es la simulación de procesos de inteligencia humana por parte de máquinas, especialmente sistemas informáticos."
-        
-        elif "machine learning" in question_lower or "aprendizaje automático" in question_lower:
-            return "El machine learning es un subconjunto de la IA que permite a las computadoras aprender y mejorar automáticamente sin ser programadas explícitamente."
-        
-        elif "deep learning" in question_lower or "aprendizaje profundo" in question_lower:
-            return "El deep learning es una rama del machine learning basada en redes neuronales artificiales con múltiples capas."
-        
-        elif "blockchain" in question_lower:
-            return "Blockchain es una tecnología de registro distribuido que mantiene una lista creciente de registros (bloques) vinculados y asegurados criptográficamente."
-        
-        elif "bitcoin" in question_lower:
-            return "Bitcoin es la primera criptomoneda descentralizada, creada en 2009 por Satoshi Nakamoto."
-        
-        elif "ethereum" in question_lower:
-            return "Ethereum es una plataforma blockchain que permite crear aplicaciones descentralizadas y contratos inteligentes."
-        
-        else:
-            # Generic response for unknown queries
-            return f"Consulta recibida: '{question}'. Puedo ayudarte con información sobre programación, tecnologías, lenguajes de programación y temas técnicos."
 
     def getPostTitle(self, post):
         """Get title from a Gemini post"""
