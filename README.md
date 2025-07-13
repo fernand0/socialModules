@@ -45,6 +45,7 @@ Social Modules provides a modular architecture for reading from and writing to v
 - **XML-RPC** - Remote procedure calls
 - **Forum** - Forum content management
 - **Gitter** - Chat platform integration
+- **Cursor** - IDE integration and development automation
 
 ## Installation
 
@@ -118,6 +119,22 @@ linksToAvoid = https://tublog.com/evitar1,https://tublog.com/evitar2
 - `linksToAvoid`: Lista de enlaces a evitar (separados por comas)
 
 Puedes añadir tantas secciones `[BlogX]` como necesites, cada una con sus propios parámetros.
+
+### Ejemplo de configuración: `.rssCursor`
+
+El fichero `.rssCursor` permite configurar la integración con Cursor IDE:
+
+```ini
+[your_cursor_user]
+cursor_path = /usr/bin/cursor
+api_key = your_cursor_api_key
+workspace_path = /home/user/projects
+```
+
+**Campos típicos:**
+- `cursor_path`: Ruta de instalación de Cursor (opcional, se auto-detecta)
+- `api_key`: Clave API de Cursor (para futuras integraciones)
+- `workspace_path`: Directorio de trabajo por defecto
 
 ## Architecture
 
@@ -221,6 +238,100 @@ next_post = api.getNextPost()
 # Update last published link
 api.updateLastLink(url, link)
 ```
+
+### Cursor IDE Integration
+```python
+from socialModules.configMod import getApi
+
+# Initialize Cursor module
+cursor_api = getApi('Cursor', 'your_cursor_user')
+
+# Query Cursor using publishPost
+response = cursor_api.publishPost("help", "")
+print(response)
+
+# List files in workspace
+files = cursor_api.publishPost("files", "")
+print(files)
+
+# Check Cursor status
+status = cursor_api.publishPost("status", "")
+print(status)
+
+# Read a file
+content = cursor_api.publishPost("read", "moduleCursor.py")
+print(f"File content: {content[:100]}...")
+
+# Search for files
+python_files = cursor_api.publishPost("search", "*.py")
+print(f"Python files: {python_files}")
+
+# Analyze code
+analysis = cursor_api.publishPost("analyze_code", "moduleCursor.py")
+print(f"Code analysis: {analysis}")
+
+# Create a project
+result = cursor_api.publishPost("create_project", "my_project:python")
+print(result)
+
+# Write to a file
+result = cursor_api.publishPost("write", "test.txt:Hello from Cursor!")
+print(result)
+
+# Get file information
+info = cursor_api.publishPost("info", "moduleCursor.py")
+print(f"File info: {info}")
+
+# List projects
+projects = cursor_api.publishPost("list_projects", "")
+print(f"Projects: {projects}")
+
+# Custom query
+custom = cursor_api.publishPost("custom", "analyze")
+print(custom)
+```
+
+**Tipos de consultas disponibles:**
+- `help` - Obtener ayuda
+- `files` - Listar archivos del workspace
+- `status` - Verificar estado de Cursor
+- `projects` - Listar proyectos
+- `analyze` - Analizar workspace
+- `read` - Leer archivo específico
+- `write` - Escribir en archivo (formato: "archivo:contenido")
+- `search` - Buscar archivos
+- `info` - Obtener información de archivo
+- `analyze_code` - Analizar archivo de código
+- `create_project` - Crear proyecto (formato: "nombre:tipo")
+- `list_projects` - Listar todos los proyectos
+- `custom` - Consulta personalizada
+- `query` / `pregunta` - Consultas genéricas de información
+
+### Consultas Genéricas de Información
+
+El módulo Cursor también soporta consultas genéricas de información usando `query` o `pregunta`:
+
+```python
+# Consultas genéricas
+response = cursor_api.publishPost("query", "¿Qué sabes de Zaragoza?")
+print(response)
+
+response = cursor_api.publishPost("pregunta", "¿Qué es Python?")
+print(response)
+
+response = cursor_api.publishPost("query", "¿Qué hay en el workspace?")
+print(response)
+
+response = cursor_api.publishPost("query", "¿Cuántos archivos hay?")
+print(response)
+```
+
+**Temas soportados en consultas genéricas:**
+- Información sobre ciudades (Zaragoza, etc.)
+- Lenguajes de programación (Python, etc.)
+- Información sobre Cursor IDE
+- Estado del workspace y archivos
+- Análisis de código y proyectos
 
 ## Dependencies
 
