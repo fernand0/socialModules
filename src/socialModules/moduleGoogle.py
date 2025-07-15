@@ -103,9 +103,9 @@ class socialGoogle:
                 except:
                     msgLog = sys.exc_info()
                     logMsg(msgLog, 2, 0)
-                    if os.path.exists(fileTokenStore): 
+                    if os.path.exists(fileTokenStore):
                         os.remove(fileTokenStore)
-                        print(f"Archivo '{fileTokenStore}' eliminado para forzar una nueva autenticación.") 
+                        print(f"Archivo '{fileTokenStore}' eliminado para forzar una nueva autenticación.")
                     raise # Es importante que el programa salga o relance para que el usuario pueda re-autenticar
         elif not creds:
                 # This needs to have a desktop application created in
@@ -114,8 +114,6 @@ class socialGoogle:
                 # verification process in Google.
                 # It only works in local, since it launches a brower
 
-                msgLog = f"{self.indent}  building service {creds} {type(creds)}" 
-                logMsg(msgLog, 2, 0) 
                 msgLog = f"{self.indent} Needs to re-authorize token {self.service}"
                 logMsg(msgLog, 2, 0)
                 fileCredStore = self.confName((self.server, self.nick))
@@ -154,18 +152,35 @@ class socialGoogle:
                     # creds = 'Fail!'
 
 
-        msgLog = f"{self.indent}  building service {creds} {type(creds)}" 
-        logMsg(msgLog, 2, 0) 
-        if isinstance(creds, google.oauth2.credentials.Credentials): 
-            try: 
-                msgLog = f"{self.indent}  building service {serviceName}" 
-                logMsg(msgLog, 2, 0) 
-                service = build(serviceName, version, credentials=creds) 
+        msgLog = f"{self.indent}  building service {creds} {type(creds)}"
+        logMsg(msgLog, 2, 0)
+        if isinstance(creds, google.oauth2.credentials.Credentials):
+            try:
+                msgLog = f"{self.indent}  building service {serviceName}"
+                logMsg(msgLog, 2, 0)
+                service = build(serviceName, version, credentials=creds)
             except:
                 service = self.report(self.service, "", "", sys.exc_info())
 
-        msgLog = f"{self.indent} Service: {service}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} {service.__getstate__()}"
+        # logMsg(msgLog, 1, 0)
+        # if not service._credentials_validated:
+        #     msgLog = f"{self.indent} Problem with credentials"
+        #     logMsg(msgLog, 1, 0)
+        #     fileCredStore = self.confName((self.server, self.nick))
+        #     msgLog = f"{self.indent} fileCredStore: {fileCredStore}"
+        #     logMsg(msgLog, 1, 0)
+        #     flow = InstalledAppFlow.from_client_secrets_file(
+        #         fileCredStore, SCOPES, redirect_uri="http://localhost"
+        #     )
+        #     creds = flow.run_local_server(port=0)
+
+        #     # Save the credentials for the next run
+        #     with open(fileTokenStore, "wb") as token:
+        #         msgLog = f"{self.indent}   Pickle: {fileTokenStore}"
+        #         logMsg(msgLog, 2, 0)
+        #         pickle.dump(creds, token)
+
         return service
 
     def confName(self, acc):
