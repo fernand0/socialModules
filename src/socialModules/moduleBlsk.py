@@ -32,6 +32,9 @@ class moduleBlsk(Content): #, Queue):
                 self.me = client.me
             else:
                 self.me = None
+        except atproto_client.exceptions.NetworkError:
+            self.report(self.service, 'Error en setApiFavs. Network Error. ',
+                        '', sys.exc_info())
         except:
             res = self.report(self.indent, 'Error in initApi',
                               '', sys.exc_info())
@@ -52,7 +55,7 @@ class moduleBlsk(Content): #, Queue):
         nick = ''
         if not nick:
             nick = self.getUrl()
-            if nick: 
+            if nick:
                 nick = nick.split("/")[-1].split('.')[0]
         self.nick = nick
 
@@ -70,16 +73,20 @@ class moduleBlsk(Content): #, Queue):
     def setApiFavs(self):
         posts = []
 
-        try:
-            posts, error = self.apiCall('get_actor_likes',
-                                        params={'actor':self.me.did})
+        if hasattr(self, 'me'):
+            try:
+                posts, error = self.apiCall('get_actor_likes',
+                                            params={'actor':self.me.did})
 
-            if not error:
-                posts = posts['feed']
-        except: 
-            self.report(self.service, 'Error en setApiFavs', 
-                        '', sys.exc_info())
-            
+                if not error:
+                    posts = posts['feed']
+            except atproto.atproto_client.exceptions.NetworkError:
+                self.report(self.service, 'Error en setApiFavs. Network Error. ',
+                            '', sys.exc_info())
+            except:
+                self.report(self.service, 'Error en setApiFavs',
+                            '', sys.exc_info())
+
 
         return posts
 
@@ -214,7 +221,7 @@ class moduleBlsk(Content): #, Queue):
 
         facets =  []
         if link:
-            title = title[:(300 - (len(link)+1))]
+            title = title[:(300))]
 
             embed_external = models.AppBskyEmbedExternal.Main(
                               external=models.AppBskyEmbedExternal.External(

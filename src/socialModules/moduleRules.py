@@ -8,7 +8,7 @@ import sys
 import time
 
 import socialModules
-from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR
+from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR, select_from_list
 
 fileName = socialModules.__file__
 path = f"{os.path.dirname(fileName)}"
@@ -93,7 +93,8 @@ class moduleRules:
                     logMsg(msgLog, 2, 0)
 
                     methods = self.hasSetMethods(service)
-                    msgLog = f"{self.indent} Service {service} has " f"set {methods}"
+                    msgLog = (f"{self.indent} Service {service} has " 
+                              f"set {methods}")
                     logMsg(msgLog, 2, 0)
                     for method in methods:
                         if "posts" in moreS:
@@ -362,7 +363,7 @@ class moduleRules:
                                     mor[fromSrvN] = dict(moreS)
                                     msgLog = f"{self.indent}  chan: {chan}"
                                     logMsg(msgLog, 2, 0)
-                                    if chan != "set":
+                                    if (chan != "set") and not 'imap' in moreS:
                                         mor[fromSrvN].update(
                                             {"posts": chan, "channel": chan}
                                         )
@@ -386,8 +387,8 @@ class moduleRules:
         # Now we can see which destinations can be also sources
         # msgLog = f"Dsts: {dsts}"
         # logMsg(msgLog, 2, 0)
-        logging.info(f"Srcs: {srcs}")
-        logging.info(f"SrcsA: {srcsA}")
+        # logging.info(f"Srcs: {srcs}")
+        # logging.info(f"SrcsA: {srcsA}")
 
         self.indent = f"{self.indent} Destinations:"
         for dst in dsts:
@@ -508,15 +509,21 @@ class moduleRules:
         if not service:
             nameModule = os.path.basename(inspect.stack()[1].filename)
             service = nameModule.split(".")[0][6:].casefold()
-        selRules = self.selectRule(service, "")
-        print("Rules:")
-        iRul = 0
-        if len(selRules) > 1:
-            for i, rul in enumerate(selRules):
-                print(f"{i}) {rul}")
-            iRul = input("Which rule? ")
-        src = selRules[int(iRul)]
-        print(f"\nSelected rule: {iRul}. Rule {src}")
+        if not isinstance(service, list):
+            service = [service, ]
+        selRules = []
+        logging.info(f"Services: {service}")
+        for ser in service:
+            logging.info(f"Service: {ser}")
+            selRules = selRules + self.selectRule(ser, "")
+
+        # selRules = self.selectRule(service, "")
+        logging.info(f"Rules: {selRules}")
+        iRul, src = select_from_list(selRules)
+
+        logging.info(f"Selected rule: {iRul}. Rule {src}\n")
+        print(f"\nSelected rule: {iRul}. Rule {src}\n")
+        logging.debug(f"\nSelected more: {self.more}\n")
         more = None
         if src in self.more:
             more = self.more[src]
@@ -536,25 +543,31 @@ class moduleRules:
 
     def selectRule(self, name="", selector2="", selector3=""):
         rules = []
-        for src in self.rules.keys():
-            if self.getNameRule(src).capitalize() == name.capitalize():
-                logging.debug(f"profileR: {self.getProfileRule(src)}")
-                logging.debug(f"profileR: {self.getProfileAction(src)}")
-                if not selector2:
-                    rules.append(src)
-                else:
-                    if selector2 == self.getProfileAction(src):
-                        # FIXME: ??
-                        logging.debug(f"Second Selector: {selector2}")
-                        if not selector3:
-                            rules.append(src)
-                        elif selector3 in self.getTypeRule(src):
-                            rules.append(src)
+        service = name
+        if not isinstance(name, list):
+            service = [name, ]
+        selRules = []
+        for name_ser in service:
+            logging.debug(f"Name: {name_ser}, Selectors: {selector2}, {selector3}")
+            for src in self.rules.keys():
+                if name_ser.capitalize() in self.getNameRule(src).capitalize():
+                    logging.debug(f"profileR: {self.getProfileRule(src)}")
+                    logging.debug(f"profileR: {self.getProfileAction(src)}")
+                    if not selector2:
+                        rules.append(src)
+                    else:
+                        if selector2 in self.getProfileAction(src):
+                            # FIXME: ??
+                            logging.debug(f"Second Selector: {selector2}")
+                            if not selector3:
+                                rules.append(src)
+                            elif selector3 in self.getTypeRule(src):
+                                rules.append(src)
         if not rules:
             for src in self.rules.keys():
                 for action in self.rules[src]:
                     print(f"Action: {action}")
-                    if self.getNameAction(action).capitalize() == name.capitalize():
+                    if self.getNameAction(action).capitalize() == name_ser.capitalize():
                         rules.append(src)
 
         return rules
@@ -813,11 +826,11 @@ class moduleRules:
             apiSrc = getApi(profile, account, indent, more["channel"])
         else:
             apiSrc = getApi(profile, account, indent)
+        msgLog = f"{indent} readConfigSrc clientttt {apiSrc.getClient()}"  #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
         apiSrc.src = src
         apiSrc.setPostsType(src[-1])
-        print(f"Uuuuurlllll: {apiSrc.url}")
         apiSrc.setMoreValues(more)
-        print(f"Uuuuurlllll: {apiSrc.url}")
 
         # msgLog = f"{indent} Url: {apiSrc.getUrl()}" #: {src[1:]}"
         # logMsg(msgLog, 2, 0)
@@ -851,6 +864,7 @@ class moduleRules:
         if apiSrc:
             apiDst.setLastLink(apiSrc)
         else:
+            # FIXME. Do we need this? 
             apiDst.setLastLink(apiDst)
 
         # FIXME: best in readConfigSrc (readConfigDst, since we need it)?
@@ -1222,6 +1236,7 @@ class moduleRules:
                     continue
                 # Source
                 apiSrc = self.readConfigSrc(indent, src, more)
+                logging.info(f"{indent} Clientttt: {apiSrc.getClient()}")
                 if not apiSrc.getClient():
                     msgLog = self.clientErrorMsg(
                         indent,
