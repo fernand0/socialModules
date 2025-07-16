@@ -1,6 +1,7 @@
 import pytest
 from moduleRules import moduleRules, ConfigError
 import os
+from unittest.mock import patch, MagicMock
 
 # Utilidad para crear un archivo de configuración temporal
 def make_config_file(tmp_path, content):
@@ -118,4 +119,58 @@ def test_duplicate_destinations(tmp_path):
     rules = moduleRules()
     # Esperamos un error de configuración por claves duplicadas
     with pytest.raises(ConfigError):
-        rules.checkRules(configFile=config_file) 
+        rules.checkRules(configFile=config_file)
+
+def make_basic_rules():
+    rules = moduleRules()
+    # Simula reglas y metadatos mínimos
+    rules.rules = {'src1': ['action1', 'action2'], 'src2': ['action3']}
+    rules.more = {'src1': {}, 'src2': {}}
+    rules.args = MagicMock()
+    rules.args.checkBlog = ""
+    rules.args.simmulate = False
+    rules.args.noWait = False
+    rules.args.timeSlots = 1
+    return rules
+
+def test_executeRules_calls_executeAction():
+    rules = make_basic_rules()
+    called = []
+    def fake_single_action(scheduled_action):
+        called.append(scheduled_action)
+        return "ok"
+    with patch('moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
+        rules.executeRules(max_workers=2)
+    assert len(called) == 3  # 3 acciones
+
+def test_executeRules_respects_hold():
+    rules = make_basic_rules()
+    rules.more['src1'] = {"hold": "yes"}
+    called = []
+    def fake_single_action(scheduled_action):
+        called.append(scheduled_action)
+        return "ok"
+    with patch('moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
+        rules.executeRules()
+    assert len(called) == 1  # Solo src2/action3
+
+def test_executeRules_handles_exceptions():
+    rules = make_basic_rules()
+    def fake_single_action(scheduled_action):
+        if scheduled_action['rule_action'] == 'action2':
+            raise Exception("fail")
+        return "ok"
+    with patch('moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
+        rules.executeRules()
+
+def test_executeRules_with_checkBlog():
+    rules = make_basic_rules()
+    rules.args.checkBlog = "src1"
+    called = []
+    def fake_single_action(scheduled_action):
+        called.append(scheduled_action)
+        return "ok"
+    with patch('moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
+        rules.executeRules()
+    # Solo acciones de src1
+    assert all(a['rule_key'] == 'src1' for a in called) 
