@@ -1047,164 +1047,130 @@ class moduleRules:
         logMsg(f"{indent} End executeAction {textEnd}", 2, 0)
         return f"{indent} {res} {textEnd}"
 
-    def executeRules(self):
+    def executeRules(self, max_workers=None):
+        """
+        Ejecuta todas las reglas generadas usando concurrencia.
+        Refactorizado para delegar en funciones auxiliares.
+        Permite configurar el número de hilos (max_workers) por argumento, variable de entorno SOCIALMODULES_MAX_WORKERS,
+        o automáticamente según el número de acciones a ejecutar (uno por acción, mínimo 1, máximo 100).
+        """
+        import os
         msgLog = "Start Executing rules"
         logMsg(msgLog, 1, 2)
-        indent = " "
-
         args = self.args
         select = args.checkBlog
         simmulate = args.simmulate
+        # Preparar acciones a ejecutar
+        scheduled_actions = self._prepare_actions(args, select)
+        # Determinar número de hilos
+        if max_workers is not None:
+            pass  # usar el valor explícito
+        elif "SOCIALMODULES_MAX_WORKERS" in os.environ:
+            max_workers = int(os.environ["SOCIALMODULES_MAX_WORKERS"])
+        else:
+            num_actions = max(1, len(scheduled_actions))
+            max_workers = min(num_actions, 100)  # máximo razonable
+        # Ejecutar acciones concurrentemente
+        action_results, action_errors = self._run_actions_concurrently(scheduled_actions, max_workers=max_workers)
+        # Reportar resultados y errores
+        self._report_results(action_results, action_errors)
+        msgLog = f"End Executing rules with {len(scheduled_actions)} actions."
+        logMsg(msgLog, 1, 2)
+        return
 
-        delayedPosts = []
-
-        threads = 0
-        with concurrent.futures.ThreadPoolExecutor(max_workers=75) as pool:
-            i = 0
-            previous = ""
-
-            for src in sorted(self.rules.keys()):
-                if self.getNameAction(src) != previous:
-                    i = 0
-                else:
-                    i = i + 1
-                previous = self.getNameAction(src)
-
-                nameAction = f"[{self.getNameAction(src)}{i}]"
-                indent = f"{nameAction:->12}>"
-                msgIni = f"{self.getNickSrc(src)} ({self.getNickAction(src)})"
-
-                if src in self.more:
-                    if ("hold" in self.more[src]) and (self.more[src]["hold"] == "yes"):
-                        msgHold = f"{indent} On hold. {msgIni}"
-                        logMsg(msgHold, 1, 0)
-                        continue
-
-                if src in self.more:
-                    more = self.more[src]
-                else:
-                    more = None
-
-                msgIni = f"{self.getNickSrc(src)} ({self.getNickAction(src)})"
-
-                actions = self.rules[src]
-
-                if select and (select.lower() != f"{self.getNameRule(src).lower()}{i}"):
-                    actionMsg = f"Skip {msgIni}"
-                else:
-                    actionMsg = f"Scheduling {msgIni}"
-                msgLog = f"{indent} {actionMsg}"
-                logMsg(msgLog, 1, 1)
-                if actionMsg == "Skip.":
-                    # FIXME ?
+    def _prepare_actions(self, args, select):
+        """
+        Prepara la lista de acciones a ejecutar, filtrando y recogiendo toda la información necesaria.
+        Devuelve una lista de diccionarios con los datos de cada acción.
+        """
+        scheduled_actions = []
+        for rule_index, rule_key in enumerate(sorted(self.rules.keys())):
+            # Control de repetición por nombre de acción
+            rule_metadata = self.more[rule_key] if rule_key in self.more else None
+            if rule_metadata and rule_metadata.get("hold") == "yes":
+                msgHold = f"[HOLD] {self.getNickSrc(rule_key)} ({self.getNickAction(rule_key)})"
+                logMsg(msgHold, 1, 0)
+                continue
+            rule_actions = self.rules[rule_key]
+            for action_index, rule_action in enumerate(rule_actions):
+                # Selección de reglas si se usa --checkBlog
+                if select and (select.lower() != f"{self.getNameRule(rule_key).lower()}{rule_index}"):
                     continue
-                # Source
-                apiSrc = self.readConfigSrc(indent, src, more)
-                if not apiSrc.getClient():
-                    msgLog = self.clientErrorMsg(
-                        indent,
-                        apiSrc,
-                        "Source",
-                        self.getProfileRule(src),
-                        self.getNickAction(src),
-                    )
-                    if msgLog:
-                        logMsg(msgLog, 3, 1)
-                    # return f"{msgLog} End."
+                scheduled_actions.append({
+                    "rule_key": rule_key,
+                    "rule_metadata": rule_metadata,
+                    "rule_action": rule_action,
+                    "rule_index": rule_index,
+                    "action_index": action_index,
+                    "args": args,
+                    "simmulate": args.simmulate,
+                })
+        return scheduled_actions
 
-                if apiSrc.getName():
-                    theName = apiSrc.getName()
-                else:
-                    theName = self.getProfileAction(src)
-
-                for k, action in enumerate(actions):
-                    name = f"{self.getNameRule(src)}{i}>"
-                    theAction = "posts"
-                    if not self.getTypeAction(action).startswith("http"):
-                        theAction = self.getTypeAction(action)
-
-                    indent = f"{indent} "
-                    msgLog = (
-                        f"{indent} Action {k}:"
-                        f" {self.getNickAction(action)}@"
-                        f"{self.getProfileAction(action)} ({theAction})"
-                    )
-                    name = f"Action {k}:"  # [({theAction})"
-                    nameA = f"{indent} {name}"
-                    textEnd = (
-                        f"Source: {nameA} {self.getProfileRule(src)} "
-                        f"{self.getNickRule(src)}"
-                    )
-                    logMsg(msgLog, 1, 1)
-                    textEnd = f"{textEnd}\n{msgLog}"
-                    if "Skip" not in actionMsg:
-                        timeSlots = args.timeSlots
-                        noWait = args.noWait
-
-                        # Is this the correct place?
-                        if (self.getNameAction(action) in "cache") or (
-                            (self.getNameAction(action) == "direct")
-                            and (self.getProfileAction(action) == "pocket")
-                        ):
-                            # We will always load new items in the cache
-                            timeSlots = 0
-                            noWait = True
-                        msgAction = (
-                            f"{self.getNameAction(action)} "
-                            f"{self.getNickAction(action)}@"
-                            f"{self.getProfileAction(action)} "
-                            f"({self.getTypeAction(action)})"
-                        )
-
-                        msgLog = (
-                            f"Source: {theName}-{self.getNickAction(src)}"
-                            f" -> Action: {msgAction}"
-                        )
-
-                        threads = threads + 1
-                        delayedPosts.append(
-                            pool.submit(
-                                self.executeAction,
-                                src,
-                                more,
-                                action,
-                                msgAction,
-                                apiSrc,  # apiDst[-1],
-                                noWait,
-                                timeSlots,
-                                simmulate,
-                                nameA,
-                                threads,
-                            )
-                        )
-                    indent = f"{indent[:-1]}"
-                indent = f"{indent[:-1]}"
-
-            messages = []
-            for future in concurrent.futures.as_completed(delayedPosts):
+    def _run_actions_concurrently(self, scheduled_actions, max_workers=75):
+        """
+        Ejecuta las acciones en paralelo usando ThreadPoolExecutor.
+        Devuelve dos listas: resultados y errores.
+        """
+        import concurrent.futures
+        action_results = []
+        action_errors = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
+            future_to_action = {
+                pool.submit(
+                    self._execute_single_action,
+                    scheduled_action
+                ): scheduled_action for scheduled_action in scheduled_actions
+            }
+            for future in concurrent.futures.as_completed(future_to_action):
+                scheduled_action = future_to_action[future]
                 try:
                     res = future.result()
-                    if res:
-                        messages.append(f"  Published in: {future}\n{res} ")
+                    action_results.append((scheduled_action, res))
                 except Exception as exc:
-                    # else:
-                    msgLog = (
-                        f"{future} generated an exception: {exc} "
-                        f"Src: {src}. Action: {action}"
-                    )
-                    logMsg(msgLog, 1, 1)
-                    msgLog = f"{sys.exc_info()}"
-                    logMsg(msgLog, 1, 1)
-                    import traceback
+                    action_errors.append((scheduled_action, exc))
+        return action_results, action_errors
 
-                    msgLog = f"{traceback.print_exc()}"
-                    logMsg(msgLog, 1, 1)
+    def _execute_single_action(self, scheduled_action):
+        """
+        Ejecuta una sola acción (wrapper para executeAction).
+        """
+        rule_key = scheduled_action["rule_key"]
+        rule_metadata = scheduled_action["rule_metadata"]
+        rule_action = scheduled_action["rule_action"]
+        args = scheduled_action["args"]
+        simmulate = scheduled_action["simmulate"]
+        # Preparar argumentos para executeAction
+        apiSrc = self.readConfigSrc("", rule_key, rule_metadata)
+        msgAction = (
+            f"{self.getNameAction(rule_action)} "
+            f"{self.getNickAction(rule_action)}@"
+            f"{self.getProfileAction(rule_action)} "
+            f"({self.getTypeAction(rule_action)})"
+        )
+        nameA = f"Action {scheduled_action['action_index']}"
+        return self.executeAction(
+            rule_key,
+            rule_metadata,
+            rule_action,
+            msgAction,
+            apiSrc,
+            args.noWait,
+            args.timeSlots,
+            simmulate,
+            nameA,
+            scheduled_action['action_index'],
+        )
 
-        # FIXME: We are not using messages
-        msgLog = f"End Executing rules with {threads} threads."
-        logMsg(msgLog, 1, 2)
-
-        return
+    def _report_results(self, action_results, action_errors):
+        """
+        Reporta los resultados y errores de la ejecución de acciones.
+        """
+        for scheduled_action, res in action_results:
+            if res:
+                logMsg(f"[OK] Acción ejecutada: {scheduled_action['rule_key']} -> {scheduled_action['rule_action']}: {res}", 1, 1)
+        for scheduled_action, exc in action_errors:
+            logMsg(f"[ERROR] Acción fallida: {scheduled_action['rule_key']} -> {scheduled_action['rule_action']}: {exc}", 3, 1)
 
     def readArgs(self):
         import argparse
