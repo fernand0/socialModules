@@ -221,7 +221,7 @@ class moduleBlsk(Content): #, Queue):
 
         facets =  []
         if link:
-            title = title[:(300))]
+            title = title[:(300)]
 
             embed_external = models.AppBskyEmbedExternal.Main(
                               external=models.AppBskyEmbedExternal.External(

@@ -290,7 +290,7 @@ def main():
         for key in rules.rules.keys():
             if ((key[0] == 'pocket')
                     and (key[2] == 'fernand0')):
-                apiSrc = rules.readConfigSrc(key, rules.more[key])
+                apiSrc = rules.readConfigSrc("", key, rules.more[key])
 
                 try:
                     apiSrc.setPosts()
