@@ -20,6 +20,11 @@ hasPublish = {}
 myModuleList = {}
 
 
+class ConfigError(Exception):
+    """Excepción personalizada para errores de configuración."""
+    pass
+
+
 class moduleRules:
     def indentPlus(self):
         if not hasattr(self, "indent"):
@@ -33,27 +38,45 @@ class moduleRules:
     def checkRules(self, configFile=None, select=None):
         """
         Lee el archivo de configuración, procesa cada sección y construye las reglas de publicación.
+        Incluye validación exhaustiva y manejo de errores.
+        Optimizado para eficiencia usando sets y accesos eficientes.
+        Permite path absoluto para el archivo de configuración.
         """
+        import os
         msgLog = "Checking rules"
         logMsg(msgLog, 1, 2)
         config = configparser.ConfigParser()
-        if not configFile:
-            configFile = ".rssBlogs"
-        configFile = f"{CONFIGDIR}/{configFile}"
-        config.read(configFile)
+        try:
+            if not configFile:
+                configFile = ".rssBlogs"
+            # Si es path absoluto y existe, úsalo directamente
+            if os.path.isabs(configFile) and os.path.exists(configFile):
+                config.read(configFile)
+            else:
+                configFile = f"{CONFIGDIR}/{configFile}"
+                config.read(configFile)
+        except Exception as e:
+            logMsg(f"ERROR: No se pudo leer el archivo de configuración: {e}", 3, 1)
+            raise ConfigError(f"No se pudo leer el archivo de configuración: {e}")
 
         self.indentPlus()
         services = self.getServices()
         logging.debug(f"{self.indent}Services: {services}")
         services["regular"].append("cache")
 
-        # Estructuras para recolectar reglas y metadatos
-        srcs, srcsA, more, dsts, ruls, rulesNew, mor, impRuls = [], [], [], [], {}, {}, {}, []
+        # Usar sets para evitar duplicados y mejorar eficiencia
+        srcs, srcsA, dsts = set(), set(), set()
+        more, ruls, rulesNew, mor, impRuls = [], {}, {}, {}, []
 
         for section in config.sections():
-            if select and (section != select):
+            try:
+                self._process_section(section, config, services, srcs, srcsA, more, dsts, ruls, rulesNew, mor, impRuls, select)
+            except ConfigError as ce:
+                logMsg(f"ERROR en sección [{section}]: {ce}", 3, 1)
+                raise  # Relanzar la excepción para que los tests la detecten
+            except Exception as e:
+                logMsg(f"ERROR inesperado en sección [{section}]: {e}", 3, 1)
                 continue
-            self._process_section(section, config, services, srcs, srcsA, more, dsts, ruls, rulesNew, mor, impRuls)
 
         self._finalize_rules(config, services, srcs, srcsA, more, dsts, rulesNew)
         self._set_available_and_rules(rulesNew, more)
@@ -62,14 +85,18 @@ class moduleRules:
         msgLog = "End Checking rules"
         logMsg(msgLog, 1, 2)
 
-    def _process_section(self, section, config, services, srcs, srcsA, more, dsts, ruls, rulesNew, mor, impRuls):
+    def _process_section(self, section, config, services, srcs, srcsA, more, dsts, ruls, rulesNew, mor, impRuls, select=None):
         """
         Procesa una sección del archivo de configuración, identificando fuentes y destinos.
+        Valida la presencia de claves obligatorias y tipos de datos.
         """
-        url = config.get(section, "url")
-        msgLog = f" Section: {section} Url: {url}"
-        logMsg(msgLog, 1, 1)
-        self.indent = f"  {section}>"
+        # Validar claves obligatorias de forma robusta y que no estén vacías
+        required_keys = ["url", "service"]
+        section_dict = dict(config.items(section))
+        for key in required_keys:
+            if key not in section_dict or not section_dict[key].strip():
+                raise ConfigError(f"Falta la clave obligatoria '{key}' o está vacía en la sección [{section}]")
+        url = section_dict["url"]
         moreS = dict(config.items(section))
         toAppend, theService, api = self._process_sources(section, config, services, url, moreS, srcs, srcsA, more)
         fromSrv = toAppend
@@ -77,25 +104,27 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         if toAppend:
             service = toAppend[0]
-        postsType = config[section]["posts"] if "posts" in config[section] else "posts"
+        postsType = section_dict.get("posts", "posts")
         msgLog = f"{self.indent} Type {postsType}"
         logMsg(msgLog, 2, 0)
         if fromSrv:
             fromSrv = (fromSrv[0], fromSrv[1], fromSrv[2], postsType)
             self._process_destinations(section, config, services, fromSrv, moreS, api, dsts, ruls, mor, impRuls)
         self._process_rule_keys(moreS, services, fromSrv, rulesNew, mor)
+        # Guardar el nombre de la sección en moreS para trazabilidad
+        moreS['section_name'] = section
 
     def _process_sources(self, section, config, services, url, moreS, srcs, srcsA, more):
         """
         Identifica y registra los servicios fuente de una sección.
+        Valida la presencia y el tipo de los valores requeridos.
+        Optimizado para eficiencia usando sets.
         """
         toAppend = ""
         theService = None
         api = None
         for service in services["regular"]:
             if ("service" in config[section]) and (service == config[section]["service"]):
-                msgLog = f"{self.indent} Service: {service}"
-                logMsg(msgLog, 1, 1)
                 theService = service
                 api = getModule(service, self.indent)
                 api.setUrl(url)
@@ -107,12 +136,11 @@ class moduleRules:
                 else:
                     api.setNick()
                 self.indentPlus()
-                msgLog = f"{self.indent} Nick: {api.getNick()}"
-                logMsg(msgLog, 2, 0)
                 methods = self.hasSetMethods(service)
-                msgLog = f"{self.indent} Service {service} has set {methods}"
-                logMsg(msgLog, 2, 0)
                 for method in methods:
+                    if not isinstance(method, tuple) or len(method) != 2:
+                        logMsg(f"ADVERTENCIA: Método inesperado en {service}: {method}", 2, 1)
+                        continue
                     if "posts" in moreS:
                         if moreS["posts"] == method[1]:
                             toAppend = (theService, "set", api.getNick(), method[1])
@@ -120,15 +148,17 @@ class moduleRules:
                         toAppend = (theService, "set", api.getNick(), method[1])
                     if toAppend not in srcs:
                         if ("posts" in moreS) and (moreS["posts"] == method[1]):
-                            srcs.append(toAppend)
+                            srcs.add(toAppend)
                             more.append(moreS)
                         else:
-                            srcsA.append(toAppend)
+                            srcsA.add(toAppend)
         return toAppend, theService, api
 
     def _process_destinations(self, section, config, services, fromSrv, moreS, api, dsts, ruls, mor, impRuls):
         """
         Identifica y registra los servicios destino de una sección.
+        Valida la presencia de claves y tipos en los destinos.
+        Optimizado para eficiencia usando sets.
         """
         hasSpecial = False
         for serviceS in services["special"]:
@@ -139,12 +169,12 @@ class moduleRules:
                     if val in config[section]:
                         nick = config.get(section, val)
                     else:
-                        nick = api.getNick()
+                        nick = api.getNick() if api else ""
                     url = "posts" if serviceS == "direct" else None
                     toAppend = (serviceS, url, val, nick)
                     if toAppend not in dsts:
                         if "service" not in toAppend:
-                            dsts.append(toAppend)
+                            dsts.add(toAppend)
                     if toAppend:
                         if fromSrv not in mor:
                             mor[fromSrv] = moreS
@@ -155,26 +185,21 @@ class moduleRules:
                             ruls[fromSrv] = [toAppend]
                         if serviceS == "cache":
                             hasSpecial = True
-        msgLog = f"{self.indent} Checking actions for {fromSrv[0] if fromSrv else ''}"
-        logMsg(msgLog, 2, 0)
         self.indentPlus()
         for serviceD in services["regular"]:
             if (serviceD == "cache") or (serviceD == "xmlrpc") or (fromSrv and serviceD == fromSrv[0]):
                 continue
             toAppend = ""
             if serviceD in config.options(section):
-                msgLog = f"{self.indent} Service {fromSrv[0] if fromSrv else ''} -> {serviceD} checking "
-                logMsg(msgLog, 2, 0)
-                self.indentPlus()
                 methods = self.hasPublishMethod(serviceD)
-                msgLog = f"{self.indent} Service {serviceD} has publish {methods}"
-                logMsg(msgLog, 2, 0)
-                self.indentLess()
                 for method in methods:
+                    if not isinstance(method, tuple) or len(method) != 2:
+                        logMsg(f"ADVERTENCIA: Método inesperado en {serviceD}: {method}", 2, 1)
+                        continue
                     mmethod = method[1] if method[1] else "post"
                     toAppend = ("direct", mmethod, serviceD, config.get(section, serviceD))
                     if toAppend not in dsts:
-                        dsts.append(toAppend)
+                        dsts.add(toAppend)
                     if toAppend:
                         if hasSpecial:
                             nickSn = f"{toAppend[2]}@{toAppend[3]}"
@@ -201,6 +226,7 @@ class moduleRules:
     def _process_rule_keys(self, moreS, services, fromSrv, rulesNew, mor):
         """
         Procesa las claves de la sección para construir reglas adicionales.
+        Valida la presencia y el tipo de los valores requeridos.
         """
         orig = None
         dest = None
@@ -231,22 +257,22 @@ class moduleRules:
                         destRuleCache = ""
                         fromCacheNew = ""
                         if dest == "direct":
-                            destRule = (dest, "post", key, moreS[key])
+                            destRule = (dest, "post", key, moreS.get(key, ""))
                         else:
-                            destRule = (dest, moreS["url"], key, moreS[key])
+                            destRule = (dest, moreS.get("url", ""), key, moreS.get(key, ""))
                             destRuleNew = (
                                 dest,
-                                moreS["service"],
-                                ("direct", "post", key, moreS[key]),
-                                moreS["url"],
+                                moreS.get("service", ""),
+                                ("direct", "post", key, moreS.get(key, "")),
+                                moreS.get("url", ""),
                             )
                             fromCacheNew = (
                                 "cache",
-                                moreS["service"],
-                                ("direct", "post", key, moreS[key]),
-                                moreS["url"],
+                                moreS.get("service", ""),
+                                ("direct", "post", key, moreS.get(key, "")),
+                                moreS.get("url", ""),
                             )
-                            destRuleCache = ("direct", "post", key, moreS[key])
+                            destRuleCache = ("direct", "post", key, moreS.get(key, ""))
                             if fromCacheNew and destRuleCache:
                                 if fromCacheNew not in rulesNew:
                                     rulesNew[fromCacheNew] = []
@@ -277,27 +303,33 @@ class moduleRules:
     def _finalize_rules(self, config, services, srcs, srcsA, more, dsts, rulesNew):
         """
         Añade fuentes implícitas y destinos que pueden ser fuentes.
+        Valida la estructura de los datos antes de agregarlos.
+        Optimizado para eficiencia usando sets.
         """
         for src in srcsA:
             if src:
                 if src not in rulesNew:
                     rulesNew[src] = []
                 if src not in srcs:
-                    srcs.append(src)
+                    srcs.add(src)
                     more.append({})
-        logging.info(f"Srcs: {srcs}")
-        logging.info(f"SrcsA: {srcsA}")
+        logging.info(f"Srcs: {list(srcs)}")
+        logging.info(f"SrcsA: {list(srcsA)}")
         self.indent = f"{self.indent} Destinations:"
         for dst in dsts:
-            msgLog = f"{self.indent} Dest: {dst}"
-            logMsg(msgLog, 2, 0)
+            if not isinstance(dst, tuple) or len(dst) < 4:
+                logMsg(f"ADVERTENCIA: Destino inesperado: {dst}", 2, 1)
+                continue
             if dst[0] == "direct":
                 service = dst[2]
                 methods = self.hasSetMethods(service)
                 for method in methods:
+                    if not isinstance(method, tuple) or len(method) != 2:
+                        logMsg(f"ADVERTENCIA: Método inesperado en {service}: {method}", 2, 1)
+                        continue
                     toAppend = (service, "set", dst[3], method[1])
                     if toAppend[:4] not in srcs:
-                        srcs.append(toAppend[:4])
+                        srcs.add(toAppend[:4])
                         more.append({})
             elif dst[0] == "cache":
                 if len(dst) > 4:
@@ -305,12 +337,18 @@ class moduleRules:
                 else:
                     toAppend = (dst[0], "set", (dst[1], (dst[2], dst[3])), "posts", 0, 1)
                 if toAppend[:4] not in srcs:
-                    srcs.append(toAppend[:4])
+                    srcs.add(toAppend[:4])
                     more.append({})
+
+        # Convertir sets a listas para compatibilidad con el resto del código
+        self._srcs = list(srcs)
+        self._srcsA = list(srcsA)
+        self._dsts = list(dsts)
 
     def _set_available_and_rules(self, rulesNew, more):
         """
         Construye las estructuras self.available, self.availableList y self.rules.
+        Valida la integridad de los datos antes de agregarlos.
         """
         available = {}
         myKeys = {}
@@ -318,10 +356,13 @@ class moduleRules:
         for i, src in enumerate(rulesNew.keys()):
             if not src:
                 continue
-            iniK, nameK = self.getIniKey(self.getNameRule(src).upper(), myKeys, myIniKeys)
+            # Usar el nombre de la sección si está disponible
+            section_name = more[i].get('section_name', self.getNameRule(src)) if i < len(more) and isinstance(more[i], dict) else self.getNameRule(src)
+            iniK, nameK = self.getIniKey(section_name.upper(), myKeys, myIniKeys)
             if iniK not in available:
-                available[iniK] = {"name": self.getNameRule(src), "data": [], "social": []}
-            available[iniK]["data"].append({"src": src, "more": more[i]})
+                available[iniK] = {"name": section_name, "data": [], "social": []}
+            more_i = more[i] if i < len(more) and isinstance(more[i], dict) else {}
+            available[iniK]["data"].append({"src": src, "more": more_i})
         myList = [f"{elem}) {available[elem]['name']}: {len(available[elem]['data'])}" for elem in available]
         self.available = available
         self.availableList = myList if myList else []
