@@ -386,7 +386,17 @@ class moduleRules:
         for dst in dsts:
             msgLog = f"{self.indent} Dest: {dst}"
             logMsg(msgLog, 2, 0)
-            if self.getRuleComponent(dst, 0) == "direct":
+            if isinstance(dst, Rule) and dst.service == "direct":
+                service = dst.profile
+                account = dst.post_type
+                # FIXME
+                methods = self.hasSetMethods(service)
+                for method in methods:
+                    toAppend = Rule(service, "set", account, method[1])
+                    if toAppend not in srcs:
+                        srcs.append(toAppend)
+                        more.append({})
+            elif self.getRuleComponent(dst, 0) == "direct":
                 service = self.getRuleComponent(dst, 2)
                 # FIXME
                 methods = self.hasSetMethods(service)
@@ -568,33 +578,37 @@ Selected more: {self.more}
 
     def selectRule(self, name="", selector2="", selector3=""):
         rules = []
-        service = name
-        if not isinstance(name, list):
-            service = [name, ]
-        selRules = []
+        service = [name] if not isinstance(name, list) else name
+
         for name_ser in service:
             logging.debug(f"Name: {name_ser}, Selectors: {selector2}, {selector3}")
             for src in self.rules.keys():
-                if name_ser.capitalize() in self.getNameRule(src).capitalize():
-                    logging.debug(f"profileR: {self.getProfileRule(src)}")
-                    logging.debug(f"profileR: {self.getProfileAction(src)}")
-                    if not selector2:
-                        rules.append(src)
-                    else:
-                        if selector2 in self.getProfileAction(src):
-                            # FIXME: ??
-                            logging.debug(f"Second Selector: {selector2}")
-                            if not selector3:
-                                rules.append(src)
-                            elif selector3 in self.getTypeRule(src):
-                                rules.append(src)
-        if not rules:
-            for src in self.rules.keys():
-                for action in self.rules[src]:
-                    print(f"Action: {action}")
-                    if self.getNameAction(action).capitalize() == name_ser.capitalize():
+                # Primary filter: rule name must match the service name
+                if name_ser.capitalize() not in self.getNameRule(src).capitalize():
+                    continue
+
+                # If we are here, the name matches. Now evaluate selectors.
+                if not selector2:
+                    # No second selector, so we add the rule
+                    rules.append(src)
+                    continue
+
+                # A second selector is present, it must match
+                # FIXME: ??
+                if selector2 in self.getProfileAction(src):
+                    # The second selector matches. Now check the third.
+                    if not selector3 or selector3 in self.getTypeRule(src):
+                        # No third selector, or the third selector also matches.
                         rules.append(src)
 
+        # Fallback: if no rules were found, search by action name
+        if not rules:
+            for name_ser in service:
+                for src in self.rules.keys():
+                    for action in self.rules[src]:
+                        if self.getNameAction(action).capitalize() == name_ser.capitalize():
+                            if src not in rules:
+                                rules.append(src)
         return rules
 
     def hasSetMethods(self, service):
