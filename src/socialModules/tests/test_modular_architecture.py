@@ -1,22 +1,22 @@
-from moduleRules import moduleRules
+from socialModules.moduleRules import moduleRules
 
 
 def main():
     rules = moduleRules()
-    rules.checkRules()  # Procesa el archivo de configuración
+    rules.checkRules()  # Processes the configuration file
 
-    # Muestra las reglas generadas
-    print("Reglas generadas:")
+    # Show generated rules
+    print("Generated rules:")
     for src, actions in rules.rules.items():
-        print(f"Fuente: {src}")
+        print(f"Source: {src}")
         for action in actions:
-            print(f"  Acción: {action}")
+            print(f"  Action: {action}")
 
-    print("\nFuentes disponibles:")
+    print("\nAvailable sources:")
     for key, value in rules.available.items():
         print(f"{key}: {value}")
 
-    print("\nLista de disponibles:")
+    print("\nAvailable list:")
     print(rules.availableList)
 
 

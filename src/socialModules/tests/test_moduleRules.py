@@ -1,16 +1,17 @@
 import pytest
-from moduleRules import moduleRules, ConfigError
+from socialModules.moduleRules import moduleRules, ConfigError
 import os
 from unittest.mock import patch, MagicMock
 
-# Utilidad para crear un archivo de configuración temporal
+# Utility to create a temporary configuration file
+
 def make_config_file(tmp_path, content):
     config_file = tmp_path / ".rssBlogs"
     config_file.write_text(content)
     return str(config_file)
 
 def test_missing_url(tmp_path):
-    # Falta la clave 'url'
+    # Missing 'url' key
     config_content = """
     [blog1]
     service = reddit
@@ -33,9 +34,9 @@ def test_valid_config(tmp_path):
     config_file = make_config_file(tmp_path, config_content)
     rules = moduleRules()
     rules.checkRules(configFile=config_file)
-    # Debe haber una fuente llamada 'blog1' en available
+    # There should be a source named 'blog1' in available
     assert any('blog1' in v['name'] for v in rules.available.values())
-    # Debe haber reglas para reddit
+    # There should be rules for reddit
     assert any('reddit' in str(src) for src in rules.rules)
 
 def test_no_duplicates(tmp_path):
@@ -50,7 +51,7 @@ def test_no_duplicates(tmp_path):
     config_file = make_config_file(tmp_path, config_content)
     rules = moduleRules()
     rules.checkRules(configFile=config_file)
-    # No debe haber duplicados en las fuentes
+    # There should be no duplicates in sources
     srcs = [d['src'] for v in rules.available.values() for d in v['data']]
     assert len(srcs) == len(set(srcs))
 
@@ -117,13 +118,13 @@ def test_duplicate_destinations(tmp_path):
     """
     config_file = make_config_file(tmp_path, config_content)
     rules = moduleRules()
-    # Esperamos un error de configuración por claves duplicadas
+    # We expect a configuration error due to duplicate keys
     with pytest.raises(ConfigError):
         rules.checkRules(configFile=config_file)
 
 def make_basic_rules():
     rules = moduleRules()
-    # Simula reglas y metadatos mínimos
+    # Simulate minimal rules and metadata
     rules.rules = {'src1': ['action1', 'action2'], 'src2': ['action3']}
     rules.more = {'src1': {}, 'src2': {}}
     rules.args = MagicMock()
@@ -139,9 +140,9 @@ def test_executeRules_calls_executeAction():
     def fake_single_action(scheduled_action):
         called.append(scheduled_action)
         return "ok"
-    with patch('moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
+    with patch('socialModules.moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
         rules.executeRules(max_workers=2)
-    assert len(called) == 3  # 3 acciones
+    assert len(called) == 3  # 3 actions
 
 def test_executeRules_respects_hold():
     rules = make_basic_rules()
@@ -150,9 +151,9 @@ def test_executeRules_respects_hold():
     def fake_single_action(scheduled_action):
         called.append(scheduled_action)
         return "ok"
-    with patch('moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
+    with patch('socialModules.moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
         rules.executeRules()
-    assert len(called) == 1  # Solo src2/action3
+    assert len(called) == 1  # Only src2/action3
 
 def test_executeRules_handles_exceptions():
     rules = make_basic_rules()
@@ -160,7 +161,7 @@ def test_executeRules_handles_exceptions():
         if scheduled_action['rule_action'] == 'action2':
             raise Exception("fail")
         return "ok"
-    with patch('moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
+    with patch('socialModules.moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
         rules.executeRules()
 
 def test_executeRules_with_checkBlog():
@@ -170,7 +171,7 @@ def test_executeRules_with_checkBlog():
     def fake_single_action(scheduled_action):
         called.append(scheduled_action)
         return "ok"
-    with patch('moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
+    with patch('socialModules.moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
         rules.executeRules()
-    # Solo acciones de src1
+    # Only actions from src1
     assert all(a['rule_key'] == 'src1' for a in called) 
