@@ -21,7 +21,7 @@ myModuleList = {}
 
 
 class ConfigError(Exception):
-    """Excepción personalizada para errores de configuración."""
+    """Custom exception for configuration errors."""
     pass
 
 
@@ -37,10 +37,10 @@ class moduleRules:
 
     def checkRules(self, configFile=None, select=None):
         """
-        Lee el archivo de configuración, procesa cada sección y construye las reglas de publicación.
-        Incluye validación exhaustiva y manejo de errores.
-        Optimizado para eficiencia usando sets y accesos eficientes.
-        Permite path absoluto para el archivo de configuración.
+        Reads the configuration file, processes each section, and builds the publishing rules.
+        Includes exhaustive validation and error handling.
+        Optimized for efficiency using sets and efficient access.
+        Allows absolute path for the configuration file.
         """
         import os
         msgLog = "Checking rules"
@@ -49,22 +49,22 @@ class moduleRules:
         try:
             if not configFile:
                 configFile = ".rssBlogs"
-            # Si es path absoluto y existe, úsalo directamente
+            # If it's an absolute path and exists, use it directly
             if os.path.isabs(configFile) and os.path.exists(configFile):
                 config.read(configFile)
             else:
                 configFile = f"{CONFIGDIR}/{configFile}"
                 config.read(configFile)
         except Exception as e:
-            logMsg(f"ERROR: No se pudo leer el archivo de configuración: {e}", 3, 1)
-            raise ConfigError(f"No se pudo leer el archivo de configuración: {e}")
+            logMsg(f"ERROR: Could not read configuration file: {e}", 3, 1)
+            raise ConfigError(f"Could not read configuration file: {e}")
 
         self.indentPlus()
         services = self.getServices()
         logging.debug(f"{self.indent}Services: {services}")
         services["regular"].append("cache")
 
-        # Usar sets para evitar duplicados y mejorar eficiencia
+        # Use sets to avoid duplicates and improve efficiency
         srcs, srcsA, dsts = set(), set(), set()
         more, ruls, rulesNew, mor, impRuls = [], {}, {}, {}, []
 
@@ -72,10 +72,10 @@ class moduleRules:
             try:
                 self._process_section(section, config, services, srcs, srcsA, more, dsts, ruls, rulesNew, mor, impRuls, select)
             except ConfigError as ce:
-                logMsg(f"ERROR en sección [{section}]: {ce}", 3, 1)
-                raise  # Relanzar la excepción para que los tests la detecten
+                logMsg(f"ERROR in section [{section}]: {ce}", 3, 1)
+                raise  # Reraise the exception so tests can catch it
             except Exception as e:
-                logMsg(f"ERROR inesperado en sección [{section}]: {e}", 3, 1)
+                logMsg(f"UNEXPECTED ERROR in section [{section}]: {e}", 3, 1)
                 continue
 
         self._finalize_rules(config, services, srcs, srcsA, more, dsts, rulesNew)
@@ -87,15 +87,15 @@ class moduleRules:
 
     def _process_section(self, section, config, services, srcs, srcsA, more, dsts, ruls, rulesNew, mor, impRuls, select=None):
         """
-        Procesa una sección del archivo de configuración, identificando fuentes y destinos.
-        Valida la presencia de claves obligatorias y tipos de datos.
+        Processes a section of the configuration file, identifying sources and destinations.
+        Validates the presence of required keys and data types.
         """
-        # Validar claves obligatorias de forma robusta y que no estén vacías
+        # Robustly validate required keys and ensure they are not empty
         required_keys = ["url", "service"]
         section_dict = dict(config.items(section))
         for key in required_keys:
             if key not in section_dict or not section_dict[key].strip():
-                raise ConfigError(f"Falta la clave obligatoria '{key}' o está vacía en la sección [{section}]")
+                raise ConfigError(f"Missing required key '{key}' or it is empty in section [{section}]")
         url = section_dict["url"]
         moreS = dict(config.items(section))
         toAppend, theService, api = self._process_sources(section, config, services, url, moreS, srcs, srcsA, more)
@@ -111,14 +111,14 @@ class moduleRules:
             fromSrv = (fromSrv[0], fromSrv[1], fromSrv[2], postsType)
             self._process_destinations(section, config, services, fromSrv, moreS, api, dsts, ruls, mor, impRuls)
         self._process_rule_keys(moreS, services, fromSrv, rulesNew, mor)
-        # Guardar el nombre de la sección en moreS para trazabilidad
+        # Save the section name in moreS for traceability
         moreS['section_name'] = section
 
     def _process_sources(self, section, config, services, url, moreS, srcs, srcsA, more):
         """
-        Identifica y registra los servicios fuente de una sección.
-        Valida la presencia y el tipo de los valores requeridos.
-        Optimizado para eficiencia usando sets.
+        Identifies and registers the source services of a section.
+        Validates the presence and type of required values.
+        Optimized for efficiency using sets.
         """
         toAppend = ""
         theService = None
@@ -139,7 +139,7 @@ class moduleRules:
                 methods = self.hasSetMethods(service)
                 for method in methods:
                     if not isinstance(method, tuple) or len(method) != 2:
-                        logMsg(f"ADVERTENCIA: Método inesperado en {service}: {method}", 2, 1)
+                        logMsg(f"WARNING: Unexpected method in {service}: {method}", 2, 1)
                         continue
                     if "posts" in moreS:
                         if moreS["posts"] == method[1]:
@@ -156,9 +156,9 @@ class moduleRules:
 
     def _process_destinations(self, section, config, services, fromSrv, moreS, api, dsts, ruls, mor, impRuls):
         """
-        Identifica y registra los servicios destino de una sección.
-        Valida la presencia de claves y tipos en los destinos.
-        Optimizado para eficiencia usando sets.
+        Identifies and registers the destination services of a section.
+        Validates the presence of keys and types in the destinations.
+        Optimized for efficiency using sets.
         """
         hasSpecial = False
         for serviceS in services["special"]:
@@ -194,7 +194,7 @@ class moduleRules:
                 methods = self.hasPublishMethod(serviceD)
                 for method in methods:
                     if not isinstance(method, tuple) or len(method) != 2:
-                        logMsg(f"ADVERTENCIA: Método inesperado en {serviceD}: {method}", 2, 1)
+                        logMsg(f"WARNING: Unexpected method in {serviceD}: {method}", 2, 1)
                         continue
                     mmethod = method[1] if method[1] else "post"
                     toAppend = ("direct", mmethod, serviceD, config.get(section, serviceD))
@@ -225,8 +225,8 @@ class moduleRules:
 
     def _process_rule_keys(self, moreS, services, fromSrv, rulesNew, mor):
         """
-        Procesa las claves de la sección para construir reglas adicionales.
-        Valida la presencia y el tipo de los valores requeridos.
+        Processes the section keys to build additional rules.
+        Validates the presence and type of required values.
         """
         orig = None
         dest = None
@@ -302,9 +302,9 @@ class moduleRules:
 
     def _finalize_rules(self, config, services, srcs, srcsA, more, dsts, rulesNew):
         """
-        Añade fuentes implícitas y destinos que pueden ser fuentes.
-        Valida la estructura de los datos antes de agregarlos.
-        Optimizado para eficiencia usando sets.
+        Adds implicit sources and destinations that can be sources.
+        Validates the structure of the data before adding them.
+        Optimized for efficiency using sets.
         """
         for src in srcsA:
             if src:
@@ -318,14 +318,14 @@ class moduleRules:
         self.indent = f"{self.indent} Destinations:"
         for dst in dsts:
             if not isinstance(dst, tuple) or len(dst) < 4:
-                logMsg(f"ADVERTENCIA: Destino inesperado: {dst}", 2, 1)
+                logMsg(f"WARNING: Unexpected destination: {dst}", 2, 1)
                 continue
             if dst[0] == "direct":
                 service = dst[2]
                 methods = self.hasSetMethods(service)
                 for method in methods:
                     if not isinstance(method, tuple) or len(method) != 2:
-                        logMsg(f"ADVERTENCIA: Método inesperado en {service}: {method}", 2, 1)
+                        logMsg(f"WARNING: Unexpected method in {service}: {method}", 2, 1)
                         continue
                     toAppend = (service, "set", dst[3], method[1])
                     if toAppend[:4] not in srcs:
@@ -340,15 +340,15 @@ class moduleRules:
                     srcs.add(toAppend[:4])
                     more.append({})
 
-        # Convertir sets a listas para compatibilidad con el resto del código
+        # Convert sets to lists for compatibility with the rest of the code
         self._srcs = list(srcs)
         self._srcsA = list(srcsA)
         self._dsts = list(dsts)
 
     def _set_available_and_rules(self, rulesNew, more):
         """
-        Construye las estructuras self.available, self.availableList y self.rules.
-        Valida la integridad de los datos antes de agregarlos.
+        Builds self.available, self.availableList and self.rules.
+        Validates the integrity of the data before adding them.
         """
         available = {}
         myKeys = {}
@@ -356,7 +356,7 @@ class moduleRules:
         for i, src in enumerate(rulesNew.keys()):
             if not src:
                 continue
-            # Usar el nombre de la sección si está disponible
+            # Use the section name if available
             section_name = more[i].get('section_name', self.getNameRule(src)) if i < len(more) and isinstance(more[i], dict) else self.getNameRule(src)
             iniK, nameK = self.getIniKey(section_name.upper(), myKeys, myIniKeys)
             if iniK not in available:
@@ -693,9 +693,7 @@ class moduleRules:
             apiSrc = getApi(profile, account, indent)
         apiSrc.src = src
         apiSrc.setPostsType(src[-1])
-        print(f"Uuuuurlllll: {apiSrc.url}")
         apiSrc.setMoreValues(more)
-        print(f"Uuuuurlllll: {apiSrc.url}")
 
         # msgLog = f"{indent} Url: {apiSrc.getUrl()}" #: {src[1:]}"
         # logMsg(msgLog, 2, 0)
@@ -1049,10 +1047,10 @@ class moduleRules:
 
     def executeRules(self, max_workers=None):
         """
-        Ejecuta todas las reglas generadas usando concurrencia.
-        Refactorizado para delegar en funciones auxiliares.
-        Permite configurar el número de hilos (max_workers) por argumento, variable de entorno SOCIALMODULES_MAX_WORKERS,
-        o automáticamente según el número de acciones a ejecutar (uno por acción, mínimo 1, máximo 100).
+        Executes all generated rules using concurrency.
+        Refactored to delegate to helper functions.
+        Allows configuring the number of threads (max_workers) by argument, environment variable SOCIALMODULES_MAX_WORKERS,
+        or automatically according to the number of actions to execute (one per action, minimum 1, maximum 100).
         """
         import os
         msgLog = "Start Executing rules"
@@ -1060,19 +1058,19 @@ class moduleRules:
         args = self.args
         select = args.checkBlog
         simmulate = args.simmulate
-        # Preparar acciones a ejecutar
+        # Prepare actions to execute
         scheduled_actions = self._prepare_actions(args, select)
-        # Determinar número de hilos
+        # Determine number of threads
         if max_workers is not None:
-            pass  # usar el valor explícito
+            pass  # use the explicit value
         elif "SOCIALMODULES_MAX_WORKERS" in os.environ:
             max_workers = int(os.environ["SOCIALMODULES_MAX_WORKERS"])
         else:
             num_actions = max(1, len(scheduled_actions))
-            max_workers = min(num_actions, 100)  # máximo razonable
-        # Ejecutar acciones concurrentemente
+            max_workers = min(num_actions, 100)  # reasonable maximum
+        # Execute actions concurrently
         action_results, action_errors = self._run_actions_concurrently(scheduled_actions, max_workers=max_workers)
-        # Reportar resultados y errores
+        # Report results and errors
         self._report_results(action_results, action_errors)
         msgLog = f"End Executing rules with {len(scheduled_actions)} actions."
         logMsg(msgLog, 1, 2)
@@ -1080,12 +1078,12 @@ class moduleRules:
 
     def _prepare_actions(self, args, select):
         """
-        Prepara la lista de acciones a ejecutar, filtrando y recogiendo toda la información necesaria.
-        Devuelve una lista de diccionarios con los datos de cada acción.
+        Prepares the list of actions to execute, filtering and collecting all necessary information.
+        Returns a list of dictionaries with data for each action.
         """
         scheduled_actions = []
         for rule_index, rule_key in enumerate(sorted(self.rules.keys())):
-            # Control de repetición por nombre de acción
+            # Repetition control by action name
             rule_metadata = self.more[rule_key] if rule_key in self.more else None
             if rule_metadata and rule_metadata.get("hold") == "yes":
                 msgHold = f"[HOLD] {self.getNickSrc(rule_key)} ({self.getNickAction(rule_key)})"
@@ -1093,7 +1091,7 @@ class moduleRules:
                 continue
             rule_actions = self.rules[rule_key]
             for action_index, rule_action in enumerate(rule_actions):
-                # Selección de reglas si se usa --checkBlog
+                # Rule selection if --checkBlog is used
                 if select and (select.lower() != f"{self.getNameRule(rule_key).lower()}{rule_index}"):
                     continue
                 scheduled_actions.append({
@@ -1109,8 +1107,8 @@ class moduleRules:
 
     def _run_actions_concurrently(self, scheduled_actions, max_workers=75):
         """
-        Ejecuta las acciones en paralelo usando ThreadPoolExecutor.
-        Devuelve dos listas: resultados y errores.
+        Executes actions in parallel using ThreadPoolExecutor.
+        Returns two lists: results and errors.
         """
         import concurrent.futures
         action_results = []
@@ -1133,14 +1131,14 @@ class moduleRules:
 
     def _execute_single_action(self, scheduled_action):
         """
-        Ejecuta una sola acción (wrapper para executeAction).
+        Executes a single action (wrapper for executeAction).
         """
         rule_key = scheduled_action["rule_key"]
         rule_metadata = scheduled_action["rule_metadata"]
         rule_action = scheduled_action["rule_action"]
         args = scheduled_action["args"]
         simmulate = scheduled_action["simmulate"]
-        # Preparar argumentos para executeAction
+        # Prepare arguments for executeAction
         apiSrc = self.readConfigSrc("", rule_key, rule_metadata)
         msgAction = (
             f"{self.getNameAction(rule_action)} "
@@ -1148,7 +1146,9 @@ class moduleRules:
             f"{self.getProfileAction(rule_action)} "
             f"({self.getTypeAction(rule_action)})"
         )
-        nameA = f"Action {scheduled_action['action_index']}"
+        rule_index = scheduled_action.get('rule_index', 0)
+        action_index = scheduled_action.get('action_index', 0)
+        nameA = f"Action {rule_index:2d}-{action_index}"
         return self.executeAction(
             rule_key,
             rule_metadata,
@@ -1159,18 +1159,24 @@ class moduleRules:
             args.timeSlots,
             simmulate,
             nameA,
-            scheduled_action['action_index'],
+            action_index,
         )
 
     def _report_results(self, action_results, action_errors):
         """
-        Reporta los resultados y errores de la ejecución de acciones.
+        Reports the results and errors of action execution.
         """
         for scheduled_action, res in action_results:
             if res:
-                logMsg(f"[OK] Acción ejecutada: {scheduled_action['rule_key']} -> {scheduled_action['rule_action']}: {res}", 1, 1)
+                rule_key = scheduled_action['rule_key']
+                rule_index = scheduled_action.get('rule_index', '')
+                rule_summary = f"Rule {rule_index}: {rule_key}" if rule_index != '' else str(rule_key)
+                logMsg(f"[OK] Action executed for {rule_summary} -> {scheduled_action['rule_action']}: {res}", 1, 1)
         for scheduled_action, exc in action_errors:
-            logMsg(f"[ERROR] Acción fallida: {scheduled_action['rule_key']} -> {scheduled_action['rule_action']}: {exc}", 3, 1)
+            rule_key = scheduled_action['rule_key']
+            rule_index = scheduled_action.get('rule_index', '')
+            rule_summary = f"Rule {rule_index}: {rule_key}" if rule_index != '' else str(rule_key)
+            logMsg(f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {exc}", 3, 1)
 
     def readArgs(self):
         import argparse
