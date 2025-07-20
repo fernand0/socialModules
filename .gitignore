@@ -6,3 +6,4 @@ dist/
 .python-version
 uv*
 .coverate
+.coverage
