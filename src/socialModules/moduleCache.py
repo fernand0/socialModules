@@ -31,7 +31,9 @@ class moduleCache(Content): #,Queue):
         self.postaction = 'delete'
 
     def getApiDst(self):
-        api = self.apiDst
+        api = ""
+        if hasattr(self, 'apiDst'):
+            api = self.apiDst
         # if hasattr(self, 'auxClass'):
         #     myModule = f"module{self.auxClass.capitalize()}"
         #     importlib.import_module(myModule)
@@ -110,7 +112,8 @@ class moduleCache(Content): #,Queue):
         self.socialNetwork = ""
         self.user = self.src[2]
         self.nick = self.user
-        self.apiDst = getModule(self.src[1][2], f"{self.indent}  (c)")
+        self.apiDst = getModule(self.profile.profile, f"{self.indent}  (c)")
+        print(f"apiDst: {self.apiDst}")
         self.apiDst.setUser(self.src[1][3])
         self.apiSrc = getModule(self.src[0], f"{self.indent}  (c)")
         # logging.info(f"{self.indent} srcClass: {self.apiSrc}")
@@ -725,8 +728,9 @@ def main():
     more = rules.more[src]
     indent = ""
     apiSrc = rules.readConfigSrc(indent, src, more)
+    print(f"Src: {apiSrc.src}")
     print(f"Url: {apiSrc.getUrl()}")
-    print(f"apiDst: {apiSrc.getApiDst()}")
+    print(f"apiDstt: {apiSrc.getApiDst()}")
     print(f"User apiDst: {apiSrc.getApiDst().getUser()}")
     print(f"User: {apiSrc.getUser()}")
     print(f"User src: {apiSrc.apiSrc.getUser()}")

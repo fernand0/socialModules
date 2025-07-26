@@ -169,12 +169,20 @@ def updateLastLink(url, link, socialNetwork=(),indent=''):
             f.write(link[0])
 
 def getModule(profile, indent=''):
-    # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
+    # Ensure the base path is in sys.path for this thread/context
+    base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    if base_path not in sys.path:
+        sys.path.append(base_path)
+
     indent = f"{indent} "
     msgLog = (f"{indent} Start getModule {profile}")
     logMsg(msgLog, 2, 0)
     serviceName = profile.capitalize()
-
+    msgLog = (f"{indent} Profile: {profile}, serviceName: {serviceName}")
+    logMsg(msgLog, 2, 0)
+    module_full_name = 'socialModules.module' + serviceName
+    msgLog = (f"{indent} Attempting to import: {module_full_name}")
+    logMsg(msgLog, 2, 0)
     mod = importlib.import_module('socialModules.module' + serviceName)
     cls = getattr(mod, 'module' + serviceName)
     api = cls(indent)
@@ -198,6 +206,7 @@ def getApi(profile, nick, indent="", channel = None):
     api.nick = nick
     api.indent = f"{indent} "
     api.setClient(nick)
+    api.apiDst = nick
     if channel:
         api.setPage(channel)
     api.indent = f"{indent[:-1]}"

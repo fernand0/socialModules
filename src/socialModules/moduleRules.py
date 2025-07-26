@@ -7,13 +7,16 @@ import random
 import shutil
 import sys
 import time
+from dataclasses import dataclass
+from typing import Union
 
+import argparse
 import click
 import socialModules
 from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR
 
 fileName = socialModules.__file__
-path = f"{os.path.dirname(fileName)}"
+path = f"{os.path.dirname(os.path.dirname(fileName))}"
 
 sys.path.append(path)
 
@@ -22,7 +25,7 @@ hasPublish = {}
 myModuleList = {}
 
 
-@dataclass
+@dataclass(frozen=True)
 class Rule:
     service: str
     method: str
@@ -80,9 +83,9 @@ class moduleRules:
                 for method in methods:
                     if "posts" in moreS:
                         if moreS["posts"] == method[1]:
-                            toAppend = (theService, "set", api.getNick(), method[1])
+                            toAppend = Rule(theService, "set", api.getNick(), method[1])
                     else:
-                        toAppend = (theService, "set", api.getNick(), method[1])
+                        toAppend = Rule(theService, "set", api.getNick(), method[1])
                     if toAppend not in srcs:
                         if ("posts" in moreS) and (moreS["posts"] == method[1]):
                             srcs.append(toAppend)
@@ -93,7 +96,7 @@ class moduleRules:
         fromSrv = toAppend
         return fromSrv, api, theService
 
-    def _process_destinations(self, section_config, services, fromSrv, api, theService, mor, ruls, dsts):
+    def _process_destinations(self, section_config, services, fromSrv, api, theService, mor, ruls, dsts, moreS):
         hasSpecial = False
         if "posts" in section_config:
             postsType = section_config["posts"]
@@ -103,9 +106,9 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         if fromSrv:
             fromSrv = (
-                fromSrv[0],
-                fromSrv[1],
-                fromSrv[2],
+                fromSrv.service,
+                fromSrv.method,
+                fromSrv.profile,
                 postsType,
             )
             for serviceS in services["special"]:
@@ -113,6 +116,7 @@ class moduleRules:
                 if serviceS in section_config:
                     valueE = section_config.get(serviceS).split("\n")
                     for val in valueE:
+                        url = ""
                         if val in section_config:
                             nick = section_config.get(val)
                         else:
@@ -121,7 +125,7 @@ class moduleRules:
                             url = "posts"
                         toAppend = Rule(serviceS, url, val, nick)
                         if toAppend not in dsts:
-                            if "service" not in toAppend:
+                            if not hasattr(toAppend, "service"):
                                 dsts.append(toAppend)
                         if toAppend:
                             if fromSrv not in mor:
@@ -137,9 +141,9 @@ class moduleRules:
                                 hasSpecial = True
         return hasSpecial
 
-    def _process_actions(self, section_config, services, fromSrv, theService, hasSpecial, mor, ruls, dsts, impRuls):
+    def _process_actions(self, section_config, services, fromSrv, theService, hasSpecial, mor, ruls, dsts, impRuls, moreS):
         if fromSrv:
-            msgLog = f"{self.indent} Checking actions for {fromSrv[0]}"
+            msgLog = f"{self.indent} Checking actions for {fromSrv.service}"
             logMsg(msgLog, 2, 0)
             self.indentPlus()
             for serviceD in services["regular"]:
@@ -152,7 +156,7 @@ class moduleRules:
                 toAppend = ""
                 if serviceD in section_config:
                     msgLog = (
-                        f"{self.indent} Service {fromSrv[0]} -> {serviceD} checking "
+                        f"{self.indent} Service {fromSrv.service} -> {serviceD} checking "
                     )
                     logMsg(msgLog, 2, 0)
                     self.indentPlus()
@@ -333,12 +337,15 @@ class moduleRules:
                                     mor[fromSrvN].update(
                                         {"posts": chan, "channel": chan}
                                     )
+        logging.debug(f"{self.indent}rulesNew after section processing: {rulesNew}")
+        logging.debug(f"{self.indent}mor after section processing: {mor}")
 
     def _process_section(self, section, config, services, srcs, srcsA, more, dsts):
-        
+
         rulesNew = {}
         mor = {}
-        impRuls = {}
+        impRuls = []
+        ruls = {}
         url = config.get(section, "url")
         msgLog = f" Section: {section} Url: {url}"
         logMsg(msgLog, 1, 1)
@@ -350,7 +357,7 @@ class moduleRules:
         msgLog = f"{self.indent} We will append: {fromSrv}"
         logMsg(msgLog, 2, 0)
         if fromSrv:
-            service = fromSrv[0]
+            service = fromSrv.service
 
         # if "time" in config.options(section):
         #     timeW = config.get(section, "time")
@@ -364,9 +371,9 @@ class moduleRules:
         #     bufferMax = config.get(section, "max")
 
         # Destinations
-        hasSpecial = self._process_destinations(config[section], services, fromSrv, api, theService, mor, ruls, dsts)
+        hasSpecial = self._process_destinations(config[section], services, fromSrv, api, theService, mor, ruls, dsts, moreS)
 
-        self._process_actions(config[section], services, fromSrv, theService, hasSpecial, mor, ruls, dsts, impRuls)
+        self._process_actions(config[section], services, fromSrv, theService, hasSpecial, mor, ruls, dsts, impRuls, moreS)
 
         self._create_rules_from_section(moreS, services, fromSrv, rulesNew, mor)
 
@@ -444,7 +451,7 @@ class moduleRules:
         self.indentPlus()
         services = self.getServices()
         logging.debug(f"{self.indent}Services: {services}")
-        
+
 
         srcs, srcsA, more, dsts = self._initialize_rule_data()
         rulesNew = {}
@@ -456,7 +463,7 @@ class moduleRules:
             rulesNew.update(rulesNew_section)
             mor.update(mor_section)
 
-        # logging.info(f"Rules: {rulesNew}")
+        logging.info(f"RRules: {rulesNew}")
 
         # Now we can add the sources not added.
         self._process_srcs_not_added(srcs, srcsA, rulesNew, more)
@@ -519,6 +526,8 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         msgLog = f"Rules: {self.rules}"
         logMsg(msgLog, 2, 0)
+        msgLog = f"Rules keys: {list(self.rules.keys())}"
+        logMsg(msgLog, 2, 0)
         self.more = mor
 
     def selectActionInteractive(self, service=None):
@@ -551,14 +560,9 @@ class moduleRules:
         logging.info(f"Rules: {selRules}")
         iRul, src = select_from_list(selRules)
 
-        logging.info(f"Selected rule: {iRul}. Rule {src}
-")
-        print(f"
-Selected rule: {iRul}. Rule {src}
-")
-        logging.debug(f"
-Selected more: {self.more}
-")
+        logging.info(f"Selected rule: {iRul}. Rule {src} ")
+        print(f" Selected rule: {iRul}. Rule {src} ")
+        logging.debug(f" Selected more: {self.more} ")
         more = None
         if src in self.more:
             more = self.more[src]
@@ -691,15 +695,16 @@ Selected more: {self.more}
     def getServices(self):
         msgLog = f"{self.indent} Start getServices"
         logMsg(msgLog, 2, 0)
-        modulesFiles = os.listdir(path)
+        modulesFiles = os.listdir(f"{path}/socialModules")
+        logging.debug(f"{self.indent}modulesFiles: {modulesFiles}")
         modules = {"special": ["cache", "direct"], "regular": [], "other": ["service"]}
         # Initialized with some special services
         name = "module"
         for module in modulesFiles:
-            if module.startswith(name):
+            if module.startswith(name) and module.endswith(".py") and module not in ["moduleRules.py", "configMod.py", "testingSrcDst.py"]:
                 moduleName = module[len(name) : -3].lower()
+                logging.debug(f"{self.indent}moduleName: {moduleName}")
                 if moduleName not in modules["special"]:
-                    # We drop the 'module' and the '.py' parts
                     modules["regular"].append(moduleName)
 
         msgLog = f"{self.indent} End getServices"
@@ -756,8 +761,10 @@ Selected more: {self.more}
         url = url.replace(":", "").replace("/", "")
         return url
 
-    def getNickSrc(self, src):
-        if isinstance(src[2], tuple):
+    def getNickSrc(self, src: Union[Rule, tuple]):
+        if isinstance(src, Rule):
+            return src.profile
+        elif isinstance(src[2], tuple):
             res = src[-1]
         else:
             res = src[2]
@@ -857,7 +864,11 @@ Selected more: {self.more}
 
     def clientErrorMsg(self, indent, api, typeC, rule, action):
         msgLog = ""
-        if "rss" not in rule:
+        if isinstance(rule, Rule) and "rss" not in rule.service:
+            msgLog = (
+                f"{indent} {typeC} Error. " f"No client for {rule} ({action}). End."
+            )
+        elif not isinstance(rule, Rule) and "rss" not in rule:
             msgLog = (
                 f"{indent} {typeC} Error. " f"No client for {rule} ({action}). End."
             )
@@ -869,7 +880,11 @@ Selected more: {self.more}
         indent = f"{indent} "
 
         profile = self.getNameRule(src)
+        msgLog = f"{indent} profile {profile}"
+        logMsg(msgLog, 2, 0)
         account = self.getProfileRule(src)
+        msgLog = f"{indent} account {account}"
+        logMsg(msgLog, 2, 0)
         if "channel" in more:
             apiSrc = getApi(profile, account, indent, more["channel"])
         else:
@@ -877,7 +892,7 @@ Selected more: {self.more}
         msgLog = f"{indent} readConfigSrc clientttt {apiSrc.getClient()}"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         apiSrc.src = src
-        apiSrc.setPostsType(src[-1])
+        apiSrc.setPostsType(src.post_type)
         apiSrc.setMoreValues(more)
 
         # msgLog = f"{indent} Url: {apiSrc.getUrl()}" #: {src[1:]}"
@@ -890,7 +905,16 @@ Selected more: {self.more}
 
     def getActionComponent(self, action, pos):
         res = ""
-        if isinstance(action, tuple) and (len(action) == 4):
+        if isinstance(action, Rule):
+            if pos == 0:
+                res = action.service
+            elif pos == 1:
+                res = action.method
+            elif pos == 2:
+                res = action.profile
+            elif pos == 3:
+                res = action.post_type
+        elif isinstance(action, tuple) and (len(action) == 4):
             res = action[pos]
         return res
 
@@ -912,7 +936,7 @@ Selected more: {self.more}
         if apiSrc:
             apiDst.setLastLink(apiSrc)
         else:
-            # FIXME. Do we need this? 
+            # FIXME. Do we need this?
             apiDst.setLastLink(apiDst)
 
         # FIXME: best in readConfigSrc (readConfigDst, since we need it)?
@@ -944,16 +968,14 @@ Selected more: {self.more}
             else:
                 print(
                     f"{indent} Differ listPosts (len {len(listPosts[0])}, "
-                    f"{len(listPosts2[0])}:
-"
+                    f"{len(listPosts2[0])}:"
                 )
                 for i, post in enumerate(listPosts):
                     for j, line in enumerate(listPosts[i]):
                         if line:
                             if listPosts[i][j] != listPosts2[i][j]:
                                 print(
-                                    f"{j}) *{listPosts[i][j]}*
-"
+                                    f"{j}) *{listPosts[i][j]}* "
                                     f"{j}) *{listPosts2[i][j]}*"
                                 )
                         else:
@@ -969,54 +991,42 @@ Selected more: {self.more}
         msgLog = f"{indent}Trying to execute Post Action"
         logMsg(msgLog, 1, 1)
         postaction = apiSrc.getPostAction()
+
         if postaction:
             msgLog = f"{indent}Post Action {postaction} " f"(nextPost = {nextPost})"
             logMsg(msgLog, 1, 1)
 
-            if "OK. Published!" in res:
-                msgLog = f"{indent} Res {res} is OK"
-                logMsg(msgLog, 1, 0)
-                if nextPost:
-                    msgLog = f"{indent}Post Action next post"
-                    logMsg(msgLog, 2, 0)
-                    cmdPost = getattr(apiSrc, f"{postaction}NextPost")
-                    resPost = cmdPost()
-                else:
-                    msgLog = f"{indent}Post Action pos post"
-                    logMsg(msgLog, 2, 0)
-                    cmdPost = getattr(apiSrc, f"{postaction}")
-                    resPost = cmdPost(pos)
-                    # FIXME inconsistent
-            msgLog = f"{indent}End {postaction}, reply: {resPost} "
-            logMsg(msgLog, 1, 1)
-            resMsg += f" Post Action: {resPost}"
-            if (
-                (res and ("failed!" not in res) and ("Fail!" not in res))
-                or (res and ("abusive!" in res))
-                or (
-                    ((not res) and ("OK. Published!" not in res))
-                    or ("duplicate" in res)
-                )
-            ):
-                msgLog = f"{indent} Res {res} is not OK"
-                # FIXME Some OK publishing follows this path (mastodon, linkedin, ...)
-                logMsg(msgLog, 1, 0)
+            cmd_method = None
+            cmd_args = []
 
-                if nextPost:
-                    cmdPost = getattr(apiSrc, f"{postaction}NextPost")
-                    resPost = cmdPost(apiDst)
-                else:
-                    cmdPost = getattr(apiSrc, f"{postaction}")
-                    resPost = cmdPost(pos)
-                # FIXME inconsistent
-                msgLog = f"{indent}Post Action command {cmdPost}"
-                logMsg(msgLog, 1, 1)
+            if nextPost:
+                cmd_method = getattr(apiSrc, f"{postaction}NextPost", None)
+                # Heuristic: if method takes more than 'self', assume it needs apiDst
+                if cmd_method and hasattr(cmd_method, '__code__') and cmd_method.__code__.co_argcount > 1:
+                    cmd_args = [apiDst]
+            else:
+                cmd_method = getattr(apiSrc, f"{postaction}", None)
+                # Heuristic: if method takes more than 'self', assume it needs pos
+                if cmd_method and hasattr(cmd_method, '__code__') and cmd_method.__code__.co_argcount > 1:
+                    cmd_args = [pos]
+
+            if cmd_method:
+                try:
+                    resPost = cmd_method(*cmd_args)
+                except TypeError as e:
+                    logMsg(f"{indent}Error calling {postaction} with args {cmd_args}: {e}", 3, 1)
+                    resPost = f"Error: {e}"
+                except Exception as e:
+                    logMsg(f"{indent}Unexpected error calling {postaction} with args {cmd_args}: {e}", 3, 1)
+                    resPost = f"Unexpected Error: {e}"
+
                 msgLog = f"{indent}End {postaction}, reply: {resPost} "
                 logMsg(msgLog, 1, 1)
-                resMsg += f"Post Action: {resPost}"
+                resMsg += f" Post Action: {resPost}"
             else:
-                msgLog = f"{indent}Something went wrong"
+                msgLog = f"{indent}No callable method found for post action {postaction}"
                 logMsg(msgLog, 1, 1)
+                resMsg += f" No callable method for {postaction}"
         else:
             msgLog = f"{indent}No Post Action"
             logMsg(msgLog, 1, 1)
@@ -1130,8 +1140,7 @@ Selected more: {self.more}
             )
             if msgLog:
                 logMsg(msgLog, 3, 1)
-                sys.stderr.write(f"Error: {msgLog}
-")
+                sys.stderr.write(f"Error: {msgLog}\n")
             return f"End: {msgLog}"
 
         tL = random.random() * numAct
@@ -1250,7 +1259,9 @@ Selected more: {self.more}
             i = 0
             previous = ""
 
-            for src in sorted(self.rules.keys()):
+            for src in sorted(self.rules.keys(), key=lambda rule: rule.service):
+                logging.debug(f"{self.indent}Rules to process: {self.rules.keys()}")
+                logging.debug(f"{self.indent}Select filter: {select}")
                 if self.getNameAction(src) != previous:
                     i = 0
                 else:
@@ -1324,8 +1335,7 @@ Selected more: {self.more}
                         f"{self.getNickRule(src)}"
                     )
                     logMsg(msgLog, 1, 1)
-                    textEnd = f"{textEnd}
-{msgLog}"
+                    textEnd = f"{textEnd} {msgLog}"
                     nameA = f"{indent} {name}"
                     if "Skip" not in actionMsg:
                         timeSlots = args.timeSlots
@@ -1375,8 +1385,7 @@ Selected more: {self.more}
                 try:
                     res = future.result()
                     if res:
-                        messages.append(f"  Published in: {future}
-{res} ")
+                        messages.append(f"  Published in: {future} {res} ")
                 except Exception as exc:
                     # else:
                     msgLog = (
@@ -1397,106 +1406,101 @@ Selected more: {self.more}
 
         return
 
-    def readArgs(self):
-        import argparse
-
-def safe_get(data, keys, default=""):
-    """Safely retrieves nested values from a dictionary."""
-    try:
-        for key in keys:
-            data = data[key]
-        return data
-    except (KeyError, TypeError):
-        return default
-
-
-def select_from_list(options, identifier="", selector="", 
-                     negation_selector="", default="", more_options=[]):
-    """selects an option form an iterable element, based on some identifier
-
-    we can make an initial selection of elements that contain 'selector'
-    we can select based on numbers or in substrings of the elements
-    of the list.
-    """
-
-    if options and (
-        isinstance(options[0], dict)
-        or (hasattr(options[0], "__slots__"))
-        or hasattr(options[0], "name")
-    ):
-        names = [
-            safe_get(
-                el,
-                [
-                    identifier,
-                ],
-            )
-            if isinstance(el, dict)
-            else getattr(el, identifier)
-            for el in options
-        ]
-    else:
-        names = options
-    sel = -1
-    names_sel = names.copy()
-    if selector:
-        names_sel = [opt for opt in names if selector in opt]# + more_options
-    if negation_selector:
-        names_sel = [opt for opt in names if not (negation_selector in opt)] 
-    names_sel = names_sel + more_options
-    options_sel = names_sel.copy()
-    while options_sel and len(options_sel)>1:
-        text_sel = ""
-        for i, elem in enumerate(options_sel):
-            text_sel = f"{text_sel}
-{i}) {elem}"
+    def safe_get(data, keys, default=""):
+        """Safely retrieves nested values from a dictionary."""
         try:
-            columns, rows = shutil.get_terminal_size()
-        except OSError:
-            columns, rows = 80, 24
-        logging.info(f"Rows: {rows} Columns: {columns}")
-        if text_sel.count('
-') > int(rows) -2:
-            click.echo_via_pager(text_sel) 
+            for key in keys:
+                data = data[key]
+            return data
+        except (KeyError, TypeError):
+            return default
+
+
+    def select_from_list(options, identifier="", selector="",
+                         negation_selector="", default="", more_options=[]):
+        """selects an option form an iterable element, based on some identifier
+
+        we can make an initial selection of elements that contain 'selector'
+        we can select based on numbers or in substrings of the elements
+        of the list.
+        """
+
+        if options and (
+            isinstance(options[0], dict)
+            or (hasattr(options[0], "__slots__"))
+            or hasattr(options[0], "name")
+        ):
+            names = [
+                safe_get(
+                    el,
+                    [
+                        identifier,
+                    ],
+                )
+                if isinstance(el, dict)
+                else getattr(el, identifier)
+                for el in options
+            ]
         else:
-            click.echo(text_sel)
-        msg = "Selection"
-        # msg += f"({default}) " if default else ""
-        sel = click.prompt(msg, default=default)
-        if sel == "" and default:
-            sel = names.index(default)
-            options_sel = []
-        elif not sel.isdigit():
-            logging.debug(f"Opt: {sel}")
-            options_sel = [opt for opt in options_sel if sel.lower() in opt.lower()]
-            # if len(options_sel) == 1:
-            #     if not options_sel[0] in more_options:
-            #         sel = names.index(options_sel[0])
-            #     options_sel = []
-            # elif
-            if len(options_sel) == 0:
-                options_sel = names_sel.copy()
-        else:
-            # Now we select the original number
-            if int(sel) < len(options_sel):
-                sel = names.index(options_sel[int(sel)])
-                options_sel = []
+            names = options
+        sel = -1
+        names_sel = names.copy()
+        if selector:
+            names_sel = [opt for opt in names if selector in opt]# + more_options
+        if negation_selector:
+            names_sel = [opt for opt in names if not (negation_selector in opt)]
+        names_sel = names_sel + more_options
+        options_sel = names_sel.copy()
+        while options_sel and len(options_sel)>1:
+            text_sel = ""
+            for i, elem in enumerate(options_sel):
+                text_sel = f"{text_sel} {i}) {elem}"
+            try:
+                columns, rows = shutil.get_terminal_size()
+            except OSError:
+                columns, rows = 80, 24
+            logging.info(f"Rows: {rows} Columns: {columns}")
+            if text_sel.count(' ') > int(rows) -2:
+                click.echo_via_pager(text_sel)
             else:
-                options_sel = names_sel.copy()
-    
-    if len(options_sel) == 1:      
-        if not options_sel[0] in more_options: 
-            sel = names.index(options_sel[0])
+                click.echo(text_sel)
+            msg = "Selection"
+            # msg += f"({default}) " if default else ""
+            sel = click.prompt(msg, default=default)
+            if sel == "" and default:
+                sel = names.index(default)
+                options_sel = []
+            elif not sel.isdigit():
+                logging.debug(f"Opt: {sel}")
+                options_sel = [opt for opt in options_sel if sel.lower() in opt.lower()]
+                # if len(options_sel) == 1:
+                #     if not options_sel[0] in more_options:
+                #         sel = names.index(options_sel[0])
+                #     options_sel = []
+                # elif
+                if len(options_sel) == 0:
+                    options_sel = names_sel.copy()
+            else:
+                # Now we select the original number
+                if int(sel) < len(options_sel):
+                    sel = names.index(options_sel[int(sel)])
+                    options_sel = []
+                else:
+                    options_sel = names_sel.copy()
 
-    logging.info(f"Sel: {sel}")
-    if isinstance(sel, int) and int(sel) < len(names): 
-        logging.info(f"- {names[int(sel)]}")
-        name = names[int(sel)]
-    else:
-        logging.info(f"- is an extra option")
-        name = sel
+        if len(options_sel) == 1:
+            if not options_sel[0] in more_options:
+                sel = names.index(options_sel[0])
 
-    return sel, name
+        logging.info(f"Sel: {sel}")
+        if isinstance(sel, int) and int(sel) < len(names):
+            logging.info(f"- {names[int(sel)]}")
+            name = names[int(sel)]
+        else:
+            logging.info(f"- is an extra option")
+            name = sel
+
+        return sel, name
 
     def readArgs(self):
 
@@ -1544,7 +1548,7 @@ def select_from_list(options, identifier="", selector="",
 def main():
     mode = logging.DEBUG
     logging.basicConfig(
-        filename=f"{LOGDIR}/rssSocial.log",
+        # filename=f"{LOGDIR}/rssSocial.log",
         # stream=sys.stdout,
         level=mode,
         format="%(asctime)s [%(filename).12s] %(message)s",
