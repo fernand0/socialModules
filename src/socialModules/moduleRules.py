@@ -69,6 +69,9 @@ class moduleRules:
         more, ruls, rulesNew, mor, impRuls = [], {}, {}, {}, []
 
         for section in config.sections():
+            msgLog = f" Section: {section}"
+            logMsg(msgLog, 1, 1)
+            self.indent = f"{self.indent}{section}>"
             try:
                 self._process_section(section, config, services, srcs, srcsA, more, dsts, ruls, rulesNew, mor, impRuls, select)
             except ConfigError as ce:
@@ -77,6 +80,7 @@ class moduleRules:
             except Exception as e:
                 logMsg(f"UNEXPECTED ERROR in section [{section}]: {e}", 3, 1)
                 continue
+            self.indent = f"{self.indent[:-(len(section)+2)]}"
 
         self._finalize_rules(config, services, srcs, srcsA, more, dsts, rulesNew)
         self._set_available_and_rules(rulesNew, more)
@@ -84,6 +88,8 @@ class moduleRules:
         self.indentLess()
         msgLog = "End Checking rules"
         logMsg(msgLog, 1, 2)
+        msgLog = f"Rules: {rulesNew}"
+        logMsg(msgLog, 2, 0)
 
     def _process_section(self, section, config, services, srcs, srcsA, more, dsts, ruls, rulesNew, mor, impRuls, select=None):
         """
@@ -97,6 +103,8 @@ class moduleRules:
             if key not in section_dict or not section_dict[key].strip():
                 raise ConfigError(f"Missing required key '{key}' or it is empty in section [{section}]")
         url = section_dict["url"]
+        msgLog = f"{self.indent} Url: {url}"
+        logMsg(msgLog, 1, 1)
         moreS = dict(config.items(section))
         toAppend, theService, api = self._process_sources(section, config, services, url, moreS, srcs, srcsA, more)
         fromSrv = toAppend
@@ -105,11 +113,14 @@ class moduleRules:
         if toAppend:
             service = toAppend[0]
         postsType = section_dict.get("posts", "posts")
-        msgLog = f"{self.indent} Type {postsType}"
+        self.indentPlus()
+        msgLog = f"{self.indent} Type: {postsType}"
         logMsg(msgLog, 2, 0)
         if fromSrv:
             fromSrv = (fromSrv[0], fromSrv[1], fromSrv[2], postsType)
-            self._process_destinations(section, config, services, fromSrv, moreS, api, dsts, ruls, mor, impRuls)
+            msgLog = f"{self.indent} Checking actions for {service}"
+            logMsg(msgLog, 1, 0)
+            self._process_destinations(section, config, service, services, fromSrv, moreS, api, dsts, ruls, mor, impRuls)
         self._process_rule_keys(moreS, services, fromSrv, rulesNew, mor)
         # Save the section name in moreS for traceability
         moreS['section_name'] = section
@@ -152,9 +163,13 @@ class moduleRules:
                             more.append(moreS)
                         else:
                             srcsA.add(toAppend)
+
+                self.indentLess()
+                msgLog = f"{self.indent} Service: {service}"
+                logMsg(msgLog, 1, 1)
         return toAppend, theService, api
 
-    def _process_destinations(self, section, config, services, fromSrv, moreS, api, dsts, ruls, mor, impRuls):
+    def _process_destinations(self, section, config, service, services, fromSrv, moreS, api, dsts, ruls, mor, impRuls):
         """
         Identifies and registers the destination services of a section.
         Validates the presence of keys and types in the destinations.
@@ -191,6 +206,11 @@ class moduleRules:
                 continue
             toAppend = ""
             if serviceD in config.options(section):
+                msgLog = ( 
+                          f"{self.indent} Service {service} -> {serviceD} checking "
+                          )
+                logMsg(msgLog, 2, 0)
+
                 methods = self.hasPublishMethod(serviceD)
                 for method in methods:
                     if not isinstance(method, tuple) or len(method) != 2:
@@ -228,6 +248,12 @@ class moduleRules:
         Processes the section keys to build additional rules.
         Validates the presence and type of required values.
         """
+        msgLog = f"{self.indent} Processing services in more"
+        logMsg(msgLog, 2, 0)
+        self.indentPlus()
+        msgLog = f"{self.indent} moreS: {moreS}"
+        logMsg(msgLog, 2, 0)
+        self.indentPlus()
         orig = None
         dest = None
         for key in moreS.keys():
@@ -245,6 +271,8 @@ class moduleRules:
                     msgLog = f"{self.indent} Service {service} not interesting"
                     logMsg(msgLog, 2, 0)
             else:
+                msgLog = f"{self.indent} Service {service} not orig"
+                logMsg(msgLog, 2, 0)
                 if (key in services["special"]) or (key in services["regular"]):
                     if key == "cache":
                         dest = key
@@ -278,16 +306,18 @@ class moduleRules:
                                     rulesNew[fromCacheNew] = []
                                 rulesNew[fromCacheNew].append(destRuleCache)
                                 mor[fromCacheNew] = moreS
+                        self.indentPlus()
                         msgLog = f"{self.indent} Rule: {orig} -> {key}({dest})"
                         logMsg(msgLog, 2, 0)
-                        msgLog = f"{self.indent}  from Srv: {fromSrv}"
+                        self.indentPlus()
+                        msgLog = f"{self.indent} from Srv: {fromSrv}"
                         logMsg(msgLog, 2, 0)
-                        msgLog = f"{self.indent}  dest Rule: {destRule}"
+                        msgLog = f"{self.indent} dest Rule: {destRule}"
                         logMsg(msgLog, 2, 0)
-                        msgLog = f"{self.indent}  moreS: {moreS}"
-                        logMsg(msgLog, 2, 0)
+                        self.indentLess()
+                        self.indentLess()
                         channels = moreS["channel"].split(",") if "channel" in moreS else ["set"]
-                        for chan in channels:
+                        for chan in channels: 
                             if fromSrv and (destRuleNew or destRule):
                                 fromSrvN = (fromSrv[0], chan, fromSrv[2], fromSrv[3])
                                 if fromSrvN not in rulesNew:
@@ -299,6 +329,8 @@ class moduleRules:
                                 mor[fromSrvN] = dict(moreS)
                                 if chan != "set":
                                     mor[fromSrvN].update({"posts": chan, "channel": chan})
+        self.indentLess()
+        self.indentLess()
 
     def _finalize_rules(self, config, services, srcs, srcsA, more, dsts, rulesNew):
         """
@@ -931,6 +963,10 @@ class moduleRules:
 
         # FIXME. What happens when src and dst are the same service (drafts, mainly)?
         # Destination
+        orig = f"{self.getNameAction(src)} ({self.getNickRule(src)}) {self.getTypeRule(src)}"
+        dest = f"{self.getNameAction(action)} ({self.getNickAction(action)}) {self.getTypeAction(action)}"
+        msgLog = f"{indent} Scheduling {orig} -> {dest}"
+        logMsg(msgLog, 1, 1)
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
         if not apiDst.getClient():
             msgLog = self.clientErrorMsg(
@@ -1082,6 +1118,7 @@ class moduleRules:
         Returns a list of dictionaries with data for each action.
         """
         scheduled_actions = []
+        previous = ""
         for rule_index, rule_key in enumerate(sorted(self.rules.keys())):
             # Repetition control by action name
             rule_metadata = self.more[rule_key] if rule_key in self.more else None
@@ -1090,15 +1127,22 @@ class moduleRules:
                 logMsg(msgHold, 1, 0)
                 continue
             rule_actions = self.rules[rule_key]
+            if self.getNameAction(rule_key) != previous:
+                i = 0
+            else:
+                i = i + 1
+            previous = self.getNameAction(rule_key)
+
             for action_index, rule_action in enumerate(rule_actions):
                 # Rule selection if --checkBlog is used
-                if select and (select.lower() != f"{self.getNameRule(rule_key).lower()}{rule_index}"):
+
+                if select and (select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"):
                     continue
                 scheduled_actions.append({
                     "rule_key": rule_key,
                     "rule_metadata": rule_metadata,
                     "rule_action": rule_action,
-                    "rule_index": rule_index,
+                    "rule_index": i,
                     "action_index": action_index,
                     "args": args,
                     "simmulate": args.simmulate,
@@ -1148,7 +1192,8 @@ class moduleRules:
         )
         rule_index = scheduled_action.get('rule_index', 0)
         action_index = scheduled_action.get('action_index', 0)
-        nameA = f"Action {rule_index:2d}-{action_index}"
+        name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
+        nameA =  f"{name_action:->12}> Action {action_index}:"
         return self.executeAction(
             rule_key,
             rule_metadata,
