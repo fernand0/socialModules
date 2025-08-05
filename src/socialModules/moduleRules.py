@@ -1085,16 +1085,20 @@ class moduleRules:
         """
         Executes all generated rules using concurrency.
         Refactored to delegate to helper functions.
-        Allows configuring the number of threads (max_workers) by argument, environment variable SOCIALMODULES_MAX_WORKERS,
-        or automatically according to the number of actions to execute (one per action, minimum 1, maximum 100).
+        Allows configuring the number of threads (max_workers) by argument,
+        environment variable SOCIALMODULES_MAX_WORKERS, or automatically
+        according to the number of actions to execute (one per action, minimum
+        1, maximum 100).
         """
         import os
-        msgLog = "Start Executing rules"
+        msgLog = "Starttt Executing rules"
         logMsg(msgLog, 1, 2)
         args = self.args
         select = args.checkBlog
         simmulate = args.simmulate
         # Prepare actions to execute
+        msgLog = f"Rulesssss)"
+        logMsg(msgLog, 1, 1)
         scheduled_actions = self._prepare_actions(args, select)
         # Determine number of threads
         if max_workers is not None:
@@ -1129,6 +1133,8 @@ class moduleRules:
             rule_actions = self.rules[rule_key]
             if self.getNameAction(rule_key) != previous:
                 i = 0
+                msgLog = f"Preparing actions for rule: {self.getNickSrc(rule_key)}@{self.getNameRule(rule_key)} ({self.getNickAction(rule_key)})"
+                logMsg(msgLog, 1, 1)
             else:
                 i = i + 1
             previous = self.getNameAction(rule_key)
@@ -1138,6 +1144,7 @@ class moduleRules:
 
                 if select and (select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"):
                     continue
+
                 scheduled_actions.append({
                     "rule_key": rule_key,
                     "rule_metadata": rule_metadata,
