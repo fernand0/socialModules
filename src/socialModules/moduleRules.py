@@ -390,9 +390,7 @@ class moduleRules:
                 continue
             # Use the section name if available
             # section_name = more[i].get('section_name', self.getNameRule(src)) if i < len(more) and isinstance(more[i], dict) else self.getNameRule(src)
-            logging.info(f"Srcc: {src}")
             section_name = self.getNameRule(src)
-            logging.info(f"Secc: {section_name}")
             iniK, nameK = self.getIniKey(section_name.upper(), myKeys, myIniKeys)
             if iniK not in available:
                 available[iniK] = {"name": section_name, "data": [], "social": []}
