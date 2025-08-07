@@ -70,6 +70,7 @@ class moduleRules:
 
         for section in config.sections():
             msgLog = f" Section: {section}"
+            self.indentPlus()
             logMsg(msgLog, 1, 1)
             self.indent = f"{self.indent}{section}>"
             try:
@@ -124,6 +125,7 @@ class moduleRules:
         self._process_rule_keys(moreS, services, fromSrv, rulesNew, mor)
         # Save the section name in moreS for traceability
         moreS['section_name'] = section
+        self.indentLess()
 
     def _process_sources(self, section, config, services, url, moreS, srcs, srcsA, more):
         """
@@ -714,8 +716,9 @@ class moduleRules:
         return f"{msgLog}"
 
     def readConfigSrc(self, indent, src, more):
+        indent = self.indent
         msgLog = f"{indent} Start readConfigSrc {src}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, 1)
         indent = f"{indent} "
 
         profile = self.getNameRule(src)
@@ -743,14 +746,19 @@ class moduleRules:
         return res
 
     def readConfigDst(self, indent, action, more, apiSrc):
-        msgLog = f"{indent} Start readConfigDst"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
+        indent = self.indent
+        msgLog = f"{indent} Start readConfigDst {action}"  #: {src[1:]}"
+        logMsg(msgLog, 2, 1)
         indent = f"{indent} "
 
         profile = self.getNameAction(action)
         account = self.getDestAction(action)
         apiDst = getApi(profile, account, indent)
         apiDst.setMoreValues(more)
+        msgLog = f"{indent} apiDstt {apiDst}"  #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
+        msgLog = f"{indent} apiDstt {apiDst.client}"  #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
 
         if apiSrc:
             apiDst.setUrl(apiSrc.getUrl())
@@ -961,11 +969,15 @@ class moduleRules:
         delete=False,
     ):
         indent = f"{name}"
+        if hasattr(self, 'indent'):
+            indent = self.indent
 
         # FIXME. What happens when src and dst are the same service (drafts, mainly)?
         # Destination
-        orig = f"{self.getNameAction(src)} ({self.getNickRule(src)}) {self.getTypeRule(src)}"
-        dest = f"{self.getNameAction(action)} ({self.getNickAction(action)}) {self.getTypeAction(action)}"
+        # orig = f"{self.getNameAction(src)} ({self.getNickRule(src)}) {self.getTypeRule(src)}"
+        orig = f"{self.getNickRule(src)}@{self.getNameAction(src)} ({self.getTypeRule(src)})"
+        # dest = f"{self.getNameAction(action)} ({self.getNickAction(action)}) {self.getTypeAction(action)}"
+        dest = f"{self.getNickAction(action)}@{self.getNameAction(action)} ({self.getTypeAction(action)})"
         msgLog = f"{indent} Scheduling {orig} -> {dest}"
         logMsg(msgLog, 1, 1)
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
@@ -980,6 +992,7 @@ class moduleRules:
             if msgLog:
                 logMsg(msgLog, 3, 1)
                 sys.stderr.write(f"Error: {msgLog}\n")
+                # FIXME Improve report  in moduleContent and use it
             return f"End: {msgLog}"
 
         tL = random.random() * numAct
@@ -1092,14 +1105,12 @@ class moduleRules:
         1, maximum 100).
         """
         import os
-        msgLog = "Starttt Executing rules"
+        msgLog = "Start Executing rules"
         logMsg(msgLog, 1, 2)
         args = self.args
         select = args.checkBlog
         simmulate = args.simmulate
         # Prepare actions to execute
-        msgLog = f"Rulesssss)"
-        logMsg(msgLog, 1, 1)
         scheduled_actions = self._prepare_actions(args, select)
         # Determine number of threads
         if max_workers is not None:
@@ -1134,10 +1145,16 @@ class moduleRules:
             rule_actions = self.rules[rule_key]
             if self.getNameAction(rule_key) != previous:
                 i = 0
-                msgLog = f"Preparing actions for rule: {self.getNickSrc(rule_key)}@{self.getNameRule(rule_key)} ({self.getNickAction(rule_key)})"
-                logMsg(msgLog, 1, 1)
             else:
                 i = i + 1
+            nameR = f"[{self.getNameAction(rule_key)}{i}]"
+            msgLog = (f"{nameR:->12}> "
+                          f"Preparing actions for rule: "
+                          f"{self.getNickSrc(rule_key)}@"
+                          f"{self.getNameRule(rule_key)} "
+                          f"({self.getNickAction(rule_key)})"
+                          )
+            logMsg(msgLog, 1, 1)
             previous = self.getNameAction(rule_key)
 
             for action_index, rule_action in enumerate(rule_actions):
@@ -1174,6 +1191,7 @@ class moduleRules:
             }
             for future in concurrent.futures.as_completed(future_to_action):
                 scheduled_action = future_to_action[future]
+                res = ''
                 try:
                     res = future.result()
                     action_results.append((scheduled_action, res))
@@ -1191,7 +1209,6 @@ class moduleRules:
         args = scheduled_action["args"]
         simmulate = scheduled_action["simmulate"]
         # Prepare arguments for executeAction
-        apiSrc = self.readConfigSrc("", rule_key, rule_metadata)
         msgAction = (
             f"{self.getNameAction(rule_action)} "
             f"{self.getNickAction(rule_action)}@"
@@ -1202,6 +1219,8 @@ class moduleRules:
         action_index = scheduled_action.get('action_index', 0)
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
         nameA =  f"{name_action:->12}> Action {action_index}:"
+        self.indent = nameA
+        apiSrc = self.readConfigSrc("", rule_key, rule_metadata)
         return self.executeAction(
             rule_key,
             rule_metadata,
