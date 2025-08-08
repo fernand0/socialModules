@@ -745,7 +745,6 @@ class moduleRules:
         return res
 
     def readConfigDst(self, indent, action, more, apiSrc):
-        indent = self.indent
         msgLog = f"{indent} Start readConfigDst {action}"  #: {src[1:]}"
         logMsg(msgLog, 2, 1)
         indent = f"{indent} "
@@ -968,7 +967,7 @@ class moduleRules:
         delete=False,
     ):
         indent = f"{name}"
-
+        
         # FIXME. What happens when src and dst are the same service (drafts, mainly)?
         # Destination
         # orig = f"{self.getNameAction(src)} ({self.getNickRule(src)}) {self.getTypeRule(src)}"
