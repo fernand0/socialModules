@@ -716,7 +716,6 @@ class moduleRules:
         return f"{msgLog}"
 
     def readConfigSrc(self, indent, src, more):
-        indent = self.indent
         msgLog = f"{indent} Start readConfigSrc {src}"
         logMsg(msgLog, 2, 1)
         indent = f"{indent} "
@@ -1045,8 +1044,8 @@ class moduleRules:
             if noWait or (diffTime > hours):
                 tSleep = random.random() * float(timeSlots) * 60
 
-                msgLog = f"{indent} timeSlots, tSleep: {timeSlots} {tSleep}"
-                logMsg(msgLog, 1, 1)
+                # msgLog = f"{indent} timeSlots, tSleep: {timeSlots} {tSleep}"
+                # logMsg(msgLog, 1, 1)
                 apiDst.fileName = ""
                 apiDst.setNextTime(tNow, tSleep, apiSrc)
                 apiDst.fileName = ""
@@ -1108,6 +1107,7 @@ class moduleRules:
         import os
         msgLog = "Start Executing rules"
         logMsg(msgLog, 1, 2)
+        self.indent = ""
         args = self.args
         select = args.checkBlog
         simmulate = args.simmulate
@@ -1137,6 +1137,7 @@ class moduleRules:
         """
         scheduled_actions = []
         previous = ""
+        i = 0  # Initialize i outside the loop to avoid UnboundLocalError
         for rule_index, rule_key in enumerate(sorted(self.rules.keys())):
             # Repetition control by action name
             rule_metadata = self.more[rule_key] if rule_key in self.more else None
@@ -1210,6 +1211,19 @@ class moduleRules:
         rule_action = scheduled_action["rule_action"]
         args = scheduled_action["args"]
         simmulate = scheduled_action["simmulate"]
+        
+        # Apply special timeSlots treatment for cache and pocket actions
+        timeSlots = args.timeSlots
+        noWait = args.noWait
+        
+        if (self.getNameAction(rule_action) in "cache") or (
+            (self.getNameAction(rule_action) == "direct")
+            and (self.getProfileAction(rule_action) == "pocket")
+        ):
+            # We will always load new items in the cache
+            timeSlots = 0
+            noWait = True
+        
         # Prepare arguments for executeAction
         msgAction = (
             f"{self.getNameAction(rule_action)} "
@@ -1220,16 +1234,17 @@ class moduleRules:
         rule_index = scheduled_action.get('rule_index', 0)
         action_index = scheduled_action.get('action_index', 0)
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
-        nameA =  f"{name_action:->12}> Action {action_index}:"
-        apiSrc = self.readConfigSrc("", rule_key, rule_metadata)
+        nameR = f"{name_action:->12}>"
+        nameA =  f"{nameR} Action {action_index}:"
+        apiSrc = self.readConfigSrc(nameR, rule_key, rule_metadata)
         return self.executeAction(
             rule_key,
             rule_metadata,
             rule_action,
             msgAction,
             apiSrc,
-            args.noWait,
-            args.timeSlots,
+            noWait,
+            timeSlots,
             simmulate,
             nameA,
             action_index,
@@ -1308,6 +1323,7 @@ def main():
     rules = moduleRules()
 
     rules.readArgs()
+    rules.indent = ""
     rules.checkRules()
 
     rules.executeRules()

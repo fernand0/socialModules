@@ -34,8 +34,8 @@ def test_valid_config(tmp_path):
     config_file = make_config_file(tmp_path, config_content)
     rules = moduleRules()
     rules.checkRules(configFile=config_file)
-    # There should be a source named 'blog1' in available
-    assert any('blog1' in v['name'] for v in rules.available.values())
+    # There should be a source named 'reddit' in available (service name)
+    assert any('reddit' in v['name'] for v in rules.available.values())
     # There should be rules for reddit
     assert any('reddit' in str(src) for src in rules.rules)
 
@@ -87,8 +87,8 @@ def test_multiple_sections(tmp_path):
     rules = moduleRules()
     rules.checkRules(configFile=config_file)
     names = [v['name'] for v in rules.available.values()]
-    assert 'blog1' in names
-    assert 'blog2' in names
+    assert 'reddit' in names
+    assert 'mastodon' in names
 
 def test_non_numeric_max(tmp_path):
     config_content = """
