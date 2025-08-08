@@ -208,7 +208,7 @@ class moduleRules:
                 continue
             toAppend = ""
             if serviceD in config.options(section):
-                msgLog = ( 
+                msgLog = (
                           f"{self.indent} Service {service} -> {serviceD} checking "
                           )
                 logMsg(msgLog, 2, 0)
@@ -319,7 +319,7 @@ class moduleRules:
                         self.indentLess()
                         self.indentLess()
                         channels = moreS["channel"].split(",") if "channel" in moreS else ["set"]
-                        for chan in channels: 
+                        for chan in channels:
                             if fromSrv and (destRuleNew or destRule):
                                 fromSrvN = (fromSrv[0], chan, fromSrv[2], fromSrv[3])
                                 if fromSrvN not in rulesNew:
@@ -969,8 +969,6 @@ class moduleRules:
         delete=False,
     ):
         indent = f"{name}"
-        if hasattr(self, 'indent'):
-            indent = self.indent
 
         # FIXME. What happens when src and dst are the same service (drafts, mainly)?
         # Destination
@@ -1025,7 +1023,7 @@ class moduleRules:
 
         theAction = self.getTypeAction(action)
         msgLog = (
-            f"{indent} I'll publish {num} {theAction} "
+            f"{indent}I'll publish {num} {theAction} "
             f"from {apiSrc.getUrl()} "
             f"in {self.getNickAction(action)}@"
             f"{self.getProfileAction(action)}"
@@ -1036,7 +1034,7 @@ class moduleRules:
             tNow = time.time()
             hours = float(apiDst.getTime()) * 60 * 60
 
-            lastTime = apiDst.getLastTimePublished(f"{indent} ")
+            lastTime = apiDst.getLastTimePublished(f"{indent}")
 
             if lastTime:
                 diffTime = tNow - lastTime
@@ -1047,6 +1045,8 @@ class moduleRules:
             if noWait or (diffTime > hours):
                 tSleep = random.random() * float(timeSlots) * 60
 
+                msgLog = f"{indent} timeSlots, tSleep: {timeSlots} {tSleep}"
+                logMsg(msgLog, 1, 1)
                 apiDst.fileName = ""
                 apiDst.setNextTime(tNow, tSleep, apiSrc)
                 apiDst.fileName = ""
@@ -1067,13 +1067,14 @@ class moduleRules:
 
                 for i in range(num):
                     time.sleep(tSleep)
-                    msgLog = (
-                        f"{indent} End Waiting {theAction} "
-                        f"from {apiSrc.getUrl()} "
-                        f"in {self.getNickAction(action)}@"
-                        f"{self.getProfileAction(action)}"
-                    )
-                    logMsg(msgLog, 1, 1)
+                    if "minutes" in msgLog:
+                        msgLog = (
+                            f"{indent} End Waiting {theAction} "
+                            f"from {apiSrc.getUrl()} "
+                            f"in {self.getNickAction(action)}@"
+                            f"{self.getProfileAction(action)}"
+                        )
+                        logMsg(msgLog, 1, 1)
                     res = self.executePublishAction(
                         indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos
                     )
@@ -1130,8 +1131,9 @@ class moduleRules:
 
     def _prepare_actions(self, args, select):
         """
-        Prepares the list of actions to execute, filtering and collecting all necessary information.
-        Returns a list of dictionaries with data for each action.
+        Prepares the list of actions to execute, filtering and collecting all
+        necessary information.  Returns a list of dictionaries with data for
+        each action.
         """
         scheduled_actions = []
         previous = ""
@@ -1219,7 +1221,6 @@ class moduleRules:
         action_index = scheduled_action.get('action_index', 0)
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
         nameA =  f"{name_action:->12}> Action {action_index}:"
-        self.indent = nameA
         apiSrc = self.readConfigSrc("", rule_key, rule_metadata)
         return self.executeAction(
             rule_key,
