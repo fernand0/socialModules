@@ -88,10 +88,10 @@ class Content:
                       f" Does it contain an entry for your account?")
             res = self.report({self.indent}, msgLog, 0, "")
 
-        
+
         msgLog = f"{self.indent} Res: {res}"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        if res and not "Fail" in res: 
+        if res and not "Fail" in res:
             self.indent = f"{self.indent} "
             msgLog = f"{self.indent} Getting keys"
             logMsg(msgLog, 2, 0)
@@ -108,7 +108,7 @@ class Content:
                     logMsg(msgLog, 3, 0)
 
             self.indent = f"{self.indent} "
-            msgLog = f"{self.indent} Starting initApi"
+            msgLog = f"{self.indent} Calling initApi"
             logMsg(msgLog, 2, 0)
             # To avoid submodules logging.
             # logger = logging.getLogger('my_module_name')
@@ -122,7 +122,7 @@ class Content:
                 if not config.sections and not keys:
                     self.report({self.service}, "No keys", "", "")
                 else:
-                    self.report({self.service}, "Some problem", "", "")
+                    self.report({self.service}, "Some problem", "", sys.exc_info())
 
         self.client = client
         self.indent = self.indent[:-1]
@@ -1087,7 +1087,7 @@ class Content:
         elif len(args) == 1:
             # apiSrc= args[0]
             listPosts = args  # [1]
-            msgLog = (f"{self.indent} Publishing post {listPosts}" 
+            msgLog = (f"{self.indent} Publishing post {listPosts}"
                       f" len(args) == 1")
             logMsg(msgLog, 2, 0)
             return
@@ -1131,7 +1131,7 @@ class Content:
                     reply = method(api=api, post=post)
                 else:
                     msgLog = (
-                        f"{self.indent} Calling method " 
+                        f"{self.indent} Calling method "
                         f"with title, link, comment"
                     )
                     logMsg(msgLog, 2, 0)

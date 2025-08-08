@@ -86,6 +86,7 @@ class moduleCache(Content): #,Queue):
             # self.setServiceAux()
             service = self.apiSrc.getService()
 
+            logging.info(f"apiDst: {self.apiDst}")
             userD = self.apiDst.getUser()
             serviceD = self.apiDst.getService()
             # userD = self.src[1][3]
@@ -105,19 +106,27 @@ class moduleCache(Content): #,Queue):
         return fileName
 
     def initApi(self, keys):
+        msgLog = (f"{self.indent} Start initApi cache")
+        logMsg(msgLog, 2, 0)
         self.service = 'Cache'
         self.postaction = 'delete'
         self.postsType = 'posts'
         self.url = ""
         self.socialNetwork = ""
-        self.user = self.src[2]
+        logging.info(f"Src: {self.src}")
+        # self.user = self.src[2]
+        self.user = self.src.post_type
         self.nick = self.user
-        self.apiDst = getModule(self.profile.profile, f"{self.indent}  (c)")
-        print(f"apiDst: {self.apiDst}")
-        self.apiDst.setUser(self.src[1][3])
-        self.apiSrc = getModule(self.src[0], f"{self.indent}  (c)")
-        # logging.info(f"{self.indent} srcClass: {self.apiSrc}")
-        self.apiSrc.setUrl(self.src[2])
+        #self.apiDst = getModule(self.profile.profile, f"{self.indent}  (c)")
+        self.apiDst = getModule(self.src.profile, f"{self.indent}  (c)")
+        logging.info(f"apiDst: {self.apiDst}")
+        # self.apiDst.setUser(self.src[1][3])
+        self.apiDst.setUser(self.src.post_type)
+        # self.apiSrc = getModule(self.src[0], f"{self.indent}  (c)")
+        self.apiSrc = getModule('cache', f"{self.indent}  (c)")
+        logging.info(f"{self.indent} srcClass: {self.apiSrc}")
+        # self.apiSrc.setUrl(self.src[2])
+        self.apiSrc.setUrl(self.user)
         self.apiSrc.setUser()
         self.apiSrc.setNick()
         # logging.info(f"{self.indent} Dst: {self.apiDst.getUser()}")
@@ -132,6 +141,8 @@ class moduleCache(Content): #,Queue):
         # We are instatiating (but not configuring) the aux api
         self.fileName = ""
 
+        # logging.info(f"{self.indent}End apiSrc: {self.apiSrc}")
+        # logging.info(f"{self.indent}End apiDst: {self.apiDst}")
         return self
 
     def getKeys(self, config):
@@ -718,23 +729,24 @@ def main():
     name = nameModule()
     print(f"Name: {name}")
 
-    rulesList = rules.selectRule(name)
-    for i, rule in enumerate(rulesList):
-        print(f"{i}) {rule}")
+    #rulesList = rules.selectRule(name)
+    #for i, rule in enumerate(rulesList):
+    #    print(f"{i}) {rule}")
 
-    sel = int(input(f"Which one? "))
-    src = rulesList[sel]
-    print(f"Selected: {src}")
-    more = rules.more[src]
-    indent = ""
-    apiSrc = rules.readConfigSrc(indent, src, more)
+    #sel = int(input(f"Which one? "))
+    #src = rulesList[sel]
+    #print(f"Selected: {src}")
+    #more = rules.more[src]
+    #indent = ""
+    #apiSrc = rules.readConfigSrc(indent, src, more)
+    apiSrc = rules.selectRuleInteractive(name)
     print(f"Src: {apiSrc.src}")
     print(f"Url: {apiSrc.getUrl()}")
     print(f"apiDstt: {apiSrc.getApiDst()}")
-    print(f"User apiDst: {apiSrc.getApiDst().getUser()}")
+    #print(f"User apiDst: {apiSrc.getApiDst().getUser()}")
     print(f"User: {apiSrc.getUser()}")
-    print(f"User src: {apiSrc.apiSrc.getUser()}")
-    print(f"User src: {apiSrc.apiSrc.getNick()}")
+    #print(f"User src: {apiSrc.apiSrc.getUser()}")
+    #print(f"User src: {apiSrc.apiSrc.getNick()}")
 
     testingFiles = False
 

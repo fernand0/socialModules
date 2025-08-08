@@ -526,8 +526,6 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         msgLog = f"Rules: {self.rules}"
         logMsg(msgLog, 2, 0)
-        msgLog = f"Rules keys: {list(self.rules.keys())}"
-        logMsg(msgLog, 2, 0)
         self.more = mor
 
     def selectActionInteractive(self, service=None):
@@ -558,7 +556,7 @@ class moduleRules:
 
         # selRules = self.selectRule(service, "")
         logging.info(f"Rules: {selRules}")
-        iRul, src = select_from_list(selRules)
+        iRul, src = self.select_from_list(selRules)
 
         logging.info(f"Selected rule: {iRul}. Rule {src} ")
         print(f" Selected rule: {iRul}. Rule {src} ")
@@ -901,6 +899,7 @@ class moduleRules:
         msgLog = f"{indent} End readConfigSrc"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         apiSrc.indent = indent
+
         return apiSrc
 
     def getActionComponent(self, action, pos):
@@ -1416,7 +1415,7 @@ class moduleRules:
             return default
 
 
-    def select_from_list(options, identifier="", selector="",
+    def select_from_list(self, options, identifier="", selector="",
                          negation_selector="", default="", more_options=[]):
         """selects an option form an iterable element, based on some identifier
 

@@ -206,7 +206,7 @@ def getApi(profile, nick, indent="", channel = None):
     api.nick = nick
     api.indent = f"{indent} "
     api.setClient(nick)
-    api.apiDst = nick
+    #api.apiDst = nick
     if channel:
         api.setPage(channel)
     api.indent = f"{indent[:-1]}"
