@@ -75,6 +75,7 @@ class Content:
         logMsg(msgLog, 2, 0)
 
         configFile = f"{CONFIGDIR}/.rss{self.service}"
+        res = ""
         try:
             config = configparser.RawConfigParser()
             config.read(f"{configFile}")
