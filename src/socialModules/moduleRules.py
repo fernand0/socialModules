@@ -449,6 +449,7 @@ class moduleRules:
 
     def selectRule(self, name="", selector2="", selector3=""):
         rules = []
+        logging.debug(f"Name: {name}, Selectors: {selector2}, {selector3}")
         for src in self.rules.keys():
             if self.getNameRule(src).capitalize() == name.capitalize():
                 logging.debug(f"profileR: {self.getProfileRule(src)}")
@@ -456,7 +457,7 @@ class moduleRules:
                 if not selector2:
                     rules.append(src)
                 else:
-                    if selector2 == self.getProfileAction(src):
+                    if selector2 in self.getProfileAction(src):
                         # FIXME: ??
                         logging.debug(f"Second Selector: {selector2}")
                         if not selector3:
@@ -766,6 +767,7 @@ class moduleRules:
         if apiSrc:
             apiDst.setLastLink(apiSrc)
         else:
+            # FIXME. Do we need this? 
             apiDst.setLastLink(apiDst)
 
         # FIXME: best in readConfigSrc (readConfigDst, since we need it)?

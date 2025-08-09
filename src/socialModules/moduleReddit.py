@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import configparser
+import praw
 import sys
 
 import socialModules.moduleRss
@@ -12,27 +13,42 @@ class moduleReddit(Content): #, Queue):
     def getKeys(self, config):
         user = self.user
         idR = config.get(user, 'id')
+        client_id = config.get(user, 'client_id')
+        client_secret = config.get(user, 'client_secret')
 
-        return (idR, )
+        return (idR, client_id, client_secret, )
 
     def initApi(self, keys):
         # FIXME: Do we call this method directly?
         self.id = keys[0]
+        self.client_id= keys[1]
+        self.client_secret= keys[2]
+
         self.base_url = self.user.split('u')[0]
         self.url = self.user
         self.nick = self.user.split('/')[-1]
-        self.rssFeedAll = (f"{self.base_url}/.rss?feed="
-                           f"{self.id}&user={self.nick}")
+        # self.rssFeedAll = (f"{self.base_url}/.rss?feed="
+        #                    f"{self.id}&user={self.nick}")
 
-        # logging.info(f"Srcccc: {self.src}")
-        #     self.setPage()
+        # # logging.info(f"Srcccc: {self.src}")
+        # #     self.setPage()
 
-        blog = socialModules.moduleRss.moduleRss()
-        blog.base_url = self.base_url
+        # blog = socialModules.moduleRss.moduleRss()
+        #blog.base_url = self.base_url
         # blog.setRssFeed(self.rssFeed)
 
-        self.clientRss = blog
-        client = None
+        # self.clientRss = blog
+        try:
+            reddit = praw.Reddit( 
+                             client_id=self.client_id, 
+                             client_secret=self.client_secret, 
+                             user_agent="socialModules",
+                             )
+        except:
+            print(f"Exception: {sys.exc_info()}")
+
+        print(f"Rrrrrredit: {reddit.read_only}")
+        client = reddit
 
         return client
 
@@ -45,41 +61,44 @@ class moduleReddit(Content): #, Queue):
     def setApiPosts(self):
         posts = []
         if self.page:
-            self.clientRss.setRssFeed(self.rssFeed)
-            self.clientRss.setUrl(self.base_url)
-            self.clientRss.setRss(self.rssFeed)
-            self.clientRss.setPosts()
-            comments = socialModules.moduleRss.moduleRss()
-            #self.rssFeed = f"r/{self.page}/new/.rss?sort=new"
-            comments.setUrl(self.base_url)
-            comments.setRssFeed(f"r/{self.page}/comments/.rss")
-            comments.setPosts()
-            for com in comments.getPosts():
-                link = comments.getPostLink(com)
-                linkN = link[:link[:-1].rfind('/')+1]
-                pos = self.clientRss.getLinkPosition(linkN)
-                if pos>=0:
-                    title = self.clientRss.getPosts()[pos]['title']
-                    if title.endswith('*)'):
-                        title = f"{title[:-1]}*)"
-                    else:
-                        title = f"{title} (*)" 
-                    self.clientRss.getPosts()[pos]['title'] = title
+            subreddit = self.getClient().subreddit(self.page)
+            for submission in subreddit.hot(limit=20):
+                posts.append(submission)
+            # self.clientRss.setRssFeed(self.rssFeed)
+            # self.clientRss.setUrl(self.base_url)
+            # self.clientRss.setRss(self.rssFeed)
+            # self.clientRss.setPosts()
+            # comments = socialModules.moduleRss.moduleRss()
+            # #self.rssFeed = f"r/{self.page}/new/.rss?sort=new"
+            # comments.setUrl(self.base_url)
+            # comments.setRssFeed(f"r/{self.page}/comments/.rss")
+            # comments.setPosts()
+            # for com in comments.getPosts():
+            #     link = comments.getPostLink(com)
+            #     linkN = link[:link[:-1].rfind('/')+1]
+            #     pos = self.clientRss.getLinkPosition(linkN)
+            #     if pos>=0:
+            #         title = self.clientRss.getPosts()[pos]['title']
+            #         if title.endswith('*)'):
+            #             title = f"{title[:-1]}*)"
+            #         else:
+            #             title = f"{title} (*)" 
+            #         self.clientRss.getPosts()[pos]['title'] = title
 
 
-            posts = self.clientRss.getPosts()
-            posts.reverse()
+            # posts = self.clientRss.getPosts()
+            # posts.reverse()
             #FIXME: This should not be here
-            self.posts = posts[:-1] # The last one seems to be the always the
+            # self.posts = posts[:-1] # The last one seems to be the always the
                                     # same post
 
-        lastLink, lastTime = checkLastLink(self.getUrl())
-        logging.info(f"Last: {lastLink} |  {lastTime}")
-        pos = self.getLinkPosition(lastLink)
-        logging.info(f"Position: {pos} Len: {len(posts)}")
-        if pos<0:
-            pos = 0
-        posts = self.posts[pos:]
+        # lastLink, lastTime = checkLastLink(self.getUrl())
+        # logging.info(f"Last: {lastLink} |  {lastTime}")
+        # pos = self.getLinkPosition(lastLink)
+        # logging.info(f"Position: {pos} Len: {len(posts)}")
+        # if pos<0:
+        #     pos = 0
+        # posts = self.posts[pos:]
 
         return posts
 
@@ -98,9 +117,9 @@ class moduleReddit(Content): #, Queue):
                 self.page = self.groups[0]
             else:
                 self.warning("You need to join, at least, one group")
-        if self.page:
-            self.rssFeed = f"r/{self.page}/new/.rss?sort=new"
-            self.clientRss.setRss(urllib.parse.urljoin(self.clientRss.base_url, self.rssFeed))
+        # if self.page:
+        #     self.rssFeed = f"r/{self.page}/new/.rss?sort=new"
+        #     self.clientRss.setRss(urllib.parse.urljoin(self.clientRss.base_url, self.rssFeed))
 
     def getUrl(self):
         url = self.url
@@ -141,7 +160,7 @@ class moduleReddit(Content): #, Queue):
     def getPostTitle(self, post):
         title = ''
         try:
-            title = post['title']
+            title = post.title
         except:
             title = ''
         return title
@@ -152,14 +171,18 @@ class moduleReddit(Content): #, Queue):
         return res
 
     def getPostLink(self, post):
-        link = post['link']
+        link = ''
+        try:
+            link = post.url
+        except:
+            link = ''
         return link
 
     def extractPostLinks(self, post, linksToAvoid=""):
         return (self.getPostContent(post), self.getPostContentLink(post))
 
     def getPostContent(self, post):
-        result = post['content'][0]['value']
+        result = post.selftext #['content'][0]['value']
         soup = BeautifulSoup(result,'lxml')
         title = self.getPostTitle(post)
         (theContent, theSummaryLinks) = self.extractLinks(soup, "")
@@ -172,10 +195,12 @@ class moduleReddit(Content): #, Queue):
         return result
 
     def getPostTime(self, post):
-        time = None
-        if post:
-            time = post.get('updated', None)
-        return time
+        res = None
+        try:
+            res = post.created_utc
+        except:
+            res = None
+        return res
 
     def publishApiImage(self, *args, **kwargs):
         res = None
@@ -234,14 +259,14 @@ def main():
     logLevel = logging.DEBUG
     logging.basicConfig(stream=sys.stdout, level=logLevel,
                         format='%(asctime)s %(message)s')
-
+    
     import socialModules.moduleRules
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
-
+    
     apiSrc = rules.selectRuleInteractive()
-
-    testingErrbot = True
+    
+    testingErrbot = False
     if testingErrbot:
         print(f"Src: {apiSrc.src}")
         print(f"More: {rules.more[apiSrc.src]}")
@@ -262,15 +287,19 @@ def main():
                 soup = BeautifulSoup(contentHtml,'lxml')
                 (theContent, theSummaryLinks) = apiSrc.extractLinks(soup, "")
                 content = f"{theContent}\n{theSummaryLinks}"
-
+    
                 print(f"{apiSrc.getPostTitle(post)}\n"
                       f"{content}")
-
+    
         return
+
+    print(f"Client: {apiSrc.getClient()}")
 
     testingPosts = True
     if testingPosts:
         print("aquí")
+        print(apiSrc.getClient().read_only)
+        apiSrc.setPostsType('posts')
         apiSrc.setPosts()
         print("ahora")
         print(apiSrc.getPosts())
@@ -279,8 +308,8 @@ def main():
             logging.debug(f"Post {i}): {post}")
             try:
                 print(f" -Title {apiSrc.getPostTitle(post)}")
-                print(f" -Time {apiSrc.getPostTime(post)}")
                 print(f" -Link {apiSrc.getPostLink(post)}")
+                print(f" -Time {apiSrc.getPostTime(post)}")
                 print(f" -Content link {apiSrc.getPostContentLink(post)}")
                 print(f" -Post link {apiSrc.extractPostLinks(post)}")
                 print(f"Len: {len(apiSrc.getPosts())}")

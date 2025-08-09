@@ -79,30 +79,26 @@ class Content:
             config = configparser.RawConfigParser()
             config.read(f"{configFile}")
         except:
-            msgLog = f"Does file {configFile} exist?"
-            self.report({self.indent}, msgLog, 0, "")
+            msgLog = (f"Does file {configFile} exist?\n"
+                      f"It is well formatted?\n"
+                      f" Does it contain an entry for your account?")
+            res = self.report({self.indent}, msgLog, 0, "")
 
-        self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Getting keys"
-        logMsg(msgLog, 1, 0)
-        keys = ""
-        try:
-            keys = self.getKeys(config)
-            # logging.debug(f"{self.indent} user {self.user}")
-        except:
-            if not config.sections():
-                # FIXME: Are you sure?
-                msgLog = (
-                    f"{self.indent} Do the adequate keys exist " f"in {configFile}?"
-                )
-                logMsg(msgLog, 3, 0)
-
-        self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Starting initApi"
-        logMsg(msgLog, 2, 0)
-        # To avoid submodules logging.
-        # logger = logging.getLogger('my_module_name')
-        # https://stackoverflow.com/questions/35325042/python-logging-disable-logging-from-imported-modules
+        if not "Fail" in res: 
+            self.indent = f"{self.indent} "
+            msgLog = f"{self.indent} Getting keys"
+            logMsg(msgLog, 2, 0)
+            keys = ""
+            try:
+                keys = self.getKeys(config)
+                # logging.debug(f"{self.indent} user {self.user}")
+            except:
+                if not config.sections():
+                    # FIXME: Are you sure?
+                    msgLog = (
+                        f"{self.indent} Do the adequate keys exist " f"in {configFile}?"
+                    )
+                    logMsg(msgLog, 3, 0)
 
         client = None
         try:
@@ -110,10 +106,19 @@ class Content:
         except:
             msgLog = (f"{self.indent} Exception {sys.exc_info()}")
             logMsg(msgLog, 2, 0)
-            if not config.sections and not keys:
-                self.report({self.service}, "No keys", "", "")
-            else:
-                self.report({self.service}, "Some problem", "", "")
+            # To avoid submodules logging.
+            # logger = logging.getLogger('my_module_name')
+            # https://stackoverflow.com/questions/35325042/python-logging-disable-logging-from-imported-modules
+
+            try:
+                client = self.initApi(keys)
+            except:
+                msgLog = (f"{self.indent} Exception")
+                logMsg(msgLog, 2, 0)
+                if not config.sections and not keys:
+                    self.report({self.service}, "No keys", "", "")
+                else:
+                    self.report({self.service}, "Some problem", "", "")
 
         msgLog = f"{self.indent} clienttt {client}"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
@@ -253,6 +258,7 @@ class Content:
         logMsg(msgLog, 2, 0)
         if hasattr(self, "getPostsType") and self.getPostsType():
             # typeposts = self.getPostsType()
+            logging.info("hasattr")
             if self.getPostsType() in [
                 "posts",
                 "drafts",
@@ -261,11 +267,15 @@ class Content:
                 "search",
                 "queue",
             ]:
+                logging.debug("hasattr known")
                 cmd = getattr(self, f"setApi{self.getPostsType().capitalize()}")
             else:
-                self.setChannel(self.getPostsType())
+                logging.debug("hasattr else")
+                if not self.getChannel():
+                    self.setChannel(self.getPostsType())
                 cmd = getattr(self, "setApiPosts")
         else:
+            logging.debug("no hasattr else")
             cmd = getattr(self, "setApiPosts")
 
         self.indent = f"{self.indent} "
@@ -430,12 +440,12 @@ class Content:
                 with open(fileName, "rb") as f:
                     linkLast = f.read()
                     linkLast = linkLast.decode().split()  # last published
+                lastTime = os.path.getctime(fileName)
             except:
                 self.report(
                     self.service, self.indent, f"fileName: {fileName}", sys.exc_info()
                 )
 
-            lastTime = os.path.getctime(fileName)
         else:
             lastTime = 0
             self.report(self.service, msgLog, "", "")
@@ -1071,7 +1081,8 @@ class Content:
         elif len(args) == 1:
             # apiSrc= args[0]
             listPosts = args  # [1]
-            msgLog = f"{self.indent} Publishing post {listPosts}" f" len(args) == 1"
+            msgLog = (f"{self.indent} Publishing post {listPosts}" 
+                      f" len(args) == 1")
             logMsg(msgLog, 2, 0)
             return
         if more:
@@ -1114,7 +1125,8 @@ class Content:
                     reply = method(api=api, post=post)
                 else:
                     msgLog = (
-                        f"{self.indent} Calling method " f"with title, link, comment"
+                        f"{self.indent} Calling method " 
+                        f"with title, link, comment"
                     )
                     logMsg(msgLog, 2, 0)
                     reply = method(title, link, comment)

@@ -2,6 +2,7 @@ import configparser
 import sys
 import time
 
+import imgurpython
 from imgurpython import ImgurClient
 
 from socialModules.configMod import *
@@ -201,8 +202,8 @@ class moduleImgur(Content): #, Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        if args and len(args) == 3:
-            title, idPost, comment = args
+        # if args and len(args) == 3:
+        #     title, idPost, comment = args
         if kwargs:
             more = kwargs
             post = more.get('post', '')
@@ -227,6 +228,9 @@ class moduleImgur(Content): #, Queue):
             logMsg(msgLog, 2, 0)
             if res:
                 return(OK)
+        except imgurpython.helpers.error.ImgurClientError:
+            res = self.report(self.getService(), kwargs, 'Unexpected', 
+                              sys.exc_info())
         except:
             res = self.report('Imgur', post, idPost, sys.exc_info())
             return(res)

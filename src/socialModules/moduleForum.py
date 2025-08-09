@@ -247,7 +247,7 @@ class moduleForum(Content): #, Queue):
                 idPost = self.extractId(apiAux.getPostLink(post))
                 textF = apiAux.getPostTitle(post)
                 linkF = apiAux.getPostLink(post)
-                if idPost:
+                if idPost and not "• Re: " in textF:
                     if not idPost in listId:
                         listId.append(idPost)
                         logging.debug(f"Post: {post}")
@@ -318,7 +318,6 @@ def main():
     logging.debug(f"Last: {lastLink} - {lastTime}")
     pos = forum.getLinkPosition(lastLink)
     logging.debug(f"Pos: {pos}")
-
 
     if pos > len(forum.getPosts()) - 1:
         print("No new posts!\n")

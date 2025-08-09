@@ -87,7 +87,6 @@ class moduleBlsk(Content): #, Queue):
                 self.report(self.service, 'Error en setApiFavs',
                             '', sys.exc_info())
 
-
         return posts
 
     def getPostTitle(self, post):
