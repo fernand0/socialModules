@@ -83,6 +83,7 @@ class moduleMastodon(Content): #, Queue):
         if args and len(args) == 3:
             # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
+        comment = ''
         if kwargs:
             # logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
@@ -90,13 +91,16 @@ class moduleMastodon(Content): #, Queue):
             api = more.get('api', '')
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
-            comment = ''
 
         post = self.addComment(title, comment)
 
         res = 'Fail!'
         try:
             res = self.getClient().toot(post+" "+link)
+        except mastodon.errors.MastodonServiceUnavailableError:
+            res = self.report(self.getService(), kwargs, 'Not available', 
+                              sys.exc_info())
+            res = f"Fail! {res}"
         except:
             res = self.report(self.getService(), kwargs, '', sys.exc_info())
             res = f"Fail! {res}"

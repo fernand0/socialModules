@@ -23,29 +23,47 @@ class moduleFlickr(Content): #, Queue):
         # FIXME: Do we call this method directly?
         self.base_url = 'https://flickr.com'
         self.url = f"{self.base_url}/photos/{self.user}"
-
+        
+        authorized = False
         try:
             flickr = flickrapi.FlickrAPI(keys[0], keys[1], format='parsed-json',
                         token_cache_location=f"{CONFIGDIR}")
-            if not flickr.token_valid(perms='write'):
-                # Get a request token
-                flickr.get_request_token(oauth_callback='oob')
-
-                # Open a browser at the authentication URL. Do this however
-                # you want, as long as the user visits that URL.
-                authorize_url = flickr.auth_url(perms='write')
-                print(f"Visit {authorize_url} and copy the result")
-
-                # Get the verifier code from the user. Do this however you
-                # want, as long as the user gives the application the code.
-                verifier = str(input('Verifier code: '))
-
-                # Trade the request token for an access token
-                flickr.get_access_token(verifier)
+            if (not hasattr(flickr, 'token_valid') 
+                or not flickr.token_valid(perms='write')):
+                authorized = False
+            else:
+                authorized = True
+        except requests.exceptions.ConnectionError:
+            res = self.report(self.indent, 'Error in initApi. Connection Error',
+                              '', sys.exc_info())
+        except flickrapi.exceptions.FlickrError:
+            res = self.report(self.indent, 'Error in initApi. Flickr Error',
+                              '', sys.exc_info())
         except:
             res = self.report(self.indent, 'Error in initApi',
                               '', sys.exc_info())
             client = None
+
+        if not authorized:
+            print("Aquí")
+            # Get a request token
+            flickr.get_request_token(oauth_callback='oob')
+            print("Aquí")
+
+            # Open a browser at the authentication URL. Do this however
+            # you want, as long as the user visits that URL.
+            authorize_url = flickr.auth_url(perms='write')
+            print("Aquí")
+            print(f"Visit {authorize_url} and copy the result")
+
+            # Get the verifier code from the user. Do this however you
+            # want, as long as the user gives the application the code.
+            verifier = str(input('Verifier code: '))
+            print("Aquí")
+
+            # Trade the request token for an access token
+            flickr.get_access_token(verifier)
+
         self.api = flickr
         client = flickr
 
@@ -71,6 +89,9 @@ class moduleFlickr(Content): #, Queue):
 
         posts = []
         posts = self.apiCall('people.getPhotos', user_id='fernand0')
+        # logging.debug(f"Post: {posts[0]}")
+        # logging.debug(f"Post photos: {posts[0]['photos']}")
+        # logging.debug(f"Post photos photo: {posts[0]['photos']['photo']}")
         posts = posts[0]['photos']['photo']
         return posts
 
@@ -183,7 +204,7 @@ def main():
 
     apiSrc = rules.selectRuleInteractive()
 
-    testingPostsPos = True
+    testingPostsPos = False
     if testingPostsPos:
         apiSrc.setPosts()
         apiSrc.lastLinkPublished='https://flickr.com/photos/fernand0/53624853058'
@@ -202,11 +223,13 @@ def main():
             print(f"Post {i}): {post}")
         return
 
-    testingPublishDraft = False
+    testingPublishDraft = True
     if testingPublishDraft:
+        apiSrc.setPostsType('drafts')
         apiSrc.setPosts()
         post = apiSrc.getPosts()[0]
         print(f"Post: {post}")
+        input("Continue? ")
         apiSrc.publishApiDraft(api= apiSrc.getClient(), post=post)
         return
 

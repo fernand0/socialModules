@@ -37,8 +37,9 @@ class modulePocket(Content): #,Queue):
         logging.debug(f"Name: {name}")
         # Based on https://github.com/dogsheep/pocket-to-sqlite/blob/main/pocket_to_sqlite/cli.py
         consumer_key = config.get(name, 'consumer_key')
-        redir = config.get(name, 'redirect_uri')
-        if not redir:
+        try:
+            redir = config.get(name, 'redirect_uri')
+        except:
             redir = "https://getpocket.com/connected_applications"
         try:
             response = requests.post(
@@ -58,6 +59,7 @@ class modulePocket(Content): #,Queue):
 
         # Now exchange the request_token for an access_token
         try:
+            print("Getting the token")
             response2 = requests.post(
                    "https://getpocket.com/v3/oauth/authorize",
                    {"consumer_key": consumer_key, "code": request_token},
@@ -89,7 +91,7 @@ class modulePocket(Content): #,Queue):
     def setApiPosts(self):
         posts = []
         try:
-            dictPosts = self.client.retrieve(state="unread", sort="oldest")
+            dictPosts = self.client.retrieve(state="unread", sort="new")
             dictPosts = dictPosts['list']
             for post in dictPosts:
                 posts.append(dictPosts[post])
@@ -283,12 +285,12 @@ def main():
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
 
-    testingPosts = False
+    testingPosts = True
     if testingPosts:
         for key in rules.rules.keys():
             if ((key[0] == 'pocket')
                     and (key[2] == 'fernand0')):
-                apiSrc = rules.readConfigSrc(key, rules.more[key])
+                apiSrc = rules.readConfigSrc("", key, rules.more[key])
 
                 try:
                     apiSrc.setPosts()
