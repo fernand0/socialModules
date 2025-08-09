@@ -42,6 +42,7 @@ dependencies = [
 		'python-crontab',
 		'tmdbsimple',
 		'imgurpython',
+		'lxml',
 		'linkedin-api-client',
 		'Mastodon.py',
 		'medium',

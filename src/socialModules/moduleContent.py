@@ -124,6 +124,8 @@ class Content:
                 else:
                     self.report({self.service}, "Some problem", "", "")
 
+        msgLog = f"{self.indent} clienttt {client}"  #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
         self.client = client
         self.indent = self.indent[:-1]
         self.indent = self.indent[:-1]
