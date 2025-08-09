@@ -32,13 +32,16 @@ class moduleBlsk(Content): #, Queue):
                 self.me = client.me
             else:
                 self.me = None
+        except atproto_client.exceptions.NetworkError:
+            self.report(self.service, 'Error en setApiFavs. Network Error. ',
+                        '', sys.exc_info())
         except:
             res = self.report(self.indent, 'Error in initApi',
                               '', sys.exc_info())
             client = None
-        self.api = client
         if hasattr(client, 'app'):
             client = client.app.bsky.feed
+        self.api = client
         return client
 
 
@@ -52,7 +55,7 @@ class moduleBlsk(Content): #, Queue):
         nick = ''
         if not nick:
             nick = self.getUrl()
-            if nick: 
+            if nick:
                 nick = nick.split("/")[-1].split('.')[0]
         self.nick = nick
 
@@ -70,16 +73,20 @@ class moduleBlsk(Content): #, Queue):
     def setApiFavs(self):
         posts = []
 
-        try:
-            posts, error = self.apiCall('get_actor_likes',
-                                        params={'actor':self.me.did})
+        if hasattr(self, 'me'):
+            try:
+                posts, error = self.apiCall('get_actor_likes',
+                                            params={'actor':self.me.did})
 
-            if not error:
-                posts = posts['feed']
-        except: 
-            self.report(self.service, 'Error en setApiFavs', 
-                        '', sys.exc_info())
-            
+                if not error:
+                    posts = posts['feed']
+            except atproto.atproto_client.exceptions.NetworkError:
+                self.report(self.service, 'Error en setApiFavs. Network Error. ',
+                            '', sys.exc_info())
+            except:
+                self.report(self.service, 'Error en setApiFavs',
+                            '', sys.exc_info())
+
 
         return posts
 
@@ -117,7 +124,6 @@ class moduleBlsk(Content): #, Queue):
         return (self.getPostContent(post), self.getPostContentLink(post))
 
     def getPostContent(self, post):
-        logging.info(f"Postttt: {post}")
         result = post.post.record.text
         # if 'full_text' in post:
         #     result = post.get('full_text')
@@ -214,7 +220,7 @@ class moduleBlsk(Content): #, Queue):
 
         facets =  []
         if link:
-            title = title[:(300 - (len(link)+1))]
+            title = title[:(300)]
 
             embed_external = models.AppBskyEmbedExternal.Main(
                               external=models.AppBskyEmbedExternal.External(
@@ -335,7 +341,7 @@ def main():
 
         return
 
-    testingPosts = False
+    testingPosts = True
     if testingPosts:
         apiSrc.setPosts()
         for i,post in enumerate(apiSrc.getPosts()):

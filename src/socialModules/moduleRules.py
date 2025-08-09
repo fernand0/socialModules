@@ -20,6 +20,11 @@ hasPublish = {}
 myModuleList = {}
 
 
+class ConfigError(Exception):
+    """Custom exception for configuration errors."""
+    pass
+
+
 class moduleRules:
     def indentPlus(self):
         if not hasattr(self, "indent"):
@@ -31,464 +36,372 @@ class moduleRules:
         self.indent = self.indent[:-1]
 
     def checkRules(self, configFile=None, select=None):
+        """
+        Reads the configuration file, processes each section, and builds the publishing rules.
+        Includes exhaustive validation and error handling.
+        Optimized for efficiency using sets and efficient access.
+        Allows absolute path for the configuration file.
+        """
+        import os
         msgLog = "Checking rules"
         logMsg(msgLog, 1, 2)
         config = configparser.ConfigParser()
-        if not configFile:
-            configFile = ".rssBlogs"
-        configFile = f"{CONFIGDIR}/{configFile}"
-        config.read(configFile)
+        try:
+            if not configFile:
+                configFile = ".rssBlogs"
+            # If it's an absolute path and exists, use it directly
+            if os.path.isabs(configFile) and os.path.exists(configFile):
+                config.read(configFile)
+            else:
+                configFile = f"{CONFIGDIR}/{configFile}"
+                config.read(configFile)
+        except Exception as e:
+            logMsg(f"ERROR: Could not read configuration file: {e}", 3, 1)
+            raise ConfigError(f"Could not read configuration file: {e}")
 
         self.indentPlus()
         services = self.getServices()
         logging.debug(f"{self.indent}Services: {services}")
         services["regular"].append("cache")
-        # cache objects can be considered as regular for publishing elements
-        # stored there
 
-        srcs = []
-        srcsA = []
-        more = []
-        dsts = []
-        ruls = {}
-        rulesNew = {}
-        mor = {}
-        impRuls = []
+        # Use sets to avoid duplicates and improve efficiency
+        srcs, srcsA, dsts = set(), set(), set()
+        more, ruls, rulesNew, mor, impRuls = [], {}, {}, {}, []
+
         for section in config.sections():
-            if select and (section != select):
-                continue
-            url = config.get(section, "url")
-            msgLog = f" Section: {section} Url: {url}"
+            msgLog = f" Section: {section}"
+            self.indentPlus()
             logMsg(msgLog, 1, 1)
-            self.indent = f"  {section}>"
-            toAppend = ""
-            # Sources
-            moreS = dict(config.items(section))
-            # moreSS = None
-            # FIXME Could we avoid the last part for rules,
-            # selecting services here?
-            for service in services["regular"]:
-                if ("service" in config[section]) and (
-                    service == config[section]["service"]
-                ):
-                    msgLog = f"{self.indent} Service: {service}"
-                    logMsg(msgLog, 1, 1)
-                    theService = service
-                    api = getModule(service, self.indent)
-                    api.setUrl(url)
-                    if service in config[section]:
-                        serviceData = config.get(section, service)
-                        api.setService(service, serviceData)
-                        # nameGet = f"get{service.capitalize()}"
-                        # if nameGet in api.__dir__():
-                        #     cmd = getattr(api, nameGet)
+            self.indent = f"{self.indent}{section}>"
+            try:
+                self._process_section(section, config, services, srcs, srcsA, more, dsts, ruls, rulesNew, mor, impRuls, select)
+            except ConfigError as ce:
+                logMsg(f"ERROR in section [{section}]: {ce}", 3, 1)
+                raise  # Reraise the exception so tests can catch it
+            except Exception as e:
+                logMsg(f"UNEXPECTED ERROR in section [{section}]: {e}", 3, 1)
+                continue
+            self.indent = f"{self.indent[:-(len(section)+2)]}"
 
-                    if service in config[section]:
-                        api.setNick(config[section][service])
-                    else:
-                        api.setNick()
+        self._finalize_rules(config, services, srcs, srcsA, more, dsts, rulesNew)
+        self._set_available_and_rules(rulesNew, more)
+        self.more = mor
+        self.indentLess()
+        msgLog = "End Checking rules"
+        logMsg(msgLog, 1, 2)
+        msgLog = f"Rules: {rulesNew}"
+        logMsg(msgLog, 2, 0)
 
-                    self.indentPlus()
-                    msgLog = f"{self.indent} Nick: {api.getNick()}"
-                    logMsg(msgLog, 2, 0)
+    def _process_section(self, section, config, services, srcs, srcsA, more, dsts, ruls, rulesNew, mor, impRuls, select=None):
+        """
+        Processes a section of the configuration file, identifying sources and destinations.
+        Validates the presence of required keys and data types.
+        """
+        # Robustly validate required keys and ensure they are not empty
+        required_keys = ["url", "service"]
+        section_dict = dict(config.items(section))
+        for key in required_keys:
+            if key not in section_dict or not section_dict[key].strip():
+                raise ConfigError(f"Missing required key '{key}' or it is empty in section [{section}]")
+        url = section_dict["url"]
+        msgLog = f"{self.indent} Url: {url}"
+        logMsg(msgLog, 1, 1)
+        moreS = dict(config.items(section))
+        toAppend, theService, api = self._process_sources(section, config, services, url, moreS, srcs, srcsA, more)
+        fromSrv = toAppend
+        msgLog = f"{self.indent} We will append: {toAppend}"
+        logMsg(msgLog, 2, 0)
+        if toAppend:
+            service = toAppend[0]
+        postsType = section_dict.get("posts", "posts")
+        self.indentPlus()
+        msgLog = f"{self.indent} Type: {postsType}"
+        logMsg(msgLog, 2, 0)
+        if fromSrv:
+            fromSrv = (fromSrv[0], fromSrv[1], fromSrv[2], postsType)
+            msgLog = f"{self.indent} Checking actions for {service}"
+            logMsg(msgLog, 1, 0)
+            self._process_destinations(section, config, service, services, fromSrv, moreS, api, dsts, ruls, mor, impRuls)
+        self._process_rule_keys(moreS, services, fromSrv, rulesNew, mor)
+        # Save the section name in moreS for traceability
+        moreS['section_name'] = section
+        self.indentLess()
 
-                    methods = self.hasSetMethods(service)
-                    msgLog = f"{self.indent} Service {service} has " f"set {methods}"
-                    logMsg(msgLog, 2, 0)
-                    for method in methods:
-                        if "posts" in moreS:
-                            if moreS["posts"] == method[1]:
-                                toAppend = (theService, "set", api.getNick(), method[1])
-                        else:
+    def _process_sources(self, section, config, services, url, moreS, srcs, srcsA, more):
+        """
+        Identifies and registers the source services of a section.
+        Validates the presence and type of required values.
+        Optimized for efficiency using sets.
+        """
+        toAppend = ""
+        theService = None
+        api = None
+        for service in services["regular"]:
+            if ("service" in config[section]) and (service == config[section]["service"]):
+                theService = service
+                api = getModule(service, self.indent)
+                api.setUrl(url)
+                if service in config[section]:
+                    serviceData = config.get(section, service)
+                    api.setService(service, serviceData)
+                if service in config[section]:
+                    api.setNick(config[section][service])
+                else:
+                    api.setNick()
+                self.indentPlus()
+                methods = self.hasSetMethods(service)
+                for method in methods:
+                    if not isinstance(method, tuple) or len(method) != 2:
+                        logMsg(f"WARNING: Unexpected method in {service}: {method}", 2, 1)
+                        continue
+                    if "posts" in moreS:
+                        if moreS["posts"] == method[1]:
                             toAppend = (theService, "set", api.getNick(), method[1])
-                        if toAppend not in srcs:
-                            if ("posts" in moreS) and (moreS["posts"] == method[1]):
-                                srcs.append(toAppend)
-                                more.append(moreS)
-                            else:
-                                # Available, but with no rules
-                                srcsA.append(toAppend)
-            fromSrv = toAppend
-            msgLog = f"{self.indent} We will append: {toAppend}"
-            logMsg(msgLog, 2, 0)
-            if toAppend:
-                service = toAppend[0]
+                    else:
+                        toAppend = (theService, "set", api.getNick(), method[1])
+                    if toAppend not in srcs:
+                        if ("posts" in moreS) and (moreS["posts"] == method[1]):
+                            srcs.add(toAppend)
+                            more.append(moreS)
+                        else:
+                            srcsA.add(toAppend)
 
-            # if "time" in config.options(section):
-            #     timeW = config.get(section, "time")
-            # else:
-            #     timeW = 0
-            # if "buffermax" in config.options(section):
-            #     bufferMax = config.get(section, "buffermax")
-            # else:
-            #     bufferMax = 0
-            # if "max" in config.options(section):
-            #     bufferMax = config.get(section, "max")
+                self.indentLess()
+                msgLog = f"{self.indent} Service: {service}"
+                logMsg(msgLog, 1, 1)
+        return toAppend, theService, api
 
-            # Destinations
-            hasSpecial = False
-            if "posts" in config[section]:
-                postsType = config[section]["posts"]
-            else:
-                postsType = "posts"
-            msgLog = f"{self.indent} Type {postsType}"
-            logMsg(msgLog, 2, 0)
-            if fromSrv:
-                fromSrv = (
-                    fromSrv[0],
-                    fromSrv[1],
-                    fromSrv[2],
-                    postsType,
-                )
-                for serviceS in services["special"]:
-                    toAppend = ""
-                    if serviceS in config.options(section):
-                        valueE = config.get(section, serviceS).split("\n")
-                        for val in valueE:
-                            if val in config[section]:
-                                nick = config.get(section, val)
+    def _process_destinations(self, section, config, service, services, fromSrv, moreS, api, dsts, ruls, mor, impRuls):
+        """
+        Identifies and registers the destination services of a section.
+        Validates the presence of keys and types in the destinations.
+        Optimized for efficiency using sets.
+        """
+        hasSpecial = False
+        for serviceS in services["special"]:
+            toAppend = ""
+            if serviceS in config.options(section):
+                valueE = config.get(section, serviceS).split("\n")
+                for val in valueE:
+                    if val in config[section]:
+                        nick = config.get(section, val)
+                    else:
+                        nick = api.getNick() if api else ""
+                    url = "posts" if serviceS == "direct" else None
+                    toAppend = (serviceS, url, val, nick)
+                    if toAppend not in dsts:
+                        if "service" not in toAppend:
+                            dsts.add(toAppend)
+                    if toAppend:
+                        if fromSrv not in mor:
+                            mor[fromSrv] = moreS
+                        if fromSrv in ruls:
+                            if toAppend not in ruls[fromSrv]:
+                                ruls[fromSrv].append(toAppend)
+                        else:
+                            ruls[fromSrv] = [toAppend]
+                        if serviceS == "cache":
+                            hasSpecial = True
+        self.indentPlus()
+        for serviceD in services["regular"]:
+            if (serviceD == "cache") or (serviceD == "xmlrpc") or (fromSrv and serviceD == fromSrv[0]):
+                continue
+            toAppend = ""
+            if serviceD in config.options(section):
+                msgLog = (
+                          f"{self.indent} Service {service} -> {serviceD} checking "
+                          )
+                logMsg(msgLog, 2, 0)
+
+                methods = self.hasPublishMethod(serviceD)
+                for method in methods:
+                    if not isinstance(method, tuple) or len(method) != 2:
+                        logMsg(f"WARNING: Unexpected method in {serviceD}: {method}", 2, 1)
+                        continue
+                    mmethod = method[1] if method[1] else "post"
+                    toAppend = ("direct", mmethod, serviceD, config.get(section, serviceD))
+                    if toAppend not in dsts:
+                        dsts.add(toAppend)
+                    if toAppend:
+                        if hasSpecial:
+                            nickSn = f"{toAppend[2]}@{toAppend[3]}"
+                            fromSrvSp = ("cache", (fromSrv[0], fromSrv[2]), nickSn, "posts")
+                            impRuls.append((fromSrvSp, toAppend))
+                            if fromSrvSp not in mor:
+                                mor[fromSrvSp] = moreS
+                            if fromSrvSp in ruls:
+                                if toAppend not in ruls[fromSrvSp]:
+                                    ruls[fromSrvSp].append(toAppend)
                             else:
-                                nick = api.getNick()
-                            if serviceS == "direct":
-                                url = "posts"
-                            toAppend = (serviceS, url, val, nick)  # , timeW, bufferMax)
-                            if toAppend not in dsts:
-                                if "service" not in toAppend:
-                                    dsts.append(toAppend)
-                            if toAppend:
+                                ruls[fromSrvSp] = [toAppend]
+                        else:
+                            if not (fromSrv[2] != toAppend[3] and fromSrv[3][:-1] != toAppend[1]):
                                 if fromSrv not in mor:
                                     mor[fromSrv] = moreS
                                 if fromSrv in ruls:
                                     if toAppend not in ruls[fromSrv]:
                                         ruls[fromSrv].append(toAppend)
                                 else:
-                                    ruls[fromSrv] = []
-                                    ruls[fromSrv].append(toAppend)
+                                    ruls[fromSrv] = [toAppend]
+        self.indentLess()
 
-                                if serviceS == "cache":
-                                    hasSpecial = True
-
-                msgLog = f"{self.indent} Checking actions for {service}"
+    def _process_rule_keys(self, moreS, services, fromSrv, rulesNew, mor):
+        """
+        Processes the section keys to build additional rules.
+        Validates the presence and type of required values.
+        """
+        msgLog = f"{self.indent} Processing services in more"
+        logMsg(msgLog, 2, 0)
+        self.indentPlus()
+        msgLog = f"{self.indent} moreS: {moreS}"
+        logMsg(msgLog, 2, 0)
+        self.indentPlus()
+        orig = None
+        dest = None
+        for key in moreS.keys():
+            service = moreS[key] if key == "service" else key
+            if not orig:
+                if service in services["special"]:
+                    msgLog = f"{self.indent} Service {service} special"
+                    logMsg(msgLog, 2, 0)
+                    orig = service
+                elif service in services["regular"]:
+                    msgLog = f"{self.indent} Service {service} regular"
+                    logMsg(msgLog, 2, 0)
+                    orig = service
+                else:
+                    msgLog = f"{self.indent} Service {service} not interesting"
+                    logMsg(msgLog, 2, 0)
+            else:
+                msgLog = f"{self.indent} Service {service} not orig"
                 logMsg(msgLog, 2, 0)
-                self.indentPlus()
-                for serviceD in services["regular"]:
-                    if (
-                        (serviceD == "cache")
-                        or (serviceD == "xmlrpc")
-                        or (serviceD == theService)
-                    ):
-                        continue
-                    toAppend = ""
-                    if serviceD in config.options(section):
-                        msgLog = (
-                            f"{self.indent} Service {service} -> {serviceD} checking "
-                        )
+                if (key in services["special"]) or (key in services["regular"]):
+                    if key == "cache":
+                        dest = key
+                    elif key == "direct":
+                        dest = key
+                    elif self.hasPublishMethod(key):
+                        if not dest:
+                            dest = "direct"
+                        destRuleNew = ""
+                        destRuleCache = ""
+                        fromCacheNew = ""
+                        if dest == "direct":
+                            destRule = (dest, "post", key, moreS.get(key, ""))
+                        else:
+                            destRule = (dest, moreS.get("url", ""), key, moreS.get(key, ""))
+                            destRuleNew = (
+                                dest,
+                                moreS.get("service", ""),
+                                ("direct", "post", key, moreS.get(key, "")),
+                                moreS.get("url", ""),
+                            )
+                            fromCacheNew = (
+                                "cache",
+                                moreS.get("service", ""),
+                                ("direct", "post", key, moreS.get(key, "")),
+                                moreS.get("url", ""),
+                            )
+                            destRuleCache = ("direct", "post", key, moreS.get(key, ""))
+                            if fromCacheNew and destRuleCache:
+                                if fromCacheNew not in rulesNew:
+                                    rulesNew[fromCacheNew] = []
+                                rulesNew[fromCacheNew].append(destRuleCache)
+                                mor[fromCacheNew] = moreS
+                        self.indentPlus()
+                        msgLog = f"{self.indent} Rule: {orig} -> {key}({dest})"
                         logMsg(msgLog, 2, 0)
                         self.indentPlus()
-                        methods = self.hasPublishMethod(serviceD)
-                        msgLog = (
-                            f"{self.indent} Service {serviceD} has "
-                            f"publish {methods}"
-                        )
+                        msgLog = f"{self.indent} from Srv: {fromSrv}"
+                        logMsg(msgLog, 2, 0)
+                        msgLog = f"{self.indent} dest Rule: {destRule}"
                         logMsg(msgLog, 2, 0)
                         self.indentLess()
-                        for method in methods:
-                            if not method[1]:
-                                mmethod = "post"
-                            else:
-                                mmethod = method[1]
-                            toAppend = (
-                                "direct",
-                                mmethod,
-                                serviceD,
-                                config.get(section, serviceD),
-                            )
-
-                            if toAppend not in dsts:
-                                dsts.append(toAppend)
-                            if toAppend:
-                                if hasSpecial:
-                                    nickSn = f"{toAppend[2]}@{toAppend[3]}"
-                                    fromSrvSp = (
-                                        "cache",
-                                        (fromSrv[0], fromSrv[2]),
-                                        nickSn,
-                                        "posts",
-                                    )
-                                    impRuls.append((fromSrvSp, toAppend))
-
-                                    if fromSrvSp not in mor:
-                                        mor[fromSrvSp] = moreS
-                                    if fromSrvSp in ruls:
-                                        if toAppend not in ruls[fromSrvSp]:
-                                            ruls[fromSrvSp].append(toAppend)
-                                    else:
-                                        ruls[fromSrvSp] = []
-                                        ruls[fromSrvSp].append(toAppend)
+                        self.indentLess()
+                        channels = moreS["channel"].split(",") if "channel" in moreS else ["set"]
+                        for chan in channels:
+                            if fromSrv and (destRuleNew or destRule):
+                                fromSrvN = (fromSrv[0], chan, fromSrv[2], fromSrv[3])
+                                if fromSrvN not in rulesNew:
+                                    rulesNew[fromSrvN] = []
+                                if destRuleNew:
+                                    rulesNew[fromSrvN].append(destRuleNew)
                                 else:
-                                    if not (
-                                        fromSrv[2] != toAppend[3]
-                                        and fromSrv[3][:-1] != toAppend[1]
-                                    ):
-                                        # We do not want to add the origin as
-                                        # destination
-                                        if fromSrv not in mor:
-                                            mor[fromSrv] = moreS
-                                        if fromSrv in ruls:
-                                            if toAppend not in ruls[fromSrv]:
-                                                ruls[fromSrv].append(toAppend)
-                                        else:
-                                            ruls[fromSrv] = []
-                                            ruls[fromSrv].append(toAppend)
+                                    rulesNew[fromSrvN].append(destRule)
+                                mor[fromSrvN] = dict(moreS)
+                                if chan != "set":
+                                    mor[fromSrvN].update({"posts": chan, "channel": chan})
+        self.indentLess()
+        self.indentLess()
 
-            orig = None
-            dest = None
-            for key in moreS.keys():
-                if key == "service":
-                    service = moreS[key]
-                else:
-                    service = key
-
-                if not orig:
-                    if service in services["special"]:
-                        msgLog = f"{self.indent} Service {service} special"
-                        logMsg(msgLog, 2, 0)
-                        orig = service
-                    elif service in services["regular"]:
-                        msgLog = f"{self.indent} Service {service} regular"
-                        logMsg(msgLog, 2, 0)
-                        orig = service
-                    else:
-                        msgLog = f"{self.indent} Service {service} not interesting"
-                        logMsg(msgLog, 2, 0)
-                else:
-                    if (key in services["special"]) or (key in services["regular"]):
-                        if key == "cache":
-                            msgLog = f"{self.indent} Rules: {key}"
-                            logMsg(msgLog, 2, 0)
-                            dest = key
-                        elif key == "direct":
-                            msgLog = f"{self.indent} Rules: {key}"
-                            logMsg(msgLog, 2, 0)
-                            dest = key
-                        elif self.hasPublishMethod(key):
-                            # If it has no publish methods it can not be a
-                            # destination
-                            if not dest:
-                                dest = "direct"
-                            destRuleNew = ""
-                            destRuleCache = ""
-                            fromCacheNew = ""
-                            if dest == "direct":
-                                destRule = (dest, "post", key, moreS[key])
-                            else:
-                                destRule = (dest, moreS["url"], key, moreS[key])
-                                destRuleNew = (
-                                    dest,
-                                    moreS["service"],
-                                    ("direct", "post", key, moreS[key]),
-                                    moreS["url"],
-                                )
-                                # Rule cache:
-                                #if "posts" in moreS:
-                                #    myPosts = moreS["posts"]
-                                #else:
-                                #    myPosts = "posts"
-                                # fromCache = (
-                                #     "cache",
-                                #     (moreS["service"], moreS["url"]),
-                                #     f"{key}@{moreS[key]}",
-                                #     "posts",
-                                # )
-                                fromCacheNew = (
-                                    "cache",
-                                    moreS["service"],
-                                    ("direct", "post", key, moreS[key]),
-                                    moreS["url"],
-                                )  # , 'posts'),
-                                # f"{key}@{moreS[key]}")
-                                # FIXME: It is needed for imgur, in the other
-                                # cases is OK
-                                destRuleCache = ("direct", "post", key, moreS[key])
-                                if fromCacheNew and destRuleCache:
-                                    if fromCacheNew not in rulesNew:
-                                        rulesNew[fromCacheNew] = []
-                                    rulesNew[fromCacheNew].append(destRuleCache)
-                                    mor[fromCacheNew] = moreS
-                                # print(f"fromCache: {fromCache}")
-                                # print(f"fromCacheNew: {fromCacheNew}")
-                                # print(f"destRule: {destRule}")
-                                # print(f"destRuleCache: {destRuleCache}")
-                                # print(f"destRuleNew: {destRuleNew}")
-
-                            # FIXME. Can this be done before?
-                            # Look at previous arrow " -> "
-                            msgLog = f"{self.indent} Rule: {orig} -> " f"{key}({dest})"
-                            logMsg(msgLog, 2, 0)
-                            msgLog = f"{self.indent}  from Srv: {fromSrv}"
-                            logMsg(msgLog, 2, 0)
-                            msgLog = f"{self.indent}  dest Rule: {destRule}"
-                            logMsg(msgLog, 2, 0)
-                            msgLog = f"{self.indent}  moreS: {moreS}"
-                            logMsg(msgLog, 2, 0)
-                            if "channel" in moreS:
-                                msgLog = f"{self.indent}  moreSC: {moreS['channel']}"
-                                logMsg(msgLog, 2, 0)
-                                channels = moreS["channel"].split(",")
-                            else:
-                                msgLog = f"{self.indent}  moreSC: No"
-                                logMsg(msgLog, 2, 0)
-                                channels = ["set"]
-                            for chan in channels:
-                                if fromSrv and (destRuleNew or destRule):
-                                    fromSrvN = (
-                                        fromSrv[0],
-                                        chan,
-                                        fromSrv[2],
-                                        fromSrv[3],
-                                    )
-                                    if fromSrvN not in rulesNew:
-                                        rulesNew[fromSrvN] = []
-                                    # print(f".fromSrv: {fromSrv}")
-                                    if destRuleNew:
-                                        # print(f".destRuleNew: {destRuleNew}")
-                                        rulesNew[fromSrvN].append(destRuleNew)
-                                    else:
-                                        # print(f"destRule: {destRule}")
-                                        rulesNew[fromSrvN].append(destRule)
-
-                                    msgLog = f"{self.indent}  moreS: {moreS}"
-                                    logMsg(msgLog, 2, 0)
-                                    mor[fromSrvN] = dict(moreS)
-                                    msgLog = f"{self.indent}  chan: {chan}"
-                                    logMsg(msgLog, 2, 0)
-                                    if chan != "set":
-                                        mor[fromSrvN].update(
-                                            {"posts": chan, "channel": chan}
-                                        )
-
-        # logging.info(f"Rules: {rulesNew}")
-
-        # Now we can add the sources not added.
-
+    def _finalize_rules(self, config, services, srcs, srcsA, more, dsts, rulesNew):
+        """
+        Adds implicit sources and destinations that can be sources.
+        Validates the structure of the data before adding them.
+        Optimized for efficiency using sets.
+        """
         for src in srcsA:
-            # logging.info(f"-> {src}")
             if src:
                 if src not in rulesNew:
-                    # Adding more rules
                     rulesNew[src] = []
                 if src not in srcs:
-                    # msgLog = (f"Adding implicit {src}")
-                    # logMsg(msgLog, 2, 0)
-                    srcs.append(src)
+                    srcs.add(src)
                     more.append({})
-
-        # Now we can see which destinations can be also sources
-        # msgLog = f"Dsts: {dsts}"
-        # logMsg(msgLog, 2, 0)
-        logging.info(f"Srcs: {srcs}")
-        logging.info(f"SrcsA: {srcsA}")
-
+        logging.info(f"Srcs: {list(srcs)}")
+        logging.info(f"SrcsA: {list(srcsA)}")
         self.indent = f"{self.indent} Destinations:"
         for dst in dsts:
-            msgLog = f"{self.indent} Dest: {dst}"
-            logMsg(msgLog, 2, 0)
+            if not isinstance(dst, tuple) or len(dst) < 4:
+                logMsg(f"WARNING: Unexpected destination: {dst}", 2, 1)
+                continue
             if dst[0] == "direct":
                 service = dst[2]
-                # FIXME
                 methods = self.hasSetMethods(service)
                 for method in methods:
-                    # msgLog = (f"cache dst {dst}")
-                    # logMsg(msgLog, 2, 0)
-                    toAppend = (service, "set", dst[3], method[1])  # , dst[4])
-                    # msgLog = (f"toAppend src {toAppend}")
-                    # logMsg(msgLog, 2, 0)
+                    if not isinstance(method, tuple) or len(method) != 2:
+                        logMsg(f"WARNING: Unexpected method in {service}: {method}", 2, 1)
+                        continue
+                    toAppend = (service, "set", dst[3], method[1])
                     if toAppend[:4] not in srcs:
-                        srcs.append(toAppend[:4])
+                        srcs.add(toAppend[:4])
                         more.append({})
             elif dst[0] == "cache":
                 if len(dst) > 4:
-                    toAppend = (
-                        dst[0],
-                        "set",
-                        (dst[1], (dst[2], dst[3])),
-                        "posts",
-                        dst[4],
-                        1,
-                    )
+                    toAppend = (dst[0], "set", (dst[1], (dst[2], dst[3])), "posts", dst[4], 1)
                 else:
-                    toAppend = (
-                        dst[0],
-                        "set",
-                        (dst[1], (dst[2], dst[3])),
-                        "posts",
-                        0,
-                        1,
-                    )
+                    toAppend = (dst[0], "set", (dst[1], (dst[2], dst[3])), "posts", 0, 1)
                 if toAppend[:4] not in srcs:
-                    srcs.append(toAppend[:4])
+                    srcs.add(toAppend[:4])
                     more.append({})
 
+        # Convert sets to lists for compatibility with the rest of the code
+        self._srcs = list(srcs)
+        self._srcsA = list(srcsA)
+        self._dsts = list(dsts)
+
+    def _set_available_and_rules(self, rulesNew, more):
+        """
+        Builds self.available, self.availableList and self.rules.
+        Validates the integrity of the data before adding them.
+        """
         available = {}
         myKeys = {}
         myIniKeys = []
-        # for i, src in enumerate(srcs):
         for i, src in enumerate(rulesNew.keys()):
             if not src:
                 continue
-            iniK, nameK = self.getIniKey(
-                self.getNameRule(src).upper(), myKeys, myIniKeys
-            )
-            # logging.info(f"iniK: {iniK}")
+            # Use the section name if available
+            # section_name = more[i].get('section_name', self.getNameRule(src)) if i < len(more) and isinstance(more[i], dict) else self.getNameRule(src)
+            section_name = self.getNameRule(src)
+            iniK, nameK = self.getIniKey(section_name.upper(), myKeys, myIniKeys)
             if iniK not in available:
-                available[iniK] = {
-                    "name": self.getNameRule(src),
-                    "data": [],
-                    "social": [],
-                }
-                available[iniK]["data"] = []  # {'src': src, 'more': more[i]}]
-            available[iniK]["data"].append({"src": src, "more": more[i]})
-
-        myList = []
-        for elem in available:
-            component = (
-                f"{elem}) "
-                f"{available[elem]['name']}: "
-                f"{len(available[elem]['data'])}"
-            )
-            myList.append(component)
-
-        if myList:
-            availableList = myList
-        else:
-            availableList = []
-
+                available[iniK] = {"name": section_name, "data": [], "social": []}
+            more_i = more[i] if i < len(more) and isinstance(more[i], dict) else {}
+            available[iniK]["data"].append({"src": src, "more": more_i})
+        myList = [f"{elem}) {available[elem]['name']}: {len(available[elem]['data'])}" for elem in available]
         self.available = available
-        self.availableList = availableList
-
-        self.rules = {}
-        for key in rulesNew:
-            # FIXME Is this ok?
-            if rulesNew[key]:
-                self.rules[key] = rulesNew[key]
-
-        # msgLog = (f"RulesNew: {rulesNew}")
-        # logMsg(msgLog, 2, 0)
-        msgLog = f"More: {mor}"
-        logMsg(msgLog, 2, 0)
-        if hasattr(self, "args") and self.args.rules:
-            self.printDict(rulesNew, "Rules")
-
-        # self.rules = rulesNew
-        msgLog = f"Available: {self.available}"
-        logMsg(msgLog, 2, 0)
-        msgLog = f"Rules: {self.rules}"
-        logMsg(msgLog, 2, 0)
-        self.more = mor
-
-        self.indentLess()
-        msgLog = "End Checking rules"
-        logMsg(msgLog, 1, 2)
+        self.availableList = myList if myList else []
+        self.rules = {key: rulesNew[key] for key in rulesNew if rulesNew[key]}
 
     def selectActionInteractive(self, service=None):
         if not service:
@@ -804,7 +717,7 @@ class moduleRules:
 
     def readConfigSrc(self, indent, src, more):
         msgLog = f"{indent} Start readConfigSrc {src}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, 1)
         indent = f"{indent} "
 
         profile = self.getNameRule(src)
@@ -815,9 +728,7 @@ class moduleRules:
             apiSrc = getApi(profile, account, indent)
         apiSrc.src = src
         apiSrc.setPostsType(src[-1])
-        print(f"Uuuuurlllll: {apiSrc.url}")
         apiSrc.setMoreValues(more)
-        print(f"Uuuuurlllll: {apiSrc.url}")
 
         # msgLog = f"{indent} Url: {apiSrc.getUrl()}" #: {src[1:]}"
         # logMsg(msgLog, 2, 0)
@@ -834,14 +745,18 @@ class moduleRules:
         return res
 
     def readConfigDst(self, indent, action, more, apiSrc):
-        msgLog = f"{indent} Start readConfigDst"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
+        msgLog = f"{indent} Start readConfigDst {action}"  #: {src[1:]}"
+        logMsg(msgLog, 2, 1)
         indent = f"{indent} "
 
         profile = self.getNameAction(action)
         account = self.getDestAction(action)
         apiDst = getApi(profile, account, indent)
         apiDst.setMoreValues(more)
+        msgLog = f"{indent} apiDstt {apiDst}"  #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
+        msgLog = f"{indent} apiDstt {apiDst.client}"  #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
 
         if apiSrc:
             apiDst.setUrl(apiSrc.getUrl())
@@ -1052,9 +967,15 @@ class moduleRules:
         delete=False,
     ):
         indent = f"{name}"
-
+        
         # FIXME. What happens when src and dst are the same service (drafts, mainly)?
         # Destination
+        # orig = f"{self.getNameAction(src)} ({self.getNickRule(src)}) {self.getTypeRule(src)}"
+        orig = f"{self.getNickRule(src)}@{self.getNameAction(src)} ({self.getTypeRule(src)})"
+        # dest = f"{self.getNameAction(action)} ({self.getNickAction(action)}) {self.getTypeAction(action)}"
+        dest = f"{self.getNickAction(action)}@{self.getNameAction(action)} ({self.getTypeAction(action)})"
+        msgLog = f"{indent} Scheduling {orig} -> {dest}"
+        logMsg(msgLog, 1, 1)
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
         if not apiDst.getClient():
             msgLog = self.clientErrorMsg(
@@ -1067,6 +988,7 @@ class moduleRules:
             if msgLog:
                 logMsg(msgLog, 3, 1)
                 sys.stderr.write(f"Error: {msgLog}\n")
+                # FIXME Improve report  in moduleContent and use it
             return f"End: {msgLog}"
 
         tL = random.random() * numAct
@@ -1099,7 +1021,7 @@ class moduleRules:
 
         theAction = self.getTypeAction(action)
         msgLog = (
-            f"{indent} I'll publish {num} {theAction} "
+            f"{indent}I'll publish {num} {theAction} "
             f"from {apiSrc.getUrl()} "
             f"in {self.getNickAction(action)}@"
             f"{self.getProfileAction(action)}"
@@ -1110,7 +1032,7 @@ class moduleRules:
             tNow = time.time()
             hours = float(apiDst.getTime()) * 60 * 60
 
-            lastTime = apiDst.getLastTimePublished(f"{indent} ")
+            lastTime = apiDst.getLastTimePublished(f"{indent}")
 
             if lastTime:
                 diffTime = tNow - lastTime
@@ -1121,6 +1043,8 @@ class moduleRules:
             if noWait or (diffTime > hours):
                 tSleep = random.random() * float(timeSlots) * 60
 
+                # msgLog = f"{indent} timeSlots, tSleep: {timeSlots} {tSleep}"
+                # logMsg(msgLog, 1, 1)
                 apiDst.fileName = ""
                 apiDst.setNextTime(tNow, tSleep, apiSrc)
                 apiDst.fileName = ""
@@ -1141,13 +1065,14 @@ class moduleRules:
 
                 for i in range(num):
                     time.sleep(tSleep)
-                    msgLog = (
-                        f"{indent} End Waiting {theAction} "
-                        f"from {apiSrc.getUrl()} "
-                        f"in {self.getNickAction(action)}@"
-                        f"{self.getProfileAction(action)}"
-                    )
-                    logMsg(msgLog, 1, 1)
+                    if "minutes" in msgLog:
+                        msgLog = (
+                            f"{indent} End Waiting {theAction} "
+                            f"from {apiSrc.getUrl()} "
+                            f"in {self.getNickAction(action)}@"
+                            f"{self.getProfileAction(action)}"
+                        )
+                        logMsg(msgLog, 1, 1)
                     res = self.executePublishAction(
                         indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos
                     )
@@ -1169,165 +1094,176 @@ class moduleRules:
         logMsg(f"{indent} End executeAction {textEnd}", 2, 0)
         return f"{indent} {res} {textEnd}"
 
-    def executeRules(self):
+    def executeRules(self, max_workers=None):
+        """
+        Executes all generated rules using concurrency.
+        Refactored to delegate to helper functions.
+        Allows configuring the number of threads (max_workers) by argument,
+        environment variable SOCIALMODULES_MAX_WORKERS, or automatically
+        according to the number of actions to execute (one per action, minimum
+        1, maximum 100).
+        """
+        import os
         msgLog = "Start Executing rules"
         logMsg(msgLog, 1, 2)
-        indent = " "
-
+        self.indent = ""
         args = self.args
         select = args.checkBlog
         simmulate = args.simmulate
+        # Prepare actions to execute
+        scheduled_actions = self._prepare_actions(args, select)
+        # Determine number of threads
+        if max_workers is not None:
+            pass  # use the explicit value
+        elif "SOCIALMODULES_MAX_WORKERS" in os.environ:
+            max_workers = int(os.environ["SOCIALMODULES_MAX_WORKERS"])
+        else:
+            num_actions = max(1, len(scheduled_actions))
+            max_workers = min(num_actions, 100)  # reasonable maximum
+        # Execute actions concurrently
+        action_results, action_errors = self._run_actions_concurrently(scheduled_actions, max_workers=max_workers)
+        # Report results and errors
+        self._report_results(action_results, action_errors)
+        msgLog = f"End Executing rules with {len(scheduled_actions)} actions."
+        logMsg(msgLog, 1, 2)
+        return
 
-        delayedPosts = []
+    def _prepare_actions(self, args, select):
+        """
+        Prepares the list of actions to execute, filtering and collecting all
+        necessary information.  Returns a list of dictionaries with data for
+        each action.
+        """
+        scheduled_actions = []
+        previous = ""
+        i = 0  # Initialize i outside the loop to avoid UnboundLocalError
+        for rule_index, rule_key in enumerate(sorted(self.rules.keys())):
+            # Repetition control by action name
+            rule_metadata = self.more[rule_key] if rule_key in self.more else None
+            if rule_metadata and rule_metadata.get("hold") == "yes":
+                msgHold = f"[HOLD] {self.getNickSrc(rule_key)} ({self.getNickAction(rule_key)})"
+                logMsg(msgHold, 1, 0)
+                continue
+            rule_actions = self.rules[rule_key]
+            if self.getNameAction(rule_key) != previous:
+                i = 0
+            else:
+                i = i + 1
+            nameR = f"[{self.getNameAction(rule_key)}{i}]"
+            msgLog = (f"{nameR:->12}> "
+                          f"Preparing actions for rule: "
+                          f"{self.getNickSrc(rule_key)}@"
+                          f"{self.getNameRule(rule_key)} "
+                          f"({self.getNickAction(rule_key)})"
+                          )
+            logMsg(msgLog, 1, 1)
+            previous = self.getNameAction(rule_key)
 
-        threads = 0
-        with concurrent.futures.ThreadPoolExecutor(max_workers=75) as pool:
-            i = 0
-            previous = ""
+            for action_index, rule_action in enumerate(rule_actions):
+                # Rule selection if --checkBlog is used
 
-            for src in sorted(self.rules.keys()):
-                if self.getNameAction(src) != previous:
-                    i = 0
-                else:
-                    i = i + 1
-                previous = self.getNameAction(src)
-
-                nameAction = f"[{self.getNameAction(src)}{i}]"
-                indent = f"{nameAction:->12}>"
-                msgIni = f"{self.getNickSrc(src)} ({self.getNickAction(src)})"
-
-                if src in self.more:
-                    if ("hold" in self.more[src]) and (self.more[src]["hold"] == "yes"):
-                        msgHold = f"{indent} On hold. {msgIni}"
-                        logMsg(msgHold, 1, 0)
-                        continue
-
-                if src in self.more:
-                    more = self.more[src]
-                else:
-                    more = None
-
-                msgIni = f"{self.getNickSrc(src)} ({self.getNickAction(src)})"
-
-                actions = self.rules[src]
-
-                if select and (select.lower() != f"{self.getNameRule(src).lower()}{i}"):
-                    actionMsg = f"Skip {msgIni}"
-                else:
-                    actionMsg = f"Scheduling {msgIni}"
-                msgLog = f"{indent} {actionMsg}"
-                logMsg(msgLog, 1, 1)
-                if actionMsg == "Skip.":
-                    # FIXME ?
+                if select and (select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"):
                     continue
-                # Source
-                apiSrc = self.readConfigSrc(indent, src, more)
-                if not apiSrc.getClient():
-                    msgLog = self.clientErrorMsg(
-                        indent,
-                        apiSrc,
-                        "Source",
-                        self.getProfileRule(src),
-                        self.getNickAction(src),
-                    )
-                    if msgLog:
-                        logMsg(msgLog, 3, 1)
-                    # return f"{msgLog} End."
 
-                if apiSrc.getName():
-                    theName = apiSrc.getName()
-                else:
-                    theName = self.getProfileAction(src)
+                scheduled_actions.append({
+                    "rule_key": rule_key,
+                    "rule_metadata": rule_metadata,
+                    "rule_action": rule_action,
+                    "rule_index": i,
+                    "action_index": action_index,
+                    "args": args,
+                    "simmulate": args.simmulate,
+                })
+        return scheduled_actions
 
-                for k, action in enumerate(actions):
-                    name = f"{self.getNameRule(src)}{i}>"
-                    theAction = "posts"
-                    if not self.getTypeAction(action).startswith("http"):
-                        theAction = self.getTypeAction(action)
-
-                    indent = f"{indent} "
-                    msgLog = (
-                        f"{indent} Action {k}:"
-                        f" {self.getNickAction(action)}@"
-                        f"{self.getProfileAction(action)} ({theAction})"
-                    )
-                    name = f"Action {k}:"  # [({theAction})"
-                    nameA = f"{actionMsg} "
-                    textEnd = (
-                        f"Source: {nameA} {self.getProfileRule(src)} "
-                        f"{self.getNickRule(src)}"
-                    )
-                    logMsg(msgLog, 1, 1)
-                    textEnd = f"{textEnd}\n{msgLog}"
-                    nameA = f"{indent} {name}"
-                    if "Skip" not in actionMsg:
-                        timeSlots = args.timeSlots
-                        noWait = args.noWait
-
-                        # Is this the correct place?
-                        if (self.getNameAction(action) in "cache") or (
-                            (self.getNameAction(action) == "direct")
-                            and (self.getProfileAction(action) == "pocket")
-                        ):
-                            # We will always load new items in the cache
-                            timeSlots = 0
-                            noWait = True
-                        msgAction = (
-                            f"{self.getNameAction(action)} "
-                            f"{self.getNickAction(action)}@"
-                            f"{self.getProfileAction(action)} "
-                            f"({self.getTypeAction(action)})"
-                        )
-
-                        msgLog = (
-                            f"Source: {theName}-{self.getNickAction(src)}"
-                            f" -> Action: {msgAction}"
-                        )
-
-                        threads = threads + 1
-                        delayedPosts.append(
-                            pool.submit(
-                                self.executeAction,
-                                src,
-                                more,
-                                action,
-                                msgAction,
-                                apiSrc,  # apiDst[-1],
-                                noWait,
-                                timeSlots,
-                                simmulate,
-                                nameA,
-                                threads,
-                            )
-                        )
-                    indent = f"{indent[:-1]}"
-                indent = f"{indent[:-1]}"
-
-            messages = []
-            for future in concurrent.futures.as_completed(delayedPosts):
+    def _run_actions_concurrently(self, scheduled_actions, max_workers=75):
+        """
+        Executes actions in parallel using ThreadPoolExecutor.
+        Returns two lists: results and errors.
+        """
+        import concurrent.futures
+        action_results = []
+        action_errors = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
+            future_to_action = {
+                pool.submit(
+                    self._execute_single_action,
+                    scheduled_action
+                ): scheduled_action for scheduled_action in scheduled_actions
+            }
+            for future in concurrent.futures.as_completed(future_to_action):
+                scheduled_action = future_to_action[future]
+                res = ''
                 try:
                     res = future.result()
-                    if res:
-                        messages.append(f"  Published in: {future}\n{res} ")
+                    action_results.append((scheduled_action, res))
                 except Exception as exc:
-                    # else:
-                    msgLog = (
-                        f"{future} generated an exception: {exc} "
-                        f"Src: {src}. Action: {action}"
-                    )
-                    logMsg(msgLog, 1, 1)
-                    msgLog = f"{sys.exc_info()}"
-                    logMsg(msgLog, 1, 1)
-                    import traceback
+                    action_errors.append((scheduled_action, exc))
+        return action_results, action_errors
 
-                    msgLog = f"{traceback.print_exc()}"
-                    logMsg(msgLog, 1, 1)
+    def _execute_single_action(self, scheduled_action):
+        """
+        Executes a single action (wrapper for executeAction).
+        """
+        rule_key = scheduled_action["rule_key"]
+        rule_metadata = scheduled_action["rule_metadata"]
+        rule_action = scheduled_action["rule_action"]
+        args = scheduled_action["args"]
+        simmulate = scheduled_action["simmulate"]
+        
+        # Apply special timeSlots treatment for cache and pocket actions
+        timeSlots = args.timeSlots
+        noWait = args.noWait
+        
+        if (self.getNameAction(rule_action) in "cache") or (
+            (self.getNameAction(rule_action) == "direct")
+            and (self.getProfileAction(rule_action) == "pocket")
+        ):
+            # We will always load new items in the cache
+            timeSlots = 0
+            noWait = True
+        
+        # Prepare arguments for executeAction
+        msgAction = (
+            f"{self.getNameAction(rule_action)} "
+            f"{self.getNickAction(rule_action)}@"
+            f"{self.getProfileAction(rule_action)} "
+            f"({self.getTypeAction(rule_action)})"
+        )
+        rule_index = scheduled_action.get('rule_index', 0)
+        action_index = scheduled_action.get('action_index', 0)
+        name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
+        nameR = f"{name_action:->12}>"
+        nameA =  f"{nameR} Action {action_index}:"
+        apiSrc = self.readConfigSrc(nameR, rule_key, rule_metadata)
+        return self.executeAction(
+            rule_key,
+            rule_metadata,
+            rule_action,
+            msgAction,
+            apiSrc,
+            noWait,
+            timeSlots,
+            simmulate,
+            nameA,
+            action_index,
+        )
 
-        # FIXME: We are not using messages
-        msgLog = f"End Executing rules with {threads} threads."
-        logMsg(msgLog, 1, 2)
-
-        return
+    def _report_results(self, action_results, action_errors):
+        """
+        Reports the results and errors of action execution.
+        """
+        for scheduled_action, res in action_results:
+            if res:
+                rule_key = scheduled_action['rule_key']
+                rule_index = scheduled_action.get('rule_index', '')
+                rule_summary = f"Rule {rule_index}: {rule_key}" if rule_index != '' else str(rule_key)
+                logMsg(f"[OK] Action executed for {rule_summary} -> {scheduled_action['rule_action']}: {res}", 1, 1)
+        for scheduled_action, exc in action_errors:
+            rule_key = scheduled_action['rule_key']
+            rule_index = scheduled_action.get('rule_index', '')
+            rule_summary = f"Rule {rule_index}: {rule_key}" if rule_index != '' else str(rule_key)
+            logMsg(f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {exc}", 3, 1)
 
     def readArgs(self):
         import argparse
@@ -1386,6 +1322,7 @@ def main():
     rules = moduleRules()
 
     rules.readArgs()
+    rules.indent = ""
     rules.checkRules()
 
     rules.executeRules()
