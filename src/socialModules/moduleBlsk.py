@@ -39,9 +39,9 @@ class moduleBlsk(Content): #, Queue):
             res = self.report(self.indent, 'Error in initApi',
                               '', sys.exc_info())
             client = None
+        self.api = client
         if hasattr(client, 'app'):
             client = client.app.bsky.feed
-        self.api = client
         return client
 
 
@@ -124,6 +124,7 @@ class moduleBlsk(Content): #, Queue):
         return (self.getPostContent(post), self.getPostContentLink(post))
 
     def getPostContent(self, post):
+        logging.info(f"Postttt: {post}")
         result = post.post.record.text
         # if 'full_text' in post:
         #     result = post.get('full_text')
@@ -341,7 +342,7 @@ def main():
 
         return
 
-    testingPosts = True
+    testingPosts = False
     if testingPosts:
         apiSrc.setPosts()
         for i,post in enumerate(apiSrc.getPosts()):
