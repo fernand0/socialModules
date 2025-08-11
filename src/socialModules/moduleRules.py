@@ -1325,7 +1325,7 @@ class moduleRules:
 
 
 def main():
-    mode = logging.INFO
+    mode = logging.DEBUG
     logging.basicConfig(
         filename=f"{LOGDIR}/rssSocial.log",
         # stream=sys.stdout,

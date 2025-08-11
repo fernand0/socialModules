@@ -88,14 +88,9 @@ class Content:
                       f" Does it contain an entry for your account?")
             res = self.report({self.indent}, msgLog, 0, "")
 
-<<<<<<< HEAD
-        if not "Fail" in res: 
-=======
-        
         msgLog = f"{self.indent} Res: {res}"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         if res and not "Fail" in res: 
->>>>>>> master
             self.indent = f"{self.indent} "
             msgLog = f"{self.indent} Getting keys"
             logMsg(msgLog, 2, 0)

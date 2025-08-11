@@ -253,43 +253,46 @@ class moduleHtml(Content): #, Queue):
         return theList
 
     def extractLinks(self, soup, linksToAvoid=""):
-        if isinstance(soup, BeautifulSoup):
-            j = 0
-            linksTxt = ""
-            links = soup.find_all(["a", "iframe"])
-            for link in links:
-                theLink = ""
-                if len(link.contents) > 0:
-                    if not isinstance(link.contents[0], Tag):
-                        # We want to avoid embdeded tags (mainly <img ... )
-                        if link.has_attr("href"):
-                            theLink = link["href"]
-                        else:
-                            if "src" in link:
-                                theLink = link["src"]
-                            else:
-                                continue
-                else:
-                    if "src" in link:
-                        theLink = link["src"]
+        if not isinstance(soup, BeautifulSoup):
+            mySoup = BeautifulSoup(soup, "lxml")
+        else:
+            mySoup = soup
+        j = 0
+        linksTxt = ""
+        links = soup.find_all(["a", "iframe"])
+        for link in links:
+            theLink = ""
+            if len(link.contents) > 0:
+                if not isinstance(link.contents[0], Tag):
+                    # We want to avoid embdeded tags (mainly <img ... )
+                    if link.has_attr("href"):
+                        theLink = link["href"]
                     else:
-                        continue
+                        if "src" in link:
+                            theLink = link["src"]
+                        else:
+                            continue
+            else:
+                if "src" in link:
+                    theLink = link["src"]
+                else:
+                    continue
 
-                if (linksToAvoid == "") or (
-                    not re.search(linksToAvoid, theLink)
-                ):
-                    if theLink:
-                        link.append(" [" + str(j) + "]")
-                        linksTxt = (
-                            linksTxt
-                            + "["
-                            + str(j)
-                            + "] "
-                            + link.contents[0]
-                            + "\n"
-                        )
-                        linksTxt = linksTxt + "    " + theLink + "\n"
-                        j = j + 1
+            if (linksToAvoid == "") or (
+                not re.search(linksToAvoid, theLink)
+            ):
+                if theLink:
+                    link.append(" [" + str(j) + "]")
+                    linksTxt = (
+                        linksTxt
+                        + "["
+                        + str(j)
+                        + "] "
+                        + link.contents[0]
+                        + "\n"
+                    )
+                    linksTxt = linksTxt + "    " + theLink + "\n"
+                    j = j + 1
 
             if linksTxt != "":
                 theSummaryLinks = linksTxt
@@ -418,9 +421,22 @@ if __name__ == "__main__":
 
     url = "https://fernand0-errbot.slack.com/"
     blog = moduleRss.moduleRss()
-    blog.setPosts()
-    blog.setUrl(url)
-    print(blog.obtainPostData(29))
+    # blog.setPosts()
+    # blog.setUrl(url)
+    # print(blog.obtainPostData(29))
+
+    testingX = True
+    if testingX:
+        import moduleHtml
+        blog = moduleHtml.moduleHtml()
+        url = input("X link: ")
+        blog.setUrl(url)
+        data = blog.downloadUrl(url)
+        print(data)
+        print(blog.extractLinks(data)[1])
+
+
+
     sys.exit()
 
     for section in config.sections():

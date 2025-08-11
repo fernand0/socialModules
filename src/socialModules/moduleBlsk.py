@@ -39,8 +39,8 @@ class moduleBlsk(Content): #, Queue):
             res = self.report(self.indent, 'Error in initApi',
                               '', sys.exc_info())
             client = None
-        if hasattr(client, 'app'):
-            client = client.app.bsky.feed
+        # if hasattr(client, 'app'):
+        #     client = client.app.bsky.feed
         self.api = client
         return client
 
@@ -242,7 +242,7 @@ class moduleBlsk(Content): #, Queue):
             embed_external = None
 
 
-        msgLog = f"{self.indent}Publishing {title} ({len(title)}"
+        msgLog = f"{self.indent}Publishing {title} ({len(title)})"
         logMsg(msgLog, 2, 0)
         client = self.api
         #try:

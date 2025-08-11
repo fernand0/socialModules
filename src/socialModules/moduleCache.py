@@ -108,6 +108,7 @@ class moduleCache(Content): #,Queue):
         self.postsType = 'posts'
         self.url = ""
         self.socialNetwork = ""
+        logging.info(f"Src: {self.src}")
         self.user = self.src[2]
         self.nick = self.user
         self.apiDst = getModule(self.src[1][2], f"{self.indent}  (c)")
