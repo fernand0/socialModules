@@ -5,5 +5,3 @@ dist/
 .*.swp
 .python-version
 uv*
-.coverate
-.coverage

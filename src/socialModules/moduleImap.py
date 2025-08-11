@@ -155,13 +155,18 @@ class moduleImap(Content): #, Queue):
         # IMAP accounts get disconnected when time passes.
         # Maybe we should check if this is needed
 
-        logging.info(f"getChannel: {self.user}@{self.server}")
+        logging.info(f"setApiPosts")
+        # logging.info(f"getChannel: {self.user}@{self.server}")
         self.checkConnected()
+        logging.info(f"setApiPosts")
         channel = self.getChannel()
+        logging.info(f"setApiPosts")
         logging.info(f"getChannel: {channel}")
         if not channel:
             self.setChannel()
             channel = self.getChannel()
+        logging.info(f"setApiPostss")
+        logging.info(f"setApiPostss {self.getClient()}")
         posts = self.listMessages(self.getClient(), channel)
         return posts
 
@@ -505,7 +510,7 @@ class moduleImap(Content): #, Queue):
             # sel, sel_txt = select_from_list(headers, negation_selector="Received:")
 
             # print(f"Sel: {sel} - {sel_txt}")
-            
+
             textHeaders = []
             nameHeaders = []
             for header in msgHeaders:
@@ -762,7 +767,7 @@ class moduleImap(Content): #, Queue):
 
     def getMessageBody(self, msg):
         # http://blog.magiksys.net/parsing-email-using-python-content
-        body = msg.get_body()
+        body = msg
         try:
            bodyTxt = body.get_content()
            typeB = body.get_content_type()
@@ -921,7 +926,7 @@ class moduleImap(Content): #, Queue):
 
     def setLabels(self):
         api = self.getClient()
-        resp, data = self.getClient().list('""', '*')
+        resp, data = api.list('""', '*')
         if 'OK' in resp and data:
             self.labels = data
 
@@ -1271,6 +1276,13 @@ class moduleImap(Content): #, Queue):
         except:
             logging.warning("Some error moving mails to Trash")
 
+    def modifyLabels(self, messageId, oldLabelId, labelId):
+        M = self.getClient()
+        if labelId:
+            self.moveMails(M, messageId, labelId)
+        else:
+            self.moveMails(M, messageId, 'Trash')
+
     def moveMails(self, M, msgs, folder):
         if hasattr(self, 'channel'): # in self:
             M.select(self.channel)
@@ -1308,6 +1320,9 @@ class moduleImap(Content): #, Queue):
                         msgI = email.message_from_bytes(response_part[1])
                         print(headerToString(msgI['Subject']))
 
+    def getPostBody(self, msg):
+        return self.getPostContent(msg)
+
     def getPostContentHtml(self, msg):
         if isinstance(msg, tuple):
             post = msg[1]
@@ -1334,7 +1349,6 @@ class moduleImap(Content): #, Queue):
         else:
             mail_content = post.get_payload()
 
-        # print(f"Mail: {mail_content}")
 
         return mail_content
 
@@ -1343,18 +1357,25 @@ class moduleImap(Content): #, Queue):
         if post.is_multipart():
             mail_content = ''
             for part in post.get_payload():
+
                 if part.get_content_type() == 'text/plain':
                     mail_content += part.get_payload()
                 elif part.get_content_type() == 'text/html':
                     text = part.get_payload(decode=True)
                     soup = BeautifulSoup(text, "html.parser")
                     mail_content += soup.get_text('\n')
-                elif part.get_content_type() == 'multipart/alternative':
+                elif part.get_content_type() in ['multipart/alternative', 'multipart/related']:
                     for partt in part.get_payload():
-                        mail_content += partt.get_payload()
+                        if partt.get_content_type() == 'text/html':
+                            text = partt.get_payload(decode=True)
+                            soup = BeautifulSoup(text, "html.parser")
+                            mail_content += soup.get_text('\n')
+                        else:
+                            mail_content += partt.get_payload()
         else:
             mail_content = post.get_payload()
 
+        # print(f"Mail: {mail_content}")
         return mail_content
 
     def getPostLinks(self, msg):

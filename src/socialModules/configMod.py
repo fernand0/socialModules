@@ -255,17 +255,20 @@ def select_from_list(options, identifier="", selector="",
     else:
         names = options
     sel = -1
-    names_sel = [opt for opt in names if selector in opt]# + more_options
+    names_sel = names.copy()
+    if selector:
+        names_sel = [opt for opt in names if selector in opt]# + more_options
     if negation_selector:
         names_sel = [opt for opt in names if not (negation_selector in opt)] 
     names_sel = names_sel + more_options
     options_sel = names_sel.copy()
-    while options_sel:
+    while options_sel and len(options_sel)>1:
         text_sel = ""
         for i, elem in enumerate(options_sel):
             text_sel = f"{text_sel}\n{i}) {elem}"
         resPopen = os.popen('stty size', 'r').read()
         rows, columns = resPopen.split()
+        logging.info(f"Rows: {rows} Columns: {columns}")
         if text_sel.count('\n') > int(rows) -2:
             click.echo_via_pager(text_sel) 
         else:
@@ -277,12 +280,14 @@ def select_from_list(options, identifier="", selector="",
             sel = names.index(default)
             options_sel = []
         elif not sel.isdigit():
+            logging.debug(f"Opt: {sel}")
             options_sel = [opt for opt in options_sel if sel.lower() in opt.lower()]
-            if len(options_sel) == 1:
-                if not options_sel[0] in more_options:
-                    sel = names.index(options_sel[0])
-                options_sel = []
-            elif len(options_sel) == 0:
+            # if len(options_sel) == 1:
+            #     if not options_sel[0] in more_options:
+            #         sel = names.index(options_sel[0])
+            #     options_sel = []
+            # elif
+            if len(options_sel) == 0:
                 options_sel = names_sel.copy()
         else:
             # Now we select the original number
@@ -291,6 +296,10 @@ def select_from_list(options, identifier="", selector="",
                 options_sel = []
             else:
                 options_sel = names_sel.copy()
+    
+    if len(options_sel) == 1:      
+        if not options_sel[0] in more_options: 
+            sel = names.index(options_sel[0])
 
     logging.info(f"Sel: {sel}")
     if isinstance(sel, int) and int(sel) < len(names): 

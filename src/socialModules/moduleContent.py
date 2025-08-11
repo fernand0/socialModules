@@ -75,17 +75,27 @@ class Content:
         logMsg(msgLog, 2, 0)
 
         configFile = f"{CONFIGDIR}/.rss{self.service}"
-        res = ""
+        res = None
+        msgLog = f"{self.indent} Config: {configFile}"  #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
+        res = configFile
         try:
             config = configparser.RawConfigParser()
-            config.read(f"{configFile}")
+            config.read(configFile)
         except:
             msgLog = (f"Does file {configFile} exist?\n"
                       f"It is well formatted?\n"
                       f" Does it contain an entry for your account?")
             res = self.report({self.indent}, msgLog, 0, "")
 
+<<<<<<< HEAD
         if not "Fail" in res: 
+=======
+        
+        msgLog = f"{self.indent} Res: {res}"  #: {src[1:]}"
+        logMsg(msgLog, 2, 0)
+        if res and not "Fail" in res: 
+>>>>>>> master
             self.indent = f"{self.indent} "
             msgLog = f"{self.indent} Getting keys"
             logMsg(msgLog, 2, 0)
@@ -121,8 +131,6 @@ class Content:
                 else:
                     self.report({self.service}, "Some problem", "", "")
 
-        msgLog = f"{self.indent} clienttt {client}"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
         self.client = client
         self.indent = self.indent[:-1]
         self.indent = self.indent[:-1]
@@ -159,6 +167,12 @@ class Content:
                 nick = nick.split("/")[-1]
         self.nick = nick
 
+    def getServer(self):
+        server = ''
+        if hasattr(self, 'server'):
+            server = self.server
+        return server
+
     def getNick(self):
         nick = ""
         if hasattr(self, "nick"):
@@ -185,10 +199,6 @@ class Content:
         # We have a dictionary of values and we check for methods for
         # setting these values in our object
         self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Start setMoreValues"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent}  moreValues: {more}"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
         if more:
             # Setting values available in more
             for option in more:
@@ -219,6 +229,8 @@ class Content:
                                 break
         if not self.getUser():
             self.setUser()
+        msgLog = f"{self.indent} End setMoreValues client {self.getClient()}"
+        logMsg(msgLog, 2, 0)
         msgLog = f"{self.indent} End setMoreValues"
         logMsg(msgLog, 2, 0)
         self.indent = f"{self.indent[:-1]}"

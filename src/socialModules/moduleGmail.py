@@ -89,6 +89,10 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def getLabels(self, sel=""):
         if not hasattr(self, "labels") or not self.labels:
             self.setLabels()
+        if isinstance(sel, dict):
+            sel = sel['name']
+        logging.info(f"Labels: {self.labels}")
+        logging.info(f"Labels: {sel}")
         return list(filter(lambda x: sel in x["name"], self.labels))
 
     def getLabelsNames(self, sel=""):
@@ -122,6 +126,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def modifyLabels(self, messageId, oldLabelId, labelId):
         api = self.getClient()
+        if isinstance(oldLabelId, dict):
+            oldLabelId = oldLabelId.get('id')
         list_labels = {
             "removeLabelIds": [
                 oldLabelId,
@@ -133,12 +139,17 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         logging.info(list_labels)
         # print(message)
 
-        message = (
-            api.users()
-            .messages()
-            .modify(userId="me", id=messageId, body=list_labels)
-            .execute()
-        )
+        try:
+            message = (
+                api.users()
+                .messages()
+                .modify(userId="me", id=messageId, body=list_labels)
+                .execute()
+            )
+        except googleapiclient.errors.httperror as e:
+            logging.error(f"Error deleting email: {e}")
+            message = ""
+
         return message
 
     def getDrafts(self):
@@ -158,6 +169,9 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                     message = {}
                     message["list"] = post
                     message["meta"] = meta
+                    post_id = self.getPostId(post)
+                    email_result = self.getMessage(post_id)
+                    message["body"] = email_result
                 else:
                     raw = self.getMessageRaw(post["id"], typePosts)
                     message = {}
@@ -284,7 +298,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def getMessage(self, idPost):
         api = self.getClient()
-        if 'draft' in self.getPostsType(): 
+        if 'draft' in self.getPostsType():
             message = api.users().drafts().get(userId="me", id=idPost).execute()
         else:
             message = api.users().messages().get(userId="me", id=idPost).execute()
@@ -391,9 +405,13 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return links
 
     def getPostContentHtml(self, post):
+        msgLog = f"{self.indent} getPostDate"
+        logMsg(msgLog, 2, 0)
         # message = self.getMessageId(self.getPostId(post))
-        snippet = self.getHeader(post, "snippet")
-        return snippet
+        if post:
+            snippet = self.getHeader(post, "snippet")
+            return snippet
+        return None
 
     def getPostLinks(self, post):
         message = self.getMessageId(self.getPostId(post))
@@ -428,8 +446,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def getPostTitle(self, post):
         msgLog = f"{self.indent} getPostTitle"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent} {post}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} {post}"
+        # logMsg(msgLog, 2, 0)
         title = ""
         if post:
             title = self.getHeader(post)
@@ -438,8 +456,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def getPostDate(self, post):
         msgLog = f"{self.indent} getPostDate"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent} {post}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} Post: {post}"
+        # logMsg(msgLog, 2, 0)
         if post:
             date = self.getHeader(post, "internalDate")
             # date = int(self.getHeader(post,'internalDate'))/1000
@@ -449,10 +467,12 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return None
 
     def getHeader(self, message, header="Subject"):
-        msgLog = f"{self.indent} getHeader"
+        msgLog = f"{self.indent} getHeader {header}"
         logMsg(msgLog, 2, 0)
         msgLog = f"{self.indent} Message: {message}"
         logMsg(msgLog, 2, 0)
+        # if "message" in message:
+        #     message = message["message"]
         if "meta" in message:
             message = message["meta"]
         for head in message:
@@ -463,7 +483,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 return head["value"]
 
     def getPostId(self, message):
-        # print(f"Message: {message}")
+        logging.debug(f"Message: {message}")
         # print(f"Message: {'list' in message}")
         if isinstance(message, str):
             idPost = message
@@ -473,6 +493,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         elif isinstance(message, tuple):
             # logging.debug(message)
             idPost = message
+        elif 'id' in message:
+            idPost = message.get('id')
 
         return idPost
 
@@ -491,7 +513,10 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return messageEmail
 
     def getPostBody(self, message):
-        res = self.getHeader(message, "payload")
+        logging.debug(f"Message: {message}")
+        if 'body' in message:
+            mess = message["body"]
+        res = self.getHeader(mess, "payload")
         if not res:
             print("No ressss")
             res = message

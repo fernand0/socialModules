@@ -83,7 +83,7 @@ class socialGoogle:
                     creds = pickle.load(fToken)
             except:
                 msgLog = f"{self.indent}  No credentials to pickle"
-                logMsg(msgLog, 2, 0)
+                logMsg(msgLog, 2, 1)
 
         except:
             msgLog = f"{self.indent}  creds except {sys.exc_info()}"
@@ -93,20 +93,27 @@ class socialGoogle:
         if not creds:
             msgLog = f"{self.indent} No creds"
             logMsg(msgLog, 2, 0)
-            if creds and creds.expired and creds.refresh_token:
-                msgLog = f"{self.indent} Needs to refresh token GMail"
+        if creds and creds.expired and creds.refresh_token:
+                msgLog = (f"{self.indent} Needs to refresh token GMail"
+                          # f"Exp {creds.expired} - Ref {creds.refresh_token}"
+                          )
                 logMsg(msgLog, 2, 0)
                 try:
                     creds.refresh(Request())
                 except:
                     msgLog = sys.exc_info()
                     logMsg(msgLog, 2, 0)
-            else:
+                    if os.path.exists(fileTokenStore):
+                        os.remove(fileTokenStore)
+                        print(f"Archivo '{fileTokenStore}' eliminado para forzar una nueva autenticación.")
+                    raise # Es importante que el programa salga o relance para que el usuario pueda re-autenticar
+        elif not creds:
                 # This needs to have a desktop application created in
                 # https://console.cloud.google.com/auth/clients
                 # and some test user, since we are not passing the
                 # verification process in Google.
                 # It only works in local, since it launches a brower
+
                 msgLog = f"{self.indent} Needs to re-authorize token {self.service}"
                 logMsg(msgLog, 2, 0)
                 fileCredStore = self.confName((self.server, self.nick))
@@ -144,18 +151,36 @@ class socialGoogle:
                     creds.refresh(Request())
                     # creds = 'Fail!'
 
-        msgLog = f"{self.indent}  building service {creds} {type(creds)}" 
-        logMsg(msgLog, 2, 0) 
-        if isinstance(creds, google.oauth2.credentials.Credentials): 
-            try: 
-                msgLog = f"{self.indent}  building service {serviceName}" 
-                logMsg(msgLog, 2, 0) 
-                service = build(serviceName, version, credentials=creds) 
+
+        msgLog = f"{self.indent}  building service {creds} {type(creds)}"
+        logMsg(msgLog, 2, 0)
+        if isinstance(creds, google.oauth2.credentials.Credentials):
+            try:
+                msgLog = f"{self.indent}  building service {serviceName}"
+                logMsg(msgLog, 2, 0)
+                service = build(serviceName, version, credentials=creds)
             except:
                 service = self.report(self.service, "", "", sys.exc_info())
 
-        msgLog = f"{self.indent} Service: {service}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} {service.__getstate__()}"
+        # logMsg(msgLog, 1, 0)
+        # if not service._credentials_validated:
+        #     msgLog = f"{self.indent} Problem with credentials"
+        #     logMsg(msgLog, 1, 0)
+        #     fileCredStore = self.confName((self.server, self.nick))
+        #     msgLog = f"{self.indent} fileCredStore: {fileCredStore}"
+        #     logMsg(msgLog, 1, 0)
+        #     flow = InstalledAppFlow.from_client_secrets_file(
+        #         fileCredStore, SCOPES, redirect_uri="http://localhost"
+        #     )
+        #     creds = flow.run_local_server(port=0)
+
+        #     # Save the credentials for the next run
+        #     with open(fileTokenStore, "wb") as token:
+        #         msgLog = f"{self.indent}   Pickle: {fileTokenStore}"
+        #         logMsg(msgLog, 2, 0)
+        #         pickle.dump(creds, token)
+
         return service
 
     def confName(self, acc):

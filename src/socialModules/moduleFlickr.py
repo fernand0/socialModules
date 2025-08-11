@@ -204,7 +204,7 @@ def main():
 
     apiSrc = rules.selectRuleInteractive()
 
-    testingPostsPos = True
+    testingPostsPos = False
     if testingPostsPos:
         apiSrc.setPosts()
         apiSrc.lastLinkPublished='https://flickr.com/photos/fernand0/53624853058'
@@ -223,11 +223,13 @@ def main():
             print(f"Post {i}): {post}")
         return
 
-    testingPublishDraft = False
+    testingPublishDraft = True
     if testingPublishDraft:
+        apiSrc.setPostsType('drafts')
         apiSrc.setPosts()
         post = apiSrc.getPosts()[0]
         print(f"Post: {post}")
+        input("Continue? ")
         apiSrc.publishApiDraft(api= apiSrc.getClient(), post=post)
         return
 
