@@ -780,7 +780,7 @@ class moduleRules:
         if apiSrc:
             apiDst.setLastLink(apiSrc)
         else:
-            # FIXME. Do we need this? 
+            # FIXME. Do we need this?
             apiDst.setLastLink(apiDst)
 
         # FIXME: best in readConfigSrc (readConfigDst, since we need it)?
@@ -982,7 +982,7 @@ class moduleRules:
         delete=False,
     ):
         indent = f"{name}"
-        
+
         # FIXME. What happens when src and dst are the same service (drafts, mainly)?
         # Destination
         # orig = f"{self.getNameAction(src)} ({self.getNickRule(src)}) {self.getTypeRule(src)}"
@@ -1225,11 +1225,11 @@ class moduleRules:
         rule_action = scheduled_action["rule_action"]
         args = scheduled_action["args"]
         simmulate = scheduled_action["simmulate"]
-        
+
         # Apply special timeSlots treatment for cache and pocket actions
         timeSlots = args.timeSlots
         noWait = args.noWait
-        
+
         if (self.getNameAction(rule_action) in "cache") or (
             (self.getNameAction(rule_action) == "direct")
             and (self.getProfileAction(rule_action) == "pocket")
@@ -1237,7 +1237,7 @@ class moduleRules:
             # We will always load new items in the cache
             timeSlots = 0
             noWait = True
-        
+
         # Prepare arguments for executeAction
         msgAction = (
             f"{self.getNameAction(rule_action)} "
@@ -1269,11 +1269,12 @@ class moduleRules:
         Reports the results and errors of action execution.
         """
         for scheduled_action, res in action_results:
-            if res:
-                rule_key = scheduled_action['rule_key']
-                rule_index = scheduled_action.get('rule_index', '')
-                rule_summary = f"Rule {rule_index}: {rule_key}" if rule_index != '' else str(rule_key)
-                logMsg(f"[OK] Action executed for {rule_summary} -> {scheduled_action['rule_action']}: {res}", 1, 1)
+            if not res:
+                res = ""
+            rule_key = scheduled_action['rule_key']
+            rule_index = scheduled_action.get('rule_index', '')
+            rule_summary = f"Rule {rule_index}: {rule_key}" if rule_index != '' else str(rule_key)
+            logMsg(f"[OK] Action executed for {rule_summary} -> {scheduled_action['rule_action']}: {res}", 1, 1)
         for scheduled_action, exc in action_errors:
             rule_key = scheduled_action['rule_key']
             rule_index = scheduled_action.get('rule_index', '')
