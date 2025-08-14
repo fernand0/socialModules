@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from slack_sdk import WebClient
 
 from socialModules.moduleContent import *
+from socialModules.configMod import nameModule
 # from socialModules.moduleQueue import *
 
 # from slack_sdk.errors import SlackApiError
@@ -424,6 +425,26 @@ def main():
 
     indent = ""
 
+    import socialModules.moduleRules
+    rules = socialModules.moduleRules.moduleRules()
+    rules.checkRules()
+
+    apiSrc = rules.selectRuleInteractive()
+
+
+
+    testingPost = True
+    if testingPost:
+        apiSrc.setPosts()
+        print(f"Posts: {apiSrc.getPosts()}")
+        listPosts = {}
+        for i,post in enumerate(apiSrc.getPosts()):
+            # print(f"Post {i}): {post}")
+            print(f"{i}) {apiSrc.getPostTitle(post)}")
+            print(f"     {apiSrc.getPostLink(post)}")
+        return
+
+
     testingInit = False
     if testingInit:
         import moduleRules
@@ -438,7 +459,7 @@ def main():
         logging.info(f"Channels: {apiSrc.getChannels()}")
         return
 
-    testingPublishing = True
+    testingPublishing = False
     if testingPublishing:
         links  = [ 
         'https://blog.thunderbird.net/2024/10/thunderbird-for-android-8-0-takes-flight/',

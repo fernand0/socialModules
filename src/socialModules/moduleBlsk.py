@@ -62,7 +62,10 @@ class moduleBlsk(Content): #, Queue):
     def setApiPosts(self):
         posts = []
 
-        posts, error = self.apiCall('get_timeline')
+        print(f"client: {self.client}")
+        posts, error = self.apiCall('get_timeline', 
+                                    api=self.client.app.bsky.feed
+                                    )
 
         if not error:
             posts = posts['feed']
@@ -75,12 +78,13 @@ class moduleBlsk(Content): #, Queue):
 
         if hasattr(self, 'me'):
             try:
-                posts, error = self.apiCall('get_actor_likes',
+                posts, error = self.apiCall('get_actor_likes', 
+                                            api=self.client.app.bsky.feed,
                                             params={'actor':self.me.did})
 
                 if not error:
                     posts = posts['feed']
-            except atproto.atproto_client.exceptions.NetworkError:
+            except atproto_client.exceptions.NetworkError:
                 self.report(self.service, 'Error en setApiFavs. Network Error. ',
                             '', sys.exc_info())
             except:
