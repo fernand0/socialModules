@@ -1293,7 +1293,7 @@ class moduleImap(Content): #, Queue):
         logMsg(msgLog, 2, 0)
         (status, resultMsg) = M.copy(msgs, folder)
         res = status
-        logging.debug(f"Res status: {res}")
+        logging.debug(f"Res status: {res} - {resultMsg}")
         if status == 'OK':
             # If the list of messages is too long it won't work
             flag = '\\Deleted'
