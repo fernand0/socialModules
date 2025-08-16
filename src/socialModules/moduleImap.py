@@ -1304,7 +1304,7 @@ class moduleImap(Content): #, Queue):
             else:
                 print(f"deleting! {result}")
         else:
-            logging.debug(f"Fail copying")
+            logging.warning(f"Fail copying. {resultMsg}")
             res = "Fail!"
         #print(f"Expunge: {M.expunge()}")
         # msgs contains the index of the message, we can retrieve/move them
