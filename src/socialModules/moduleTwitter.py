@@ -82,13 +82,15 @@ class moduleTwitter(Content): #, Queue):
         return api
 
     def setApiPosts(self):
-        posts = []
         # Does not work with new API restrictions
         #posts = self.apiCall(self.getClient().statuses.user_timeline,
         posts = self.apiCall(self.getClient().get_home_timeline,
                              tweet_fields=['entities']) #,
                 # max_results=100) #, tweet_mode='extended')
-        posts = posts[0]
+        if not isinstance(posts, str):
+            posts = posts[0]
+        else:
+            posts = []
 
         return posts
 
@@ -387,15 +389,15 @@ def main():
     # logging.debug(f"Key: {key}")
 
 
-    testingPosts = False
+    testingPosts = True
     if testingPosts:
         print("Testing Posts")
-        # key = ('twitter', 'set', 'fernand0', 'posts')
+        key = ('twitter', 'set', 'fernand0', 'posts')
         # logging.debug(f"Key: {key}")
         apiSrc = rules.readConfigSrc("", key, None)
         apiSrc.setPosts()
         posts = apiSrc.getPosts()
-        # print(f"Tweets: {posts}")
+        print(f"Tweets: {posts}")
         for tweet in posts:
             print(f"Tweet: {tweet}")
             print(f"Tweet: {tweet.entities}")
@@ -431,7 +433,7 @@ def main():
         print(f"Len: {len(apiSrc.getPosts())}")
         return
 
-    testingPost = True
+    testingPost = False
     if testingPost:
         print("Testing Post")
         key = ('direct', 'post', 'twitter', 'fernand0Test')
