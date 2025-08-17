@@ -33,6 +33,7 @@ dependencies = [
 		'distance',
 		'ebooklib',
 		'sievelib',
+		'six',
 		'gitpython',
 		'keyring',
 		'click',
