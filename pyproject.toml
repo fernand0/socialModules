@@ -49,6 +49,7 @@ dependencies = [
 		'medium',
 		'pocket-api',
 		'pytumblr',
+		'six',
 		'telepot',
 		'gitterpy',
 		'setuptools',
