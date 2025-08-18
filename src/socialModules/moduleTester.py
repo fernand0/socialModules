@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import logging
-from socialModules.testing import testing_utils
+from socialModules.test_utils import testing_utils
 
 class TestOption:
     def __init__(self, name, test_function):
