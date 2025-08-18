@@ -389,10 +389,10 @@ def main():
     # logging.debug(f"Key: {key}")
 
 
-    testingPosts = True
+    testingPosts = False
     if testingPosts:
         print("Testing Posts")
-        key = ('twitter', 'set', 'fernand0', 'posts')
+        key = ('twitter', 'set', 'fernand0Test', 'posts')
         # logging.debug(f"Key: {key}")
         apiSrc = rules.readConfigSrc("", key, None)
         apiSrc.setPosts()
@@ -433,7 +433,7 @@ def main():
         print(f"Len: {len(apiSrc.getPosts())}")
         return
 
-    testingPost = False
+    testingPost = True
     if testingPost:
         print("Testing Post")
         key = ('direct', 'post', 'twitter', 'fernand0Test')

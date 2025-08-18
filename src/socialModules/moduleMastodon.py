@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import logging
+import os
 import sys
 
 import mastodon
@@ -98,7 +99,7 @@ class moduleMastodon(Content): #, Queue):
         try:
             res = self.getClient().toot(post+" "+link)
         except mastodon.errors.MastodonServiceUnavailableError:
-            res = self.report(self.getService(), kwargs, 'Not available', 
+            res = self.report(self.getService(), kwargs, 'Not available',
                               sys.exc_info())
             res = f"Fail! {res}"
         except:
@@ -249,6 +250,10 @@ class moduleMastodon(Content): #, Queue):
 
 
 def main():
+    """
+    Main function for testing moduleMastodon functionality.
+    Provides interactive testing capabilities for various Mastodon operations.
+    """
 
     logging.basicConfig(stream=sys.stdout,
                         level=logging.DEBUG,
@@ -257,117 +262,655 @@ def main():
     import socialModules.moduleRules
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
+
     name = nameModule()
     rulesList = rules.selectRule(name, '@fernand0', 'favs')
-    logging.debug(f"Key: {rulesList}")
-    key = rulesList[0]
 
-    testingPosts = True
+    print("Available Mastodon rules:")
+    for i, rule in enumerate(rulesList):
+        print(f"{i}) {rule}")
+
+    if not rulesList:
+        print("No Mastodon rules found. Please configure Mastodon in your rules.")
+        return
+
+    # Select rule
+    try:
+        sel = int(input(f"Which rule to use? (0-{len(rulesList)-1}): "))
+        if sel < 0 or sel >= len(rulesList):
+            print("Invalid selection")
+            return
+        key = rulesList[sel]
+    except (ValueError, IndexError):
+        print("Invalid input, using first rule")
+        key = rulesList[0]
+
+    print(f"Selected rule: {key}")
+
+    # Initialize Mastodon module
+    try:
+        apiSrc = rules.readConfigSrc("", key, None)
+        print(f"Mastodon client initialized for: {apiSrc.user}")
+        print(f"Server: {getattr(apiSrc, 'server', 'Unknown')}")
+    except Exception as e:
+        print(f"Error initializing Mastodon: {e}")
+        return
+
+    # Test scenarios - interactive menu
+
+    testingConnection = False
+    if testingConnection:
+        print("\n=== Testing Mastodon Connection ===")
+        try:
+            client = apiSrc.getClient()
+            if client:
+                me = client.me()
+                print(f"✓ Connected as: {me.get('display_name', 'Unknown')} (@{me.get('username', 'unknown')})")
+                print(f"  Account ID: {me.get('id')}")
+                print(f"  Followers: {me.get('followers_count', 0)}")
+                print(f"  Following: {me.get('following_count', 0)}")
+                print(f"  Posts: {me.get('statuses_count', 0)}")
+            else:
+                print("✗ No Mastodon client available")
+        except Exception as e:
+            print(f"✗ Connection failed: {e}")
+        return
+
+    testingPosts = False
     if testingPosts:
-        print("Testing Posts")
-        mastodon = rules.readConfigSrc("", key, None)
-        mastodon.setPosts()
-        if mastodon.getPosts():
-            toot = mastodon.getPosts()[0]
-            # toot = mastodon.getNextPost()[0]
-            print(toot)
-            print(f" -Title {mastodon.getPostTitle(toot)}")
-            print(f" -Link {mastodon.getPostLink(toot)}")
-            print(f" -Content link {mastodon.getPostContentLink(toot)}")
-            print(f" -Post link {mastodon.extractPostLinks(toot)}")
+        print("\n=== Testing Posts Retrieval ===")
+        try:
+            apiSrc.setPosts()
+            posts = apiSrc.getPosts()
+
+            if posts:
+                print(f"Retrieved {len(posts)} posts:")
+                for i, post in enumerate(posts[:5]):  # Show first 5
+                    title = apiSrc.getPostTitle(post)
+                    link = apiSrc.getPostLink(post)
+                    url = apiSrc.getPostUrl(post)
+                    post_id = apiSrc.getPostId(post)
+
+                    print(f"\n{i+1}. Post ID: {post_id}")
+                    print(f"   Title: {title[:100]}{'...' if len(title) > 100 else ''}")
+                    print(f"   Link: {link}")
+                    print(f"   URL: {url}")
+
+                if len(posts) > 5:
+                    print(f"\n... and {len(posts) - 5} more posts")
+            else:
+                print("No posts found")
+        except Exception as e:
+            print(f"Error retrieving posts: {e}")
         return
 
-    testingFav = False
-    if testingFav:
-        print("Testing Fav")
-        mastodon = rules.readConfigSrc("", key, None)
-        mastodon.setPosts()
-        logging.info(f"Favs: {mastodon.getPosts()}")
-        if mastodon.getPosts():
-            toot = mastodon.getPosts()[0]
-            toot = mastodon.getNextPost()#[0]
-            print(toot)
-            print(f" -Title {mastodon.getPostTitle(toot)}")
-            print(f" -Link {mastodon.getPostLink(toot)}")
-            print(f" -Content link {mastodon.getPostContentLink(toot)}")
-            print(f" -Post link {mastodon.extractPostLinks(toot)}")
+    testingFavorites = False
+    if testingFavorites:
+        print("\n=== Testing Favorites ===")
+        try:
+            # Set posts type to favorites
+            apiSrc.setPostsType('favs')
+            apiSrc.setPosts()
+            favs = apiSrc.getPosts()
+
+            if favs:
+                print(f"Retrieved {len(favs)} favorites:")
+                for i, fav in enumerate(favs[:3]):  # Show first 3
+                    title = apiSrc.getPostTitle(fav)
+                    link = apiSrc.getPostLink(fav)
+                    content_link = apiSrc.getPostContentLink(fav)
+
+                    print(f"\n{i+1}. Favorite:")
+                    print(f"   Title: {title[:100]}{'...' if len(title) > 100 else ''}")
+                    print(f"   Link: {link}")
+                    print(f"   Content Link: {content_link}")
+                    print(f"   Extract Links: {apiSrc.extractPostLinks(fav)}")
+
+                if len(favs) > 3:
+                    print(f"\n... and {len(favs) - 3} more favorites")
+            else:
+                print("No favorites found")
+        except Exception as e:
+            print(f"Error retrieving favorites: {e}")
         return
 
+    testingBasicPost = False
+    if testingBasicPost:
+        print("\n=== Testing Basic Post ===")
+        title = "Test post from moduleMastodon"
+        link = "https://example.com/test"
 
-    testingPost = False
-    if testingPost:
-        print("Testing Post")
-        title = "Test"
-        link = "https://twitter.com/fernand0Test"
-        mastodon.publishApiPost(title, link, '')
+        print(f"Posting toot:")
+        print(f"  Title: {title}")
+        print(f"  Link: {link}")
+
+        try:
+            result = apiSrc.publishPost(title, link, '')
+            print(f"Post result: {result}")
+
+            if result and not str(result).startswith("Fail"):
+                post_id = apiSrc.getUrlId(str(result)) if hasattr(mastodon, 'getUrlId') else None
+                if post_id:
+                    print(f"Post ID: {post_id}")
+
+                    delete_choice = input("Delete this post? (y/N): ").lower()
+                    if delete_choice == 'y':
+                        delete_result = apiSrc.deleteApiPosts(post_id)
+                        print(f"Delete result: {delete_result}")
+        except Exception as e:
+            print(f"Error posting: {e}")
         return
 
-    testingPostImages = False
-    if testingPostImages:
-        key =  ('mastodon', 'set', '@fernand0@mastodon.social', 'posts')
-        image = '/tmp/2023-06-09_image.png'
-        title = 'Prueba imagen'
-        altText = "Alternative text"
-        apiSrc = rules.readConfigSrc("", key, rules.more.get('key',''))
-        apiSrc.publishImage(title, image, alt=altText)
-        # print(f"Last res: {apiSrc.lastRes}")
-        # print(f"Last res: {apiSrc.lastRes['media_attachments'][0]['url']}")
+    testingImagePost = False
+    if testingImagePost:
+        print("\n=== Testing Image Post ===")
 
+        # Ask for image path
+        image_path = input("Enter image path (or press Enter for default): ").strip()
+        if not image_path:
+            image_path = '/tmp/test_image.png'
 
+        if not os.path.exists(image_path):
+            print(f"Image not found: {image_path}")
+            print("Skipping image test")
+            return
+
+        title = "Test image post"
+        alt_text = "Test image from moduleMastodon"
+
+        print(f"Posting image:")
+        print(f"  Image: {image_path}")
+        print(f"  Title: {title}")
+        print(f"  Alt text: {alt_text}")
+
+        try:
+            if hasattr(mastodon, 'publishImage'):
+                result = apiSrc.publishImage(title, image_path, alt=alt_text)
+                print(f"Image post result: {result}")
+
+                if result and not str(result).startswith("Fail"):
+                    post_id = apiSrc.getUrlId(str(result)) if hasattr(mastodon, 'getUrlId') else None
+                    if post_id:
+                        print(f"Post ID: {post_id}")
+
+                        delete_choice = input("Delete this post? (y/N): ").lower()
+                        if delete_choice == 'y':
+                            delete_result = apiSrc.deleteApiPosts(post_id)
+                            print(f"Delete result: {delete_result}")
+            else:
+                print("publishImage method not available")
+        except Exception as e:
+            print(f"Error posting image: {e}")
         return
 
+    testingCacheIntegration = False
+    if testingCacheIntegration:
+        print("\n=== Testing Cache Integration ===")
 
-    print("Testing posting and deleting")
-    res = mastodon.publishImage("Prueba ", "/tmp/prueba.png")
-    print(res)
-    idPost = mastodon.getUrlId(res)
-    print(idPost)
-    input('Delete? ')
-    mastodon.deletePostId(idPost)
-    # sys.exit()
-    print("Testing posts")
-    print(mastodon.getClient().me())
-    for i, post in enumerate(mastodon.getPosts()):
-        # print(post)
-        title = mastodon.getPostTitle(post)
-        link = mastodon.getPostLink(post)
-        url = mastodon.getPostUrl(post)
-        theId = mastodon.getPostId(post)
-        print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
+        # Enable auto-cache
+        apiSrc.setAutoCache(True)
+        print(f"Auto-cache enabled: {apiSrc.getAutoCache()}")
 
-    print("Favorites")
-    for post in mastodon.getPosts():
-        print(post)
-        print(mastodon.getPostTitle(post))
-        # input("Delete ?")
+        # Post with caching
+        title = "Cache integration test"
+        link = "https://example.com/cache-test"
+
+        print("Posting toot with auto-cache enabled...")
+        try:
+            result = apiSrc.publishPost(title, link, '')
+            print(f"Post result: {result}")
+
+            # Check cache
+            from socialModules.modulePublicationCache import PublicationCache
+            cache = PublicationCache()
+            mastodon_pubs = cache.get_publications_by_service("mastodon")
+            print(f"Mastodon publications in cache: {len(mastodon_pubs)}")
+
+            if mastodon_pubs:
+                latest = mastodon_pubs[-1]
+                print(f"Latest cached publication:")
+                print(f"  Title: {latest['title']}")
+                print(f"  Link: {latest['original_link']}")
+                print(f"  Service: {latest['service']}")
+                print(f"  Response Link: {latest.get('response_link', 'None')}")
+                print(f"  Date: {latest['publication_date']}")
+        except Exception as e:
+            print(f"Error in cache integration test: {e}")
+        return
+
+    testingDeletion = False
+    if testingDeletion:
+        print("\n=== Testing Post Deletion ===")
+
+        post_id = input("Enter post ID to delete: ").strip()
+        if not post_id:
+            print("No post ID provided")
+            return
+
+        confirm = input(f"Are you sure you want to delete post {post_id}? (y/N): ").lower()
+        if confirm != 'y':
+            print("Deletion cancelled")
+            return
+
+        try:
+            result = apiSrc.deleteApiPosts(post_id)
+            print(f"Deletion result: {result}")
+        except Exception as e:
+            print(f"Error deleting post: {e}")
+        return
+
+    testingFavoritesManagement = False
+    if testingFavoritesManagement:
+        print("\n=== Testing Favorites Management ===")
+
+        post_id = input("Enter post ID to unfavorite: ").strip()
+        if not post_id:
+            print("No post ID provided")
+            return
+
+        try:
+            if hasattr(mastodon, 'deleteApiFavs'):
+                result = apiSrc.deleteApiFavs(post_id)
+                print(f"Unfavorite result: {result}")
+            else:
+                print("deleteApiFavs method not available")
+        except Exception as e:
+            print(f"Error managing favorite: {e}")
+        return
+
+    testingCacheContent = False
+    if testingCacheContent:
+        print("\n=== Testing Cache Content ===")
+        try:
+            from socialModules.modulePublicationCache import PublicationCache
+            cache = PublicationCache()
+            
+            service = input("Enter service to check (default: mastodon): ").strip().lower()
+            if not service:
+                service = "mastodon"
+
+            service_pubs = cache.get_publications_by_service(service)
+            print(f"\nFound {len(service_pubs)} publications for service '{service}':")
+
+            if service_pubs:
+                for i, pub in enumerate(service_pubs):
+                    print(f"\n--- Publication {i+1}/{len(service_pubs)} ---")
+                    print(f"  ID: {pub.get('id')}")
+                    print(f"  Title: {pub.get('title')}")
+                    print(f"  Original Link: {pub.get('original_link')}")
+                    print(f"  Service: {pub.get('service')}")
+                    print(f"  Response Link: {pub.get('response_link', 'None')}")
+                    print(f"  Date: {pub.get('publication_date')}")
+                    print(f"  Metadata: {pub.get('metadata')}")
+            else:
+                print("No publications found for this service.")
+
+        except Exception as e:
+            print(f"Error checking cache content: {e}")
+        return
+
+    # Interactive testing mode (default)
+    testingInteractive = True
+    if testingInteractive:
+        print("\n=== Interactive Mastodon Testing ===")
+        print("Available test modes:")
+        print("1. Connection test")
+        print("2. Posts retrieval test")
+        print("3. Favorites test")
+        print("4. Basic post test")
+        print("5. Image post test")
+        print("6. Cache integration test")
+        print("7. Post deletion test")
+        print("8. Favorites management test")
+        print("9. Custom post")
+        print("10. Browse posts")
+        print("11. Cache content verification")
+
+        try:
+            choice = int(input("Select test mode (1-11): "))
+
+            if choice == 1:
+                testingConnection = True
+            elif choice == 2:
+                testingPosts = True
+            elif choice == 3:
+                testingFavorites = True
+            elif choice == 4:
+                testingBasicPost = True
+            elif choice == 5:
+                testingImagePost = True
+            elif choice == 6:
+                testingCacheIntegration = True
+            elif choice == 7:
+                testingDeletion = True
+            elif choice == 8:
+                testingFavoritesManagement = True
+            elif choice == 9:
+                print("\n=== Custom Post ===")
+                title = input("Post content: ").strip() or "Custom test post"
+                link = input("Link (optional): ").strip()
+
+                # Ask about cache
+                cache_choice = input("Enable auto-cache? (y/N): ").lower()
+                if cache_choice == 'y':
+                    apiSrc.setAutoCache(True)
+                    print("Auto-cache enabled")
+
+                print(f"\nPosting custom toot:")
+                print(f"  Content: {title}")
+                if link:
+                    print(f"  Link: {link}")
+
+                try:
+                    result = apiSrc.publishPost(title, link, '')
+                    print(f"Result: {result}")
+                except Exception as e:
+                    print(f"Error: {e}")
+            elif choice == 10:
+                print("\n=== Browse Posts ===")
+                try:
+                    apiSrc.setPosts()
+                    posts = apiSrc.getPosts()
+
+                    if posts:
+                        print(f"Found {len(posts)} posts. Browsing...")
+                        for i, post in enumerate(posts):
+                            title = apiSrc.getPostTitle(post)
+                            link = apiSrc.getPostLink(post)
+                            url = apiSrc.getPostUrl(post)
+                            post_id = apiSrc.getPostId(post)
+
+                            print(f"\n--- Post {i+1}/{len(posts)} ---")
+                            print(f"ID: {post_id}")
+                            print(f"Title: {title}")
+                            print(f"Link: {link}")
+                            print(f"URL: {url}")
+
+                            if i < len(posts) - 1:
+                                cont = input("Continue? (y/N/q to quit): ").lower()
+                                if cont == 'q':
+                                    break
+                                elif cont != 'y':
+                                    break
+                    else:
+                        print("No posts found")
+                except Exception as e:
+                    print(f"Error browsing posts: {e}")
+            elif choice == 11:
+                testingCacheContent = True
+            else:
+                print("Invalid choice")
+                return
+
+        except ValueError:
+            print("Invalid input")
+            return
+        except KeyboardInterrupt:
+            print("\nTest cancelled by user")
+            return
+
+    # Re-run the selected test
+    if testingConnection:
+        print("\n=== Testing Mastodon Connection ===")
+        try:
+            client = apiSrc.getClient()
+            if client:
+                me = client.me()
+                print(f"✓ Connected as: {me.get('display_name', 'Unknown')} (@{me.get('username', 'unknown')})")
+                print(f"  Account ID: {me.get('id')}")
+                print(f"  Followers: {me.get('followers_count', 0)}")
+                print(f"  Following: {me.get('following_count', 0)}")
+                print(f"  Posts: {me.get('statuses_count', 0)}")
+            else:
+                print("✗ No Mastodon client available")
+        except Exception as e:
+            print(f"✗ Connection failed: {e}")
+
+    elif testingPosts:
+        print("\n=== Testing Posts Retrieval ===")
+        try:
+            apiSrc.setPosts()
+            posts = apiSrc.getPosts()
+
+            if posts:
+                print(f"Retrieved {len(posts)} posts:")
+                for i, post in enumerate(posts[:5]):  # Show first 5
+                    title = apiSrc.getPostTitle(post)
+                    link = apiSrc.getPostLink(post)
+                    url = apiSrc.getPostUrl(post)
+                    post_id = apiSrc.getPostId(post)
+
+                    print(f"\n{i+1}. Post ID: {post_id}")
+                    print(f"   Title: {title[:100]}{'...' if len(title) > 100 else ''}")
+                    print(f"   Link: {link}")
+                    print(f"   URL: {url}")
+
+                if len(posts) > 5:
+                    print(f"\n... and {len(posts) - 5} more posts")
+            else:
+                print("No posts found")
+        except Exception as e:
+            print(f"Error retrieving posts: {e}")
+
+    elif testingFavorites:
+        print("\n=== Testing Favorites ===")
+        try:
+            # Set posts type to favorites
+            apiSrc.setPostsType('favs')
+            apiSrc.setPosts()
+            favs = apiSrc.getPosts()
+
+            if favs:
+                print(f"Retrieved {len(favs)} favorites:")
+                for i, fav in enumerate(favs[:3]):  # Show first 3
+                    title = apiSrc.getPostTitle(fav)
+                    link = apiSrc.getPostLink(fav)
+                    content_link = apiSrc.getPostContentLink(fav)
+
+                    print(f"\n{i+1}. Favorite:")
+                    print(f"   Title: {title[:100]}{'...' if len(title) > 100 else ''}")
+                    print(f"   Link: {link}")
+                    print(f"   Content Link: {content_link}")
+                    print(f"   Extract Links: {apiSrc.extractPostLinks(fav)}")
+
+                if len(favs) > 3:
+                    print(f"\n... and {len(favs) - 3} more favorites")
+            else:
+                print("No favorites found")
+        except Exception as e:
+            print(f"Error retrieving favorites: {e}")
+
+    elif testingBasicPost:
+        print("\n=== Testing Basic Post ===")
+        title = "Test post from moduleMastodon"
+        link = "https://example.com/test"
+
+        print(f"Posting toot:")
+        print(f"  Title: {title}")
+        print(f"  Link: {link}")
+
+        try:
+            result = apiSrc.publishPost(title, link, '')
+            print(f"Post result: {result}")
+
+            if result and not str(result).startswith("Fail"):
+                post_id = apiSrc.getUrlId(str(result)) if hasattr(mastodon, 'getUrlId') else None
+                if post_id:
+                    print(f"Post ID: {post_id}")
+
+                    delete_choice = input("Delete this post? (y/N): ").lower()
+                    if delete_choice == 'y':
+                        delete_result = apiSrc.deleteApiPosts(post_id)
+                        print(f"Delete result: {delete_result}")
+        except Exception as e:
+            print(f"Error posting: {e}")
+
+    elif testingImagePost:
+        print("\n=== Testing Image Post ===")
+
+        # Ask for image path
+        image_path = input("Enter image path (or press Enter to skip): ").strip()
+        if not image_path:
+            print("No image path provided, skipping image test")
+            return
+
+        if not os.path.exists(image_path):
+            print(f"Image not found: {image_path}")
+            return
+
+        title = "Test image post"
+        alt_text = "Test image from moduleMastodon"
+
+        print(f"Posting image:")
+        print(f"  Image: {image_path}")
+        print(f"  Title: {title}")
+        print(f"  Alt text: {alt_text}")
+
+        try:
+            if hasattr(mastodon, 'publishImage'):
+                result = apiSrc.publishImage(title, image_path, alt=alt_text)
+                print(f"Image post result: {result}")
+
+                if result and not str(result).startswith("Fail"):
+                    post_id = apiSrc.getUrlId(str(result)) if hasattr(mastodon, 'getUrlId') else None
+                    if post_id:
+                        print(f"Post ID: {post_id}")
+
+                        delete_choice = input("Delete this post? (y/N): ").lower()
+                        if delete_choice == 'y':
+                            delete_result = apiSrc.deleteApiPosts(post_id)
+                            print(f"Delete result: {delete_result}")
+            else:
+                print("publishImage method not available")
+        except Exception as e:
+            print(f"Error posting image: {e}")
+
+    elif testingCacheIntegration:
+        print("\n=== Testing Cache Integration ===")
+
+        # Enable auto-cache
+        apiSrc.setAutoCache(True)
+        print(f"Auto-cache enabled: {apiSrc.getAutoCache()}")
+
+        # Post with caching
+        title = "Cache integration test"
+        link = "https://example.com/cache-test"
+
+        print("Posting toot with auto-cache enabled...")
+        try:
+            result = apiSrc.publishPost(title, link, '')
+            print(f"Post result: {result}")
+
+            # Check cache
+            from socialModules.modulePublicationCache import PublicationCache
+            cache = PublicationCache()
+            mastodon_pubs = cache.get_publications_by_service("mastodon")
+            print(f"Mastodon publications in cache: {len(mastodon_pubs)}")
+
+            if mastodon_pubs:
+                latest = mastodon_pubs[-1]
+                print(f"Latest cached publication:")
+                print(f"  Title: {latest['title']}")
+                print(f"  Link: {latest['original_link']}")
+                print(f"  Service: {latest['service']}")
+                print(f"  Response Link: {latest.get('response_link', 'None')}")
+                print(f"  Date: {latest['publication_date']}")
+        except Exception as e:
+            print(f"Error in cache integration test: {e}")
+
+    elif testingDeletion:
+        print("\n=== Testing Post Deletion ===")
+
+        post_id = input("Enter post ID to delete: ").strip()
+        if not post_id:
+            print("No post ID provided")
+            return
+
+        confirm = input(f"Are you sure you want to delete post {post_id}? (y/N): ").lower()
+        if confirm != 'y':
+            print("Deletion cancelled")
+            return
+
+        try:
+            result = apiSrc.deleteApiPosts(post_id)
+            print(f"Deletion result: {result}")
+        except Exception as e:
+            print(f"Error deleting post: {e}")
+
+    elif testingFavoritesManagement:
+        print("\n=== Testing Favorites Management ===")
+
+        post_id = input("Enter post ID to unfavorite: ").strip()
+        if not post_id:
+            print("No post ID provided")
+            return
+
+        try:
+            if hasattr(mastodon, 'deleteApiFavs'):
+                result = apiSrc.deleteApiFavs(post_id)
+                print(f"Unfavorite result: {result}")
+            else:
+                print("deleteApiFavs method not available")
+        except Exception as e:
+            print(f"Error managing favorite: {e}")
         # mastodon.deletePost(post)
 
-    # sys.exit()
+    elif testingCacheContent:
+        print("\n=== Testing Cache Content ===")
+        try:
+            from socialModules.modulePublicationCache import PublicationCache
+            cache = PublicationCache()
+            
+            service = input("Enter service to check (default: mastodon): ").strip().lower()
+            if not service:
+                service = "mastodon"
+
+            service_pubs = cache.get_publications_by_service(service)
+            print(f"\nFound {len(service_pubs)} publications for service '{service}':")
+
+            if service_pubs:
+                for i, pub in enumerate(service_pubs):
+                    print(f"\n--- Publication {i+1}/{len(service_pubs)} ---")
+                    print(f"  ID: {pub.get('id')}")
+                    print(f"  Title: {pub.get('title')}")
+                    print(f"  Original Link: {pub.get('original_link')}")
+                    print(f"  Service: {pub.get('service')}")
+                    print(f"  Response Link: {pub.get('response_link', 'None')}")
+                    print(f"  Date: {pub.get('publication_date')}")
+                    print(f"  Metadata: {pub.get('metadata')}")
+            else:
+                print("No publications found for this service.")
+
+        except Exception as e:
+            print(f"Error checking cache content: {e}")
+
+
+    return
 
     print("Testing title and link")
 
     print("Posts")
 
-    for post in mastodon.getPosts():
-        title = mastodon.getPostTitle(post)
-        link = mastodon.getPostLink(post)
+    for post in apiSrc.getPosts():
+        title = apiSrc.getPostTitle(post)
+        link = apiSrc.getPostLink(post)
         print(f"Title: {title}\nLink: {link}\n")
 
     print("Favs")
 
-    for i, post in enumerate(mastodon.getPosts()):
+    for i, post in enumerate(apiSrc.getPosts()):
         print("i", i)
         print("1", post)
-        print("2", mastodon.getPost(i))
-        title = mastodon.getPostTitle(post)
-        link = mastodon.getPostLink(post)
+        print("2", apiSrc.getPost(i))
+        title = apiSrc.getPostTitle(post)
+        link = apiSrc.getPostLink(post)
         print(f"Title: {title}\nLink: {link}\n")
-        print(mastodon.extractDataMessage(i))
+        print(apiSrc.extractDataMessage(i))
 
     sys.exit()
     (theTitle, theLink, firstLink, theImage, theSummary, content,
      theSummaryLinks, theContent, theLinks, comment) \
-             = mastodon.extractDataMessage(0)
+             = apiSrc.extractDataMessage(0)
 
     # config = configparser.ConfigParser()
     # config.read(CONFIGDIR + '/.rssBlogs')
@@ -379,7 +922,7 @@ def main():
     # p.setClient('fernand0')
     # p.publishPost(theTitle, firstLink, '')
 
-    mastodon.publishPost("I'll publish several links each day about "
+    apiSrc.publishPost("I'll publish several links each day about "
                          "technology, social internet, security, ... "
                          " as in", 'https://twitter.com/fernand0', '')
 
