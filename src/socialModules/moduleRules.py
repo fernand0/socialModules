@@ -69,14 +69,14 @@ class moduleRules:
         more, temp_rules, rulesNew, rule_metadata, implicit_rules = [], {}, {}, {}, []
 
         for section in config.sections():
+            if select and section != select:
+                continue
             msgLog = f" Section: {section}"
             self.indentPlus()
             logMsg(msgLog, 1, 1)
             self.indent = f"{self.indent}{section}>"
-            if select:
-                section = select
             try:
-                self._process_section(section, config, services, sources, sources_available, more, destinations, temp_rules, rulesNew, rule_metadata, implicit_rules, select)
+                self._process_section(section, config, services, sources, sources_available, more, destinations, temp_rules, rulesNew, rule_metadata, implicit_rules)
             except ConfigError as ce:
                 logMsg(f"ERROR in section [{section}]: {ce}", 3, 1)
                 raise  # Reraise the exception so tests can catch it
@@ -94,7 +94,7 @@ class moduleRules:
         msgLog = f"Rules: {rulesNew}"
         logMsg(msgLog, 2, 0)
 
-    def _process_section(self, section, config, services, sources, sources_available, more, destinations, temp_rules, rulesNew, rule_metadata, implicit_rules, select=None):
+    def _process_section(self, section, config, services, sources, sources_available, more, destinations, temp_rules, rulesNew, rule_metadata, implicit_rules):
         """
         Processes a section of the configuration file, identifying sources and destinations.
         Validates the presence of required keys and data types.
