@@ -33,7 +33,15 @@ class ModuleTester:
 
         print(f"Available {name} rules:")
         for i, rule in enumerate(rulesList):
-            print(f"{i}) {rule}")
+            if not name.lower() in rule:
+                for rule_index, rule_key in enumerate(sorted(rules.rules.keys())):
+                    rule_metadata = rules.more[rule_key] if rule_key in rules.more else None
+                    rule_actions = rules.rules[rule_key]
+                    for action_index, rule_action in enumerate(rule_actions):
+                        if name.lower() in rule_action:
+                            print(f"{i}) {rule_action}")
+            else:
+                print(f"{i}) {rule}")
 
         if not rulesList:
             print(f"No {name} rules found. Please configure {name} in your rules.")
@@ -52,7 +60,15 @@ class ModuleTester:
         print(f"Selected rule: {key}")
 
         try:
-            self.api_src = rules.readConfigSrc("", key, None)
+            if not name.lower() in key:
+                rule_actions = rules.rules[key]
+                print(f"Actions: {rule_actions}")
+                for action_index, rule_action in enumerate(rule_actions):
+                    if name.lower() in rule_action:
+                        print(f"Selected rule: {rule_action}")
+                        self.api_src = rules.readConfigDst("", rule_action, None, None)
+            else:
+                self.api_src = rules.readConfigSrc("", key, None)
             print(f"{name} client initialized for: {self.api_src.user}")
             return True
         except Exception as e:
