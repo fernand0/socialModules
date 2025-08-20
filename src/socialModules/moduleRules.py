@@ -73,6 +73,8 @@ class moduleRules:
             self.indentPlus()
             logMsg(msgLog, 1, 1)
             self.indent = f"{self.indent}{section}>"
+            if select:
+                section = select
             try:
                 self._process_section(section, config, services, sources, sources_available, more, destinations, temp_rules, rulesNew, rule_metadata, implicit_rules, select)
             except ConfigError as ce:
