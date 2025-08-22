@@ -54,6 +54,7 @@ class moduleSmtp(Content): #, Queue):
 
     def _create_html_email(self, subject, link, body_content):
         """Creates an HTML email with a standard template."""
+        body_content_br = body_content.replace('\n','\n<br>')
         return f'''
         <html>
         <head>
@@ -69,7 +70,7 @@ class moduleSmtp(Content): #, Queue):
                 <div class="header">Title: {subject}</div>
                 <div class="link">Url: <a href="{link}">{link}</a></div>
                 <div class="content">
-                    {body_content}
+                    {body_content_br}
                 </div>
             </div>
         </body>
@@ -297,12 +298,12 @@ class moduleSmtp(Content): #, Queue):
         title = "Test Email from moduleSmtp"
         link = "https://example.com/test"
         comment = "This is a test email sent from the SMTP module."
-        
+
         print(f"Sending email:")
         print(f"  Title: {title}")
         print(f"  Link: {link}")
         print(f"  Comment: {comment}")
-        
+
         result = api_src.publishPost(title, link, comment)
         print(f"Result: {result}")
 
@@ -327,12 +328,12 @@ class moduleSmtp(Content): #, Queue):
         </body>
         </html>
         '''
-        
+
         print(f"Sending HTML email:")
         print(f"  Title: {title}")
         print(f"  Link: {link}")
         print(f"  HTML content length: {len(htmlContent)} chars")
-        
+
         result = api_src.publishPost(title, link, htmlContent)
         print(f"Result: {result}")
 
@@ -345,7 +346,7 @@ def main():
                         format='%(asctime)s %(message)s')
 
     from socialModules.moduleTester import ModuleTester
-    
+
     smtp_module = moduleSmtp()
     tester = ModuleTester(smtp_module)
     tester.run()
