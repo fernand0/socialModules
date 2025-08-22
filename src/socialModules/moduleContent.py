@@ -49,6 +49,28 @@ class Content:
         # logMsg(msgLog, 1, 0)
         # They start with module
         self.hold = None
+        # Publication cache configuration
+        self.auto_cache = False  # Disabled by default for backward compatibility
+
+    def setAutoCache(self, enabled=True):
+        """
+        Enable or disable automatic publication caching
+        
+        Args:
+            enabled (bool): True to enable auto-caching, False to disable
+        """
+        self.auto_cache = enabled
+        msgLog = f"{self.indent} Auto-cache {'enabled' if enabled else 'disabled'}"
+        logMsg(msgLog, 2, 0)
+
+    def getAutoCache(self):
+        """
+        Get current auto-cache setting
+        
+        Returns:
+            bool: True if auto-cache is enabled
+        """
+        return getattr(self, 'auto_cache', False)
 
     def setService(self, service, serviceData):
         nameSet = f"set{service.capitalize()}"
@@ -1143,10 +1165,169 @@ class Content:
 
             logging.info(f"Reply publish: {reply}")
             reply = self.processReply(reply)
+            
+            # Integrate publication cache if successful and auto_cache is enabled
+            if self.getAutoCache():
+                self._cache_publication_if_successful(reply, title, link, api, post, more)
+            
         except:
             reply = self.report(self.service, title, link, sys.exc_info())
 
         return reply
+
+    def _cache_publication_if_successful(self, reply, title, link, api, post, more):
+        """
+        Cache publication information if the publication was successful.
+        This method integrates with the publication cache system.
+        """
+        try:
+            # Only cache if publication was successful
+            if reply and not (isinstance(reply, str) and reply.startswith("Fail")):
+                # Extract publication details
+                pub_title = title
+                pub_link = link
+                pub_service = self.getService().lower()
+                
+                # Check if we should cache this publication
+                try:
+                    from examples.publication_cache_config import should_cache_publication
+                    if not should_cache_publication(pub_service, pub_title, pub_link):
+                        return
+                except ImportError:
+                    # Configuration not available, use default behavior
+                    if not pub_title or not pub_link:
+                        return
+                
+                # Import here to avoid circular imports
+                from socialModules.modulePublicationCache import PublicationCache
+                
+                # Initialize cache
+                cache = PublicationCache()
+                
+                # If we have api and post, try to get better information
+                if api and post:
+                    try:
+                        if hasattr(api, 'getPostTitle'):
+                            pub_title = api.getPostTitle(post) or title
+                        if hasattr(api, 'getPostLink'):
+                            pub_link = api.getPostLink(post) or link
+                    except:
+                        # Fallback to original values
+                        pass
+                
+                # Extract response link from reply
+                response_link = self._extract_response_link_from_reply(reply, pub_service)
+                
+                # Prepare metadata
+                metadata = {}
+                if more:
+                    # Include relevant metadata from 'more' parameter
+                    metadata_fields = ['tags', 'comment', 'audience', 'hashtags', 'campaign', 'author']
+                    try:
+                        from examples.publication_cache_config import filter_metadata
+                        metadata = filter_metadata(more)
+                    except ImportError:
+                        # Use default fields if config not available
+                        for key in metadata_fields:
+                            if key in more:
+                                metadata[key] = more[key]
+                
+                # Add service-specific metadata
+                metadata['service'] = pub_service
+                metadata['user'] = self.getUser() or self.getNick()
+                
+                # Cache the publication
+                if pub_title and pub_link:
+                    pub_id = cache.add_publication(
+                        title=pub_title,
+                        original_link=pub_link,
+                        service=pub_service,
+                        response_link=response_link,
+                        metadata=metadata
+                    )
+                    
+                    if pub_id:
+                        msgLog = f"{self.indent} Publication cached with ID: {pub_id}"
+                        logMsg(msgLog, 2, 0)
+                    else:
+                        msgLog = f"{self.indent} Failed to cache publication"
+                        logMsg(msgLog, 3, 0)
+                        
+        except Exception as e:
+            # Don't fail the publication if caching fails
+            msgLog = f"{self.indent} Error caching publication: {e}"
+            logMsg(msgLog, 3, 0)
+    
+    def _extract_response_link_from_reply(self, reply, service):
+        """
+        Extract response link from publication reply based on service type.
+        """
+        if not reply:
+            return None
+            
+        try:
+            # Check for custom extractor first
+            try:
+                from examples.publication_cache_config import get_custom_extractor
+                custom_extractor = get_custom_extractor(service)
+                if custom_extractor:
+                    custom_result = custom_extractor(reply)
+                    if custom_result:
+                        return custom_result
+            except ImportError:
+                # Configuration not available, continue with default extractors
+                pass
+            
+            # Handle different reply formats
+            if isinstance(reply, dict):
+                # Twitter-style responses
+                if service == 'twitter':
+                    if 'id' in reply:
+                        return f"https://twitter.com/user/status/{reply['id']}"
+                    elif 'data' in reply and 'id' in reply['data']:
+                        return f"https://twitter.com/user/status/{reply['data']['id']}"
+                
+                # Facebook-style responses
+                elif service == 'facebook':
+                    if 'id' in reply:
+                        return f"https://facebook.com/post/{reply['id']}"
+                    elif 'post_id' in reply:
+                        return f"https://facebook.com/post/{reply['post_id']}"
+                
+                # LinkedIn-style responses
+                elif service == 'linkedin':
+                    if 'id' in reply:
+                        return f"https://linkedin.com/feed/update/{reply['id']}"
+                
+                # Mastodon-style responses
+                elif service == 'mastodon':
+                    if 'url' in reply:
+                        return reply['url']
+                
+                # Generic URL extraction
+                for key in ['url', 'link', 'permalink', 'web_url']:
+                    if key in reply:
+                        return reply[key]
+            
+            # Handle tuple responses (legacy format)
+            elif isinstance(reply, tuple) and len(reply) > 1:
+                if isinstance(reply[1], dict) and 'id' in reply[1]:
+                    return f"https://{service}.com/post/{reply[1]['id']}"
+            
+            # Handle string responses that might contain URLs
+            elif isinstance(reply, str):
+                # Look for URLs in the response string
+                import re
+                url_pattern = r'https?://[^\s<>"{}|\\^`\[\]]+'
+                urls = re.findall(url_pattern, reply)
+                if urls:
+                    return urls[0]  # Return first URL found
+                    
+        except Exception as e:
+            msgLog = f"{self.indent} Error extracting response link: {e}"
+            logMsg(msgLog, 3, 0)
+        
+        return None
 
     def deletePostId(self, idPost):
         # msgLog = (f"{self.indent} Service {self.service} deleting post "

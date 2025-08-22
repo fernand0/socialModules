@@ -2,6 +2,7 @@
 
 import configparser
 import sys
+import os
 
 import dateparser
 import dateutil
@@ -12,7 +13,7 @@ from socialModules.moduleContent import *
 # from socialModules.moduleQueue import *
 
 # pip install twitter
-# https://pypi.python.org/pypi/twitter
+# https://pypi.org/pypi/twitter
 # https://github.com/sixohsix/twitter/tree
 # http://mike.verdone.ca/twitter/
 
@@ -85,7 +86,7 @@ class moduleTwitter(Content): #, Queue):
         # Does not work with new API restrictions
         #posts = self.apiCall(self.getClient().statuses.user_timeline,
         posts = self.apiCall(self.getClient().get_home_timeline,
-                             tweet_fields=['entities']) #,
+                             tweet_fields=['entities']) #, 
                 # max_results=100) #, tweet_mode='extended')
         if not isinstance(posts, str):
             posts = posts[0]
@@ -102,8 +103,8 @@ class moduleTwitter(Content): #, Queue):
         # posts = self.apiCall(self.getClient().get_favorites,
         # API v2
         posts = self.apiCall(self.getClient().get_liked_tweets,
-                             id=self.user) #,
-                             # user_auth=True) #,
+                             id=self.user) #, 
+                             # user_auth=True) #, 
                 #tweet_mode='extended')
 
         return posts
@@ -180,8 +181,8 @@ class moduleTwitter(Content): #, Queue):
                     # if 'alt' in more:
                     #     # t_upload.media.metadata.create(_json={"media_id": id_img1,
                     #     self.getClient().media.metadata.create(_json={"media_id": id_img1,
-                    #                                           "alt_text": {"text": more['alt']}
-                    #                                           })
+                    #                                               "alt_text": {"text": more['alt']}
+                    #                                               })
                     # res = self.getClient().statuses.update(status=post,
                     #                                        media_ids=id_img1)
                 except twitter.api.TwitterHTTPError as twittererror:
@@ -372,277 +373,50 @@ class moduleTwitter(Content): #, Queue):
         if res:
             return (res.get('statuses', []))
 
-def main():
+    def get_name(self):
+        return "Twitter"
 
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
+    def get_default_user(self):
+        return "fernand0"
+
+    def get_default_post_type(self):
+        return "posts"
+
+    def register_specific_tests(self, tester):
+        tester.add_test("Search test", self.test_search)
+
+    def get_user_info(self, client):
+        me = client.get_me().data
+        return f"{me.name} (@{me.username})"
+
+    def get_post_id_from_result(self, result):
+        return self.getUrlId(str(result[1]))
+
+    def test_search(self, apiSrc):
+        query = input("Enter search query: ").strip()
+        if not query:
+            print("No query provided")
+            return
+
+        results = apiSrc.searchApi(query)
+        if results:
+            print(f"Found {len(results)} tweets:")
+            for i, tweet in enumerate(results[:5]):
+                print(f"\n{i+1}. {apiSrc.getPostTitle(tweet)}")
+                print(f"   by @{tweet['user']['screen_name']}")
+                print(f"   Link: {apiSrc.getPostUrl(tweet)}")
+        else:
+            print("No results found.")
+def main():
+    logging.basicConfig(stream=sys.stdout,
+                        level=logging.DEBUG,
                         format='%(asctime)s %(message)s')
 
-    import socialModules.moduleRules
-    rules = socialModules.moduleRules.moduleRules()
-    rules.checkRules()
-    #apiSrc = rules.selectRuleInteractive()
-
-    # name = nameModule()
-    # rulesList = rules.selectRule(name, 'fernand0', 'posts')
-    # logging.debug(f"Key: {rulesList}")
-    # key = rulesList[0]
-    # logging.debug(f"Key: {key}")
-
-
-    testingPosts = True
-    if testingPosts:
-        print("Testing Posts")
-        key = ('twitter', 'set', 'fernand0', 'posts')
-        # logging.debug(f"Key: {key}")
-        apiSrc = rules.readConfigSrc("", key, None)
-        apiSrc.setPosts()
-        posts = apiSrc.getPosts()
-        print(f"Tweets: {posts}")
-        for tweet in posts:
-            print(f"Tweet: {tweet}")
-            print(f"Tweet: {tweet.entities}")
-            print(f" -Title {apiSrc.getPostTitle(tweet)}")
-            print(f" -Link {apiSrc.getPostLink(tweet)}")
-            print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
-            print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
-            print(f"Len: {len(apiSrc.getPosts())}")
-        return
-
-    testingFav = False
-    if testingFav:
-        logging.info(f"Testing Favs")
-        key = ('twitter', 'set', 'fernand0', 'favs')
-        logging.debug(f"Key: {key}")
-        apiSrc = rules.readConfigSrc("", key, None)
-        apiSrc.setPostsType('favs')
-
-        print(f"User: {apiSrc.user}")
-        apiSrc.setPosts()
-        posts = apiSrc.api.get_favorites()
-        print(f"Posts: {posts}")
-        for i, tweet in enumerate(apiSrc.getPosts()):
-            print(f" -Title {apiSrc.getPostTitle(tweet)}")
-            print(f" -Link {apiSrc.getPostLink(tweet)}")
-            print(f" -Content link {apiSrc.getPostContentLink(tweet)}")
-            print(f" -Post link {apiSrc.extractPostLinks(tweet)}")
-            print(f" -Created {tweet.get('created_at')}")
-            # parsedDate = dateutil.parser.parse(
-            #     apiSrc.getPostApiDate(tweet))
-            # print(
-            #     f" -Created {parsedDate.year}-{parsedDate.month}-{parsedDate.day}")
-        print(f"Len: {len(apiSrc.getPosts())}")
-        return
-
-    testingPost = False
-    if testingPost:
-        print("Testing Post")
-        key = ('direct', 'post', 'twitter', 'fernand0Test')
-        # more = {'url': 'https://twitter.com/fernand0', 'service': 'twitter', 'posts': 'posts', 'direct': 'twitter', 'twitter': 'fernand0', 'time': '23.1', 'max': '1', 'hold': 'no'}
-
-        apiDst = rules.readConfigDst("", key, None, None)
-        title = "Test"
-        link = "https://twitter.com/fernand0Test"
-        print(f"Publishing {apiDst.publishPost(title, link, '')}")
-        delete = input("Delete (write the id)? ")
-        if delete:
-            print(f"Deleting: {apiDst.deleteApiPosts(delete)}")
-
-        return
-
-    testingDM = False
-    if testingDM:
-        key =  ('twitter', 'set', 'mbpfernand0', 'posts')
-
-        apiSrc = rules.readConfigSrc("", key, None)
-
-        print(f"Direct: {apiSrc.api.get_direct_messages()}")
-        return
-
-    testingPostImages = False
-    if testingPostImages:
-        image = '/tmp/2023-07-16_image.svg'
-        # Does not work with svg
-        image = '/tmp/2023-08-04_image.png'
-
-        title = 'Prueba imagen'
-        altText = "Texto adicional"
-        key =  ('twitter', 'set', 'fernand0', 'posts')
-
-        apiSrc = rules.readConfigSrc("", key, None)
-        print(f"Testing posting with images")
-        res = apiSrc.publishImage("Prueba imagen", image, alt= altText)
-        print(f"Res: {res}")
-
-        return
-
-        print(f"Res: {apiSrc.publishApiImage(title, image, alt=altText)}")
-
-        return
-
-    testingRT = False
-    if testingRT:
-        print("Testing RT")
-        title= ''
-        link ='https://twitter.com/fernand0/status/1141952205702029312'
-        print(f"Res: {apiSrc.publishApiRT(title, link, '')}")
-        return
-
-    testingDelete = False
-    if testingDelete:
-        for key in rules.rules.keys():
-            if ((key[0] == 'twitter')
-                and ('fernand0Test' in key[2])
-                and (key[3] == 'posts')):
-                    break
-        apiSrc = rules.readConfigSrc("", key, rules.more[key])
-        apiSrc.setPosts()
-        post = apiSrc.getPosts()[0]
-        idPost = apiSrc.getPostId(post)
-        print(f"Deleting: {apiSrc.deleteApiPosts(idPost)}")
-        return
-
-    testingDeleteFavs = False
-    if testingDeleteFavs:
-        for key in rules.rules.keys():
-            if ((key[0] == 'twitter')
-                and ('fernand0Test' in key[2])):
-                #and (key[3] == 'favs')):
-                    break
-        apiSrc = rules.readConfigSrc("", key, rules.more[key])
-        rules.more['posts'] = 'favs'
-        apiSrc.setPosts()
-        post = apiSrc.getPosts()[0]
-        idPost = apiSrc.getPostId(post)
-        print(f"Deleting: {apiSrc.getPostTitle(post)}")
-        print(f"Deleting: {apiSrc.deleteApiFavs(idPost)}")
-        return
-
-    testingSearch = False
-    if testingSearch:
-        print("Testing Search")
-        for key in rules.rules.keys():
-            print(f"Key: {key}")
-            if ((key[0] == 'twitter')
-                    and ('fernand0' == key[2])
-                    # and (key[3] == 'posts')
-                    ):
-                break
-        apiSrc = rules.readConfigSrc("", key, rules.more[key])
-
-        res = apiSrc.searchApi('tetris')
-        print(f"Res: {res}")
-        for tweet in res:
-            print(f"Title: {apiSrc.getPostTitle(tweet)}")
-        return
-
-        myLastLink = 'https://twitter.com/reflexioneseir/status/1235128399452164096'
-        myLastLink = 'http://fernand0.blogalia.com//historias/78135'
-        i = apiNew.getLinkPosition(myLastLink)
-        print(i)
-        print(apiNew.getPosts()[i-1])
-        print(apiNew.getPostLink(apiNew.getPosts()[i-1]))
-        num = 1
-        lastLink = myLastLink
-        listPosts = apiNew.getNumPostsData(num, i, lastLink)
-        print(listPosts)
-        return
-
-    sys.exit()
-
-    print("Testing duplicate post")
-
-    res = tw.publishPost("Best Practices for Writing a Dockerfile",
-                         "https://blog.bitsrc.io/best-practices-for-writing-a-dockerfile-68893706c3", '')
-    print(f"Res: {res}")
-    print(f"End Res")
-    print(res.find('Status is a duplicate'))
-    input("Repeat?")
-    res = tw.publishPost("Best Practices for Writing a Dockerfile",
-                         "https://blog.bitsrc.io/best-practices-for-writing-a-dockerfile-68893706c3", '')
-
-    sys.exit()
-    # print("Testing bad link")
-    # res = tw.publishPost("Post MTProto Analysis: Accessible Overview", "https://telegra.ph/LoU-ETH-4a-proof-07-16", '')
-
-    # logging.info(f"Res: {res}")
-
-    # return
-
-    #print("Testing followers")
-    # tw.setFriends()
-    # sys.exit()
-
-    # res = tw.publishImage("Prueba imagen", "/tmp/2021-06-25_image.png",
-    #        alt= "Imagen con alt")
-    #print("Testing posting and deleting")
-    # res = tw.publishPost("Prueba borrando 7", "http://elmundoesimperfecto.com/", '')
-    # print(res)
-    # idPost = tw.getUrlId(res)
-    # print(idPost)
-    # input('Delete? ')
-    # tw.deletePostId(idPost)
-    # return
-    # sys.exit()
-
-    # print("Testing posts")
-    # tw.setPostsType('favs')
-    # tw.setPosts()
-
-    print("Testing title and link")
-
-    for i, post in enumerate(tw.getPosts()):
-        title = tw.getPostTitle(post)
-        link = tw.getPostLink(post)
-        url = tw.getPostUrl(post)
-        theId = tw.getPostId(post)
-        print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
-
-    return
-
-    print("Favs")
-
-    tw.setPostsType("favs")
-    tw.setPosts()
-
-    for post in tw.getPosts():
-        title = tw.getPostTitle(post)
-        link = tw.getPostLink(post)
-        url = tw.getPostUrl(post)
-        print("Title: {}\nLink: {}\nUrl:{}\n".format(title, link, url))
-    print(len(tw.getPosts()))
-
-    sys.exit()
-
-    i = 0
-    post = tw.getPost(i)
-    title = tw.getPostTitle(post)
-    link = tw.getPostLink(post)
-    url = tw.getPostUrl(post)
-    print(post)
-    print("Title: {}\nTuit: {}\nLink: {}\n".format(title, link, url))
-    tw.deletePost(post)
-    sys.exit()
-
-    for i, post in enumerate(tw.getPosts()):
-        title = tw.getPostTitle(post)
-        link = tw.getPostLink(post)
-        url = tw.getPostUrl(post)
-        print("Title: {}\nTuit: {}\nLink: {}\n".format(title, link, url))
-        input("Delete?")
-        print("Deleted https://twitter.com/i/status/{}".format(tw.delete(i)))
-        import time
-        time.sleep(5)
-
-    sys.exit()
-
-    res = tw.search('url:fernand0')
-
-    for tt in res['statuses']:
-        # print(tt)
-        print('- @{0} {1} https://twitter.com/{0}/status/{2}'.format(
-            tt['user']['name'], tt['text'], tt['id_str']))
-    sys.exit()
-
+    from socialModules.moduleTester import ModuleTester
+    
+    twitter_module = moduleTwitter()
+    tester = ModuleTester(twitter_module)
+    tester.run()
 
 if __name__ == '__main__':
     main()

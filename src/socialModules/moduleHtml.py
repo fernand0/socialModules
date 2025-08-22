@@ -119,7 +119,7 @@ class moduleHtml(Content): #, Queue):
         ]
 
         for cleanTxt in cleaning:
-            logging.info(cleanTxt)
+            logging.debug(cleanTxt)
             posUrl = url.find("?" + cleanTxt)
             if posUrl > 0:
                 url = url[:posUrl]

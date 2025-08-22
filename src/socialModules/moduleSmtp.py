@@ -52,6 +52,31 @@ class moduleSmtp(Content): #, Queue):
 
         return client
 
+    def _create_html_email(self, subject, link, body_content):
+        """Creates an HTML email with a standard template."""
+        body_content_br = body_content.replace('\n','\n<br>')
+        return f'''
+        <html>
+        <head>
+            <style>
+                body {{ font-family: sans-serif; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }}
+                .header {{ font-size: 1.2em; font-weight: bold; margin-bottom: 10px; }}
+                .link {{ margin-bottom: 10px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">Title: {subject}</div>
+                <div class="link">Url: <a href="{link}">{link}</a></div>
+                <div class="content">
+                    {body_content_br}
+                </div>
+            </div>
+        </body>
+        </html>
+        '''
+
     def publishApiPost(self, *args, **kwargs):
         comment = ""
         if args and len(args) == 3:
@@ -94,15 +119,16 @@ class moduleSmtp(Content): #, Queue):
             msg['X-print'] = theUrl
             msg['Subject'] = subject
 
-            htmlDoc = (f"<html><body>"
-                       f"Title: {subject}<br />\n"
-                       f"Url: {link}<br />\n"
-                       f"{post}<br />\n"
-                       f"</body></html>\n")
+            # Construct the email body
+            body_content = ""
+            if comment:
+                body_content = comment
+            else:
+                body_content = post
+
+            htmlDoc = self._create_html_email(subject, link, body_content)
 
             if comment:
-                htmlDoc = comment
-
                 msgLog = (f"{self.indent} Doc: {htmlDoc}")
                 logMsg(msgLog, 2, 0)
 
@@ -171,7 +197,7 @@ class moduleSmtp(Content): #, Queue):
             try:
                 res = server.sendmail(fromaddr, toaddrs, msg.as_string())
             except:
-                res = self.report(self.service, 
+                res = self.report(self.service,
                                     f"{post} {link}", post, sys.exc_info())
 
             if not res:
@@ -183,61 +209,148 @@ class moduleSmtp(Content): #, Queue):
 
         return(f"{res}")
 
+    def getPostTitle(self, post):
+        """
+        Extract title from email post data
+        For SMTP, this would typically be the subject line
+        """
+        if isinstance(post, dict):
+            return post.get('subject', post.get('title', ''))
+        elif isinstance(post, str):
+            # If it's a string, use first line as title
+            lines = post.split('\n')
+            return lines[0] if lines else post[:50]
+        return str(post)[:50]  # Fallback
+
+    def getPostLink(self, post):
+        """
+        Extract link from email post data
+        """
+        if isinstance(post, dict):
+            return post.get('url', post.get('link', ''))
+        return ''
+
+    def getPostContent(self, post):
+        """
+        Extract content from email post data
+        """
+        if isinstance(post, dict):
+            return post.get('content', post.get('body', ''))
+        elif isinstance(post, str):
+            return post
+        return str(post)
+
+    def getPostId(self, post):
+        """
+        Get post ID for email (could be message ID)
+        """
+        if isinstance(post, dict):
+            return post.get('id', post.get('message_id', ''))
+        return ''
+
+    def getSiteTitle(self):
+        """
+        Get site title for SMTP service
+        """
+        if hasattr(self, 'user') and self.user:
+            return f"SMTP ({self.user})"
+        return "SMTP Service"
+
+    def testConnection(self):
+        """
+        Test SMTP connection
+        """
+        try:
+            if self.client:
+                resp = self.client.noop()
+                return True, f"Connection OK: {resp}"
+            else:
+                return False, "No client available"
+        except Exception as e:
+            return False, f"Connection failed: {e}"
+
+    def get_name(self):
+        return "SMTP"
+
+    def get_default_user(self):
+        # This should be a valid user from your configuration
+        return "ftricas@elmundoesimperfecto.com"
+
+    def get_default_post_type(self):
+        return ""
+
+    def register_specific_tests(self, tester):
+        """Registers SMTP-specific tests with the ModuleTester."""
+        tester.add_test("Basic Email", self._test_basic_email)
+        tester.add_test("HTML Email", self._test_html_email)
+
+    def get_user_info(self, client):
+        if hasattr(self, 'user'):
+            return f"User: {self.user}"
+        return "User: Unknown"
+
+    def get_post_id_from_result(self, result):
+        return None
+
+    def _test_basic_email(self, api_src):
+        """Tests sending a basic email."""
+        print("\n=== Testing Basic Email ===")
+        title = "Test Email from moduleSmtp"
+        link = "https://example.com/test"
+        comment = "This is a test email sent from the SMTP module."
+
+        print(f"Sending email:")
+        print(f"  Title: {title}")
+        print(f"  Link: {link}")
+        print(f"  Comment: {comment}")
+
+        result = api_src.publishPost(title, link, comment)
+        print(f"Result: {result}")
+
+    def _test_html_email(self, api_src):
+        """Tests sending an HTML email."""
+        print("\n=== Testing HTML Email ===")
+        title = "HTML Test Email"
+        link = "https://example.com/html-test"
+        htmlContent = '''
+        <html>
+        <body>
+            <h2>Test HTML Email</h2>
+            <p>This is a <strong>test email</strong> with HTML content.</p>
+            <ul>
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+            </ul>
+            <p>Link: <a href="https://example.com/html-test">Click here</a></p>
+            <hr>
+            <p><em>Sent from moduleSmtp test</em></p>
+        </body>
+        </html>
+        '''
+
+        print(f"Sending HTML email:")
+        print(f"  Title: {title}")
+        print(f"  Link: {link}")
+        print(f"  HTML content length: {len(htmlContent)} chars")
+
+        result = api_src.publishPost(title, link, htmlContent)
+        print(f"Result: {result}")
+
 def main():
+    """
+    Main function for testing moduleSmtp functionality using ModuleTester.
+    """
     logging.basicConfig(stream=sys.stdout,
-            level=logging.DEBUG,
-            format='%(asctime)s %(message)s')
+                        level=logging.INFO,
+                        format='%(asctime)s %(message)s')
 
-    import socialModules.moduleRules
-    rules = socialModules.moduleRules.moduleRules()
-    rules.checkRules()
+    from socialModules.moduleTester import ModuleTester
 
-    name = nameModule()
-    rulesList = rules.selectRule(name)
-    for i, rule in enumerate(rulesList):
-        print(f"{i}) {rule}")
-
-    sel = int(input(f"Which one? "))
-    src = rulesList[sel]
-    print(f"Selected: {src}")
-    for i, action in enumerate(rules.rules[src]):
-        print(f"{i}) {action}")
-    sel = int(input(f"Which one? "))
-    more = rules.more[src]
-    indent = ""
-    apiSrc = rules.readConfigSrc(indent, src, more)
-
-    action =  rules.rules[src][sel]
-    print(f"Action: {action}")
-    apiDst = rules.readConfigDst(indent, action, more, apiSrc)
-    print(f"Client: {apiDst.client}")
-    apiDst.user = 'fernand0Enlaces@elmundoesimperfecto.com'
-
-    testingPublishing = False
-    if testingPublishing:
-        apiDst.publishPost('Mensaje', 'https://www.unizar.es/', '')
-
-        return
-
-    testingHtml = False
-    if testingHtml:
-        msgHtml = '<body><html><p>Cuadro de mandos<hr></hr></p><p><img alt="Cuadro de mandos" height="240" src="https://live.staticflickr.com/65535/53057264758_272560e5d9_m.jpg" width="160"/></p><p>https://www.flickr.com/photos/fernand0/53057264758/</p></body></html>'
-        apiDst.publishPost('Mensaje', 'https://www.unizar.es/', msgHtml)
-
-        return
-
-
-    testingWeb = True
-    if testingWeb:
-        url = 'https://avecesunafoto.wordpress.com/2017/07/19/maria-fernandez-guajardo-consejos-practicos-de-una-feminista-zaragozana-en-el-silicon-valley/'
-        import requests
-        req = requests.get(url)
-        import time
-        myTime = time.asctime()
-        print(f"Res1: {apiDst.publishPost(req.text, myTime ,'')}")
-        print(f"Res2: {apiDst.publishPost(req.text, myTime, req.text)}")
+    smtp_module = moduleSmtp()
+    tester = ModuleTester(smtp_module)
+    tester.run()
 
 
 if __name__ == '__main__':
     main()
-

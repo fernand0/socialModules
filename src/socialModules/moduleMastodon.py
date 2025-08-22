@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import logging
+import os
 import sys
 
 import mastodon
@@ -98,7 +99,7 @@ class moduleMastodon(Content): #, Queue):
         try:
             res = self.getClient().toot(post+" "+link)
         except mastodon.errors.MastodonServiceUnavailableError:
-            res = self.report(self.getService(), kwargs, 'Not available', 
+            res = self.report(self.getService(), kwargs, 'Not available',
                               sys.exc_info())
             res = f"Fail! {res}"
         except:
@@ -215,174 +216,38 @@ class moduleMastodon(Content): #, Queue):
                 link = self.getAttribute(post, 'uri')
         return link
 
-    # def extractDataMessage(self, i):
-    #     logging.info(f"Service {self.service}")
-    #     (theTitle, theLink, firstLink, theImage, theSummary,
-    #      content, theSummaryLinks, theContent, theLinks, comment) = (
-    #                     None, None, None, None, None,
-    #                     None, None, None, None, None)
-
-    #     if i < len(self.getPosts()):
-    #         post = self.getPost(i)
-    #         theTitle = self.getPostTitle(post)
-    #         theLink = self.getPostUrl(post)
-    #         firstLink = self.getPostContentLink(post)
-    #         theId = self.getPostId(post)
-
-    #         theLinks = [firstLink, ]
-    #         content = None
-    #         theContent = None
-    #         if 'card' in post and post['card']:
-    #             theContent = self.getAttribute(post['card'], 'description')
-
-    #         theImage = None
-    #         theSummary = None
-
-    #         theSummaryLinks = None
-    #         comment = theId
-
-    #     return (theTitle, theLink, firstLink, theImage, theSummary,
-    #             content, theSummaryLinks, theContent, theLinks, comment)
-
     def search(self, text):
         pass
 
+    def get_name(self):
+        return "Mastodon"
+
+    def get_default_user(self):
+        return "@fernand0"
+
+    def get_default_post_type(self):
+        return "favs"
+
+    def register_specific_tests(self, tester):
+        pass
+
+    def get_user_info(self, client):
+        me = client.me()
+        return f"{me.get('display_name', 'Unknown')} (@{me.get('username', 'unknown')})"
+
+    def get_post_id_from_result(self, result):
+        return self.getUrlId(str(result)) if hasattr(mastodon, 'getUrlId') else None
 
 def main():
-
     logging.basicConfig(stream=sys.stdout,
                         level=logging.DEBUG,
                         format='%(asctime)s %(message)s')
 
-    import socialModules.moduleRules
-    rules = socialModules.moduleRules.moduleRules()
-    rules.checkRules()
-    name = nameModule()
-    rulesList = rules.selectRule(name, '@fernand0', 'favs')
-    logging.debug(f"Key: {rulesList}")
-    key = rulesList[0]
-
-    testingPosts = True
-    if testingPosts:
-        print("Testing Posts")
-        mastodon = rules.readConfigSrc("", key, None)
-        mastodon.setPosts()
-        if mastodon.getPosts():
-            toot = mastodon.getPosts()[0]
-            # toot = mastodon.getNextPost()[0]
-            print(toot)
-            print(f" -Title {mastodon.getPostTitle(toot)}")
-            print(f" -Link {mastodon.getPostLink(toot)}")
-            print(f" -Content link {mastodon.getPostContentLink(toot)}")
-            print(f" -Post link {mastodon.extractPostLinks(toot)}")
-        return
-
-    testingFav = False
-    if testingFav:
-        print("Testing Fav")
-        mastodon = rules.readConfigSrc("", key, None)
-        mastodon.setPosts()
-        logging.info(f"Favs: {mastodon.getPosts()}")
-        if mastodon.getPosts():
-            toot = mastodon.getPosts()[0]
-            toot = mastodon.getNextPost()#[0]
-            print(toot)
-            print(f" -Title {mastodon.getPostTitle(toot)}")
-            print(f" -Link {mastodon.getPostLink(toot)}")
-            print(f" -Content link {mastodon.getPostContentLink(toot)}")
-            print(f" -Post link {mastodon.extractPostLinks(toot)}")
-        return
-
-
-    testingPost = False
-    if testingPost:
-        print("Testing Post")
-        title = "Test"
-        link = "https://twitter.com/fernand0Test"
-        mastodon.publishApiPost(title, link, '')
-        return
-
-    testingPostImages = False
-    if testingPostImages:
-        key =  ('mastodon', 'set', '@fernand0@mastodon.social', 'posts')
-        image = '/tmp/2023-06-09_image.png'
-        title = 'Prueba imagen'
-        altText = "Alternative text"
-        apiSrc = rules.readConfigSrc("", key, rules.more.get('key',''))
-        apiSrc.publishImage(title, image, alt=altText)
-        # print(f"Last res: {apiSrc.lastRes}")
-        # print(f"Last res: {apiSrc.lastRes['media_attachments'][0]['url']}")
-
-
-        return
-
-
-    print("Testing posting and deleting")
-    res = mastodon.publishImage("Prueba ", "/tmp/prueba.png")
-    print(res)
-    idPost = mastodon.getUrlId(res)
-    print(idPost)
-    input('Delete? ')
-    mastodon.deletePostId(idPost)
-    # sys.exit()
-    print("Testing posts")
-    print(mastodon.getClient().me())
-    for i, post in enumerate(mastodon.getPosts()):
-        # print(post)
-        title = mastodon.getPostTitle(post)
-        link = mastodon.getPostLink(post)
-        url = mastodon.getPostUrl(post)
-        theId = mastodon.getPostId(post)
-        print(f"{i}) Title: {title}\nLink: {link}\nUrl: {url}\nId: {theId}\n")
-
-    print("Favorites")
-    for post in mastodon.getPosts():
-        print(post)
-        print(mastodon.getPostTitle(post))
-        # input("Delete ?")
-        # mastodon.deletePost(post)
-
-    # sys.exit()
-
-    print("Testing title and link")
-
-    print("Posts")
-
-    for post in mastodon.getPosts():
-        title = mastodon.getPostTitle(post)
-        link = mastodon.getPostLink(post)
-        print(f"Title: {title}\nLink: {link}\n")
-
-    print("Favs")
-
-    for i, post in enumerate(mastodon.getPosts()):
-        print("i", i)
-        print("1", post)
-        print("2", mastodon.getPost(i))
-        title = mastodon.getPostTitle(post)
-        link = mastodon.getPostLink(post)
-        print(f"Title: {title}\nLink: {link}\n")
-        print(mastodon.extractDataMessage(i))
-
-    sys.exit()
-    (theTitle, theLink, firstLink, theImage, theSummary, content,
-     theSummaryLinks, theContent, theLinks, comment) \
-             = mastodon.extractDataMessage(0)
-
-    # config = configparser.ConfigParser()
-    # config.read(CONFIGDIR + '/.rssBlogs')
-
-    # import modulePocket
-    #
-    # p = modulePocket.modulePocket()
-
-    # p.setClient('fernand0')
-    # p.publishPost(theTitle, firstLink, '')
-
-    mastodon.publishPost("I'll publish several links each day about "
-                         "technology, social internet, security, ... "
-                         " as in", 'https://twitter.com/fernand0', '')
-
+    from socialModules.moduleTester import ModuleTester
+    
+    mastodon_module = moduleMastodon()
+    tester = ModuleTester(mastodon_module)
+    tester.run()
 
 if __name__ == '__main__':
     main()
