@@ -7,13 +7,17 @@ import time
 import urllib
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 # import textract
 from bs4 import BeautifulSoup, Tag
 from pdfrw import PdfReader
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-# from socialModules.moduleQueue import *
+
+class DownloadError(Exception):
+    """Custom exception for download failures."""
 
 # https://github.com/fernand0/scripts/blob/master/moduleCache.py
 
@@ -48,56 +52,67 @@ class moduleHtml(Content): #, Queue):
     def setLinksToAvoid(self, linksToAvoid):
         self.linksToAvoid = linksToAvoid
 
-    def downloadUrl(self, theUrl):
-        msgLog = f"Downloading: {theUrl}"
+    def downloadUrl(self, url_to_download):
+        msgLog = f"Downloading: {url_to_download}"
         logMsg(msgLog, 1, 1)
 
         # Based on https://github.com/moshfiqur/html2mobi
-        retry = False
         response = None
         moreContent = ""
+
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["HEAD", "GET", "OPTIONS"]
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        http = requests.Session()
+        http.mount("https://", adapter)
+        http.mount("http://", adapter)
+
         try:
             from requests.packages.urllib3.exceptions import InsecureRequestWarning
-            msgLog = f"First try"
-            logMsg(msgLog, 1, 1)
-            requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-            response = requests.get(theUrl, verify=False)
-            logging.info(f"Response 1: {response}")
-            pos = response.text.find("https://www.blogger.com/feeds/")
-            # Some blogspot blogs do not render ok because they use javascript
-            # to load content. We add the content from the RSS feed.  Dirty
-            # trick
-            if pos >= 0:
-                msgLog = f"Blogger"
-                logMsg(msgLog, 1, 1)
-                pos2 = response.text.find('"', pos + 1)
-                theUrl2 = response.text[pos:pos2]
-                import moduleRss
+            requests.packages.urllib3.disable_warnings(InsecureRequestWarning) # Keep this if verify=False is intended
 
-                blog = moduleRss.moduleRss()
-                pos = theUrl2.find("/", 9)
-                blog.setUrl(theUrl2[: pos + 1])
-                rssFeed = theUrl2[pos + 1:]
-                blog.setRssFeed(rssFeed)
-                blog.setPosts()
-                posPost = blog.getLinkPosition(theUrl)
-                data = blog.obtainPostData(posPost)
-                moreContent = data[5][0]["value"]
-        except:
-            logging.info("Retry")
-            retry = True
-        if retry or response.status_code >= 401:
-            try:
-                msgLog = f"Second try"
-                logMsg(msgLog, 1, 1)
-                from fake_useragent import UserAgent
-                ua = UserAgent()
-                response = requests.get(
-                    theUrl, headers={"User-Agent": ua.random}, verify=False
-                )
-                logging.info(f"Response 2: {response}")
-            except:
-                logging.info("somethigh wrong ")
+            response = http.get(url_to_download, verify=False, timeout=10) # Use the session
+            response.raise_for_status()
+
+            moreContent = self._handle_blogger_content(response, url_to_download)
+
+        except requests.exceptions.Timeout:
+            logMsg(f"Timeout occurred while downloading {url_to_download}", 3, 1)
+        except requests.exceptions.ConnectionError:
+            logMsg(f"Connection error while downloading {url_to_download}", 3, 1)
+        except requests.exceptions.HTTPError as e:
+            logMsg(f"HTTP error {e.response.status_code} while downloading {url_to_download}: {e}", 3, 1)
+        except requests.exceptions.RequestException as e:
+            logMsg(f"An unexpected requests error occurred while downloading {url_to_download}: {e}", 3, 1)
+        except Exception as e:
+            logMsg(f"An unexpected error occurred: {e}", 3, 1)
+
+    def _handle_blogger_content(self, response, url_to_download):
+        moreContent = ""
+        pos = response.text.find("https://www.blogger.com/feeds/")
+        if pos >= 0:
+            logMsg(f"Blogger", 1, 1)
+            pos2 = response.text.find('"', pos + 1)
+            theUrl2 = response.text[pos:pos2]
+            import moduleRss
+
+            blog = moduleRss.moduleRss()
+            pos = theUrl2.find("/", 9)
+            blog.setUrl(theUrl2[: pos + 1])
+            rssFeed = theUrl2[pos + 1:]
+            blog.setRssFeed(rssFeed)
+            blog.setPosts()
+                        posPost = blog.getLinkPosition(url_to_download)
+            data = blog.obtainPostData(posPost)
+            moreContent = data[5][0]["value"]
+        return moreContent
+
+        if response is None or not response.ok:
+            raise DownloadError(f"Failed to download {url_to_download} after multiple attempts.")
 
         return response, moreContent
 
@@ -144,7 +159,7 @@ class moduleHtml(Content): #, Queue):
 
         return title
 
-    def cleanDocument(self, text, theUrl, response):
+    def cleanDocument(self, text, url_to_download, response):
         replaceChars = [
             ("“", '"'),
             ("”", '"'),
@@ -195,7 +210,7 @@ class moduleHtml(Content): #, Queue):
         # doc_title = doc.css_first('title').text()
 
         if not doc_title or (doc_title == "[no-title]"):
-            if theUrl.lower().endswith("pdf"):
+            if url_to_download.lower().endswith("pdf"):
                 title = self.getPdfTitle(response)
                 print(title)
                 doc_title = "[PDF] " + title
@@ -431,7 +446,7 @@ if __name__ == "__main__":
         blog = moduleHtml.moduleHtml()
         url = input("X link: ")
         blog.setUrl(url)
-        data = blog.downloadUrl(url)
+        data = blog.downloadUrl(url_to_download)
         print(data)
         print(blog.extractLinks(data)[1])
 
