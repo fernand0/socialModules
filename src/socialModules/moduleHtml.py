@@ -3,8 +3,13 @@
 
 import configparser
 import logging
+import random
+import re
 import time
 import urllib
+from io import BytesIO
+
+import pycurl
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -56,40 +61,75 @@ class moduleHtml(Content): #, Queue):
         msgLog = f"Downloading: {url_to_download}"
         logMsg(msgLog, 1, 1)
 
-        # Based on https://github.com/moshfiqur/html2mobi
         response = None
         moreContent = ""
 
-        retry_strategy = Retry(
-            total=3,
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["HEAD", "GET", "OPTIONS"]
-        )
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        http = requests.Session()
-        http.mount("https://", adapter)
-        http.mount("http://", adapter)
-
+        # First and second attempts with requests
         try:
-            from requests.packages.urllib3.exceptions import InsecureRequestWarning
-            requests.packages.urllib3.disable_warnings(InsecureRequestWarning) # Keep this if verify=False is intended
+            retry_strategy = Retry(
+                total=2,  # Two attempts
+                backoff_factor=1,
+                status_forcelist=[429, 500, 502, 503, 504],
+                allowed_methods=["HEAD", "GET", "OPTIONS"]
+            )
+            adapter = HTTPAdapter(max_retries=retry_strategy)
+            http = requests.Session()
+            http.mount("https://", adapter)
+            http.mount("http://", adapter)
 
-            response = http.get(url_to_download, verify=False, timeout=10) # Use the session
+            from requests.packages.urllib3.exceptions import InsecureRequestWarning
+            requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+            response = http.get(url_to_download, verify=False, timeout=10)
             response.raise_for_status()
 
-            moreContent = self._handle_blogger_content(response, url_to_download)
-
-        except requests.exceptions.Timeout:
-            logMsg(f"Timeout occurred while downloading {url_to_download}", 3, 1)
-        except requests.exceptions.ConnectionError:
-            logMsg(f"Connection error while downloading {url_to_download}", 3, 1)
-        except requests.exceptions.HTTPError as e:
-            logMsg(f"HTTP error {e.response.status_code} while downloading {url_to_download}: {e}", 3, 1)
         except requests.exceptions.RequestException as e:
-            logMsg(f"An unexpected requests error occurred while downloading {url_to_download}: {e}", 3, 1)
-        except Exception as e:
-            logMsg(f"An unexpected error occurred: {e}", 3, 1)
+            logMsg(f"Requests failed after 2 attempts: {e}", 2, 1)
+            response = None # Ensure response is None on failure
+
+        # Third attempt with pycurl if requests failed
+        if response is None or not response.ok:
+            sleep_time = random.uniform(0, 2)
+            logMsg(f"Requests failed. Waiting for {sleep_time:.2f} seconds before trying with pycurl.", 1, 1)
+            time.sleep(sleep_time)
+
+            logMsg(f"Making a third attempt with pycurl.", 2, 1)
+            try:
+                buffer = BytesIO()
+                c = pycurl.Curl()
+                c.setopt(c.URL, url_to_download)
+                c.setopt(c.WRITEDATA, buffer)
+                c.setopt(c.FOLLOWLOCATION, True)
+                c.setopt(c.TIMEOUT, 30)
+                c.perform()
+
+                status_code = c.getinfo(pycurl.HTTP_CODE)
+
+                if 200 <= status_code < 300:
+                    # Create a mock response object for consistency
+                    response = requests.Response()
+                    response.status_code = status_code
+                    response._content = buffer.getvalue()
+                    response.url = c.getinfo(pycurl.EFFECTIVE_URL)
+                else:
+                    logMsg(f"pycurl failed with status code {status_code}", 3, 1)
+                    response = None
+
+                c.close()
+
+            except pycurl.error as e:
+                logMsg(f"pycurl failed: {e}", 3, 1)
+                response = None
+            except Exception as e:
+                logMsg(f"An unexpected error occurred with pycurl: {e}", 3, 1)
+                response = None
+
+
+        if response and response.ok:
+            moreContent = self._handle_blogger_content(response, url_to_download)
+            return response, moreContent
+        else:
+            raise DownloadError(f"Failed to download {url_to_download} after 3 attempts.")
 
     def _handle_blogger_content(self, response, url_to_download):
         moreContent = ""
@@ -106,15 +146,10 @@ class moduleHtml(Content): #, Queue):
             rssFeed = theUrl2[pos + 1:]
             blog.setRssFeed(rssFeed)
             blog.setPosts()
-                        posPost = blog.getLinkPosition(url_to_download)
+            posPost = blog.getLinkPosition(url_to_download)
             data = blog.obtainPostData(posPost)
             moreContent = data[5][0]["value"]
         return moreContent
-
-        if response is None or not response.ok:
-            raise DownloadError(f"Failed to download {url_to_download} after multiple attempts.")
-
-        return response, moreContent
 
     def cleanUrl(self, url):
         cleaning = [
@@ -444,8 +479,8 @@ if __name__ == "__main__":
     if testingX:
         import moduleHtml
         blog = moduleHtml.moduleHtml()
-        url = input("X link: ")
-        blog.setUrl(url)
+        url_to_download = input("X link: ")
+        blog.setUrl(url_to_download)
         data = blog.downloadUrl(url_to_download)
         print(data)
         print(blog.extractLinks(data)[1])
