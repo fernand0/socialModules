@@ -91,33 +91,33 @@ TOKEN_SECRET = your_access_token_secret
 BEARER_TOKEN = your_bearer_token
 ```
 
-## Ejemplo de configuración: `.rssBlogs`
+## Configuration Example: `.rssBlogs`
 
-El fichero `.rssBlogs` permite definir múltiples blogs y sus parámetros asociados para automatizar la publicación y gestión de contenido en diferentes servicios. Cada sección representa un blog distinto:
+The `.rssBlogs` file allows you to define multiple blogs and their associated parameters to automate content publishing and management across different services. Each section represents a different blog:
 
 ```ini
 [Blog1]
-url = https://tublog.com/
-rss = https://tublog.com/feed.xml
-xmlrpc = https://tublog.com/xmlrpc.php
-twitterAC = tu_usuario_twitter
-pageFB = tu_pagina_facebook
-telegramAC = tu_usuario_telegram
-mediumAC = tu_usuario_medium
-linksToAvoid = https://tublog.com/evitar1,https://tublog.com/evitar2
+url = https://yourblog.com/
+rss = https://yourblog.com/feed.xml
+xmlrpc = https://yourblog.com/xmlrpc.php
+twitterAC = your_twitter_user
+pageFB = your_facebook_page
+telegramAC = your_telegram_user
+mediumAC = your_medium_user
+linksToAvoid = https://yourblog.com/avoid1,https://yourblog.com/avoid2
 ```
 
-**Campos típicos:**
-- `url`: URL principal del blog
-- `rss`: URL del feed RSS
-- `xmlrpc`: Endpoint XML-RPC para publicación remota (WordPress, etc.)
-- `twitterAC`: Cuenta de Twitter asociada
-- `pageFB`: Página de Facebook asociada
-- `telegramAC`: Usuario/canal de Telegram asociado
-- `mediumAC`: Cuenta de Medium asociada
-- `linksToAvoid`: Lista de enlaces a evitar (separados por comas)
+**Typical fields:**
+- `url`: Main URL of the blog
+- `rss`: URL of the RSS feed
+- `xmlrpc`: XML-RPC endpoint for remote publishing (WordPress, etc.)
+- `twitterAC`: Associated Twitter account
+- `pageFB`: Associated Facebook page
+- `telegramAC`: Associated Telegram user/channel
+- `mediumAC`: Associated Medium account
+- `linksToAvoid`: List of links to avoid (comma-separated)
 
-Puedes añadir tantas secciones `[BlogX]` como necesites, cada una con sus propios parámetros.
+You can add as many `[BlogX]` sections as you need, each with its own parameters.
 
 ## Architecture
 
