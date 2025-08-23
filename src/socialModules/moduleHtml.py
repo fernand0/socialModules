@@ -3,17 +3,26 @@
 
 import configparser
 import logging
+import random
+import re
 import time
 import urllib
+from io import BytesIO
+
+import pycurl
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 # import textract
 from bs4 import BeautifulSoup, Tag
 from pdfrw import PdfReader
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-# from socialModules.moduleQueue import *
+
+class DownloadError(Exception):
+    """Custom exception for download failures."""
 
 # https://github.com/fernand0/scripts/blob/master/moduleCache.py
 
@@ -48,58 +57,99 @@ class moduleHtml(Content): #, Queue):
     def setLinksToAvoid(self, linksToAvoid):
         self.linksToAvoid = linksToAvoid
 
-    def downloadUrl(self, theUrl):
-        msgLog = f"Downloading: {theUrl}"
+    def downloadUrl(self, url_to_download):
+        msgLog = f"Downloading: {url_to_download}"
         logMsg(msgLog, 1, 1)
 
-        # Based on https://github.com/moshfiqur/html2mobi
-        retry = False
         response = None
         moreContent = ""
+
+        # First and second attempts with requests
         try:
+            retry_strategy = Retry(
+                total=2,  # Two attempts
+                backoff_factor=1,
+                status_forcelist=[429, 500, 502, 503, 504],
+                allowed_methods=["HEAD", "GET", "OPTIONS"]
+            )
+            adapter = HTTPAdapter(max_retries=retry_strategy)
+            http = requests.Session()
+            http.mount("https://", adapter)
+            http.mount("http://", adapter)
+
             from requests.packages.urllib3.exceptions import InsecureRequestWarning
-            msgLog = f"First try"
-            logMsg(msgLog, 1, 1)
             requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-            response = requests.get(theUrl, verify=False)
-            logging.info(f"Response 1: {response}")
-            pos = response.text.find("https://www.blogger.com/feeds/")
-            # Some blogspot blogs do not render ok because they use javascript
-            # to load content. We add the content from the RSS feed.  Dirty
-            # trick
-            if pos >= 0:
-                msgLog = f"Blogger"
-                logMsg(msgLog, 1, 1)
-                pos2 = response.text.find('"', pos + 1)
-                theUrl2 = response.text[pos:pos2]
-                import moduleRss
 
-                blog = moduleRss.moduleRss()
-                pos = theUrl2.find("/", 9)
-                blog.setUrl(theUrl2[: pos + 1])
-                rssFeed = theUrl2[pos + 1:]
-                blog.setRssFeed(rssFeed)
-                blog.setPosts()
-                posPost = blog.getLinkPosition(theUrl)
-                data = blog.obtainPostData(posPost)
-                moreContent = data[5][0]["value"]
-        except:
-            logging.info("Retry")
-            retry = True
-        if retry or response.status_code >= 401:
+            response = http.get(url_to_download, verify=False, timeout=10)
+            response.raise_for_status()
+
+        except requests.exceptions.RequestException as e:
+            logMsg(f"Requests failed after 2 attempts: {e}", 2, 1)
+            response = None # Ensure response is None on failure
+
+        # Third attempt with pycurl if requests failed
+        if response is None or not response.ok:
+            sleep_time = random.uniform(0, 2)
+            logMsg(f"Requests failed. Waiting for {sleep_time:.2f} seconds before trying with pycurl.", 1, 1)
+            time.sleep(sleep_time)
+
+            logMsg(f"Making a third attempt with pycurl.", 2, 1)
             try:
-                msgLog = f"Second try"
-                logMsg(msgLog, 1, 1)
-                from fake_useragent import UserAgent
-                ua = UserAgent()
-                response = requests.get(
-                    theUrl, headers={"User-Agent": ua.random}, verify=False
-                )
-                logging.info(f"Response 2: {response}")
-            except:
-                logging.info("somethigh wrong ")
+                buffer = BytesIO()
+                c = pycurl.Curl()
+                c.setopt(c.URL, url_to_download)
+                c.setopt(c.WRITEDATA, buffer)
+                c.setopt(c.FOLLOWLOCATION, True)
+                c.setopt(c.TIMEOUT, 30)
+                c.perform()
 
-        return response, moreContent
+                status_code = c.getinfo(pycurl.HTTP_CODE)
+
+                if 200 <= status_code < 300:
+                    # Create a mock response object for consistency
+                    response = requests.Response()
+                    response.status_code = status_code
+                    response._content = buffer.getvalue()
+                    response.url = c.getinfo(pycurl.EFFECTIVE_URL)
+                else:
+                    logMsg(f"pycurl failed with status code {status_code}", 3, 1)
+                    response = None
+
+                c.close()
+
+            except pycurl.error as e:
+                logMsg(f"pycurl failed: {e}", 3, 1)
+                response = None
+            except Exception as e:
+                logMsg(f"An unexpected error occurred with pycurl: {e}", 3, 1)
+                response = None
+
+
+        if response and response.ok:
+            moreContent = self._handle_blogger_content(response, url_to_download)
+            return response, moreContent
+        else:
+            raise DownloadError(f"Failed to download {url_to_download} after 3 attempts.")
+
+    def _handle_blogger_content(self, response, url_to_download):
+        moreContent = ""
+        pos = response.text.find("https://www.blogger.com/feeds/")
+        if pos >= 0:
+            logMsg(f"Blogger", 1, 1)
+            pos2 = response.text.find('"', pos + 1)
+            theUrl2 = response.text[pos:pos2]
+            import moduleRss
+
+            blog = moduleRss.moduleRss()
+            pos = theUrl2.find("/", 9)
+            blog.setUrl(theUrl2[: pos + 1])
+            rssFeed = theUrl2[pos + 1:]
+            blog.setRssFeed(rssFeed)
+            blog.setPosts()
+            posPost = blog.getLinkPosition(url_to_download)
+            data = blog.obtainPostData(posPost)
+            moreContent = data[5][0]["value"]
+        return moreContent
 
     def cleanUrl(self, url):
         cleaning = [
@@ -144,7 +194,7 @@ class moduleHtml(Content): #, Queue):
 
         return title
 
-    def cleanDocument(self, text, theUrl, response):
+    def cleanDocument(self, text, url_to_download, response):
         replaceChars = [
             ("“", '"'),
             ("”", '"'),
@@ -195,7 +245,7 @@ class moduleHtml(Content): #, Queue):
         # doc_title = doc.css_first('title').text()
 
         if not doc_title or (doc_title == "[no-title]"):
-            if theUrl.lower().endswith("pdf"):
+            if url_to_download.lower().endswith("pdf"):
                 title = self.getPdfTitle(response)
                 print(title)
                 doc_title = "[PDF] " + title
@@ -429,9 +479,9 @@ if __name__ == "__main__":
     if testingX:
         import moduleHtml
         blog = moduleHtml.moduleHtml()
-        url = input("X link: ")
-        blog.setUrl(url)
-        data = blog.downloadUrl(url)
+        url_to_download = input("X link: ")
+        blog.setUrl(url_to_download)
+        data = blog.downloadUrl(url_to_download)
         print(data)
         print(blog.extractLinks(data)[1])
 

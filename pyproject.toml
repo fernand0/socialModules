@@ -55,7 +55,8 @@ dependencies = [
 		'setuptools',
 		'slack_sdk',
 		'readability-lxml',
-		'readabilipy'
+		'readabilipy',
+		'pycurl'
 
 ]
 
