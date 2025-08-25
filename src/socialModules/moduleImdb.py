@@ -56,6 +56,7 @@ class moduleImdb(Content): #,Queue):
         posts = []
         self.data = []
         logging.info(f"Reading data from {self.fileTV} ...") 
+        self.cache = False
         if os.path.exists(self.fileTV): 
             import time
             timeNow = time.time() 
