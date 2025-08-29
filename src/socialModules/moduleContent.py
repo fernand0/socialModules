@@ -539,19 +539,38 @@ class Content:
             print("not implemented!")
 
     def setNextTime(self, tnow, tSleep, src=None):
+        """
+        Guarda la próxima hora de ejecución para una fuente dada en un fichero.
+        """
         self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Start setNextTime"
+        msgLog = f"{self.indent}Start setNextTime"
         logMsg(msgLog, 2, 0)
-        fileNameNext = ""
-        fileNameNext = f"{src.fileNameBase(self)}.timeNext"
-        msgLog = checkFile(fileNameNext, f"{self.indent} ")
-        if "OK" not in msgLog:
-            msgLog = f"file {fileNameNext} does not exist. " f"I'm going to create it."
-            self.report("", msgLog, "", "")
-        with open(fileNameNext, "wb") as f:
-            pickle.dump((tnow, tSleep), f)
-        msgLog = f"{self.indent}  File updated: {fileNameNext}"
-        logMsg(msgLog, 2, 0)
+
+        if not src:
+            logMsg(f"{self.indent}Error: El parámetro 'src' no puede ser None.", 3, 1)
+            self.indent = self.indent[:-1]
+            return
+
+        fileNameNext = None
+        try:
+            fileNameNext = f"{src.fileNameBase(self)}.timeNext"
+            
+            # 'wb' creará el fichero si no existe, por lo que checkFile es redundante
+            # a menos que se quiera un log específico si el fichero no existía.
+            with open(fileNameNext, "wb") as f:
+                pickle.dump((tnow, tSleep), f)
+            
+            msgLog = f"{self.indent}  Fichero actualizado: {fileNameNext}"
+            logMsg(msgLog, 2, 0)
+
+        except (IOError, pickle.PicklingError) as e:
+            # Un manejo de errores más específico que llamar a self.report
+            error_msg = f"Fallo al escribir en el fichero {fileNameNext or 'desconocido'}"
+            logMsg(f"{self.indent}{error_msg}", 3, 1)
+            self.report(self.service, error_msg, fileNameNext, e)
+        finally:
+            # Asegurarse de que el indentado siempre se restaura
+            self.indent = self.indent[:-1]
 
     def setNumPosts(self, numposts):
         self.numposts = numposts

@@ -1046,9 +1046,9 @@ class moduleRules:
                 tSleep = random.random() * float(timeSlots) * 60
 
                 # msgLog = f"{indent} timeSlots, tSleep: {timeSlots} {tSleep}"
+                # Forzar el recálculo del nombre de fichero en setNextTime
                 apiDst.fileName = ""
                 apiDst.setNextTime(tNow, tSleep, apiSrc)
-                apiDst.fileName = ""
 
                 if tSleep > 0.0:
                     msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
@@ -1270,7 +1270,7 @@ class moduleRules:
     def _configure_service_api(self, api, destination, channel=None, from_email=None, to_email=None, account=None):
         """
         Configure service-specific API settings
-        
+
         Args:
             api: Service API instance
             destination: Service name
@@ -1284,47 +1284,47 @@ class moduleRules:
             if hasattr(api, "setChannel") and channel:
                 api.setChannel(channel)
                 logging.debug(f"Channel set to '{channel}' for {destination}")
-            
+
             # Configure SMTP-specific settings
             if "smtp" in destination.lower():
                 if hasattr(api, 'fromaddr'):
                     api.fromaddr = from_email or "default@example.com"
                     logging.debug(f"SMTP fromaddr set to {api.fromaddr}")
-                
+
                 if hasattr(api, 'to'):
                     api.to = to_email or account
                     logging.debug(f"SMTP to set to {api.to}")
-                    
+
         except Exception as e:
             logging.warning(f"Error configuring {destination} API: {e}")
-    
+
     def _extract_image_url(self, api, destination):
         """
         Extract image URL from API response in a generic way
-        
+
         Args:
             api: Service API instance
             destination: Service name
-            
+
         Returns:
             str or None: Image URL if found
         """
         try:
             if not hasattr(api, "lastRes") or not api.lastRes:
                 return None
-            
+
             response = api.lastRes
-            
+
             # Try different response formats
             # Mastodon format
-            if (isinstance(response, dict) and 
-                "media_attachments" in response and 
+            if (isinstance(response, dict) and
+                "media_attachments" in response and
                 response["media_attachments"] and
                 isinstance(response["media_attachments"], list) and
                 len(response["media_attachments"]) > 0 and
                 "url" in response["media_attachments"][0]):
                 return response["media_attachments"][0]["url"]
-            
+
             # Twitter format
             if isinstance(response, dict) and "media" in response:
                 media = response["media"]
@@ -1332,26 +1332,26 @@ class moduleRules:
                     return media["media_url"]
                 elif isinstance(media, list) and len(media) > 0 and "media_url" in media[0]:
                     return media[0]["media_url"]
-            
+
             # Generic URL field
             if isinstance(response, dict):
                 for url_field in ["url", "image_url", "media_url", "attachment_url"]:
                     if url_field in response:
                         return response[url_field]
-            
+
             logging.debug(f"No image URL found in {destination} response")
             return None
-            
+
         except Exception as e:
             logging.warning(f"Error extracting image URL from {destination}: {e}")
             return None
-    
-    def _publish_to_single_destination(self, destination, account, title, url, content, 
+
+    def _publish_to_single_destination(self, destination, account, title, url, content,
                                      image_path=None, alt_text="", channel=None,
                                      from_email=None, to_email=None):
         """
         Publish to a single destination
-        
+
         Args:
             destination: Service name
             account: Account name
@@ -1363,29 +1363,29 @@ class moduleRules:
             channel: Channel for services that support it
             from_email: Email origin for SMTP
             to_email: Email destination for SMTP
-            
+
         Returns:
             dict: Publication result
         """
         service_key = f"{destination}_{account}"
-        
+
         try:
             # Create key for readConfigDst
             key = ("direct", "post", destination, account)
-            
+
             # Get service API
             api = self.readConfigDst("  ", key, None, None)
-            
+
             if not api:
                 return {
                     'success': False,
                     'error': f'Could not initialize API for {destination}',
                     'service': service_key
                 }
-            
+
             # Configure service-specific settings
             self._configure_service_api(api, destination, channel, from_email, to_email, account)
-            
+
             # Publish image if provided
             image_url = None
             if image_path and hasattr(api, 'publishImage'):
@@ -1396,10 +1396,10 @@ class moduleRules:
                 except Exception as e:
                     logging.error(f"Error publishing image to {destination}: {e}")
                     # Continue with text post even if image fails
-            
+
             # Publish main post
             result = api.publishPost(title, url, content)
-            
+
             # Validate result
             if self._is_publication_successful(result):
                 logging.info(f"Successfully published to {destination}: {result}")
@@ -1416,7 +1416,7 @@ class moduleRules:
                     'result': result,
                     'service': service_key
                 }
-                
+
         except Exception as e:
             error_msg = f"Error publishing to {destination}: {e}"
             logging.error(error_msg)
@@ -1425,50 +1425,50 @@ class moduleRules:
                 'error': str(e),
                 'service': service_key
             }
-    
+
     def _is_publication_successful(self, result):
         """
         Determine if a publication result indicates success
-        
+
         Args:
             result: Publication result from API
-            
+
         Returns:
             bool: True if successful
         """
         if result is None:
             return False
-        
+
         # String results starting with "Fail" are failures
         if isinstance(result, str) and result.startswith("Fail"):
             return False
-        
+
         # Dict results with explicit success/error indicators
         if isinstance(result, dict):
             if 'success' in result:
                 return result['success']
             if 'error' in result:
                 return False
-        
+
         # Non-empty results are generally successful
         return bool(result)
-    
+
     def _validate_destinations(self, destinations):
         """
         Validate and normalize destinations parameter
-        
+
         Args:
             destinations: Dict or list of destinations
-            
+
         Returns:
             list: Normalized list of (service, account) tuples
-            
+
         Raises:
             ValueError: If destinations format is invalid
         """
         if not destinations:
             raise ValueError("Destinations cannot be empty")
-        
+
         if isinstance(destinations, dict):
             return [(service, account) for service, account in destinations.items() if account]
         elif isinstance(destinations, (list, tuple)):
@@ -1484,12 +1484,12 @@ class moduleRules:
         else:
             raise ValueError(f"Destinations must be dict or list, got {type(destinations)}")
 
-    def publish_to_multiple_destinations(self, destinations, title, url="", content="", 
+    def publish_to_multiple_destinations(self, destinations, title, url="", content="",
                                        image_path=None, alt_text="", channel=None,
                                        from_email=None, to_email=None):
         """
         Publishes content to multiple destinations using unified logic
-        
+
         Args:
             destinations: Dict with {service: account} or list of tuples (service, account)
             title: Publication title
@@ -1500,35 +1500,35 @@ class moduleRules:
             channel: Specific channel for some services (optional)
             from_email: Origin email for SMTP (optional)
             to_email: Destination email for SMTP (optional)
-            
+
         Returns:
             Dict with results from each publication
-            
+
         Raises:
             ValueError: If parameters are invalid
         """
         # Validate inputs
         if not title and not content:
             raise ValueError("Either title or content must be provided")
-        
+
         try:
             dest_items = self._validate_destinations(destinations)
         except ValueError as e:
             logging.error(f"Invalid destinations: {e}")
             return {'error': str(e)}
-        
+
         if not dest_items:
             logging.warning("No valid destinations found")
             return {}
-        
+
         logging.info(f"Starting publication to {len(dest_items)} destinations: {title}")
-        
+
         results = {}
-        
+
         # Publish to each destination
         for destination, account in dest_items:
             logging.info(f"Publishing to: {destination} - {account}")
-            
+
             result = self._publish_to_single_destination(
                 destination=destination,
                 account=account,
@@ -1541,39 +1541,39 @@ class moduleRules:
                 from_email=from_email,
                 to_email=to_email
             )
-            
+
             results[result['service']] = {
                 'success': result['success'],
                 'result': result.get('result'),
                 'error': result.get('error'),
                 'image_url': result.get('image_url')
             }
-        
+
         # Log summary
         successful = sum(1 for r in results.values() if r.get('success'))
         total = len(results)
         logging.info(f"Publication completed: {successful}/{total} successful")
-        
+
         return results
-    
+
     def publish_message_to_destinations(self, destinations, message, **kwargs):
         """
         Simplified method to publish only a message
-        
+
         Args:
             destinations: Dict with {service: account} or list of tuples
             message: Message to publish
             **kwargs: Additional parameters passed to publish_to_multiple_destinations
-            
+
         Returns:
             Dict with results
-            
+
         Raises:
             ValueError: If message is empty
         """
         if not message or not message.strip():
             raise ValueError("Message cannot be empty")
-        
+
         return self.publish_to_multiple_destinations(
             destinations=destinations,
             title=message,
@@ -1585,14 +1585,14 @@ class moduleRules:
             from_email=kwargs.get('from_email'),
             to_email=kwargs.get('to_email')
         )
-    
+
     def get_publication_summary(self, results):
         """
         Generate a summary of publication results
-        
+
         Args:
             results: Results dict from publish_to_multiple_destinations
-            
+
         Returns:
             dict: Summary with statistics and details
         """
@@ -1604,13 +1604,13 @@ class moduleRules:
                 'success_rate': 0.0,
                 'error': results.get('error') if results else 'No results'
             }
-        
+
         successful_services = [k for k, v in results.items() if v.get('success')]
         failed_services = [k for k, v in results.items() if not v.get('success')]
-        
+
         total = len(results)
         successful_count = len(successful_services)
-        
+
         return {
             'total': total,
             'successful': successful_count,
@@ -1618,10 +1618,10 @@ class moduleRules:
             'success_rate': successful_count / total if total > 0 else 0.0,
             'successful_services': successful_services,
             'failed_services': failed_services,
-            'response_links': {k: v.get('image_url') or v.get('result') 
-                             for k, v in results.items() 
+            'response_links': {k: v.get('image_url') or v.get('result')
+                             for k, v in results.items()
                              if v.get('success') and (v.get('image_url') or v.get('result'))},
-            'errors': {k: v.get('error') for k, v in results.items() 
+            'errors': {k: v.get('error') for k, v in results.items()
                       if not v.get('success') and v.get('error')}
         }
 
