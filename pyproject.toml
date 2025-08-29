@@ -56,7 +56,8 @@ dependencies = [
 		'slack_sdk',
 		'readability-lxml',
 		'readabilipy',
-		'pycurl'
+		'pycurl',
+		'instapaper'
 
 ]
 
