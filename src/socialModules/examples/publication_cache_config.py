@@ -34,11 +34,8 @@ class PublicationCacheConfig:
         # 'myservice': lambda reply: reply.get('custom_url') if isinstance(reply, dict) else None
     }
 
-    # Metadata fields to include in cache
-    METADATA_FIELDS = [
-        'tags', 'comment', 'audience', 'hashtags',
-        'campaign', 'author', 'category'
-    ]
+    # Metadata fields to include in cache (deprecated)
+    METADATA_FIELDS = []
 
     # Enable/disable logging for cache operations
     CACHE_LOGGING = True
@@ -56,7 +53,6 @@ def get_cache_config():
         'max_cache_size': PublicationCacheConfig.MAX_CACHE_SIZE,
         'extract_response_links': PublicationCacheConfig.EXTRACT_RESPONSE_LINKS,
         'custom_extractors': PublicationCacheConfig.CUSTOM_EXTRACTORS,
-        'metadata_fields': PublicationCacheConfig.METADATA_FIELDS,
         'cache_logging': PublicationCacheConfig.CACHE_LOGGING,
         'cache_log_level': PublicationCacheConfig.CACHE_LOG_LEVEL,
     }
@@ -105,23 +101,15 @@ def get_custom_extractor(service):
 
 def filter_metadata(metadata_dict):
     """
-    Filter metadata to include only configured fields
+    Filter metadata to include only configured fields (deprecated)
 
     Args:
         metadata_dict: Original metadata dictionary
 
     Returns:
-        dict: Filtered metadata
+        dict: Empty dictionary
     """
-    if not metadata_dict:
-        return {}
-
-    filtered = {}
-    for field in PublicationCacheConfig.METADATA_FIELDS:
-        if field in metadata_dict:
-            filtered[field] = metadata_dict[field]
-
-    return filtered
+    return {}
 
 
 # Example usage and customization

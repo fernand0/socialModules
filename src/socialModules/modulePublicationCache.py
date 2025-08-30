@@ -60,7 +60,7 @@ class PublicationCache:
             return False
 
     def add_publication(self, title, original_link, service, response_link=None,
-                       publication_date=None, metadata=None, user=None):
+                       publication_date=None, user=None):
         """
         Add a new publication to the cache
 
@@ -70,7 +70,6 @@ class PublicationCache:
             service: Service where it was published (twitter, facebook, etc.)
             response_link: Service response link (optional)
             publication_date: Publication date (optional, uses current date if not specified)
-            metadata: Additional information (optional)
 
         Returns:
             str: Unique ID of the added publication
@@ -90,8 +89,7 @@ class PublicationCache:
             'service': service,
             'user': user,
             'response_link': response_link,
-            'publication_date': publication_date,
-            'metadata': metadata or {}
+            'publication_date': publication_date
         }
 
         logging.debug(f"Publication data: {publication}")

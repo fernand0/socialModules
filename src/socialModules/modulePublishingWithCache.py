@@ -24,7 +24,7 @@ class PublisherWithCache(Publisher):
         self.publication_cache = PublicationCache(cache_file)
     
     def publish_and_cache(self, title, original_link, service, api_instance, 
-                         comment='', metadata=None):
+                         comment=''):
         """
         Publish content and store information in cache
         
@@ -34,7 +34,6 @@ class PublisherWithCache(Publisher):
             service: Service to publish to (twitter, facebook, etc.)
             api_instance: Service API instance
             comment: Additional comment (optional)
-            metadata: Additional metadata (optional)
         
         Returns:
             dict: Publication result with cache information
@@ -51,8 +50,7 @@ class PublisherWithCache(Publisher):
                 title=title,
                 original_link=original_link,
                 service=service,
-                response_link=response_link,
-                metadata=metadata
+                response_link=response_link
             )
             
             result = {
@@ -241,8 +239,7 @@ def main():
         title="Test article",
         original_link="https://example.com/article",
         service="twitter",
-        api_instance=mock_api,
-        metadata={'tags': ['python', 'tutorial']}
+        api_instance=mock_api
     )
     
     print(f"Result: {result}")

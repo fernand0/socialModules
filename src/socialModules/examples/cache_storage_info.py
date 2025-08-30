@@ -87,13 +87,7 @@ def show_cache_file_structure():
             "original_link": "https://source.com/article",
             "service": "twitter|facebook|linkedin|etc",
             "response_link": "https://platform.com/post/id",
-            "publication_date": "ISO 8601 timestamp",
-            "metadata": {
-                "service": "platform name",
-                "user": "username",
-                "tags": ["tag1", "tag2"],
-                "custom_field": "custom_value"
-            }
+            "publication_date": "ISO 8601 timestamp"
         }
     }
     

@@ -554,12 +554,12 @@ class Content:
         fileNameNext = None
         try:
             fileNameNext = f"{src.fileNameBase(self)}.timeNext"
-            
+
             # 'wb' creará el fichero si no existe, por lo que checkFile es redundante
             # a menos que se quiera un log específico si el fichero no existía.
             with open(fileNameNext, "wb") as f:
                 pickle.dump((tnow, tSleep), f)
-            
+
             msgLog = f"{self.indent}  Fichero actualizado: {fileNameNext}"
             logMsg(msgLog, 2, 0)
 
@@ -1239,20 +1239,6 @@ class Content:
                 # Extract response link from reply
                 response_link = self._extract_response_link_from_reply(reply, pub_service)
 
-                # Prepare metadata
-                metadata = {}
-                if more:
-                    # Include relevant metadata from 'more' parameter
-                    metadata_fields = ['tags', 'comment', 'audience', 'hashtags', 'campaign', 'author']
-                    try:
-                        from examples.publication_cache_config import filter_metadata
-                        metadata = filter_metadata(more)
-                    except ImportError:
-                        # Use default fields if config not available
-                        for key in metadata_fields:
-                            if key in more:
-                                metadata[key] = more[key]
-
                 # Cache the publication
                 user = self.getUser() or self.getNick()
                 if pub_title and pub_link:
@@ -1262,7 +1248,6 @@ class Content:
                         service=pub_service,
                         user=user,
                         response_link=response_link,
-                        metadata=metadata,
                         publication_date=datetime.datetime.now().isoformat()
                     )
 

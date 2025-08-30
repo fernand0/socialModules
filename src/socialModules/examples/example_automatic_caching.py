@@ -127,8 +127,7 @@ def demo_publication_history():
             title=article_title,
             original_link=article_link,
             service=service,
-            response_link=response_link,
-            metadata={'campaign': 'tech_awareness', 'author': 'test_user'}
+            response_link=response_link
         )
         print(f"  ✓ Published on {site}")
     

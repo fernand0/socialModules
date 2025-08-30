@@ -71,8 +71,7 @@ result = publisher.publish_and_cache(
     title="New tutorial",
     original_link="https://myblog.com/tutorial",
     service="facebook",
-    api_instance=facebook_api,
-    metadata={'tags': ['tutorial', 'programming']}
+    api_instance=facebook_api
 )
 
 # View article history
@@ -90,11 +89,7 @@ Each publication stores:
     "original_link": "https://example.com/article",
     "service": "twitter",
     "response_link": "https://twitter.com/user/status/123456",
-    "publication_date": "2024-01-15T10:30:00",
-    "metadata": {
-        "hashtags": ["#python", "#tutorial"],
-        "audience": "public"
-    }
+    "publication_date": "2024-01-15T10:30:00"
 }
 ```
 

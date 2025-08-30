@@ -60,7 +60,7 @@ def show_cache_info():
         if stats:
             print("\nPublications by service:")
             for service, data in stats.items():
-                print(f"  {site}: {data['total']} publications")
+                print(f"  {service}: {data['total']} publications")
     else:
         print("Cache file does not exist yet (will be created on first publication)")
     
@@ -174,10 +174,10 @@ def export_cache_formats():
             
             f.write("Publications by service:\n")
             for service, data in stats.items():
-                f.write(f"  {site}: {data['total']} publications\n")
+                f.write(f"  {service}: {data['total']} publications\n")
             
             f.write("\nRecent publications:\n")
-            for pub in publications[-10:]:  # Last 10
+            for pub in publications[-10:]:
                 f.write(f"  {pub['publication_date']}: {pub['title']} ({pub['service']})\n")
         
         print(f"✓ Exported summary: {summary_file}")
@@ -242,7 +242,7 @@ def show_cache_statistics():
     print("\nBy service:")
     for service, data in stats.items():
         success_rate = (data['with_response_link'] / data['total'] * 100) if data['total'] > 0 else 0
-        print(f"  {site}: {data['total']} total, {data['with_response_link']} with links ({success_rate:.1f}%)")
+        print(f"  {service}: {data['total']} total, {data['with_response_link']} with links ({success_rate:.1f}%)")
     
     # By date
     from collections import defaultdict
@@ -252,10 +252,10 @@ def show_cache_statistics():
         try:
             date_str = pub['publication_date'][:10]  # YYYY-MM-DD
             by_date[date_str] += 1
-        except:
+        except Exception:
             by_date['unknown'] += 1
     
-    print(f"\nBy date (last 7 days):")
+    print("\nBy date (last 7 days):")
     sorted_dates = sorted(by_date.items(), reverse=True)
     for date, count in sorted_dates[:7]:
         print(f"  {date}: {count} publications")
@@ -265,7 +265,7 @@ def show_cache_statistics():
     for pub in publications:
         link_counts[pub.get('original_link', 'unknown')] += 1
     
-    print(f"\nMost published links:")
+    print("\nMost published links:")
     sorted_links = sorted(link_counts.items(), key=lambda x: x[1], reverse=True)
     for link, count in sorted_links[:5]:
         if count > 1:

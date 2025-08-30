@@ -118,8 +118,7 @@ def demo_integration_with_existing_system():
         title=article_title,
         original_link=article_link,
         service="twitter",
-        api_instance=MockTwitterAPI(),
-        metadata={'hashtags': ['#development', '#software']}
+        api_instance=MockTwitterAPI()
     )
     print(f"   Twitter: {twitter_result['message']}")
     
@@ -128,8 +127,7 @@ def demo_integration_with_existing_system():
         title=article_title,
         original_link=article_link,
         service="facebook", 
-        api_instance=MockFacebookAPI(),
-        metadata={'audience': 'public'}
+        api_instance=MockFacebookAPI()
     )
     print(f"   Facebook: {facebook_result['message']}")
     
@@ -138,8 +136,7 @@ def demo_integration_with_existing_system():
         title=article_title,
         original_link=article_link,
         service="linkedin",
-        api_instance=MockLinkedInAPI(),
-        metadata={'professional': True}
+        api_instance=MockLinkedInAPI()
     )
     print(f"   LinkedIn: {linkedin_result['message']}")
     print()

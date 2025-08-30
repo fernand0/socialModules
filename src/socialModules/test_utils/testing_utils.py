@@ -270,7 +270,6 @@ def test_cache_content(apiSrc):
                 print(f"  Service: {pub.get('service')}")
                 print(f"  Response Link: {pub.get('response_link', 'None')}")
                 print(f"  Date: {pub.get('publication_date')}")
-                print(f"  Metadata: {pub.get('metadata')}")
         else:
             print("No publications found for this service.")
 
