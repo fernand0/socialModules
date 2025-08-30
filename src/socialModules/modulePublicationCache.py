@@ -12,10 +12,11 @@ Module to manage a publication cache that stores:
 
 import json
 import os
-import pickle
+import shutil
+import sys
 import logging
 from datetime import datetime
-from socialModules.configMod import *
+from socialModules.configMod import DATADIR
 
 
 class PublicationCache:
@@ -279,54 +280,392 @@ class PublicationCache:
             logging.error(f"Error exporting to CSV: {e}")
             return None
 
+    def show_info(self):
+        """Display information about the cache file and location"""
+        
+        print("=== Cache Information ===\n")
+        
+        cache_file = self.cache_file
+        
+        print(f"Cache file location: {cache_file}")
+        print(f"DATADIR: {DATADIR})")
+        print(f"Cache file exists: {os.path.exists(cache_file)}")
+        
+        if os.path.exists(cache_file):
+            # File size
+            size_bytes = os.path.getsize(cache_file)
+            size_kb = size_bytes / 1024
+            size_mb = size_kb / 1024
+            
+            if size_mb > 1:
+                size_str = f"{size_mb:.2f} MB"
+            elif size_kb > 1:
+                size_str = f"{size_kb:.2f} KB"
+            else:
+                size_str = f"{size_bytes} bytes"
+            
+            print(f"Cache file size: {size_str}")
+            
+            # Last modified
+            mtime = os.path.getmtime(cache_file)
+            last_modified = datetime.fromtimestamp(mtime)
+            print(f"Last modified: {last_modified}")
+            
+            # Number of publications
+            publications = self.get_all_publications()
+            print(f"Total publications: {len(publications)}")
+            
+            # Statistics by service
+            stats = self.get_stats()
+            if stats:
+                print("\nPublications by service:")
+                for service, data in stats.items():
+                    print(f"  {service}: {data['total']} publications")
+        else:
+            print("Cache file does not exist yet (will be created on first publication)")
+        
+        print()
+
+    def backup(self):
+        """Create a backup of the cache file"""
+        
+        print("=== Backup Cache ===\n")
+        
+        cache_file = self.cache_file
+        
+        if not os.path.exists(cache_file):
+            print("No cache file to backup")
+            return False
+        
+        # Create backup filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_file = f"{cache_file}.backup_{timestamp}"
+        
+        try:
+            shutil.copy2(cache_file, backup_file)
+            print(f"✓ Cache backed up to: {backup_file}")
+            
+            # Show backup info
+            size_bytes = os.path.getsize(backup_file)
+            print(f"  Backup size: {size_bytes} bytes")
+            
+            return backup_file
+            
+        except Exception as e:
+            print(f"✗ Backup failed: {e}")
+            return False
+
+    def restore(self, backup_file):
+        """Restore cache from a backup file"""
+        
+        print(f"=== Restore Cache from {backup_file} ===\n")
+        
+        if not os.path.exists(backup_file):
+            print(f"Backup file not found: {backup_file}")
+            return False
+        
+        cache_file = self.cache_file
+        
+        try:
+            # Create backup of current cache if it exists
+            if os.path.exists(cache_file):
+                current_backup = f"{cache_file}.before_restore_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                shutil.copy2(cache_file, current_backup)
+                print(f"Current cache backed up to: {current_backup}")
+            
+            # Restore from backup
+            shutil.copy2(backup_file, cache_file)
+            print(f"✓ Cache restored from: {backup_file}")
+            
+            # Verify restoration
+            self.publications = self._load_cache()
+            publications = self.get_all_publications()
+            print(f"  Restored {len(publications)} publications")
+            
+            return True
+            
+        except Exception as e:
+            print(f"✗ Restore failed: {e}")
+            return False
+
+    def export_formats(self):
+        """Export cache to different formats"""
+        
+        print("=== Export Cache ===\n")
+        
+        publications = self.get_all_publications()
+        
+        if not publications:
+            print("No publications to export")
+            return
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # Export to CSV
+        csv_file = self.export_to_csv(f"publications_export_{timestamp}.csv")
+        if csv_file:
+            print(f"✓ Exported to CSV: {csv_file}")
+        
+        # Export to JSON (pretty formatted)
+        json_file = f"publications_export_{timestamp}.json"
+        try:
+            with open(json_file, 'w', encoding='utf-8') as f:
+                json.dump(publications, f, indent=2, ensure_ascii=False, default=str)
+            print(f"✓ Exported to JSON: {json_file}")
+        except Exception as e:
+            print(f"✗ JSON export failed: {e}")
+        
+        # Export summary
+        summary_file = f"publications_summary_{timestamp}.txt"
+        try:
+            with open(summary_file, 'w', encoding='utf-8') as f:
+                f.write("PUBLICATION CACHE SUMMARY\n")
+                f.write("=" * 50 + "\n\n")
+                
+                stats = self.get_stats()
+                f.write(f"Total publications: {len(publications)}\n")
+                f.write(f"Export date: {datetime.now()}\n\n")
+                
+                f.write("Publications by service:\n")
+                for service, data in stats.items():
+                    f.write(f"  {service}: {data['total']} publications\n")
+                
+                f.write("\nRecent publications:\n")
+                for pub in publications[-10:]:
+                    f.write(f"  {pub['publication_date']}: {pub['title']} ({pub['service']})\n")
+            
+            print(f"✓ Exported summary: {summary_file}")
+            
+        except Exception as e:
+            print(f"✗ Summary export failed: {e}")
+
+    def clean(self):
+        """Clean old or invalid entries from cache"""
+        
+        print("=== Clean Cache ===\n")
+        
+        publications = self.get_all_publications()
+        
+        if not publications:
+            print("No publications to clean")
+            return
+        
+        original_count = len(publications)
+        cleaned_count = 0
+        
+        # Remove entries without required fields
+        valid_publications = []
+        for pub in publications:
+            if pub.get('title') and pub.get('original_link') and pub.get('service'):
+                valid_publications.append(pub)
+            else:
+                cleaned_count += 1
+                print(f"Removed invalid entry: {pub.get('id', 'unknown')}")
+        
+        if cleaned_count > 0:
+            # Update cache with cleaned data
+            self.publications = {pub['id']: pub for pub in valid_publications}
+            self._save_cache()
+            
+            print(f"✓ Cleaned {cleaned_count} invalid entries")
+            print(f"  Before: {original_count} publications")
+            print(f"  After: {len(valid_publications)} publications")
+        else:
+            print("✓ No invalid entries found - cache is clean")
+
+    def show_statistics(self):
+        """Show detailed cache statistics"""
+        
+        print("=== Cache Statistics ===\n")
+        
+        publications = self.get_all_publications()
+        
+        if not publications:
+            print("No publications in cache")
+            return
+        
+        # Basic stats
+        print(f"Total publications: {len(publications)}")
+        
+        # By site
+        stats = self.get_stats()
+        print("\nBy service:")
+        for service, data in stats.items():
+            success_rate = (data['with_response_link'] / data['total'] * 100) if data['total'] > 0 else 0
+            print(f"  {service}: {data['total']} total, {data['with_response_link']} with links ({success_rate:.1f}%)")
+        
+        # By date
+        from collections import defaultdict
+        by_date = defaultdict(int)
+        
+        for pub in publications:
+            try:
+                date_str = pub['publication_date'][:10]  # YYYY-MM-DD
+                by_date[date_str] += 1
+            except Exception:
+                by_date['unknown'] += 1
+        
+        print("\nBy date (last 7 days):")
+        sorted_dates = sorted(by_date.items(), reverse=True)
+        for date, count in sorted_dates[:7]:
+            print(f"  {date}: {count} publications")
+        
+        # Most active links
+        link_counts = defaultdict(int)
+        for pub in publications:
+            link_counts[pub.get('original_link', 'unknown')] += 1
+        
+        print("\nMost published links:")
+        sorted_links = sorted(link_counts.items(), key=lambda x: x[1], reverse=True)
+        for link, count in sorted_links[:5]:
+            if count > 1:
+                print(f"  {count}x: {link}")
+
+    def list_backups(self):
+        """List available backup files"""
+        
+        print("=== Available Backup Files ===\n")
+        
+        cache_dir = os.path.dirname(self.cache_file)
+        cache_name = os.path.basename(self.cache_file)
+        
+        backup_files = []
+        
+        try:
+            for file in os.listdir(cache_dir):
+                if file.startswith(cache_name) and 'backup' in file:
+                    backup_path = os.path.join(cache_dir, file)
+                    mtime = os.path.getmtime(backup_path)
+                    size = os.path.getsize(backup_path)
+                    backup_files.append((file, mtime, size))
+            
+            if backup_files:
+                backup_files.sort(key=lambda x: x[1], reverse=True)  # Sort by date
+                
+                for i, (file, mtime, size) in enumerate(backup_files, 1):
+                    date_str = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
+                    size_str = f"{size} bytes" if size < 1024 else f"{size/1024:.1f} KB"
+                    print(f"{i}. {file}")
+                    print(f"   Date: {date_str}, Size: {size_str}")
+            else:
+                print("No backup files found")
+                
+        except Exception as e:
+            print(f"Error listing backups: {e}")
+
+    def interactive_restore(self):
+        """Interactive backup restoration"""
+        
+        print("=== Restore from Backup ===\n")
+        
+        cache_dir = os.path.dirname(self.cache_file)
+        
+        # List backups
+        self.list_backups()
+        
+        backup_file = input("\nEnter backup filename (or full path): ").strip()
+        
+        if not backup_file:
+            print("No file specified")
+            return
+        
+        # If just filename, assume it's in cache directory
+        if not os.path.dirname(backup_file):
+            backup_file = os.path.join(cache_dir, backup_file)
+        
+        if not os.path.exists(backup_file):
+            print(f"Backup file not found: {backup_file}")
+            return
+        
+        # Confirm restoration
+        confirm = input(f"Restore from {backup_file}? This will replace current cache (y/N): ").lower()
+        
+        if confirm == 'y':
+            self.restore(backup_file)
+        else:
+            print("Restoration cancelled")
+
+def interactive_menu():
+    """Interactive menu for cache management"""
+    
+    cache = PublicationCache()
+    
+    while True:
+        print("\n" + "=" * 50)
+        print("PUBLICATION CACHE MANAGEMENT")
+        print("=" * 50)
+        print("1. Show cache information")
+        print("2. Show cache statistics")
+        print("3. Backup cache")
+        print("4. Export cache (CSV, JSON, summary)")
+        print("5. Clean cache")
+        print("6. List backup files")
+        print("7. Restore from backup")
+        print("0. Exit")
+        print()
+        
+        choice = input("Select option (0-7): ").strip()
+        
+        if choice == '0':
+            print("Goodbye!")
+            break
+        elif choice == '1':
+            cache.show_info()
+        elif choice == '2':
+            cache.show_statistics()
+        elif choice == '3':
+            cache.backup()
+        elif choice == '4':
+            cache.export_formats()
+        elif choice == '5':
+            cache.clean()
+        elif choice == '6':
+            cache.list_backups()
+        elif choice == '7':
+            cache.interactive_restore()
+        else:
+            print("Invalid option. Please try again.")
 
 def main():
-    """Module test function"""
+    """Main function for CLI operations"""
 
-    # Configure logging
-    logging.basicConfig(level=logging.DEBUG,
+    # Configure logging (if not already configured)
+    logging.basicConfig(level=logging.INFO,
                        format='%(asctime)s - %(levelname)s - %(message)s')
 
-    # Create cache instance
-    cache = PublicationCache()
+    cache = PublicationCache() # Create an instance here
 
-    # Usage example
-    print("=== PublicationCache module test ===")
+    if len(sys.argv) > 1:
+        command = sys.argv[1].lower()
+        
+        if command == 'info':
+            cache.show_info()
+        elif command == 'stats':
+            cache.show_statistics()
+        elif command == 'backup':
+            cache.backup()
+        elif command == 'export':
+            cache.export_formats()
+        elif command == 'clean':
+            cache.clean()
+        elif command == 'list-backups':
+            cache.list_backups()
+        elif command == 'restore': # Add restore command
+            if len(sys.argv) > 2:
+                backup_file = sys.argv[2]
+                cache.restore(backup_file)
+            else:
+                print("Usage: python modulePublicationCache.py restore <backup_file>")
+                return 1
+        else:
+            print(f"Unknown command: {command}")
+            print("Available commands: info, stats, backup, export, clean, list-backups, restore")
+            return 1
+    else:
+        interactive_menu() # Call the interactive menu
 
-    # Add some test publications
-    pub1_id = cache.add_publication(
-        title="Interesting article about Python",
-        original_link="https://example.com/python-article",
-        service="twitter",
-        user="testuser",
-        response_link="https://twitter.com/user/status/123456"
-    )
-
-    pub2_id = cache.add_publication(
-        title="Git Tutorial",
-        original_link="https://example.com/git-tutorial",
-        service="facebook",
-        user="testuser2"
-    )
-
-    # Update response link
-    cache.update_response_link(pub2_id, "https://facebook.com/post/789012")
-
-    # Show statistics
-    stats = cache.get_stats()
-    print(f"\nStatistics: {stats}")
-
-    # Search publications
-    python_posts = cache.search_publications("Python")
-    print(f"\nPython publications: {len(python_posts)}")
-
-    # Show all publications
-    all_pubs = cache.get_all_publications()
-    print(f"\nTotal publications: {len(all_pubs)}")
-
-    for pub in all_pubs:
-        print(f"- {pub['title']} ({pub['service']})")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
