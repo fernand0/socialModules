@@ -384,7 +384,7 @@ class PublicationCache:
             print(f"✗ Backup failed: {e}")
             return False
 
-     def restore(self, backup_file):
+    def restore(self, backup_file):
          """Restore cache from a backup file in a thread-safe manner."""
 
          print(f"=== Restore Cache from {backup_file} ===\\n")
