@@ -417,39 +417,6 @@ class PublicationCache:
                 print(f"✗ Restore failed: {e}")
                 return False
 
-    # def restore(self, backup_file):
-    #     """Restore cache from a backup file"""
-    #
-    #     print(f"=== Restore Cache from {backup_file} ===\n")
-    #
-    #     if not os.path.exists(backup_file):
-    #         print(f"Backup file not found: {backup_file}")
-    #         return False
-    #
-    #     cache_file = self.cache_file
-    #
-    #     try:
-    #         # Create backup of current cache if it exists
-    #         if os.path.exists(cache_file):
-    #             current_backup = f"{cache_file}.before_restore_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    #             shutil.copy2(cache_file, current_backup)
-    #             print(f"Current cache backed up to: {current_backup}")
-    #
-    #         # Restore from backup
-    #         shutil.copy2(backup_file, cache_file)
-    #         print(f"✓ Cache restored from: {backup_file}")
-    #
-    #         # Verify restoration
-    #         self.publications = self._load_cache()
-    #         publications = self.get_all_publications()
-    #         print(f"  Restored {len(publications)} publications")
-    #
-    #         return True
-    #
-    #     except Exception as e:
-    #         print(f"✗ Restore failed: {e}")
-    #         return False
-
     def export_formats(self):
         """Export cache to different formats"""
 
