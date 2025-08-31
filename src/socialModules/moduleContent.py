@@ -1244,10 +1244,12 @@ class Content:
                 # Cache the publication
                 user = self.getUser() or self.getNick()
                 if pub_title and pub_link:
+                    source_service_name = api.getService().lower() if api else None
                     pub_id = cache.add_publication(
                         title=pub_title,
                         original_link=pub_link,
                         service=pub_service,
+                        source_service=source_service_name,
                         user=user,
                         response_link=response_link,
                         publication_date=datetime.datetime.now().isoformat()

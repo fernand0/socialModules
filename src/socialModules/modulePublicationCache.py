@@ -60,7 +60,7 @@ class PublicationCache:
             logging.error(f"Error saving cache: {e}")
             return False
 
-    def add_publication(self, title, original_link, service, response_link=None,
+    def add_publication(self, title, original_link, service, source_service=None, response_link=None,
                        publication_date=None, user=None):
         """
         Add a new publication to the cache
@@ -69,8 +69,10 @@ class PublicationCache:
             title: Publication title
             original_link: Original content link
             service: Service where it was published (twitter, facebook, etc.)
+            source_service: Service from where the content was obtained (optional)
             response_link: Service response link (optional)
             publication_date: Publication date (optional, uses current date if not specified)
+            user: User account used for publication (optional)
 
         Returns:
             str: Unique ID of the added publication
@@ -87,6 +89,7 @@ class PublicationCache:
             'id': pub_id,
             'title': title,
             'original_link': original_link,
+            'source_service': source_service,
             'service': service,
             'user': user,
             'response_link': response_link,
@@ -264,7 +267,7 @@ class PublicationCache:
 
         try:
             with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
-                fieldnames = ['id', 'title', 'original_link', 'service', 'user',
+                fieldnames = ['id', 'title', 'original_link', 'source_service', 'service', 'user',
                              'response_link', 'publication_date']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
