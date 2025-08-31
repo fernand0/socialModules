@@ -110,23 +110,31 @@ class moduleTwitter(Content): #, Queue):
         return posts
 
     def processReply(self, reply):
-        res = ''
+        """
+        Processes the reply from a Tweepy API call.
+        Extracts the URL from a successful publication.
+        """
         msgLog = f"{self.indent}Reply: {reply}"
         logMsg(msgLog, 1, 1)
-        origReply = reply
-        if hasattr(origReply, 'errors') and not origReply.errors:
-            if not ('Fail!' in reply):
-                idPost = self.getPostId(reply)
-                title = self.getPostTitle(reply)
-                res = (f"{title}",
-                       f"https://twitter.com/{self.user}/status/{idPost}")
-            else:
-                res = reply
-                if (('You have already retweeted' in res)
-                    or ('Status is a duplicate.' in res)
-                    or ('not allowed to create a Tweet with duplicate' in res)):
-                    res = res + ' SAVELINK'
-        return (res)
+
+        # Handle Tweepy v2 Response object
+        if hasattr(reply, 'data') and isinstance(reply.data, dict):
+            tweet_id = reply.data.get('id')
+            if tweet_id:
+                # Return the direct URL, which is a simple and standard format.
+                return f"https://twitter.com/{self.user}/status/{tweet_id}"
+
+        # Handle error responses or other formats
+        if hasattr(reply, 'errors') and reply.errors:
+            return f"Fail! {reply.errors}"
+
+        # Fallback for other cases or older response formats
+        if isinstance(reply, str) and (('You have already retweeted' in reply)
+            or ('Status is a duplicate.' in reply)
+            or ('not allowed to create a Tweet with duplicate' in reply)):
+            return reply + ' SAVELINK'
+
+        return reply # Return the original reply if it's not a recognized success format
 
     def publishApiImage(self, *args, **kwargs):
         logging.debug(f"{args} Len: {len(args)}")
