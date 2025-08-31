@@ -1185,7 +1185,7 @@ class Content:
             logging.info(f"Reply publish: {reply}")
             reply = self.processReply(reply)
 
-            self.setAutoCache()
+            # self.setAutoCache()
             # Integrate publication cache if successful and auto_cache is enabled
             if self.getAutoCache():
                 self._cache_publication_if_successful(reply, title, link, api, post, more)
