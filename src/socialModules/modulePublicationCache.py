@@ -435,7 +435,8 @@ class PublicationCache:
                 
                 f.write("\nRecent publications:\n")
                 for pub in publications[-10:]:
-                    f.write(f"  {pub['publication_date']}: {pub['title']} ({pub['service']})\n")
+                    source_info = f"{pub.get('source_service', '?')} -> " if pub.get('source_service') else ""
+                    f.write(f"  {pub['publication_date']}: {pub['title']} ({source_info}{pub['service']})\n")
             
             print(f"✓ Exported summary: {summary_file}")
             
