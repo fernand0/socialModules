@@ -23,6 +23,7 @@ dependencies = [
 		'flickrapi',
 		'tweepy',
 		'facebook-sdk',
+		'filelock',
 		'requests',
 		'bs4',
 		'lxml',

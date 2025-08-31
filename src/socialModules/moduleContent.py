@@ -50,7 +50,7 @@ class Content:
         # They start with module
         self.hold = None
         # Publication cache configuration
-        self.auto_cache = False  # Disabled by default for backward compatibility
+        self.auto_cache = True
 
     def setAutoCache(self, enabled=True):
         """
@@ -65,12 +65,15 @@ class Content:
 
     def getAutoCache(self):
         """
-        Get current auto-cache setting
+        Get current auto-cache setting, handling string-based values from config.
 
         Returns:
             bool: True if auto-cache is enabled
         """
-        return getattr(self, 'auto_cache', False)
+        enabled = getattr(self, 'auto_cache', True)
+        if isinstance(enabled, str):
+            return enabled.lower() in ('true', 'yes', '1')
+        return bool(enabled)
 
     def setService(self, service, serviceData):
         nameSet = f"set{service.capitalize()}"
@@ -1185,7 +1188,6 @@ class Content:
             logging.info(f"Reply publish: {reply}")
             reply = self.processReply(reply)
 
-            # self.setAutoCache()
             # Integrate publication cache if successful and auto_cache is enabled
             if self.getAutoCache():
                 self._cache_publication_if_successful(reply, title, link, api, post, more)
@@ -1242,10 +1244,12 @@ class Content:
                 # Cache the publication
                 user = self.getUser() or self.getNick()
                 if pub_title and pub_link:
+                    source_service_name = api.getService().lower() if api else None
                     pub_id = cache.add_publication(
                         title=pub_title,
                         original_link=pub_link,
                         service=pub_service,
+                        source_service=source_service_name,
                         user=user,
                         response_link=response_link,
                         publication_date=datetime.datetime.now().isoformat()
