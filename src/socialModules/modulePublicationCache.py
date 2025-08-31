@@ -475,7 +475,9 @@ class PublicationCache:
 
     def show_statistics(self):
         """Show detailed cache statistics"""
-        
+        from collections import defaultdict
+        from urllib.parse import urlparse
+
         print("=== Cache Statistics ===\n")
         
         publications = self.get_all_publications()
@@ -493,9 +495,26 @@ class PublicationCache:
         for service, data in stats.items():
             success_rate = (data['with_response_link'] / data['total'] * 100) if data['total'] > 0 else 0
             print(f"  {service}: {data['total']} total, {data['with_response_link']} with links ({success_rate:.1f}%)")
+
+        # By domain
+        domain_counts = defaultdict(int)
+        for pub in publications:
+            link = pub.get('original_link')
+            if link:
+                try:
+                    domain = urlparse(link).netloc
+                    if domain:
+                        domain_counts[domain] += 1
+                except Exception:
+                    pass  # Ignore parsing errors
+
+        if domain_counts:
+            print("\nBy domain:")
+            sorted_domains = sorted(domain_counts.items(), key=lambda x: x[1], reverse=True)
+            for domain, count in sorted_domains:
+                print(f"  {domain}: {count} publications")
         
         # By date
-        from collections import defaultdict
         by_date = defaultdict(int)
         
         for pub in publications:
