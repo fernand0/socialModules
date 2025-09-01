@@ -308,16 +308,21 @@ class moduleBlsk(Content): #, Queue):
         res = ''
         msgLog = f"{self.indent}Reply: {reply}"
         logMsg(msgLog, 1, 1)
-        origReply = reply
-        if reply:
-            #if isinstance(reply, str) and 'Fail' in reply:
-                res = reply
-            # else:
-            #     res = "OK!"
-        else:
-            res = "Fail!"
 
-        return (res)
+        if hasattr(reply, 'uri'):
+            # Success: The reply object has a 'uri', which is the post identifier.
+            res = reply.uri
+        elif isinstance(reply, str) and 'Fail' in reply:
+            # Failure: The reply is an explicit failure string.
+            res = reply
+        elif not reply:
+            # Failure: The reply is None, False, or empty.
+            res = "Fail! No reply from API."
+        else:
+            # Failure: The reply is in an unexpected format.
+            res = f"Fail! Unexpected reply type: {type(reply)}"
+
+        return res
 
 
 def main():
