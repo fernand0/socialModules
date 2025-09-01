@@ -118,7 +118,7 @@ class PublicationCache:
                     logging.error(f"Error saving publication: {title}")
                     return None
         except Timeout:
-            logging.error(f"Could not acquire lock to add publication. Another process may be holding it.")
+            logging.error("Could not acquire lock to add publication. Another process may be holding it.")
             return None
 
     def update_response_link(self, pub_id, response_link):
@@ -144,7 +144,7 @@ class PublicationCache:
                 logging.warning(f"Publication {pub_id} not found")
                 return False
         except Timeout:
-            logging.error(f"Could not acquire lock to update response link.")
+            logging.error("Could not acquire lock to update response link.")
             return False
 
     def get_publication(self, pub_id):
@@ -226,7 +226,7 @@ class PublicationCache:
                 logging.warning(f"Publication {pub_id} not found for deletion")
                 return False
         except Timeout:
-            logging.error(f"Could not acquire lock to delete publication.")
+            logging.error("Could not acquire lock to delete publication.")
             return False
 
     def get_all_publications(self, sort_by='publication_date', reverse=True):
@@ -384,7 +384,7 @@ class PublicationCache:
             print(f"✗ Backup failed: {e}")
             return False
 
-     def restore(self, backup_file):
+    def restore(self, backup_file):
          """Restore cache from a backup file in a thread-safe manner."""
 
          print(f"=== Restore Cache from {backup_file} ===\\n")
@@ -414,7 +414,7 @@ class PublicationCache:
 
                  return True
          except Timeout:
-             logging.error(f"Could not acquire lock to restore the cache.")
+             logging.error("Could not acquire lock to restore the cache.")
              return False
          except Exception as e:
              print(f"✗ Restore failed: {e}")
@@ -509,7 +509,7 @@ class PublicationCache:
                 else:
                     print("✓ No invalid entries found - cache is clean")
         except Timeout:
-            logging.error(f"Could not acquire lock to clean the cache.")
+            logging.error("Could not acquire lock to clean the cache.")
 
     def show_statistics(self):
         """Show detailed cache statistics"""
