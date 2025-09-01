@@ -1,18 +1,40 @@
 # Social Modules
 
-A comprehensive Python package for managing interactions with multiple social networks and content sites through a unified interface.
+A comprehensive Python package for managing interactions with multiple social networks and content sites through a unified, enhanced, and efficient interface.
 
 ## Overview
 
-Social Modules provides a modular architecture for reading from and writing to various social media platforms and content sites. It offers a consistent API across different services, making it easy to manage content across multiple platforms.
+Social Modules provides a modular architecture for reading from and writing to various social media platforms and content sites. It offers a consistent API across different services, making it easy to manage content, and now includes powerful new features for unified publishing and automatic publication caching.
+
+## Key Enhancements
+
+### 1. Unified Publishing Logic
+
+The publishing workflow has been centralized and significantly improved. The new `publish_to_multiple_destinations` method in `moduleRules` provides a single, robust entry point for all publications.
+
+- **Simplified API**: Publish to multiple platforms with a single function call.
+- **Improved Error Handling**: Robust error handling and detailed, structured results for each publication attempt.
+- **Flexible Destinations**: Supports both dictionary and list formats for specifying destinations.
+- **Automatic Configuration**: Smartly configures service-specific settings (e.g., channels for Slack/Telegram, email fields for SMTP).
+- **Image & Content Support**: Natively handles image attachments, alt text, and different content types.
+
+### 2. Automatic Publication Caching
+
+A powerful, opt-in caching system is now integrated directly into the core content module. This allows you to automatically track every publication made through the system.
+
+- **Opt-In Activation**: Disabled by default for backward compatibility. Enable it with a single line: `api.setAutoCache(True)`.
+- **Rich Data Storage**: Caches publication title, original link, target service, the platform's response link (e.g., tweet URL), and metadata.
+- **Zero-Effort History**: Automatically builds a complete history of all your publications across all platforms.
+- **Powerful Analytics**: The cache module provides functions to search, filter, get statistics, and export your publication history to CSV.
 
 ## Features
 
-- **Unified Interface**: Common API for all supported platforms
-- **Content Management**: Read and write content across multiple social networks
-- **Caching System**: Local storage for managing content queues
-- **Modular Design**: Easy to extend with new platforms
-- **Configuration Management**: Centralized configuration for all services
+- **Unified Interface**: Common API for all supported platforms.
+- **Unified Publishing**: Centralized, robust method for multi-platform publishing.
+- **Publication Caching**: Optional, automatic caching of all publications.
+- **Content Management**: Read and write content across multiple social networks.
+- **Modular Design**: Easy to extend with new platforms.
+- **Configuration Management**: Centralized configuration for all services.
 
 ## Supported Platforms
 
@@ -60,126 +82,44 @@ cd socialModules
 pip install -e .
 ```
 
-## Quick Start
+## Quick Start: Unified Publishing & Caching
 
-### Basic Usage
+This example demonstrates publishing a single piece of content to multiple platforms and automatically caching the results.
 
 ```python
+from socialModules.moduleRules import Rules
 from socialModules.configMod import getApi
 
-# Initialize a Twitter module
-twitter_api = getApi('Twitter', 'your_twitter_username')
+# 1. Define your destinations
+destinations = {
+    "twitter": "your_twitter_username",
+    "mastodon": "your_mastodon_username",
+    "linkedin": "your_linkedin_username"
+}
 
-# Get posts from your timeline
-posts = twitter_api.setApiPosts()
+# 2. Enable automatic caching for each destination API
+for service, account in destinations.items():
+    api = getApi(service, account)
+    api.setAutoCache(True) # Enable automatic caching
 
-# Publish a post
-result = twitter_api.publishPost("Hello, World!")
-```
+# 3. Use the unified publishing method from moduleRules
+rules = Rules()
+results = rules.publish_to_multiple_destinations(
+    destinations=destinations,
+    title="Check out my new blog post!",
+    url="https://example.com/my-awesome-post",
+    content="Here's a brief summary of my new post about..."
+)
 
-### Configuration
+# 4. Review the structured results
+print(results)
 
-Each service requires configuration in `~/.mySocial/config/` directory:
-
-```ini
-# Example: ~/.mySocial/config/.rssTwitter
-[your_twitter_username]
-CONSUMER_KEY = your_consumer_key
-CONSUMER_SECRET = your_consumer_secret
-TOKEN_KEY = your_access_token
-TOKEN_SECRET = your_access_token_secret
-BEARER_TOKEN = your_bearer_token
-```
-
-## Configuration Example: `.rssBlogs`
-
-The `.rssBlogs` file allows you to define multiple blogs and their associated parameters to automate content publishing and management across different services. Each section represents a different blog:
-
-```ini
-[Blog1]
-url = https://yourblog.com/
-rss = https://yourblog.com/feed.xml
-xmlrpc = https://yourblog.com/xmlrpc.php
-twitterAC = your_twitter_user
-pageFB = your_facebook_page
-telegramAC = your_telegram_user
-mediumAC = your_medium_user
-linksToAvoid = https://yourblog.com/avoid1,https://yourblog.com/avoid2
-```
-
-**Typical fields:**
-- `url`: Main URL of the blog
-- `rss`: URL of the RSS feed
-- `xmlrpc`: XML-RPC endpoint for remote publishing (WordPress, etc.)
-- `twitterAC`: Associated Twitter account
-- `pageFB`: Associated Facebook page
-- `telegramAC`: Associated Telegram user/channel
-- `mediumAC`: Associated Medium account
-- `linksToAvoid`: List of links to avoid (comma-separated)
-
-You can add as many `[BlogX]` sections as you need, each with its own parameters.
-
-## Architecture
-
-### Core Components
-
-1. **Content Module** (`moduleContent.py`)
-   - Base class for all content operations
-   - Handles post management, caching, and formatting
-   - Provides unified interface for all platforms
-
-2. **Configuration Module** (`configMod.py`)
-   - Manages API keys and service configuration
-   - Handles file operations and logging
-   - Provides utility functions for all modules
-
-3. **Cache Module** (`moduleCache.py`)
-   - Local storage for content queues
-   - Manages temporal storage of content
-   - Handles data persistence
-
-4. **Platform-Specific Modules**
-   - Each social platform has its own module
-   - Inherits from Content class
-   - Implements platform-specific API calls
-
-### Module Structure
-
-Each platform module follows this pattern:
-```python
-class modulePlatform(Content):
-    def getKeys(self, config):
-        # Extract API keys from config
-        
-    def initApi(self, keys):
-        # Initialize platform-specific API client
-        
-    def setApiPosts(self):
-        # Retrieve posts from platform
-        
-    def publishPost(self, *args, **kwargs):
-        # Publish content to platform
-```
-
-## Configuration
-
-### Directory Structure
-```
-~/.mySocial/
-├── config/          # Configuration files
-│   ├── .rssTwitter
-│   ├── .rssFacebook
-│   └── ...
-├── data/           # Cached data and logs
-└── logs/           # Application logs
-```
-
-### Environment Setup
-```bash
-# Create configuration directories
-mkdir -p ~/.mySocial/config
-mkdir -p ~/.mySocial/data
-mkdir -p ~/.mySocial/logs
+# 5. Analyze your cached publications
+from socialModules.modulePublicationCache import PublicationCache
+cache = PublicationCache()
+stats = cache.get_stats()
+print("\nPublication Statistics:")
+print(stats)
 ```
 
 ## Usage Examples
@@ -188,77 +128,92 @@ mkdir -p ~/.mySocial/logs
 ```python
 from socialModules.configMod import getApi
 
-# Read from RSS feed
+# Read from an RSS feed
 rss_api = getApi('Rss', 'https://example.com/feed.xml')
 posts = rss_api.setApiPosts()
+print(f"Found {len(posts)} posts in RSS feed.")
 
-# Read from Twitter timeline
-twitter_api = getApi('Twitter', 'username')
+# Read from a Twitter timeline
+twitter_api = getApi('Twitter', 'your_twitter_username')
 tweets = twitter_api.setApiPosts()
+print(f"Found {len(tweets)} tweets on timeline.")
 ```
 
-### Publishing Content
+### Analyzing the Publication Cache
 ```python
-# Publish to Twitter
-twitter_api = getApi('Twitter', 'username')
-result = twitter_api.publishPost("New blog post: https://example.com/post")
+from socialModules.modulePublicationCache import PublicationCache
 
-# Publish to multiple platforms
-platforms = ['Twitter', 'Facebook', 'LinkedIn']
-for platform in platforms:
-    api = getApi(platform, 'username')
-    api.publishPost("Cross-platform post")
+cache = PublicationCache()
+
+# Search for all publications related to a specific link
+history = cache.get_publications_by_original_link("https://example.com/my-awesome-post")
+print(f"Found {len(history)} publications for the link.")
+
+# Search for publications containing 'Python'
+python_posts = cache.search_publications("Python")
+print(f"Found {len(python_posts)} posts about Python.")
+
+# Export all data to a CSV file
+cache.export_to_csv("my_publications.csv")
+print("Publication history exported to my_publications.csv")
 ```
 
-### Content Management
-```python
-# Get cached posts
-posts = api.getPosts()
+## Configuration
 
-# Get next post to publish
-next_post = api.getNextPost()
+The core configuration remains in the `~/.mySocial/` directory.
 
-# Update last published link
-api.updateLastLink(url, link)
+### Directory Structure
 ```
+~/.mySocial/
+├── config/          # Service configuration files (e.g., .rssTwitter)
+├── data/            # Cached data, including publication_cache.json
+└── logs/            # Application logs
+```
+
+### Service Configuration
+Each service requires its own configuration file in `~/.mySocial/config/`. For example, `~/.mySocial/config/.rssTwitter`:
+
+```ini
+[your_twitter_username]
+CONSUMER_KEY = your_consumer_key
+CONSUMER_SECRET = your_consumer_secret
+TOKEN_KEY = your_access_token
+TOKEN_SECRET = your_access_token_secret
+BEARER_TOKEN = your_bearer_token
+```
+
+## Architecture
+
+### Core Components
+
+1.  **Rules Module** (`moduleRules.py`)
+    -   Provides the centralized `publish_to_multiple_destinations` method for unified publishing.
+    -   Orchestrates interactions with various service modules.
+
+2.  **Content Module** (`moduleContent.py`)
+    -   Base class for all platform-specific modules.
+    -   Contains the integrated, opt-in logic for automatic publication caching.
+
+3.  **Publication Cache Module** (`modulePublicationCache.py`)
+    -   Manages the storage, retrieval, and analysis of publication data.
+    -   Persists data to a local JSON file.
+
+4.  **Platform-Specific Modules** (`moduleTwitter.py`, `moduleFacebook.py`, etc.)
+    -   Implement the platform-specific API calls for reading and writing content.
+    -   Inherit from `moduleContent`.
 
 ## Dependencies
 
-The package requires Python 3.7+ and includes dependencies for:
-- Social media APIs (tweepy, facebook-sdk, etc.)
-- Content processing (beautifulsoup4, feedparser)
-- Authentication (oauth2, keyring)
-- Utilities (requests, click, dateparser)
-
-See `pyproject.toml` for complete dependency list.
+The package requires Python 3.7+. See `pyproject.toml` for the complete dependency list.
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Implement your changes
-4. Add tests if applicable
-5. Submit a pull request
+1.  Fork the repository
+2.  Create a feature branch
+3.  Implement your changes
+4.  Add tests if applicable
+5.  Submit a pull request
 
 ## License
 
 This project is licensed under the GNU General Public License. See `LICENSE.md` for details.
-
-## History
-
-This code was originally part of [https://github.com/fernand0/scripts](https://github.com/fernand0/scripts) and was moved here following GitHub's guide on [Splitting a subfolder out into a new repository](https://docs.github.com/en/github/using-git/splitting-a-subfolder-out-into-a-new-repository).
-
-## Support
-
-For issues and questions:
-- Create an issue on GitHub
-- Check existing issues for solutions
-- Review the configuration examples in the codebase
-
-## Roadmap
-
-- [ ] Add more social platforms
-- [ ] Improve error handling
-- [ ] Add comprehensive tests
-- [ ] Enhance documentation
-- [ ] Performance optimizations
