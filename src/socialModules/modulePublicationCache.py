@@ -707,6 +707,25 @@ def main():
             cache.clean()
         elif command == 'list-backups':
             cache.list_backups()
+        elif command == 'list-by-service':
+            if len(sys.argv) > 2:
+                service = sys.argv[2]
+                publications = cache.get_publications_by_service(service)
+                publications.sort(key=lambda x: x.get('publication_date', ''), reverse=True)
+                
+                print(f"--- Latest publications for service: {service} ---")
+                if not publications:
+                    print("No publications found.")
+                
+                for pub in publications:
+                    print(f"  Date: {pub.get('publication_date')}")
+                    print(f"  Title: {pub.get('title')}")
+                    print(f"  Original Link: {pub.get('original_link')}")
+                    print(f"  Response Link: {pub.get('response_link')}")
+                    print("-" * 20)
+            else:
+                print("Usage: python3 src/socialModules/modulePublicationCache.py list-by-service <service_name>")
+                return 1
         elif command == 'restore': # Add restore command
             if len(sys.argv) > 2:
                 backup_file = sys.argv[2]
@@ -716,7 +735,7 @@ def main():
                 return 1
         else:
             print(f"Unknown command: {command}")
-            print("Available commands: info, stats, backup, export, clean, list-backups, restore")
+            print("Available commands: info, stats, backup, export, clean, list-backups, restore, list-by-service")
             return 1
     else:
         interactive_menu() # Call the interactive menu
