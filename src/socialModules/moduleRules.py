@@ -972,7 +972,6 @@ class moduleRules:
     ):
         indent = f"{name}"
 
-        # FIXME. What happens when src and dst are the same service (drafts, mainly)?
         # Destination
         orig = f"{self.getNickRule(src)}@{self.getNameAction(src)} ({self.getTypeRule(src)})"
         dest = f"{self.getNickAction(action)}@{self.getNameAction(action)} ({self.getTypeAction(action)})"
@@ -990,8 +989,10 @@ class moduleRules:
             if msgLog:
                 logMsg(msgLog, 3, 1)
                 sys.stderr.write(f"Error: {msgLog}\n")
-                # FIXME Improve report  in moduleContent and use it
             return f"End: {msgLog}"
+
+        # Backup the current next-run time before making changes
+        backup_time = apiDst.getNextTime(apiSrc)
 
         tL = random.random() * numAct
         indent = f"{indent} "
@@ -1001,9 +1002,6 @@ class moduleRules:
         )
         logMsg(msgLog, 1, 0)
         numAct = max(3, numAct)  # Less than 3 is too small
-        # 'Cosmetic' waiting to allow all the processes to be launched.
-        # Randomization is a way to avoid calling several times the same
-        # service (almost) as the same time.
         time.sleep(tL)
 
         msgLog = f"{indent} Go!"
@@ -1039,15 +1037,12 @@ class moduleRules:
             if lastTime:
                 diffTime = tNow - lastTime
             else:
-                # If there is no lasTime, we will publish
                 diffTime = hours + 1
 
             if noWait or (diffTime > hours):
                 tSleep = random.random() * float(timeSlots) * 60
 
-                # msgLog = f"{indent} timeSlots, tSleep: {timeSlots} {tSleep}"
-                # Forzar el recálculo del nombre de fichero en setNextTime
-                apiDst.fileName = ""
+                # Reserve the time slot by setting the new time
                 apiDst.setNextTime(tNow, tSleep, apiSrc)
 
                 if tSleep > 0.0:
@@ -1056,27 +1051,22 @@ class moduleRules:
                     tSleep = 2.0
                     msgLog = f"{indent} No Waiting"
 
-                msgLog = (
-                    f"{msgLog} for {theAction} "
-                    f"from {apiSrc.getUrl()} "
-                    f"in {self.getNickAction(action)}@"
-                    f"{self.getProfileAction(action)}"
-                )
-                logMsg(msgLog, 1, 1)
+                logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
 
                 for i in range(num):
                     time.sleep(tSleep)
                     if "minutes" in msgLog:
-                        msgLog = (
-                            f"{indent} End Waiting {theAction} "
-                            f"from {apiSrc.getUrl()} "
-                            f"in {self.getNickAction(action)}@"
-                            f"{self.getProfileAction(action)}"
-                        )
-                        logMsg(msgLog, 1, 1)
+                        logMsg(f"{indent} End Waiting {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
+                    
                     res = self.executePublishAction(
                         indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos
                     )
+
+                # If no publication happened, restore the previous time
+                if not res and backup_time[0] is not None:
+                    logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
+                    apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
+
             elif diffTime <= hours:
                 msgLog = (
                     f"{indent} Not enough time passed. "
