@@ -63,7 +63,7 @@ class moduleBlsk(Content): #, Queue):
         posts = []
 
         print(f"client: {self.client}")
-        posts, error = self.apiCall('get_timeline', 
+        posts, error = self.apiCall('get_timeline',
                                     api=self.client.app.bsky.feed
                                     )
 
@@ -78,7 +78,7 @@ class moduleBlsk(Content): #, Queue):
 
         if hasattr(self, 'me'):
             try:
-                posts, error = self.apiCall('get_actor_likes', 
+                posts, error = self.apiCall('get_actor_likes',
                                             api=self.client.app.bsky.feed,
                                             params={'actor':self.me.did})
 
@@ -308,16 +308,22 @@ class moduleBlsk(Content): #, Queue):
         res = ''
         msgLog = f"{self.indent}Reply: {reply}"
         logMsg(msgLog, 1, 1)
-        origReply = reply
-        if reply:
-            #if isinstance(reply, str) and 'Fail' in reply:
-                res = reply
-            # else:
-            #     res = "OK!"
-        else:
-            res = "Fail!"
 
-        return (res)
+        if hasattr(reply, 'uri'):
+            # Success: The reply object has a 'uri', which is the post identifier.
+            res = f"https://bsky.app/profile/fernand0.bsky.social/post/"
+            res = f"{res}{reply.uri.split('/')[-1]}"
+        elif isinstance(reply, str) and 'Fail' in reply:
+            # Failure: The reply is an explicit failure string.
+            res = reply
+        elif not reply:
+            # Failure: The reply is None, False, or empty.
+            res = "Fail! No reply from API."
+        else:
+            # Failure: The reply is in an unexpected format.
+            res = f"Fail! Unexpected reply type: {type(reply)}"
+
+        return res
 
 
 def main():

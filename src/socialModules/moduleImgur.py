@@ -169,18 +169,25 @@ class moduleImgur(Content): #, Queue):
 
     def processReply(self, reply):
         res = ''
-        if reply:
-            if not ('Fail!' in reply):
-                msgLog = (f"{self.indent} Reply: {reply}")
-                logMsg(msgLog, 2, 0)
-                # idPost = reply.get('id','')
-                # title = reply.get('title')
-                res = f"Published {reply}"
-            else:
-                res = reply
-                if ('Image already in gallery.' in res):
-                    res = res + ' SAVELINK'
-        return(res)
+        msgLog = f"{self.indent}Reply: {reply}"
+        logMsg(msgLog, 2, 0)
+
+        if isinstance(reply, dict) and 'link' in reply:
+            # Success: The reply is a dictionary with the image link.
+            res = reply['link']
+        elif isinstance(reply, str) and 'Fail!' in reply:
+            # Failure: The reply is an explicit failure string.
+            res = reply
+            if 'Image already in gallery.' in res:
+                res += ' SAVELINK'
+        elif not reply:
+            # Failure: The reply is None, False, or empty.
+            res = "Fail! No reply from API."
+        else:
+            # Failure: The reply is in an unexpected format.
+            res = f"Fail! Unexpected reply type: {type(reply)}"
+
+        return res
 
     def publishNextPost(self, apiSrc):
         # We just store the post, we need more information than the title,
