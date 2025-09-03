@@ -86,7 +86,7 @@ class moduleTwitter(Content): #, Queue):
         # Does not work with new API restrictions
         #posts = self.apiCall(self.getClient().statuses.user_timeline,
         posts = self.apiCall(self.getClient().get_home_timeline,
-                             tweet_fields=['entities']) #, 
+                             tweet_fields=['entities']) #,
                 # max_results=100) #, tweet_mode='extended')
         if not isinstance(posts, str):
             posts = posts[0]
@@ -103,8 +103,8 @@ class moduleTwitter(Content): #, Queue):
         # posts = self.apiCall(self.getClient().get_favorites,
         # API v2
         posts = self.apiCall(self.getClient().get_liked_tweets,
-                             id=self.user) #, 
-                             # user_auth=True) #, 
+                             id=self.user) #,
+                             # user_auth=True) #,
                 #tweet_mode='extended')
 
         return posts
@@ -421,7 +421,7 @@ def main():
                         format='%(asctime)s %(message)s')
 
     from socialModules.moduleTester import ModuleTester
-    
+
     twitter_module = moduleTwitter()
     tester = ModuleTester(twitter_module)
     tester.run()

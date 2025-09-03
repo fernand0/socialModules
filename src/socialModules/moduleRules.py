@@ -488,41 +488,39 @@ class moduleRules:
         self.indentPlus()
         msgLog = f"{self.indent} Service {service} checking set methods"
         logMsg(msgLog, 2, 0)
-        if service == "social":
-            return []
-
-        if service in hasSet:
-            msgLog = f"{self.indent} Service {service} cached"
-            logMsg(msgLog, 2, 0)
-            listMethods = hasSet[service]
-        else:
-            clsService = getModule(service, self.indent)
-            listMethods = clsService.__dir__()
-            hasSet[service] = listMethods
-
         methods = []
-        for method in listMethods:
-            if (not method.startswith("__")) and (method.find("set") >= 0):
-                action = "set"
-                target = ""
-                # FIXME: indenting inside modules?
-                try:
-                    myModule = eval(f"clsService.{method}.__module__")
-                    myModuleList[(service, method)] = myModule
-                except:
-                    myModule = myModuleList[(service, method)]
+        if service != "social":
+            if service in hasSet:
+                msgLog = f"{self.indent} Service {service} cached"
+                logMsg(msgLog, 2, 0)
+                listMethods = hasSet[service]
+            else:
+                clsService = getModule(service, self.indent)
+                listMethods = clsService.__dir__()
+                hasSet[service] = listMethods
 
-                if method.find("Api") >= 0:
-                    target = method[len("setApi") :].lower()
-                elif myModule == f"module{service.capitalize()}":
-                    target = method[len("set") :].lower()
-                if target and (
-                    target.lower()
-                    in ["posts", "drafts", "favs", "messages", "queue", "search"]
-                ):
-                    toAppend = (action, target)
-                    if toAppend not in methods:
-                        methods.append(toAppend)
+            for method in listMethods:
+                if (not method.startswith("__")) and (method.find("set") >= 0):
+                    action = "set"
+                    target = ""
+                    # FIXME: indenting inside modules?
+                    try:
+                        myModule = eval(f"clsService.{method}.__module__")
+                        myModuleList[(service, method)] = myModule
+                    except:
+                        myModule = myModuleList[(service, method)]
+
+                    if method.find("Api") >= 0:
+                        target = method[len("setApi") :].lower()
+                    elif myModule == f"module{service.capitalize()}":
+                        target = method[len("set") :].lower()
+                    if target and (
+                        target.lower()
+                        in ["posts", "drafts", "favs", "messages", "queue", "search"]
+                    ):
+                        toAppend = (action, target)
+                        if toAppend not in methods:
+                            methods.append(toAppend)
         self.indentLess()
         return methods
 
@@ -697,7 +695,7 @@ class moduleRules:
         idR = ""
         if isinstance(self.getRuleComponent(rule, 2), tuple):
             subC = self.getRuleComponent(rule, 2)
-            idR = f"{self.getRuleComponent(subC, 3)}@{self.getRuleComponent(subC, 2)}@{self.getRuleComponent(rule, 0)}[{self.getRuleComponent(rule, 3)}]"  # @{self.getRuleComponent(rule, 0)}]"
+            idR = f"{self.getRuleComponent(subC, 3)}@{self.getRuleComponent(subC, 2)}@{self.getRuleComponent(rule, 0)}[{self.getRuleComponent(rule, 3)}]"  # @{self.getRuleComponent(rule, 0)}]
         else:
             idR = f"{self.getRuleComponent(rule, 2)}@{self.getNameRule(rule)}"
         return idR
@@ -822,7 +820,15 @@ class moduleRules:
             print(f"{indent}No listPosts2")
 
     def executePostAction(
-        self, indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos, res
+        self,
+        indent,
+        msgAction,
+        apiSrc,
+        apiDst,
+        simmulate,
+        nextPost,
+        pos,
+        res,
     ):
         resPost = ""
         resMsg = ""
@@ -884,75 +890,85 @@ class moduleRules:
         return resMsg
 
     def executePublishAction(
-        self, indent, msgAction, apiSrc, apiDst, simmulate, nextPost=True, pos=-1
+        self,
+        indent,
+        msgAction,
+        apiSrc,
+        apiDst,
+        simmulate,
+        nextPost=True,
+        pos=-1,
     ):
-        res = ""
-
-        resMsg = ""
+        result_dict = {
+            "success": False,
+            "publication_result": None,
+            "link_updated": False,
+            "post_action_result": None,
+            "error": "No post found",
+        }
         postaction = ""
         apiSrc.setPosts()
         if nextPost:
             post = apiSrc.getNextPost(apiDst)
         else:
             post = apiSrc.getPost(pos)
-        link = ""
-        if post:
+
+        if not post:
+            msgLog = f"{indent}No post to schedule in {msgAction}"
+            logMsg(msgLog, 1, 1)
+        else:
             title = apiSrc.getPostTitle(post)
             link = apiSrc.getPostLink(post)
-            resMsg = f"Publish result: {res}"
             msgLog = f"Title: {title}."
             if link:
                 msgLog = (
                     f"{msgLog} Recording Link: {link} "
                     f"in file {apiDst.fileNameBase(apiSrc)}.last"
                 )
-        else:
-            msgLog = f"{indent}No post to schedule in " f" {msgAction}"
 
-        if simmulate:
-            if post:
-                msgLog = f"{indent}Would schedule in " f" {msgAction} " f"{msgLog}"
-            logMsg(msgLog, 1, 1)
+            if simmulate:
+                msgLog = f"{indent}Would schedule in {msgAction} {msgLog}"
+                logMsg(msgLog, 1, 1)
+                result_dict["success"] = True
+                result_dict["error"] = "Simulation"
+            else:
+                publication_res = apiDst.publishPost(api=apiSrc, post=post)
+                result_dict["publication_result"] = publication_res
+                msgLog = f"{indent}Reply: {publication_res}"
+                logMsg(msgLog, 1, 1)
 
-            indent = f"{indent[:-1]}"
-            resMsg = ""
-        else:
-            res = ""
-            if post:
-                res = apiDst.publishPost(api=apiSrc, post=post)
-                msgLog = f"{indent}Reply: {res}"
-                msgLog = f"{indent}Trying to publish {msgLog} "
-                if nextPost and (
-                    res and ("Fail!" not in res) and ("failed!" not in res)
-                ):
-                    # ((not res) or ('SAVELINK' in res) or
-                    #              (('Fail!' not in res)) or
-                    #              (('failed!' not in res)))):
-                    resUpdate = apiDst.updateLastLink(apiSrc, link)
-                    resMsg += f" Update: {resUpdate}"
-
-            logMsg(msgLog, 1, 1)
-            # msgLog = (f"{indent} Res enddddd: {res}")
-            if res:
-                msgLog = f"{indent}Res: {res} "
-                logMsg(msgLog, 2, 0)
-            if post:
-                resMsg = self.executePostAction(
-                    indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos, res
+                is_success = "Fail!" not in str(publication_res) and "failed!" not in str(
+                    publication_res
                 )
-            msgLog = f"{indent}End publish"
-            if resMsg:
-                msgLog = f"{msgLog}, reply: {resMsg}"
-            logMsg(msgLog, 1, 1)
-        if postaction == "delete":
-            # FIXME: not always len is the available number. We should
-            # consider the last published and so on.
-            msgLog = f"{indent}Available {len(apiSrc.getPosts())-1}"
-        else:
-            msgLog = f"{indent}Available {len(apiSrc.getPosts())}"
-        logMsg(msgLog, 1, 1)
+                result_dict["success"] = is_success
 
-        return resMsg
+                if is_success:
+                    result_dict["error"] = None
+                    if nextPost:
+                        resUpdate = apiDst.updateLastLink(apiSrc, link)
+                        result_dict["link_updated"] = "Error" not in resUpdate
+
+                    post_action_res = self.executePostAction(
+                        indent,
+                        msgAction,
+                        apiSrc,
+                        apiDst,
+                        simmulate,
+                        nextPost,
+                        pos,
+                        publication_res,
+                    )
+                    result_dict["post_action_result"] = post_action_res
+                else:
+                    result_dict["error"] = f"Publication failed: {publication_res}"
+
+            if postaction == "delete":
+                msgLog = f"{indent}Available {len(apiSrc.getPosts())-1}"
+            else:
+                msgLog = f"{indent}Available {len(apiSrc.getPosts())}"
+            logMsg(msgLog, 1, 1)
+
+        return result_dict
 
     def executeAction(
         self,
@@ -971,8 +987,9 @@ class moduleRules:
         delete=False,
     ):
         indent = f"{name}"
+        res = {{}}
+        textEnd = ""
 
-        # FIXME. What happens when src and dst are the same service (drafts, mainly)?
         # Destination
         orig = f"{self.getNickRule(src)}@{self.getNameAction(src)} ({self.getTypeRule(src)})"
         dest = f"{self.getNickAction(action)}@{self.getNameAction(action)} ({self.getTypeAction(action)})"
@@ -990,110 +1007,106 @@ class moduleRules:
             if msgLog:
                 logMsg(msgLog, 3, 1)
                 sys.stderr.write(f"Error: {msgLog}\n")
-                # FIXME Improve report  in moduleContent and use it
-            return f"End: {msgLog}"
-
-        tL = random.random() * numAct
-        indent = f"{indent} "
-        msgLog = (
-            f"{indent} Sleeping {tL:.2f} seconds ({numAct} actions) "
-            f"to launch all processes"
-        )
-        logMsg(msgLog, 1, 0)
-        numAct = max(3, numAct)  # Less than 3 is too small
-        # 'Cosmetic' waiting to allow all the processes to be launched.
-        # Randomization is a way to avoid calling several times the same
-        # service (almost) as the same time.
-        time.sleep(tL)
-
-        msgLog = f"{indent} Go!"
-        logMsg(msgLog, 1, 0)
-        indent = f"{indent} "
-
-        res = ""
-        textEnd = f"{msgLog}"
-
-        time.sleep(1)
-
-        msgLog = ""
-        if nextPost:
-            num = apiDst.getMax()
+            res = {{"success": False, "error": f"End: {msgLog}"}}
         else:
-            num = 1
+            # Backup the current next-run time before making changes
+            backup_time = apiDst.getNextTime(apiSrc)
 
-        theAction = self.getTypeAction(action)
-        msgLog = (
-            f"{indent}I'll publish {num} {theAction} "
-            f"from {apiSrc.getUrl()} "
-            f"in {self.getNickAction(action)}@"
-            f"{self.getProfileAction(action)}"
-        )
-        logMsg(msgLog, 1, 1)
+            tL = random.random() * numAct
+            indent = f"{indent} "
+            msgLog = (
+                f"{indent} Sleeping {tL:.2f} seconds ({numAct} actions) "
+                f"to launch all processes"
+            )
+            logMsg(msgLog, 1, 0)
+            numAct = max(3, numAct)  # Less than 3 is too small
+            time.sleep(tL)
 
-        if num > 0:
-            tNow = time.time()
-            hours = float(apiDst.getTime()) * 60 * 60
+            msgLog = f"{indent} Go!"
+            logMsg(msgLog, 1, 0)
+            indent = f"{indent} "
 
-            lastTime = apiDst.getLastTimePublished(f"{indent}")
+            textEnd = f"{msgLog}"
 
-            if lastTime:
-                diffTime = tNow - lastTime
+            time.sleep(1)
+
+            msgLog = ""
+            if nextPost:
+                num = apiDst.getMax()
             else:
-                # If there is no lasTime, we will publish
-                diffTime = hours + 1
+                num = 1
 
-            if noWait or (diffTime > hours):
-                tSleep = random.random() * float(timeSlots) * 60
+            theAction = self.getTypeAction(action)
+            msgLog = (
+                f"{indent}I'll publish {num} {theAction} "
+                f"from {apiSrc.getUrl()} "
+                f"in {self.getNickAction(action)}@"
+                f"{self.getProfileAction(action)}"
+            )
+            logMsg(msgLog, 1, 1)
 
-                # msgLog = f"{indent} timeSlots, tSleep: {timeSlots} {tSleep}"
-                # Forzar el recálculo del nombre de fichero en setNextTime
-                apiDst.fileName = ""
-                apiDst.setNextTime(tNow, tSleep, apiSrc)
+            if num > 0:
+                tNow = time.time()
+                hours = float(apiDst.getTime()) * 60 * 60
 
-                if tSleep > 0.0:
-                    msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
+                lastTime = apiDst.getLastTimePublished(f"{indent}")
+
+                if lastTime:
+                    diffTime = tNow - lastTime
                 else:
-                    tSleep = 2.0
-                    msgLog = f"{indent} No Waiting"
+                    diffTime = hours + 1
 
-                msgLog = (
-                    f"{msgLog} for {theAction} "
-                    f"from {apiSrc.getUrl()} "
-                    f"in {self.getNickAction(action)}@"
-                    f"{self.getProfileAction(action)}"
-                )
-                logMsg(msgLog, 1, 1)
+                if noWait or (diffTime > hours):
+                    tSleep = random.random() * float(timeSlots) * 60
 
-                for i in range(num):
-                    time.sleep(tSleep)
-                    if "minutes" in msgLog:
-                        msgLog = (
-                            f"{indent} End Waiting {theAction} "
-                            f"from {apiSrc.getUrl()} "
-                            f"in {self.getNickAction(action)}@"
-                            f"{self.getProfileAction(action)}"
+                    # Reserve the time slot by setting the new time
+                    apiDst.setNextTime(tNow, tSleep, apiSrc)
+
+                    if tSleep > 0.0:
+                        msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
+                    else:
+                        tSleep = 2.0
+                        msgLog = f"{indent} No Waiting"
+
+                    logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
+
+                    for i in range(num):
+                        time.sleep(tSleep)
+                        if "minutes" in msgLog:
+                            logMsg(f"{indent} End Waiting {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
+
+                        res = self.executePublishAction(
+                            indent,
+                            msgAction,
+                            apiSrc,
+                            apiDst,
+                            simmulate,
+                            nextPost,
+                            pos,
                         )
-                        logMsg(msgLog, 1, 1)
-                    res = self.executePublishAction(
-                        indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos
+
+                    # If no publication happened, restore the previous time
+                    if not res.get("success") and backup_time[0] is not None:
+                        logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
+                        apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
+
+                elif diffTime <= hours:
+                    msgLog = (
+                        f"{indent} Not enough time passed. "
+                        f"We will wait at least "
+                        f"{(hours-diffTime)/(60*60):2.2f} hours."
                     )
-            elif diffTime <= hours:
-                msgLog = (
-                    f"{indent} Not enough time passed. "
-                    f"We will wait at least "
-                    f"{(hours-diffTime)/(60*60):2.2f} hours."
-                )
-                logMsg(msgLog, 1, 1)
-                textEnd = ""
+                    logMsg(msgLog, 1, 1)
+                    textEnd = ""
 
-        else:
-            if num <= 0:
-                msgLog = f"{indent} No posts available"
-                logMsg(msgLog, 1, 1)
+            else:
+                if num <= 0:
+                    msgLog = f"{indent} No posts available"
+                    logMsg(msgLog, 1, 1)
 
-        indent = f"{indent[:-1]}"
-        logMsg(f"{indent} End executeAction {textEnd}", 2, 0)
-        return f"{indent} {res} {textEnd}"
+            indent = f"{indent[:-1]}"
+            logMsg(f"{indent} End executeAction {textEnd}", 2, 0)
+        return res
 
     def executeRules(self, max_workers=None):
         """
@@ -1155,8 +1168,7 @@ class moduleRules:
                           f"Preparing actions for rule: "
                           f"{self.getNickSrc(rule_key)}@"
                           f"{self.getNameRule(rule_key)} "
-                          f"({self.getNickAction(rule_key)})"
-                          )
+                          f"({self.getNickAction(rule_key)})")
             logMsg(msgLog, 1, 1)
             previous = self.getNameAction(rule_key)
 
@@ -1229,8 +1241,7 @@ class moduleRules:
             f"{self.getNameAction(rule_action)} "
             f"{self.getNickAction(rule_action)}@"
             f"{self.getProfileAction(rule_action)} "
-            f"({self.getTypeAction(rule_action)})"
-        )
+            f"({self.getTypeAction(rule_action)})")
         rule_index = scheduled_action.get('rule_index', 0)
         action_index = scheduled_action.get('action_index', 0)
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
@@ -1254,18 +1265,48 @@ class moduleRules:
         """
         Reports the results and errors of action execution.
         """
-        for scheduled_action, res in action_results:
-            if not res:
-                res = ""
-            rule_key = scheduled_action['rule_key']
-            rule_index = scheduled_action.get('rule_index', '')
-            rule_summary = f"Rule {rule_index}: {rule_key}" if rule_index != '' else str(rule_key)
-            logMsg(f"[OK] Action executed for {rule_summary} -> {scheduled_action['rule_action']}: {res}", 1, 1)
+        for scheduled_action, res_dict in action_results:
+            rule_key = scheduled_action["rule_key"]
+            rule_index = scheduled_action.get("rule_index", "")
+            rule_summary = (
+                f"Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
+            )
+
+            if res_dict and res_dict.get("success"):
+                pub_res = res_dict.get("publication_result", "N/A")
+                post_act = res_dict.get("post_action_result", "N/A")
+                summary_msg = f"Success. Pub: '{pub_res}'. Post-Action: '{post_act}'."
+                logMsg(
+                    f"[OK] Action for {rule_summary} -> {scheduled_action['rule_action']}: {summary_msg}",
+                    1,
+                    1,
+                )
+            elif res_dict:
+                error_msg = res_dict.get("error", "Unknown error")
+                logMsg(
+                    f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {error_msg}",
+                    3,
+                    1,
+                )
+            else:
+                # Fallback for empty or non-dict results
+                logMsg(
+                    f"[WARN] Action for {rule_summary} -> {scheduled_action['rule_action']} produced an invalid result: {res_dict}",
+                    2,
+                    1,
+                )
+
         for scheduled_action, exc in action_errors:
-            rule_key = scheduled_action['rule_key']
-            rule_index = scheduled_action.get('rule_index', '')
-            rule_summary = f"Rule {rule_index}: {rule_key}" if rule_index != '' else str(rule_key)
-            logMsg(f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {exc}", 3, 1)
+            rule_key = scheduled_action["rule_key"]
+            rule_index = scheduled_action.get("rule_index", "")
+            rule_summary = (
+                f"Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
+            )
+            logMsg(
+                f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {exc}",
+                3,
+                1,
+            )
 
     def _configure_service_api(self, api, destination, channel=None, from_email=None, to_email=None, account=None):
         """
@@ -1309,46 +1350,62 @@ class moduleRules:
         Returns:
             str or None: Image URL if found
         """
+        image_url = None
         try:
-            if not hasattr(api, "lastRes") or not api.lastRes:
-                return None
+            if hasattr(api, "lastRes") and api.lastRes:
+                response = api.lastRes
 
-            response = api.lastRes
+                # Try different response formats
+                # Mastodon format
+                if (
+                    isinstance(response, dict)
+                    and "media_attachments" in response
+                    and response["media_attachments"]
+                    and isinstance(response["media_attachments"], list)
+                    and len(response["media_attachments"]) > 0
+                    and "url" in response["media_attachments"][0]
+                ):
+                    image_url = response["media_attachments"][0]["url"]
 
-            # Try different response formats
-            # Mastodon format
-            if (isinstance(response, dict) and
-                "media_attachments" in response and
-                response["media_attachments"] and
-                isinstance(response["media_attachments"], list) and
-                len(response["media_attachments"]) > 0 and
-                "url" in response["media_attachments"][0]):
-                return response["media_attachments"][0]["url"]
+                # Twitter format
+                elif isinstance(response, dict) and "media" in response:
+                    media = response["media"]
+                    if isinstance(media, dict) and "media_url" in media:
+                        image_url = media["media_url"]
+                    elif (
+                        isinstance(media, list)
+                        and len(media) > 0
+                        and "media_url" in media[0]
+                    ):
+                        image_url = media[0]["media_url"]
 
-            # Twitter format
-            if isinstance(response, dict) and "media" in response:
-                media = response["media"]
-                if isinstance(media, dict) and "media_url" in media:
-                    return media["media_url"]
-                elif isinstance(media, list) and len(media) > 0 and "media_url" in media[0]:
-                    return media[0]["media_url"]
-
-            # Generic URL field
-            if isinstance(response, dict):
-                for url_field in ["url", "image_url", "media_url", "attachment_url"]:
-                    if url_field in response:
-                        return response[url_field]
-
-            logging.debug(f"No image URL found in {destination} response")
-            return None
+                # Generic URL field
+                elif isinstance(response, dict):
+                    for url_field in ["url", "image_url", "media_url", "attachment_url"]:
+                        if url_field in response:
+                            image_url = response[url_field]
+                            break
+                if not image_url:
+                    logging.debug(f"No image URL found in {destination} response")
 
         except Exception as e:
             logging.warning(f"Error extracting image URL from {destination}: {e}")
-            return None
 
-    def _publish_to_single_destination(self, destination, account, title, url, content,
-                                     image_path=None, alt_text="", channel=None,
-                                     from_email=None, to_email=None):
+        return image_url
+
+    def _publish_to_single_destination(
+        self,
+        destination,
+        account,
+        title,
+        url,
+        content,
+        image_path=None,
+        alt_text="",
+        channel=None,
+        from_email=None,
+        to_email=None,
+    ):
         """
         Publish to a single destination
 
@@ -1368,6 +1425,7 @@ class moduleRules:
             dict: Publication result
         """
         service_key = f"{destination}_{account}"
+        result_dict = {{}}
 
         try:
             # Create key for readConfigDst
@@ -1377,54 +1435,53 @@ class moduleRules:
             api = self.readConfigDst("  ", key, None, None)
 
             if not api:
-                return {
-                    'success': False,
-                    'error': f'Could not initialize API for {destination}',
-                    'service': service_key
-                }
-
-            # Configure service-specific settings
-            self._configure_service_api(api, destination, channel, from_email, to_email, account)
-
-            # Publish image if provided
-            image_url = None
-            if image_path and hasattr(api, 'publishImage'):
-                try:
-                    image_result = api.publishImage(title, image_path, alt=alt_text)
-                    image_url = self._extract_image_url(api, destination)
-                    logging.info(f"Image published to {destination}: {image_result}")
-                except Exception as e:
-                    logging.error(f"Error publishing image to {destination}: {e}")
-                    # Continue with text post even if image fails
-
-            # Publish main post
-            result = api.publishPost(title, url, content)
-
-            # Validate result
-            if self._is_publication_successful(result):
-                logging.info(f"Successfully published to {destination}: {result}")
-                return {
-                    'success': True,
-                    'result': result,
-                    'image_url': image_url,
-                    'service': service_key
+                result_dict = {
+                    "success": False,
+                    "error": f"Could not initialize API for {destination}",
+                    "service": service_key,
                 }
             else:
-                return {
-                    'success': False,
-                    'error': f'Publication returned unsuccessful result: {result}',
-                    'result': result,
-                    'service': service_key
-                }
+                # Configure service-specific settings
+                self._configure_service_api(
+                    api, destination, channel, from_email, to_email, account
+                )
+
+                # Publish image if provided
+                image_url = None
+                if image_path and hasattr(api, "publishImage"):
+                    try:
+                        image_result = api.publishImage(title, image_path, alt=alt_text)
+                        image_url = self._extract_image_url(api, destination)
+                        logging.info(f"Image published to {destination}: {image_result}")
+                    except Exception as e:
+                        logging.error(f"Error publishing image to {destination}: {e}")
+                        # Continue with text post even if image fails
+
+                # Publish main post
+                result = api.publishPost(title, url, content)
+
+                # Validate result
+                if self._is_publication_successful(result):
+                    logging.info(f"Successfully published to {destination}: {result}")
+                    result_dict = {
+                        "success": True,
+                        "result": result,
+                        "image_url": image_url,
+                        "service": service_key,
+                    }
+                else:
+                    result_dict = {
+                        "success": False,
+                        "error": f"Publication returned unsuccessful result: {result}",
+                        "result": result,
+                        "service": service_key,
+                    }
 
         except Exception as e:
             error_msg = f"Error publishing to {destination}: {e}"
             logging.error(error_msg)
-            return {
-                'success': False,
-                'error': str(e),
-                'service': service_key
-            }
+            result_dict = {"success": False, "error": str(e), "service": service_key}
+        return result_dict
 
     def _is_publication_successful(self, result):
         """
@@ -1436,22 +1493,26 @@ class moduleRules:
         Returns:
             bool: True if successful
         """
+        successful = True
         if result is None:
-            return False
+            successful = False
 
         # String results starting with "Fail" are failures
-        if isinstance(result, str) and result.startswith("Fail"):
-            return False
+        elif isinstance(result, str) and result.startswith("Fail"):
+            successful = False
 
         # Dict results with explicit success/error indicators
-        if isinstance(result, dict):
-            if 'success' in result:
-                return result['success']
-            if 'error' in result:
-                return False
+        elif isinstance(result, dict):
+            if "success" in result:
+                successful = result["success"]
+            elif "error" in result:
+                successful = False
+            else:
+                successful = bool(result)
+        else:
+            successful = bool(result)
 
-        # Non-empty results are generally successful
-        return bool(result)
+        return successful
 
     def _validate_destinations(self, destinations):
         """
@@ -1469,10 +1530,12 @@ class moduleRules:
         if not destinations:
             raise ValueError("Destinations cannot be empty")
 
+        normalized = []
         if isinstance(destinations, dict):
-            return [(service, account) for service, account in destinations.items() if account]
+            normalized = [
+                (service, account) for service, account in destinations.items() if account
+            ]
         elif isinstance(destinations, (list, tuple)):
-            normalized = []
             for item in destinations:
                 if isinstance(item, (list, tuple)) and len(item) >= 2:
                     service, account = item[0], item[1]
@@ -1480,13 +1543,24 @@ class moduleRules:
                         normalized.append((service, account))
                 else:
                     raise ValueError(f"Invalid destination format: {item}")
-            return normalized
         else:
-            raise ValueError(f"Destinations must be dict or list, got {type(destinations)}")
+            raise ValueError(
+                f"Destinations must be dict or list, got {type(destinations)}"
+            )
+        return normalized
 
-    def publish_to_multiple_destinations(self, destinations, title, url="", content="",
-                                       image_path=None, alt_text="", channel=None,
-                                       from_email=None, to_email=None):
+    def publish_to_multiple_destinations(
+        self,
+        destinations,
+        title,
+        url="",
+        content="",
+        image_path=None,
+        alt_text="",
+        channel=None,
+        from_email=None,
+        to_email=None,
+    ):
         """
         Publishes content to multiple destinations using unified logic
 
@@ -1507,52 +1581,52 @@ class moduleRules:
         Raises:
             ValueError: If parameters are invalid
         """
+        results = {{}}
         # Validate inputs
         if not title and not content:
             raise ValueError("Either title or content must be provided")
 
         try:
             dest_items = self._validate_destinations(destinations)
+            if not dest_items:
+                logging.warning("No valid destinations found")
+            else:
+                logging.info(
+                    f"Starting publication to {len(dest_items)} destinations: {title}"
+                )
+
+                # Publish to each destination
+                for destination, account in dest_items:
+                    logging.info(f"Publishing to: {destination} - {account}")
+
+                    result = self._publish_to_single_destination(
+                        destination=destination,
+                        account=account,
+                        title=title,
+                        url=url,
+                        content=content,
+                        image_path=image_path,
+                        alt_text=alt_text,
+                        channel=channel,
+                        from_email=from_email,
+                        to_email=to_email,
+                    )
+
+                    results[result["service"]] = {
+                        "success": result["success"],
+                        "result": result.get("result"),
+                        "error": result.get("error"),
+                        "image_url": result.get("image_url"),
+                    }
+
+                # Log summary
+                successful = sum(1 for r in results.values() if r.get("success"))
+                total = len(results)
+                logging.info(f"Publication completed: {successful}/{total} successful")
+
         except ValueError as e:
             logging.error(f"Invalid destinations: {e}")
-            return {'error': str(e)}
-
-        if not dest_items:
-            logging.warning("No valid destinations found")
-            return {}
-
-        logging.info(f"Starting publication to {len(dest_items)} destinations: {title}")
-
-        results = {}
-
-        # Publish to each destination
-        for destination, account in dest_items:
-            logging.info(f"Publishing to: {destination} - {account}")
-
-            result = self._publish_to_single_destination(
-                destination=destination,
-                account=account,
-                title=title,
-                url=url,
-                content=content,
-                image_path=image_path,
-                alt_text=alt_text,
-                channel=channel,
-                from_email=from_email,
-                to_email=to_email
-            )
-
-            results[result['service']] = {
-                'success': result['success'],
-                'result': result.get('result'),
-                'error': result.get('error'),
-                'image_url': result.get('image_url')
-            }
-
-        # Log summary
-        successful = sum(1 for r in results.values() if r.get('success'))
-        total = len(results)
-        logging.info(f"Publication completed: {successful}/{total} successful")
+            results = {"error": str(e)}
 
         return results
 
@@ -1596,34 +1670,41 @@ class moduleRules:
         Returns:
             dict: Summary with statistics and details
         """
-        if not results or 'error' in results:
-            return {
-                'total': 0,
-                'successful': 0,
-                'failed': 0,
-                'success_rate': 0.0,
-                'error': results.get('error') if results else 'No results'
+        summary = {{}}
+        if not results or "error" in results:
+            summary = {
+                "total": 0,
+                "successful": 0,
+                "failed": 0,
+                "success_rate": 0.0,
+                "error": results.get("error") if results else "No results",
             }
+        else:
+            successful_services = [k for k, v in results.items() if v.get("success")]
+            failed_services = [k for k, v in results.items() if not v.get("success")]
 
-        successful_services = [k for k, v in results.items() if v.get('success')]
-        failed_services = [k for k, v in results.items() if not v.get('success')]
+            total = len(results)
+            successful_count = len(successful_services)
 
-        total = len(results)
-        successful_count = len(successful_services)
-
-        return {
-            'total': total,
-            'successful': successful_count,
-            'failed': len(failed_services),
-            'success_rate': successful_count / total if total > 0 else 0.0,
-            'successful_services': successful_services,
-            'failed_services': failed_services,
-            'response_links': {k: v.get('image_url') or v.get('result')
-                             for k, v in results.items()
-                             if v.get('success') and (v.get('image_url') or v.get('result'))},
-            'errors': {k: v.get('error') for k, v in results.items()
-                      if not v.get('success') and v.get('error')}
-        }
+            summary = {
+                "total": total,
+                "successful": successful_count,
+                "failed": len(failed_services),
+                "success_rate": successful_count / total if total > 0 else 0.0,
+                "successful_services": successful_services,
+                "failed_services": failed_services,
+                "response_links": {
+                    k: v.get("image_url") or v.get("result")
+                    for k, v in results.items()
+                    if v.get("success") and (v.get("image_url") or v.get("result"))
+                },
+                "errors": {
+                    k: v.get("error")
+                    for k, v in results.items()
+                    if not v.get("success") and v.get("error")
+                },
+            }
+        return summary
 
     def readArgs(self):
         import argparse
