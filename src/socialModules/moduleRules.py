@@ -1049,11 +1049,17 @@ class moduleRules:
             window_end_formatted = datetime.datetime.fromtimestamp(tNow + timeSlots_seconds).strftime('%Y-%m-%d %H:%M:%S')
 
             if not noWait and next_pub_time >= tNow + timeSlots_seconds:
-                msgLog = (
-                    f"{indent} Publication time ({next_pub_time_formatted}) is too far in the future. "
-                    f"It's outside the {timeSlots} minutes window (ends at {window_end_formatted}). Skipping."
-                )
-                logMsg(msgLog, 1, 1)
+                                    # Calculate time left
+                                    time_left_seconds = next_pub_time - tNow
+                                    hours_left = int(time_left_seconds // 3600)
+                                    minutes_left = int((time_left_seconds % 3600) // 60)
+                                    seconds_left = int(time_left_seconds % 60)
+                                    time_left_formatted = f"{hours_left}h {minutes_left}m {seconds_left}s"
+                
+                                    msgLog = (
+                                        f"{indent} Publication time ({next_pub_time_formatted}) is too far in the future (in {time_left_formatted}). "
+                                        f"It's outside the {timeSlots} min window [{tNow_formatted} to {window_end_formatted}]. Skipping."
+                                    )                logMsg(msgLog, 1, 1)
                 textEnd = "" # This will make the function return nothing.
             else:
                 # If not skipped, proceed with the original logic, but adjust tSleep.
