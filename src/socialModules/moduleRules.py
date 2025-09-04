@@ -6,6 +6,7 @@ import os
 import random
 import sys
 import time
+import datetime
 
 import socialModules
 from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR, select_from_list
@@ -1042,9 +1043,15 @@ class moduleRules:
             timeSlots_seconds = float(timeSlots) * 60
             next_pub_time = lastTime + hours
             
+            # Format timestamps for readability
+            next_pub_time_formatted = datetime.datetime.fromtimestamp(next_pub_time).strftime('%Y-%m-%d %H:%M:%S')
+            tNow_formatted = datetime.datetime.fromtimestamp(tNow).strftime('%Y-%m-%d %H:%M:%S')
+            window_end_formatted = datetime.datetime.fromtimestamp(tNow + timeSlots_seconds).strftime('%Y-%m-%d %H:%M:%S')
+
             if not noWait and next_pub_time >= tNow + timeSlots_seconds:
                 msgLog = (
-                    f"{indent} Publication time ({next_pub_time}) is outside the {timeSlots} minutes window ([{tNow}, {tNow + timeSlots_seconds}]). Skipping."
+                    f"{indent} Publication time ({next_pub_time_formatted}) is too far in the future. "
+                    f"It's outside the {timeSlots} minutes window (ends at {window_end_formatted}). Skipping."
                 )
                 logMsg(msgLog, 1, 1)
                 textEnd = "" # This will make the function return nothing.
