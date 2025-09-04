@@ -1009,7 +1009,7 @@ class moduleRules:
         indent = f"{indent} "
 
         res = ""
-
+        textEnd = f"{msgLog}"
 
         time.sleep(1)
 
@@ -1039,45 +1039,43 @@ class moduleRules:
             else:
                 diffTime = hours + 1
 
-            if not noWait and diffTime <= hours:
-                # Not enough time passed, so we wait for the exact required time
-                wait_duration = (lastTime + hours) - tNow
-                if wait_duration > 0:
-                    msgLog = (
-                        f"{indent} Not enough time passed. "
-                        f"We will wait for {wait_duration/3600:2.2f} hours."
+            if noWait or (diffTime > hours):
+                tSleep = random.random() * float(timeSlots) * 60
+
+                # Reserve the time slot by setting the new time
+                apiDst.setNextTime(tNow, tSleep, apiSrc)
+
+                if tSleep > 0.0:
+                    msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
+                else:
+                    tSleep = 2.0
+                    msgLog = f"{indent} No Waiting"
+
+                logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
+
+                for i in range(num):
+                    time.sleep(tSleep)
+                    if "minutes" in msgLog:
+                        logMsg(f"{indent} End Waiting {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
+
+                    res = self.executePublishAction(
+                        indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos
                     )
-                    logMsg(msgLog, 1, 1)
-                    time.sleep(wait_duration)
-            
-            # After any necessary waiting, we proceed with the normal randomized sleep schedule for publishing.
-            tSleep = random.random() * float(timeSlots) * 60
 
-            # Reserve the time slot by setting the new time
-            apiDst.setNextTime(tNow, tSleep, apiSrc)
+                # If no publication happened, restore the previous time
+                logging.info(f"{indent}Resssss: {res}")
+                if (not res or (res and not 'OK' in res)) and backup_time[0] is not None:
+                    logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
+                    apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
 
-            if tSleep > 0.0:
-                msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
-            else:
-                tSleep = 2.0
-                msgLog = f"{indent} No Waiting"
-
-            logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
-
-            for i in range(num):
-                time.sleep(tSleep)
-                if "minutes" in msgLog:
-                    logMsg(f"{indent} End Waiting {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
-
-                res = self.executePublishAction(
-                    indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos
+            elif diffTime <= hours:
+                msgLog = (
+                    f"{indent} Not enough time passed. "
+                    f"We will wait at least "
+                    f"{(hours-diffTime)/(60*60):2.2f} hours."
                 )
-
-            # If no publication happened, restore the previous time
-            logging.info(f"{indent}Resssss: {res}")
-            if (not res or (res and not 'OK' in res)) and backup_time[0] is not None:
-                logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
-                apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
+                logMsg(msgLog, 1, 1)
+                textEnd = ""
 
         else:
             if num <= 0:
@@ -1085,8 +1083,8 @@ class moduleRules:
                 logMsg(msgLog, 1, 1)
 
         indent = f"{indent[:-1]}"
-        logMsg(f"{indent} End executeAction {msgLog}", 2, 0)
-        return f"{indent} {res} {msgLog}"
+        logMsg(f"{indent} End executeAction {textEnd}", 2, 0)
+        return f"{indent} {res} {textEnd}"
 
     def executeRules(self, max_workers=None):
         """
