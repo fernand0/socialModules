@@ -1042,7 +1042,7 @@ class moduleRules:
 
             timeSlots_seconds = float(timeSlots) * 60
             next_pub_time = lastTime + hours
-            
+
             # Format timestamps for readability
             next_pub_time_formatted = datetime.datetime.fromtimestamp(next_pub_time).strftime('%Y-%m-%d %H:%M:%S')
             tNow_formatted = datetime.datetime.fromtimestamp(tNow).strftime('%Y-%m-%d %H:%M:%S')
@@ -1055,11 +1055,12 @@ class moduleRules:
                                     minutes_left = int((time_left_seconds % 3600) // 60)
                                     seconds_left = int(time_left_seconds % 60)
                                     time_left_formatted = f"{hours_left}h {minutes_left}m {seconds_left}s"
-                
+
                                     msgLog = (
                                         f"{indent} Publication time ({next_pub_time_formatted}) is too far in the future (in {time_left_formatted}). "
                                         f"It's outside the {timeSlots} min window [{tNow_formatted} to {window_end_formatted}]. Skipping."
-                                    )                logMsg(msgLog, 1, 1)
+                                    )
+                                    logMsg(msgLog, 1, 1)
                 textEnd = "" # This will make the function return nothing.
             else:
                 # If not skipped, proceed with the original logic, but adjust tSleep.
@@ -1070,14 +1071,14 @@ class moduleRules:
                     tSleep = next_pub_time - tNow
                     if tSleep < 0: # If next_pub_time is in the past, publish immediately.
                         tSleep = 0
-                    
+
                     msgLog = (
                         f"{indent} Not enough time passed. "
                         f"We will wait for {tSleep/3600:2.2f} hours." # This message is confusing if tSleep is 0.
                     )
                     logMsg(msgLog, 1, 1)
                     time.sleep(tSleep)
-                    
+
                     # After waiting (or not), the tSleep for spacing should be random.
                     tSleep = random.random() * float(timeSlots) * 60
 
