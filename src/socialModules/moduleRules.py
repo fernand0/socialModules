@@ -1057,7 +1057,7 @@ class moduleRules:
                 time_left_formatted = f"{hours_left}h {minutes_left}m {seconds_left}s"
 
                 msgLog = (
-                     f"{indent} Publication time ({next_pub_time_formatted}, in {time_left_formatted}). "
+                     f"{indent} Publication time starts at ({next_pub_time_formatted}, in {time_left_formatted}). "
                      f"It's outside the {timeSlots} min window [{tNow_formatted} to {window_end_formatted}]. Skipping."
                      )
                 logMsg(msgLog, 1, 1)
