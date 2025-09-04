@@ -1063,7 +1063,8 @@ class moduleRules:
                     )
 
                 # If no publication happened, restore the previous time
-                if not res and backup_time[0] is not None:
+                logging.info(f"{indent}Resssss: {res}")
+                if (not res or (res and not 'OK' in res)) and backup_time[0] is not None:
                     logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
                     apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
 
