@@ -1009,7 +1009,7 @@ class moduleRules:
         indent = f"{indent} "
 
         res = ""
-        textEnd = f"{msgLog}"
+
 
         time.sleep(1)
 
@@ -1039,8 +1039,34 @@ class moduleRules:
             else:
                 diffTime = hours + 1
 
-            if noWait or (diffTime > hours):
-                tSleep = random.random() * float(timeSlots) * 60
+            timeSlots_seconds = float(timeSlots) * 60
+            next_pub_time = lastTime + hours
+            
+            if not noWait and next_pub_time >= tNow + timeSlots_seconds:
+                msgLog = (
+                    f"{indent} Publication time ({next_pub_time}) is outside the {timeSlots} minutes window ([{tNow}, {tNow + timeSlots_seconds}]). Skipping."
+                )
+                logMsg(msgLog, 1, 1)
+                textEnd = "" # This will make the function return nothing.
+            else:
+                # If not skipped, proceed with the original logic, but adjust tSleep.
+                if noWait or (diffTime > hours):
+                    tSleep = random.random() * float(timeSlots) * 60
+                else: # diffTime <= hours
+                    # We need to wait until next_pub_time, or publish immediately if in the past.
+                    tSleep = next_pub_time - tNow
+                    if tSleep < 0: # If next_pub_time is in the past, publish immediately.
+                        tSleep = 0
+                    
+                    msgLog = (
+                        f"{indent} Not enough time passed. "
+                        f"We will wait for {tSleep/3600:2.2f} hours." # This message is confusing if tSleep is 0.
+                    )
+                    logMsg(msgLog, 1, 1)
+                    time.sleep(tSleep)
+                    
+                    # After waiting (or not), the tSleep for spacing should be random.
+                    tSleep = random.random() * float(timeSlots) * 60
 
                 # Reserve the time slot by setting the new time
                 apiDst.setNextTime(tNow, tSleep, apiSrc)
@@ -1068,23 +1094,14 @@ class moduleRules:
                     logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
                     apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
 
-            elif diffTime <= hours:
-                msgLog = (
-                    f"{indent} Not enough time passed. "
-                    f"We will wait at least "
-                    f"{(hours-diffTime)/(60*60):2.2f} hours."
-                )
-                logMsg(msgLog, 1, 1)
-                textEnd = ""
-
         else:
             if num <= 0:
                 msgLog = f"{indent} No posts available"
                 logMsg(msgLog, 1, 1)
 
         indent = f"{indent[:-1]}"
-        logMsg(f"{indent} End executeAction {textEnd}", 2, 0)
-        return f"{indent} {res} {textEnd}"
+        logMsg(f"{indent} End executeAction {msgLog}", 2, 0)
+        return f"{indent} {res} {msgLog}"
 
     def executeRules(self, max_workers=None):
         """
