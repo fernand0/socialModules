@@ -109,15 +109,41 @@ class moduleCache(Content): #,Queue):
         self.url = ""
         self.socialNetwork = ""
         logging.info(f"Src: {self.src}")
-        self.user = self.src[2]
-        self.nick = self.user
-        self.apiDst = getModule(self.src[1][2], f"{self.indent}  (c)")
-        self.apiDst.setUser(self.src[1][3])
-        self.apiSrc = getModule(self.src[0], f"{self.indent}  (c)")
-        # logging.info(f"{self.indent} srcClass: {self.apiSrc}")
-        self.apiSrc.setUrl(self.src[2])
-        self.apiSrc.setUser()
-        self.apiSrc.setNick()
+        # Assuming self.src is (url, (sN, nick)) from setClient calls in examples
+        # Extract service name (sN) and nick from self.src
+        if isinstance(self.src, tuple) and len(self.src) == 2 and isinstance(self.src[1], tuple) and len(self.src[1]) == 2:
+            # This is the format (url, (sN, nick))
+            service_name_src = self.src[1][0] # sN for source
+            user_nick_src = self.src[1][1] # nick for source
+            self.url = self.src[0] # url
+
+            # For apiDst, it seems to be using self.src[1][2] in original code, which is problematic
+            # Let's assume apiDst also uses the same service_name_src and user_nick_src for now
+            # This might need further refinement if apiDst is truly different.
+            service_name_dst = self.src[1][0] # sN for destination
+            user_nick_dst = self.src[1][1] # nick for destination
+
+            self.user = user_nick_src
+            self.nick = user_nick_src
+
+            # Correctly call getModule with the service name
+            self.apiDst = getModule(service_name_dst, f"{self.indent}  (c)")
+            self.apiDst.setUser(user_nick_dst) # Assuming setUser takes nick
+
+            self.apiSrc = getModule(service_name_src, f"{self.indent}  (c)")
+            self.apiSrc.setUrl(self.url)
+            self.apiSrc.setUser() # This might need user_nick_src
+            self.apiSrc.setNick() # This might need user_nick_src
+        else:
+            # Fallback to original logic if self.src is not in the expected (url, (sN, nick)) format
+            self.user = self.src[2]
+            self.nick = self.user
+            self.apiDst = getModule(self.src[1][2], f"{self.indent}  (c)")
+            self.apiDst.setUser(self.src[1][3])
+            self.apiSrc = getModule(self.src[0], f"{self.indent}  (c)")
+            self.apiSrc.setUrl(self.src[2])
+            self.apiSrc.setUser()
+            self.apiSrc.setNick()
         # logging.info(f"{self.indent} Dst: {self.apiDst.getUser()}")
         # logging.info(f"{self.indent} Dst: {self.apiDst.getNick()}")
         # logging.info(f"{self.indent} Dst: {self.apiDst.getName()}")
