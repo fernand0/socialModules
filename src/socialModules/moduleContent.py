@@ -52,6 +52,15 @@ class Content:
         # Publication cache configuration
         self.auto_cache = True
 
+        # Load lastTimePublished from file if available
+        # getNextTime returns (tnow, tSleep, lastTimePublished)
+        # We only care about lastTimePublished here for initialization
+        _, _, loaded_lastTimePublished = self.getNextTime(self)
+        if loaded_lastTimePublished is not None:
+            self.lastTimePublished = loaded_lastTimePublished
+        else:
+            self.lastTimePublished = 0 # Default to 0 if not found, to avoid None in calculations
+
     def setAutoCache(self, enabled=True):
         """
         Enable or disable automatic publication caching
@@ -559,25 +568,25 @@ class Content:
         if not os.path.exists(fileNameNext):
             logMsg(f"{self.indent}  Fichero de tiempo no existe: {fileNameNext}", 2, 0)
             self.indent = self.indent[:-1]
-            return None, None
+            return None, None, None
 
         try:
             with open(fileNameNext, "rb") as f:
-                tnow, tSleep = pickle.load(f)
+                tnow, tSleep, lastTimePublished = pickle.load(f)
 
             msgLog = f"{self.indent}  Fichero leído: {fileNameNext}"
             logMsg(msgLog, 2, 0)
             self.indent = self.indent[:-1]
-            return tnow, tSleep
+            return tnow, tSleep, lastTimePublished
 
         except (IOError, pickle.UnpicklingError) as e:
             error_msg = f"Fallo al leer el fichero {fileNameNext}"
             logMsg(f"{self.indent}{error_msg}", 3, 1)
             self.report(self.service, error_msg, fileNameNext, e)
             self.indent = self.indent[:-1]
-            return None, None
+            return None, None, None
 
-    def setNextTime(self, tnow, tSleep, src=None):
+    def setNextTime(self, tnow, tSleep, lastTimePublished, src=None):
         """
         Guarda la próxima hora de ejecución para una fuente dada en un fichero.
         """
@@ -588,28 +597,30 @@ class Content:
         if not src:
             logMsg(f"{self.indent}Error: El parámetro 'src' no puede ser None.", 3, 1)
             self.indent = self.indent[:-1]
-            return
+            return None, None
 
-        fileNameNext = None
+        fileNameNext = f"{src.fileNameBase(self)}.timeNext"
+
+        if not os.path.exists(fileNameNext):
+            logMsg(f"{self.indent}  Fichero de tiempo no existe: {fileNameNext}", 2, 0)
+            self.indent = self.indent[:-1]
+            return None, None
+
         try:
-            fileNameNext = f"{src.fileNameBase(self)}.timeNext"
-
-            # 'wb' creará el fichero si no existe, por lo que checkFile es redundante
-            # a menos que se quiera un log específico si el fichero no existía.
             with open(fileNameNext, "wb") as f:
-                pickle.dump((tnow, tSleep), f)
+                pickle.dump((tnow, tSleep, lastTimePublished), f)
 
-            msgLog = f"{self.indent}  Fichero actualizado: {fileNameNext}"
+            msgLog = f"{self.indent}  Fichero guardado: {fileNameNext}"
             logMsg(msgLog, 2, 0)
+            self.indent = self.indent[:-1]
+            return True
 
-        except (IOError, pickle.PicklingError) as e:
-            # Un manejo de errores más específico que llamar a self.report
-            error_msg = f"Fallo al escribir en el fichero {fileNameNext or 'desconocido'}"
+        except IOError as e:
+            error_msg = f"Fallo al guardar el fichero {fileNameNext}"
             logMsg(f"{self.indent}{error_msg}", 3, 1)
             self.report(self.service, error_msg, fileNameNext, e)
-        finally:
-            # Asegurarse de que el indentado siempre se restaura
             self.indent = self.indent[:-1]
+            return False
 
     def setNumPosts(self, numposts):
         self.numposts = numposts
