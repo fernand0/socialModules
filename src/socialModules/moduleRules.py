@@ -1053,15 +1053,17 @@ class moduleRules:
                     tSleep = 2.0
                     msgLog = f"{indent} No Waiting"
 
-                logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
+                msgFrom = (f" {theAction} from "
+                           f"{apiSrc.getUrl()} in {self.getNickAction(action)}@"
+                           f"{self.getProfileAction(action)}"
+                           )
+                logMsg(f"{msgLog} for {msgFrom}", 1, 1
+                       )
 
                 for i in range(num):
                     time.sleep(tSleep)
                     if "minutes" in msgLog:
-                        logMsg(f"{indent} End Waiting {theAction} "
-                               f"from {apiSrc.getUrl()} in "
-                               f"{self.getNickAction(action)}@"
-                               f"{self.getProfileAction(action)}", 1, 1)
+                        logMsg(f"{indent} End Waiting {msgFrom}", 1, 1)
                     res = self.executePublishAction(
                         indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos
                     )
