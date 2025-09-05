@@ -1022,11 +1022,12 @@ class moduleRules:
             num = 1
 
         theAction = self.getTypeAction(action)
+        msgFrom = (f" {theAction} from "
+                   f"{apiSrc.getUrl()} in {self.getNickAction(action)}@"
+                   f"{self.getProfileAction(action)}"
+                   )
         msgLog = (
-            f"{indent}I'll publish {num} {theAction} "
-            f"from {apiSrc.getUrl()} "
-            f"in {self.getNickAction(action)}@"
-            f"{self.getProfileAction(action)}"
+            f"{indent}I'll publish {num} {msgFrom}"
         )
         logMsg(msgLog, 1, 1)
 
@@ -1053,12 +1054,7 @@ class moduleRules:
                     tSleep = 2.0
                     msgLog = f"{indent} No Waiting"
 
-                msgFrom = (f" {theAction} from "
-                           f"{apiSrc.getUrl()} in {self.getNickAction(action)}@"
-                           f"{self.getProfileAction(action)}"
-                           )
-                logMsg(f"{msgLog} for {msgFrom}", 1, 1
-                       )
+                logMsg(f"{msgLog} for {msgFrom}", 1, 1)
 
                 for i in range(num):
                     time.sleep(tSleep)
