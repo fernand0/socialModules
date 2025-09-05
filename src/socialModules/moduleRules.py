@@ -1044,49 +1044,40 @@ class moduleRules:
             # If not skipped, proceed with the original logic, but adjust tSleep.
             if noWait or (diffTime > hours):
                 tSleep = random.random() * float(timeSlots) * 60
-            else: # diffTime <= hours
-                # We need to wait until next_pub_time, or publish immediately if in the past.
-                next_pub_time = lastTime + hours
-                tSleep = next_pub_time - tNow
-                if tSleep < 0: # If next_pub_time is in the past, publish immediately.
-                    tSleep = 0
+                # Reserve the time slot by setting the new time
+                apiDst.setNextTime(tNow, tSleep, apiSrc)
 
+                if tSleep > 0.0:
+                    msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
+                else:
+                    tSleep = 2.0
+                    msgLog = f"{indent} No Waiting"
+
+                logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
+
+                for i in range(num):
+                    time.sleep(tSleep)
+                    if "minutes" in msgLog:
+                        logMsg(f"{indent} End Waiting {theAction} "
+                               f"from {apiSrc.getUrl()} in "
+                               f"{self.getNickAction(action)}@"
+                               f"{self.getProfileAction(action)}", 1, 1)
+                    res = self.executePublishAction(
+                        indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos
+                    )
+
+                # If no publication happened, restore the previous time
+                logging.info(f"{indent}Resssss: {res}")
+                if (not res or (res and not 'OK' in res)) and backup_time[0] is not None:
+                    logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
+                    apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
+            elif diffTime <= hours:
                 msgLog = (
                     f"{indent} Not enough time passed. "
-                    f"We will wait for {tSleep/3600:2.2f} hours." # This message is confusing if tSleep is 0.
+                    f"We will wait at least "
+                    f"{(hours-diffTime)/(60*60):2.2f} hours."
                 )
                 logMsg(msgLog, 1, 1)
-                time.sleep(tSleep)
-
-                # After waiting (or not), the tSleep for spacing should be random.
-                tSleep = random.random() * float(timeSlots) * 60
-
-            # Reserve the time slot by setting the new time
-            apiDst.setNextTime(tNow, tSleep, apiSrc)
-
-            if tSleep > 0.0:
-                msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
-            else:
-                tSleep = 2.0
-                msgLog = f"{indent} No Waiting"
-
-            logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
-
-            for i in range(num):
-                time.sleep(tSleep)
-                if "minutes" in msgLog:
-                    logMsg(f"{indent} End Waiting {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
-
-                res = self.executePublishAction(
-                    indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos
-                )
-
-            # If no publication happened, restore the previous time
-            logging.info(f"{indent}Resssss: {res}")
-            if (not res or (res and not 'OK' in res)) and backup_time[0] is not None:
-                logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
-                apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
-
         else:
             if num <= 0:
                 msgLog = f"{indent} No posts available"
