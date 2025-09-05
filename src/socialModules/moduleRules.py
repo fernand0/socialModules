@@ -1062,7 +1062,7 @@ class moduleRules:
                 tSleep = random.random() * float(timeSlots) * 60
 
             # Reserve the time slot by setting the new time
-            apiDst.setNextTime(tNow, tSleep, lastTime, apiSrc)
+            apiDst.setNextTime(tNow, tSleep, apiSrc)
 
             if tSleep > 0.0:
                 msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
