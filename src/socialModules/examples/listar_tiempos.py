@@ -37,6 +37,7 @@ def read_next_times():
 
                 print(f"Servicio: {file_name}")
                 print(f"  -> Próxima publicación programada para: {next_publication_time.strftime('%Y-%m-%d %H:%M:%S')}")
+                print(f"  -> Tiempo de espera (tSleep): {tSleep/60:.2f} minutos")
                 print("-" * 40)
 
         except (pickle.UnpicklingError, EOFError, TypeError) as e:
