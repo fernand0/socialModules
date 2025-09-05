@@ -38,8 +38,8 @@ class moduleRules:
 
     def checkRules(self, configFile=None, select=None):
         """
-        Reads the configuration file, processes each section, and builds the publishing rules.
-        Includes exhaustive validation and error handling.
+        Reads the configuration file, processes each section, and builds the
+        publishing rules.  Includes exhaustive validation and error handling.
         Optimized for efficiency using sets and efficient access.
         Allows absolute path for the configuration file.
         """
@@ -962,6 +962,7 @@ class moduleRules:
         action,
         msgAction,
         apiSrc,
+        apiDst,
         noWait,
         timeSlots,
         simmulate,
@@ -978,7 +979,7 @@ class moduleRules:
         dest = f"{self.getNickAction(action)}@{self.getNameAction(action)} ({self.getTypeAction(action)})"
         msgLog = f"{indent} Scheduling {orig} -> {dest}"
         logMsg(msgLog, 1, 1)
-        apiDst = self.readConfigDst(indent, action, more, apiSrc)
+        # apiDst = self.readConfigDst(indent, action, more, apiSrc)
         if not apiDst.getClient():
             msgLog = self.clientErrorMsg(
                 indent,
@@ -1040,73 +1041,51 @@ class moduleRules:
             else:
                 diffTime = hours + 1
 
-            timeSlots_seconds = float(timeSlots) * 60
-            next_pub_time = lastTime + hours
-
-            # Format timestamps for readability
-            next_pub_time_formatted = datetime.datetime.fromtimestamp(next_pub_time).strftime('%Y-%m-%d %H:%M:%S')
-            tNow_formatted = datetime.datetime.fromtimestamp(tNow).strftime('%Y-%m-%d %H:%M:%S')
-            window_end_formatted = datetime.datetime.fromtimestamp(tNow + timeSlots_seconds).strftime('%Y-%m-%d %H:%M:%S')
-
-            if not noWait and next_pub_time >= tNow + timeSlots_seconds:
-                # Calculate time left
-                time_left_seconds = next_pub_time - tNow
-                hours_left = int(time_left_seconds // 3600)
-                minutes_left = int((time_left_seconds % 3600) // 60)
-                seconds_left = int(time_left_seconds % 60)
-                time_left_formatted = f"{hours_left}h {minutes_left}m {seconds_left}s"
+            # If not skipped, proceed with the original logic, but adjust tSleep.
+            if noWait or (diffTime > hours):
+                tSleep = random.random() * float(timeSlots) * 60
+            else: # diffTime <= hours
+                # We need to wait until next_pub_time, or publish immediately if in the past.
+                next_pub_time = lastTime + hours
+                tSleep = next_pub_time - tNow
+                if tSleep < 0: # If next_pub_time is in the past, publish immediately.
+                    tSleep = 0
 
                 msgLog = (
-                     f"{indent} Publication time starts at {next_pub_time_formatted} (in {time_left_formatted}). "
-                     f"It's outside the {timeSlots} min window [{tNow_formatted} to {window_end_formatted}]. Skipping."
-                     )
+                    f"{indent} Not enough time passed. "
+                    f"We will wait for {tSleep/3600:2.2f} hours." # This message is confusing if tSleep is 0.
+                )
                 logMsg(msgLog, 1, 1)
-                textEnd = "" # This will make the function return nothing.
+                time.sleep(tSleep)
+
+                # After waiting (or not), the tSleep for spacing should be random.
+                tSleep = random.random() * float(timeSlots) * 60
+
+            # Reserve the time slot by setting the new time
+            apiDst.setNextTime(tNow, tSleep, apiSrc)
+
+            if tSleep > 0.0:
+                msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
             else:
-                # If not skipped, proceed with the original logic, but adjust tSleep.
-                if noWait or (diffTime > hours):
-                    tSleep = random.random() * float(timeSlots) * 60
-                else: # diffTime <= hours
-                    # We need to wait until next_pub_time, or publish immediately if in the past.
-                    tSleep = next_pub_time - tNow
-                    if tSleep < 0: # If next_pub_time is in the past, publish immediately.
-                        tSleep = 0
+                tSleep = 2.0
+                msgLog = f"{indent} No Waiting"
 
-                    msgLog = (
-                        f"{indent} Not enough time passed. "
-                        f"We will wait for {tSleep/3600:2.2f} hours." # This message is confusing if tSleep is 0.
-                    )
-                    logMsg(msgLog, 1, 1)
-                    time.sleep(tSleep)
+            logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
 
-                    # After waiting (or not), the tSleep for spacing should be random.
-                    tSleep = random.random() * float(timeSlots) * 60
+            for i in range(num):
+                time.sleep(tSleep)
+                if "minutes" in msgLog:
+                    logMsg(f"{indent} End Waiting {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
 
-                # Reserve the time slot by setting the new time
-                apiDst.setNextTime(tNow, tSleep, apiSrc)
+                res = self.executePublishAction(
+                    indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos
+                )
 
-                if tSleep > 0.0:
-                    msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
-                else:
-                    tSleep = 2.0
-                    msgLog = f"{indent} No Waiting"
-
-                logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
-
-                for i in range(num):
-                    time.sleep(tSleep)
-                    if "minutes" in msgLog:
-                        logMsg(f"{indent} End Waiting {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
-
-                    res = self.executePublishAction(
-                        indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos
-                    )
-
-                # If no publication happened, restore the previous time
-                logging.info(f"{indent}Resssss: {res}")
-                if (not res or (res and not 'OK' in res)) and backup_time[0] is not None:
-                    logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
-                    apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
+            # If no publication happened, restore the previous time
+            logging.info(f"{indent}Resssss: {res}")
+            if (not res or (res and not 'OK' in res)) and backup_time[0] is not None:
+                logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
+                apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
 
         else:
             if num <= 0:
@@ -1151,6 +1130,35 @@ class moduleRules:
         logMsg(msgLog, 1, 2)
         return
 
+    def _should_skip_publication(self, apiDst, apiSrc, noWait, timeSlots, indent=""):
+        tNow = time.time()
+        hours = float(apiDst.getTime()) * 60 * 60
+        lastTime = apiDst.getLastTimePublished(f"{indent}")
+
+        if lastTime is None:
+            return False # Do not skip if there is no last time
+
+        timeSlots_seconds = float(timeSlots) * 60
+        next_pub_time = lastTime + hours
+
+        if not noWait and next_pub_time >= tNow + timeSlots_seconds:
+            next_pub_time_formatted = datetime.datetime.fromtimestamp(next_pub_time).strftime('%Y-%m-%d %H:%M:%S')
+            tNow_formatted = datetime.datetime.fromtimestamp(tNow).strftime('%Y-%m-%d %H:%M:%S')
+            window_end_formatted = datetime.datetime.fromtimestamp(tNow + timeSlots_seconds).strftime('%Y-%m-%d %H:%M:%S')
+            time_left_seconds = next_pub_time - tNow
+            hours_left = int(time_left_seconds // 3600)
+            minutes_left = int((time_left_seconds % 3600) // 60)
+            seconds_left = int(time_left_seconds % 60)
+            time_left_formatted = f"{hours_left}h {minutes_left}m {seconds_left}s"
+
+            msgLog = (
+                f"{indent} Publication time starts at {next_pub_time_formatted} (in {time_left_formatted}). "
+                f"It's outside the {timeSlots} min window [{tNow_formatted} to {window_end_formatted}]. Skipping."
+            )
+            logMsg(msgLog, 1, 1)
+            return True  # Skip publication
+        return False # Do not skip
+
     def _prepare_actions(self, args, select):
         """
         Prepares the list of actions to execute, filtering and collecting all
@@ -1188,6 +1196,21 @@ class moduleRules:
                 if select and (select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"):
                     continue
 
+                apiSrc = self.readConfigSrc(nameR, rule_key, rule_metadata)
+                apiDst = self.readConfigDst(nameR, rule_action, rule_metadata, apiSrc)
+
+                timeSlots = args.timeSlots
+                noWait = args.noWait
+                if (self.getNameAction(rule_action) in "cache") or (
+                    (self.getNameAction(rule_action) == "direct")
+                    and (self.getProfileAction(rule_action) == "pocket")
+                ):
+                    timeSlots = 0
+                    noWait = True
+
+                if self._should_skip_publication(apiDst, apiSrc, noWait, timeSlots, nameR):
+                    continue
+
                 scheduled_actions.append({
                     "rule_key": rule_key,
                     "rule_metadata": rule_metadata,
@@ -1196,6 +1219,8 @@ class moduleRules:
                     "action_index": action_index,
                     "args": args,
                     "simmulate": args.simmulate,
+                    "apiSrc": apiSrc,
+                    "apiDst": apiDst,
                 })
         return scheduled_actions
 
@@ -1233,6 +1258,8 @@ class moduleRules:
         rule_action = scheduled_action["rule_action"]
         args = scheduled_action["args"]
         simmulate = scheduled_action["simmulate"]
+        apiSrc = scheduled_action["apiSrc"]
+        apiDst = scheduled_action["apiDst"]
 
         # Apply special timeSlots treatment for cache and pocket actions
         timeSlots = args.timeSlots
@@ -1258,13 +1285,13 @@ class moduleRules:
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
         nameR = f"{name_action:->12}>"
         nameA =  f"{nameR} Action {action_index}:"
-        apiSrc = self.readConfigSrc(nameR, rule_key, rule_metadata)
         return self.executeAction(
             rule_key,
             rule_metadata,
             rule_action,
             msgAction,
             apiSrc,
+            apiDst,
             noWait,
             timeSlots,
             simmulate,
