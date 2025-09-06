@@ -829,9 +829,13 @@ class moduleRules:
         resMsg = ""
         msgLog = f"{indent}Trying to execute Post Action"
         logMsg(msgLog, 1, 1)
+        msgLog = f"{indent}Post Action ressss {res}"
+        logMsg(msgLog, 1, 1)
         postaction = apiSrc.getPostAction()
         if postaction:
-            msgLog = f"{indent}Post Action {postaction} " f"(nextPost = {nextPost})"
+            msgLog = (f"{indent}Post Action {postaction} "
+                      f"(nextPost = {nextPost})"
+                      )
             logMsg(msgLog, 1, 1)
 
             if "OK. Published!" in res:
@@ -929,6 +933,7 @@ class moduleRules:
                     # ((not res) or ('SAVELINK' in res) or
                     #              (('Fail!' not in res)) or
                     #              (('failed!' not in res)))):
+                    link = apiSrc.getPostLink(post)
                     resUpdate = apiDst.updateLastLink(apiSrc, link)
                     resMsg += f" Update: {resUpdate}"
 
@@ -1046,6 +1051,8 @@ class moduleRules:
             if noWait or (diffTime > hours):
                 tSleep = random.random() * float(timeSlots) * 60
                 # Reserve the time slot by setting the new time
+                msgLog = f"{self.indent}tSleep {tSleep}"
+                logMsg(msgLog, 2, 0)
                 apiDst.setNextTime(tNow, tSleep, apiSrc)
 
                 if tSleep > 0.0:
