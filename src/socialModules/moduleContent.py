@@ -601,8 +601,12 @@ class Content:
             # a menos que se quiera un log específico si el fichero no existía.
             msgLog = f"{self.indent}Nowwww: {tnow}, tSleep {tSleep}"
             logMsg(msgLog, 2, 0)
+            msgLog = f"{self.indent}Nowwww: {(tnow,tSleep)}"
+            logMsg(msgLog, 2, 0)
             with open(fileNameNext, "wb") as f:
                 pickle.dump((tnow, tSleep), f)
+            msgLog = f"{self.indent}Nowwwd: {(tnow,tSleep)}"
+            logMsg(msgLog, 2, 0)
 
             msgLog = f"{self.indent}  Fichero actualizado: {fileNameNext}"
             logMsg(msgLog, 2, 0)

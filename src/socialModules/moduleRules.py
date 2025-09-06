@@ -1051,7 +1051,7 @@ class moduleRules:
             if noWait or (diffTime > hours):
                 tSleep = random.random() * float(timeSlots) * 60
                 # Reserve the time slot by setting the new time
-                msgLog = f"{self.indent}tSleep {tSleep}"
+                msgLog = f"{indent}tSleep {tSleep}"
                 logMsg(msgLog, 2, 0)
                 apiDst.setNextTime(tNow, tSleep, apiSrc)
 
