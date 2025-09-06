@@ -63,7 +63,7 @@ class moduleRules:
                 continue
             msgLog = f" Section: {section}"
             logMsg(msgLog, 1, 1)
-            section_indent = f"{indent}{section}>")
+            section_indent = f"{indent}{section}>"
             try:
                 self._process_section(section_indent, section, config, services, sources, sources_available, more, destinations, temp_rules, rulesNew, rule_metadata, implicit_rules)
             except ConfigError as ce:
