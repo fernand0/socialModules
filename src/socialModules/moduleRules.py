@@ -757,7 +757,7 @@ class moduleRules:
                 logMsg(f"{indent}Trying to publish {msgLog} ", 1, 1)
                 if nextPost and (res and ("Fail!" not in res) and ("failed!" not in res)):
                     link = apiSrc.getPostLink(post)
-                    resUpdate = apiDst.updateLastLink(apiSrc, link)
+                    resUpdate = apiDst.updateLastLink(apiSrc, link, indent)
                     resMsg += f" Update: {resUpdate}"
             if res:
                 logMsg(f"{indent}Res: {res} ", 2, 0)
