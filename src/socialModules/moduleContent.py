@@ -365,8 +365,10 @@ class Content:
             service = src.getService()
 
             logging.info(f"dst.... {dst}")
+            logging.info(f"user.... {user}")
             dst.setNick()
             if hasattr(dst, "src") and isinstance(dst.src, tuple):
+                logging.info(f"dst.... {dst.src}")
                 # It is a cache
                 # userD = dst.src[1][3]
                 # serviceD = dst.src[1][2]
