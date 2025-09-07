@@ -40,8 +40,8 @@ class moduleSmtp(Content): #, Queue):
         client = None
         try:
             import ssl
-            context = ssl.SSLContext(ssl.PROTOCOL_TLS)
-            client = smtplib.SMTP_SSL(self.server, self.port)
+            context = ssl._create_unverified_context()
+            client = smtplib.SMTP_SSL(self.server, self.port, context=context)
             #client.starttls() #context=context)
             logging.info("     User: self.user")
             client.login(self.user, self.password)
