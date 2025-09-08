@@ -372,6 +372,8 @@ class Content:
                 # logging.info(f"Uuuuuu: {userD} - {serviceD}")
                 userD = dst.getUser()
                 serviceD = dst.getService()
+                # userD = dst.apiDst.getUser()
+                # serviceD = dst.apiDst.getService()
                 # logging.info(f"Uuuuuu: {userD} - {serviceD}")
             else:
                 userD = dst.getUser()
