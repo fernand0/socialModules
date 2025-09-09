@@ -966,32 +966,33 @@ class moduleRules:
         logMsg("Debugging filenames", 1, 2)
         print("-" * 80)
         for rule_key, rule_actions in self.rules.items():
+            print(f"Rule: {rule_key}")
             rule_metadata = self.more.get(rule_key)
             apiSrc = self.readConfigSrc("", rule_key, rule_metadata)
-            for action in rule_actions:
+            
+            for i, action in enumerate(rule_actions):
                 apiDst = self.readConfigDst("", action, rule_metadata, apiSrc)
                 filename = apiDst.fileNameBase(apiSrc)
                 
-                print(f"Rule         : {rule_key}")
-                print(f"Action       : {action}")
-                print(f"Filename base: {filename}")
+                print(f"  Action {i}: {action}")
+                print(f"    Filename base: {filename}")
 
                 # Get content of .last file
                 last_link = apiDst.getLastLink(apiSrc)
                 if last_link:
-                    print(f"Last Link    : {last_link}")
+                    print(f"    Last Link    : {last_link}")
                 else:
-                    print("Last Link    : Not found or is empty")
+                    print("    Last Link    : Not found or is empty")
 
                 # Get content of .timeNext file
                 tnow, tsleep = apiDst.getNextTime(src=apiSrc)
                 if tnow is not None and tsleep is not None:
                     last_run_time = datetime.datetime.fromtimestamp(tnow)
-                    print(f"Last Run     : {last_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
-                    print(f"Sleep Time   : {tsleep:.2f} seconds")
+                    print(f"    Last Run     : {last_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
+                    print(f"    Sleep Time   : {tsleep:.2f} seconds")
                 else:
-                    print("Next Run     : Not scheduled")
-                print("-" * 80)
+                    print("    Next Run     : Not scheduled")
+            print("-" * 80)
 
     def _configure_service_api(self, api, destination, channel=None, from_email=None, to_email=None, account=None):
         try:
