@@ -812,7 +812,7 @@ class moduleRules:
             if noWait or (diffTime > hours):
                 tSleep = random.random() * float(timeSlots) * 60
                 logMsg(f"{grandchild_indent}tSleep {tSleep}", 2, 0)
-                if self.getNameRule(src) != "slack":
+                if not noWait:
                     apiDst.setNextTime(tNow, tSleep, apiSrc)
                 if tSleep > 0.0:
                     msgLog = f"{grandchild_indent} Waiting {tSleep/60:2.2f} minutes"
