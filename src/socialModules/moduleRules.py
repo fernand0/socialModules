@@ -972,19 +972,7 @@ class moduleRules:
                 filename = apiDst.fileNameBase(apiSrc)
                 print(f"Rule: {rule_key}")
                 print(f"  Action: {action}")
-                print(f"  Filename base: {filename}")
-
-                for ext in [".last", ".timeNext"]:
-                    filepath = f"{filename}{ext}"
-                    try:
-                        if os.path.exists(filepath):
-                            with open(filepath, 'r') as f:
-                                content = f.read().strip()
-                                print(f"    Content of {ext}: {content}")
-                        else:
-                            print(f"    {ext} file not found")
-                    except Exception as e:
-                        print(f"    Error reading {ext} file: {e}")
+                print(f"  Filename: {filename}.last")
 
     def _configure_service_api(self, api, destination, channel=None, from_email=None, to_email=None, account=None):
         try:
