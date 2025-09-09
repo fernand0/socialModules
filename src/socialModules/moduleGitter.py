@@ -17,8 +17,7 @@ from socialModules.moduleContent import *
 # from socialModules.moduleQueue import *
 
 
-class moduleGitter(Content): #,Queue):
-
+class moduleGitter(Content):  # ,Queue):
     def getKeys(self, config):
         token = config.get(self.service, "token")
         oauth_key = config.get(self.service, "oauth_key")
@@ -31,14 +30,14 @@ class moduleGitter(Content): #,Queue):
         self.client = None
         self.channel = None
         self.keys = []
-        self.service = 'Gitter'
+        self.service = "Gitter"
 
         self.token = keys[0]
         # logging.info("     Connecting {}".format(self.service))
         try:
             client = gitterpy.client.GitterClient(self.token)
         except:
-            msgLog = ("Account not configured")
+            msgLog = "Account not configured"
             logMsg(msgLog, 3, 0)
             if sys.exc_info()[0]:
                 # logging.warning("Unexpected error: {}".format(
@@ -53,10 +52,10 @@ class moduleGitter(Content): #,Queue):
     def getChannels(self):
         return self.getClient().rooms.rooms_list
 
-    def setChannel(self, channel=''):
+    def setChannel(self, channel=""):
         if not channel:
             # The first one
-            channel = self.getChannels()[0].get('name','')
+            channel = self.getChannels()[0].get("name", "")
         # setPage in Facebook
         # We should follow more the model there
         self.channel = channel
@@ -67,7 +66,7 @@ class moduleGitter(Content): #,Queue):
     def setApiPosts(self):
         if not self.channel:
             # It will set the owner channel by default
-            msgLog = (f"No channel defined, setting the first one (if any)")
+            msgLog = f"No channel defined, setting the first one (if any)"
             logMsg(msgLog, 3, 0)
             self.setChannel()
         posts = []
@@ -94,50 +93,50 @@ class moduleGitter(Content): #,Queue):
     #         return -1
 
     def getPostContentHtml(self, post):
-        return post.get('html', '')
+        return post.get("html", "")
 
     def editApiLink(self, post, newLink):
-        #FIXME. To be done
+        # FIXME. To be done
         pass
 
     def setPostTitle(self, post, newTitle):
         # Only in local memory
-        pos = post.get('text','').rfind('http')
+        pos = post.get("text", "").rfind("http")
         title = newTitle
-        if pos>=0:
+        if pos >= 0:
             title = f"{title} {post.get('text','')[pos:]}"
-            post['text'] = title
+            post["text"] = title
 
     def getPostTitle(self, post):
-        title = post.get('text', '')
-        pos = title.rfind('http')
-        if pos>=0:
+        title = post.get("text", "")
+        pos = title.rfind("http")
+        if pos >= 0:
             title = title[:pos]
         return title
 
     def getPostLink(self, post):
-        link = ''
-        text = post.get('text','')
-        pos = text.rfind('http')
-        if pos>=0:
+        link = ""
+        text = post.get("text", "")
+        pos = text.rfind("http")
+        if pos >= 0:
             link = text[pos:]
         return link
 
     def getPostId(self, post):
-        idPost = post.get('id','')
-        return (idPost)
+        idPost = post.get("id", "")
+        return idPost
 
     def deleteApiPosts(self, idPost):
         result = self.deteleGitter(idPost, self.getChannel())
         # logging.info(f"Res: {result}")
-        return(result)
+        return result
 
     def deleteGitter(self, idPost, idChannel):
         # This does not belong here
         # '/v1/rooms/:roomId/chatMessages/:chatMessageId"
         # call = f"https://api.gitter.im/v1/{api_meth}"
-        #api_meth = 'rooms/{}/chatMessages/{}'.format(room_id, idPost)
-        api_meth  = self.getClient().get_and_update_msg_url(idChannel, idPost)
+        # api_meth = 'rooms/{}/chatMessages/{}'.format(room_id, idPost)
+        api_meth = self.getClient().get_and_update_msg_url(idChannel, idPost)
         result = self.getClient().delete(api_meth)
         # logging.info("Result: {}".format(str(result)))
         return result
@@ -166,14 +165,14 @@ class moduleGitter(Content): #,Queue):
     #     return(result)
 
     def getChanId(self, name):
-        msgLog = ("{self.indent} getChanId {self.service}")
+        msgLog = "{self.indent} getChanId {self.service}"
         logMsg(msgLog, 2, 0)
 
         chanList = self.getClient().rooms.rooms_list
         for channel in chanList:
-            if channel.get('name', '').endswith(name):
-                return(channel['id'])
-        return(None)
+            if channel.get("name", "").endswith(name):
+                return channel["id"]
+        return None
 
     # def extractDataMessage(self, i):
     #     logging.info(f"extract gitt {i}")
@@ -199,10 +198,9 @@ class moduleGitter(Content): #,Queue):
     #     print (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
     #     return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
-
     def processReply(self, reply):
         # logging.info(reply)
-        reply = reply.get('id', '')
+        reply = reply.get("id", "")
         return reply
 
     def publishApiPost(self, *args, **kwargs):
@@ -211,48 +209,49 @@ class moduleGitter(Content): #,Queue):
         if kwargs:
             more = kwargs
 
-            post = more.get('post', '')
-            api = more.get('api', '')
+            post = more.get("post", "")
+            api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
             comment = api.getPostComment(title)
 
         chan = self.getChannel()
         result = self.getClient().messages.send(chan, f"{title} {link}")
-        return(result)
+        return result
 
-    def getBots(self, channel='tavern-of-the-bots'):
+    def getBots(self, channel="tavern-of-the-bots"):
         # FIXME: this does not belong here
         if not self.posts:
             self.setPosts(channel)
         msgs = {}
         for msg in self.getPosts():
-            if msg['text'].find('Hello')>=0:
-                posN = msg['text'].find('Name:')+6
-                posFN = msg['text'].find('"',posN)
-                posI = msg['text'].find('IP:')+4
-                posFI = msg['text'].find(' ',posI+1)-1
-                posC = msg['text'].find('[')
-                name = msg['text'][posN:posFN]
-                ip = msg['text'][posI:posFI]
-                command = msg['text'][posC+1:posC+2]
+            if msg["text"].find("Hello") >= 0:
+                posN = msg["text"].find("Name:") + 6
+                posFN = msg["text"].find('"', posN)
+                posI = msg["text"].find("IP:") + 4
+                posFI = msg["text"].find(" ", posI + 1) - 1
+                posC = msg["text"].find("[")
+                name = msg["text"][posN:posFN]
+                ip = msg["text"][posI:posFI]
+                command = msg["text"][posC + 1 : posC + 2]
                 if name not in msgs:
-                    theTime = msg['sent'][:10]
+                    theTime = msg["sent"][:10]
                     msgs[name] = (ip, command, theTime)
         theBots = []
         for name in msgs:
             a, b, c = msgs[name]
-            theBots.append("{2} [{1}] {0} {3}".format(a,b,c,name))
-        return(theBots)
+            theBots.append("{2} [{1}] {0} {3}".format(a, b, c, name))
+        return theBots
+
 
 def main():
-
-    logging.basicConfig(stream=sys.stdout,
-            level=logging.INFO,
-            format='%(asctime)s %(message)s')
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s"
+    )
 
     import moduleGitter
     import moduleRules
+
     rules = moduleRules.moduleRules()
     rules.checkRules()
 
@@ -263,17 +262,17 @@ def main():
 
     indent = ""
     for src in rules.rules.keys():
-        if src[0] == 'gitter':
+        if src[0] == "gitter":
             more = rules.more[src]
             break
     apiSrc = rules.readConfigSrc(indent, src, more)
 
-    apiSrc.setUser(apiSrc.getClient().auth.get_my_id['name'])
+    apiSrc.setUser(apiSrc.getClient().auth.get_my_id["name"])
 
     testingSetTitle = False
     if testingSetTitle:
         apiSrc.setPostsType("posts")
-        apiSrc.setChannel('fernand0errbot/links')
+        apiSrc.setChannel("fernand0errbot/links")
         apiSrc.setPosts()
         if apiSrc.getPosts():
             print(f"Title: {apiSrc.getPostTitle(apiSrc.getPost(0))}")
@@ -287,7 +286,7 @@ def main():
     if testingPosts:
         print("Testing posts")
         apiSrc.setPostsType("posts")
-        apiSrc.setChannel('fernand0errbot/links')
+        apiSrc.setChannel("fernand0errbot/links")
         apiSrc.setPosts()
 
         print("Testing title and link")
@@ -300,19 +299,23 @@ def main():
             theId = apiSrc.getPostId(post)
             summary = apiSrc.getPostContentHtml(post)
             image = apiSrc.getPostImage(post)
-            print(f"{i}) Title: {title}\n"
-                  f"Link: {link}\n"
-                  f"Url: {url}\nId: {theId}\n"
-                  f"Content: {summary} {image}")
+            print(
+                f"{i}) Title: {title}\n"
+                f"Link: {link}\n"
+                f"Url: {url}\nId: {theId}\n"
+                f"Content: {summary} {image}"
+            )
 
-        if input("All? (y/n) ") == 'y':
+        if input("All? (y/n) ") == "y":
             for channel in apiSrc.getChannels():
                 print(f"Name: {channel['name']}")
-                apiSrc.setChannel(channel['name'])
+                apiSrc.setChannel(channel["name"])
                 apiSrc.setPosts()
                 for i, post in enumerate(apiSrc.getPosts()):
-                    print(f"{i}) Title: {apiSrc.getPostTitle(post)}\n"
-                          f"Link: {apiSrc.getPostLink(post)}\n")
+                    print(
+                        f"{i}) Title: {apiSrc.getPostTitle(post)}\n"
+                        f"Link: {apiSrc.getPostLink(post)}\n"
+                    )
                 input("More? (any key to continue) ")
 
         return
@@ -320,15 +323,19 @@ def main():
     testingDelete = True
     if testingDelete:
         print(f"Channels")
-        [ print(f"{i}) {channel.get('name','')}")
-            for i, channel in enumerate(apiSrc.getChannels()) ]
+        [
+            print(f"{i}) {channel.get('name','')}")
+            for i, channel in enumerate(apiSrc.getChannels())
+        ]
         pos = input("Which channel (number)? ")
-        apiSrc.setChannel(apiSrc.getChannels()[int(pos)].get('name',''))
+        apiSrc.setChannel(apiSrc.getChannels()[int(pos)].get("name", ""))
 
         apiSrc.setPosts()
 
-        [ print(f"{i}) {apiSrc.getPostTitle(post)}")
-                for i, post in enumerate(apiSrc.getPosts()) ]
+        [
+            print(f"{i}) {apiSrc.getPostTitle(post)}")
+            for i, post in enumerate(apiSrc.getPosts())
+        ]
         pos = input("Which post to delete? ")
         post = apiSrc.getPost(int(pos))
         apiSrc.deletePost(post)
@@ -375,7 +382,7 @@ def main():
 
     testingPostDelete = True
     if testingPostDelete:
-        rep = site.publishPost(CHANNEL, 'helloo')
+        rep = site.publishPost(CHANNEL, "helloo")
 
         site.setPosts()
         print(len(site.getPosts()))
@@ -402,42 +409,45 @@ def main():
 
     print(CHANNEL)
     site.deletePost(site.getPostId(post), site.getChanId(CHANNEL))
-    rep = site.publishPost(CHANNEL, 'helloo')
+    rep = site.publishPost(CHANNEL, "helloo")
     print(rep)
 
     print(site.extractDataMessage(4))
 
     sys.exit()
-    res=site.search('links', 'https://www.pine64.org/2020/01/24/setting-the-record-straight-pinephone-misconceptions/a')
-    print("res",res)
-    print("res",res['messages']['total'])
+    res = site.search(
+        "links",
+        "https://www.pine64.org/2020/01/24/setting-the-record-straight-pinephone-misconceptions/a",
+    )
+    print("res", res)
+    print("res", res["messages"]["total"])
     print(site.getPosts())
     post = site.getPosts()[0]
     print(site.getPostTitle(post))
     print(site.getPostLink(post))
-    rep = site.publishPost('tavern-of-the-bots', 'hello')
-    wait = input('Delete %s?' % rep)
-    theChan = site.getChanId('tavern-of-the-bots')
-    rep = site.deletePost(rep['ts'], theChan)
+    rep = site.publishPost("tavern-of-the-bots", "hello")
+    wait = input("Delete %s?" % rep)
+    theChan = site.getChanId("tavern-of-the-bots")
+    rep = site.deletePost(rep["ts"], theChan)
 
     sys.exit()
 
-    site.setPosts('links')
-    site.setPosts('tavern-of-the-bots')
+    site.setPosts("links")
+    site.setPosts("tavern-of-the-bots")
     print(site.getPosts())
     print(site.getBots())
-    print(site.getClient().api_call('channels.list'))
+    print(site.getClient().api_call("channels.list"))
     sys.exit()
-    rep = site.publishPost('tavern-of-the-bots', 'hello')
-    site.deletePost(rep['ts'], theChan)
+    rep = site.publishPost("tavern-of-the-bots", "hello")
+    site.deletePost(rep["ts"], theChan)
     sys.exit()
 
     site.setSocialNetworks(config)
 
-    if ('buffer' in config.options(section)):
+    if "buffer" in config.options(section):
         site.setBufferapp(config.get(section, "buffer"))
 
-    if ('cache' in config.options(section)):
+    if "cache" in config.options(section):
         site.setProgram(config.get(section, "cache"))
 
     theChannel = site.getChanId("links")
@@ -445,7 +455,7 @@ def main():
     i = 0
     listLinks = ""
 
-    lastUrl = ''
+    lastUrl = ""
     for i, post in enumerate(site.getPosts()):
         url = site.getLink(i)
         if urllib.parse.urlparse(url).netloc == lastUrl:
@@ -462,7 +472,7 @@ def main():
     numEntries = i
     click.echo_via_pager(listLinks)
     i = input("Which one? [x] to exit ")
-    if i == 'x':
+    if i == "x":
         sys.exit()
 
     elem = int(i)
@@ -470,15 +480,15 @@ def main():
 
     action = input("Delete [d], publish [p], exit [x] ")
 
-    if action == 'x':
+    if action == "x":
         sys.exit()
-    elif action == 'p':
+    elif action == "p":
         if site.getBufferapp():
             for profile in site.getSocialNetworks():
                 if profile[0] in site.getBufferapp():
                     lenMax = site.len(profile)
                     print("   getBuffer %s" % profile)
-                    socialNetwork = (profile,site.getSocialNetworks()[profile])
+                    socialNetwork = (profile, site.getSocialNetworks()[profile])
                     title = site.getTitle(elem)
                     url = site.getLink(elem)
                     listPosts = []
@@ -491,30 +501,30 @@ def main():
                     lenMax = site.len(profile)
                     print("   getProgram %s" % profile)
 
-                    socialNetwork = (profile,site.getSocialNetworks()[profile])
+                    socialNetwork = (profile, site.getSocialNetworks()[profile])
 
                     listP = site.cache[socialNetwork].getPosts()
-                    #site.cache[socialNetwork].posts = site.cache[socialNetwork].posts[:8]
-                    #listP = site.cache[socialNetwork].getPosts()
-                    #for i,l in enumerate(listP):
+                    # site.cache[socialNetwork].posts = site.cache[socialNetwork].posts[:8]
+                    # listP = site.cache[socialNetwork].getPosts()
+                    # for i,l in enumerate(listP):
                     #    print(i, l)
-                    #site.cache[socialNetwork].updatePostsCache()
+                    # site.cache[socialNetwork].updatePostsCache()
                     listPsts = site.obtainPostData(elem)
                     listP = listP + [listPsts]
-                    #for i,l in enumerate(listP):
+                    # for i,l in enumerate(listP):
                     #    print(i, l)
-                    #sys.exit()
+                    # sys.exit()
                     site.cache[socialNetwork].posts = listP
                     site.cache[socialNetwork].updatePostsCache()
         t = moduleTumblr.moduleTumblr()
-        t.setClient('fernand0')
+        t.setClient("fernand0")
         # We need to publish it in the Tumblr blog since we won't publish it by
         # usuarl means (it is deleted from queue).
-        t.publishPost(title, url, '')
+        t.publishPost(title, url, "")
 
     site.deletePost(site.getId(j), theChannel)
-    #print(outputData['Slack']['pending'][elem][8])
+    # print(outputData['Slack']['pending'][elem][8])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

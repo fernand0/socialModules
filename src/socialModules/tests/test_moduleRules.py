@@ -2,6 +2,7 @@ import pytest
 from socialModules.moduleRules import moduleRules, ConfigError
 import os
 from unittest.mock import patch, MagicMock
+import time # Import time for mocking getNextTime
 
 # Utility to create a temporary configuration file
 
@@ -9,6 +10,7 @@ def make_config_file(tmp_path, content):
     config_file = tmp_path / ".rssBlogs"
     config_file.write_text(content)
     return str(config_file)
+
 
 def test_missing_url(tmp_path):
     # Missing 'url' key
@@ -21,6 +23,7 @@ def test_missing_url(tmp_path):
     rules = moduleRules()
     with pytest.raises(ConfigError):
         rules.checkRules(configFile=config_file)
+
 
 def test_valid_config(tmp_path):
     config_content = """
@@ -35,9 +38,10 @@ def test_valid_config(tmp_path):
     rules = moduleRules()
     rules.checkRules(configFile=config_file)
     # There should be a source named 'reddit' in available (service name)
-    assert any('reddit' in v['name'] for v in rules.available.values())
+    assert any("reddit" in v["name"] for v in rules.available.values())
     # There should be rules for reddit
-    assert any('reddit' in str(src) for src in rules.rules)
+    assert any("reddit" in str(src) for src in rules.rules)
+
 
 def test_no_duplicates(tmp_path):
     config_content = """
@@ -52,8 +56,9 @@ def test_no_duplicates(tmp_path):
     rules = moduleRules()
     rules.checkRules(configFile=config_file)
     # There should be no duplicates in sources
-    srcs = [d['src'] for v in rules.available.values() for d in v['data']]
+    srcs = [d["src"] for v in rules.available.values() for d in v["data"]]
     assert len(srcs) == len(set(srcs))
+
 
 def test_empty_url(tmp_path):
     config_content = """
@@ -66,6 +71,7 @@ def test_empty_url(tmp_path):
     rules = moduleRules()
     with pytest.raises(ConfigError):
         rules.checkRules(configFile=config_file)
+
 
 def test_multiple_sections(tmp_path):
     config_content = """
@@ -86,9 +92,10 @@ def test_multiple_sections(tmp_path):
     config_file = make_config_file(tmp_path, config_content)
     rules = moduleRules()
     rules.checkRules(configFile=config_file)
-    names = [v['name'] for v in rules.available.values()]
-    assert 'reddit' in names
-    assert 'mastodon' in names
+    names = [v["name"] for v in rules.available.values()]
+    assert "reddit" in names
+    assert "mastodon" in names
+
 
 def test_non_numeric_max(tmp_path):
     config_content = """
@@ -103,8 +110,9 @@ def test_non_numeric_max(tmp_path):
     config_file = make_config_file(tmp_path, config_content)
     rules = moduleRules()
     rules.checkRules(configFile=config_file)
-    more = [d['more'] for v in rules.available.values() for d in v['data']]
-    assert any('max' in m for m in more)
+    more = [d["more"] for v in rules.available.values() for d in v["data"]]
+    assert any("max" in m for m in more)
+
 
 def test_duplicate_destinations(tmp_path):
     config_content = """
@@ -122,56 +130,89 @@ def test_duplicate_destinations(tmp_path):
     with pytest.raises(ConfigError):
         rules.checkRules(configFile=config_file)
 
+
 def make_basic_rules():
     rules = moduleRules()
     # Simulate minimal rules and metadata
-    rules.rules = {'src1': ['action1', 'action2'], 'src2': ['action3']}
-    rules.more = {'src1': {}, 'src2': {}}
+    rules.rules = {"src1": ["action1", "action2"], "src2": ["action3"]}
+    rules.more = {"src1": {}, "src2": {}}
     rules.args = MagicMock()
     rules.args.checkBlog = ""
     rules.args.simmulate = False
-    rules.args.noWait = False
+    rules.args.noWait = True
     rules.args.timeSlots = 1
     return rules
 
-def test_executeRules_calls_executeAction():
+# Mock API instance for consistent behavior across tests
+mock_api_instance = MagicMock()
+mock_api_instance.fileNameBase.return_value = "/tmp/mock_file"
+mock_api_instance.getLastLink.return_value = "mock_last_link"
+mock_api_instance.getNextTime.return_value = (time.time(), 100.0) # Mock current time and sleep time
+mock_api_instance.getNick.return_value = "mock_nick"
+mock_api_instance.getName.return_value = "mock_name"
+mock_api_instance.getUrl.return_value = "http://mock.url"
+mock_api_instance.getClient.return_value = MagicMock() # Mock the client object
+mock_api_instance.getTime.return_value = 60.0 # Mock getTime to return a float (e.g., 60 minutes)
+mock_api_instance.getLastTimePublished.return_value = time.time() - 3600 # Mock last published time (e.g., 1 hour ago)
+
+
+@patch('socialModules.configMod.getModule', return_value=mock_api_instance)
+@patch('socialModules.configMod.getApi', return_value=mock_api_instance)
+def test_executeRules_calls_executeAction(mock_get_api, mock_get_module):
     rules = make_basic_rules()
     called = []
+
     def fake_single_action(scheduled_action):
         called.append(scheduled_action)
         return "ok"
+
     with patch('socialModules.moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
         rules.executeRules(max_workers=2)
     assert len(called) == 3  # 3 actions
 
-def test_executeRules_respects_hold():
+
+@patch('socialModules.configMod.getModule', return_value=mock_api_instance)
+@patch('socialModules.configMod.getApi', return_value=mock_api_instance)
+def test_executeRules_respects_hold(mock_get_api, mock_get_module):
     rules = make_basic_rules()
-    rules.more['src1'] = {"hold": "yes"}
+    rules.more["src1"] = {"hold": "yes"}
     called = []
+
     def fake_single_action(scheduled_action):
         called.append(scheduled_action)
         return "ok"
+
     with patch('socialModules.moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
         rules.executeRules()
     assert len(called) == 1  # Only src2/action3
 
-def test_executeRules_handles_exceptions():
+
+@patch('socialModules.configMod.getModule', return_value=mock_api_instance)
+@patch('socialModules.configMod.getApi', return_value=mock_api_instance)
+def test_executeRules_handles_exceptions(mock_get_api, mock_get_module):
     rules = make_basic_rules()
+
     def fake_single_action(scheduled_action):
-        if scheduled_action['rule_action'] == 'action2':
+        if scheduled_action["rule_action"] == "action2":
             raise Exception("fail")
         return "ok"
+
     with patch('socialModules.moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
         rules.executeRules()
 
-def test_executeRules_with_checkBlog():
+
+@patch('socialModules.configMod.getModule', return_value=mock_api_instance)
+@patch('socialModules.configMod.getApi', return_value=mock_api_instance)
+def test_executeRules_with_checkBlog(mock_get_api, mock_get_module):
     rules = make_basic_rules()
     rules.args.checkBlog = "src1"
     called = []
+
     def fake_single_action(scheduled_action):
         called.append(scheduled_action)
         return "ok"
+
     with patch('socialModules.moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
         rules.executeRules()
     # Only actions from src1
-    assert all(a['rule_key'] == 'src1' for a in called) 
+    assert all(a["rule_key"] == "src1" for a in called)

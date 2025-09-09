@@ -15,19 +15,24 @@ from socialModules.configMod import *
 from socialModules.moduleContent import *
 # from socialModules.moduleQueue import *
 
-#import getpass
-#import keyring
-#import keyrings
+# import getpass
+# import keyring
+# import keyrings
 
-class moduleSmtp(Content): #, Queue):
 
+class moduleSmtp(Content):  # , Queue):
     def getKeys(self, config):
         SERVER = config.get(self.user, "server")
         USER = config.get(self.user, "user")
         PASSWORD = config.get(self.user, "token")
         PORT = config.get(self.user, "port")
 
-        return (SERVER, PORT, USER, PASSWORD,)
+        return (
+            SERVER,
+            PORT,
+            USER,
+            PASSWORD,
+        )
 
     def initApi(self, keys):
         self.fromaddr = self.user
@@ -35,14 +40,15 @@ class moduleSmtp(Content): #, Queue):
         self.port = keys[1]
         self.user = keys[2]
         self.password = keys[3]
-        self.to = ''
+        self.to = ""
 
         client = None
         try:
             import ssl
+
             context = ssl._create_unverified_context()
             client = smtplib.SMTP_SSL(self.server, self.port, context=context)
-            #client.starttls() #context=context)
+            # client.starttls() #context=context)
             logging.info("     User: self.user")
             client.login(self.user, self.password)
             logging.info("     Logging OK")
@@ -54,8 +60,8 @@ class moduleSmtp(Content): #, Queue):
 
     def _create_html_email(self, subject, link, body_content):
         """Creates an HTML email with a standard template."""
-        body_content_br = body_content.replace('\n','\n<br>')
-        return f'''
+        body_content_br = body_content.replace("\n", "\n<br>")
+        return f"""
         <html>
         <head>
             <style>
@@ -75,7 +81,7 @@ class moduleSmtp(Content): #, Queue):
             </div>
         </body>
         </html>
-        '''
+        """
 
     def publishApiPost(self, *args, **kwargs):
         comment = ""
@@ -84,11 +90,11 @@ class moduleSmtp(Content): #, Queue):
         if kwargs:
             more = kwargs
             # FIXME: We need to do something here
-            thePost = more.get('post', '')
-            api = more.get('api', '')
+            thePost = more.get("post", "")
+            api = more.get("api", "")
             post = api.getPostTitle(thePost)
             link = api.getPostLink(thePost)
-        res = 'Fail!'
+        res = "Fail!"
         if True:
             if self.to:
                 destaddr = self.to
@@ -96,7 +102,7 @@ class moduleSmtp(Content): #, Queue):
             else:
                 destaddr = self.user
                 toaddrs = self.user
-            if hasattr(self, 'fromaddr') and self.fromaddr:
+            if hasattr(self, "fromaddr") and self.fromaddr:
                 logging.info(f"{self.indent} 1")
                 fromaddr = self.fromaddr
             else:
@@ -104,7 +110,7 @@ class moduleSmtp(Content): #, Queue):
                 fromaddr = self.user
             theUrl = link
             if post:
-                subject = post.split('\n')[0]
+                subject = post.split("\n")[0]
             else:
                 if link:
                     subject = link
@@ -112,12 +118,12 @@ class moduleSmtp(Content): #, Queue):
                     subject = "No subject"
 
             msg = MIMEMultipart()
-            msg['From']    = fromaddr
-            msg['To']      = destaddr
-            msg['Date']    = time.asctime(time.localtime(time.time()))
-            msg['X-URL']   = theUrl
-            msg['X-print'] = theUrl
-            msg['Subject'] = subject
+            msg["From"] = fromaddr
+            msg["To"] = destaddr
+            msg["Date"] = time.asctime(time.localtime(time.time()))
+            msg["X-URL"] = theUrl
+            msg["X-print"] = theUrl
+            msg["Subject"] = subject
 
             # Construct the email body
             body_content = ""
@@ -129,11 +135,10 @@ class moduleSmtp(Content): #, Queue):
             htmlDoc = self._create_html_email(subject, link, body_content)
 
             if comment:
-                msgLog = (f"{self.indent} Doc: {htmlDoc}")
+                msgLog = f"{self.indent} Doc: {htmlDoc}"
                 logMsg(msgLog, 2, 0)
 
-
-            subtype = 'html'
+            subtype = "html"
             # if htmlDoc.startswith('<'):
             #     subtype = 'html'
             # else:
@@ -169,9 +174,8 @@ class moduleSmtp(Content): #, Queue):
             #     adj = MIMEText(htmlDoc, _subtype=subtype)
             #     msg.attach(adj)
 
-
             if not self.client:
-                smtpsrv  = 'localhost'
+                smtpsrv = "localhost"
                 server = smtplib.SMTP(smtpsrv)
                 server.connect(smtpsrv, 587)
                 server.starttls()
@@ -184,30 +188,30 @@ class moduleSmtp(Content): #, Queue):
                 if not (respN == 250):
                     logging.info(f"Noop: not")
                     import ssl
+
                     context = ssl.SSLContext(ssl.PROTOCOL_TLS)
                     server = smtplib.SMTP_SSL(self.server, self.port)
-                    #server.starttls(context=context)
+                    # server.starttls(context=context)
                     server.login(self.user, self.password)
 
-            msgLog = (f"From: {fromaddr} To:{toaddrs}")
+            msgLog = f"From: {fromaddr} To:{toaddrs}"
             logMsg(msgLog, 2, 0)
-            msgLog = (f"Msg: {msg.as_string()[:250]}")
+            msgLog = f"Msg: {msg.as_string()[:250]}"
             logMsg(msgLog, 2, 0)
 
             try:
                 res = server.sendmail(fromaddr, toaddrs, msg.as_string())
             except:
-                res = self.report(self.service,
-                                    f"{post} {link}", post, sys.exc_info())
+                res = self.report(self.service, f"{post} {link}", post, sys.exc_info())
 
             if not res:
                 res = "OK"
             # server.quit()
 
         else:
-            res = self.report(self.service, '', '', sys.exc_info())
+            res = self.report(self.service, "", "", sys.exc_info())
 
-        return(f"{res}")
+        return f"{res}"
 
     def getPostTitle(self, post):
         """
@@ -215,10 +219,10 @@ class moduleSmtp(Content): #, Queue):
         For SMTP, this would typically be the subject line
         """
         if isinstance(post, dict):
-            return post.get('subject', post.get('title', ''))
+            return post.get("subject", post.get("title", ""))
         elif isinstance(post, str):
             # If it's a string, use first line as title
-            lines = post.split('\n')
+            lines = post.split("\n")
             return lines[0] if lines else post[:50]
         return str(post)[:50]  # Fallback
 
@@ -227,15 +231,15 @@ class moduleSmtp(Content): #, Queue):
         Extract link from email post data
         """
         if isinstance(post, dict):
-            return post.get('url', post.get('link', ''))
-        return ''
+            return post.get("url", post.get("link", ""))
+        return ""
 
     def getPostContent(self, post):
         """
         Extract content from email post data
         """
         if isinstance(post, dict):
-            return post.get('content', post.get('body', ''))
+            return post.get("content", post.get("body", ""))
         elif isinstance(post, str):
             return post
         return str(post)
@@ -245,14 +249,14 @@ class moduleSmtp(Content): #, Queue):
         Get post ID for email (could be message ID)
         """
         if isinstance(post, dict):
-            return post.get('id', post.get('message_id', ''))
-        return ''
+            return post.get("id", post.get("message_id", ""))
+        return ""
 
     def getSiteTitle(self):
         """
         Get site title for SMTP service
         """
-        if hasattr(self, 'user') and self.user:
+        if hasattr(self, "user") and self.user:
             return f"SMTP ({self.user})"
         return "SMTP Service"
 
@@ -285,7 +289,7 @@ class moduleSmtp(Content): #, Queue):
         tester.add_test("HTML Email", self._test_html_email)
 
     def get_user_info(self, client):
-        if hasattr(self, 'user'):
+        if hasattr(self, "user"):
             return f"User: {self.user}"
         return "User: Unknown"
 
@@ -312,7 +316,7 @@ class moduleSmtp(Content): #, Queue):
         print("\n=== Testing HTML Email ===")
         title = "HTML Test Email"
         link = "https://example.com/html-test"
-        htmlContent = '''
+        htmlContent = """
         <html>
         <body>
             <h2>Test HTML Email</h2>
@@ -327,7 +331,7 @@ class moduleSmtp(Content): #, Queue):
             <p><em>Sent from moduleSmtp test</em></p>
         </body>
         </html>
-        '''
+        """
 
         print(f"Sending HTML email:")
         print(f"  Title: {title}")
@@ -337,13 +341,14 @@ class moduleSmtp(Content): #, Queue):
         result = api_src.publishPost(title, link, htmlContent)
         print(f"Result: {result}")
 
+
 def main():
     """
     Main function for testing moduleSmtp functionality using ModuleTester.
     """
-    logging.basicConfig(stream=sys.stdout,
-                        level=logging.INFO,
-                        format='%(asctime)s %(message)s')
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s"
+    )
 
     from socialModules.moduleTester import ModuleTester
 
@@ -352,5 +357,5 @@ def main():
     tester.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

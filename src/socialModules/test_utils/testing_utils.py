@@ -1,6 +1,7 @@
 # testing/testing_utils.py
 import os
 
+
 def test_connection(apiSrc, get_user_info_callback):
     """
     Tests the connection to the social media platform.
@@ -19,6 +20,7 @@ def test_connection(apiSrc, get_user_info_callback):
             print("✗ No client available")
     except Exception as e:
         print(f"✗ Connection failed: {e}")
+
 
 def test_posts_retrieval(apiSrc):
     """
@@ -52,6 +54,7 @@ def test_posts_retrieval(apiSrc):
     except Exception as e:
         print(f"Error retrieving posts: {e}")
 
+
 def test_favorites(apiSrc):
     """
     Tests retrieving favorites from the social media platform.
@@ -62,7 +65,7 @@ def test_favorites(apiSrc):
     print("\n=== Testing Favorites ===")
     try:
         # Set posts type to favorites
-        apiSrc.setPostsType('favs')
+        apiSrc.setPostsType("favs")
         apiSrc.setPosts()
         favs = apiSrc.getPosts()
 
@@ -86,6 +89,7 @@ def test_favorites(apiSrc):
     except Exception as e:
         print(f"Error retrieving favorites: {e}")
 
+
 def test_basic_post(apiSrc, get_post_id_callback):
     """
     Tests posting a basic post to the social media platform.
@@ -103,7 +107,7 @@ def test_basic_post(apiSrc, get_post_id_callback):
     print(f"  Link: {link}")
 
     try:
-        result = apiSrc.publishPost(title, link, '')
+        result = apiSrc.publishPost(title, link, "")
         print(f"Post result: {result}")
 
         if result and not str(result).startswith("Fail"):
@@ -112,11 +116,12 @@ def test_basic_post(apiSrc, get_post_id_callback):
                 print(f"Post ID: {post_id}")
 
                 delete_choice = input("Delete this post? (y/N): ").lower()
-                if delete_choice == 'y':
+                if delete_choice == "y":
                     delete_result = apiSrc.deleteApiPosts(post_id)
                     print(f"Delete result: {delete_result}")
     except Exception as e:
         print(f"Error posting: {e}")
+
 
 def test_image_post(apiSrc, get_post_id_callback):
     """
@@ -130,7 +135,7 @@ def test_image_post(apiSrc, get_post_id_callback):
     # Ask for image path
     image_path = input("Enter image path (or press Enter for default): ").strip()
     if not image_path:
-        image_path = '/tmp/test_image.png'
+        image_path = "/tmp/test_image.png"
 
     if not os.path.exists(image_path):
         print(f"Image not found: {image_path}")
@@ -155,11 +160,12 @@ def test_image_post(apiSrc, get_post_id_callback):
                 print(f"Post ID: {post_id}")
 
                 delete_choice = input("Delete this post? (y/N): ").lower()
-                if delete_choice == 'y':
+                if delete_choice == "y":
                     delete_result = apiSrc.deleteApiPosts(post_id)
                     print(f"Delete result: {delete_result}")
     except Exception as e:
         print(f"Error posting image: {e}")
+
 
 def test_cache_integration(apiSrc):
     """
@@ -179,11 +185,12 @@ def test_cache_integration(apiSrc):
 
     print(f"Posting to {apiSrc.get_name()} with auto-cache enabled...")
     try:
-        result = apiSrc.publishPost(title, link, '')
+        result = apiSrc.publishPost(title, link, "")
         print(f"Post result: {result}")
 
         # Check cache
         from socialModules.modulePublicationCache import PublicationCache
+
         cache = PublicationCache()
         pubs = cache.get_publications_by_service(apiSrc.get_name().lower())
         print(f"{apiSrc.get_name()} publications in cache: {len(pubs)}")
@@ -199,6 +206,7 @@ def test_cache_integration(apiSrc):
     except Exception as e:
         print(f"Error in cache integration test: {e}")
 
+
 def test_deletion(apiSrc):
     """
     Tests deleting a post from the social media platform.
@@ -213,7 +221,7 @@ def test_deletion(apiSrc):
         return
 
     confirm = input(f"Are you sure you want to delete post {post_id}? (y/N): ").lower()
-    if confirm != 'y':
+    if confirm != "y":
         print("Deletion cancelled")
         return
 
@@ -222,6 +230,7 @@ def test_deletion(apiSrc):
         print(f"Deletion result: {result}")
     except Exception as e:
         print(f"Error deleting post: {e}")
+
 
 def test_favorites_management(apiSrc):
     """
@@ -242,6 +251,7 @@ def test_favorites_management(apiSrc):
     except Exception as e:
         print(f"Error managing favorite: {e}")
 
+
 def test_cache_content(apiSrc):
     """
     Tests verifying the cache content for the social media platform.
@@ -252,9 +262,14 @@ def test_cache_content(apiSrc):
     print("\n=== Testing Cache Content ===")
     try:
         from socialModules.modulePublicationCache import PublicationCache
+
         cache = PublicationCache()
-        
-        service = input(f"Enter service to check (default: {apiSrc.get_name().lower()}): ").strip().lower()
+
+        service = (
+            input(f"Enter service to check (default: {apiSrc.get_name().lower()}): ")
+            .strip()
+            .lower()
+        )
         if not service:
             service = apiSrc.get_name().lower()
 

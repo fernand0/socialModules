@@ -14,6 +14,7 @@ import pycurl
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+
 # import textract
 from bs4 import BeautifulSoup, Tag
 from pdfrw import PdfReader
@@ -21,15 +22,15 @@ from pdfrw import PdfReader
 from socialModules.configMod import *
 from socialModules.moduleContent import *
 
+
 class DownloadError(Exception):
     """Custom exception for download failures."""
+
 
 # https://github.com/fernand0/scripts/blob/master/moduleCache.py
 
 
-
-class moduleHtml(Content): #, Queue):
-
+class moduleHtml(Content):  # , Queue):
     def initApi(self, keys):
         self.url = ""
         self.name = ""
@@ -70,7 +71,7 @@ class moduleHtml(Content): #, Queue):
                 total=2,  # Two attempts
                 backoff_factor=1,
                 status_forcelist=[429, 500, 502, 503, 504],
-                allowed_methods=["HEAD", "GET", "OPTIONS"]
+                allowed_methods=["HEAD", "GET", "OPTIONS"],
             )
             adapter = HTTPAdapter(max_retries=retry_strategy)
             http = requests.Session()
@@ -78,6 +79,7 @@ class moduleHtml(Content): #, Queue):
             http.mount("http://", adapter)
 
             from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
             requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
             response = http.get(url_to_download, verify=False, timeout=10)
@@ -85,12 +87,16 @@ class moduleHtml(Content): #, Queue):
 
         except requests.exceptions.RequestException as e:
             logMsg(f"Requests failed after 2 attempts: {e}", 2, 1)
-            response = None # Ensure response is None on failure
+            response = None  # Ensure response is None on failure
 
         # Third attempt with pycurl if requests failed
         if response is None or not response.ok:
             sleep_time = random.uniform(0, 2)
-            logMsg(f"Requests failed. Waiting for {sleep_time:.2f} seconds before trying with pycurl.", 1, 1)
+            logMsg(
+                f"Requests failed. Waiting for {sleep_time:.2f} seconds before trying with pycurl.",
+                1,
+                1,
+            )
             time.sleep(sleep_time)
 
             logMsg(f"Making a third attempt with pycurl.", 2, 1)
@@ -124,12 +130,13 @@ class moduleHtml(Content): #, Queue):
                 logMsg(f"An unexpected error occurred with pycurl: {e}", 3, 1)
                 response = None
 
-
         if response and response.ok:
             moreContent = self._handle_blogger_content(response, url_to_download)
             return response, moreContent
         else:
-            raise DownloadError(f"Failed to download {url_to_download} after 3 attempts.")
+            raise DownloadError(
+                f"Failed to download {url_to_download} after 3 attempts."
+            )
 
     def _handle_blogger_content(self, response, url_to_download):
         moreContent = ""
@@ -143,7 +150,7 @@ class moduleHtml(Content): #, Queue):
             blog = moduleRss.moduleRss()
             pos = theUrl2.find("/", 9)
             blog.setUrl(theUrl2[: pos + 1])
-            rssFeed = theUrl2[pos + 1:]
+            rssFeed = theUrl2[pos + 1 :]
             blog.setRssFeed(rssFeed)
             blog.setPosts()
             posPost = blog.getLinkPosition(url_to_download)
@@ -232,8 +239,8 @@ class moduleHtml(Content): #, Queue):
             ("👍", "(ok)"),
             ("🙀", "(oh)"),
             ("🚀", "(despegar)"),
-            ("\\n",""),
-            ("\\t",""),
+            ("\\n", ""),
+            ("\\t", ""),
         ]
 
         from readability.readability import Document
@@ -263,12 +270,12 @@ class moduleHtml(Content): #, Queue):
         return (myText, theTitle)
 
     def extractVideos(self, soup):
-        videos =  soup.find_all('video')
+        videos = soup.find_all("video")
         return videos
 
     def extractImages(self, soup):
         if not isinstance(soup, BeautifulSoup):
-            soup = BeautifulSoup(soup, 'lxml')
+            soup = BeautifulSoup(soup, "lxml")
         pageImages = soup.findAll("img")
         return pageImages
 
@@ -328,19 +335,10 @@ class moduleHtml(Content): #, Queue):
                 else:
                     continue
 
-            if (linksToAvoid == "") or (
-                not re.search(linksToAvoid, theLink)
-            ):
+            if (linksToAvoid == "") or (not re.search(linksToAvoid, theLink)):
                 if theLink:
                     link.append(" [" + str(j) + "]")
-                    linksTxt = (
-                        linksTxt
-                        + "["
-                        + str(j)
-                        + "] "
-                        + link.contents[0]
-                        + "\n"
-                    )
+                    linksTxt = linksTxt + "[" + str(j) + "] " + link.contents[0] + "\n"
                     linksTxt = linksTxt + "    " + theLink + "\n"
                     j = j + 1
 
@@ -381,7 +379,7 @@ class moduleHtml(Content): #, Queue):
             if firstLink[lenProt:pos] == theTitle[: pos - lenProt]:
                 # A way to identify retumblings. They have the name of the
                 # tumblr at the beggining of the anchor text
-                theTitle = theTitle[pos - lenProt + 1:]
+                theTitle = theTitle[pos - lenProt + 1 :]
 
         theSummary = soup.get_text()
         if self.getLinksToAvoid():
@@ -450,7 +448,7 @@ class moduleHtml(Content): #, Queue):
             " Safari/537.36"
         }
         logging.debug(f"url: {url}")
-        if ('http://' in url) or ('https://' in url):
+        if ("http://" in url) or ("https://" in url):
             # Some people writes bad URLs in email
             response = requests.get(url, headers=headers)
             if response.status_code != 200:
@@ -459,7 +457,6 @@ class moduleHtml(Content): #, Queue):
 
 
 if __name__ == "__main__":
-
     import moduleRss
 
     config = configparser.ConfigParser()
@@ -478,14 +475,13 @@ if __name__ == "__main__":
     testingX = True
     if testingX:
         import moduleHtml
+
         blog = moduleHtml.moduleHtml()
         url_to_download = input("X link: ")
         blog.setUrl(url_to_download)
         data = blog.downloadUrl(url_to_download)
         print(data)
         print(blog.extractLinks(data)[1])
-
-
 
     sys.exit()
 
@@ -536,13 +532,10 @@ if __name__ == "__main__":
         print(time.asctime(blog.datePost(5)))
         blog.obtainPostData(0)
         if blog.getUrl().find("ando") > 0:
-            blog.newPost(
-                "Prueba %s" % time.asctime(), "description %s" % "prueba"
-            )
+            blog.newPost("Prueba %s" % time.asctime(), "description %s" % "prueba")
             print(blog.selectPost())
 
     for blog in blogs:
-
         urlFile = open(
             DATADIR
             + "/"
@@ -551,9 +544,7 @@ if __name__ == "__main__":
             "r",
         )
         linkLast = urlFile.read().rstrip()  # Last published
-        print(
-            blog.getUrl() + blog.getRssFeed(), blog.getLinkPosition(linkLast)
-        )
+        print(blog.getUrl() + blog.getRssFeed(), blog.getLinkPosition(linkLast))
         print("description ->", blog.getPostsRss().entries[5]["description"])
         for post in posts:
             if "content" in post:

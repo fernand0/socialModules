@@ -94,63 +94,63 @@ class socialGoogle:
             msgLog = f"{self.indent} No creds"
             logMsg(msgLog, 2, 0)
         if creds and creds.expired and creds.refresh_token:
-                msgLog = (f"{self.indent} Needs to refresh token GMail"
-                          # f"Exp {creds.expired} - Ref {creds.refresh_token}"
-                          )
+            msgLog = (
+                f"{self.indent} Needs to refresh token GMail"
+                # f"Exp {creds.expired} - Ref {creds.refresh_token}"
+            )
+            logMsg(msgLog, 2, 0)
+            try:
+                creds.refresh(Request())
+            except:
+                msgLog = sys.exc_info()
                 logMsg(msgLog, 2, 0)
-                try:
-                    creds.refresh(Request())
-                except:
-                    msgLog = sys.exc_info()
-                    logMsg(msgLog, 2, 0)
-                    if os.path.exists(fileTokenStore):
-                        os.remove(fileTokenStore)
-                        print(f"Archivo '{fileTokenStore}' eliminado para forzar una nueva autenticación.")
-                    raise # Es importante que el programa salga o relance para que el usuario pueda re-autenticar
-        elif not creds:
-                # This needs to have a desktop application created in
-                # https://console.cloud.google.com/auth/clients
-                # and some test user, since we are not passing the
-                # verification process in Google.
-                # It only works in local, since it launches a brower
-
-                msgLog = f"{self.indent} Needs to re-authorize token {self.service}"
-                logMsg(msgLog, 2, 0)
-                fileCredStore = self.confName((self.server, self.nick))
-                msgLog = f"{self.indent}  fileCred: {fileCredStore}"
-                logMsg(msgLog, 2, 0)
-                # It's a json file
-                try:
-                    if not os.path.exists(fileCredStore):
-                        msgLog = (
-                            f"{self.indent}  fileCred: {fileCredStore} does not exist"
-                        )
-                        logMsg(msgLog, 2, 0)
-                    else:
-                        print(
-                            f"This won't work on remote, you need a local browser to pass the oauth process"
-                        )
-                        flow = InstalledAppFlow.from_client_secrets_file(
-                            fileCredStore, SCOPES, redirect_uri="http://localhost"
-                        )
-                        creds = flow.run_local_server(port=0)
-
-                        # Save the credentials for the next run
-                        with open(fileTokenStore, "wb") as token:
-                            msgLog = f"{self.indent}   Pickle: {fileTokenStore}"
-                            logMsg(msgLog, 2, 0)
-                            pickle.dump(creds, token)
-                except FileNotFoundError:
-                    print("noooo")
-                    print(fileCredStore)
-                    sys.exit()
-                except ValueError:
-                    res = self.report(
-                        "moduleGoogle", "Wrong data in file", "", sys.exc_info()
+                if os.path.exists(fileTokenStore):
+                    os.remove(fileTokenStore)
+                    print(
+                        f"Archivo '{fileTokenStore}' eliminado para forzar una nueva autenticación."
                     )
-                    creds.refresh(Request())
-                    # creds = 'Fail!'
+                raise  # Es importante que el programa salga o relance para que el usuario pueda re-autenticar
+        elif not creds:
+            # This needs to have a desktop application created in
+            # https://console.cloud.google.com/auth/clients
+            # and some test user, since we are not passing the
+            # verification process in Google.
+            # It only works in local, since it launches a brower
 
+            msgLog = f"{self.indent} Needs to re-authorize token {self.service}"
+            logMsg(msgLog, 2, 0)
+            fileCredStore = self.confName((self.server, self.nick))
+            msgLog = f"{self.indent}  fileCred: {fileCredStore}"
+            logMsg(msgLog, 2, 0)
+            # It's a json file
+            try:
+                if not os.path.exists(fileCredStore):
+                    msgLog = f"{self.indent}  fileCred: {fileCredStore} does not exist"
+                    logMsg(msgLog, 2, 0)
+                else:
+                    print(
+                        f"This won't work on remote, you need a local browser to pass the oauth process"
+                    )
+                    flow = InstalledAppFlow.from_client_secrets_file(
+                        fileCredStore, SCOPES, redirect_uri="http://localhost"
+                    )
+                    creds = flow.run_local_server(port=0)
+
+                    # Save the credentials for the next run
+                    with open(fileTokenStore, "wb") as token:
+                        msgLog = f"{self.indent}   Pickle: {fileTokenStore}"
+                        logMsg(msgLog, 2, 0)
+                        pickle.dump(creds, token)
+            except FileNotFoundError:
+                print("noooo")
+                print(fileCredStore)
+                sys.exit()
+            except ValueError:
+                res = self.report(
+                    "moduleGoogle", "Wrong data in file", "", sys.exc_info()
+                )
+                creds.refresh(Request())
+                # creds = 'Fail!'
 
         msgLog = f"{self.indent}  building service {creds} {type(creds)}"
         logMsg(msgLog, 2, 0)

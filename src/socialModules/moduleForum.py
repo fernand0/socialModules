@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-#from socialModules.moduleQueue import *
+# from socialModules.moduleQueue import *
 
 # This moule reads directly the HTML code
 #
@@ -23,8 +23,7 @@ from socialModules.moduleContent import *
 # idSeparator: # character used for the identification of a post
 
 
-class moduleForum(Content): #, Queue):
-
+class moduleForum(Content):  # , Queue):
     def setClient(self, forumData):
         logging.info(f"Ffffforum: {forumData}")
         self.selected = None
@@ -82,7 +81,7 @@ class moduleForum(Content): #, Queue):
             "Chrome/39.0.2171.95 Safari/537.36"
         }
 
-        headers.update({'referer': self.url})
+        headers.update({"referer": self.url})
 
         selector = self.selector[idSelector]
         response = requests.get(url, headers=headers)
@@ -99,7 +98,7 @@ class moduleForum(Content): #, Queue):
             links = None
         if not links:
             logging.debug(f"Soup 2: {soup}")
-            links = soup.find_all('a')
+            links = soup.find_all("a")
             for i, l in enumerate(links):
                 logging.debug(f"{i}) -> {l}")
 
@@ -113,17 +112,17 @@ class moduleForum(Content): #, Queue):
         url = self.url
         logging.debug(f"Url:  {url}")
         logging.debug(f"Data: {data}")
-        link = ''
+        link = ""
         if "index.php" in url:
             href = data.get("href")
             if href:
                 link = url[:-9] + href
         else:
-            if url[-1] != '/':
+            if url[-1] != "/":
                 link = urllib.parse.urljoin(url, data.get("href"))
             else:
                 link = urllib.parse.urljoin(url, data.get("href"))
-                #link = url + data.get("href")
+                # link = url + data.get("href")
         if link:
             logging.debug(f"Link: {link}")
         else:
@@ -138,27 +137,27 @@ class moduleForum(Content): #, Queue):
 
     def extractId(self, link):
         pos2 = 0
-        if hasattr(self, 'idWhere') and self.idWhere == '0':
+        if hasattr(self, "idWhere") and self.idWhere == "0":
             pos2 = link.find(self.idSeparator)
-            pos = link.rfind('/')
+            pos = link.rfind("/")
         else:
             pos = link.rfind(self.idSeparator)
         if not link[-1].isdigit() and (pos2 == 0):
             # idPost = int(link[pos + 1 : -1])
             idPost = link[pos + 1 : -1]
         else:
-            if pos2>0:
-                idPost = link[pos+1:pos2]
+            if pos2 > 0:
+                idPost = link[pos + 1 : pos2]
             else:
                 # idPost = int(link[pos + 1 :])
                 idPost = link[pos + 1 :]
         logging.debug(f"Link: {link} idPost: {idPost}")
-        if idPost.find('http')>=0:
+        if idPost.find("http") >= 0:
             idPost = None
-        elif idPost.find('mailto')>=0:
+        elif idPost.find("mailto") >= 0:
             idPost = None
-        elif idPost.find('#')>=0:
-            idPost = None # int(idPost.split('#')[0])
+        elif idPost.find("#") >= 0:
+            idPost = None  # int(idPost.split('#')[0])
         else:
             try:
                 idPost = int(idPost)
@@ -166,11 +165,11 @@ class moduleForum(Content): #, Queue):
                 try:
                     idPost = int(idPost[1:])
                 except:
-                    ids = [int(s) for s in idPost.split('/') if s.isdigit()]
+                    ids = [int(s) for s in idPost.split("/") if s.isdigit()]
                     if ids:
                         idPost = ids[0]
                     else:
-                        ids = [int(s) for s in idPost.split('-') if s.isdigit()]
+                        ids = [int(s) for s in idPost.split("-") if s.isdigit()]
                         if ids:
                             idPost = ids[0]
                         else:
@@ -184,7 +183,7 @@ class moduleForum(Content): #, Queue):
 
         listId = []
         posts = {}
-        if not url.startswith('rss'):
+        if not url.startswith("rss"):
             try:
                 forums = self.getLinks(url, 0)
             except:
@@ -206,8 +205,7 @@ class moduleForum(Content): #, Queue):
                     logging.debug("Forum in html: %s" % forum)
                 text = forum.text
                 logging.debug(f"Text: {text}")
-                if ((text.lower() in self.selected)
-                        or (text in self.selected)):
+                if (text.lower() in self.selected) or (text in self.selected):
                     logging.debug(f"Forum: {forum}")
                     link = self.extractLink(forum)
                     logging.info(f"  - {text} {link}")
@@ -217,7 +215,7 @@ class moduleForum(Content): #, Queue):
                         linkF = self.extractLink(post)
                         logging.info(f"linkF {linkF}")
                         if linkF:
-                            if hasattr(self, 'selectorlink'):
+                            if hasattr(self, "selectorlink"):
                                 logging.info(f"Selectorrrr: {self.selectorlink}")
                                 if not self.selectorlink in linkF:
                                     linkF = None
@@ -236,10 +234,11 @@ class moduleForum(Content): #, Queue):
 
                     time.sleep(1)
         else:
-            url = self.url.replace('rss', 'https')
-            src = ('rss', 'set', url, 'posts')
+            url = self.url.replace("rss", "https")
+            src = ("rss", "set", url, "posts")
             more = []
             import socialModules.moduleRules
+
             rules = socialModules.moduleRules.moduleRules()
             apiAux = rules.readConfigSrc("", src, more)
             apiAux.setPosts()
@@ -288,21 +287,19 @@ class moduleForum(Content): #, Queue):
 
 
 def main():
-
     logging.basicConfig(
-        stream=sys.stdout, level=logging.DEBUG,
-        format="%(asctime)s %(message)s"
+        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
     import socialModules.moduleRules
+
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
 
     apiSrc = rules.selectRuleInteractive()
 
-    #return
+    # return
 
-
-    #forums = [
+    # forums = [
     #     #"http://foro.infojardin.com/",
     #     'https://cactuspro.com/forum/',
     #     #'https://garden.org/forums/'

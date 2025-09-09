@@ -49,6 +49,7 @@ def parse_arguments():
 
     return parser.parse_args()
 
+
 def safe_get(data, keys, default=""):
     """Safely retrieves nested values from a dictionary."""
     try:
@@ -61,6 +62,7 @@ def safe_get(data, keys, default=""):
 
 def file_name(now: datetime.datetime) -> str:
     return f"{now.year}-{now.month:02d}-{now.day:02d}"
+
 
 def get_cached_data(filepath: str) -> dict | None:
     """Retrieves data from a cached file."""
@@ -99,7 +101,7 @@ def get_data(now: datetime.datetime) -> dict | None:
     """Retrieves PVPC data, either from cache or API."""
     filepath = os.path.join(CACHE_DIR, f"{file_name(now)}_data.json")
     data = get_cached_data(filepath)
-    if not data: 
+    if not data:
         data = fetch_api_data(API_URL)
         if data:
             save_data_to_cache(filepath, data)
@@ -109,14 +111,14 @@ def get_data(now: datetime.datetime) -> dict | None:
 
 def get_price_and_next(data: dict, now: datetime.datetime) -> tuple[float, float]:
     """Retrieves the current and next hour's prices."""
-    price = safe_get(data, ['PVPC', now.hour,'PCB'])
+    price = safe_get(data, ["PVPC", now.hour, "PCB"])
     current_price = float(price.replace(",", ".")) / 1000
     next_now = now + datetime.timedelta(hours=1)
     if next_now.day == now.day:
         next_data = data
     else:
         next_data = get_data(next_now)
-    price = safe_get(next_data, ['PVPC',next_now.hour,'PCB'])
+    price = safe_get(next_data, ["PVPC", next_now.hour, "PCB"])
     next_price = float(price.replace(",", ".")) / 1000
 
     return current_price, next_price
@@ -143,11 +145,13 @@ def convert_time_to_datetime(time_str: str) -> datetime.datetime:
     return datetime.datetime.strptime(f"{now} {time_str}", "%Y-%m-%d %H:%M")
 
 
-def get_time_frame(now: datetime.datetime) -> tuple[datetime.datetime, datetime.datetime, list[str], str]:
+def get_time_frame(
+    now: datetime.datetime,
+) -> tuple[datetime.datetime, datetime.datetime, list[str], str]:
     """Determines the current time frame."""
     weekday = now.weekday()
-    start = ''
-    end = ''
+    start = ""
+    end = ""
     if weekday > 4:
         # Weekend
         frame = ["00:00", "24:00"]
@@ -168,7 +172,9 @@ def get_time_frame(now: datetime.datetime) -> tuple[datetime.datetime, datetime.
     )
 
 
-def find_min_max_prices(data: dict, frame: list[str]) -> tuple[tuple[int, float], tuple[int, float]]:
+def find_min_max_prices(
+    data: dict, frame: list[str]
+) -> tuple[tuple[int, float], tuple[int, float]]:
     """Finds the min and max prices within a given time range."""
     start_hour = int(frame[0].split(":")[0])
     end_hour = int(frame[1].split(":")[0]) if frame[1] != "00:00" else 24
@@ -178,12 +184,12 @@ def find_min_max_prices(data: dict, frame: list[str]) -> tuple[tuple[int, float]
     ]
     min_price, max_price = min(prices), max(prices)
     min_index, max_index = prices.index(min_price), prices.index(max_price)
-    return ((start_hour + min_index, min_price), 
-            (start_hour + max_index, max_price)
-            )
+    return ((start_hour + min_index, min_price), (start_hour + max_index, max_price))
 
 
-def generate_message(now: datetime.datetime, data: dict, time_frame_info: tuple, min_max_prices: tuple) -> str:
+def generate_message(
+    now: datetime.datetime, data: dict, time_frame_info: tuple, min_max_prices: tuple
+) -> str:
     """Generates the message to be published."""
     start, end, frame, frame_name = time_frame_info
     current_price, next_price = get_price_and_next(data, now)
@@ -191,29 +197,36 @@ def generate_message(now: datetime.datetime, data: dict, time_frame_info: tuple,
     range_msg = (
         f"(entre las {frame[0]} y las {frame[1]})"
         if frame_name != "valle"
-        else "(entre las 00:00 y las 8:00)" if now.weekday() <= 4 
+        else "(entre las 00:00 y las 8:00)"
+        if now.weekday() <= 4
         else "(todo el día)"
     )
-    message = (f"{BUTTON_SYMBOLS[frame_name]} "
-               f"{'Empieza' if now.hour == start.hour else 'Estamos en'} "
-               f"periodo {frame_name} {range_msg}. Precios PVPC\n"
-               )
-    message += (f"En esta hora: {current_price:.3f}\n"
-                f"En la hora siguiente: {next_price:.3f}{price_trend}\n"
-                )
+    message = (
+        f"{BUTTON_SYMBOLS[frame_name]} "
+        f"{'Empieza' if now.hour == start.hour else 'Estamos en'} "
+        f"periodo {frame_name} {range_msg}. Precios PVPC\n"
+    )
+    message += (
+        f"En esta hora: {current_price:.3f}\n"
+        f"En la hora siguiente: {next_price:.3f}{price_trend}\n"
+    )
     if (start.hour == now.hour) and min_max_prices:
         min_hour, min_price = min_max_prices[0]
         max_hour, max_price = min_max_prices[1]
-        message += (f"Mín: {min_price:.3f}, entre las {min_hour}:00 "
-                    f"y las {min_hour + 1}:00 (hora más económica)\n"
-                    )
-        message += (f"Máx: {max_price:.3f}, entre las {max_hour}:00 "
-                    f"y las {max_hour + 1}:00 (hora más cara)"
-                    )
+        message += (
+            f"Mín: {min_price:.3f}, entre las {min_hour}:00 "
+            f"y las {min_hour + 1}:00 (hora más económica)\n"
+        )
+        message += (
+            f"Máx: {max_price:.3f}, entre las {max_hour}:00 "
+            f"y las {max_hour + 1}:00 (hora más cara)"
+        )
     return message
 
 
-def generate_table(values: list[float], min_day: tuple[int, float], max_day: tuple[int, float]) -> str:
+def generate_table(
+    values: list[float], min_day: tuple[int, float], max_day: tuple[int, float]
+) -> str:
     """Generates a table string from price values."""
     table = ""
     for i, price in enumerate(values):
@@ -235,7 +248,12 @@ def generate_table(values: list[float], min_day: tuple[int, float], max_day: tup
     return table + "\n"
 
 
-def generate_chart_js(values: list[float], min_day: tuple[int, float], max_day: tuple[int, float], now_next: str) -> str:
+def generate_chart_js(
+    values: list[float],
+    min_day: tuple[int, float],
+    max_day: tuple[int, float],
+    now_next: str,
+) -> str:
     """Generates JavaScript code for a Chart.js chart."""
     js = f"""
         import Chart from 'chart.js/auto';
@@ -301,7 +319,9 @@ def generate_plotly_graph(prices: list[float], now_next: datetime.datetime) -> N
         f.write(fig.to_html(include_plotlyjs="cdn", full_html=False))
 
 
-def generate_matplotlib_graph(values: list[float], now_next: datetime.datetime) -> tuple[str, tuple[int, float], tuple[int, float]]:
+def generate_matplotlib_graph(
+    values: list[float], now_next: datetime.datetime
+) -> tuple[str, tuple[int, float], tuple[int, float]]:
     """Generates and saves a Matplotlib graph to PNG and SVG."""
     max_price, min_price = max(values), min(values)
     max_index, min_index = values.index(max_price), values.index(min_price)
@@ -341,15 +361,12 @@ def generar_resumen_diario(now, destinations, rules, message):
     next_day = now + datetime.timedelta(days=1)
     next_day_data = get_data(next_day)
     prices = [
-        float(val["PCB"].replace(",", ".")) / 1000
-        for val in next_day_data["PVPC"]
+        float(val["PCB"].replace(",", ".")) / 1000 for val in next_day_data["PVPC"]
     ]
     png_path, min_day, max_day = generate_matplotlib_graph(prices, next_day)
     generate_plotly_graph(prices, next_day)
     table = generate_table(prices, min_day, max_day)
-    js_code = generate_chart_js(
-        prices, min_day, max_day, str(next_day).split(" ")[0]
-    )
+    js_code = generate_chart_js(prices, min_day, max_day, str(next_day).split(" ")[0])
     with open(f"/tmp/kk.js", "w") as f:
         f.write(js_code)
 
@@ -367,13 +384,11 @@ def generar_resumen_diario(now, destinations, rules, message):
         "categories: jekyll update\n"
         "---\n\n"
         f"{alt_text}\n\n"
-        "# f\"\\{image}\"\n\n"
+        '# f"\\{image}"\n\n'
         f"{graph_html}\n\n"
         f"{table}"
     )
-    with open(
-        f"{CACHE_DIR}/{file_name(now)}-post.md", "w"
-    ) as f:
+    with open(f"{CACHE_DIR}/{file_name(now)}-post.md", "w") as f:
         f.write(markdown_content)
 
     for destination, account in destinations.items():
@@ -401,6 +416,7 @@ def generar_resumen_diario(now, destinations, rules, message):
 
             result = api.publishPost(message, "", "")
             logging.info(f"Published to {destination}: {result}")
+
 
 def publicar_mensaje_horario(destinations, message, rules):
     for destination, account in destinations.items():

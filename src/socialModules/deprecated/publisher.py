@@ -3,10 +3,7 @@ from configMod import *
 
 
 class srcDst:
-
-
     def readArgs(self):
-
         import argparse
 
         parser = argparse.ArgumentParser(
@@ -16,9 +13,8 @@ class srcDst:
             "--timeSlots",
             "-t",
             default=50,  # 50 minutes
-            help=("How many time slots we will have for publishing "
-                 f"(in minutes)"),
-            )
+            help=("How many time slots we will have for publishing " f"(in minutes)"),
+        )
         parser.add_argument(
             "checkBlog",
             default="",
@@ -45,8 +41,8 @@ class srcDst:
 
         return args
 
-def main():
 
+def main():
     logging.basicConfig(
         filename=LOGDIR + "/rssSocial.log",
         level=logging.INFO,
@@ -66,5 +62,3 @@ def main():
     rules.executeRules(args)
 
     return
-
-

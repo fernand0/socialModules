@@ -14,26 +14,23 @@ from socialModules.moduleContent import *
 # pip install Mastodon.py
 
 
-
-class moduleMastodon(Content): #, Queue):
-
+class moduleMastodon(Content):  # , Queue):
     def getKeys(self, config):
-        #if self.user.startswith('@'):
+        # if self.user.startswith('@'):
         #    self.user = self.user[1:]
 
-        access_token = config[self.user]['access_token']
-        return ((access_token, ))
+        access_token = config[self.user]["access_token"]
+        return (access_token,)
 
     def initApi(self, keys):
-        pos = self.user.find('@',1) # The first character can be @
+        pos = self.user.find("@", 1)  # The first character can be @
         if pos > 0:
             self.base_url = f"https://{self.user[pos:]}"
-            #self.user = self.user[:pos]
+            # self.user = self.user[:pos]
         else:
-            self.base_url = 'https://mastodon.social'
+            self.base_url = "https://mastodon.social"
 
-        client = mastodon.Mastodon(access_token=keys[0],
-                                   api_base_url=self.base_url)
+        client = mastodon.Mastodon(access_token=keys[0], api_base_url=self.base_url)
         return client
 
     def setApiPosts(self):
@@ -55,7 +52,7 @@ class moduleMastodon(Content): #, Queue):
         return posts
 
     def processReply(self, reply):
-        res = ''
+        res = ""
         if reply:
             res = f"{self.getAttribute(reply, 'uri')}"
         return res
@@ -64,48 +61,48 @@ class moduleMastodon(Content): #, Queue):
         post, image = args
         more = kwargs
 
-        res = 'Fail!'
+        res = "Fail!"
         try:
             logging.info(f"{self.indent} First, the image")
             res = self.getClient().media_post(image, "image/png")
             self.lastRes = res
             logging.info(f"{self.indent} res {res}")
             logging.info(f"{self.indent} Now the post")
-            res = self.getClient().status_post(post, media_ids = res['id'])
+            res = self.getClient().status_post(post, media_ids=res["id"])
             self.lastRes = res
         except:
-            res = self.getClient().status_post(post+" "+link,
-                    visibility='private')
+            res = self.getClient().status_post(post + " " + link, visibility="private")
         print(f"res: {res}")
         return res
 
     def publishApiPost(self, *args, **kwargs):
-        title = ''
+        title = ""
         if args and len(args) == 3:
             # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
-        comment = ''
+        comment = ""
         if kwargs:
             # logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
-            post = more.get('post', '')
-            api = more.get('api', '')
+            post = more.get("post", "")
+            api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
 
         post = self.addComment(title, comment)
 
-        res = 'Fail!'
+        res = "Fail!"
         try:
-            res = self.getClient().toot(post+" "+link)
+            res = self.getClient().toot(post + " " + link)
         except mastodon.errors.MastodonServiceUnavailableError:
-            res = self.report(self.getService(), kwargs, 'Not available',
-                              sys.exc_info())
+            res = self.report(
+                self.getService(), kwargs, "Not available", sys.exc_info()
+            )
             res = f"Fail! {res}"
         except:
-            res = self.report(self.getService(), kwargs, '', sys.exc_info())
+            res = self.report(self.getService(), kwargs, "", sys.exc_info())
             res = f"Fail! {res}"
-# else:
+        # else:
         #     res = self.getClient().status_post(post+" "+link,
         #             visibility='private')
         #     # 'direct' 'private' 'unlisted' 'public'
@@ -117,63 +114,63 @@ class moduleMastodon(Content): #, Queue):
         try:
             result = self.getClient().status_delete(idPost)
         except:
-            result = self.report(self.service, '', '', sys.exc_info())
+            result = self.report(self.service, "", "", sys.exc_info())
         logging.info(f"Res: {result}")
-        return(result)
+        return result
 
     def deleteApiFavs(self, idPost):
         logging.info("Deleting: {}".format(str(idPost)))
         try:
             result = self.client.status_unfavourite(idPost)
         except:
-            result = self.report(self.service, '', '', sys.exc_info())
+            result = self.report(self.service, "", "", sys.exc_info())
         logging.info(f"Res: {result}")
-        return(result)
+        return result
 
     def getPostTime(self, post):
         time = None
         if post:
-            time = post.get('created_at', None)
+            time = post.get("created_at", None)
         return time
 
     def getPostId(self, post):
         if isinstance(post, str):
             idPost = post
         else:
-            idPost = self.getAttribute(post, 'id')
+            idPost = self.getAttribute(post, "id")
         return idPost
 
     def getUrlId(self, post):
-        return (post.split('/')[-1])
+        return post.split("/")[-1]
 
     def getSiteTitle(self):
-        title = ''
+        title = ""
         if self.user:
             title = f"{self.user}'s {self.service}"
         return title
 
     def getPostTitle(self, post):
-        result = ''
+        result = ""
         # import pprint
         # print(f"post: {post}")
         # pprint.pprint(post)
-        card = post.get('card', '')
+        card = post.get("card", "")
         if card:
             result = f"{card.get('title')} {card.get('url')}"
 
         if not result:
-            result = post.get('content', '')
+            result = post.get("content", "")
         if not result:
-            result = post.get('text', '')
+            result = post.get("text", "")
         # soup = BeautifulSoup(result, 'lxml')
-        if result.startswith('<'):
+        if result.startswith("<"):
             result = result[3:]
-        if result.endswith('>'):
+        if result.endswith(">"):
             result = result[:-4]
         # print(f"RRRRResult: {result}")
-        pos = result.find('<')
-        posH = result.find('http')
-        posF = result.find('"',posH+1)
+        pos = result.find("<")
+        posH = result.find("http")
+        posF = result.find('"', posH + 1)
         result = f"{result[:pos]} {result[posH:posF]}"
 
         # if 'card' in post and post['card'] and 'title' in post['card']:
@@ -185,10 +182,10 @@ class moduleMastodon(Content): #, Queue):
         return result
 
     def getPostUrl(self, post):
-        return self.getAttribute(post, 'url')
+        return self.getAttribute(post, "url")
 
     def getPostLink(self, post):
-        if self.getPostsType() == 'favs':
+        if self.getPostsType() == "favs":
             content, link = self.extractPostLinks(post)
         else:
             link = self.getPostUrl(post)
@@ -198,22 +195,22 @@ class moduleMastodon(Content): #, Queue):
         return (self.getPostContent(post), self.getPostContentLink(post))
 
     def getPostContent(self, post):
-        result = ''
-        if post and 'content' in post:
-            result = self.getAttribute(post, 'content')
+        result = ""
+        if post and "content" in post:
+            result = self.getAttribute(post, "content")
         return result
 
     def getPostContentLink(self, post):
-        link = ''
-        if ('card' in post) and post['card']:
-            link = self.getAttribute(post['card'], 'url')
+        link = ""
+        if ("card" in post) and post["card"]:
+            link = self.getAttribute(post["card"], "url")
         else:
-            soup = BeautifulSoup(post['content'], 'lxml')
+            soup = BeautifulSoup(post["content"], "lxml")
             link = soup.a
             if link:
-                link = link['href']
+                link = link["href"]
             else:
-                link = self.getAttribute(post, 'uri')
+                link = self.getAttribute(post, "uri")
         return link
 
     def search(self, text):
@@ -236,18 +233,20 @@ class moduleMastodon(Content): #, Queue):
         return f"{me.get('display_name', 'Unknown')} (@{me.get('username', 'unknown')})"
 
     def get_post_id_from_result(self, result):
-        return self.getUrlId(str(result)) if hasattr(mastodon, 'getUrlId') else None
+        return self.getUrlId(str(result)) if hasattr(mastodon, "getUrlId") else None
+
 
 def main():
-    logging.basicConfig(stream=sys.stdout,
-                        level=logging.DEBUG,
-                        format='%(asctime)s %(message)s')
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
+    )
 
     from socialModules.moduleTester import ModuleTester
-    
+
     mastodon_module = moduleMastodon()
     tester = ModuleTester(mastodon_module)
     tester.run()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

@@ -21,7 +21,6 @@ from socialModules.configMod import DATADIR
 
 
 class PublicationCache:
-
     def __init__(self, cache_file=None, timeout=10):
         """
         Initialize the publication cache
@@ -46,7 +45,7 @@ class PublicationCache:
         """Load cache from file"""
         if os.path.exists(self.cache_file):
             try:
-                with open(self.cache_file, 'r', encoding='utf-8') as f:
+                with open(self.cache_file, "r", encoding="utf-8") as f:
                     return json.load(f)
             except (json.JSONDecodeError, IOError) as e:
                 logging.warning(f"Error loading cache: {e}. Starting empty cache.")
@@ -59,15 +58,23 @@ class PublicationCache:
             # Create directory if it doesn't exist
             os.makedirs(os.path.dirname(self.cache_file), exist_ok=True)
 
-            with open(self.cache_file, 'w', encoding='utf-8') as f:
+            with open(self.cache_file, "w", encoding="utf-8") as f:
                 json.dump(self.publications, f, indent=2, ensure_ascii=False)
             return True
         except IOError as e:
             logging.error(f"Error saving cache: {e}")
             return False
 
-    def add_publication(self, title, original_link, service, source_service=None, response_link=None,
-                       publication_date=None, user=None):
+    def add_publication(
+        self,
+        title,
+        original_link,
+        service,
+        source_service=None,
+        response_link=None,
+        publication_date=None,
+        user=None,
+    ):
         """
         Add a new publication to the cache in a thread-safe manner.
 
@@ -91,20 +98,22 @@ class PublicationCache:
                 if publication_date is None:
                     publication_date = datetime.now().isoformat()
 
-                logging.info(f"Adding publication with title: {title}, service: {service}, user: {user}")
+                logging.info(
+                    f"Adding publication with title: {title}, service: {service}, user: {user}"
+                )
 
                 # Generate unique ID based on timestamp and service
                 pub_id = f"{service}_{int(datetime.now().timestamp())}"
 
                 publication = {
-                    'id': pub_id,
-                    'title': title,
-                    'original_link': original_link,
-                    'source_service': source_service,
-                    'service': service,
-                    'user': user,
-                    'response_link': response_link,
-                    'publication_date': publication_date
+                    "id": pub_id,
+                    "title": title,
+                    "original_link": original_link,
+                    "source_service": source_service,
+                    "service": service,
+                    "user": user,
+                    "response_link": response_link,
+                    "publication_date": publication_date,
                 }
 
                 logging.debug(f"Publication data: {publication}")
@@ -118,7 +127,9 @@ class PublicationCache:
                     logging.error(f"Error saving publication: {title}")
                     return None
         except Timeout:
-            logging.error("Could not acquire lock to add publication. Another process may be holding it.")
+            logging.error(
+                "Could not acquire lock to add publication. Another process may be holding it."
+            )
             return None
 
     def update_response_link(self, pub_id, response_link):
@@ -136,7 +147,7 @@ class PublicationCache:
             with self.lock:
                 self.publications = self._load_cache()
                 if pub_id in self.publications:
-                    self.publications[pub_id]['response_link'] = response_link
+                    self.publications[pub_id]["response_link"] = response_link
                     if self._save_cache():
                         logging.info(f"Response link updated for {pub_id}")
                         return True
@@ -169,7 +180,7 @@ class PublicationCache:
         Returns:
             list: List of publications from the service
         """
-        return [pub for pub in self.publications.values() if pub['service'] == service]
+        return [pub for pub in self.publications.values() if pub["service"] == service]
 
     def get_publications_by_original_link(self, original_link):
         """
@@ -181,10 +192,13 @@ class PublicationCache:
         Returns:
             list: List of publications with that original link
         """
-        return [pub for pub in self.publications.values()
-                if pub['original_link'] == original_link]
+        return [
+            pub
+            for pub in self.publications.values()
+            if pub["original_link"] == original_link
+        ]
 
-    def search_publications(self, query, field='title'):
+    def search_publications(self, query, field="title"):
         """
         Search publications by text in a specific field
 
@@ -229,7 +243,7 @@ class PublicationCache:
             logging.error("Could not acquire lock to delete publication.")
             return False
 
-    def get_all_publications(self, sort_by='publication_date', reverse=True):
+    def get_all_publications(self, sort_by="publication_date", reverse=True):
         """
         Get all publications sorted
 
@@ -243,7 +257,7 @@ class PublicationCache:
         publications = list(self.publications.values())
 
         try:
-            publications.sort(key=lambda x: x.get(sort_by, ''), reverse=reverse)
+            publications.sort(key=lambda x: x.get(sort_by, ""), reverse=reverse)
         except (TypeError, KeyError):
             logging.warning(f"Could not sort by {sort_by}")
 
@@ -259,20 +273,20 @@ class PublicationCache:
         stats = {}
 
         for pub in self.publications.values():
-            service = pub['service']
+            service = pub["service"]
             if service not in stats:
                 stats[service] = {
-                    'total': 0,
-                    'with_response_link': 0,
-                    'without_response_link': 0
+                    "total": 0,
+                    "with_response_link": 0,
+                    "without_response_link": 0,
                 }
 
-            stats[service]['total'] += 1
+            stats[service]["total"] += 1
 
-            if pub.get('response_link'):
-                stats[service]['with_response_link'] += 1
+            if pub.get("response_link"):
+                stats[service]["with_response_link"] += 1
             else:
-                stats[service]['without_response_link'] += 1
+                stats[service]["without_response_link"] += 1
 
         return stats
 
@@ -292,14 +306,22 @@ class PublicationCache:
             filename = os.path.join(DATADIR, "publications_export.csv")
 
         try:
-            with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
-                fieldnames = ['id', 'title', 'original_link', 'source_service', 'service', 'user',
-                             'response_link', 'publication_date']
+            with open(filename, "w", newline="", encoding="utf-8") as csvfile:
+                fieldnames = [
+                    "id",
+                    "title",
+                    "original_link",
+                    "source_service",
+                    "service",
+                    "user",
+                    "response_link",
+                    "publication_date",
+                ]
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
                 writer.writeheader()
                 for pub in self.publications.values():
-                    row = {field: pub.get(field, '') for field in fieldnames}
+                    row = {field: pub.get(field, "") for field in fieldnames}
                     writer.writerow(row)
 
             logging.info(f"Publications exported to {filename}")
@@ -351,7 +373,9 @@ class PublicationCache:
                 for service, data in stats.items():
                     print(f"  {service}: {data['total']} publications")
         else:
-            print("Cache file does not exist yet (will be created on first publication)")
+            print(
+                "Cache file does not exist yet (will be created on first publication)"
+            )
 
         print()
 
@@ -385,41 +409,40 @@ class PublicationCache:
             return False
 
     def restore(self, backup_file):
-         """Restore cache from a backup file in a thread-safe manner."""
+        """Restore cache from a backup file in a thread-safe manner."""
 
-         print(f"=== Restore Cache from {backup_file} ===\\n")
+        print(f"=== Restore Cache from {backup_file} ===\\n")
 
-         if not os.path.exists(backup_file):
-             print(f"Backup file not found: {backup_file}")
-             return False
+        if not os.path.exists(backup_file):
+            print(f"Backup file not found: {backup_file}")
+            return False
 
-         cache_file = self.cache_file
+        cache_file = self.cache_file
 
-         try:
-             with self.lock:
-                 # Create backup of current cache if it exists
-                 if os.path.exists(cache_file):
-                     current_backup = f"{cache_file}.before_restore_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-                     shutil.copy2(cache_file, current_backup)
-                     print(f"Current cache backed up to: {current_backup}")
+        try:
+            with self.lock:
+                # Create backup of current cache if it exists
+                if os.path.exists(cache_file):
+                    current_backup = f"{cache_file}.before_restore_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                    shutil.copy2(cache_file, current_backup)
+                    print(f"Current cache backed up to: {current_backup}")
 
-                 # Restore from backup
-                 shutil.copy2(backup_file, cache_file)
-                 print(f"✓ Cache restored from: {backup_file}")
+                # Restore from backup
+                shutil.copy2(backup_file, cache_file)
+                print(f"✓ Cache restored from: {backup_file}")
 
-                 # Verify restoration
-                 self.publications = self._load_cache()
-                 publications = self.get_all_publications()
-                 print(f"  Restored {len(publications)} publications")
+                # Verify restoration
+                self.publications = self._load_cache()
+                publications = self.get_all_publications()
+                print(f"  Restored {len(publications)} publications")
 
-                 return True
-         except Timeout:
-             logging.error("Could not acquire lock to restore the cache.")
-             return False
-         except Exception as e:
-             print(f"✗ Restore failed: {e}")
-             return False
-
+                return True
+        except Timeout:
+            logging.error("Could not acquire lock to restore the cache.")
+            return False
+        except Exception as e:
+            print(f"✗ Restore failed: {e}")
+            return False
 
     def export_formats(self):
         """Export cache to different formats"""
@@ -442,7 +465,7 @@ class PublicationCache:
         # Export to JSON (pretty formatted)
         json_file = f"publications_export_{timestamp}.json"
         try:
-            with open(json_file, 'w', encoding='utf-8') as f:
+            with open(json_file, "w", encoding="utf-8") as f:
                 json.dump(publications, f, indent=2, ensure_ascii=False, default=str)
             print(f"✓ Exported to JSON: {json_file}")
         except Exception as e:
@@ -451,7 +474,7 @@ class PublicationCache:
         # Export summary
         summary_file = f"publications_summary_{timestamp}.txt"
         try:
-            with open(summary_file, 'w', encoding='utf-8') as f:
+            with open(summary_file, "w", encoding="utf-8") as f:
                 f.write("PUBLICATION CACHE SUMMARY\n")
                 f.write("=" * 50 + "\n\n")
 
@@ -465,8 +488,14 @@ class PublicationCache:
 
                 f.write("\nRecent publications:\n")
                 for pub in publications[-10:]:
-                    source_info = f"{pub.get('source_service', '?')} -> " if pub.get('source_service') else ""
-                    f.write(f"  {pub['publication_date']}: {pub['title']} ({source_info}{pub['service']})\n")
+                    source_info = (
+                        f"{pub.get('source_service', '?')} -> "
+                        if pub.get("source_service")
+                        else ""
+                    )
+                    f.write(
+                        f"  {pub['publication_date']}: {pub['title']} ({source_info}{pub['service']})\n"
+                    )
 
             print(f"✓ Exported summary: {summary_file}")
 
@@ -492,7 +521,11 @@ class PublicationCache:
                 # Remove entries without required fields
                 valid_publications = []
                 for pub in publications:
-                    if pub.get('title') and pub.get('original_link') and pub.get('service'):
+                    if (
+                        pub.get("title")
+                        and pub.get("original_link")
+                        and pub.get("service")
+                    ):
                         valid_publications.append(pub)
                     else:
                         cleaned_count += 1
@@ -500,7 +533,7 @@ class PublicationCache:
 
                 if cleaned_count > 0:
                     # Update cache with cleaned data
-                    self.publications = {pub['id']: pub for pub in valid_publications}
+                    self.publications = {pub["id"]: pub for pub in valid_publications}
                     self._save_cache()
 
                     print(f"✓ Cleaned {cleaned_count} invalid entries")
@@ -531,13 +564,19 @@ class PublicationCache:
         stats = self.get_stats()
         print("\nBy service:")
         for service, data in stats.items():
-            success_rate = (data['with_response_link'] / data['total'] * 100) if data['total'] > 0 else 0
-            print(f"  {service}: {data['total']} total, {data['with_response_link']} with links ({success_rate:.1f}%)")
+            success_rate = (
+                (data["with_response_link"] / data["total"] * 100)
+                if data["total"] > 0
+                else 0
+            )
+            print(
+                f"  {service}: {data['total']} total, {data['with_response_link']} with links ({success_rate:.1f}%)"
+            )
 
         # By domain
         domain_counts = defaultdict(int)
         for pub in publications:
-            link = pub.get('original_link')
+            link = pub.get("original_link")
             if link:
                 try:
                     domain = urlparse(link).netloc
@@ -548,7 +587,9 @@ class PublicationCache:
 
         if domain_counts:
             print("\nBy domain:")
-            sorted_domains = sorted(domain_counts.items(), key=lambda x: x[1], reverse=True)
+            sorted_domains = sorted(
+                domain_counts.items(), key=lambda x: x[1], reverse=True
+            )
             for domain, count in sorted_domains:
                 print(f"  {domain}: {count} publications")
 
@@ -557,10 +598,10 @@ class PublicationCache:
 
         for pub in publications:
             try:
-                date_str = pub['publication_date'][:10]  # YYYY-MM-DD
+                date_str = pub["publication_date"][:10]  # YYYY-MM-DD
                 by_date[date_str] += 1
             except Exception:
-                by_date['unknown'] += 1
+                by_date["unknown"] += 1
 
         print("\nBy date (last 7 days):")
         sorted_dates = sorted(by_date.items(), reverse=True)
@@ -570,7 +611,7 @@ class PublicationCache:
         # Most active links
         link_counts = defaultdict(int)
         for pub in publications:
-            link_counts[pub.get('original_link', 'unknown')] += 1
+            link_counts[pub.get("original_link", "unknown")] += 1
 
         print("\nMost published links:")
         sorted_links = sorted(link_counts.items(), key=lambda x: x[1], reverse=True)
@@ -590,7 +631,7 @@ class PublicationCache:
 
         try:
             for file in os.listdir(cache_dir):
-                if file.startswith(cache_name) and 'backup' in file:
+                if file.startswith(cache_name) and "backup" in file:
                     backup_path = os.path.join(cache_dir, file)
                     mtime = os.path.getmtime(backup_path)
                     size = os.path.getsize(backup_path)
@@ -600,7 +641,9 @@ class PublicationCache:
                 backup_files.sort(key=lambda x: x[1], reverse=True)  # Sort by date
 
                 for i, (file, mtime, size) in enumerate(backup_files, 1):
-                    date_str = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
+                    date_str = datetime.fromtimestamp(mtime).strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    )
                     size_str = f"{size} bytes" if size < 1024 else f"{size/1024:.1f} KB"
                     print(f"{i}. {file}")
                     print(f"   Date: {date_str}, Size: {size_str}")
@@ -635,12 +678,15 @@ class PublicationCache:
             return
 
         # Confirm restoration
-        confirm = input(f"Restore from {backup_file}? This will replace current cache (y/N): ").lower()
+        confirm = input(
+            f"Restore from {backup_file}? This will replace current cache (y/N): "
+        ).lower()
 
-        if confirm == 'y':
+        if confirm == "y":
             self.restore(backup_file)
         else:
             print("Restoration cancelled")
+
 
 def interactive_menu():
     """Interactive menu for cache management"""
@@ -663,60 +709,64 @@ def interactive_menu():
 
         choice = input("Select option (0-7): ").strip()
 
-        if choice == '0':
+        if choice == "0":
             print("Goodbye!")
             break
-        elif choice == '1':
+        elif choice == "1":
             cache.show_info()
-        elif choice == '2':
+        elif choice == "2":
             cache.show_statistics()
-        elif choice == '3':
+        elif choice == "3":
             cache.backup()
-        elif choice == '4':
+        elif choice == "4":
             cache.export_formats()
-        elif choice == '5':
+        elif choice == "5":
             cache.clean()
-        elif choice == '6':
+        elif choice == "6":
             cache.list_backups()
-        elif choice == '7':
+        elif choice == "7":
             cache.interactive_restore()
         else:
             print("Invalid option. Please try again.")
+
 
 def main():
     """Main function for CLI operations"""
 
     # Configure logging (if not already configured)
-    logging.basicConfig(level=logging.INFO,
-                       format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    )
 
-    cache = PublicationCache() # Create an instance here
+    cache = PublicationCache()  # Create an instance here
 
     if len(sys.argv) > 1:
         command = sys.argv[1].lower()
 
-        if command == 'info':
+        if command == "info":
             cache.show_info()
-        elif command == 'stats':
+        elif command == "stats":
             cache.show_statistics()
-        elif command == 'backup':
+        elif command == "backup":
             cache.backup()
-        elif command == 'export':
+        elif command == "export":
             cache.export_formats()
-        elif command == 'clean':
+        elif command == "clean":
             cache.clean()
-        elif command == 'list-backups':
+        elif command == "list-backups":
             cache.list_backups()
-        elif command == 'list-by-service':
+        elif command == "list-by-service":
             if len(sys.argv) > 2:
                 service = sys.argv[2]
                 publications = cache.get_publications_by_service(service)
-                publications.sort(key=lambda x: x.get('publication_date', ''), reverse=True)
-                
+                publications.sort(
+                    key=lambda x: x.get("publication_date", ""), reverse=True
+                )
+
                 print(f"--- Latest publications for service: {service} ---")
                 if not publications:
                     print("No publications found.")
-                
+
                 for pub in publications:
                     print(f"  Date: {pub.get('publication_date')}")
                     print(f"  Title: {pub.get('title')}")
@@ -724,9 +774,11 @@ def main():
                     print(f"  Response Link: {pub.get('response_link')}")
                     print("-" * 20)
             else:
-                print("Usage: python3 src/socialModules/modulePublicationCache.py list-by-service <service_name>")
+                print(
+                    "Usage: python3 src/socialModules/modulePublicationCache.py list-by-service <service_name>"
+                )
                 return 1
-        elif command == 'restore': # Add restore command
+        elif command == "restore":  # Add restore command
             if len(sys.argv) > 2:
                 backup_file = sys.argv[2]
                 cache.restore(backup_file)
@@ -735,10 +787,12 @@ def main():
                 return 1
         else:
             print(f"Unknown command: {command}")
-            print("Available commands: info, stats, backup, export, clean, list-backups, restore, list-by-service")
+            print(
+                "Available commands: info, stats, backup, export, clean, list-backups, restore, list-by-service"
+            )
             return 1
     else:
-        interactive_menu() # Call the interactive menu
+        interactive_menu()  # Call the interactive menu
 
     return 0
 
