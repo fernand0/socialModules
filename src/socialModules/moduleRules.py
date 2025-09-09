@@ -902,11 +902,9 @@ class moduleRules:
                     continue
                 apiSrc = self.readConfigSrc(nameR, rule_key, rule_metadata)
                 apiDst = self.readConfigDst(nameR, rule_action, rule_metadata, apiSrc)
-                timeSlots = args.timeSlots
-                noWait = args.noWait
-                if (self.getNameAction(rule_action) in "cache") or ((self.getNameAction(rule_action) == "direct") and (self.getProfileAction(rule_action) == "pocket")):
-                    timeSlots = 0
-                    noWait = True
+                
+                timeSlots, noWait = self._get_action_properties(rule_action, rule_metadata, args)
+
                 if self._should_skip_publication(apiDst, apiSrc, noWait, timeSlots, nameR):
                     continue
                 scheduled_actions.append({"rule_key": rule_key, "rule_metadata": rule_metadata, "rule_action": rule_action, "rule_index": i, "action_index": action_index, "args": args, "simmulate": args.simmulate, "apiSrc": apiSrc, "apiDst": apiDst})
@@ -935,11 +933,9 @@ class moduleRules:
         simmulate = scheduled_action["simmulate"]
         apiSrc = scheduled_action["apiSrc"]
         apiDst = scheduled_action["apiDst"]
-        timeSlots = args.timeSlots
-        noWait = args.noWait
-        if (self.getNameAction(rule_action) in "cache") or ((self.getNameAction(rule_action) == "direct") and (self.getProfileAction(rule_action) == "pocket")):
-            timeSlots = 0
-            noWait = True
+        
+        timeSlots, noWait = self._get_action_properties(rule_action, rule_metadata, args)
+
         msgAction = (f"{self.getNameAction(rule_action)} {self.getNickAction(rule_action)}@{self.getProfileAction(rule_action)} ({self.getTypeAction(rule_action)})")
         rule_index = scheduled_action.get('rule_index', 0)
         action_index = scheduled_action.get('action_index', 0)
@@ -961,6 +957,30 @@ class moduleRules:
             rule_index = scheduled_action.get('rule_index', '')
             rule_summary = f"Rule {rule_index}: {rule_key}" if rule_index != '' else str(rule_key)
             logMsg(f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {exc}", 3, 1)
+
+    def _get_action_properties(self, rule_action, rule_metadata, args):
+        timeSlots = args.timeSlots
+        noWait = args.noWait
+
+        # Hardcoded logic for specific services
+        if (self.getNameAction(rule_action) in "cache") or \
+           ((self.getNameAction(rule_action) == "direct") and \
+            (self.getProfileAction(rule_action) == "pocket")):
+            timeSlots = 0
+            noWait = True
+
+        # Override with rule-specific metadata if present
+        if 'timeSlots' in rule_metadata:
+            try:
+                timeSlots = float(rule_metadata['timeSlots'])
+            except ValueError:
+                logMsg(f"WARNING: Invalid timeSlots value in rule metadata: {rule_metadata['timeSlots']}", 2, 1)
+        
+        if 'noWait' in rule_metadata:
+            noWait_str = str(rule_metadata['noWait']).lower()
+            noWait = noWait_str in ('true', '1', 't', 'y', 'yes')
+        
+        return timeSlots, noWait
 
     def debug_filenames(self):
         logMsg("Debugging filenames", 1, 2)
