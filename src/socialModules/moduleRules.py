@@ -726,7 +726,7 @@ class moduleRules:
             logMsg(f"{indent}No Post Action", 1, 1)
         return resMsg
 
-    def executePublishAction(self, indent, msgAction, apiSrc, apiDst, simmulate, nextPost=True, pos=-1):
+    def executePublishAction(self, indent, msgAction, apiSrc, apiDst, simmulate, nextPost=True, pos=-1, src=None):
         res = ""
         resMsg = ""
         postaction = ""
@@ -757,8 +757,9 @@ class moduleRules:
                 logMsg(f"{indent}Trying to publish {msgLog} ", 1, 1)
                 if nextPost and (res and ("Fail!" not in res) and ("failed!" not in res)):
                     link = apiSrc.getPostLink(post)
-                    resUpdate = apiDst.updateLastLink(apiSrc, link)
-                    resMsg += f" Update: {resUpdate}"
+                    if src and self.getNameRule(src) != "cache":
+                        resUpdate = apiDst.updateLastLink(apiSrc, link)
+                        resMsg += f" Update: {resUpdate}"
             if res:
                 logMsg(f"{indent}Res: {res} ", 2, 0)
             if post:
@@ -811,7 +812,8 @@ class moduleRules:
             if noWait or (diffTime > hours):
                 tSleep = random.random() * float(timeSlots) * 60
                 logMsg(f"{grandchild_indent}tSleep {tSleep}", 2, 0)
-                apiDst.setNextTime(tNow, tSleep, apiSrc)
+                if self.getNameRule(src) != "cache":
+                    apiDst.setNextTime(tNow, tSleep, apiSrc)
                 if tSleep > 0.0:
                     msgLog = f"{grandchild_indent} Waiting {tSleep/60:2.2f} minutes"
                 else:
@@ -822,7 +824,7 @@ class moduleRules:
                     time.sleep(tSleep)
                     if "minutes" in msgLog:
                         logMsg(f"{grandchild_indent} End Waiting {msgFrom}", 1, 1)
-                    res = self.executePublishAction(grandchild_indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos)
+                    res = self.executePublishAction(grandchild_indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos, src=src)
                 logging.info(f"{grandchild_indent}Resssss: {res}")
                 if (not res or (res and not 'OK' in res)) and backup_time[0] is not None:
                     logMsg(f"{grandchild_indent} No publication occurred. Restoring previous next-run time.", 1, 1)
@@ -959,6 +961,18 @@ class moduleRules:
             rule_index = scheduled_action.get('rule_index', '')
             rule_summary = f"Rule {rule_index}: {rule_key}" if rule_index != '' else str(rule_key)
             logMsg(f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {exc}", 3, 1)
+
+    def debug_filenames(self):
+        logMsg("Debugging filenames", 1, 2)
+        for rule_key, rule_actions in self.rules.items():
+            rule_metadata = self.more.get(rule_key)
+            apiSrc = self.readConfigSrc("", rule_key, rule_metadata)
+            for action in rule_actions:
+                apiDst = self.readConfigDst("", action, rule_metadata, apiSrc)
+                filename = apiDst.fileNameBase(apiSrc)
+                print(f"Rule: {rule_key}")
+                print(f"  Action: {action}")
+                print(f"  Filename: {filename}.last")
 
     def _configure_service_api(self, api, destination, channel=None, from_email=None, to_email=None, account=None):
         try:
@@ -1099,6 +1113,7 @@ class moduleRules:
         parser.add_argument("--simmulate", "-s", default=False, action="store_true", help="simulate which posts would be added")
         parser.add_argument("--noWait", "-n", default=False, action="store_true", help="no wait for time restrictions")
         parser.add_argument("--rules", "-r", default=False, action="store_true", help="Show the list of rules and actions")
+        parser.add_argument("--debug-filenames", default=False, action="store_true", help="Debug rules by showing generated filenames")
         self.args = parser.parse_args()
 
 def main():
@@ -1107,6 +1122,9 @@ def main():
     rules = moduleRules()
     rules.readArgs()
     rules.checkRules()
+    if rules.args.debug_filenames:
+        rules.debug_filenames()
+        return
     rules.executeRules()
     return
 
