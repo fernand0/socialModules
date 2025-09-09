@@ -902,7 +902,7 @@ class moduleRules:
                     continue
                 apiSrc = self.readConfigSrc(nameR, rule_key, rule_metadata)
                 apiDst = self.readConfigDst(nameR, rule_action, rule_metadata, apiSrc)
-                
+
                 timeSlots, noWait = self._get_action_properties(rule_action, rule_metadata, args)
 
                 if self._should_skip_publication(apiDst, apiSrc, noWait, timeSlots, nameR):
@@ -933,10 +933,14 @@ class moduleRules:
         simmulate = scheduled_action["simmulate"]
         apiSrc = scheduled_action["apiSrc"]
         apiDst = scheduled_action["apiDst"]
-        
+
         timeSlots, noWait = self._get_action_properties(rule_action, rule_metadata, args)
 
-        msgAction = (f"{self.getNameAction(rule_action)} {self.getNickAction(rule_action)}@{self.getProfileAction(rule_action)} ({self.getTypeAction(rule_action)})")
+        msgAction = (f"{self.getNameAction(rule_action)} "
+                     f"{self.getNickAction(rule_action)}@"
+                     f"{self.getProfileAction(rule_action)} "
+                     f"({self.getTypeAction(rule_action)})"
+                     )
         rule_index = scheduled_action.get('rule_index', 0)
         action_index = scheduled_action.get('action_index', 0)
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
@@ -962,10 +966,12 @@ class moduleRules:
         timeSlots = args.timeSlots
         noWait = args.noWait
 
+        action_name = self.getNameAction(rule_action)
+        profile_action = self.getProfileAction(rule_action)
+
         # Hardcoded logic for specific services
-        if (self.getNameAction(rule_action) in "cache") or \
-           ((self.getNameAction(rule_action) == "direct") and \
-            (self.getProfileAction(rule_action) == "pocket")):
+        if (action_name == "cache") or \
+           (action_name == "direct" and profile_action == "pocket"):
             timeSlots = 0
             noWait = True
 
@@ -975,11 +981,11 @@ class moduleRules:
                 timeSlots = float(rule_metadata['timeSlots'])
             except ValueError:
                 logMsg(f"WARNING: Invalid timeSlots value in rule metadata: {rule_metadata['timeSlots']}", 2, 1)
-        
+
         if 'noWait' in rule_metadata:
             noWait_str = str(rule_metadata['noWait']).lower()
             noWait = noWait_str in ('true', '1', 't', 'y', 'yes')
-        
+
         return timeSlots, noWait
 
     def debug_filenames(self):
