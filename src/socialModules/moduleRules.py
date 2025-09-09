@@ -757,7 +757,7 @@ class moduleRules:
                 logMsg(f"{indent}Trying to publish {msgLog} ", 1, 1)
                 if nextPost and (res and ("Fail!" not in res) and ("failed!" not in res)):
                     link = apiSrc.getPostLink(post)
-                    if src and self.getNameRule(src) != "cache":
+                    if src and self.getNameRule(src) != "slack":
                         resUpdate = apiDst.updateLastLink(apiSrc, link)
                         resMsg += f" Update: {resUpdate}"
             if res:
@@ -812,7 +812,7 @@ class moduleRules:
             if noWait or (diffTime > hours):
                 tSleep = random.random() * float(timeSlots) * 60
                 logMsg(f"{grandchild_indent}tSleep {tSleep}", 2, 0)
-                if self.getNameRule(src) != "cache":
+                if self.getNameRule(src) != "slack":
                     apiDst.setNextTime(tNow, tSleep, apiSrc)
                 if tSleep > 0.0:
                     msgLog = f"{grandchild_indent} Waiting {tSleep/60:2.2f} minutes"
@@ -969,11 +969,11 @@ class moduleRules:
             print(f"Rule: {rule_key}")
             rule_metadata = self.more.get(rule_key)
             apiSrc = self.readConfigSrc("", rule_key, rule_metadata)
-            
+
             for i, action in enumerate(rule_actions):
                 apiDst = self.readConfigDst("", action, rule_metadata, apiSrc)
                 filename = apiDst.fileNameBase(apiSrc)
-                
+
                 print(f"  > Action {i}: {action}")
                 print(f"    Filename base: {filename}")
 
