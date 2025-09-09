@@ -972,7 +972,21 @@ class moduleRules:
                 filename = apiDst.fileNameBase(apiSrc)
                 print(f"Rule: {rule_key}")
                 print(f"  Action: {action}")
-                print(f"  Filename: {filename}.last")
+                print(f"  Filename base: {filename}")
+
+                # Get content of .last file
+                last_link = apiDst.getLastLink(apiSrc)
+                if last_link:
+                    print(f"    Content of .last: {last_link}")
+                else:
+                    print("    .last file not found or is empty")
+
+                # Get content of .timeNext file
+                tnow, tsleep = apiDst.getNextTime(apiSrc)
+                if tnow is not None and tsleep is not None:
+                    print(f"    Content of .timeNext: {(tnow, tsleep)}")
+                else:
+                    print("    .timeNext file not found")
 
     def _configure_service_api(self, api, destination, channel=None, from_email=None, to_email=None, account=None):
         try:
