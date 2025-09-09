@@ -974,7 +974,7 @@ class moduleRules:
                 apiDst = self.readConfigDst("", action, rule_metadata, apiSrc)
                 filename = apiDst.fileNameBase(apiSrc)
                 
-                print(f"  Action {i}: {action}")
+                print(f"  > Action {i}: {action}")
                 print(f"    Filename base: {filename}")
 
                 # Get content of .last file
