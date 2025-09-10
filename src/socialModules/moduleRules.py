@@ -1137,32 +1137,37 @@ class moduleRules:
         return
 
     def _should_skip_publication(self, apiDst, apiSrc, noWait, timeSlots, indent=""):
+        skip = False
         tNow = time.time()
         hours = float(apiDst.getTime()) * 60 * 60
         lastTime = apiDst.getLastTimePublished(f"{indent}")
-        if lastTime is None:
-            return False
-        timeSlots_seconds = float(timeSlots) * 60
-        next_pub_time = lastTime + hours
-        if not noWait and next_pub_time >= tNow + timeSlots_seconds:
-            next_pub_time_formatted = datetime.datetime.fromtimestamp(
-                next_pub_time
-            ).strftime("%Y-%m-%d %H:%M:%S")
-            tNow_formatted = datetime.datetime.fromtimestamp(tNow).strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
-            window_end_formatted = datetime.datetime.fromtimestamp(
-                tNow + timeSlots_seconds
-            ).strftime("%Y-%m-%d %H:%M:%S")
-            time_left_seconds = next_pub_time - tNow
-            hours_left = int(time_left_seconds // 3600)
-            minutes_left = int((time_left_seconds % 3600) // 60)
-            seconds_left = int(time_left_seconds % 60)
-            time_left_formatted = f"{hours_left}h {minutes_left}m {seconds_left}s"
-            msgLog = f"{indent} Publication time starts at {next_pub_time_formatted} (in {time_left_formatted}). It's outside the {timeSlots} min window [{tNow_formatted} to {window_end_formatted}]. Skipping."
-            logMsg(msgLog, 1, 1)
-            return True
-        return False
+        if lastTime is not None:
+            timeSlots_seconds = float(timeSlots) * 60
+            next_pub_time = lastTime + hours
+            if not noWait and next_pub_time >= tNow + timeSlots_seconds:
+                next_pub_time_formatted = datetime.datetime.fromtimestamp(
+                    next_pub_time
+                ).strftime("%Y-%m-%d %H:%M:%S")
+                tNow_formatted = datetime.datetime.fromtimestamp(tNow).strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
+                window_end_formatted = datetime.datetime.fromtimestamp(
+                    tNow + timeSlots_seconds
+                ).strftime("%Y-%m-%d %H:%M:%S")
+                time_left_seconds = next_pub_time - tNow
+                hours_left = int(time_left_seconds // 3600)
+                minutes_left = int((time_left_seconds % 3600) // 60)
+                seconds_left = int(time_left_seconds % 60)
+                time_left_formatted = f"{hours_left}h {minutes_left}m {seconds_left}s"
+                msgLog = (f"{indent} Publication time starts at "
+                          f"{next_pub_time_formatted} (in "
+                          f"{time_left_formatted}). It's outside "
+                          f"the {timeSlots} min window [{tNow_formatted} "
+                          f"to {window_end_formatted}]. Skipping."
+                          )
+                logMsg(msgLog, 1, 1)
+                skip = True
+        return skip
 
     def _prepare_actions(self, args, select):
         scheduled_actions = []
@@ -1183,8 +1188,9 @@ class moduleRules:
             else:
                 i = i + 1
             nameR = f"[{self.getNameAction(rule_key)}{i}]"
+            indent = f"{nameR:->12}>"
             logMsg(
-                f"{nameR:->12}> Preparing actions for rule: {self.getNickSrc(rule_key)}@{self.getNameRule(rule_key)} ({self.getNickAction(rule_key)})",
+                f"{indent} Preparing actions for rule: {self.getNickSrc(rule_key)}@{self.getNameRule(rule_key)} ({self.getNickAction(rule_key)})",
                 1,
                 1,
             )
@@ -1194,15 +1200,15 @@ class moduleRules:
                     select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"
                 ):
                     continue
-                apiSrc = self.readConfigSrc(nameR, rule_key, rule_metadata)
-                apiDst = self.readConfigDst(nameR, rule_action, rule_metadata, apiSrc)
+                apiSrc = self.readConfigSrc(indent, rule_key, rule_metadata)
+                apiDst = self.readConfigDst(indent, rule_action, rule_metadata, apiSrc)
 
                 timeSlots, noWait = self._get_action_properties(
                     rule_action, rule_metadata, args
                 )
 
                 if self._should_skip_publication(
-                    apiDst, apiSrc, noWait, timeSlots, nameR
+                    apiDst, apiSrc, noWait, timeSlots, indent
                 ):
                     continue
                 scheduled_actions.append(
