@@ -256,22 +256,14 @@ class moduleBlsk(Content):  # , Queue):
         msgLog = f"{self.indent}Publishing {title} ({len(title)})"
         logMsg(msgLog, 2, 0)
         client = self.api
-        # try:
-        res, error = self.apiCall(
-            "send_post", api=client, text=title, embed=embed_external
-        )
-        #    # res = client.com.atproto.repo.create_record(
-        #    #         models.ComAtprotoRepoCreateRecord.Data(
-        #    #          repo=client.me.did,
-        #    #          collection=models.ids.AppBskyFeedPost,
-        #    #          record=models.AppBskyFeedPost.Main(
-        #    #              created_at=client.get_current_time_iso(),
-        #    #              text=title, facets=facets),
-        #    #          )
-        #    #         )
-        # except:
-        #    res = self.report(self.service,
-        #                        f"{title} {link}", title, sys.exc_info())
+        try:
+            res, error = self.apiCall(
+                "send_post", api=client, text=title, embed=embed_external
+            )
+        except atproto_client.exceptions.BadRequestError:
+            res = self.report(self.service, f"{title} {link}", title, sys.exc_info())
+        except:
+            res = self.report(self.service, f"{title} {link}", title, sys.exc_info())
 
         msgLog = f"{self.indent}Res: {res} "
         logMsg(msgLog, 2, 0)
