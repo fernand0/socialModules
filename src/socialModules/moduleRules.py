@@ -1187,12 +1187,11 @@ class moduleRules:
                 i = 0
             else:
                 i = i + 1
-            nameR = f"[{self.getNameAction(rule_key)}{i}]"
-            indent = f"{nameR:->12}>"
+
+            nameR_base = f"[{self.getNameAction(rule_key)}{i}]"
+            indent_base = f"{nameR_base:->12}>"
             logMsg(
-                f"{indent} Preparing actions for rule: "
-                f"{self.getNickSrc(rule_key)}@{self.getNameRule(rule_key)}"
-                f"({self.getNickAction(rule_key)})",
+                f"{indent_base} Preparing actions for rule: {self.getNickSrc(rule_key)}@{self.getNameRule(rule_key)} ({self.getNickAction(rule_key)})",
                 1,
                 1,
             )
@@ -1202,6 +1201,10 @@ class moduleRules:
                     select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"
                 ):
                     continue
+
+                nameA = f"{indent_base} Action {action_index}:"
+                indent = nameA
+
                 apiSrc = self.readConfigSrc(indent, rule_key, rule_metadata)
                 apiDst = self.readConfigDst(indent, rule_action, rule_metadata, apiSrc)
 
