@@ -1190,7 +1190,9 @@ class moduleRules:
             nameR = f"[{self.getNameAction(rule_key)}{i}]"
             indent = f"{nameR:->12}>"
             logMsg(
-                f"{indent} Preparing actions for rule: {self.getNickSrc(rule_key)}@{self.getNameRule(rule_key)} ({self.getNickAction(rule_key)})",
+                f"{indent} Preparing actions for rule: "
+                f"{self.getNickSrc(rule_key)}@{self.getNameRule(rule_key)}"
+                f"({self.getNickAction(rule_key)})",
                 1,
                 1,
             )
@@ -1381,20 +1383,22 @@ class moduleRules:
         from_email=None,
         to_email=None,
         account=None,
+        indent="",
     ):
+        child_indent = f"{indent}  "
         try:
             if hasattr(api, "setChannel") and channel:
                 api.setChannel(channel)
-                logging.debug(f"Channel set to '{channel}' for {destination}")
+                logMsg(f"{child_indent}Channel set to '{channel}' for {destination}", 2, 0)
             if "smtp" in destination.lower():
                 if hasattr(api, "fromaddr"):
                     api.fromaddr = from_email or "default@example.com"
-                    logging.debug(f"SMTP fromaddr set to {api.fromaddr}")
+                    logMsg(f"{child_indent}SMTP fromaddr set to {api.fromaddr}", 2, 0)
                 if hasattr(api, "to"):
                     api.to = to_email or account
-                    logging.debug(f"SMTP to set to {api.to}")
+                    logMsg(f"{child_indent}SMTP to set to {api.to}", 2, 0)
         except Exception as e:
-            logging.warning(f"Error configuring {destination} API: {e}")
+            logMsg(f"{child_indent}Error configuring {destination} API: {e}", 2, 1)
 
     def _extract_image_url(self, api, destination):
         try:
@@ -1442,31 +1446,36 @@ class moduleRules:
         channel=None,
         from_email=None,
         to_email=None,
+        indent="",
     ):
         service_key = f"{destination}_{account}"
+        child_indent = f"{indent}  "
         try:
             key = ("direct", "post", destination, account)
-            api = self.readConfigDst("  ", key, None, None)
+            api = self.readConfigDst(child_indent, key, None, None)
             if not api:
+                logMsg(f"{child_indent}Could not initialize API for {destination}", 3, 1)
                 return {
                     "success": False,
                     "error": f"Could not initialize API for {destination}",
                     "service": service_key,
                 }
             self._configure_service_api(
-                api, destination, channel, from_email, to_email, account
+                api, destination, channel, from_email, to_email, account, indent=child_indent
             )
             image_url = None
             if image_path and hasattr(api, "publishImage"):
                 try:
+                    logMsg(f"{child_indent}Publishing image to {destination}...", 1, 1)
                     image_result = api.publishImage(title, image_path, alt=alt_text)
                     image_url = self._extract_image_url(api, destination)
-                    logging.info(f"Image published to {destination}: {image_result}")
+                    logMsg(f"{child_indent}Image published to {destination}: {image_result}", 1, 1)
                 except Exception as e:
-                    logging.error(f"Error publishing image to {destination}: {e}")
+                    logMsg(f"{child_indent}Error publishing image to {destination}: {e}", 3, 1)
+            logMsg(f"{child_indent}Publishing post to {destination}...", 1, 1)
             result = api.publishPost(title, url, content)
             if self._is_publication_successful(result):
-                logging.info(f"Successfully published to {destination}: {result}")
+                logMsg(f"{child_indent}Successfully published to {destination}: {result}", 1, 1)
                 return {
                     "success": True,
                     "result": result,
@@ -1474,6 +1483,7 @@ class moduleRules:
                     "service": service_key,
                 }
             else:
+                logMsg(f"{child_indent}Publication to {destination} returned unsuccessful result: {result}", 2, 1)
                 return {
                     "success": False,
                     "error": f"Publication returned unsuccessful result: {result}",
@@ -1482,7 +1492,7 @@ class moduleRules:
                 }
         except Exception as e:
             error_msg = f"Error publishing to {destination}: {e}"
-            logging.error(error_msg)
+            logMsg(f"{child_indent}{error_msg}", 3, 1)
             return {"success": False, "error": str(e), "service": service_key}
 
     def _is_publication_successful(self, result):
@@ -1532,21 +1542,24 @@ class moduleRules:
         channel=None,
         from_email=None,
         to_email=None,
+        indent="",
     ):
         if not title and not content:
             raise ValueError("Either title or content must be provided")
+        child_indent = f"{indent}  "
         try:
             dest_items = self._validate_destinations(destinations)
         except ValueError as e:
-            logging.error(f"Invalid destinations: {e}")
+            logMsg(f"{child_indent}Invalid destinations: {e}", 3, 1)
             return {"error": str(e)}
         if not dest_items:
-            logging.warning("No valid destinations found")
+            logMsg(f"{child_indent}No valid destinations found", 2, 1)
             return {}
-        logging.info(f"Starting publication to {len(dest_items)} destinations: {title}")
+        logMsg(f"{child_indent}Starting publication to {len(dest_items)} destinations: {title}", 1, 1)
         results = {}
         for destination, account in dest_items:
-            logging.info(f"Publishing to: {destination} - {account}")
+            grandchild_indent = f"{child_indent}  "
+            logMsg(f"{grandchild_indent}Publishing to: {destination} - {account}", 1, 1)
             result = self._publish_to_single_destination(
                 destination=destination,
                 account=account,
@@ -1558,6 +1571,7 @@ class moduleRules:
                 channel=channel,
                 from_email=from_email,
                 to_email=to_email,
+                indent=grandchild_indent,
             )
             results[result["service"]] = {
                 "success": result["success"],
@@ -1567,12 +1581,13 @@ class moduleRules:
             }
         successful = sum(1 for r in results.values() if r.get("success"))
         total = len(results)
-        logging.info(f"Publication completed: {successful}/{total} successful")
+        logMsg(f"{child_indent}Publication completed: {successful}/{total} successful", 1, 1)
         return results
 
     def publish_message_to_destinations(self, destinations, message, **kwargs):
         if not message or not message.strip():
             raise ValueError("Message cannot be empty")
+        indent = kwargs.pop("indent", "")
         return self.publish_to_multiple_destinations(
             destinations=destinations,
             title=message,
@@ -1583,6 +1598,7 @@ class moduleRules:
             channel=kwargs.get("channel"),
             from_email=kwargs.get("from_email"),
             to_email=kwargs.get("to_email"),
+            indent=indent,
         )
 
     def get_publication_summary(self, results):
