@@ -525,23 +525,17 @@ class moduleImap(Content):  # , Queue):
 
         return msg_data[int(msg_number)]  # messages[-10+int(msg_number)-1]
 
-    def selectHeaderAuto(self, M, msg):
-        i = 1
-        print(f"Msg: {msg}")
-        if "List-Id" in msg:
-            return ("List-Id", msg["List-Id"][msg["List-Id"].find("<") + 1 : -1])
-        else:
-            # print(f"{msg} - {type(msg)}")
-            # print(f"{msg[1].keys()}")
-
-            # headers = [f"{header}: {msg[1].get(header)}" for header in msg[1].keys()]
-
-            # print(f"Headers: {headers}")
-
-            # sel, sel_txt = select_from_list(headers, negation_selector="Received:")
-
-            # print(f"Sel: {sel} - {sel_txt}")
-
+    def get_headers_content(self, M, msg, header_name=""):
+        result = None # Initialize result variable
+        if header_name: # If header_name is provided
+            textHeader = M.getHeader(msg, header_name)
+            textHeader = email.header.decode_header(str(textHeader))
+            textHeader = str(email.header.make_header(textHeader))
+            if textHeader != "None":
+                result = textHeader # Assign to result
+            else:
+                result = "" # Assign to result
+        else: # If header_name is empty, behave as before
             textHeaders = []
             nameHeaders = []
             for header in msgHeaders:
@@ -549,11 +543,19 @@ class moduleImap(Content):  # , Queue):
                 textHeader = email.header.decode_header(str(textHeader))
                 textHeader = str(email.header.make_header(textHeader))
                 if textHeader != "None":
-                    # print(f"{i}) {header}: {textHeader}")
                     textHeaders.append(f"{textHeader}")
                     nameHeaders.append(f"{header}")
-                # i = i + 1
-            import locale
+            result = textHeaders, nameHeaders # Assign tuple to result
+        return result # Single return statement
+
+    def selectHeaderAuto(self, M, msg):
+        # i = 1 # Removed unused variable
+        print(f"Msg: {msg}")
+        if "List-Id" in msg:
+            return ("List-Id", msg["List-Id"][msg["List-Id"].find("<") + 1 : -1])
+        else:
+            textHeaders, nameHeaders = self.get_headers_content(M, msg)
+            # import locale # Removed unused import
             # header_num = input("Select header: ")
 
             headers = [
@@ -584,7 +586,69 @@ class moduleImap(Content):  # , Queue):
             if not filterCond:
                 filterCond = textHeader
 
-        return (header, filterCond)
+        logging.info(f"Keywordd: {header} {textHeader} {filterCond}")
+        return (header, textHeader, filterCond)
+
+    # def selectHeaderAuto(self, M, msg):
+    #     i = 1
+    #     print(f"Msg: {msg}")
+    #     if "List-Id" in msg:
+    #         return ("List-Id", msg["List-Id"][msg["List-Id"].find("<") + 1 : -1])
+    #     else:
+    #         # print(f"{msg} - {type(msg)}")
+    #         # print(f"{msg[1].keys()}")
+
+    #         # headers = [f"{header}: {msg[1].get(header)}" for header in msg[1].keys()]
+
+    #         # print(f"Headers: {headers}")
+
+    #         # sel, sel_txt = select_from_list(headers, negation_selector="Received:")
+
+    #         # print(f"Sel: {sel} - {sel_txt}")
+
+    #         textHeaders = []
+    #         nameHeaders = []
+    #         for header in msgHeaders:
+    #             textHeader = M.getHeader(msg, header)
+    #             textHeader = email.header.decode_header(str(textHeader))
+    #             textHeader = str(email.header.make_header(textHeader))
+    #             if textHeader != "None":
+    #                 # print(f"{i}) {header}: {textHeader}")
+    #                 textHeaders.append(f"{textHeader}")
+    #                 nameHeaders.append(f"{header}")
+    #             # i = i + 1
+    #         import locale
+    #         # header_num = input("Select header: ")
+
+    #         headers = [
+    #             f"{cad1}: {cad2}" for cad1, cad2 in zip(nameHeaders, textHeaders)
+    #         ]
+    #         header_num, sel_txt = select_from_list(headers)
+
+    #         header = nameHeaders[header_num]
+    #         textHeader = textHeaders[header_num]
+    #         # textHeader = M.getHeader(msg, header)
+    #         # textHeader = email.header.decode_header(str(textHeader))
+    #         # textHeader = str(email.header.make_header(textHeader))
+    #         pos = textHeader.find("<")
+    #         if pos >= 0:
+    #             textHeader = textHeader[pos + 1 : textHeader.find(">", pos + 1)]
+    #         else:
+    #             pos = textHeader.find("[")
+    #             if pos >= 0:
+    #                 textHeader = textHeader[pos + 1 : textHeader.find("]", pos + 1)]
+    #             else:
+    #                 textHeader = textHeader
+
+    #         print("Filter: (header) ", header, ", (text) ", textHeader)
+    #         filterCond = input("Text for selection (empty for all): ")
+    #         # Trying to solve the problem with accents and so
+    #         filterCond = filterCond  # .decode('utf-8')
+
+    #         if not filterCond:
+    #             filterCond = textHeader
+
+    #     return (header, filterCond)
 
     def selectHash(self, M, folder, hashSelect):
         M.select(folder)
@@ -1017,6 +1081,12 @@ class moduleImap(Content):  # , Queue):
         self.checkConnected()
         data = self.listFolders()
         folders = [self.nameFolder(fol) for fol in data]
+        if folderM:
+            folders_sel = [self.nameFolder(fol) for fol in data
+                           if folderM in self.nameFolder(fol)]
+        # Dirty trick? We add at the end (the last that will appear on the
+        # terminal the selected folders, if any
+        folders = folders + folders_sel
         sel, folder = select_from_list(folders, more_options=["-cf"])
         if isinstance(sel, str) and "-cf" in sel:
             nfn = input("New folder name? (%s)" % folderM)
