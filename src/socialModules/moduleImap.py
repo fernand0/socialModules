@@ -568,17 +568,18 @@ class moduleImap(Content):  # , Queue):
             # textHeader = M.getHeader(msg, header)
             # textHeader = email.header.decode_header(str(textHeader))
             # textHeader = str(email.header.make_header(textHeader))
-            pos = textHeader.find("<")
-            if pos >= 0:
-                textHeader = textHeader[pos + 1 : textHeader.find(">", pos + 1)]
-            else:
-                pos = textHeader.find("[")
+            logging.info(f"Filter: (header) {header} (text) {textHeader}")
+            if 'Subject' not in header:
+                pos = textHeader.find("<")
                 if pos >= 0:
-                    textHeader = textHeader[pos + 1 : textHeader.find("]", pos + 1)]
+                    textHeader = textHeader[pos + 1 : textHeader.find(">", pos + 1)]
                 else:
-                    textHeader = textHeader
+                    pos = textHeader.find("[")
+                    if pos >= 0:
+                        textHeader = textHeader[pos + 1 : textHeader.find("]", pos + 1)]
+                    else:
+                        textHeader = textHeader
 
-            print("Filter: (header) ", header, ", (text) ", textHeader)
             filterCond = input("Text for selection (empty for all): ")
             # Trying to solve the problem with accents and so
             filterCond = filterCond  # .decode('utf-8')
@@ -586,7 +587,6 @@ class moduleImap(Content):  # , Queue):
             if not filterCond:
                 filterCond = textHeader
 
-        logging.info(f"Keywordd: {header} {textHeader} {filterCond}")
         return (header, textHeader, filterCond)
 
     # def selectHeaderAuto(self, M, msg):
@@ -1080,6 +1080,7 @@ class moduleImap(Content):  # , Queue):
     def selectFolderN(self, moreMessages="", newFolderName="", folderM=""):
         self.checkConnected()
         data = self.listFolders()
+        logging.info(f"folderM: {folderM}")
         folders = [self.nameFolder(fol) for fol in data]
         if folderM:
             folders_sel = [self.nameFolder(fol) for fol in data
