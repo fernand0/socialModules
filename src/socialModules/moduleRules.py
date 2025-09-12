@@ -456,6 +456,7 @@ class moduleRules:
         logging.info(f"Srcs: {list(sources)}")
         logging.info(f"SrcsA: {list(sources_available)}")
         logMsg(f"{indent}Destinations:", 1, 0)
+        logMsg(f"{indent} {dst}", 2, 0)
         for dst in destinations:
             if not isinstance(dst, tuple) or len(dst) < 4:
                 logMsg(f"WARNING: Unexpected destination: {dst}", 2, 1)
