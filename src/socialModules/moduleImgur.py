@@ -235,8 +235,11 @@ class moduleImgur(Content):  # , Queue):
             logMsg(msgLog, 2, 0)
             if res_api:
                 res = OK
-        except imgurpython.helpers.error.ImgurClientError:
-            res = self.report(self.getService(), kwargs, "Unexpected", sys.exc_info())
+        except imgurpython.helpers.error.ImgurClientError as e:
+            if 'Image already in gallery.' in str(e):
+                res = "Fail! Image already in gallery."
+            else:
+                res = self.report(self.getService(), kwargs, "Unexpected", sys.exc_info())
         except:
             res = self.report("Imgur", post, idPost, sys.exc_info())
 
