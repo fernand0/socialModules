@@ -456,7 +456,6 @@ class moduleRules:
         logging.info(f"Srcs: {list(sources)}")
         logging.info(f"SrcsA: {list(sources_available)}")
         logMsg(f"{indent}Destinations:", 1, 0)
-        logMsg(f"{indent} Dddd {destinations}", 2, 0)
         for dst in destinations:
             if not isinstance(dst, tuple) or len(dst) < 4:
                 logMsg(f"WARNING: Unexpected destination: {dst}", 2, 1)
@@ -509,6 +508,7 @@ class moduleRules:
                 continue
             section_name = self.getNameRule(src)
             iniK, nameK = self.getIniKey(section_name.upper(), myKeys, myIniKeys)
+            logging.info(f"setAvail: {src} - {iniK} - {nameK}")
             if iniK not in available:
                 available[iniK] = {"name": section_name, "data": [], "social": []}
             more_i = more[i] if i < len(more) and isinstance(more[i], dict) else {}
