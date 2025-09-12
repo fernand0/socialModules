@@ -12,16 +12,15 @@ from socialModules.moduleContent import *
 
 
 class moduleTelegram(Content):
-
     def getKeys(self, config):
         print(config)
-        print(config.get('Telegram', 'TOKEN'))
-        TOKEN = config['Telegram']['TOKEN']
+        print(config.get("Telegram", "TOKEN"))
+        TOKEN = config["Telegram"]["TOKEN"]
         print(TOKEN)
-        return((TOKEN, ))
+        return (TOKEN,)
 
     def initApi(self, keys):
-        self.service = 'Telegram'
+        self.service = "Telegram"
         # logging.info("     Connecting {self.service}")
         TOKEN = keys[0]
         # logging.info("     token: {TOKEN}")
@@ -39,12 +38,12 @@ class moduleTelegram(Content):
         return bot
 
     def setClient(self, channel):
-        msgLog = (f"{self.indent} Start setClient account: {channel}")
+        msgLog = f"{self.indent} Start setClient account: {channel}"
         logMsg(msgLog, 1, 0)
         self.indent = f"{self.indent} "
         try:
             config = configparser.ConfigParser()
-            config.read(CONFIGDIR + '/.rssTelegram')
+            config.read(CONFIGDIR + "/.rssTelegram")
 
             if channel in config:
                 TOKEN = config.get(channel, "TOKEN")
@@ -63,15 +62,17 @@ class moduleTelegram(Content):
         self.user = channel
         self.channel = channel
         self.indent = self.indent[:-1]
-        msgLog = (f"{self.indent} End setClientt")
+        msgLog = f"{self.indent} End setClientt"
         logMsg(msgLog, 1, 0)
 
     def setChannel(self, channel):
         self.channel = channel
 
     def publishApiImage(self, *args, **kwargs):
-        msgLog = (f"{self.indent} Service {self.service} publishing args "
-                  f"{args}: kwargs {kwargs}")
+        msgLog = (
+            f"{self.indent} Service {self.service} publishing args "
+            f"{args}: kwargs {kwargs}"
+        )
         logMsg(msgLog, 2, 0)
         post, image = args
         more = kwargs
@@ -79,16 +80,15 @@ class moduleTelegram(Content):
         bot = self.getClient()
         channel = self.user
         if True:
-            bot.sendPhoto('@'+channel, photo=open(image, 'rb'), caption=post)
+            bot.sendPhoto("@" + channel, photo=open(image, "rb"), caption=post)
         else:
-            return(self.report('Telegram', post, sys.exc_info()))
+            return self.report("Telegram", post, sys.exc_info())
 
     def publishNextPost(self, apiSrc):
         # We just store the post, we need more information than the title,
         # link and so on.
-        reply = ''
-        logging.info(f"    Publishing next post from {apiSrc} in "
-                    f"{self.service}")
+        reply = ""
+        logging.info(f"    Publishing next post from {apiSrc} in " f"{self.service}")
         try:
             post = apiSrc.getNextPost()
             if post:
@@ -102,21 +102,21 @@ class moduleTelegram(Content):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        rep = 'Fail!'
-        content = ''
+        rep = "Fail!"
+        content = ""
         if args and len(args) == 3:
             title, link, comment = args
             if comment:
-                content=comment
+                content = comment
         if kwargs:
             more = kwargs
-            post = more.get('post', '')
-            api = more.get('api', '')
+            post = more.get("post", "")
+            api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
             if post:
                 contentHtml = api.getPostContentHtml(post)
-                soup = BeautifulSoup(contentHtml,'lxml')
+                soup = BeautifulSoup(contentHtml, "lxml")
                 (theContent, theSummaryLinks) = api.extractLinks(soup, "")
                 content = f"{theContent}\n{theSummaryLinks}"
 
@@ -126,66 +126,70 @@ class moduleTelegram(Content):
         channel = self.user
 
         logging.info(f"{self.service}: Title: {title} Link: {link}")
-        text = ('<a href="'+link+'">' + title+ "</a>\n")
+        text = '<a href="' + link + '">' + title + "</a>\n"
         logging.debug(f"{self.service}: Text: {text}")
-        #FIXME: This code needs improvement
+        # FIXME: This code needs improvement
         textToPublish = text
         textToPublish2 = ""
         from html import unescape
+
         title = unescape(title)
         if content:
-            content = content.replace('<', '&lt;')
-            text = (text + content + '\n\n' + links)
+            content = content.replace("<", "&lt;")
+            text = text + content + "\n\n" + links
 
         textToPublish = text
         while textToPublish:
             try:
-                res = bot.sendMessage('@'+channel, textToPublish[:4080],
-                                      parse_mode='HTML')
+                res = bot.sendMessage(
+                    "@" + channel, textToPublish[:4080], parse_mode="HTML"
+                )
                 textToPublish = textToPublish[4080:]
             except:
-                return(self.report('Telegram', textToPublish,
-                    link, sys.exc_info()))
+                return self.report("Telegram", textToPublish, link, sys.exc_info())
 
             if links:
-                bot.sendMessage('@'+channel, links, parse_mode='HTML')
+                bot.sendMessage("@" + channel, links, parse_mode="HTML")
             rep = res
 
         return rep
 
     def processReply(self, reply):
-        res = ''
+        res = ""
         if not isinstance(reply, list):
-            origReply = [reply, ]
+            origReply = [
+                reply,
+            ]
         else:
             origReply = reply
         for rep in origReply:
             if isinstance(rep, str):
-                rep = rep.replace("'",'"')
+                rep = rep.replace("'", '"')
                 rep = json.loads(rep)
             else:
                 rep = reply
-            if 'message_id' in rep:
-                idPost = rep['message_id']
+            if "message_id" in rep:
+                idPost = rep["message_id"]
                 res = f"{res} https://t.me/{self.user}/{idPost}"
-        return (res)
+        return res
 
     def getPostTitle(self, post):
-        if 'channel_post' in post:
-            if 'text' in post['channel_post']:
-                return(post['channel_post']['text'])
+        if "channel_post" in post:
+            if "text" in post["channel_post"]:
+                return post["channel_post"]["text"]
             else:
-                return ''
+                return ""
         else:
-            return ''
+            return ""
 
 
 def main():
-
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
-            format='%(asctime)s %(message)s')
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
+    )
 
     import socialModules.moduleRules
+
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
 
@@ -193,7 +197,7 @@ def main():
 
     tel = moduleTelegram.moduleTelegram()
 
-    tel.setClient('testFernand0')
+    tel.setClient("testFernand0")
     # tel.setChannel('testFernand-1')
 
     msgAlt = "hola"
@@ -205,7 +209,7 @@ def main():
 
     testingRssPost = True
     if testingRssPost:
-        selRules = rules.selectRule('rss', '')
+        selRules = rules.selectRule("rss", "")
         print(f"Rules:")
         for i, rul in enumerate(selRules):
             print(f"{i}) {rul}")
@@ -222,8 +226,8 @@ def main():
 
     testingPost = False
     if testingPost:
-        res = tel.publishPost("Prueba texto", "https://t.me/testFernand0", '')
-                #api = 'lala' , post = 'lele')
+        res = tel.publishPost("Prueba texto", "https://t.me/testFernand0", "")
+        # api = 'lala' , post = 'lele')
         print(f"Res: {res}")
         return
 
@@ -502,11 +506,9 @@ Tapa El Lince from Huesca.
 Diocese of Huesca"""
 
     if testingLongPost:
-        res = tel.publishPost(longText[:24], "https://t.me/testFernand0",
-                              longText)
+        res = tel.publishPost(longText[:24], "https://t.me/testFernand0", longText)
         print(f"Res: {res}")
         return
-
 
     # print("Testing posts")
     # tel.setPosts()
@@ -525,5 +527,5 @@ Diocese of Huesca"""
     sys.exit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

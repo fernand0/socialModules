@@ -3,6 +3,7 @@
 import logging
 from socialModules.test_utils import testing_utils
 
+
 class TestOption:
     def __init__(self, name, test_function):
         self.name = name
@@ -15,6 +16,7 @@ class TestOption:
         except Exception as e:
             print(f"Error in {self.name} test: {e}")
 
+
 class ModuleTester:
     def __init__(self, module_instance):
         self.module = module_instance
@@ -24,18 +26,23 @@ class ModuleTester:
     def setup(self):
         # Common setup logic, like initializing rules and selecting a rule
         import socialModules.moduleRules
+
         rules = socialModules.moduleRules.moduleRules()
         rules.checkRules()
 
         name = self.module.get_name()
         # This part needs to be more generic
-        rulesList = rules.selectRule(name, self.module.get_default_user(), self.module.get_default_post_type())
+        rulesList = rules.selectRule(
+            name, self.module.get_default_user(), self.module.get_default_post_type()
+        )
 
         print(f"Available {name} rules:")
         for i, rule in enumerate(rulesList):
             if not name.lower() in rule:
                 for rule_index, rule_key in enumerate(sorted(rules.rules.keys())):
-                    rule_metadata = rules.more[rule_key] if rule_key in rules.more else None
+                    rule_metadata = (
+                        rules.more[rule_key] if rule_key in rules.more else None
+                    )
                     rule_actions = rules.rules[rule_key]
                     for action_index, rule_action in enumerate(rule_actions):
                         if name.lower() in rule_action:
@@ -92,7 +99,7 @@ class ModuleTester:
     def run(self):
         if not self.setup():
             return
-        
+
         self.register_common_tests()
         self.module.register_specific_tests(self)
 
@@ -107,7 +114,7 @@ class ModuleTester:
                 if choice == 0:
                     break
                 if 1 <= choice <= len(self.test_options):
-                    self.test_options[choice-1].run()
+                    self.test_options[choice - 1].run()
                 else:
                     print("Invalid choice")
             except ValueError:

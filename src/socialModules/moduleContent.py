@@ -70,9 +70,9 @@ class Content:
         Returns:
             bool: True if auto-cache is enabled
         """
-        enabled = getattr(self, 'auto_cache', True)
+        enabled = getattr(self, "auto_cache", True)
         if isinstance(enabled, str):
-            return enabled.lower() in ('true', 'yes', '1')
+            return enabled.lower() in ("true", "yes", "1")
         return bool(enabled)
 
     def setService(self, service, serviceData):
@@ -108,9 +108,11 @@ class Content:
             config = configparser.RawConfigParser()
             config.read(configFile)
         except:
-            msgLog = (f"Does file {configFile} exist?\n"
-                      f"It is well formatted?\n"
-                      f" Does it contain an entry for your account?")
+            msgLog = (
+                f"Does file {configFile} exist?\n"
+                f"It is well formatted?\n"
+                f" Does it contain an entry for your account?"
+            )
             res = self.report({self.indent}, msgLog, 0, "")
 
         msgLog = f"{self.indent} Res: {res}"  #: {src[1:]}"
@@ -135,7 +137,7 @@ class Content:
         try:
             client = self.initApi(keys)
         except:
-            msgLog = (f"{self.indent} Exception {sys.exc_info()}")
+            msgLog = f"{self.indent} Exception {sys.exc_info()}"
             logMsg(msgLog, 2, 0)
             # To avoid submodules logging.
             # logger = logging.getLogger('my_module_name')
@@ -144,7 +146,7 @@ class Content:
             try:
                 client = self.initApi(keys)
             except:
-                msgLog = (f"{self.indent} Exception")
+                msgLog = f"{self.indent} Exception"
                 logMsg(msgLog, 2, 0)
                 if not config.sections and not keys:
                     self.report({self.service}, "No keys", "", "")
@@ -190,8 +192,8 @@ class Content:
         self.nick = nick
 
     def getServer(self):
-        server = ''
-        if hasattr(self, 'server'):
+        server = ""
+        if hasattr(self, "server"):
             server = self.server
         return server
 
@@ -370,10 +372,8 @@ class Content:
                 # userD = dst.src[1][3]
                 # serviceD = dst.src[1][2]
                 # logging.info(f"Uuuuuu: {userD} - {serviceD}")
-                userD = dst.getUser()
-                serviceD = dst.getService()
-                # userD = dst.apiDst.getUser()
-                # serviceD = dst.apiDst.getService()
+                userD = dst.apiDst.getUser()
+                serviceD = dst.apiDst.getService()
                 # logging.info(f"Uuuuuu: {userD} - {serviceD}")
             else:
                 userD = dst.getUser()
@@ -491,7 +491,6 @@ class Content:
         msgLog = f"{self.indent} lastTime: {lastTime}"
         logMsg(msgLog, 2, 0)
 
-
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime
         self.lastLink = linkLast
@@ -601,21 +600,23 @@ class Content:
 
             # 'wb' creará el fichero si no existe, por lo que checkFile es redundante
             # a menos que se quiera un log específico si el fichero no existía.
-            msgLog = f"{self.indent}Nowwww: {tnow}, tSleep {tSleep}"
-            logMsg(msgLog, 2, 0)
-            msgLog = f"{self.indent}Nowwww: {(tnow,tSleep)}"
-            logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent}Nowwww: {tnow}, tSleep {tSleep}"
+            # logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent}Nowwww: {(tnow,tSleep)}"
+            # logMsg(msgLog, 2, 0)
             with open(fileNameNext, "wb") as f:
                 pickle.dump((tnow, tSleep), f)
-            msgLog = f"{self.indent}Nowwwd: {(tnow,tSleep)}"
-            logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent}Nowwwd: {(tnow,tSleep)}"
+            # logMsg(msgLog, 2, 0)
 
             msgLog = f"{self.indent}  Fichero actualizado: {fileNameNext}"
             logMsg(msgLog, 2, 0)
 
         except (IOError, pickle.PicklingError) as e:
             # Un manejo de errores más específico que llamar a self.report
-            error_msg = f"Fallo al escribir en el fichero {fileNameNext or 'desconocido'}"
+            error_msg = (
+                f"Fallo al escribir en el fichero {fileNameNext or 'desconocido'}"
+            )
             logMsg(f"{self.indent}{error_msg}", 3, 1)
             self.report(self.service, error_msg, fileNameNext, e)
         finally:
@@ -885,18 +886,20 @@ class Content:
                     )
 
                 if title[-1] in string.punctuation:
-                    text = (f'{text}\n<p>'
-                            f'<h4>{description}</h4>\n<a href="{url}">'
+                    text = (
+                        f"{text}\n<p>"
+                        f'<h4>{description}</h4>\n<a href="{url}">'
                         #'<img class="alignnone size-full '
                         #'wp-image-3306" src="{}"
-                            f"{srcTxt}</a></p>" #.format(text, description, url, srcTxt)
+                        f"{srcTxt}</a></p>"  # .format(text, description, url, srcTxt)
                     )
                 else:
-                    text = (f'{text}\n<p><h4>{description}</h4>'
-                            f'<a href="{url}">'
+                    text = (
+                        f"{text}\n<p><h4>{description}</h4>"
+                        f'<a href="{url}">'
                         #'<img class="alignnone size-full '
                         #'wp-image-3306" src="{}"
-                            f"{srcTxt}</a></p>" #.format(text, description, url, srcTxt)
+                        f"{srcTxt}</a></p>"  # .format(text, description, url, srcTxt)
                     )
             else:
                 title = iimg[1]
@@ -1182,8 +1185,7 @@ class Content:
         elif len(args) == 1:
             # apiSrc= args[0]
             listPosts = args  # [1]
-            msgLog = (f"{self.indent} Publishing post {listPosts}"
-                      f" len(args) == 1")
+            msgLog = f"{self.indent} Publishing post {listPosts}" f" len(args) == 1"
             logMsg(msgLog, 2, 0)
             return
         if more:
@@ -1226,8 +1228,7 @@ class Content:
                     reply = method(api=api, post=post)
                 else:
                     msgLog = (
-                        f"{self.indent} Calling method "
-                        f"with title, link, comment"
+                        f"{self.indent} Calling method " f"with title, link, comment"
                     )
                     logMsg(msgLog, 2, 0)
                     reply = method(title, link, comment)
@@ -1237,7 +1238,9 @@ class Content:
 
             # Integrate publication cache if successful and auto_cache is enabled
             if self.getAutoCache():
-                self._cache_publication_if_successful(reply, title, link, api, post, more)
+                self._cache_publication_if_successful(
+                    reply, title, link, api, post, more
+                )
 
         except:
             reply = self.report(self.service, title, link, sys.exc_info())
@@ -1256,9 +1259,9 @@ class Content:
                 # If we have api and post, try to get better information
                 if api and post:
                     try:
-                        if hasattr(api, 'getPostTitle'):
+                        if hasattr(api, "getPostTitle"):
                             pub_title = api.getPostTitle(post) or title
-                        if hasattr(api, 'getPostLink'):
+                        if hasattr(api, "getPostLink"):
                             pub_link = api.getPostLink(post) or link
                     except:
                         # Fallback to original values
@@ -1271,7 +1274,10 @@ class Content:
 
                 # Check if we should cache this publication
                 try:
-                    from examples.publication_cache_config import should_cache_publication
+                    from examples.publication_cache_config import (
+                        should_cache_publication,
+                    )
+
                     if not should_cache_publication(pub_service, pub_title, pub_link):
                         return
                 except ImportError:
@@ -1286,7 +1292,9 @@ class Content:
                 cache = PublicationCache()
 
                 # Extract response link from reply
-                response_link = self._extract_response_link_from_reply(reply, pub_service)
+                response_link = self._extract_response_link_from_reply(
+                    reply, pub_service
+                )
 
                 # Cache the publication
                 user = self.getUser() or self.getNick()
@@ -1299,7 +1307,7 @@ class Content:
                         source_service=source_service_name,
                         user=user,
                         response_link=response_link,
-                        publication_date=datetime.datetime.now().isoformat()
+                        publication_date=datetime.datetime.now().isoformat(),
                     )
 
                     if pub_id:
@@ -1325,6 +1333,7 @@ class Content:
             # Check for custom extractor first
             try:
                 from examples.publication_cache_config import get_custom_extractor
+
                 custom_extractor = get_custom_extractor(service)
                 if custom_extractor:
                     custom_result = custom_extractor(reply)
@@ -1337,43 +1346,44 @@ class Content:
             # Handle different reply formats
             if isinstance(reply, dict):
                 # Twitter-style responses
-                if service == 'twitter':
-                    if 'id' in reply:
+                if service == "twitter":
+                    if "id" in reply:
                         return f"https://twitter.com/user/status/{reply['id']}"
-                    elif 'data' in reply and 'id' in reply['data']:
+                    elif "data" in reply and "id" in reply["data"]:
                         return f"https://twitter.com/user/status/{reply['data']['id']}"
 
                 # Facebook-style responses
-                elif service == 'facebook':
-                    if 'id' in reply:
+                elif service == "facebook":
+                    if "id" in reply:
                         return f"https://facebook.com/post/{reply['id']}"
-                    elif 'post_id' in reply:
+                    elif "post_id" in reply:
                         return f"https://facebook.com/post/{reply['post_id']}"
 
                 # LinkedIn-style responses
-                elif service == 'linkedin':
-                    if 'id' in reply:
+                elif service == "linkedin":
+                    if "id" in reply:
                         return f"https://linkedin.com/feed/update/{reply['id']}"
 
                 # Mastodon-style responses
-                elif service == 'mastodon':
-                    if 'url' in reply:
-                        return reply['url']
+                elif service == "mastodon":
+                    if "url" in reply:
+                        return reply["url"]
 
                 # Generic URL extraction
-                for key in ['url', 'link', 'permalink', 'web_url']:
+                for key in ["url", "link", "permalink", "web_url"]:
                     if key in reply:
                         return reply[key]
 
             # Handle tuple responses (legacy format)
             elif isinstance(reply, tuple) and len(reply) > 1:
-                if isinstance(reply[1], dict) and 'id' in reply[1]:
+                if isinstance(reply[1], dict) and "id" in reply[1]:
                     return f"https://{service}.com/post/{reply[1]['id']}"
 
             # Handle string responses that might contain URLs
             elif isinstance(reply, str):
                 # Look for URLs in the response string
                 import re
+
                 url_pattern = r'https?://[^\s<>"{}|\\^`\[\]]+'
                 urls = re.findall(url_pattern, reply)
                 if urls:

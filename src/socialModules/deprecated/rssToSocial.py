@@ -43,7 +43,6 @@ from configMod import *
 # from buffpy.managers.updates import Update
 
 
-
 def readConfig(checkBlog):
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + "/.rssBlogs")
@@ -88,9 +87,10 @@ def readConfig(checkBlog):
                 logging.info(" Forum: {}".format(forum))
                 blog = moduleForum.moduleForum()
                 blog.setClient(forum)
-            elif (("gmail" in config.options(section)) or
-                    (("service" in config.options(section))
-                        and (config[section]['service']=='gmail'))):
+            elif ("gmail" in config.options(section)) or (
+                ("service" in config.options(section))
+                and (config[section]["service"] == "gmail")
+            ):
                 mail = config.get(section, "url")
                 logging.info(" Gmail: {}".format(mail))
                 blog = moduleGmail.moduleGmail()
@@ -253,7 +253,6 @@ def updateCaches(blog, socialNetworks, simmulate):
         # print(i)
         # print(lastLink)
         if num > 0:
-
             link = ""
             listPosts = blog.getNumPostsData(num, i, lastLink)
             # print(num)
@@ -265,10 +264,7 @@ def updateCaches(blog, socialNetworks, simmulate):
                 print("      Would schedule ...")
                 logging.info("      Would schedule ...")
                 [print("       - {}".format(post[0])) for post in listPosts]
-                [
-                    logging.info("     - {}".format(post[0]))
-                    for post in listPosts
-                ]
+                [logging.info("     - {}".format(post[0])) for post in listPosts]
 
             if simmulate:
                 print("Simmulation {}".format(str(listPosts)))
@@ -295,10 +291,7 @@ def updateCaches(blog, socialNetworks, simmulate):
                     if isinstance(lastLink, list):
                         # print(lastLink)
                         link = "\n".join(
-                            [
-                                "{}".format(post[1])
-                                for post in reversed(listPosts)
-                            ]
+                            ["{}".format(post[1]) for post in reversed(listPosts)]
                         )
                         link = link + "\n" + "\n".join(lastLink)
 
@@ -362,7 +355,6 @@ def prepareUpdatesBlog(blog, socialNetworks, simmulate, nowait, timeSlots):
                 and isinstance(blog.getProgram(), str)
                 and (profile[0] in blog.getProgram())
             ):
-
                 delayedBlogs.append(
                     (
                         blog,
@@ -415,9 +407,7 @@ def startPublishing(delayedBlogs):
                                 )
 
             except Exception as exc:
-                print(
-                    "{} generated an exception: {}".format(str(dataBlog), exc)
-                )
+                print("{} generated an exception: {}".format(str(dataBlog), exc))
 
     msgLog = " Finished delayed at %s" % time.asctime()
     logMsg(msgLog, 1, 2)
@@ -427,7 +417,6 @@ def startPublishing(delayedBlogs):
 
 
 def main():
-
     loggingLevel = logging.INFO
     logging.basicConfig(
         filename=LOGDIR + "/rssSocial_.log",

@@ -19,25 +19,26 @@ from socialModules.moduleContent import *
 
 
 class moduleInstagram(Content):
-
     def setClient(self, instagramAC):
         self.user = None
         self.ig = None
 
         logging.info("     Connecting Instagram")
-        try: 
-            keyring.set_keyring(keyrings.alt.file.PlaintextKeyring()) 
-            username = instagramAC 
+        try:
+            keyring.set_keyring(keyrings.alt.file.PlaintextKeyring())
+            username = instagramAC
             self.user = instagramAC
-            server = 'instagram'
-            password = keyring.get_password(server,username) 
-            if not password: 
-                logging.info("[%s,%s] New account. Setting password" % (server, username)) 
-                password = getpass.getpass() 
+            server = "instagram"
+            password = keyring.get_password(server, username)
+            if not password:
+                logging.info(
+                    "[%s,%s] New account. Setting password" % (server, username)
+                )
+                password = getpass.getpass()
                 keyring.set_password(server, username, password)
 
-            try: 
-                api = InstagramAPI(username, password) 
+            try:
+                api = InstagramAPI(username, password)
                 api.login()  # login
                 logging.info("     Logging OK")
             except:
@@ -48,19 +49,19 @@ class moduleInstagram(Content):
             api = None
 
         self.client = api
- 
+
     def setPosts(self):
         logging.info(f"{self.indent} Setting posts")
         self.posts = []
         if self.client.getSelfUserFeed():
-            igs = self.client.LastJson['items']
+            igs = self.client.LastJson["items"]
             # Relevant items
             # 'code': 'BzlL-OXBYOe' -> https://www.instagram.com/p/BzlL-OXBYOe
             # 'caption' -> 'text'
             # 'taken_at' time.ctime
             # 'image_versions2' -> 'candidates' -> 'url'
             # 'comment_count'
-            # 'likers' 
+            # 'likers'
             # Example at the end of this file
         for ig in igs:
             self.posts.append(ig)
@@ -69,82 +70,83 @@ class moduleInstagram(Content):
         logging.info("     Publishing in Instagram...")
         comment = resizeImage(image)
         # resizeImage provided by configMod.py
-        try: 
+        try:
             res = self.client.uploadPhoto(comment, caption=post)
             self.setPosts()
-            title = self.getPosts()[0]['caption']['text']
+            title = self.getPosts()[0]["caption"]["text"]
             print("Title %s" % title)
             print("caption %s" % post)
             if title == post:
-                mediaId = self.getPosts()[0]['caption']['media_id']
+                mediaId = self.getPosts()[0]["caption"]["media_id"]
                 if link:
                     # We will publish the link as first comment
-                    path = urllib.parse.urlparse(link)[2].split('/')
-                    if (link.find('wordpress') > 0) and (len(path)>3):
+                    path = urllib.parse.urlparse(link)[2].split("/")
+                    if (link.find("wordpress") > 0) and (len(path) > 3):
                         # This should not be here (too specific)
                         yy = path[1]
                         mm = path[2]
                         dd = path[3]
-                        self.client.comment(mediaId, 'Original: %s [%s-%s-%s]'% (link,yy,mm,dd))
+                        self.client.comment(
+                            mediaId, "Original: %s [%s-%s-%s]" % (link, yy, mm, dd)
+                        )
                     else:
-                        self.client.comment(mediaId, 'Original: %s'% link)
+                        self.client.comment(mediaId, "Original: %s" % link)
                 logging.info("     Published in Instagram...")
 
-                return(self.getPosts()[0]['code']) 
+                return self.getPosts()[0]["code"]
             else:
                 logging.info("     Not published in Instagram...")
-                return('Fail')
+                return "Fail"
         except:
             logging.info("     Not published in Instagram. Exception ...")
-            return('Fail')
-        
+            return "Fail"
+
 
 def main():
-
     import moduleInstagram
 
     ig = moduleInstagram.moduleInstagram()
 
-    ig.setClient('a_veces_una_foto')
+    ig.setClient("a_veces_una_foto")
 
-    url = 'https://avecesunafoto.wordpress.com/2017/07/09/tocando/'
-    url = 'https://avecesunafoto.wordpress.com/2017/07/09/canelon-de-longaniza/'
-    url = 'https://avecesunafoto.wordpress.com/2017/07/09/ternasco/'
-    url = 'https://avecesunafoto.wordpress.com/2017/07/17/codos/'
-    url = 'https://avecesunafoto.wordpress.com/2017/07/19/maria-fernandez-guajardo-consejos-practicos-de-una-feminista-zaragozana-en-el-silicon-valley/'
+    url = "https://avecesunafoto.wordpress.com/2017/07/09/tocando/"
+    url = "https://avecesunafoto.wordpress.com/2017/07/09/canelon-de-longaniza/"
+    url = "https://avecesunafoto.wordpress.com/2017/07/09/ternasco/"
+    url = "https://avecesunafoto.wordpress.com/2017/07/17/codos/"
+    url = "https://avecesunafoto.wordpress.com/2017/07/19/maria-fernandez-guajardo-consejos-practicos-de-una-feminista-zaragozana-en-el-silicon-valley/"
     # lin rel='next'
     # soup.findAll('link', {'rel': 'next'})
     import requests
+
     req = requests.get(url)
     if req.status_code == 200:
         from bs4 import BeautifulSoup
-        soup = BeautifulSoup(req.text, 'html.parser')
-        imgUrl = soup.img['src']
-        title = soup.findAll('h1')[1].text
-        pos = imgUrl.find('?')
+
+        soup = BeautifulSoup(req.text, "html.parser")
+        imgUrl = soup.img["src"]
+        title = soup.findAll("h1")[1].text
+        pos = imgUrl.find("?")
         if pos > 0:
             imgUrl = imgUrl[:pos]
-        if imgUrl: 
+        if imgUrl:
             logging.debug(imgUrl)
-            #res = ig.publishPost(title, url, imgUrl)
-            #print(res)
+            # res = ig.publishPost(title, url, imgUrl)
+            # print(res)
 
     sys.exit()
     print("Setting posts")
     ig.setPosts()
     for igP in ig.getPosts():
-        print("https://instagram.com/p/%s" % igP['code'])
-        print("Caption: %s" % igP['caption'])
-        print("Image: %s" % igP['image_versions2']['candidates'][0]['url'])
-        print("Likes: %d" % igP['like_count'])
+        print("https://instagram.com/p/%s" % igP["code"])
+        print("Caption: %s" % igP["caption"])
+        print("Image: %s" % igP["image_versions2"]["candidates"][0]["url"])
+        print("Likes: %d" % igP["like_count"])
 
     print(res)
-    return("https://instagram.com/p/%s" % igP['code'])
+    return "https://instagram.com/p/%s" % igP["code"]
 
 
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
 
 """

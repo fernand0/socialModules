@@ -352,11 +352,11 @@ class moduleWordpress(Content):  # ,Queue):
             imgs = soup.find_all("img")
             for img in imgs:
                 logging.debug(f"extract img: {img}")
-                src = img.get("src","")
-                alt = img.get("alt","")
-                if '(' in alt and ')' in alt:
-                    posI = alt.find('(')
-                    posF = alt.find(')')+1
+                src = img.get("src", "")
+                alt = img.get("alt", "")
+                if "(" in alt and ")" in alt:
+                    posI = alt.find("(")
+                    posF = alt.find(")") + 1
                     title = alt[posI:posF]
                     res.append((src, src, title, alt))
                 else:

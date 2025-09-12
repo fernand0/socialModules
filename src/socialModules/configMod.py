@@ -17,11 +17,12 @@ CONFIGDIR = APPDIR + "/config"
 DATADIR = APPDIR + "/data"
 TMPDIR = "/tmp"
 WWWDIR = "/var/www/html/img/"
-WWWADDRESS = 'https://elmundoesimperfecto.com/img/'
-NAMEIMG = 'instagram.jpg'
+WWWADDRESS = "https://elmundoesimperfecto.com/img/"
+NAMEIMG = "instagram.jpg"
 
-FAIL = 'Fail!'
-OK = 'OK'
+FAIL = "Fail!"
+OK = "OK"
+
 
 def logMsg(msgLog, log=1, output=1):
     if log == 1:
@@ -38,25 +39,26 @@ def logMsg(msgLog, log=1, output=1):
         print("{}".format(msgLog))
         print("====================================")
 
+
 def fileNamePath(url, socialNetwork=()):
     logging.info(f" ----> Url: {url}")
     logging.info(f"socialNetwork: {socialNetwork}")
     urlParsed = urllib.parse.urlparse(url)
     myNetloc = urlParsed.netloc
     if not myNetloc:
-        myNetloc=url
-    if ('twitter' in myNetloc) or ('reddit' in myNetloc):
+        myNetloc = url
+    if ("twitter" in myNetloc) or ("reddit" in myNetloc):
         myNetloc = f"{myNetloc}_{urlParsed.path[1:]}"
-    if myNetloc.endswith('/'):
+    if myNetloc.endswith("/"):
         myNetloc = myNetloc[:-1]
-    myNetloc = myNetloc.replace('/','_')
+    myNetloc = myNetloc.replace("/", "_")
     if not socialNetwork:
-        theName = (f"{DATADIR}/{myNetloc}")
+        theName = f"{DATADIR}/{myNetloc}"
     else:
-        myFile = (f"{DATADIR}/{myNetloc}_"
-                  f"{socialNetwork[0]}_{socialNetwork[1]}")
+        myFile = f"{DATADIR}/{myNetloc}_" f"{socialNetwork[0]}_{socialNetwork[1]}"
         theName = os.path.expanduser(myFile)
-    return(theName)
+    return theName
+
 
 # def setNextTime(blog, socialNetwork, tNow, tSleep):
 #     fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext'
@@ -64,18 +66,20 @@ def fileNamePath(url, socialNetwork=()):
 #         pickle.dump((tNow, tSleep), f)
 #     return fileNameNext
 
+
 def getNextTime(blog, socialNetwork, indent=""):
-    fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext'
-    msgLog = (f"fileNameNext {fileNameNext}")
+    fileNameNext = fileNamePath(blog.getUrl(), socialNetwork) + ".timeNext"
+    msgLog = f"fileNameNext {fileNameNext}"
     logMsg(msgLog, 2, 0)
     msgLog = checkFile(fileNameNext, indent)
-    if 'OK' in msgLog:
-        with open(fileNameNext,'rb') as f:
+    if "OK" in msgLog:
+        with open(fileNameNext, "rb") as f:
             tNow, tSleep = pickle.load(f)
         return tNow, tSleep
     else:
-        self.report(self.service, msgLog, '', '')
+        self.report(self.service, msgLog, "", "")
         return 0, 0
+
 
 def checkFile(fileName, indent=""):
     msgLog = f"{indent} Start checkFile"
@@ -95,10 +99,11 @@ def checkFile(fileName, indent=""):
     logMsg(msgLog, 2, 0)
     return msgRes
 
-def getLastLink(fileName, indent=''):
-    msgLog = (f"fileName: {fileName}")
+
+def getLastLink(fileName, indent=""):
+    msgLog = f"fileName: {fileName}"
     logMsg(msgLog, 2, 0)
-    linkLast = ''
+    linkLast = ""
     timeLast = 0
     msgLog = checkFile(fileName, indent)
     if not "OK" in msgLog:
@@ -109,28 +114,30 @@ def getLastLink(fileName, indent=''):
             linkLast = f.read().decode().split()  # Last published
         timeLast = os.path.getmtime(fileName)
     if len(linkLast) == 1:
-        return(linkLast[0], timeLast)
+        return (linkLast[0], timeLast)
     else:
-        return(linkLast, timeLast)
+        return (linkLast, timeLast)
+
 
 def checkLastLink(url, socialNetwork=()):
     # Redundant with moduleCache
-    fileNameL = fileNamePath(url, socialNetwork)+".last"
-    msgLog = (f"Checking last link: {fileNameL}")
+    fileNameL = fileNamePath(url, socialNetwork) + ".last"
+    msgLog = f"Checking last link: {fileNameL}"
     logMsg(msgLog, 2, 0)
-    #print("Checking last link: %s" % fileNameL)
+    # print("Checking last link: %s" % fileNameL)
     (linkLast, timeLast) = getLastLink(fileNameL)
-    return(linkLast, timeLast)
+    return (linkLast, timeLast)
+
 
 def newUpdateLastLink(url, link, lastLink, socialNetwork=()):
     if isinstance(lastLink, list):
-        link = '\n'.join([ "{}".format (post[1]) for post in listPosts])
-        link = link + '\n' + '\n'.join(lastLink)
+        link = "\n".join(["{}".format(post[1]) for post in listPosts])
+        link = link + "\n" + "\n".join(lastLink)
 
     fileName = fileNamePath(url, socialNetwork) + ".last"
 
     msgLog = checkFile(fileName)
-    if 'OK' in msgLog:
+    if "OK" in msgLog:
         with open(fileName, "w") as f:
             if isinstance(link, bytes):
                 f.write(link.decode())
@@ -139,26 +146,25 @@ def newUpdateLastLink(url, link, lastLink, socialNetwork=()):
             else:
                 f.write(link[0])
 
-def updateLastLink(url, link, socialNetwork=(),indent=''):
+
+def updateLastLink(url, link, socialNetwork=(), indent=""):
     try:
-        #FIXME: not self here
+        # FIXME: not self here
         indent = self.indent
     except:
-        indent = ''
-    msgLog = (f"{indent} updateLastLink {socialNetwork}")
+        indent = ""
+    msgLog = f"{indent} updateLastLink {socialNetwork}"
     logMsg(msgLog, 1, 0)
-    msgLog = (f"{indent} Url: {url} Link: {link} "
-              f"SocialNetwork: {socialNetwork}")
+    msgLog = f"{indent} Url: {url} Link: {link} " f"SocialNetwork: {socialNetwork}"
     logMsg(msgLog, 2, 0)
     fileName = fileNamePath(url, socialNetwork) + ".last"
 
-
-    msgLog = (f"fileName: {fileName}")
+    msgLog = f"fileName: {fileName}"
     logMsg(msgLog, 2, 0)
     msgLog = checkFile(fileName, indent)
     logMsg(msgLog, 2, 0)
-    if not 'OK' in msgLog:
-        msgLog = (f"fileName: {fileName} does not exist, I'll create it")
+    if not "OK" in msgLog:
+        msgLog = f"fileName: {fileName} does not exist, I'll create it"
         logMsg(msgLog, 2, 0)
     with open(fileName, "w") as f:
         if isinstance(link, bytes):
@@ -168,23 +174,25 @@ def updateLastLink(url, link, socialNetwork=(),indent=''):
         else:
             f.write(link[0])
 
-def getModule(profile, indent=''):
+
+def getModule(profile, indent=""):
     # https://stackoverflow.com/questions/41678073/import-class-from-module-dynamically
     indent = f"{indent} "
-    msgLog = (f"{indent} Start getModule {profile}")
+    msgLog = f"{indent} Start getModule {profile}"
     logMsg(msgLog, 2, 0)
     serviceName = profile.capitalize()
 
-    mod = importlib.import_module('socialModules.module' + serviceName)
-    cls = getattr(mod, 'module' + serviceName)
+    mod = importlib.import_module("socialModules.module" + serviceName)
+    cls = getattr(mod, "module" + serviceName)
     api = cls(indent)
-    msgLog = (f"{indent} End getModule")
+    msgLog = f"{indent} End getModule"
     logMsg(msgLog, 2, 0)
     indent = indent[:-1]
     return api
 
-def getApi(profile, nick, indent="", channel = None):
-    msgLog = (f"{indent} Start getApi with channel {channel}")
+
+def getApi(profile, nick, indent="", channel=None):
+    msgLog = f"{indent} Start getApi with channel {channel}"
     logMsg(msgLog, 2, 0)
 
     # msgLog = (f"{indent}  Profile {profile} "
@@ -201,21 +209,24 @@ def getApi(profile, nick, indent="", channel = None):
     if channel:
         api.setPage(channel)
     api.indent = f"{indent[:-1]}"
-    api.setPostsType('posts')
+    api.setPostsType("posts")
 
-    #indent = indent[:-1]
-    msgLog = (f"{indent} End getApi")
+    # indent = indent[:-1]
+    msgLog = f"{indent} End getApi"
     logMsg(msgLog, 2, 0)
     return api
 
+
 def nameModule():
     import inspect
+
     stack = inspect.stack()
     info = stack[1]
     name = info.filename
-    pos = name.rfind('module')
-    name = name[pos+len('module'):-3]
+    pos = name.rfind("module")
+    name = name[pos + len("module") : -3]
     return name
+
 
 def safe_get(data, keys, default=""):
     """Safely retrieves nested values from a dictionary."""
@@ -227,8 +238,14 @@ def safe_get(data, keys, default=""):
         return default
 
 
-def select_from_list(options, identifier="", selector="", 
-                     negation_selector="", default="", more_options=[]):
+def select_from_list(
+    options,
+    identifier="",
+    selector="",
+    negation_selector="",
+    default="",
+    more_options=[],
+):
     """selects an option form an iterable element, based on some identifier
 
     we can make an initial selection of elements that contain 'selector'
@@ -257,20 +274,20 @@ def select_from_list(options, identifier="", selector="",
     sel = -1
     names_sel = names.copy()
     if selector:
-        names_sel = [opt for opt in names if selector in opt]# + more_options
+        names_sel = [opt for opt in names if selector in opt]  # + more_options
     if negation_selector:
-        names_sel = [opt for opt in names if not (negation_selector in opt)] 
+        names_sel = [opt for opt in names if not (negation_selector in opt)]
     names_sel = names_sel + more_options
     options_sel = names_sel.copy()
-    while options_sel and len(options_sel)>1:
+    while options_sel and len(options_sel) > 1:
         text_sel = ""
         for i, elem in enumerate(options_sel):
             text_sel = f"{text_sel}\n{i}) {elem}"
-        resPopen = os.popen('stty size', 'r').read()
+        resPopen = os.popen("stty size", "r").read()
         rows, columns = resPopen.split()
         logging.info(f"Rows: {rows} Columns: {columns}")
-        if text_sel.count('\n') > int(rows) -2:
-            click.echo_via_pager(text_sel) 
+        if text_sel.count("\n") > int(rows) - 2:
+            click.echo_via_pager(text_sel)
         else:
             click.echo(text_sel)
         msg = "Selection"
@@ -296,13 +313,13 @@ def select_from_list(options, identifier="", selector="",
                 options_sel = []
             else:
                 options_sel = names_sel.copy()
-    
-    if len(options_sel) == 1:      
-        if not options_sel[0] in more_options: 
+
+    if len(options_sel) == 1:
+        if not options_sel[0] in more_options:
             sel = names.index(options_sel[0])
 
     logging.info(f"Sel: {sel}")
-    if isinstance(sel, int) and int(sel) < len(names): 
+    if isinstance(sel, int) and int(sel) < len(names):
         logging.info(f"- {names[int(sel)]}")
         name = names[int(sel)]
     else:

@@ -1,5 +1,5 @@
-# This module provides infrastructure for managing content in different 
-# queues: local cache, buffer, Gmail, ... 
+# This module provides infrastructure for managing content in different
+# queues: local cache, buffer, Gmail, ...
 
 import configparser
 import logging
@@ -8,7 +8,6 @@ import re
 
 
 class Queue:
-
     def __init__(self):
         self.name = None
         self.service = None
@@ -20,25 +19,25 @@ class Queue:
     def getProfiles(self):
         if not self.profiles:
             self.setProfiles()
-        return(self.profiles)
- 
-    def getPostsFormatted(self):    
-        return(self.postsFormatted)
+        return self.profiles
 
-    def lenMax(self): 
-        return(len(self.getPosts()))
+    def getPostsFormatted(self):
+        return self.postsFormatted
 
-    def reorderTitle(self, oldTitle):            
-        p = re.compile('\w')
-        newTitle = ''
+    def lenMax(self):
+        return len(self.getPosts())
+
+    def reorderTitle(self, oldTitle):
+        p = re.compile("\w")
+        newTitle = ""
         for word in oldTitle.split():
             if not p.search(word):
-                word = ' '+word+' '
+                word = " " + word + " "
                 newTitle = word.join(oldTitle.split(word)[::-1])
                 break
         if not newTitle:
             newTitle = oldTitle
-        return(newTitle)
+        return newTitle
 
     #  def extractDataMessage(self, i):
     #      logging.info("extract queue")
@@ -72,21 +71,21 @@ class Queue:
 
     #     pos = args.find(' ')
     #     j = -1
-    #     if pos > 0: 
+    #     if pos > 0:
     #         argsIni = args[:pos]
     #         if isinstance(argsCont, str):
     #             argsCont = args[pos+1:]
     #             logging.debug(f"Args {argsIni}-{argsCont}")
-    #             if (argsCont and len(argsCont)>1): 
-    #                 if argsCont[0].isdigit() and (argsCont[1] == ' '): 
+    #             if (argsCont and len(argsCont)>1):
+    #                 if argsCont[0].isdigit() and (argsCont[1] == ' '):
     #                     j = int(argsCont[0])
     #                     argsCont = argsCont[2:]
-    #     else: 
+    #     else:
     #         argsIni = args
     #         logging.info(f"Args {argsIni}")
 
     #     pos = argsIni.find('*')
-    #     if pos == 0: 
+    #     if pos == 0:
     #         """ If the first character of the argument is a '*' the
     #         following ones are the number. But we are supposing that they
     #         start at the third character, so we move the string one
@@ -97,7 +96,7 @@ class Queue:
     #     reply = ""
 
     #     if len(argsIni) > 2:
-    #         j = int(argsIni[2:]) 
+    #         j = int(argsIni[2:])
     #     logging.debug(f"Argscont {argsCont} j {j}")
     #     logging.debug(f"Self: {self}")
     #     cmd = getattr(self, command)
@@ -106,7 +105,7 @@ class Queue:
     #         logging.info("Command %s %d"% (command, j))
     #         if argsCont:
     #             reply = reply + str(cmd(j, argsCont))
-    #         else: 
+    #         else:
     #             reply = reply + str(cmd(j))
     #     else:
     #         logging.info("Missing argument %s %d"% (command, j))
@@ -121,8 +120,8 @@ class Queue:
     #         reply = f"Post: {post}"
     #     return reply
 
-    #FIXME should we put here related commands or move this one to
-    # moduleContent?  
+    # FIXME should we put here related commands or move this one to
+    # moduleContent?
     # def show(self, j):
     #     if j < len(self.getPosts()):
     #         logging.info("To show post %d" % j)
@@ -137,11 +136,11 @@ class Queue:
     #         reply = ''
     #         logging.info("title %s"%title)
     #         if title:
-    #             reply = reply + ' ' + title 
+    #             reply = reply + ' ' + title
     #         if content:
     #             reply = reply + ' ' + content
-    #         if link: 
-    #             reply = reply + '\n' + link 
+    #         if link:
+    #             reply = reply + '\n' + link
     #     else:
     #         reply = ''
 
@@ -220,7 +219,7 @@ class Queue:
 
     #     # published = False
     #     # for i, action in enumerate(actions):
-    #     #     if post: 
+    #     #     if post:
     #     #         logging.info(f"Action {i}: {action} with post: {post}")
     #     #     if action[0] == "cache":
     #     #         apiDst = getApi("cache", (src[1], (action[2], action[3])))
@@ -272,35 +271,34 @@ class Queue:
     #     #     yield (res)
     #     # yield end()
 
-
-    # 
+    #
     # #######################################################
     # # These need work
     # #######################################################
-    # 
+    #
     # def movePost(self, args):
     #     # Moving posts, we identify the profile by the first letter. We can use
     #     # several letters and if we put a '*' we'll move the posts in all the
     #     # social networks
     #     logging.info("To move %s to %s" % (toMove,toWhere))
-    # 
+    #
     #     i = 0
     #     profMov = ""
     #     return(args)
     #     while toMove[i].isalpha():
     #         profMov = profMov + toMove[i]
     #         i = i + 1
-    # 
+    #
     #     profiles = cache['profiles']
-    #     for profile in profiles: 
+    #     for profile in profiles:
     #         logging.info("Social Network %s" % profile)
     #         logging.info("profMov %s", profMov)
     #         if 'socialNetwork' in profile:
     #             logging.info("socialNetwork %s", profile['socialNetwork'])
-    # 
+    #
     #             serviceName = profile['socialNetwork'][0].capitalize()
     #             nick = profile['socialNetwork'][1]
-    #             if (serviceName[0] in profMov) or toMove[0]=='*': 
+    #             if (serviceName[0] in profMov) or toMove[0]=='*':
     #                 logging.info("to Move %s to %s" % (toMove, toWhere))
     #                 j = int(toMove[-1])
     #                 k = int(toWhere[-1])
@@ -309,41 +307,40 @@ class Queue:
     #                 posts[serviceName]['pending'][i] = postJ
     #                 posts[serviceName]['pending'][j] = postI
     #                 updatePostsCache(profile['socialNetwork'])
-    # 
-    #     return(posts[serviceName]['pending'][i][0]+' '+ 
+    #
+    #     return(posts[serviceName]['pending'][i][0]+' '+
     #               posts[serviceName]['pending'][j][0])
-    # 
+    #
     # # def copyPost(self, api, log, profiles, toCopy, toWhere):
     # #     logging.info(toCopy+' '+toWhere)
-    # # 
+    # #
     # #     profCop = toCopy[0]
     # #     ii = int(toCopy[1])
-    # # 
+    # #
     # #     j = 0
     # #     profWhe = ""
     # #     i = 0
     # #     while i < len(toWhere):
     # #         profWhe = profWhe + toWhere[i]
     # #         i = i + 1
-    # #     
+    # #
     # #     log.info(toCopy,"|",profCop, ii, profWhe)
     # #     for i in range(len(profiles)):
     # #         serviceName = profiles[i].formatted_service
     # #         log.info("ii: %s" %i)
     # #         updates = getattr(profiles[j].updates, 'pending')
     # #         update = updates[ii]
-    # #         if ('media' in update): 
+    # #         if ('media' in update):
     # #             if ('expanded_link' in update.media):
     # #                 link = update.media.expanded_link
     # #             else:
     # #                 link = update.media.link
     # #         else:
     # #             link = ""
-    # #        
+    # #
     # #         if (serviceName[0] in profCop):
-    # #             for j in range(len(profiles)): 
-    # #                 serviceName = profiles[j].formatted_service 
+    # #             for j in range(len(profiles)):
+    # #                 serviceName = profiles[j].formatted_service
     # #                 if (serviceName[0] in profWhe):
     # #                     profiles[j].updates.new(urllib.parse.quote(update.text + " " + link).encode('utf-8'))
-    # # 
-
+    # #
