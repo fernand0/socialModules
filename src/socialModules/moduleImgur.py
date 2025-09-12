@@ -228,19 +228,19 @@ class moduleImgur(Content):  # , Queue):
         logMsg(msgLog, 1, 0)
         api = self.getClient()
         # idPost = self.getPostId(post)
+        res = FAIL
         try:
-            res = api.share_on_imgur(idPost, title, terms=0)
-            msgLog = f"{self.indent} Res: {res}"
+            res_api = api.share_on_imgur(idPost, title, terms=0)
+            msgLog = f"{self.indent} Res: {res_api}"
             logMsg(msgLog, 2, 0)
-            if res:
-                return OK
+            if res_api:
+                res = OK
         except imgurpython.helpers.error.ImgurClientError:
             res = self.report(self.getService(), kwargs, "Unexpected", sys.exc_info())
         except:
             res = self.report("Imgur", post, idPost, sys.exc_info())
-            return res
 
-        return FAIL
+        return res
 
     def delete(self, j):
         msgLog = f"{self.indent} Deleting {j}"
