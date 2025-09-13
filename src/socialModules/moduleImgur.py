@@ -178,6 +178,9 @@ class moduleImgur(Content):  # , Queue):
             res = reply
             if "Image already in gallery." in res:
                 res += " SAVELINK"
+        elif (isinstance(reply, str) and "http" in reply
+              and 'imgur' in reply):
+            res = reply
         elif not reply:
             # Failure: The reply is None, False, or empty.
             res = "Fail! No reply from API."
