@@ -1434,6 +1434,10 @@ class moduleImap(Content):  # , Queue):
             res = status
         except imaplib.IMAP4.error as e:
             res = self.report("", e, "", sys.exc_info())
+            if 'Too long argument' in e:
+                msgList = msgs.split(', ')
+                msgLog = "I was Copying %s in %s" % (msgList, folder)
+
         logging.debug(f"Res status: {res} - {resultMsg}")
         if status == "OK":
             # If the list of messages is too long it won't work
