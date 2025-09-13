@@ -1427,6 +1427,7 @@ class moduleImap(Content):  # , Queue):
             M.select(channel.capitalize())
         msgLog = "Copying %s in %s" % (msgs, folder)
         logMsg(msgLog, 2, 0)
+        resultMsg =  ""
         try:
             (status, resultMsg) = M.copy(msgs, folder)
             res = status
