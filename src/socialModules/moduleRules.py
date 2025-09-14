@@ -1324,6 +1324,7 @@ class moduleRules:
         profile_action = self.getProfileAction(rule_action)
 
         # Hardcoded logic for specific services
+        logMsg(f"------->timeSlots: {timeSlots}")
         if (action_name == "cache") or (
             action_name == "direct" and profile_action == "pocket"
         ):
