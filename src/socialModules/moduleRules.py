@@ -1332,6 +1332,7 @@ class moduleRules:
             noWait = True
 
         # Override with rule-specific metadata if present
+        logMsg(f"------->timeSlots: {timeSlots}")
         if "timeSlots" in rule_metadata:
             try:
                 timeSlots = float(rule_metadata["timeSlots"])
@@ -1342,6 +1343,7 @@ class moduleRules:
                     1,
                 )
 
+        logMsg(f"------->timeSlots: {timeSlots}")
         if "noWait" in rule_metadata:
             noWait_str = str(rule_metadata["noWait"]).lower()
             noWait = noWait_str in ("true", "1", "t", "y", "yes")
