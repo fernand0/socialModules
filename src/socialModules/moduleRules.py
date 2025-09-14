@@ -1145,6 +1145,7 @@ class moduleRules:
         if lastTime is not None:
             timeSlots_seconds = float(timeSlots) * 60
             next_pub_time = lastTime + hours
+            logMsg(f"{indent}timeSlots: {timeSlots}")
             logMsg(f"{indent}next_pub: {next_pub_time} tNOw+: {tNow + timeSlots_seconds}")
             if not noWait and next_pub_time >= tNow + timeSlots_seconds:
                 next_pub_time_formatted = datetime.datetime.fromtimestamp(
