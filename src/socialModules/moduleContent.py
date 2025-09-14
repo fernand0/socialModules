@@ -238,8 +238,8 @@ class Content:
                     # setting url, time, max, posts,
                     # setCache ¿?
                     cmd = getattr(self, nameMethod)
-                    # msgLog = f"{self.indent} {cmd} value {more[option]}"
-                    # logMsg(msgLog, 2, 0)
+                    msgLog = f"{self.indent} {cmd} value {more[option]}"
+                    logMsg(msgLog, 2, 0)
                     if inspect.ismethod(cmd):
                         cmd(more[option])
                 else:

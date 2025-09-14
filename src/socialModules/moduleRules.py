@@ -1324,7 +1324,7 @@ class moduleRules:
         if (action_name == "cache") or (
             action_name == "direct" and profile_action == "pocket"
         ):
-            logMsg(f"....{action_name}: {args.noWait}")
+            logMsg(f"======{action_name}: {args.noWait}")
             timeSlots = 0
             noWait = True
 
