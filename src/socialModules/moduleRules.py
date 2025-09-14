@@ -1140,6 +1140,7 @@ class moduleRules:
         skip = False
         tNow = time.time()
         hours = float(apiDst.getTime()) * 60 * 60
+        logMsg(f"Hours: {hours}")
         lastTime = apiDst.getLastTimePublished(f"{indent}")
         if lastTime is not None:
             timeSlots_seconds = float(timeSlots) * 60
