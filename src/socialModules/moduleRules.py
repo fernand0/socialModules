@@ -989,9 +989,9 @@ class moduleRules:
                     res and ("Fail!" not in res) and ("failed!" not in res)
                 ):
                     link = apiSrc.getPostLink(post)
-                    if (src 
+                    if (src
                         and self.getNameRule(src) != "cache"
-                        and 'imgur' not in link
+                        and ('imgur' not in link or apiDst.profile != 'imgur')
                         ):
                         resUpdate = apiDst.updateLastLink(apiSrc, link)
                         resMsg += f" Update: {resUpdate}"
