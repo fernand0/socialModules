@@ -982,6 +982,7 @@ class moduleRules:
         else:
             res = ""
             if post:
+                logMsg(f"{indent}Postttt: {post}", 1, 1)
                 res = apiDst.publishPost(api=apiSrc, post=post)
                 logMsg(f"{indent}Reply: {res}", 1, 1)
                 logMsg(f"{indent}Trying to publish {msgLog} ", 1, 1)

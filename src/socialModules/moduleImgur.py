@@ -380,7 +380,7 @@ def main():
             # break
     apiSrc = rules.readConfigSrc(indent, mySrc, more)
 
-    testingImages = True
+    testingImages = False
     if testingImages:
         apiSrc.setPostsType("posts")
         apiSrc.setPosts()
@@ -391,13 +391,18 @@ def main():
 
         return
 
-    testingDrafts = False
+    testingDrafts = True
     if testingDrafts:
         apiSrc.setPostsType("drafts")
         apiSrc.setPosts()
         print(f"Posts: {apiSrc.getPosts()}")
         for i, post in enumerate(apiSrc.getPosts()):
             print(f"{i}) {apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
+
+        post = apiSrc.getNextPost()
+        print(f"Post: {post}")
+        print(f"{apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
+
 
         return
 
