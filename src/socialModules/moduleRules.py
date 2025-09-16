@@ -966,6 +966,7 @@ class moduleRules:
         else:
             post = apiSrc.getPost(pos)
         link = ""
+        logMsg(f"{indent}El postttt {post}", 1, 1)
         if post:
             title = apiSrc.getPostTitle(post)
             link = apiSrc.getPostLink(post)
