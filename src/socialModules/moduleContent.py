@@ -1479,7 +1479,7 @@ class Content:
 
     def edit(self, j, newTitle):
         msgLog = f"{self.indent} do edit {j} - {newTitle}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 1, 0)
         update = self.do_edit(j, newTitle=newTitle)
         return update
 
@@ -1774,6 +1774,8 @@ class Content:
         # print("----Unexpected error: %s"% data[2])
 
     def show(self, j):
+        msgLog = f"{self.indent} do show {j}"
+        logMsg(msgLog, 1, 0)
         if j < len(self.getPosts()):
             post = self.getPosts()[j]
             title = self.getPostTitle(post)
