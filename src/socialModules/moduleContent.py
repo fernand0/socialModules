@@ -1786,8 +1786,8 @@ class Content:
             reply = ""
             if title:
                 reply = reply + " " + title
-            if content:
-                reply = reply + " " + content
+            # if content:
+            #     reply = reply + " " + content
             if link:
                 reply = reply + "\n" + link
         else:
