@@ -1146,13 +1146,13 @@ class moduleRules:
         skip = False
         tNow = time.time()
         hours = float(apiDst.getTime()) * 60 * 60
-        logMsg(f"{indent}Hours: {hours} noWait: {noWait}")
+        # logMsg(f"{indent}Hours: {hours} noWait: {noWait}")
         lastTime = apiDst.getLastTimePublished(f"{indent}")
         if lastTime is not None:
             timeSlots_seconds = float(timeSlots) * 60
             next_pub_time = lastTime + hours
-            logMsg(f"{indent}timeSlots: {timeSlots}")
-            logMsg(f"{indent}next_pub: {next_pub_time} tNOw+: {tNow + timeSlots_seconds}")
+            # logMsg(f"{indent}timeSlots: {timeSlots}")
+            # logMsg(f"{indent}next_pub: {next_pub_time} tNOw+: {tNow + timeSlots_seconds}")
             if not noWait and next_pub_time >= tNow + timeSlots_seconds:
                 next_pub_time_formatted = datetime.datetime.fromtimestamp(
                     next_pub_time
@@ -1330,7 +1330,6 @@ class moduleRules:
         profile_action = self.getProfileAction(rule_action)
 
         # Hardcoded logic for specific services
-        logMsg(f"------->timeSlots: {timeSlots}")
         if (action_name == "cache") or (
             action_name == "direct" and profile_action == "pocket"
         ):
@@ -1339,7 +1338,6 @@ class moduleRules:
             noWait = True
 
         # Override with rule-specific metadata if present
-        logMsg(f"------->timeSlots: {timeSlots}")
         if "timeSlots" in rule_metadata:
             try:
                 timeSlots = float(rule_metadata["timeSlots"])
@@ -1350,7 +1348,6 @@ class moduleRules:
                     1,
                 )
 
-        logMsg(f"------->timeSlots: {timeSlots}")
         if "noWait" in rule_metadata:
             noWait_str = str(rule_metadata["noWait"]).lower()
             noWait = noWait_str in ("true", "1", "t", "y", "yes")
