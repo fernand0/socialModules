@@ -741,8 +741,9 @@ class Content:
         posts = self.getPosts()
         if posts and (i >= 0) and (i < len(posts)):
             post = posts[i]
-        elif posts:
-            post = posts[-1]
+        #elif posts:
+        #    # Sure? FIXME
+        #    post = posts[-1]
 
         msgLog = f"{self.indent} End getPost"
         logMsg(msgLog, 2, 0)
