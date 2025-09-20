@@ -119,6 +119,26 @@ class moduleImgur(Content):  # , Queue):
         # 'ids' parameter is optional but in the Python package check for it
         return self.getClient().update_album(idPost, fields)
 
+    def getPost(self, i):
+        self.indent = f"{self.indent} "
+        msgLog = f"{self.indent} Start getPost pos {i}."
+        logMsg(msgLog, 2, 0)
+        post = None
+        posts = self.getPosts()
+        if posts and (i >= 0) and (i < len(posts)):
+            post = posts[i]
+        elif posts:
+            # When pos is -1 there can be drafts and we just want to post the
+            # first one
+            pos = len(posts)
+            post = posts[pos-1]
+
+        msgLog = f"{self.indent} End getPost"
+        logMsg(msgLog, 2, 0)
+        self.indent = self.indent[:-1]
+        return post
+
+
     def setPostTitle(self, post, newTitle):
         post.title = newTitle
 
