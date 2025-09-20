@@ -178,6 +178,8 @@ class moduleImgur(Content):  # , Queue):
             res = reply
             if "Image already in gallery." in res:
                 res += " SAVELINK"
+        elif (isinstance(reply, str) and "OK" in reply):
+            res = reply
         elif not reply:
             # Failure: The reply is None, False, or empty.
             res = "Fail! No reply from API."
@@ -228,19 +230,22 @@ class moduleImgur(Content):  # , Queue):
         logMsg(msgLog, 1, 0)
         api = self.getClient()
         # idPost = self.getPostId(post)
+        res = FAIL
         try:
-            res = api.share_on_imgur(idPost, title, terms=0)
-            msgLog = f"{self.indent} Res: {res}"
+            res_api = api.share_on_imgur(idPost, title, terms=0)
+            msgLog = f"{self.indent} Res: {res_api}"
             logMsg(msgLog, 2, 0)
-            if res:
-                return OK
-        except imgurpython.helpers.error.ImgurClientError:
-            res = self.report(self.getService(), kwargs, "Unexpected", sys.exc_info())
+            if res_api:
+                res = OK
+        except imgurpython.helpers.error.ImgurClientError as e:
+            if 'Image already in gallery.' in str(e):
+                res = "Fail! Image already in gallery."
+            else:
+                res = self.report(self.getService(), kwargs, "Unexpected", sys.exc_info())
         except:
             res = self.report("Imgur", post, idPost, sys.exc_info())
-            return res
 
-        return FAIL
+        return res
 
     def delete(self, j):
         msgLog = f"{self.indent} Deleting {j}"
@@ -375,7 +380,7 @@ def main():
             # break
     apiSrc = rules.readConfigSrc(indent, mySrc, more)
 
-    testingImages = True
+    testingImages = False
     if testingImages:
         apiSrc.setPostsType("posts")
         apiSrc.setPosts()
@@ -386,13 +391,18 @@ def main():
 
         return
 
-    testingDrafts = False
+    testingDrafts = True
     if testingDrafts:
         apiSrc.setPostsType("drafts")
         apiSrc.setPosts()
         print(f"Posts: {apiSrc.getPosts()}")
         for i, post in enumerate(apiSrc.getPosts()):
             print(f"{i}) {apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
+
+        post = apiSrc.getNextPost()
+        print(f"Post: {post}")
+        print(f"{apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
+
 
         return
 

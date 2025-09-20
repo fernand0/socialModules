@@ -966,6 +966,7 @@ class moduleRules:
         else:
             post = apiSrc.getPost(pos)
         link = ""
+        logMsg(f"{indent}El postttt {post}", 1, 1)
         if post:
             title = apiSrc.getPostTitle(post)
             link = apiSrc.getPostLink(post)
@@ -981,7 +982,9 @@ class moduleRules:
             resMsg = ""
         else:
             res = ""
+            logMsg(f"{indent}Elseeee {post}", 1, 1)
             if post:
+                logMsg(f"{indent}Postttt: {post}", 1, 1)
                 res = apiDst.publishPost(api=apiSrc, post=post)
                 logMsg(f"{indent}Reply: {res}", 1, 1)
                 logMsg(f"{indent}Trying to publish {msgLog} ", 1, 1)
@@ -989,7 +992,10 @@ class moduleRules:
                     res and ("Fail!" not in res) and ("failed!" not in res)
                 ):
                     link = apiSrc.getPostLink(post)
-                    if src and self.getNameRule(src) != "cache":
+                    if (src
+                        and self.getNameRule(src) != "cache"
+                        and ('imgur' not in link or apiDst.profile != 'imgur')
+                        ):
                         resUpdate = apiDst.updateLastLink(apiSrc, link)
                         resMsg += f" Update: {resUpdate}"
             if res:
@@ -1140,10 +1146,13 @@ class moduleRules:
         skip = False
         tNow = time.time()
         hours = float(apiDst.getTime()) * 60 * 60
+        # logMsg(f"{indent}Hours: {hours} noWait: {noWait}")
         lastTime = apiDst.getLastTimePublished(f"{indent}")
         if lastTime is not None:
             timeSlots_seconds = float(timeSlots) * 60
             next_pub_time = lastTime + hours
+            # logMsg(f"{indent}timeSlots: {timeSlots}")
+            # logMsg(f"{indent}next_pub: {next_pub_time} tNOw+: {tNow + timeSlots_seconds}")
             if not noWait and next_pub_time >= tNow + timeSlots_seconds:
                 next_pub_time_formatted = datetime.datetime.fromtimestamp(
                     next_pub_time
@@ -1324,6 +1333,7 @@ class moduleRules:
         if (action_name == "cache") or (
             action_name == "direct" and profile_action == "pocket"
         ):
+            logMsg(f"======{action_name}: {args.noWait}")
             timeSlots = 0
             noWait = True
 

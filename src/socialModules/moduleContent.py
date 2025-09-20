@@ -741,6 +741,9 @@ class Content:
         posts = self.getPosts()
         if posts and (i >= 0) and (i < len(posts)):
             post = posts[i]
+        #elif posts:
+        #    # Sure? FIXME
+        #    post = posts[-1]
 
         msgLog = f"{self.indent} End getPost"
         logMsg(msgLog, 2, 0)
@@ -950,8 +953,10 @@ class Content:
                 else:
                     posLast = len(posts)
 
-            # msgLog = f"{self.indent} posLast: {posLast}"
-            # logMsg(msgLog, 2, 0)
+            msgLog = f"{self.indent} lastLinkkk: {lastLink}"
+            logMsg(msgLog, 1, 0)
+            msgLog = f"{self.indent} posLast: {posLast}"
+            logMsg(msgLog, 1, 0)
         msgLog = f"{self.indent} End getPosNextPost."
         logMsg(msgLog, 2, 0)
         return posLast
@@ -1475,7 +1480,7 @@ class Content:
 
     def edit(self, j, newTitle):
         msgLog = f"{self.indent} do edit {j} - {newTitle}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 1, 0)
         update = self.do_edit(j, newTitle=newTitle)
         return update
 
@@ -1526,7 +1531,6 @@ class Content:
             lastTime = self.lastTimePublished
             if lastTime:
                 import time
-
                 myTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastTime))
             else:
                 myTime = "No time"
@@ -1654,7 +1658,7 @@ class Content:
                     linkS = linkS.decode()
                 url = self.getPostLink(entry)
                 # msgLog = (f"{self.indent} Url: {url} Link: {linkS}")
-                # logMsg(msgLog, 2, 0)
+                # logMsg(msgLog, 1, 0)
                 # lenCmp = min(len(url), len(linkS))
                 if url == linkS:
                     # When there are duplicates (there shouldn't be) it returns
@@ -1770,6 +1774,8 @@ class Content:
         # print("----Unexpected error: %s"% data[2])
 
     def show(self, j):
+        msgLog = f"{self.indent} do show {j}"
+        logMsg(msgLog, 1, 0)
         if j < len(self.getPosts()):
             post = self.getPosts()[j]
             title = self.getPostTitle(post)
@@ -1781,8 +1787,8 @@ class Content:
             reply = ""
             if title:
                 reply = reply + " " + title
-            if content:
-                reply = reply + " " + content
+            # if content:
+            #     reply = reply + " " + content
             if link:
                 reply = reply + "\n" + link
         else:

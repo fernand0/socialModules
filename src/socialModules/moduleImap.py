@@ -1420,30 +1420,43 @@ class moduleImap(Content):  # , Queue):
             self.moveMails(M, messageId, "Trash")
 
     def moveMails(self, M, msgs, folder):
-        if hasattr(self, "channel"):  # in self:
+        if hasattr(self, "channel"):
             M.select(self.channel)
         else:
             channel = self.getPostsType()
             M.select(channel.capitalize())
-        msgLog = "Copying %s in %s" % (msgs, folder)
-        logMsg(msgLog, 2, 0)
-        (status, resultMsg) = M.copy(msgs, folder)
-        res = status
-        logging.debug(f"Res status: {res} - {resultMsg}")
-        if status == "OK":
-            # If the list of messages is too long it won't work
-            flag = "\\Deleted"
-            result = M.store(msgs, "+FLAGS", flag)
-            if result[0] != "OK":
-                print("Fail deleting!")
+
+        msgLog = f"Copying {len(msgs.split(','))} messages to {folder}"
+        logMsg(msgLog, 1, 0)
+
+        res = "OK"
+        msgList = msgs.split(',')
+        chunk_size = 500
+
+        for i in range(0, len(msgList), chunk_size):
+            chunk = msgList[i:i + chunk_size]
+            chunk_str = ','.join(chunk)
+            
+            try:
+                status, resultMsg = M.copy(chunk_str, folder)
+                if status != "OK":
+                    logging.warning(f"Failed to copy chunk: {resultMsg}")
+                    res = "Fail!"
+                    continue
+
+                flag = "\\Deleted"
+                result = M.store(chunk_str, "+FLAGS", flag)
+                if result[0] != "OK":
+                    print("Failed to delete chunk!")
+                    res = "Fail!"
+                else:
+                    print(f"Chunk deleted: {result}")
+
+            except imaplib.IMAP4.error as e:
+                self.report("", e, "", sys.exc_info())
+                logging.error(f"Error processing chunk: {e}")
                 res = "Fail!"
-            else:
-                print(f"deleting! {result}")
-        else:
-            logging.warning(f"Fail copying. {resultMsg}")
-            res = "Fail!"
-        # print(f"Expunge: {M.expunge()}")
-        # msgs contains the index of the message, we can retrieve/move them
+
         return res
 
     def printMessageHeaders(self, M, msgs):
