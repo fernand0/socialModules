@@ -993,8 +993,8 @@ class moduleRules:
                 ):
                     link = apiSrc.getPostLink(post)
                     if (src
-                        and self.getNameRule(src) != "cache"
-                        and ('imgur' not in link or apiDst.profile != 'imgur')
+                        # and self.getNameRule(src) != "cache"
+                        # and ('imgur' not in link or apiDst.profile != 'imgur')
                         ):
                         resUpdate = apiDst.updateLastLink(apiSrc, link)
                         resMsg += f" Update: {resUpdate}"
@@ -1049,7 +1049,8 @@ class moduleRules:
         tL = random.random() * numAct
         child_indent = f"{indent} "
         logMsg(
-            f"{child_indent} Sleeping {tL:.2f} seconds ({numAct} actions) to launch all processes",
+            (f"{child_indent} Sleeping {tL:.2f} seconds ({numAct} "
+            "actions) to launch all processes"),
             1,
             0,
         )
@@ -1065,7 +1066,10 @@ class moduleRules:
         else:
             num = 1
         theAction = self.getTypeAction(action)
-        msgFrom = f" {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}"
+        msgFrom = (f" {theAction} from {apiSrc.getUrl()} in " 
+                   f"{self.getNickAction(action)}@"
+                   f"{self.getProfileAction(action)}"
+                   )
         logMsg(f"{grandchild_indent}I'll publish {num} {msgFrom}", 1, 1)
         if num > 0:
             tNow = time.time()
@@ -1089,7 +1093,8 @@ class moduleRules:
                 for i in range(num):
                     time.sleep(tSleep)
                     if "minutes" in msgLog:
-                        logMsg(f"{grandchild_indent} End Waiting {msgFrom}", 1, 1)
+                        logMsg(f"{grandchild_indent} End Waiting "
+                               f"{msgFrom}", 1, 1)
                     res = self.executePublishAction(
                         grandchild_indent,
                         msgAction,
@@ -1105,7 +1110,8 @@ class moduleRules:
                     0
                 ] is not None:
                     logMsg(
-                        f"{grandchild_indent} No publication occurred. Restoring previous next-run time.",
+                        (f"{grandchild_indent} No publication occurred. "
+                        f"Restoring previous next-run time."),
                         1,
                         1,
                     )
@@ -1139,7 +1145,8 @@ class moduleRules:
             scheduled_actions, max_workers=max_workers
         )
         self._report_results(action_results, action_errors)
-        logMsg(f"End Executing rules with {len(scheduled_actions)} actions.", 1, 2)
+        logMsg(f"End Executing rules with {len(scheduled_actions)} "
+               f"actions.", 1, 2)
         return
 
     def _should_skip_publication(self, apiDst, apiSrc, noWait, timeSlots, indent=""):
