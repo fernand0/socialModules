@@ -1145,7 +1145,8 @@ class moduleRules:
             scheduled_actions, max_workers=max_workers
         )
         self._report_results(action_results, action_errors)
-        logMsg(f"End Executing rules with {len(scheduled_actions)} actions.", 1, 2)
+        logMsg(f"End Executing rules with {len(scheduled_actions)} "
+               f"actions.", 1, 2)
         return
 
     def _should_skip_publication(self, apiDst, apiSrc, noWait, timeSlots, indent=""):
