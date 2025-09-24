@@ -1286,11 +1286,12 @@ class moduleRules:
         )
 
         msgAction = (
-            f"{self.getNameAction(rule_action)} "
+                #f"{self.getNameAction(rule_action)} "
             f"{self.getNickAction(rule_action)}@"
             f"{self.getProfileAction(rule_action)} "
             f"({self.getTypeAction(rule_action)})"
         )
+        logMsg(f"=========> {msgAction}", 1,1)
         action_index = scheduled_action.get("action_index", 0)
         nameA = scheduled_action["nameA"]
         return self.executeAction(
