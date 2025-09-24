@@ -1526,16 +1526,8 @@ class Content:
 
     def getLastTimePublished(self, indent=""):
         lastTime = ""
-        msgLog = f"{indent} No lastTimePublished"
         if hasattr(self, "lastTimePublished"):
             lastTime = self.lastTimePublished
-            if lastTime:
-                import time
-                myTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastTime))
-            else:
-                myTime = "No time"
-            msgLog = f"{indent} Last time: {myTime}"
-        logMsg(msgLog, 1, 1)
         return lastTime
 
     def getLinksToAvoid(self):

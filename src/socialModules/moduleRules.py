@@ -966,7 +966,6 @@ class moduleRules:
         else:
             post = apiSrc.getPost(pos)
         link = ""
-        logMsg(f"{indent}El postttt {post}", 1, 1)
         if post:
             title = apiSrc.getPostTitle(post)
             link = apiSrc.getPostLink(post)
@@ -982,9 +981,8 @@ class moduleRules:
             resMsg = ""
         else:
             res = ""
-            logMsg(f"{indent}Elseeee {post}", 1, 1)
             if post:
-                logMsg(f"{indent}Postttt: {post}", 1, 1)
+                logMsg(f"{indent}Will publish in {msgAction} {msgLog}", 1, 1)
                 res = apiDst.publishPost(api=apiSrc, post=post)
                 logMsg(f"{indent}Reply: {res}", 1, 1)
                 logMsg(f"{indent}Trying to publish {msgLog} ", 1, 1)
@@ -1005,11 +1003,11 @@ class moduleRules:
                     indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos, res
                 )
             logMsg(f"{indent}End publish, reply: {resMsg}", 1, 1)
-        if postaction == "delete":
-            msgLog = f"{indent}Available {len(apiSrc.getPosts())-1}"
-        else:
-            msgLog = f"{indent}Available {len(apiSrc.getPosts())}"
-        logMsg(msgLog, 1, 1)
+        # if postaction == "delete":
+        #     msgLog = f"{indent}Available {len(apiSrc.getPosts())-1}"
+        # else:
+        #     msgLog = f"{indent}Available {len(apiSrc.getPosts())}"
+        # logMsg(msgLog, 1, 1)
         return resMsg
 
     def executeAction(
@@ -1066,7 +1064,7 @@ class moduleRules:
         else:
             num = 1
         theAction = self.getTypeAction(action)
-        msgFrom = (f" {theAction} from {apiSrc.getUrl()} in "
+        msgFrom = (f"{theAction} from {apiSrc.getUrl()} in "
                    f"{self.getNickAction(action)}@"
                    f"{self.getProfileAction(action)}"
                    )
@@ -1151,10 +1149,17 @@ class moduleRules:
 
     def _should_skip_publication(self, apiDst, apiSrc, noWait, timeSlots, indent=""):
         skip = False
+        import time
         tNow = time.time()
         hours = float(apiDst.getTime()) * 60 * 60
         # logMsg(f"{indent}Hours: {hours} noWait: {noWait}")
         lastTime = apiDst.getLastTimePublished(f"{indent}")
+        if lastTime:
+            myTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastTime))
+            msgLog = f"{indent} Last time: {myTime}"
+        else:
+            msgLog = f"{indent} No lastTimePublished"
+        logMsg(msgLog, 1, 1)
         if lastTime is not None:
             timeSlots_seconds = float(timeSlots) * 60
             next_pub_time = lastTime + hours
