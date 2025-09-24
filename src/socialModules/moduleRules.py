@@ -970,7 +970,7 @@ class moduleRules:
             title = apiSrc.getPostTitle(post)
             link = apiSrc.getPostLink(post)
             resMsg = f"Publish result: {res}"
-            msgLog = f"Title: {title}."
+            msgLog = f"Title: {title}"
             if link:
                 msgLog = f"{msgLog} Recording Link: {link} in file {apiDst.fileNameBase(apiSrc)}.last"
         else:
@@ -1291,7 +1291,7 @@ class moduleRules:
             f"{self.getProfileAction(rule_action)} "
             f"({self.getTypeAction(rule_action)})"
         )
-        logMsg(f"=========> {msgAction}", 1,1)
+        # logMsg(f"=========> {msgAction}", 1,1)
         action_index = scheduled_action.get("action_index", 0)
         nameA = scheduled_action["nameA"]
         return self.executeAction(
