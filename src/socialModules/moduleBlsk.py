@@ -261,9 +261,9 @@ class moduleBlsk(Content):  # , Queue):
                 "send_post", api=client, text=title, embed=embed_external
             )
         except atproto_client.exceptions.BadRequestError:
-            res = self.report(self.service, f"{title} {link}", title, sys.exc_info())
+            res = self.report(self.service, f"Bad Request: {title} {link}", title, sys.exc_info())
         except:
-            res = self.report(self.service, f"{title} {link}", title, sys.exc_info())
+            res = self.report(self.service, f"Other Exception: {title} {link}", title, sys.exc_info())
 
         msgLog = f"{self.indent}Res: {res} "
         logMsg(msgLog, 2, 0)
