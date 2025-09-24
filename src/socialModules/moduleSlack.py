@@ -429,6 +429,7 @@ def main():
 
     testingPost = True
     if testingPost:
+        # apiSrc.setChannel('tavern-of-the-bots')
         apiSrc.setPosts()
         print(f"Posts: {apiSrc.getPosts()}")
         listPosts = {}
