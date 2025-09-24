@@ -71,7 +71,7 @@ class moduleRules:
             if select and section != select:
                 continue
             msgLog = f" Section: {section}"
-            logMsg(msgLog, 1, 1)
+            logMsg(msgLog, 2, 0)
             section_indent = f"{indent}{section}>"
             try:
                 self._process_section(
@@ -226,7 +226,7 @@ class moduleRules:
                             more.append(section_metadata)
                         else:
                             sources_available.add(toAppend)
-                logMsg(f"{indent} Service: {service}", 1, 1)
+                logMsg(f"{indent} Service: {service}", 2, 0)
         return toAppend, theService, api
 
     def _process_destinations(
@@ -1066,7 +1066,7 @@ class moduleRules:
         else:
             num = 1
         theAction = self.getTypeAction(action)
-        msgFrom = (f" {theAction} from {apiSrc.getUrl()} in " 
+        msgFrom = (f" {theAction} from {apiSrc.getUrl()} in "
                    f"{self.getNickAction(action)}@"
                    f"{self.getProfileAction(action)}"
                    )
@@ -1175,7 +1175,7 @@ class moduleRules:
                 minutes_left = int((time_left_seconds % 3600) // 60)
                 seconds_left = int(time_left_seconds % 60)
                 time_left_formatted = f"{hours_left}h {minutes_left}m {seconds_left}s"
-                msgLog = (f"{indent} Publication time starts at "
+                msgLog = (f"{indent}Publication time starts at "
                           f"{next_pub_time_formatted} (in "
                           f"{time_left_formatted}). It's outside "
                           f"the {timeSlots} min window [{tNow_formatted} "
@@ -1204,13 +1204,13 @@ class moduleRules:
             else:
                 i = i + 1
 
-            nameR_base = f"[{self.getNameAction(rule_key)}{i}]"
-            indent_base = f"{nameR_base:->12}>"
+            name_action = f"[{self.getNameAction(rule_key)}{i}]"
+            nameR = f"{name_action:->12}>"
             logMsg(
-                f"{indent_base} Preparing actions for rule: {self.getNickSrc(rule_key)}@{self.getNameRule(rule_key)} ({self.getNickAction(rule_key)})",
-                1,
-                1,
-            )
+                (f"{nameR} Preparing actions for rule: "
+                f"{self.getNickSrc(rule_key)}@{self.getNameRule(rule_key)} "
+                f"({self.getNickAction(rule_key)})"),
+                1, 1)
             previous = self.getNameAction(rule_key)
             for action_index, rule_action in enumerate(rule_actions):
                 if select and (
@@ -1218,7 +1218,7 @@ class moduleRules:
                 ):
                     continue
 
-                nameA = f"{indent_base} Action {action_index}:"
+                nameA = f"{nameR}  Action {action_index}:"
                 indent = nameA
 
                 apiSrc = self.readConfigSrc(indent, rule_key, rule_metadata)
@@ -1229,7 +1229,7 @@ class moduleRules:
                 )
 
                 if self._should_skip_publication(
-                    apiDst, apiSrc, noWait, timeSlots, indent
+                    apiDst, apiSrc, noWait, timeSlots, f"{nameA} "
                 ):
                     continue
                 scheduled_actions.append(
@@ -1243,6 +1243,8 @@ class moduleRules:
                         "simmulate": args.simmulate,
                         "apiSrc": apiSrc,
                         "apiDst": apiDst,
+                        "name_action": name_action,
+                        "nameA": nameA,
                     }
                 )
         return scheduled_actions
@@ -1284,11 +1286,8 @@ class moduleRules:
             f"{self.getProfileAction(rule_action)} "
             f"({self.getTypeAction(rule_action)})"
         )
-        rule_index = scheduled_action.get("rule_index", 0)
         action_index = scheduled_action.get("action_index", 0)
-        name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
-        nameR = f"{name_action:->12}>"
-        nameA = f"{nameR} Action {action_index}:"
+        nameA = scheduled_action["nameA"]
         return self.executeAction(
             rule_key,
             rule_metadata,
@@ -1337,10 +1336,11 @@ class moduleRules:
         profile_action = self.getProfileAction(rule_action)
 
         # Hardcoded logic for specific services
-        if (action_name == "cache") or (
-            action_name == "direct" and profile_action == "pocket"
-        ):
-            logMsg(f"======{action_name}: {args.noWait}")
+        if (action_name == "cache"): #or (
+        #    action_name == "direct" and profile_action == "pocket"
+        #)
+        #:
+            # logMsg(f"======{action_name}: {args.noWait}")
             timeSlots = 0
             noWait = True
 
@@ -1350,10 +1350,9 @@ class moduleRules:
                 timeSlots = float(rule_metadata["timeSlots"])
             except ValueError:
                 logMsg(
-                    f"WARNING: Invalid timeSlots value in rule metadata: {rule_metadata['timeSlots']}",
-                    2,
-                    1,
-                )
+                    (f"WARNING: Invalid timeSlots value in rule metadata: "
+                     f"{rule_metadata['timeSlots']}"),
+                    2, 1,)
 
         if "noWait" in rule_metadata:
             noWait_str = str(rule_metadata["noWait"]).lower()
