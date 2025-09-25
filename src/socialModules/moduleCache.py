@@ -62,8 +62,8 @@ class moduleCache(Content):  # ,Queue):
         return "posts"
 
     def fileNameBase(self, dst=None):
-        self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Start fileNameBase (c)"
+        indent = f"{self.indent}  "
+        msgLog = f"{indent} Start fileNameBase (c)"
         logMsg(msgLog, 2, 0)
         myDst = dst
         if hasattr(self, "fileName") and self.fileName:
@@ -98,9 +98,8 @@ class moduleCache(Content):  # ,Queue):
             fileName = f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}"
             self.fileName = fileName
 
-        msgLog = f"{self.indent} End fileNameBase"
+        msgLog = f"{indent} End fileNameBase"
         logMsg(msgLog, 2, 0)
-        self.indent = f"{self.indent[:-1]}"
         return fileName
 
     def initApi(self, keys):
@@ -109,7 +108,7 @@ class moduleCache(Content):  # ,Queue):
         self.postsType = "posts"
         self.url = ""
         self.socialNetwork = ""
-        logging.info(f"Src: {self.src}")
+        # logging.info(f"Src: {self.src}")
         self.user = self.src[2]
         self.nick = self.user
         self.apiDst = getModule(self.src[1][2], f"{self.indent}  (c)")
@@ -153,9 +152,9 @@ class moduleCache(Content):  # ,Queue):
         logMsg(msgLog, 2, 0)
         listP = []
         try:
-            msgLog = checkFile(fileNameQ, f"{self.indent} ")
-            logMsg(f"{self.indent}  {msgLog}", 2, 0)
-            if "OK" in msgLog:
+            resFile = checkFile(fileNameQ, f"{self.indent} ")
+            # logMsg(f"{self.indent}  {msgLog}", 2, 0)
+            if "OK" in resFile:
                 with open(fileNameQ, "rb") as f:
                     try:
                         listP = pickle.load(f)

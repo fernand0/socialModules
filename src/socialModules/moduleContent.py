@@ -86,7 +86,7 @@ class Content:
             cmd(serviceData)
 
     def setClient(self, account):
-        msgLog = f"{self.indent} Start setClient account: {account}"
+        msgLog = f"{self.indent} Start setClient profile: {self.profile} account: {account}"
         logMsg(msgLog, 1, 0)
         self.indent = f"{self.indent} "
 
@@ -101,23 +101,24 @@ class Content:
 
         configFile = f"{CONFIGDIR}/.rss{self.service}"
         res = None
-        msgLog = f"{self.indent} Config: {configFile}"  #: {src[1:]}"
+        msgLog = f"{self.indent}  Config file: {configFile}"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        res = configFile
+        res = ""
         try:
             config = configparser.RawConfigParser()
             config.read(configFile)
         except:
-            msgLog = (
+            msgLog = (f"{self.indent}  "
                 f"Does file {configFile} exist?\n"
                 f"It is well formatted?\n"
                 f" Does it contain an entry for your account?"
             )
             res = self.report({self.indent}, msgLog, 0, "")
 
-        msgLog = f"{self.indent} Res: {res}"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
-        if res and not "Fail" in res:
+        if res:
+            msgLog = f"{self.indent}  Res: {res}"  #: {src[1:]}"
+            logMsg(msgLog, 2, 0)
+        else:
             self.indent = f"{self.indent} "
             msgLog = f"{self.indent} Getting keys"
             logMsg(msgLog, 2, 0)
@@ -153,10 +154,9 @@ class Content:
                 else:
                     self.report({self.service}, "Some problem", "", "")
 
-        msgLog = f"{self.indent} clienttt {client}"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} clienttt {client}"  #: {src[1:]}"
+        # logMsg(msgLog, 2, 0)
         self.client = client
-        self.indent = self.indent[:-1]
         self.indent = self.indent[:-1]
         self.indent = self.indent[:-1]
         msgLog = f"{self.indent} End setClientt"
@@ -223,6 +223,8 @@ class Content:
         # We have a dictionary of values and we check for methods for
         # setting these values in our object
         self.indent = f"{self.indent} "
+        msgLog = f"{self.indent} Start setMoreValues"
+        logMsg(msgLog, 2, 0)
         if more:
             # Setting values available in more
             for option in more:
@@ -253,8 +255,8 @@ class Content:
                                 break
         if not self.getUser():
             self.setUser()
-        msgLog = f"{self.indent} End setMoreValues client {self.getClient()}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} End setMoreValues client {self.getClient()}"
+        # logMsg(msgLog, 2, 0)
         msgLog = f"{self.indent} End setMoreValues"
         logMsg(msgLog, 2, 0)
         self.indent = f"{self.indent[:-1]}"
@@ -340,8 +342,8 @@ class Content:
         return url
 
     def fileNameBase(self, dst=None):
-        self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Start fileNameBase"
+        indent = f"{self.indent}  "
+        msgLog = f"{indent} Start fileNameBase"
         logMsg(msgLog, 2, 0)
 
         if hasattr(dst, "fileName") and dst.fileName:
@@ -388,9 +390,8 @@ class Content:
             fileName = f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}"
             self.fileName = fileName
 
-        msgLog = f"{self.indent} End fileNameBase"
+        msgLog = f"{indent} End fileNameBase"
         logMsg(msgLog, 2, 0)
-        self.indent = f"{self.indent[:-1]}"
         return fileName
 
     def updateLastLink(self, src, link):
@@ -461,18 +462,23 @@ class Content:
         return lastLink
 
     def setLastLink(self, src=None):
+        if src:
+            indent = src.indent
+        else:
+            indent = f"{self.indent} "
         msgLog = f"{self.indent} Start setLastLink"
         logMsg(msgLog, 1, 0)
+        self.indent = f"{self.indent} "
         if src:
             fileName = f"{src.fileNameBase(self)}.last"
         else:
             fileName = f"{self.fileNameBase(self)}.last"
         lastTime = ""
         linkLast = ""
-        checkR = checkFile(fileName, f"{self.indent} ")
-        msgLog = f"{self.indent} {checkR}"
-        logMsg(msgLog, 2, 0)
-        if "OK" in msgLog:
+        checkR = checkFile(fileName, f"{self.indent}")
+        # msgLog = f"{self.indent} {checkR}"
+        # logMsg(msgLog, 2, 0)
+        if "OK" in checkR:
             try:
                 with open(fileName, "rb") as f:
                     linkLast = f.read()
@@ -486,7 +492,7 @@ class Content:
         else:
             lastTime = 0
             self.report(self.service, msgLog, "", "")
-        msgLog = f"{self.indent} linkLast: {linkLast}"
+        msgLog = f"{self.indent} linkLast: {linkLast[0]}"
         logMsg(msgLog, 2, 0)
         msgLog = f"{self.indent} lastTime: {lastTime}"
         logMsg(msgLog, 2, 0)
@@ -494,6 +500,7 @@ class Content:
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime
         self.lastLink = linkLast
+        self.indent = self.indent[:-1]
         msgLog = f"{self.indent} End setLastLink"
         logMsg(msgLog, 1, 0)
 

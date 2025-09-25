@@ -829,8 +829,8 @@ class moduleRules:
             apiSrc = getApi(profile, account, child_indent, more["channel"])
         else:
             apiSrc = getApi(profile, account, child_indent)
-        msgLog = f"{child_indent} readConfigSrc clientttt {apiSrc.getClient()}"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{child_indent} readConfigSrc clientttt {apiSrc.getClient()}"  #: {src[1:]}"
+        # logMsg(msgLog, 2, 0)
         apiSrc.src = src
         apiSrc.setPostsType(src[-1])
         apiSrc.setMoreValues(more)
@@ -853,10 +853,11 @@ class moduleRules:
         account = self.getDestAction(action)
         apiDst = getApi(profile, account, child_indent)
         apiDst.setMoreValues(more)
-        msgLog = f"{child_indent} apiDstt {apiDst}"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
-        msgLog = f"{child_indent} apiDstt {apiDst.client}"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
+        apiDst.indent = child_indent
+        # msgLog = f"{child_indent} apiDstt {apiDst}"  #: {src[1:]}"
+        # logMsg(msgLog, 2, 0)
+        # msgLog = f"{child_indent} apiDstt {apiDst.client}"  #: {src[1:]}"
+        # logMsg(msgLog, 2, 0)
         if apiSrc:
             apiDst.setUrl(apiSrc.getUrl())
         else:
@@ -867,7 +868,6 @@ class moduleRules:
             apiDst.setLastLink(apiDst)
         msgLog = f"{indent} End readConfigDst"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        apiDst.indent = indent
         return apiDst
 
     def testDifferPosts(self, apiSrc, lastLink, listPosts):
@@ -1196,62 +1196,64 @@ class moduleRules:
         i = 0
         for rule_index, rule_key in enumerate(sorted(self.rules.keys())):
             rule_metadata = self.more[rule_key] if rule_key in self.more else None
-            if rule_metadata and rule_metadata.get("hold") == "yes":
-                logMsg(
-                    f"[HOLD] {self.getNickSrc(rule_key)} ({self.getNickAction(rule_key)})",
-                    1,
-                    0,
-                )
-                continue
             rule_actions = self.rules[rule_key]
             if self.getNameAction(rule_key) != previous:
                 i = 0
             else:
                 i = i + 1
 
-            name_action = f"[{self.getNameAction(rule_key)}{i}]"
-            nameR = f"{name_action:->12}>"
-            logMsg(
-                (f"{nameR} Preparing actions for rule: "
-                f"{self.getNickSrc(rule_key)}@{self.getNameRule(rule_key)} "
-                f"({self.getNickAction(rule_key)})"),
-                1, 1)
-            previous = self.getNameAction(rule_key)
-            for action_index, rule_action in enumerate(rule_actions):
-                if select and (
-                    select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"
-                ):
-                    continue
-
-                nameA = f"{nameR}  Action {action_index}:"
-                indent = nameA
-
-                apiSrc = self.readConfigSrc(indent, rule_key, rule_metadata)
-                apiDst = self.readConfigDst(indent, rule_action, rule_metadata, apiSrc)
-
-                timeSlots, noWait = self._get_action_properties(
-                    rule_action, rule_metadata, args
+            if rule_metadata and rule_metadata.get("hold") == "yes":
+                name_action = f"[{self.getNameAction(rule_key)}]"
+                nameR = f"{name_action:->12}>"
+                logMsg(
+                    f"{nameR} [HOLD] {self.getNickSrc(rule_key)} ({self.getNickAction(rule_key)})",
+                    1,
+                    0,
                 )
+            else:
+                name_action = f"[{self.getNameAction(rule_key)}{i}]"
+                nameR = f"{name_action:->12}>"
+                logMsg(
+                    (f"{nameR} Preparing actions for rule: "
+                    f"{self.getNickSrc(rule_key)}@{self.getNameRule(rule_key)} "
+                    f"({self.getNickAction(rule_key)})"),
+                    1, 1)
+                previous = self.getNameAction(rule_key)
+                for action_index, rule_action in enumerate(rule_actions):
+                    if select and (
+                        select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"
+                    ):
+                        continue
 
-                if self._should_skip_publication(
-                    apiDst, apiSrc, noWait, timeSlots, f"{nameA} "
-                ):
-                    continue
-                scheduled_actions.append(
-                    {
-                        "rule_key": rule_key,
-                        "rule_metadata": rule_metadata,
-                        "rule_action": rule_action,
-                        "rule_index": i,
-                        "action_index": action_index,
-                        "args": args,
-                        "simmulate": args.simmulate,
-                        "apiSrc": apiSrc,
-                        "apiDst": apiDst,
-                        "name_action": name_action,
-                        "nameA": nameA,
-                    }
-                )
+                    nameA = f"{nameR}  Action {action_index}:"
+                    indent = nameA
+
+                    apiSrc = self.readConfigSrc(indent, rule_key, rule_metadata)
+                    apiDst = self.readConfigDst(indent, rule_action, rule_metadata, apiSrc)
+
+                    timeSlots, noWait = self._get_action_properties(
+                        rule_action, rule_metadata, args
+                    )
+
+                    if self._should_skip_publication(
+                        apiDst, apiSrc, noWait, timeSlots, f"{nameA}"
+                    ):
+                        continue
+                    scheduled_actions.append(
+                        {
+                            "rule_key": rule_key,
+                            "rule_metadata": rule_metadata,
+                            "rule_action": rule_action,
+                            "rule_index": i,
+                            "action_index": action_index,
+                            "args": args,
+                            "simmulate": args.simmulate,
+                            "apiSrc": apiSrc,
+                            "apiDst": apiDst,
+                            "name_action": name_action,
+                            "nameA": nameA,
+                        }
+                    )
         return scheduled_actions
 
     def _run_actions_concurrently(self, scheduled_actions, max_workers=75):
