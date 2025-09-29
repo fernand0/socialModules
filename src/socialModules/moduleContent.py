@@ -89,7 +89,7 @@ class Content:
         profile = ""
         if hasattr(self, 'profile'):
             profile = self.profile
-        msgLog = f"{self.indent} Start setClient profile: {self.get('profile')} account: {account}"
+        msgLog = f"{self.indent} Start setClient profile: {profile} account: {account}"
         logMsg(msgLog, 1, 0)
         self.indent = f"{self.indent} "
 
