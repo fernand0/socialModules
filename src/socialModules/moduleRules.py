@@ -1206,7 +1206,10 @@ class moduleRules:
                 name_action = f"[{self.getNameAction(rule_key)}]"
                 nameR = f"{name_action:->12}>"
                 logMsg(
-                    f"{nameR} [HOLD] {self.getNickSrc(rule_key)} ({self.getNickAction(rule_key)})",
+                    (f"{nameR} [HOLD] {self.getNickSrc(rule_key)} "
+                    f"({self.getNickAction(rule_key)})"
+                    f"-> {self.getDestAction(rule_actions[0])}@"
+                    f"{self.getNameAction(rule_actions[0])}"),
                     1,
                     0,
                 )
@@ -1216,7 +1219,8 @@ class moduleRules:
                 logMsg(
                     (f"{nameR} Preparing actions for rule: "
                     f"{self.getNickSrc(rule_key)}@{self.getNameRule(rule_key)} "
-                    f"({self.getNickAction(rule_key)})"),
+                    f"({self.getNickAction(rule_key)})"
+                     ),
                     1, 1)
                 previous = self.getNameAction(rule_key)
                 for action_index, rule_action in enumerate(rule_actions):

@@ -495,8 +495,9 @@ class Content:
         else:
             lastTime = 0
             self.report(self.service, msgLog, "", "")
-        msgLog = f"{self.indent} linkLast: {linkLast[0]}"
-        logMsg(msgLog, 2, 0)
+        if len(linkLast) >0:
+            msgLog = f"{self.indent} linkLast: {linkLast[0]}"
+            logMsg(msgLog, 2, 0)
         msgLog = f"{self.indent} lastTime: {lastTime}"
         logMsg(msgLog, 2, 0)
 
