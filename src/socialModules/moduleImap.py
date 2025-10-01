@@ -1068,10 +1068,28 @@ class moduleImap(Content):  # , Queue):
 
     def checkConnected(self):
         try:
-            # Trying to avoid re-authentication. Are ther better ways?
-            self.getClient().noop()
-        except:
+            # Trying to avoid re-authentication. Are there better ways?
+            status, _ = self.getClient().noop()
+            if status == 'OK':
+                return
+            else:
+                logMsg(f"IMAP NOOP command returned status '{status}'.", 3, 0)
+                raise imaplib.IMAP4.error("NOOP failed")
+        except (imaplib.IMAP4.abort, imaplib.IMAP4.error, AttributeError):
+            logMsg(f"IMAP connection issue detected. Attempting to reconnect for user {self.user}...", 1, 0)
             self.setClient(f"{self.user}")
+            try:
+                status, _ = self.getClient().noop()
+                if status == 'OK':
+                    logMsg("IMAP reconnection successful.", 1, 0)
+                    return
+                else:
+                    raise imaplib.IMAP4.error(f"Reconnection check failed, NOOP status: {status}")
+            except (imaplib.IMAP4.abort, imaplib.IMAP4.error, AttributeError) as e:
+                log_msg = f"IMAP reconnection failed for user {self.user}."
+                logMsg(f"{log_msg} Error: {e}", 3, 0)
+                self.report(self.service, "", "", sys.exc_info())
+                raise ConnectionError(log_msg) from e
 
     def selectFolderN(self, moreMessages="", newFolderName="", folderM=""):
         self.checkConnected()
