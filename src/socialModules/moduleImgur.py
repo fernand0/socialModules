@@ -127,7 +127,7 @@ class moduleImgur(Content):  # , Queue):
         posts = self.getPosts()
         if posts and (i >= 0) and (i < len(posts)):
             post = posts[i]
-        elif posts and pos < -1:
+        elif posts and i < -1:
             # When pos is -1 the post is is position 0, the last one.
             # When pos is < -1 there can be drafts and we just want 
             # to post the first one
