@@ -297,12 +297,15 @@ class moduleSlack(Content):  # , Queue):
                 if (len(titleParts) > 1) and (titleParts[1].find("<") >= 0):
                     # There is a link
                     title = title + titleParts[1].split("<")[0]
-            else:
+            elif text.find("<h") >= 0:
                 pos = text.find("<")
                 if pos >= 0:
                     title = text[:pos]
                 else:
                     title = text
+            else:
+                pos = text.rfind("http")
+                title = text[:pos]
             msgLog = f"{self.indent} Post text: {text}"
             logMsg(msgLog, 2, 0)
             return title
