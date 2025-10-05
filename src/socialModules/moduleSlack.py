@@ -342,7 +342,7 @@ class moduleSlack(Content):  # , Queue):
                 link = text[pos + 1 : -1]
             else:
                 pos = text.rfind("http")
-                link = text[pos + 1 : -1]
+                link = text[pos : -1]
         return link
 
     def getPostImage(self, post):
