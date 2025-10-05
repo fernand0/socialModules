@@ -711,6 +711,55 @@ class moduleCache(Content):  # ,Queue):
     def register_specific_tests(self, tester):
         tester.add_test("Edit post title", self.test_edit_title)
         tester.add_test("Edit post link", self.test_edit_link)
+        tester.add_test("Show post content", self.test_show_post)
+
+    def _select_post(self, apiSrc):
+        apiSrc.setPosts()
+        posts = apiSrc.getPosts()
+        if not posts:
+            print("No posts in cache")
+            return None, None
+
+        for i, post in enumerate(posts):
+            print(f"{i}) {apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
+
+        try:
+            pos = int(input("Which post? "))
+            if 0 <= pos < len(posts):
+                return posts[pos], pos
+            else:
+                print("Invalid selection")
+                return None, None
+        except (ValueError, IndexError):
+            print("Invalid input")
+            return None, None
+
+    def test_edit_title(self, apiSrc):
+        post, pos = self._select_post(apiSrc)
+        if not post:
+            return
+
+        new_title = input("New title? ")
+        apiSrc.editApiTitle(post, new_title)
+        print("Title updated")
+
+    def test_edit_link(self, apiSrc):
+        post, pos = self._select_post(apiSrc)
+        if not post:
+            return
+
+        new_link = input("New link? ")
+        apiSrc.editApiLink(post, new_link)
+        print("Link updated")
+
+    def test_show_post(self, apiSrc):
+        post, pos = self._select_post(apiSrc)
+        if not post:
+            return
+
+        print(f"Title: {apiSrc.getPostTitle(post)}")
+        print(f"Link: {apiSrc.getPostLink(post)}")
+        print(f"Content: {apiSrc.getPostContent(post)}")
 
     def _select_post(self, apiSrc):
         apiSrc.setPosts()
