@@ -333,9 +333,12 @@ class moduleSlack(Content):  # , Queue):
             if text.startswith("<") and text.count("<") == 1:
                 # The link is the only text
                 link = post["text"][1:-1]
-            else:
+            elif text.find("<h") >= 0:
                 # Some people include URLs in the title of the page
                 pos = text.rfind("<")
+                link = text[pos + 1 : -1]
+            else:
+                pos = text.rfind("http")
                 link = text[pos + 1 : -1]
         return link
 
