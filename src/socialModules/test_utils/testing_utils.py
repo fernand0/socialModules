@@ -14,7 +14,7 @@ def test_connection(apiSrc, get_user_info_callback):
     try:
         client = apiSrc.getClient()
         if client:
-            user_info = get_user_info_callback(client)
+            user_info = get_user_info_callback(apiSrc)
             print(f"✓ Connected as: {user_info}")
         else:
             print("✗ No client available")

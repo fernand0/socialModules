@@ -41,10 +41,7 @@ class moduleCache(Content):  # ,Queue):
         return api
 
     def getUser(self):
-        user = ""
-        if hasattr(self, "apiSrc"):
-            user = self.apiSrc.getUser()
-        return user
+        return self.user
 
     def getProfileR(self, rule):
         msgLog = f"{self.indent} getProfileR {rule}"
@@ -103,13 +100,13 @@ class moduleCache(Content):  # ,Queue):
         return fileName
 
     def initApi(self, keys):
+        self.user = self.src[2]
         self.service = "Cache"
         self.postaction = "delete"
         self.postsType = "posts"
         self.url = ""
         self.socialNetwork = ""
         # logging.info(f"Src: {self.src}")
-        self.user = self.src[2]
         self.nick = self.user
         self.apiDst = getModule(self.src[1][2], f"{self.indent}  (c)")
         self.apiDst.setUser(self.src[1][3])
@@ -123,7 +120,6 @@ class moduleCache(Content):  # ,Queue):
         # logging.info(f"{self.indent} Dst: {self.apiDst.getName()}")
         # logging.info(f"{self.indent} Src: {self.apiSrc.getUser()}")
         # logging.info(f"{self.indent} Src: {self.apiSrc.getNick()}")
-        # logging.info(f"{self.indent} Src: {self.apiSrc.getName()}")
         # logging.info(f"{self.indent} Src: {self.apiSrc.getUrl()}")
         # FIXME. Do we need three?
 
@@ -703,349 +699,74 @@ class moduleCache(Content):  # ,Queue):
         return f"{self.getPostTitle(post)}"
 
 
-def main():
-    logging.basicConfig(
-        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
-    )
+    def get_name(self):
+        return "cache"
 
-    import socialModules.moduleCache
-    import socialModules.moduleRules
+    def get_default_user(self):
+        return ""
 
-    rules = socialModules.moduleRules.moduleRules()
-    rules.checkRules()
+    def get_default_post_type(self):
+        return "posts"
 
-    name = nameModule()
-    print(f"Name: {name}")
+    def register_specific_tests(self, tester):
+        tester.add_test("Edit post title", self.test_edit_title)
+        tester.add_test("Edit post link", self.test_edit_link)
 
-    rulesList = rules.selectRule(name)
-    for i, rule in enumerate(rulesList):
-        print(f"{i}) {rule}")
-
-    sel = int(input(f"Which one? "))
-    src = rulesList[sel]
-    print(f"Selected: {src}")
-    more = rules.more[src]
-    indent = ""
-    apiSrc = rules.readConfigSrc(indent, src, more)
-    print(f"Url: {apiSrc.getUrl()}")
-    print(f"apiDst: {apiSrc.getApiDst()}")
-    print(f"User apiDst: {apiSrc.getApiDst().getUser()}")
-    print(f"User: {apiSrc.getUser()}")
-    print(f"User src: {apiSrc.apiSrc.getUser()}")
-    print(f"User src: {apiSrc.apiSrc.getNick()}")
-
-    testingFiles = False
-
-    if testingFiles:
-        import socialModules.moduleCache
-        import socialModules.moduleRules
-
-        rules = socialModules.moduleRules.moduleRules()
-        rules.checkRules()
-
-        queues = []
-        for fN in os.listdir(f"{DATADIR}"):
-            if fN[0].isupper() and fN.find("queue") >= 0:
-                queues.append(fN)
-
-        for i, fN in enumerate(queues):
-            print(f"{i}) {fN}")
-
-        sel = input("Select one ")
-
-        fN = queues[int(sel)]
-        try:
-            url, sN, nick = fN.split("_")
-            nick = nick[: -len(".queue")]
-        except:
-            url = ""
-            sN = ""
-            nick = ""
-            sN = fN.split("__")[0]
-            sN = sN.split("_")[-1]
-            myModule = f"module{sN.capitalize()}"
-            print(f"{myModule}")
-            import importlib
-
-            importlib.import_module(myModule)
-            mod = sys.modules.get(myModule)
-            cls = getattr(mod, myModule)
-            api = cls()
-
-            apiCmd = getattr(api, "getPostTitle")
-
-        print(f"url: {url} social network: {sN} nick: {nick}")
-        fNP = f"{DATADIR}/{fN}"
-        import time
-
-        fileT = time.strftime(
-            "%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(fNP))
-        )
-        print(f"File name: {fNP} Date: {fileT}")
-
-        action = input(f"Actions: (D)elete, (S)how (T)itles (L)inks ")
-
-        if action.upper() in ["S", "T", "L"]:
-            url = f"https://{url}/"
-
-            site = socialModules.moduleCache.moduleCache()
-            print(f"File: {fNP}")
-            service = fNP.split("__")[0].split("_")[-1].lower()
-            url = (
-                fNP.split("__")[0].split("_")[2].replace("---", "://").replace("-", "/")
-            )
-            user = url.split("/")[-1]
-
-            indent = ""
-            src = ("cache", (service, url), f"{service}@{user}", "posts")
-            more = {}
-            apiSrc = rules.readConfigSrc(indent, src, more)
-            apiSrc.setPosts()
-            posts = site.getPosts()
-            if not posts:
-                with open(fNP, "rb") as f:
-                    try:
-                        listP = pickle.load(f)
-                    except:
-                        listP = []
-                posts = listP
-
-            print()
-            if action.upper() == "T":
-                [print(f"{i}) {apiCmd(post)}") for i, post in enumerate(posts)]
-            elif action.upper() == "L":
-                apiCmd = getattr(api, "getPostLink")
-                [print(f"{i}) {apiCmd(post)}") for i, post in enumerate(posts)]
-            else:
-                print(posts)
-            print()
-        elif action.upper() in ["D"]:
-            fileDelete = f"{fNP}"
-            ok = input(f"I'll delete {fileDelete} ")
-            os.remove(fileDelete)
-        return
-
-    dataSources = {
-        "S0": {"sn": "slack", "nick": "http://fernand0-errbot.slack.com/"},
-        "G0": {"sn": "gitter", "nick": "https://gitter.im/fernand0errbot/"},
-    }
-
-    dataCaches = {
-        "S0": {"sn": "slack", "nick": "http://fernand0-errbot.slack.com/"},
-        "H0": {"sn": "linkedin", "nick": "Fernando Tricas"},
-        "H1": {"sn": "twitter", "nick": "fernand0"},
-        "H2": {"sn": "facebook", "nick": "Enlaces de fernand0"},
-        "H3": {"sn": "mastodon", "nick": "@fernand0@mastodon.social"},
-        "H4": {"sn": "tumblr", "nick": "fernand0"},
-        "H5": {"sn": "imgur", "nick": "ftricas"},
-        "H6": {"sn": "twitter", "nick": "fernand0Test"},
-        "H7": {"sn": "facebook", "nick": "Fernand0Test"},
-        "H8": {"sn": "telegram", "nick": "testFernand0"},
-    }
-
-    testingPublishPos = False
-    if testingPublishPos:
-        url = "http://fernand0-errbot.slack.com/"
-        cache = input("Which source? ").capitalize()
-        nickDst = dataSources[cache]["nick"]
-        snDst = dataSources[cache]["sn"]
-        site = getApi(snDst, nickDst)
-        site.setPosts()
-        [
-            print(f"{i}) {site.getPostTitle(post)}")
-            for i, post in enumerate(site.getPosts())
-        ]
-        pos = int(input("Which post? "))
-        for cache in dataCaches.keys():
-            print(f"Cache: {cache}) - {dataCaches[cache]}")
-            reply = input("Publish? ")
-            if reply != "y":
-                continue
-            nickDst = dataCaches[cache]["nick"]
-            snDst = dataCaches[cache]["sn"]
-            siteDst = getApi("cache", (site, (snDst, nickDst)))
-            siteDst.socialNetwork = snDst
-            siteDst.nick = nickDst
-            siteDst.setPostsType("posts")
-            siteDst.setPosts()
-            siteDst.publishPosPost(site, pos)
-        return
-
-    testingEditPos = False
-    if testingEditPos:
-        print("Testing edit Posts")
+    def _select_post(self, apiSrc):
         apiSrc.setPosts()
+        posts = apiSrc.getPosts()
+        if not posts:
+            print("No posts in cache")
+            return None, None
 
-        [
-            print(f"{i}) {apiSrc.getPostTitle(post)}")
-            for i, post in enumerate(apiSrc.getPosts())
-        ]
-        pos = int(input("Which post? "))
-        post = apiSrc.getPost(pos)
-        print(apiSrc)
-        newTitle = input("New title? ")
-        newPosts = apiSrc.editApiTitle(post, newTitle)
-        # FIXME. It has been recorded
-        # posts = apiSrc.getPosts()
-        # posts[pos] = newPost
-        print(f"new: {newPosts}")
-        # apiSrc.assignPosts(posts)
-        print(apiSrc.updatePostsCache())
-
-        return
-
-    testingEditLink = True
-    if testingEditLink:
-        print("Testing edit Post link")
-        apiSrc.setPosts()
-
-        [
-            print(f"{i}) {apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
-            for i, post in enumerate(apiSrc.getPosts())
-        ]
-        pos = int(input("Which post? "))
-        post = apiSrc.getPost(pos)
-        print(apiSrc)
-        newLink = input("New link? ")
-        newPosts = apiSrc.editApiLink(post, newLink)
-        # FIXME. It has been recorded
-        # posts = apiSrc.getPosts()
-        # posts[pos] = newPost
-        print(f"new: {newPosts}")
-        # apiSrc.assignPosts(posts)
-        # print(apiSrc.updatePostsCache())
-
-    testingPosts = True
-    if testingPosts:
-        print("Testing Posts")
-        cmd = getattr(apiSrc, "setApiPosts")
-        posts = cmd
-        posts = cmd()
         for i, post in enumerate(posts):
             print(f"{i}) {apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
-        return
-        apiSrc.setPosts()
-        for i, post in enumerate(apiSrc.getPosts()):
-            print(f"{i}) {apiSrc.getPostTitle(post)}")
 
-        return
+        try:
+            pos = int(input("Which post? "))
+            if 0 <= pos < len(posts):
+                return posts[pos], pos
+            else:
+                print("Invalid selection")
+                return None, None
+        except (ValueError, IndexError):
+            print("Invalid input")
+            return None, None
 
-    testingPublishPos = True
-    if testingPublishPos:
-        snDst = "facebook"
-        nickDst = "Enlaces de fernand0"
-        url = "http://fernand0-errbot.slack.com/"
-        siteDst = getApi(snDst, nickDst)
-        siteDst.setPage(nickDst)
-        site = getApi("cache", ("slack", url, f"{snDst}@{nickDst}"))
-        site.socialNetwork = snDst
-        site.nick = nickDst
-        site.setPostsType("posts")
-        site.auxClass = "slack"
-        site.setPosts()
-        pos = int(input("Which post? "))
-        print(siteDst.publishPosPost(site, pos))
-
-        return
-
-    try:
-        config = configparser.ConfigParser()
-        config.read(CONFIGDIR + "/.rssBlogs")
-
-        section = "Blog7"
-        url = config.get(section, "url")
-        cache = config[section]["cache"]
-        for sN in cache.split("\n"):
-            nick = config[section][sN]
-            print("- ", sN, nick)
-            site = moduleCache.moduleCache()
-            site.setClient((url, (sN, nick)))
-            site.setPosts()
-            print(len(site.getPosts()))
-            posts = site.getPosts()[:8]
-            for i, post in enumerate(posts):
-                print(i, site.getPostTitle(post))
-                link = site.getPostLink(post)
-                print(link)
-                # updateLastLink(url, link, (sN, nick))
+    def test_edit_title(self, apiSrc):
+        post, pos = self._select_post(apiSrc)
+        if not post:
             return
-            site.posts = posts
-            # site.updatePostsCache()
 
-            print(checkLastLink(url, (sN, nick)))
+        new_title = input("New title? ")
+        apiSrc.editApiTitle(post, new_title)
+        print("Title updated")
 
-    except:
-        cache = moduleCache.moduleCache()
-        cache.setClient(("http://fernand0-errbot.slack.com/", ("twitter", "fernand0")))
-        cache.setPosts()
-        print(len(cache.getPosts()))
-        sys.exit()
-        print(cache.getPostTitle(cache.getPosts()[0]))
-        print(cache.getPostLink(cache.getPosts()[0]))
-        # print(cache.selectAndExecute('insert', 'A2 Do You Really Have a Right to be “Forgotten”? - Assorted Stuff https://www.assortedstuff.com/do-you-really-have-a-right-to-be-forgotten/'))
-        print(cache.getPostTitle(cache.getPosts()[9]))
-        print(cache.getPostLink(cache.getPosts()[9]))
-        cache.setPosts()
-        print(cache.getPostTitle(cache.getPosts()[9]))
-        sys.exit()
-        cache.setSchedules("rssToSocial")
-        print(cache.schedules)
-        cache.addSchedules(["9:00", "20:15"])
-        print(cache.schedules)
-        cache.delSchedules(["9:00", "20:15"])
-    sys.exit()
+    def test_edit_link(self, apiSrc):
+        post, pos = self._select_post(apiSrc)
+        if not post:
+            return
 
-    print(cache.getPosts())
-    print(cache.getPosts()[0])
-    print(len(cache.getPosts()[0]))
-    # # It has 10 elements
-    # print(cache.obtainPostData(0))
-    # print(cache.selectAndExecute('show', 'T0'))
-    # print(cache.selectAndExecute('show', 'M0'))
-    # print(cache.selectAndExecute('show', 'F1'))
-    # print(cache.selectAndExecute('show', '*2'))
-    # print(cache.selectAndExecute('show', 'TM3'))
-    # print(cache.selectAndExecute('show', 'TM6'))
-    # print(cache.selectAndExecute('move', 'T5 0'))
-    # #print(cache.selectAndExecute('editl', 'T1 https://www.pagetable.com/?p=1152'))
-    # #print(cache.selectAndExecute('delete', 'F7'))
-    # #print(cache.selectAndExecute('edit', 'T3'))
-    # #print(cache.selectAndExecute('edit', 'T0'))
-    # #print(cache.selectAndExecute('publish', 'T1'))
-    # sys.exit()
+        new_link = input("New link? ")
+        apiSrc.editApiLink(post, new_link)
+        print("Link updated")
 
-    # blog.cache.setPosts()
-    # print('T0', blog.cache.selectAndExecute('show', 'T0'))
-    # print('T3', blog.cache.selectAndExecute('show', 'T3'))
-    # print('TF2', blog.cache.selectAndExecute('show', 'TF2'))
-    # print('F4', blog.cache.selectAndExecute('show', 'F4'))
-    # print('*3', blog.cache.selectAndExecute('show', '*3'))
-    # #print('F0', blog.cache.selectAndExecute('delete', 'F0'))
-    # #print('edit F0', blog.cache.selectAndExecute('edit', 'F0'+' '+'LLVM 8.0.0 Release.'))
-    # #print('edit F0', blog.cache.editPost('F0', 'Así es Guestboard, un "Slack" para la organización de eventos.'))
-    # #print('publish T0', blog.cache.publishPost('T0'))
-    # #ca.movePost('T4 T3')
-    # #ca.editPost('T4', "My Stepdad's Huge Dataset.")
-    # #ca.editPost('F5', "¡Sumate al datatón y a WiDS 2019! - lanacion.com")
-    # sys.exit()
-    # print(ca.editPost('F1', 'Alternative Names for the Tampon Tax - The Belladonna Comedy'))
-    # sys.exit()
-    # print(cache.editPost(postsP, 'F1', '10 Tricks to Appear Smart During Meetings – The Cooper Review – Medium...'))
-    # sys.exit()
+    def get_user_info(self, client):
+        return self.getUser()
 
-    # publishPost(api, profiles, ('F',1))
+    def get_post_id_from_result(self, result):
+        return result
 
-    # posts.update(postsP)
-    # print("-> Posts",posts)
-    # #print("Posts",profiles)
-    # print("Keys",posts.keys())
-    # print("Pending",type(profiles))
-    # profiles = listSentPosts(api, "")
-    # print("Sent",type(profiles))
+def main():
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s"
+    )
 
-    # if profiles:
-    #    toPublish, toWhere = input("Which one do you want to publish? ").split(' ')
-    #    #publishPost(api, profiles, toPublish)
+    from socialModules.moduleTester import ModuleTester
+
+    cache_module = moduleCache()
+    tester = ModuleTester(cache_module)
+    tester.run()
 
 
 if __name__ == "__main__":
