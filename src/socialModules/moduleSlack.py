@@ -200,18 +200,28 @@ class moduleSlack(Content):  # , Queue):
         self.updatePostsCache()
 
     def setPostLink(self, post, newLink):
+        logMsg(f"Post: {post}", 1, 1)
         if "attachments" in post:
             post["attachments"][0]["original_url"] = newLink
         else:
             text = post["text"]
             if text.startswith("<") and text.count("<") == 1:
+                logMsg("Starts", 2,1)
                 # The link is the only text
                 post["text"][1:-1] = newLink
-            else:
-                # Some people include URLs in the title of the page
-                pos = text.rfind("<")
+            elif text.find("<h") >= 0:
+                logMsg("<h", 2,1)
+                pos = text.rfind("<h")
                 # text[pos + 1 : -1] = newLink
                 text = f"{text[:pos]} {newLink} (n)"
+                post["text"] = text
+            else:
+                logMsg("http", 2,1)
+                logMsg(f"text: {text}", 2,1)
+                pos = text.rfind("http")
+                logMsg(f"text pos: {pos}", 2,1)
+                text = f"{text[:pos]} {newLink}"
+                logMsg(f"textt: {text}", 2,1)
                 post["text"] = text
             msgLog = f"PPost: {post}"
             logMsg(msgLog, 2, 0)
@@ -251,15 +261,20 @@ class moduleSlack(Content):  # , Queue):
                     # There is a link
                     title = title + " " + titleParts[1].split("<")[0]
             else:
-                pos = text.find("<")
+                if text.find("<h") >= 0:
+                    pos = text.find("<h")
+                else:
+                    pos = text.rfind("http")
+                logMsg(f"text pos: {pos}", 2,1)
                 if pos >= 0:
                     title = newTitle + " " + text[pos:]
                 else:
                     title = newTitle
 
             # Last space
-            posSpace = text.rfind(" ")
-            post["text"] = title + text[posSpace:]
+            # posSpace = text.rfind(" ")
+            # post["text"] = title + text[posSpace:]
+            post["text"] = title# + text[posSpace:]
             print(f"Title: {post['text']}")
         else:
             return "No title"
