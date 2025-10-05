@@ -1,6 +1,4 @@
-# This module provides infrastructure for publishing content in different
-# places It stores in a convenient and consistent way the content in order to
-# be used in other programs
+<moved to deprecated>
 
 import configparser
 import logging
