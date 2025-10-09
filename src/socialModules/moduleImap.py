@@ -1517,32 +1517,46 @@ class moduleImap(Content):  # , Queue):
         return mail_content
 
     def getPostContent(self, msg):
-        post = msg[1]
-        if post.is_multipart():
-            mail_content = ""
-            for part in post.get_payload():
-                if part.get_content_type() == "text/plain":
-                    mail_content += part.get_payload()
-                elif part.get_content_type() == "text/html":
-                    text = part.get_payload(decode=True)
-                    soup = BeautifulSoup(text, "html.parser")
-                    mail_content += soup.get_text("\n")
-                elif part.get_content_type() in [
-                    "multipart/alternative",
-                    "multipart/related",
-                ]:
-                    for partt in part.get_payload():
-                        if partt.get_content_type() == "text/html":
-                            text = partt.get_payload(decode=True)
-                            soup = BeautifulSoup(text, "html.parser")
-                            mail_content += soup.get_text("\n")
-                        else:
-                            mail_content += partt.get_payload()
-        else:
-            mail_content = post.get_payload()
+        """
+        Extracts the plain text content from an email message, handling multipart and HTML parts.
+        Returns the concatenated plain text from all relevant parts.
+        """
+        # Support both (id, msg) tuples and just msg
+        post = msg[1] if isinstance(msg, tuple) else msg
 
-        # print(f"Mail: {mail_content}")
-        return mail_content
+        mail_content = ""
+
+        # If the message is multipart, walk through each part
+        if post.is_multipart():
+            for part in post.walk():
+                # Skip multipart container parts, only process leaf nodes
+                if part.get_content_maintype() == "multipart":
+                    continue
+                # Extract text from each part (plain or html)
+                mail_content += self._extract_text(part)
+        else:
+            # If not multipart, extract text directly
+            mail_content = self._extract_text(post)
+
+        # Return the combined and stripped plain text content
+        return mail_content.strip()
+
+    def _extract_text(self, part):
+        content_type = part.get_content_type()
+        try:
+            if content_type == "text/plain":
+                payload = part.get_payload(decode=True)
+                charset = part.get_content_charset() or "utf-8"
+                return payload.decode(charset, errors="replace")
+            elif content_type == "text/html":
+                payload = part.get_payload(decode=True)
+                charset = part.get_content_charset() or "utf-8"
+                html = payload.decode(charset, errors="replace")
+                soup = BeautifulSoup(html, "html.parser")
+                return soup.get_text("\n")
+        except Exception as e:
+            logging.warning(f"Error decoding part: {e}")
+        return ""
 
     def getPostLinks(self, msg):
         if isinstance(msg, tuple):
