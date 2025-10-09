@@ -1450,7 +1450,7 @@ class moduleImap(Content):  # , Queue):
         for i in range(0, len(msgList), chunk_size):
             chunk = msgList[i:i + chunk_size]
             chunk_str = ','.join(chunk)
-            
+
             try:
                 status, resultMsg = M.copy(chunk_str, folder)
                 if status != "OK":
@@ -1500,7 +1500,7 @@ class moduleImap(Content):  # , Queue):
                 if part.get_content_type() == "text/html":
                     mail_content += part.get_payload()
                 elif part.get_content_type() == "multipart/alternative":
-                    for subpart in part.get_payload():
+                    for subpart in part.get_payload(decode=True):
                         # print(f"sub: *{subpart}*")
                         if subpart and (subpart.get_content_charset() is None):
                             # print(f"sub: *{subpart}*")
@@ -1512,7 +1512,7 @@ class moduleImap(Content):  # , Queue):
                         if subpart.get_content_type() == "text/html":
                             mail_content += str(subpart.get_payload(decode=True))
         else:
-            mail_content = post.get_payload()
+            mail_content = post.get_payload(decode=True)
 
         return mail_content
 
@@ -1523,7 +1523,6 @@ class moduleImap(Content):  # , Queue):
         """
         # Support both (id, msg) tuples and just msg
         post = msg[1] if isinstance(msg, tuple) else msg
-
         mail_content = ""
 
         # If the message is multipart, walk through each part
