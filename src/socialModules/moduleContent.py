@@ -1789,11 +1789,11 @@ class Content:
 
             reply = ""
             if title:
-                reply = reply + " " + title
-            # if content:
-            #     reply = reply + " " + content
+                reply = f"{reply} {title}"
+            if content:
+                reply = f"{reply} {content}"
             if link:
-                reply = reply + "\n" + link
+                reply = f"{reply}\n{link}"
         else:
             reply = ""
 
