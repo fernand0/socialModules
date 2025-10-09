@@ -377,8 +377,12 @@ class Content:
                 # userD = dst.src[1][3]
                 # serviceD = dst.src[1][2]
                 # logging.info(f"Uuuuuu: {userD} - {serviceD}")
-                userD = dst.apiDst.getUser()
-                serviceD = dst.apiDst.getService()
+                if hasattr(dst, 'apiDst'):
+                    userD = dst.apiDst.getUser()
+                    serviceD = dst.apiDst.getService()
+                else:
+                    userD = dst.src[1][3]
+                    serviceD = dst.src[1][2]
                 # logging.info(f"Uuuuuu: {userD} - {serviceD}")
             else:
                 userD = dst.getUser()
