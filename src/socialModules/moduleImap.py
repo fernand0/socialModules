@@ -1500,7 +1500,7 @@ class moduleImap(Content):  # , Queue):
                 if part.get_content_type() == "text/html":
                     mail_content += part.get_payload()
                 elif part.get_content_type() == "multipart/alternative":
-                    for subpart in part.get_payload():
+                    for subpart in part.get_payload(decode=True):
                         # print(f"sub: *{subpart}*")
                         if subpart and (subpart.get_content_charset() is None):
                             # print(f"sub: *{subpart}*")
@@ -1512,7 +1512,7 @@ class moduleImap(Content):  # , Queue):
                         if subpart.get_content_type() == "text/html":
                             mail_content += str(subpart.get_payload(decode=True))
         else:
-            mail_content = post.get_payload()
+            mail_content = post.get_payload(decode=True)
 
         return mail_content
 
@@ -1522,7 +1522,7 @@ class moduleImap(Content):  # , Queue):
             mail_content = ""
             for part in post.get_payload():
                 if part.get_content_type() == "text/plain":
-                    mail_content += part.get_payload()
+                    mail_content += part.get_payload(decode=True)
                 elif part.get_content_type() == "text/html":
                     text = part.get_payload(decode=True)
                     soup = BeautifulSoup(text, "html.parser")
@@ -1531,15 +1531,15 @@ class moduleImap(Content):  # , Queue):
                     "multipart/alternative",
                     "multipart/related",
                 ]:
-                    for partt in part.get_payload():
+                    for partt in part.get_payload(decode=True):
                         if partt.get_content_type() == "text/html":
                             text = partt.get_payload(decode=True)
                             soup = BeautifulSoup(text, "html.parser")
                             mail_content += soup.get_text("\n")
                         else:
-                            mail_content += partt.get_payload()
+                            mail_content += partt.get_payload(decode=True)
         else:
-            mail_content = post.get_payload()
+            mail_content = post.get_payload(decode=True)
 
         # print(f"Mail: {mail_content}")
         return mail_content
