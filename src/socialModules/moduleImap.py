@@ -1491,35 +1491,31 @@ class moduleImap(Content):  # , Queue):
         return self.getPostContent(msg)
 
     def getPostContentHtml(self, msg):
-        if isinstance(msg, tuple):
-            post = msg[1]
-        else:
-            post = msg
-        if post.is_multipart():
-            mail_content = ""
-            for part in post.get_payload():
-                # print(f"type: {part.get_content_type()}")
-                if part.get_content_type() == "text/html":
-                    mail_content += part.get_payload()
-                elif part.get_content_type() == "multipart/alternative":
-                    for subpart in part.get_payload(decode=True):
-                        # print(f"sub: *{subpart}*")
-                        if subpart and (subpart.get_content_charset() is None):
-                            # print(f"sub: *{subpart}*")
-                            charset = chardet.detect(subpart.as_bytes())["encoding"]
-                        else:
-                            charset = subpart.get_content_charset()
-                        if subpart.get_content_type() == "text/plain":
-                            mail_content += str(subpart.get_payload(decode=True))
-                        if subpart.get_content_type() == "text/html":
-                            mail_content += str(subpart.get_payload(decode=True))
-        else:
-            mail_content = post.get_payload(decode=True)
-
-        return mail_content
-
-    def getPostContent(self, msg):
         """
+        Extracts the HTML content from an email message, using the _extract_text helper for decoding.
+        Returns the concatenated HTML text from all relevant parts.
+        """
+        post = msg[1] if isinstance(msg, tuple) else msg
+        mail_content = ""
+
+        # If the message is multipart, walk through each part
+        if post.is_multipart():
+            for part in post.walk():
+                # Skip multipart container parts, only process leaf nodes
+                if part.get_content_maintype() == "multipart":
+                    continue
+                # Only extract HTML parts
+                if part.get_content_type() == "text/html":
+                    mail_content += self._extract_text(part)
+        else:
+            # If not multipart, extract HTML directly if present
+            if post.get_content_type() == "text/html":
+                mail_content = self._extract_text(post)
+            else:
+                mail_content = ""
+
+        # Return the combined HTML content
+        return mail_content.strip()
         Extracts the plain text content from an email message, handling multipart and HTML parts.
         Returns the concatenated plain text from all relevant parts.
         """
