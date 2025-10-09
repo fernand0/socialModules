@@ -183,9 +183,9 @@ class moduleImap(Content):  # , Queue):
 
     def getChannelName(self, channel):
         # Examples:
-        # b'(\\HasNoChildren \\UnMarked) "/" INBOX/unizar/vrtic'
-        # b'(\\HasNoChildren \\UnMarked) "." INBOX.unizar.vrtic'
-        name = str(channel).split(f'"{self.separator}"')[-1][1:-1]
+        # b'(\HasNoChildren \UnMarked) "/" INBOX/unizar/vrtic'
+        # b'(\HasNoChildren \UnMarked) "." INBOX.unizar.vrtic'
+        name = str(channel).split(f'"{self.separator}"')[ -1][1:-1]
         return name
 
     def setPage(self, channel=""):
@@ -196,7 +196,7 @@ class moduleImap(Content):  # , Queue):
         if not channel:
             channel = self.getChannelName(self.getChannels()[0])
             # str(self.getChannels()[0]).split(' ')[-1][:-1]
-            # b'(\\HasChildren) "." INBOX'
+            # b'(\HasChildren) "." INBOX'
         self.channel = channel
 
     def getChannel(self):
@@ -286,7 +286,7 @@ class moduleImap(Content):  # , Queue):
                 else:
                     data = ""
                     try:
-                        cadSearch = "(" + header + ' "' + content + '")'
+                        cadSearch = "(" + header + ' "' + content + '")' 
                         typ, data = M.search(None, cadSearch)
                     except:
                         cadSearch = "(HEADER " + header + ' "' + content + '")'
@@ -331,7 +331,7 @@ class moduleImap(Content):  # , Queue):
 
                     if status == "OK":
                         # If the list of messages is too long it won't work
-                        flag = "\\Deleted"
+                        flag = "\Deleted"
                         result = M.store(msgs, "+FLAGS", flag)
                         if result[0] == "OK":
                             msgLog = "%s: %d messages have been deleted." % (msgTxt, i)
@@ -353,7 +353,7 @@ class moduleImap(Content):  # , Queue):
         res.put(("ok", SERVER, USER, total))
 
     def doFolderExist(self, folder, M):
-        if not folder.startswith(('"', "'")):
+        if not folder.startswith(("'", "'")):
             folderName = '"%s"' % folder
         else:
             folderName = folder
@@ -407,7 +407,8 @@ class moduleImap(Content):  # , Queue):
                         headSubjDec = headerToString(headSubject)
                         print(
                             fmt
-                            % (
+                            %
+                            (
                                 j,
                                 headFromDec[:20],  # [0][0][:20],
                                 headSubjDec[: col - 20 - 5],
@@ -548,7 +549,7 @@ class moduleImap(Content):  # , Queue):
         # i = 1 # Removed unused variable
         print(f"Msg: {msg}")
         if "List-Id" in msg:
-            return ("List-Id", msg["List-Id"][msg["List-Id"].find("<") + 1 : -1])
+            return ("List-Id", msg["List-Id"][msg["List-id"].find("<") + 1 : -1])
         else:
             textHeaders, nameHeaders = self.get_headers_content(M, msg)
             # import locale # Removed unused import
@@ -589,7 +590,7 @@ class moduleImap(Content):  # , Queue):
     #     i = 1
     #     print(f"Msg: {msg}")
     #     if "List-Id" in msg:
-    #         return ("List-Id", msg["List-Id"][msg["List-Id"].find("<") + 1 : -1])
+    #         return ("List-Id", msg["List-Id"].find("<") + 1 : -1])
     #     else:
     #         # print(f"{msg} - {type(msg)}")
     #         # print(f"{msg[1].keys()}")
@@ -1096,6 +1097,7 @@ class moduleImap(Content):  # , Queue):
         data = self.listFolders()
         logging.info(f"folderM: {folderM}")
         folders = [self.nameFolder(fol) for fol in data]
+        folders_sel = []
         if folderM:
             folders_sel = [self.nameFolder(fol) for fol in data
                            if folderM in self.nameFolder(fol)]
@@ -1270,9 +1272,9 @@ class moduleImap(Content):  # , Queue):
     def nameFolder(self, folder):
         # This function has two modes of working:
         # The first one is when it receives a list of IMAP folders like:
-        # b'(\\HasNoChildren) "/" Departamento/estudiantes' b'Departamento/estudiantes'
+        # b'(\HasNoChildren) "/" Departamento/estudiantes' b'Departamento/estudiantes'
         #   01234567890123456789012
-        # b'(\\HasChildren) "/" "unizar/aa vrtic/sicuz/servicios/web"'
+        # b'(\HasChildren) "/" "unizar/aa vrtic/sicuz/servicios/web"'
         # The other one can be a number followed by a ) and the folder
         # 1) folderName
         # 2) "Folder name"
@@ -1353,7 +1355,7 @@ class moduleImap(Content):  # , Queue):
                 flagsM = data[0][0]
                 print("flags", flagsM)
                 if not (b"Deleted" in flagsM):
-                    M.store(msgId, "-FLAGS", "\\Seen")
+                    M.store(msgId, "-FLAGS", "\Seen")
 
                     if typ == "OK":
                         message = data[0][1]
@@ -1366,7 +1368,7 @@ class moduleImap(Content):  # , Queue):
                         res = MD.append(folder, flags, None, message)
 
                         if res[0] == "OK":
-                            M.store(msgId, "+FLAGS", "\\Seen")
+                            M.store(msgId, "+FLAGS", "\Seen")
                 i = i + 1
             MD.close()
             MD.logout()
@@ -1383,7 +1385,7 @@ class moduleImap(Content):  # , Queue):
                 print("Message %d %s (%d)" % (i, msgId, lenM))
                 typ, data = M.fetch(msgId, "(FLAGS RFC822)")
                 flagsM = data[0][0]
-                M.store(msgId, "-FLAGS", "\\Seen")
+                M.store(msgId, "-FLAGS", "\Seen")
 
                 if typ == "OK":
                     print("flagsM %s" % flagsM)
@@ -1396,8 +1398,8 @@ class moduleImap(Content):  # , Queue):
                         msgLog = "Reply %s" % rep
                         logMsg(msgLog, 2, 0)
                         if rep != "Fail!":
-                            M.store(msgId, "+FLAGS", "\\Seen")
-                            flag = "\\Deleted"
+                            M.store(msgId, "+FLAGS", "\Seen")
+                            flag = "\Deleted"
                             M.store(msgId, "+FLAGS", flag)
                         time.sleep(0.1)
                 i = i + 1
@@ -1406,7 +1408,7 @@ class moduleImap(Content):  # , Queue):
 
         # We are returning a different code from 'OK' because we do not want to
         # delete these messages.
-        if i == len(msgs.split(",")):
+        if i == len(msgs.split(',')):
             return "OKOK"
         else:
             return "OKNO"
@@ -1458,7 +1460,7 @@ class moduleImap(Content):  # , Queue):
                     res = "Fail!"
                     continue
 
-                flag = "\\Deleted"
+                flag = "\Deleted"
                 result = M.store(chunk_str, "+FLAGS", flag)
                 if result[0] != "OK":
                     print("Failed to delete chunk!")
@@ -1769,38 +1771,43 @@ class moduleImap(Content):  # , Queue):
 
         return f"Res: {res}"
 
+    def get_name(self):
+        return "IMAP"
 
-def main():
-    logging.basicConfig(
-        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
-    )
+    def get_default_user(self):
+        return ""
 
-    import moduleImap
-    import moduleRules
+    def get_default_post_type(self):
+        return "posts"
 
-    rules = moduleRules.moduleRules()
-    rules.checkRules()
+    def register_specific_tests(self, tester):
+        tester.add_test("Test Folders", self.test_folders)
+        tester.add_test("Test Publishing Draft", self.test_publishing_draft)
+        tester.add_test("Test Publishing", self.test_publishing)
+        tester.add_test("Test Drafts", self.test_drafts)
+        tester.add_test("Test Posts", self.test_posts)
+        tester.add_test("Test Attachment", self.test_attachment)
+        tester.add_test("Test Click", self.test_click)
+        tester.add_test("Test New", self.test_new)
+        tester.add_test("Test Move Mail", self.test_move_mail)
 
-    # Example:
-    # ('imap', 'set', 'ftricas@elmundoesimperfecto.com', 'posts')
-    # More:  More: ('imap', 'set', 'ftricas@elmundoesimperfecto.com', 'posts')
+    def get_user_info(self, client):
+        return f"{client.user}"
 
-    apiSrc = rules.selectRuleInteractive()
+    def get_post_id_from_result(self, result):
+        return result
 
-    testingFolders = False
-    if testingFolders:
+    def test_folders(self, apiSrc):
         folders = apiSrc.getChannels()
         for folder in folders:
-            # print(f"Folder: {folder} Name: {name}")
             print(f"Folder: {apiSrc.getChannelName(folder)}")
         print(f"Special folders: {apiSrc.special}")
-        print(f"{apiSrc.selectFolderN()}")
-        # print(f"{apiSrc.selectFolder(apiSrc.getClient())}")
+        selected_folder = apiSrc.selectFolderN()
+        print(f"Selected folder: {selected_folder}")
+        apiSrc.setPage(selected_folder)
+        print(f"Current page: {apiSrc.getChannel()}")
 
-        return
-
-    testingPublishingDraft = True
-    if testingPublishingDraft:
+    def test_publishing_draft(self, apiSrc):
         apiSrc.setPostsType("drafts")
         apiSrc.setPosts()
         if apiSrc.getPosts():
@@ -1811,33 +1818,21 @@ def main():
             post = apiSrc.getPosts()[0]
             apiSrc.publishApiDraft(post)
 
-        return
-
-    testingPublishing = False
-    if testingPublishing:
+    def test_publishing(self, apiSrc):
         apiSrc.publishPost("Mensaje", "https://www.unizar.es/", "")
 
-        return
-
-    testingDrafts = False
-    if testingDrafts:
+    def test_drafts(self, apiSrc):
         apiSrc.setChannel(apiSrc.special["Drafts"])
         apiSrc.setPosts()
         for post in apiSrc.getPosts():
-            # print(f"Post: {post}")
             print(f"Title: {apiSrc.getPostTitle(post)}")
             print(f"Content: {apiSrc.getPostContent(post)}")
 
-        return
-
-    testingPosts = True
-    if testingPosts:
-        apiSrc.setChannel("INBOX")
+    def test_posts(self, apiSrc):
         apiSrc.setPosts()
         for i, post in enumerate(apiSrc.getPosts()):
-            # print(f"Post: {post}")
             print(f"{i}) Title: {apiSrc.getPostTitle(post)}")
-            # print(f"Content: {apiSrc.getPostContent(post)}")
+            print(f"     Text: {apiSrc.getPostContent(post)}")
 
         selPost = input("Select one: ")
         if selPost and selPost.isdigit() and (int(selPost) <= i):
@@ -1849,10 +1844,7 @@ def main():
             res = apiSrc.publishPost(api=apiSrc, post=post)
             print(f"Res: {res}")
 
-        return
-
-    testingAttachment = False
-    if testingAttachment:
+    def test_attachment(self, apiSrc):
         apiSrc.setChannel("INBOX")
         apiSrc.setPosts()
         for i, post in enumerate(apiSrc.getPosts()):
@@ -1867,10 +1859,7 @@ def main():
         with open(f"/tmp/{fileName}", "wb") as f:
             f.write(myFile)
 
-        return
-
-    testingClick = False
-    if testingClick:
+    def test_click(self, apiSrc):
         apiSrc.setPosts()
 
         import moduleHtml
@@ -1882,37 +1871,22 @@ def main():
         print(f"Ll: {link}")
         html.click(link)
         apiSrc.moveMails(apiSrc.getClient(), str(i + 1).encode(), "INBOX.Trash")
-        return
 
-    testingNew = False
-    if testingNew:
+    def test_new(self, apiSrc):
         channels = apiSrc.getChannels()
-        # print(f"blog: {apiSrc.getUrl()}")
         fileName = fileNamePath(apiSrc.getUrl())
-        # print(f"fileName: {fileName}")
         with open(fileName, "rb") as f:
             date1 = pickle.load(f)
-        # date1 = parse('Sat, 12 Feb 2022 00:00:00 +0000')
         dateLatest = date1
         for chan in channels:
-            # print(f"Channel: {apiSrc.getChannelName(chan)}")
-            # chan = b'(\\HasNoChildren \\UnMarked) "." INBOX.backup.avecesunafoto'
             if str(chan).find("Noselect") < 0:
                 apiSrc.setChannel(apiSrc.getChannelName(chan))
                 apiSrc.setPosts()
-                # print(f"Len: {len(apiSrc.getPosts())}")
-                # print(f"Mes: {apiSrc.getPosts()[0]}")
-                # print(f"Mes: {apiSrc.getPosts()[1]}")
-                # print(f"Date: {apiSrc.getPostDate(apiSrc.getPosts()[0])}")
-                # print(f"Date: {apiSrc.getPostDate(apiSrc.getPosts()[1])}")
                 for post in apiSrc.getPosts():
                     dateMsg = parse(apiSrc.getPostDate(post))
-                    # print(f"Msg: {apiSrc.getPostTitle(post)}")
                     try:
                         if dateMsg > date1:
                             print(f"Chan: {apiSrc.getChannelName(chan)}")
-                            # print(f"     Msg: {apiSrc.getPostTitle(post)}")
-                            # print(f"     Date: {dateMsg}")
                             if dateMsg > dateLatest:
                                 dateLatest = dateMsg
                             break
@@ -1921,12 +1895,11 @@ def main():
         print(f"Last Message: {dateLatest}")
         with open(fileName, "wb") as f:
             pickle.dump(dateLatest, f)
-        return
 
-        apiSrc.setPosts()
-
-    testingMoveMail = False
-    if testingMoveMail:
+    def test_move_mail(self, apiSrc):
+        import moduleRules
+        rules = moduleRules.moduleRules()
+        rules.checkRules()
         indent = ""
         i = 0
         myRules = []
@@ -1936,7 +1909,6 @@ def main():
                 print(f"{i}) Src: {src[2]} ({src[-1]})")
                 more = rules.more[src]
                 myRules.append((src, more))
-                # print(f"More: {src}")
         source = input("Select source: ")
         destin = input("Select destination: ")
         src = myRules[int(source) - 1][0]
@@ -1944,12 +1916,9 @@ def main():
         action = myRules[int(destin) - 1][0]
         moreA = myRules[int(destin) - 1][1]
         print(f"Copying from {src} to {action}")
-        apiSrc = rules.readConfigSrc(indent, src, more)
         apiDst = rules.readConfigSrc(indent, action, moreA)
         foldersSrc = apiSrc.listFolders()
         foldersDst = apiDst.listFolders()
-        # print(f"{foldersSrc}")
-        # print(f"{foldersDst}")
         sel = ""
         count = 0
         while (count != 1) and (not sel.isdigit()):
@@ -1960,7 +1929,6 @@ def main():
                     print(f"{i}) {nameF}")
                     selI = i
                     count = count + 1
-            print(f"count: {count}")
             if count > 1:
                 sel = input("Selección? ")
             elif count == 0:
@@ -1994,128 +1962,21 @@ def main():
             sel = input("Selección? ")
         if sel.isdigit():
             folderDst = foldersDst[int(sel)]
-        # print(f"Folder dst: {folderSrc}")
         print(f"Selected: {folderDst}")
         apiDst.setChannel(folderDst)
         nameF = apiDst.getChannelName(folderDst)
-        print(f"Folder dst: {nameF}")
-        # nameF = f"INBOX.{nameF}"
-        # print(f"Res: {apiDst.createChannel(nameF)}")
-        for i, post in enumerate(apiSrc.getPosts()):
-            print(f"Msg ({i}): {apiSrc.getPostTitle(post)}")
-            # input("Continue? ")
-            # print(f"Msg: {post}")
-            raw = apiSrc.getMessageRaw(post["list"]["id"], "posts")
-            post["raw"] = raw
-            flags = None
-            if "UNREAD" not in post["meta"]["labelIds"]:
-                flags = r"(\Seen)"
-                print(f"Read!")
-            import base64
 
-            messageEmail = email.message_from_bytes(
-                base64.urlsafe_b64decode(post["raw"]["raw"])
-            )
-            if apiDst.getService().lower() == "imap":
-                date = apiSrc.getPostDate(post)
-                date = int(date) / 1000  # .timetuple()
-                print(
-                    f"Appending: {apiDst.getClient().append(nameF, flags, date, messageEmail.as_bytes())}"
-                )
-            else:
-                print(
-                    f"Appending: {apiDst.copyMessage(messageEmail.as_bytes(), [ nameF, ])}"
-                )
-            apiSrc.deletePost(post)
-            time.sleep(0.5)
-            # return
-        # print(apiSrc.getPosts())
 
-        return
+def main():
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
+    )
 
-    return
+    from socialModules.moduleTester import ModuleTester
 
-    mail = moduleImap.moduleImap()
-    mail.setClient("ftricas@elmundoesimperfecto.com@mail.your-server.de")
-    # print(mail.getClient().list())
-    # return
-    mail.setPosts()
-    import moduleHtml
-
-    html = moduleHtml.moduleHtml()
-    html.setClient("fernand0")
-
-    for i, post in enumerate(mail.getPosts()):
-        print(f"Post: {post}")
-        print(f"S: {mail.getPostSubject(post)}")
-        print(f"F: {mail.getPostFrom(post)}")
-        print(f"D: {mail.getPostDate(post)}")
-        print(f"C: {mail.getPostContent(post)}")
-        link = mail.getPostLink(post)
-        print(f"Ll: {link}")
-        html.click(link)
-        mail.moveMails(mail.getClient(), str(i + 1).encode(), "INBOX.Trash")
-        return
-
-    return
-
-    import moduleRules
-
-    rules = moduleRules.moduleRules()
-    rules.checkRules()
-
-    testingSearch = False
-    if testingSearch:
-        for key in rules.rules.keys():
-            print(f"Key: {key}")
-            if (key[0] == "imap") and ("ftricas" in key[2]) and (key[3] == "search"):
-                print(
-                    f"SKey: {key}\n"
-                    f"SRule: {rules.rules[key]}\n"
-                    f"SMore: {rules.more[key]}"
-                )
-                apiSrc = rules.readConfigSrc("", key, rules.more[key])
-                apiSrc.setPosts()
-                print(f"Search posts: {apiSrc.setPosts()}")
-                return
-            elif False:
-                post = apiSrc.getNextPost()
-                print(f"titleeeee: {apiSrc.getPostTitle(post)}")
-                print(f"linkkkkk: {apiSrc.getPostLink(post)}")
-                for i, post in enumerate(apiSrc.getPosts()):
-                    print(f"{i}) {apiSrc.getPostTitle(post)}")
-                    print(f"{i}) {apiSrc.getPostLink(post)}")
-                    # print(f"{i}) {apiSrc.getPostLinks(post)}")
-
-        return
-    return
-
-    config = configparser.ConfigParser()
-    config.read([os.path.expanduser("~/.IMAP.cfg")])
-
-    SERVER = config.get("IMAP6", "server")
-    USER = config.get("IMAP6", "user")
-    PASSWORD = getPassword(SERVER, USER)
-
-    # IMAP client connection
-    context = ssl.create_default_context()
-    context.check_hostname = False
-    context.verify_mode = ssl.CERT_NONE
-    M = imaplib.IMAP4_SSL(SERVER, ssl_context=context)
-    try:
-        M.login(USER, PASSWORD)
-        PASSWORD = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-        # We do not want passwords in memory when not needed
-    except Exception as ins:
-        # We will ask for the new password
-        self.report("Wrong password", SERVER, USER, sys.exc_info())
-        res.put(("no", SERVER, USER))
-        return 0
-
-    PASSWORD = "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-    M.select()
-
-    copyMailsRemote(M, None, "fernand0movilizado@gmail.com")
+    imap_module = moduleImap()
+    tester = ModuleTester(imap_module)
+    tester.run()
 
 
 if __name__ == "__main__":
