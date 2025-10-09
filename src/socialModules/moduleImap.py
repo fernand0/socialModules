@@ -1516,6 +1516,7 @@ class moduleImap(Content):  # , Queue):
 
         # Return the combined HTML content
         return mail_content.strip()
+        """
         Extracts the plain text content from an email message, handling multipart and HTML parts.
         Returns the concatenated plain text from all relevant parts.
         """
