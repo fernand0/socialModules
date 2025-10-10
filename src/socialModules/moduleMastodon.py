@@ -152,8 +152,8 @@ class moduleMastodon(Content): #, Queue):
             title = f"{self.user}'s {self.service}"
         return title
 
-    def getPostTitle(self, post):
-        result = ''
+    def getApiPostTitle(self, post):
+        result = ""
         # import pprint
         # print(f"post: {post}")
         # pprint.pprint(post)

@@ -283,11 +283,14 @@ class moduleTwitter(Content): #, Queue):
 
     def getPostId(self, post):
         logging.info(f"Postttt: {post}")
+        idPost = ''
         if isinstance(post, str) or isinstance(post, int):
             # It is the tweet URL
             idPost = post
         else:
-            idPost = post.data.get('id')
+            data = post.get('data')
+            if data:
+                idPost = data.get('id')
         return idPost
 
     def getPostApiSource(self, post):
@@ -307,19 +310,15 @@ class moduleTwitter(Content): #, Queue):
             title = f"{self.user}'s {self.service}"
         return title
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         # msgLog = (f"{self.indent} Postttt: {post}")
         # logMsg(msgLog, 2, 0)
         # print(f"post: {post}")
         title = ''
-        try:
+        if ('text' in post.data):
             title = post.data.get('text')
-            if not title:
-                title = post.data.get('full_text')
-        except:
-            title = ''
-        # if 'http' in title:
-            # title = title.split('http')[0]
+        else:
+            title = post.data.get('full_text')
         return title
 
     def getPostUrl(self, post):

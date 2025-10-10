@@ -63,8 +63,8 @@ class moduleRss(Content, Queue):
         logging.debug("Rss: %s" % urlRss)
         self.posts = feedparser.parse(urlRss).entries
 
-    def getPostTitle(self, post):
-        title = ''
+    def getApiPostTitle(self, post):
+        title = ""
         if post:
             title = post.get('title', '').replace('\n',' ')
         return title

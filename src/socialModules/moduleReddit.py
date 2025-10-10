@@ -157,8 +157,8 @@ class moduleReddit(Content): #, Queue):
     def getPages(self):
         return self.groups
 
-    def getPostTitle(self, post):
-        title = ''
+    def getApiPostTitle(self, post):
+        title = ""
         try:
             title = post.title
         except:

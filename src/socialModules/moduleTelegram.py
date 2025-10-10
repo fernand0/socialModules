@@ -170,10 +170,10 @@ class moduleTelegram(Content):
                 res = f"{res} https://t.me/{self.user}/{idPost}"
         return (res)
 
-    def getPostTitle(self, post):
-        if 'channel_post' in post:
-            if 'text' in post['channel_post']:
-                return(post['channel_post']['text'])
+    def getApiPostTitle(self, post):
+        if "channel_post" in post:
+            if "text" in post["channel_post"]:
+                return post["channel_post"]["text"]
             else:
                 return ''
         else:

@@ -200,8 +200,8 @@ class moduleFacebook(Content): #,Queue):
     def getUrlId(self, post):
         return (post.split('/')[-1])
 
-    def getPostTitle(self, post):
-        return self.getAttribute(post, 'title')
+    def getApiPostTitle(self, post):
+        return self.getAttribute(post, "title")
 
     def getPostUrl(self, post):
         idPost = self.getPostId(post)

@@ -95,8 +95,8 @@ class moduleFlickr(Content): #, Queue):
         posts = posts[0]['photos']['photo']
         return posts
 
-    def getPostTitle(self, post):
-        title = ''
+    def getApiPostTitle(self, post):
+        title = ""
         try:
             title = post['title']
         except:

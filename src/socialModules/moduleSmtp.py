@@ -209,7 +209,7 @@ class moduleSmtp(Content): #, Queue):
 
         return(f"{res}")
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         """
         Extract title from email post data
         For SMTP, this would typically be the subject line

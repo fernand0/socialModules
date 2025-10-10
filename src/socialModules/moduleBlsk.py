@@ -93,7 +93,7 @@ class moduleBlsk(Content): #, Queue):
 
         return posts
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         title = ''
         try:
             title = post.post.record.text

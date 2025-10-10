@@ -1435,7 +1435,7 @@ class moduleImap(Content): #, Queue):
         post = msg[1]
         return post.get('List-Id')
 
-    def getPostTitle(self, msg):
+    def getApiPostTitle(self, msg):
         post = msg[1]
         return self.getPostSubject(post)
 

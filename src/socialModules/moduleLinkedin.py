@@ -274,7 +274,7 @@ class moduleLinkedin(Content):
         logging.info(f"Res: {result}")
         return(result)
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         # Not  developed
         return post
 

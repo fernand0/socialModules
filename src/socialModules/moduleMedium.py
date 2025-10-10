@@ -193,9 +193,9 @@ class moduleMedium(Content): #,Queue):
             logging.debug(res)
         return res
 
-    def getPostTitle(self, post):
-        if 'title' in post:
-            return(post['title'].replace('\n', ' '))
+    def getApiPostTitle(self, post):
+        if "title" in post:
+            return post["title"].replace("\n", " ")
 
     def getPostLink(self, post):
         return(post['link'])

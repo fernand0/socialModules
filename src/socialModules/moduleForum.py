@@ -280,7 +280,7 @@ class moduleForum(Content): #, Queue):
                     )
                 self.posts = self.posts[pos:]
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         return post[0]
 
     def getPostLink(self, post):

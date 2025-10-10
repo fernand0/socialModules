@@ -167,7 +167,7 @@ class moduleImdb(Content): #,Queue):
         # logging.info(f"Posts: {posts}")
         self.posts = sorted(posts, key = lambda d: d['hi'])
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         logging.debug("getPostTitle {}".format(post))
         if isinstance(post, tuple):
             if post:

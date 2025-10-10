@@ -395,7 +395,7 @@ class moduleCache(Content): #,Queue):
             # #     title = post[0]
             return post
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         # self.indent = f"{self.indent} "
         # msgLog = (f"{self.indent} Start getPostTitle.")
         # logMsg(msgLog, 2, 0)

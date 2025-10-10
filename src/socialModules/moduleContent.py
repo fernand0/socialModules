@@ -1755,8 +1755,17 @@ class Content:
     def getPostComment(self, post):
         return ""
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         return ""
+
+    def getPostTitle(self, post):
+        title= "" 
+        try: 
+            title = self.getApiPostTitle(post) 
+        except:
+            print(f"post: {post}")
+            title = post.get('title')
+        return title;
 
     def getPostDate(self, post):
         return ""

@@ -332,7 +332,7 @@ class moduleWordpress(Content):  # ,Queue):
 
     #     return 'OK'
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         if "title" in post:
             return post["title"]
         else:

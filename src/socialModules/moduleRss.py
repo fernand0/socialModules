@@ -157,8 +157,8 @@ class moduleRss(Content): #, Queue):
             time = post.get('published', None)
         return time
 
-    def getPostTitle(self, post):
-        title = ''
+    def getApiPostTitle(self, post):
+        title = ""
         if post:
             title = post.get('title', '').replace('\n',' ')
         return title
