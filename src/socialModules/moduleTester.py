@@ -33,9 +33,17 @@ class ModuleTester:
         name = self.module.get_name()
         # This part needs to be more generic
         rulesList = rules.selectRule(
-            name, self.module.get_default_user(), self.module.get_default_post_type()
-        )
+            name
+            )
+        # , 
+        #     self.module.get_default_post_type()
+        # )
 
+        print(f"rulesList: {rulesList}")
+        print(f"user: {self.module.get_default_user()}") 
+        print(f"user: {self.module.get_name()}") 
+        print(f"user: {self.module.get_default_post_type()}")
+ 
         print(f"Available {name} rules:")
         for i, rule in enumerate(rulesList):
             if not name.lower() in rule:

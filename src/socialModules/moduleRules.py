@@ -573,7 +573,9 @@ class moduleRules:
                 name,
             ]
         for name_ser in service:
-            logging.debug(f"Name: {name_ser}, Selectors: {selector2}, {selector3}")
+            logging.info(f"Name: {name_ser}, "
+                         f"Selectors: {selector2}, "
+                         f"{selector3}")
             for src in self.rules.keys():
                 if name_ser.capitalize() in self.getNameRule(src).capitalize():
                     logging.debug(f"profileR: {self.getProfileRule(src)}")
