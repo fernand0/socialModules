@@ -251,7 +251,7 @@ class moduleBlsk(Content):  # , Queue):
             #     )
             # )
 
-            title = title + " " + link
+            # title = title + " " + link
             # embed_post = models.AppBskyEmbedRecord.Main(record=models.create_strong_ref(post_with_link_card))
         else:
             embed_external = None
