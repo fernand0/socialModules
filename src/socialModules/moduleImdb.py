@@ -177,7 +177,7 @@ class moduleImdb(Content): #,Queue):
         else:
             return post.get('t','')
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         if isinstance(post, dict):
             return post.get('URL', '')
         return ""

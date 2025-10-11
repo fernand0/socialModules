@@ -115,7 +115,7 @@ class moduleGitter(Content): #,Queue):
             title = title[:pos]
         return title
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         link = ''
         text = post.get('text','')
         pos = text.rfind('http')

@@ -426,7 +426,7 @@ class moduleCache(Content): #,Queue):
         # self.indent = self.indent[:-1]
         return(title)
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         # self.indent = f"{self.indent} "
         # msgLog = (f"{self.indent} Start getPostLink.")
         # logMsg(msgLog, 2, 0)

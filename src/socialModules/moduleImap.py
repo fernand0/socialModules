@@ -1401,7 +1401,7 @@ class moduleImap(Content): #, Queue):
                 links.append(link)
         return links
 
-    def getPostLink(self, msg):
+    def getApiPostLink(self, msg):
         post = msg[1]
         theLink = ''
         if post:

@@ -338,7 +338,7 @@ class moduleWordpress(Content):  # ,Queue):
         else:
             return ""
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         if "URL" in post:
             return post["URL"]
         else:

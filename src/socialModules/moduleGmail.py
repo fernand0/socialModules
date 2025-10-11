@@ -426,7 +426,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 links.append(link)
         return links
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         # fromP = self.getHeader(post, 'From')
         # snippet = self.getHeader(post, 'snippet')
         theLink = ""

@@ -61,7 +61,7 @@ class moduleLinkedin(Content):
             #                         client_id=self.CONSUMER_KEY, 
             #                         client_secret=self.CONSUMER_SECRET, 
             #                         redirect_url='localhost:3000') 
-            # print(f"{auth_client.generate_member_auth_url(scopes=['r_liteprofile']}")
+            # print(f"{auth_client.generate_member_auth_url(scopes=['r_liteprofile'])}")
             resUrl = input("Copy and paste the url in a browser and write here the access token ")
 
             splitUrl = urllib.parse.urlsplit(resUrl)
@@ -209,7 +209,7 @@ class moduleLinkedin(Content):
                 else:                    
                     res = self.getClient().create(
                         resource_path=POSTS_RESOURCE, 
-                        entity={ 
+                        entity={
                                 "author": 
                                 f"urn:li:person:{me_response.entity['id']}", 
                                 "visibility": "PUBLIC", 
@@ -274,9 +274,45 @@ class moduleLinkedin(Content):
         logging.info(f"Res: {result}")
         return(result)
 
-    def getApiPostTitle(self, post):
-        # Not  developed
+    def getApiPostLink(self, post):
+        link = ''
+        if ('link' in post.data):
+            # whatever
+            link = post.data.get('link')
         return post
+
+    def getApiPostTitle(self, post):
+        title = ''
+        if ('text' in post.data):
+            # whatever
+            title = post.data.get('text')
+        return post
+
+    def get_name(self):
+        return "Linkedin"
+
+    def get_default_user(self):
+        return "fernand0"
+
+    def get_default_post_type(self):
+        return "posts"
+
+    def register_specific_tests(self, tester):
+        pass
+
+    def get_user_info(self, client):
+        # client is the module Linkedin instance
+        me_response = client.getClient().get(resource_path="/me", access_token=client.TOKEN)
+        if me_response.entity:
+            firstName = me_response.entity.get('localizedFirstName', '')
+            lastName = me_response.entity.get('localizedLastName', '')
+            return f"{firstName} {lastName}"
+        return "Could not get user info"
+
+    def get_post_id_from_result(self, result):
+        if isinstance(result, str) and 'linkedin.com' in result:
+            return result.split('/')[-2]
+        return None
 
 
 def main():
@@ -285,118 +321,12 @@ def main():
                         level=logging.INFO,
                         format='%(asctime)s %(message)s')
 
-    import moduleLinkedin
+    from socialModules.moduleTester import ModuleTester
+    
+    linkedin_module = moduleLinkedin()
+    tester = ModuleTester(linkedin_module)
+    tester.run()
 
-    ln = moduleLinkedin.moduleLinkedin()
-
-    ln.setClient('fernand0')
-    try:
-        print(ln.getClient().get(resource_path="/me", access_token=ln.TOKEN))
-    except:
-        logging.info("Not authorized, re-authorizing")
-        ln.authorize()
-
-    testingMe = False
-    if testingMe:
-        ln.setProfile()
-        profile = ln.getProfile()
-        if profile and profile.status_code == 200:
-            print(f"Profile: {profile.__dir__()}")
-            print(f"Profile: {profile.entity}")
-
-        return
-
-    testingPost = True
-    if testingPost:
-        res = ln.publishPost("A ver otro", "https://elmundoesimperfecto.com/",'')
-        print(f"res: {res}")
-        if 'Fail' in res:
-            ln.authorize()
-        return
-    #sys.exit()
-    # print(ln.deleteApiPosts('6764243697006727168'))
-    #sys.exit()
-
-    testingPostImages = False
-    if testingPostImages:
-        image = '/tmp/E8dCZoWWQAgDWqX.png'
-        title = 'Prueba imagen'
-        ln.publishImage(title, image)
-        return
-
-
-    testingPosts = True
-    if testingPosts:
-        print("Testing posts")
-        ln.setProfile()
-        LIST_POSTS_RESOURCE = "/ugcPosts"
-        QUERY_PARAMS = {'q':'authors', 
-                        'authors':"List({urn:li:person:'"+f"{ln.getProfile().entity['id']}"+'})',
-                        'sortBy':'LAST_MODIFIED',
-                        'projection':'(elements*(...))'
-                        }                        
-
-
-        print(f"url: {LIST_POSTS_RESOURCE}")
-        print(f"url: {QUERY_PARAMS}")
-        posts = ln.getClient().get(
-                resource_path=LIST_POSTS_RESOURCE, 
-                access_token=ln.TOKEN,
-                query_params=QUERY_PARAMS)
-        print(f"Posts: {posts.__dir__()}")
-        print(f"Posts: {posts.entity}")
-
-
-        # q=authors&authors=List({encoded personUrn})&sortBy=LAST_MODIFIED&projection=(elements*(...))
-
-
-        return
-
-        ln.setPostsType('posts')
-        ln.setPosts()
-        for post in ln.getPosts():
-            print(post)
-        return
-
-
-    sys.exit()
-
-    import moduleSlack
-    slack = moduleSlack.moduleSlack()
-
-    config = configparser.ConfigParser()
-    config.read(CONFIGDIR + '/.rssBlogs')
-
-    site = moduleSlack.moduleSlack()
-    section = "Blog7"
-
-    url = config.get(section, "url")
-    site.setUrl(url)
-
-    SLACKCREDENTIALS = os.path.expanduser(CONFIGDIR + '/.rssSlack')
-    site.setSlackClient(SLACKCREDENTIALS)
-
-    CHANNEL = 'links'
-    theChannel = site.getChanId(CHANNEL)
-    print("the Channel %s" % theChannel)
-    site.setPosts()
-    post = site.getNumPostsData(1,len(site.getPosts()))[0]
-    title = post[0]
-    link = post[1]
-    print(title, link)
-    ln.publishPost(title, link,'')
-
-
-
-
-    sys.exit()
-    print(ln.publishPost("Probando á é í ó ú — ",'',''))
-
-    import time
-    time.sleep(10)
-    sys.exit()
-    print(ln.publishPost("El mundo es Imperfecto",'http://elmundoesimperfecto.com/',''))
 
 if __name__ == '__main__':
     main()
-

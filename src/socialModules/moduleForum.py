@@ -283,7 +283,7 @@ class moduleForum(Content): #, Queue):
     def getApiPostTitle(self, post):
         return post[0]
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         return post[1]
 
 

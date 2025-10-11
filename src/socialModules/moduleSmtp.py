@@ -222,7 +222,7 @@ class moduleSmtp(Content): #, Queue):
             return lines[0] if lines else post[:50]
         return str(post)[:50]  # Fallback
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         """
         Extract link from email post data
         """

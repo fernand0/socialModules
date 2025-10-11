@@ -328,7 +328,8 @@ class Content:
                 if publications:
                     msgLog = f"{self.indent} Found {len(publications)} publications in cache"
                     logMsg(msgLog, 2, 0)
-                    posts = [{'title': pub['title'], 'link': pub['original_link']} for pub in publications]
+                    posts = [{'title': pub['title'], 'response_link':
+                              pub['response_link'], 'link': pub['original_link']} for pub in publications]
             except ImportError:
                 msgLog = f"{self.indent} PublicationCache module not found."
                 logMsg(msgLog, 3, 0)
@@ -1770,8 +1771,19 @@ class Content:
     def getPostDate(self, post):
         return ""
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         return ""
+
+    def getPostLink(self, post):
+        link = ""
+        try:
+            link = self.getApiPostLink(post)
+            if not link:
+                link = post.get('link', '')
+        except:
+            print(f"post: {post}")
+            link = post.get('response_link', '')
+        return link
 
     def getPostUrl(self, post):
         return ""

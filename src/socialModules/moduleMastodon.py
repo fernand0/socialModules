@@ -187,7 +187,7 @@ class moduleMastodon(Content): #, Queue):
     def getPostUrl(self, post):
         return self.getAttribute(post, 'url')
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         if self.getPostsType() == 'favs':
             content, link = self.extractPostLinks(post)
         else:

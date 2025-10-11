@@ -208,7 +208,7 @@ class moduleFacebook(Content): #,Queue):
         return f"https://facebook.com/{idPost}"
         #return f'https://twitter.com/{self.user}/status/{idPost}'
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         result = self.getAttribute(post, 'url')
         pos = result.find('=')
         pos2 = result.find('&',pos)

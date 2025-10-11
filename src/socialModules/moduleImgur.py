@@ -147,7 +147,7 @@ class moduleImgur(Content): #, Queue):
     def setPostLink(self, post, newLink):
         post.link = newLink
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         if self.getPostsType() == 'cache':
             return post[1]
         else:

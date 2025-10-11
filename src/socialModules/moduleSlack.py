@@ -314,7 +314,7 @@ class moduleSlack(Content): #, Queue):
             text = post.get('text', '')
         return text
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         link = ''
         if "attachments" in post:
             link = post["attachments"][0]["original_url"]

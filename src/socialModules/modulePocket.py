@@ -240,7 +240,7 @@ class modulePocket(Content): #,Queue):
         idPost = post.get('item_id','')
         return idPost
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         link = ''
         if 'given_url' in post:
             link = post['given_url']

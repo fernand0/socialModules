@@ -101,7 +101,7 @@ class moduleTumblr(Content):  # , Queue):
                 title = post["summary"]
         return title
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         msgLog = f"{self.indent} getPostUrl {post}"
         logMsg(msgLog, 2, 0)
         url = ""

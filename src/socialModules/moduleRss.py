@@ -163,7 +163,7 @@ class moduleRss(Content): #, Queue):
             title = post.get('title', '').replace('\n',' ')
         return title
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         link = ''
         if post:
             link = post.get('link', '')

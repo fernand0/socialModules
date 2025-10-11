@@ -115,7 +115,7 @@ class moduleBlsk(Content): #, Queue):
         logMsg(msgLog, 2, 0)
         return res
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         # FIXME: Are you sure? (inconsistent)
         if self.getPostsType() == 'favs':
             content, link = self.extractPostLinks(post)

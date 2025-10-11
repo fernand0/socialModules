@@ -170,7 +170,7 @@ class moduleReddit(Content): #, Queue):
 
         return res
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         link = ''
         try:
             link = post.url
