@@ -29,6 +29,7 @@ def test_posts_retrieval(apiSrc):
     """
     print("\n=== Testing Posts Retrieval ===")
     try:
+        apiSrc.setPostsType('posts')
         apiSrc.setPosts()
         posts = apiSrc.getPosts()
 

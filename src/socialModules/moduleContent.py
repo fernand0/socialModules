@@ -293,6 +293,7 @@ class Content:
         # typeposts = self.getPostsType()
         msgLog = f"{self.indent} Posts type {self.getPostsType()}"
         logMsg(msgLog, 2, 0)
+        typePosts  = 'posts'
         if hasattr(self, "getPostsType") and self.getPostsType():
             # typeposts = self.getPostsType()
             logging.info("hasattr")
@@ -305,6 +306,7 @@ class Content:
                 "queue",
             ]:
                 logging.debug("hasattr known")
+                typePosts = self.getPostsType()
                 cmd = getattr(self, f"setApi{self.getPostsType().capitalize()}")
             else:
                 logging.debug("hasattr else")
@@ -319,7 +321,7 @@ class Content:
         msgLog = f"{self.indent} Command: {cmd}"
         logMsg(msgLog, 2, 0)
         posts = cmd()
-        if not posts:
+        if not posts and typePosts in ['posts']:
             msgLog = f"{self.indent} No posts found, checking PublicationCache"
             logMsg(msgLog, 2, 0)
             try:
@@ -1789,14 +1791,15 @@ class Content:
         return ""
 
     def getPostUrl(self, post):
+        logging.info(f"getPostUrl")
         url = ""
         try:
             url = self.getApiPostUrl(post)
             if not url:
                 url = post.get('url', '')
         except:
-            print(f"post: {post}")
-            url = post.get('url', '')
+            logging.info(f"post: {post}")
+            url = post.get('link', '')
         return url
 
     def getPostId(self, post):

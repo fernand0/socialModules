@@ -37,9 +37,11 @@ class moduleMastodon(Content): #, Queue):
         return client
 
     def setApiPosts(self):
+        logging.info(f"setApiPosts {self.getClient()}")
         posts = []
         if self.getClient():
             try:
+                logging.info(f"meeeee: {self.getClient().me()}")
                 posts = self.getClient().account_statuses(self.getClient().me())
             except:
                 posts = []
@@ -154,6 +156,7 @@ class moduleMastodon(Content): #, Queue):
 
     def getApiPostTitle(self, post):
         result = ""
+        logging.info(f"Post: {post}")
         # import pprint
         # print(f"post: {post}")
         # pprint.pprint(post)

@@ -288,7 +288,7 @@ class moduleTwitter(Content): #, Queue):
             # It is the tweet URL
             idPost = post
         else:
-            idPost = post.data.get('data')
+            idPost = post.data.get('id')
         return idPost
 
     def getPostApiSource(self, post):
@@ -320,7 +320,9 @@ class moduleTwitter(Content): #, Queue):
         return title
 
     def getApiPostUrl(self, post):
+        logMsg("getApiPostUrl", 1, 0)
         idPost = self.getPostId(post)
+        logMsg("getApiPostUrl", 1, 0)
         msgLog = f"{self.indent} getPostUrl: {post}"
         logMsg(msgLog, 1, 0)
         if idPost:
@@ -334,7 +336,8 @@ class moduleTwitter(Content): #, Queue):
         if self.getPostsType() == 'favs':
             content, link = self.extractPostLinks(post)
         else:
-            link = self.getPostUrl(post)
+            link = post.data.get('link')
+            # whatever
         return link
 
     def extractPostLinks(self, post, linksToAvoid=""):
