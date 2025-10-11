@@ -184,7 +184,7 @@ class moduleMastodon(Content): #, Queue):
         #     result = self.getAttribute(post['card'], 'title')
         return result
 
-    def getPostUrl(self, post):
+    def getApiPostUrl(self, post):
         return self.getAttribute(post, 'url')
 
     def getApiPostLink(self, post):

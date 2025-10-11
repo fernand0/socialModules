@@ -103,7 +103,7 @@ class moduleFlickr(Content): #, Queue):
             title = ''
         return title
 
-    def getPostUrl(self, post):
+    def getApiPostUrl(self, post):
         res = ''
 
         return res

@@ -319,7 +319,7 @@ class moduleTwitter(Content): #, Queue):
             title = post.data.get('full_text')
         return title
 
-    def getPostUrl(self, post):
+    def getApiPostUrl(self, post):
         idPost = self.getPostId(post)
         msgLog = f"{self.indent} getPostUrl: {post}"
         logMsg(msgLog, 1, 0)

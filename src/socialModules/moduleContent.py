@@ -1785,8 +1785,19 @@ class Content:
             link = post.get('response_link', '')
         return link
 
-    def getPostUrl(self, post):
+    def getApiPostUrl(self, post):
         return ""
+
+    def getPostUrl(self, post):
+        url = ""
+        try:
+            url = self.getApiPostUrl(post)
+            if not url:
+                url = post.get('url', '')
+        except:
+            print(f"post: {post}")
+            url = post.get('url', '')
+        return url
 
     def getPostId(self, post):
         return ""

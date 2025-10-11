@@ -203,7 +203,7 @@ class moduleFacebook(Content): #,Queue):
     def getApiPostTitle(self, post):
         return self.getAttribute(post, "title")
 
-    def getPostUrl(self, post):
+    def getApiPostUrl(self, post):
         idPost = self.getPostId(post)
         return f"https://facebook.com/{idPost}"
         #return f'https://twitter.com/{self.user}/status/{idPost}'

@@ -298,7 +298,7 @@ class moduleSlack(Content): #, Queue):
         else:
             return "No title"
 
-    def getPostUrl(self, post):
+    def getApiPostUrl(self, post):
         return (
             f"{self.getUser()}archives/"
             f"{self.getChannel()}/p{self.getPostId(post)}"
