@@ -23,6 +23,7 @@ class ModuleTester:
 
     def setup(self):
         # Common setup logic, like initializing rules and selecting a rule
+        logging.info("Start setup")
         import socialModules.moduleRules
         rules = socialModules.moduleRules.moduleRules()
         rules.checkRules()

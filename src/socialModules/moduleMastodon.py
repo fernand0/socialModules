@@ -21,6 +21,7 @@ class moduleMastodon(Content): #, Queue):
         #if self.user.startswith('@'):
         #    self.user = self.user[1:]
 
+        logMsg(f"User: {self.user}", 1, 0)
         access_token = config[self.user]['access_token']
         return ((access_token, ))
 
