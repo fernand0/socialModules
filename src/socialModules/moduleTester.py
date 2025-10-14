@@ -68,7 +68,7 @@ class ModuleTester:
             # The original logic was complex, trying both Dst and Src config readers.
             # We'll try Dst first, then fall back to Src, which should cover all cases.
             self.api_src = rules.readConfigDst("", selected_rule, None, None)
-            if not self.api_src:
+            if not self.api_src or not self.api_src.getClient():
                 self.api_src = rules.readConfigSrc("", selected_rule, None)
             
             if self.api_src:
