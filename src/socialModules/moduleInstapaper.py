@@ -90,8 +90,8 @@ class moduleInstapaper(Content):
         # Add Instapaper API call to delete a post here
         return "Not implemented"
 
-    def getPostTitle(self, post):
-        title = ''
+    def getApiPostTitle(self, post):
+        title = ""
         # Extract title from Instapaper post object
         return title
 
@@ -100,7 +100,7 @@ class moduleInstapaper(Content):
         # Extract ID from Instapaper post object
         return idPost
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         link = ''
         # Extract link from Instapaper post object
         return link

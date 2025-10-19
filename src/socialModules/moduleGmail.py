@@ -426,7 +426,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 links.append(link)
         return links
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         # fromP = self.getHeader(post, 'From')
         # snippet = self.getHeader(post, 'snippet')
         theLink = ""
@@ -443,7 +443,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         result = theLink
         return result
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         msgLog = f"{self.indent} getPostTitle"
         logMsg(msgLog, 2, 0)
         # msgLog = f"{self.indent} {post}"

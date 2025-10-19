@@ -16,9 +16,11 @@ from html.parser import HTMLParser
 from bs4 import BeautifulSoup, Tag
 
 from socialModules.configMod import logMsg, fileNamePath, checkFile, DATADIR, CONFIGDIR
+from socialModules.modulePublicationCache import PublicationCache
 
 
 class Content:
+
     def __init__(self, indent=""):
         self.url = ""
         self.name = ""
@@ -291,6 +293,7 @@ class Content:
         # typeposts = self.getPostsType()
         msgLog = f"{self.indent} Posts type {self.getPostsType()}"
         logMsg(msgLog, 2, 0)
+        typePosts  = 'posts'
         if hasattr(self, "getPostsType") and self.getPostsType():
             # typeposts = self.getPostsType()
             logging.info("hasattr")
@@ -303,6 +306,7 @@ class Content:
                 "queue",
             ]:
                 logging.debug("hasattr known")
+                typePosts = self.getPostsType()
                 cmd = getattr(self, f"setApi{self.getPostsType().capitalize()}")
             else:
                 logging.debug("hasattr else")
@@ -317,6 +321,24 @@ class Content:
         msgLog = f"{self.indent} Command: {cmd}"
         logMsg(msgLog, 2, 0)
         posts = cmd()
+        if not posts and typePosts in ['posts']:
+            msgLog = f"{self.indent} No posts found, checking PublicationCache"
+            logMsg(msgLog, 2, 0)
+            try:
+                cache = PublicationCache()
+                publications = cache.get_publications_by_service(self.service.lower())
+                if publications:
+                    msgLog = f"{self.indent} Found {len(publications)} publications in cache"
+                    logMsg(msgLog, 2, 0)
+                    posts = [{'title': pub['title'], 'response_link':
+                              pub['response_link'], 'link': pub['original_link']} for pub in publications]
+            except ImportError:
+                msgLog = f"{self.indent} PublicationCache module not found."
+                logMsg(msgLog, 3, 0)
+            except Exception as e:
+                msgLog = f"{self.indent} Error accessing PublicationCache: {e}"
+                logMsg(msgLog, 3, 0)
+
         msgLog = f"{self.indent} service {self.service} posts: {posts}"
         logMsg(msgLog, 2, 0)
         self.assignPosts(posts)
@@ -1736,17 +1758,49 @@ class Content:
     def getPostComment(self, post):
         return ""
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         return ""
+
+    def getPostTitle(self, post):
+        title= "" 
+        try: 
+            title = self.getApiPostTitle(post) 
+        except:
+            print(f"post: {post}")
+            title = post.get('title')
+        return title;
 
     def getPostDate(self, post):
         return ""
 
+    def getApiPostLink(self, post):
+        return ""
+
     def getPostLink(self, post):
+        link = ""
+        try:
+            link = self.getApiPostLink(post)
+            if not link:
+                link = post.get('link', '')
+        except:
+            print(f"post: {post}")
+            link = post.get('response_link', '')
+        return link
+
+    def getApiPostUrl(self, post):
         return ""
 
     def getPostUrl(self, post):
-        return ""
+        logging.info(f"getPostUrl")
+        url = ""
+        try:
+            url = self.getApiPostUrl(post)
+            if not url:
+                url = post.get('url', '')
+        except:
+            logging.info(f"post: {post}")
+            url = post.get('link', '')
+        return url
 
     def getPostId(self, post):
         return ""

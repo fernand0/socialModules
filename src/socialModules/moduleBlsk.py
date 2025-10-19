@@ -93,7 +93,7 @@ class moduleBlsk(Content): #, Queue):
 
         return posts
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         title = ''
         try:
             title = post.post.record.text
@@ -101,7 +101,7 @@ class moduleBlsk(Content): #, Queue):
             title = ''
         return title
 
-    def getPostUrl(self, post):
+    def getApiPostUrl(self, post):
         idPost = self.getPostId(post)
         msgLog = f"{self.indent} getPostUrl: {post}"
         logMsg(msgLog, 2, 0)
@@ -115,7 +115,7 @@ class moduleBlsk(Content): #, Queue):
         logMsg(msgLog, 2, 0)
         return res
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         # FIXME: Are you sure? (inconsistent)
         if self.getPostsType() == 'favs':
             content, link = self.extractPostLinks(post)

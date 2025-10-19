@@ -157,20 +157,20 @@ class moduleReddit(Content): #, Queue):
     def getPages(self):
         return self.groups
 
-    def getPostTitle(self, post):
-        title = ''
+    def getApiPostTitle(self, post):
+        title = ""
         try:
             title = post.title
         except:
             title = ''
         return title
 
-    def getPostUrl(self, post):
+    def getApiPostUrl(self, post):
         res = ''
 
         return res
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         link = ''
         try:
             link = post.url

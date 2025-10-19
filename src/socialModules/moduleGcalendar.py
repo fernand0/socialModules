@@ -93,8 +93,8 @@ class moduleGcalendar(Content, socialGoogle):
 
         return "orig. " + date + " Translated." + theDate
 
-    def getPostTitle(self, post):
-        text = post.get('summary')
+    def getApiPostTitle(self, post):
+        text = post.get("summary")
         return text
 
     def getPostId(self, post):

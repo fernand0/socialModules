@@ -21,6 +21,7 @@ class moduleMastodon(Content): #, Queue):
         #if self.user.startswith('@'):
         #    self.user = self.user[1:]
 
+        logMsg(f"User: {self.user}", 1, 0)
         access_token = config[self.user]['access_token']
         return ((access_token, ))
 
@@ -37,9 +38,11 @@ class moduleMastodon(Content): #, Queue):
         return client
 
     def setApiPosts(self):
+        logging.info(f"setApiPosts {self.getClient()}")
         posts = []
         if self.getClient():
             try:
+                logging.info(f"meeeee: {self.getClient().me()}")
                 posts = self.getClient().account_statuses(self.getClient().me())
             except:
                 posts = []
@@ -152,8 +155,9 @@ class moduleMastodon(Content): #, Queue):
             title = f"{self.user}'s {self.service}"
         return title
 
-    def getPostTitle(self, post):
-        result = ''
+    def getApiPostTitle(self, post):
+        result = ""
+        logging.info(f"Post: {post}")
         # import pprint
         # print(f"post: {post}")
         # pprint.pprint(post)
@@ -184,10 +188,10 @@ class moduleMastodon(Content): #, Queue):
         #     result = self.getAttribute(post['card'], 'title')
         return result
 
-    def getPostUrl(self, post):
+    def getApiPostUrl(self, post):
         return self.getAttribute(post, 'url')
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         if self.getPostsType() == 'favs':
             content, link = self.extractPostLinks(post)
         else:

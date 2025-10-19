@@ -291,11 +291,11 @@ class moduleBuffer(Content,Queue):
     def getLink(self, i):
         if i < len(self.getPosts()): 
             post = self.getPosts()[i]
-            link = post['media']['expanded_link']
-            return (link)
-        return(None) 
-    
-    def getPostTitle(self, post):
+            link = post["media"]["expanded_link"]
+            return link
+        return None
+
+    def getApiPostTitle(self, post):
         if post:
             if 'text' in post:
                 title = post['text']

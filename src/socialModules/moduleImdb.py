@@ -167,7 +167,7 @@ class moduleImdb(Content): #,Queue):
         # logging.info(f"Posts: {posts}")
         self.posts = sorted(posts, key = lambda d: d['hi'])
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         logging.debug("getPostTitle {}".format(post))
         if isinstance(post, tuple):
             if post:
@@ -177,7 +177,7 @@ class moduleImdb(Content): #,Queue):
         else:
             return post.get('t','')
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         if isinstance(post, dict):
             return post.get('URL', '')
         return ""

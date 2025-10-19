@@ -124,7 +124,7 @@ class moduleImgur(Content): #, Queue):
     def setPostTitle(self, post, newTitle):
         post.title = newTitle
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         print(f"Post: {post}")
         try:
             title = post.title
@@ -147,7 +147,7 @@ class moduleImgur(Content): #, Queue):
     def setPostLink(self, post, newLink):
         post.link = newLink
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         if self.getPostsType() == 'cache':
             return post[1]
         else:

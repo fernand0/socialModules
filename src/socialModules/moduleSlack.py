@@ -270,7 +270,7 @@ class moduleSlack(Content): #, Queue):
 
         return post
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         # print(f"Post: {post}")
         if ("attachments" in post) and ("title" in post["attachments"][0]):
             return post["attachments"][0]["title"]
@@ -298,7 +298,7 @@ class moduleSlack(Content): #, Queue):
         else:
             return "No title"
 
-    def getPostUrl(self, post):
+    def getApiPostUrl(self, post):
         return (
             f"{self.getUser()}archives/"
             f"{self.getChannel()}/p{self.getPostId(post)}"
@@ -314,7 +314,7 @@ class moduleSlack(Content): #, Queue):
             text = post.get('text', '')
         return text
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         link = ''
         if "attachments" in post:
             link = post["attachments"][0]["original_url"]

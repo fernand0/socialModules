@@ -223,13 +223,13 @@ class modulePocket(Content): #,Queue):
             rep = "Fail!"
         return rep
 
-    def getPostTitle(self, post):
-        title = ''
-        if 'resolved_title' in post:
-            title = post['resolved_title']
-            if not title and ('given_title' in post):
-                title = post['given_title']
-        #elif 'item' in post:
+    def getApiPostTitle(self, post):
+        title = ""
+        if "resolved_title" in post:
+            title = post["resolved_title"]
+            if not title and ("given_title" in post):
+                title = post["given_title"]
+        # elif 'item' in post:
         #    if 'title' in post['item']:
         #        title = (post['item']['title'])
         # if not title:
@@ -240,7 +240,7 @@ class modulePocket(Content): #,Queue):
         idPost = post.get('item_id','')
         return idPost
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         link = ''
         if 'given_url' in post:
             link = post['given_url']

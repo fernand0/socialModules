@@ -200,15 +200,15 @@ class moduleFacebook(Content): #,Queue):
     def getUrlId(self, post):
         return (post.split('/')[-1])
 
-    def getPostTitle(self, post):
-        return self.getAttribute(post, 'title')
+    def getApiPostTitle(self, post):
+        return self.getAttribute(post, "title")
 
-    def getPostUrl(self, post):
+    def getApiPostUrl(self, post):
         idPost = self.getPostId(post)
         return f"https://facebook.com/{idPost}"
         #return f'https://twitter.com/{self.user}/status/{idPost}'
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         result = self.getAttribute(post, 'url')
         pos = result.find('=')
         pos2 = result.find('&',pos)
