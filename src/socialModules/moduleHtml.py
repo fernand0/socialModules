@@ -57,6 +57,9 @@ class moduleHtml(Content): #, Queue):
     def setLinksToAvoid(self, linksToAvoid):
         self.linksToAvoid = linksToAvoid
 
+    def setUrl(self, url):
+        self.url = url
+
     def downloadUrl(self, url_to_download):
         msgLog = f"Downloading: {url_to_download}"
         logMsg(msgLog, 1, 1)
@@ -124,12 +127,13 @@ class moduleHtml(Content): #, Queue):
                 logMsg(f"An unexpected error occurred with pycurl: {e}", 3, 1)
                 response = None
 
+        return response, None
 
-        if response and response.ok:
-            moreContent = self._handle_blogger_content(response, url_to_download)
-            return response, moreContent
-        else:
-            raise DownloadError(f"Failed to download {url_to_download} after 3 attempts.")
+        # if response and response.ok:
+        #     moreContent = self._handle_blogger_content(response, url_to_download)
+        #     return response, moreContent
+        # else:
+        #     raise DownloadError(f"Failed to download {url_to_download} after 3 attempts.")
 
     def _handle_blogger_content(self, response, url_to_download):
         moreContent = ""
@@ -261,6 +265,46 @@ class moduleHtml(Content): #, Queue):
             theTitle = theTitle.replace(a, b)
 
         return (myText, theTitle)
+
+    def setUrl(self, url):
+        self.url = url
+
+    def setApiPosts(self):
+        """
+        Downloads the HTML content from the URL(s) stored in self.url.
+        """
+        urls = self.url if isinstance(self.url, list) else [self.url]
+        self.posts = []
+        for url in urls:
+            try:
+                response, _ = self.downloadUrl(url)
+                if response and response.ok:
+                    self.posts.append(response.text)
+                else:
+                    logging.warning(f"Failed to download content from {url}")
+            except DownloadError as e:
+                logging.error(f"Download error for {url}: {e}")
+
+    def getPostContent(self, html_content):
+        """
+        Extracts the plain text content from HTML.
+        Returns the concatenated plain text.
+        """
+        if not html_content:
+            return ""
+        soup = BeautifulSoup(html_content, "html.parser")
+        return self._extract_text(soup)
+
+    def _extract_text(self, soup):
+        """
+        Extracts plain text from a BeautifulSoup object, removing script and style tags.
+        """
+        for script_or_style in soup(["script", "style"]):
+            script_or_style.extract()
+        text = soup.get_text(separator="\n").strip()
+        # text = re.sub(r"\n{2,}", "\n\n"content, text)
+        text = re.sub(r'(\n\s*){2,}', '\n\n', text)
+        return text
 
     def extractVideos(self, soup):
         videos =  soup.find_all('video')
@@ -475,16 +519,37 @@ if __name__ == "__main__":
     # blog.setUrl(url)
     # print(blog.obtainPostData(29))
 
-    testingX = True
+    testingX = False
     if testingX:
         import moduleHtml
         blog = moduleHtml.moduleHtml()
         url_to_download = input("X link: ")
         blog.setUrl(url_to_download)
-        data = blog.downloadUrl(url_to_download)
+        blog.setPosts()
+        data = blog.getPostContent()
         print(data)
         print(blog.extractLinks(data)[1])
 
+    testingContent = True
+    if testingContent:
+        import moduleHtml
+        blog = moduleHtml.moduleHtml()
+        # New test case for setApiPosts and getPostContent
+        print("\n--- Testing setApiPosts and getPostContent ---")
+        test_url = "https://github.com/fernand0/socialModules/blob/master/src/socialModules/moduleHtml.py"
+        blog.setUrl(test_url)
+        print(f"Downloading content from: {test_url}")
+        blog.setApiPosts()
+        if blog.posts:
+            print("Successfully downloaded HTML content.")
+            html_content = blog.posts[0]
+            print("Extracting text content...")
+            content = blog.getPostContent(html_content)
+            print("Extracted Content:")
+            print(content[:500])  # Print first 500 characters
+        else:
+            print("Failed to download HTML content.")
+        print("\n--- End of setApiPosts and getPostContent test ---")
 
 
     sys.exit()
