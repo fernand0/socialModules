@@ -42,6 +42,7 @@ dependencies = [
 		'feedparser',
 		'pdfrw',
 		'praw',
+		'pycurl',
 		'python-crontab',
 		'tmdbsimple',
 		'imgurpython',
