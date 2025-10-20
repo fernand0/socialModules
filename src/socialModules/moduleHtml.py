@@ -104,6 +104,7 @@ class moduleHtml(Content): #, Queue):
                 c.setopt(c.WRITEDATA, buffer)
                 c.setopt(c.FOLLOWLOCATION, True)
                 c.setopt(c.TIMEOUT, 30)
+                c.setopt(c.USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
                 c.perform()
 
                 status_code = c.getinfo(pycurl.HTTP_CODE)
