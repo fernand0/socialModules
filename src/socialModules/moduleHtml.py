@@ -395,6 +395,18 @@ class moduleHtml(Content): #, Queue):
 
             return (soup.get_text().strip("\n"), theSummaryLinks)
 
+    def getApiPostTitle(self, html_content):
+        """
+        Extracts the title from the HTML content.
+        """
+        if not html_content:
+            return ""
+        soup = BeautifulSoup(html_content, "html.parser")
+        title_tag = soup.find("title")
+        if title_tag:
+            return title_tag.get_text(strip=True)
+        return ""
+
     def obtainPostData(self, post, debug=False):
         theSummary = post["summary"]
         content = post["description"]
@@ -536,7 +548,8 @@ if __name__ == "__main__":
         blog = moduleHtml.moduleHtml()
         # New test case for setApiPosts and getPostContent
         print("\n--- Testing setApiPosts and getPostContent ---")
-        test_url = "https://github.com/fernand0/socialModules/blob/master/src/socialModules/moduleHtml.py"
+        url = input('Url? ')
+        test_url = url if url else "https://github.com/fernand0/socialModules/blob/master/src/socialModules/moduleHtml.py"
         blog.setUrl(test_url)
         print(f"Downloading content from: {test_url}")
         blog.setApiPosts()
