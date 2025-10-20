@@ -395,6 +395,18 @@ class moduleHtml(Content): #, Queue):
 
             return (soup.get_text().strip("\n"), theSummaryLinks)
 
+    def getApiPostTitle(self, html_content):
+        """
+        Extracts the title from the HTML content.
+        """
+        if not html_content:
+            return ""
+        soup = BeautifulSoup(html_content, "html.parser")
+        title_tag = soup.find("title")
+        if title_tag:
+            return title_tag.get_text(strip=True)
+        return ""
+
     def obtainPostData(self, post, debug=False):
         theSummary = post["summary"]
         content = post["description"]
