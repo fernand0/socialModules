@@ -31,53 +31,56 @@ class ModuleTester:
         rules.checkRules()
 
         name = self.module.get_name()
-        # This part needs to be more generic
         rulesList = rules.selectRule(
-            name, self.module.get_default_user(), self.module.get_default_post_type()
-        )
+            name
+            )
 
-        print(f"Available {name} rules:")
-        for i, rule in enumerate(rulesList):
-            if not name.lower() in rule:
-                for rule_index, rule_key in enumerate(sorted(rules.rules.keys())):
-                    rule_metadata = (
-                        rules.more[rule_key] if rule_key in rules.more else None
-                    )
-                    rule_actions = rules.rules[rule_key]
-                    for action_index, rule_action in enumerate(rule_actions):
-                        if name.lower() in rule_action:
-                            print(f"{i}) {rule_action}")
-            else:
-                print(f"{i}) {rule}")
+        final_rules = []
+        seen_rules = set()
 
-        if not rulesList:
+        for rule in rulesList:
+            if not name.lower() in rule and rule in rules.rules:
+                for sub_rule in rules.rules[rule]:
+                    if name.lower() in sub_rule and sub_rule not in seen_rules:
+                        final_rules.append(sub_rule)
+                        seen_rules.add(sub_rule)
+            elif rule not in seen_rules:
+                final_rules.append(rule)
+                seen_rules.add(rule)
+
+        for i, rule in enumerate(final_rules):
+            print(f"{i}) {rule}")
+
+        if not final_rules:
             print(f"No {name} rules found. Please configure {name} in your rules.")
             return False
 
         try:
-            sel = int(input(f"Which rule to use? (0-{len(rulesList)-1}): "))
-            if sel < 0 or sel >= len(rulesList):
+            sel = int(input(f"Which rule to use? (0-{len(final_rules)-1}): "))
+            if sel < 0 or sel >= len(final_rules):
                 print("Invalid selection")
                 return False
-            key = rulesList[sel]
+            selected_rule = final_rules[sel]
         except (ValueError, IndexError):
             print("Invalid input, using first rule")
-            key = rulesList[0]
+            selected_rule = final_rules[0]
 
-        print(f"Selected rule: {key}")
+        print(f"Selected rule: {selected_rule}")
 
         try:
-            if not name.lower() in key:
-                rule_actions = rules.rules[key]
-                print(f"Actions: {rule_actions}")
-                for action_index, rule_action in enumerate(rule_actions):
-                    if name.lower() in rule_action:
-                        print(f"Selected rule: {rule_action}")
-                        self.api_src = rules.readConfigDst("", rule_action, None, None)
+            # The selected_rule is now always a direct rule.
+            # The original logic was complex, trying both Dst and Src config readers.
+            # We'll try Dst first, then fall back to Src, which should cover all cases.
+            self.api_src = rules.readConfigDst("", selected_rule, None, None)
+            if not self.api_src:
+                self.api_src = rules.readConfigSrc("", selected_rule, None)
+            
+            if self.api_src:
+                print(f"{name} client initialized for: {self.api_src.user}")
+                return True
             else:
-                self.api_src = rules.readConfigSrc("", key, None)
-            print(f"{name} client initialized for: {self.api_src.user}")
-            return True
+                print(f"Error: Could not initialize API for rule '{selected_rule}'")
+                return False
         except Exception as e:
             print(f"Error initializing {name}: {e}")
             return False

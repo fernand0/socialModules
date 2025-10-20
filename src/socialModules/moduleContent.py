@@ -16,9 +16,11 @@ from html.parser import HTMLParser
 from bs4 import BeautifulSoup, Tag
 
 from socialModules.configMod import logMsg, fileNamePath, checkFile, DATADIR, CONFIGDIR
+from socialModules.modulePublicationCache import PublicationCache
 
 
 class Content:
+
     def __init__(self, indent=""):
         self.url = ""
         self.name = ""
@@ -324,6 +326,23 @@ class Content:
         msgLog = f"{self.indent} Command: {cmd}"
         logMsg(msgLog, 2, 0)
         posts = cmd()
+        if not posts:
+            msgLog = f"{self.indent} No posts found, checking PublicationCache"
+            logMsg(msgLog, 2, 0)
+            try:
+                cache = PublicationCache()
+                publications = cache.get_publications_by_service(self.service.lower())
+                if publications:
+                    msgLog = f"{self.indent} Found {len(publications)} publications in cache"
+                    logMsg(msgLog, 2, 0)
+                    posts = [{'title': pub['title'], 'link': pub['original_link']} for pub in publications]
+            except ImportError:
+                msgLog = f"{self.indent} PublicationCache module not found."
+                logMsg(msgLog, 3, 0)
+            except Exception as e:
+                msgLog = f"{self.indent} Error accessing PublicationCache: {e}"
+                logMsg(msgLog, 3, 0)
+
         msgLog = f"{self.indent} service {self.service} posts: {posts}"
         logMsg(msgLog, 2, 0)
         self.assignPosts(posts)
@@ -377,8 +396,12 @@ class Content:
                 # userD = dst.src[1][3]
                 # serviceD = dst.src[1][2]
                 # logging.info(f"Uuuuuu: {userD} - {serviceD}")
-                userD = dst.apiDst.getUser()
-                serviceD = dst.apiDst.getService()
+                if hasattr(dst, 'apiDst'):
+                    userD = dst.apiDst.getUser()
+                    serviceD = dst.apiDst.getService()
+                else:
+                    userD = dst.src[1][3]
+                    serviceD = dst.src[1][2]
                 # logging.info(f"Uuuuuu: {userD} - {serviceD}")
             else:
                 userD = dst.getUser()
