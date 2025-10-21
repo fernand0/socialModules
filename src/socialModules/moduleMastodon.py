@@ -192,10 +192,7 @@ class moduleMastodon(Content): #, Queue):
         return self.getAttribute(post, 'url')
 
     def getApiPostLink(self, post):
-        if self.getPostsType() == 'favs':
-            content, link = self.extractPostLinks(post)
-        else:
-            link = self.getPostUrl(post)
+        content, link = self.extractPostLinks(post)
         return link
 
     def extractPostLinks(self, post, linksToAvoid=""):
@@ -203,6 +200,7 @@ class moduleMastodon(Content): #, Queue):
 
     def getPostContent(self, post):
         result = ''
+        print(f"Posttt: {post}")
         if post and 'content' in post:
             result = self.getAttribute(post, 'content')
         return result
