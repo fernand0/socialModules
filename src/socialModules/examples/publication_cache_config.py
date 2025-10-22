@@ -72,15 +72,11 @@ def should_cache_publication(service, title, link):
     """
     import logging
 
-    logging.info(f"Cacheeeessss")
     if not PublicationCacheConfig.AUTO_CACHE_ENABLED:
         return False
-    logging.info(f"Cacheeeessss+")
 
     if service.lower() in [s.lower() for s in PublicationCacheConfig.EXCLUDED_SERVICES]:
         return False
-    logging.info(f"Cacheeeessss++")
-    logging.info(f"Cacheeeessss++ {title} - {link}")
 
     if not title or not link:
         return False

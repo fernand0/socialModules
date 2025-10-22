@@ -4,6 +4,7 @@ import configparser
 import sys
 import time
 import urllib
+import logging
 
 import click
 from bs4 import BeautifulSoup
@@ -178,6 +179,17 @@ class moduleSlack(Content):  # , Queue):
         self.getClient().token = self.slack_token
         return result
 
+    def editApiPost(self, post, newContent):
+        theChan = self.getChannel()
+        idPost = self.getPostId(post)
+
+        result = None
+        self.getClient().token = self.user_slack_token
+        data = {"channel": theChan, "ts": idPost, "text": newContent}
+        result = self.getClient().api_call("chat.update", data=data)
+        self.getClient().token = self.slack_token
+        return result
+
     def deleteApiPosts(self, idPost):
         # theChannel or the name of the channel?
         theChan = self.getChannel()
@@ -245,6 +257,31 @@ class moduleSlack(Content):  # , Queue):
     def getPostId(self, post):
         return post.get("ts", "")
 
+    def editApiTitle(self, post, newTitle):
+        # This method will reconstruct the post content with the new title
+        # and then call editApiPost.
+        original_text = post.get("text", "")
+        original_link = self.getPostLink(post)
+        print(f"Orig: {original_text}")
+        print(f"Orig l : {original_link}")
+
+        # Create a temporary post dictionary to get the new text with the updated title
+        temp_post = post.copy()
+        temp_post = self.setPostTitle(temp_post, newTitle)
+        new_text_with_title = temp_post.get("text", "")
+        print(f"New : {new_text_with_title}")
+
+        # If there was an original link, ensure it's still part of the new text
+        if original_link and original_link not in new_text_with_title:
+            # This is a simplified approach. A more robust solution might parse
+            # the original text to correctly insert the new title while preserving
+            # the link's position and formatting.
+            new_content = f"{new_text_with_title.strip()} {original_link}"
+        else:
+            new_content = new_text_with_title
+
+        return self.editApiPost(post, new_content)
+
     def setPostTitle(self, post, newTitle):
         if ("attachments" in post) and ("title" in post["attachments"][0]):
             post["attachments"][0]["title"] = newTitle
@@ -271,11 +308,7 @@ class moduleSlack(Content):  # , Queue):
                 else:
                     title = newTitle
 
-            # Last space
-            # posSpace = text.rfind(" ")
-            # post["text"] = title + text[posSpace:]
-            post["text"] = title# + text[posSpace:]
-            print(f"Title: {post['text']}")
+            post["text"] = title
         else:
             return "No title"
 
@@ -405,406 +438,72 @@ class moduleSlack(Content):  # , Queue):
             return self.report("Slack", text, sys.exc_info())
 
 
-def main():
-    import logging
 
+
+
+    def get_name(self):
+        return "Slack"
+
+    def get_default_user(self):
+        return "fernand0"
+
+    def get_default_post_type(self):
+        return "posts"
+
+    def register_specific_tests(self, tester):
+        tester.add_test("Search test", self.test_search)
+        tester.add_test("List channels test", self.test_list_channels)
+
+    def get_user_info(self, client):
+        response = client.auth_test()
+        return f"{response['user']} ({response['team']})"
+
+    def get_post_id_from_result(self, result):
+        if isinstance(result, dict) and "ts" in result:
+            return result["ts"]
+        return None
+
+    def test_search(self, apiSrc):
+        query = input("Enter search query: ").strip()
+        if not query:
+            print("No query provided")
+            return
+
+        results = apiSrc.search(apiSrc.getChannel(), query)
+        if results and "messages" in results and "matches" in results["messages"]:
+            matches = results["messages"]["matches"]
+            print(f"Found {len(matches)} messages:")
+            for i, msg in enumerate(matches[:5]):
+                print(f"\n{i+1}. {msg.get('text', 'No text')}")
+                print(f"   by @{msg.get('user', 'Unknown user')}")
+                print(f"   Link: {msg.get('permalink', 'No link')}")
+        else:
+            print("No results found.")
+
+    def test_list_channels(self, apiSrc):
+        channels = apiSrc.getChannels()
+        if channels:
+            print("Available channels:")
+            for i, channel in enumerate(channels):
+                print(f"{i+1}. {channel.get('name', 'No name')}")
+        else:
+            print("No channels found.")
+
+
+def main():
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
 
-    import moduleRules
-    import moduleSlack
+    from socialModules.moduleTester import ModuleTester
 
-    rules = moduleRules.moduleRules()
-    rules.checkRules()
-
-    name = nameModule()
-    print(f"Name: {name}")
-
-    rulesList = rules.selectRule(name)
-    for i, rule in enumerate(rulesList):
-        print(f"{i}) {rule}")
-
-    sel = int(input(f"Which one? "))
-    src = rulesList[sel]
-    print(f"Selected: {src}")
-    more = rules.more[src]
-    indent = ""
-    apiSrc = rules.readConfigSrc(indent, src, more)
-
-    # Example:
-    #
-    # src: ('slack', 'set', 'http://fernand0-errbot.slack.com/', 'posts')
-    #
-    # More: {'url': 'http://fernand0-errbot.slack.com/', 'service': 'slack', 'cache': 'linkedin\ntwitter\nfacebook\nmastodon\ntumblr', 'twitter': 'fernand0Test', 'facebook': 'Fernand0Test', 'mastodon': '@fernand0@mastodon.social', 'linkedin': 'Fernando Tricas', 'tumblr': 'fernand0', 'buffermax': '9'}
-    # It can be empty: {}
-
-    indent = ""
-
-    import socialModules.moduleRules
-
-    rules = socialModules.moduleRules.moduleRules()
-    rules.checkRules()
-
-    apiSrc = rules.selectRuleInteractive()
-
-    testingPost = True
-    if testingPost:
-        # apiSrc.setChannel('tavern-of-the-bots')
-        apiSrc.setPosts()
-        print(f"Posts: {apiSrc.getPosts()}")
-        listPosts = {}
-        for i, post in enumerate(apiSrc.getPosts()):
-            # print(f"Post {i}): {post}")
-            print(f"{i}) {apiSrc.getPostTitle(post)}")
-            print(f"     {apiSrc.getPostLink(post)}")
-        return
-
-    testingInit = False
-    if testingInit:
-        import moduleRules
-
-        src = ("slack", "set", "http://fernand0-errbot.slack.com/", "posts")
-        rules = moduleRules.moduleRules()
-        more = {}
-        indent = ""
-        apiSrc = rules.readConfigSrc(indent, src, more)
-        logging.info(f"User: {apiSrc.getUser()}")
-        logging.info(f"Name: {apiSrc.getName()}")
-        logging.info(f"Nick: {apiSrc.getNick()}")
-        logging.info(f"Channels: {apiSrc.getChannels()}")
-        return
-
-    testingPublishing = False
-    if testingPublishing:
-        links = [
-            "https://blog.thunderbird.net/2024/10/thunderbird-for-android-8-0-takes-flight/",
-            "https://practicalbetterments.com/order-and-orient-the-keys-on-your-keychain/",
-            "https://www.microsiervos.com/archivo/ciencia/50-snos-envio-mensaje-arecibo.html",
-            "https://lifehacker.com/tech/the-weakest-passwords-people-often-use",
-            "https://www.thetimes.com/business-money/economics/article/how-spain-is-outperforming-its-european-peers-f0stljzcf",
-            "https://www.huffingtonpost.es/virales/en-reino-unido-dicen-espana-supera-otros-paises-europeos-razon-dan-levantara-ampollas.html",
-            "https://historiatelefonia.com/2024/11/13/sobre-el-concepto-de-dominio-publico-en-documentos-historicos-de-empresas/",
-        ]
-
-        apiSrc.setChannel("links")
-        for link in links:
-            apiSrc.publishPost("", link, "")
-            import time
-            import random
-
-            time.sleep(5 + random.random() * 5)
-        return
-
-    testingEditLink = False
-    if testingEditLink:
-        print("Testing edit link poss")
-        site.setPostsType("posts")
-        site.setPosts()
-        print(site.getPostTitle(site.getPosts()[1]))
-        print(site.getPostLink(site.getPosts()[1]))
-        input("Edit? ")
-        site.setPostTitle(site.getPosts()[0], "prueba")
-        print(site.getPostTitle(site.getPosts()[0]))
-        print(site.getPostLink(site.getPosts()[0]))
-        return
-
-    testingEditTitle = False
-    if testingEditTitle:
-        print("Testing edit posts")
-        site.setPostsType("posts")
-        site.setPosts()
-        print(site.getPostTitle(site.getPosts()[0]))
-        print(site.getPostLink(site.getPosts()[0]))
-        input("Edit? ")
-        site.setPostTitle(site.getPosts()[0], "prueba")
-        print(site.getPostTitle(site.getPosts()[0]))
-        print(site.getPostLink(site.getPosts()[0]))
-        return
-
-    testingPosts = True
-    if testingPosts:
-        print("Testing posts")
-        apiSrc.setPostsType("posts")
-        apiSrc.setChannel("links")
-        # apiSrc.setChannel('tavern-of-the-bots')
-        apiSrc.setPosts()
-
-        print("Testing title and link")
-
-        for i, post in enumerate(apiSrc.getPosts()):
-            # print(f"Post: {post}")
-            title = apiSrc.getPostTitle(post)
-            link = apiSrc.getPostLink(post)
-            url = apiSrc.getPostUrl(post)
-            theId = apiSrc.getPostId(post)
-            summary = apiSrc.getPostContentHtml(post)
-            image = apiSrc.getPostImage(post)
-            print(
-                f"{i}) Title: {title}\n"
-                f"Link: {link}\n"
-                f"Url: {url}\nId: {theId}\n"
-                f"Content: {summary} {image}"
-            )
-
-        if input("See all channels? (y/n) ") == "y":
-            print(f"Channels: {apiSrc.getChannels()}")
-            for channel in apiSrc.getChannels():
-                print(f"Name: {channel['name']}")
-                apiSrc.setChannel(channel["name"])
-                apiSrc.setPosts()
-                for i, post in enumerate(apiSrc.getPosts()):
-                    print(
-                        f"{i}) Title: {apiSrc.getPostTitle(post)}\n"
-                        f"Link: {apiSrc.getPostLink(post)}\n"
-                    )
-                print(f"Name: {channel['name']}")
-                input("More? (any key to continue) ")
-
-        return
-
-    testingDeleteLast = False
-    if testingDeleteLast:
-        site.setPostsType("posts")
-        site.setPosts()
-        print(f"Testing delete last")
-        post = site.getPosts()[0]
-        input(f"Delete {site.getPostTitle(post)}? ")
-        site.delete(0)
-        return
-
-    testingDelete = False
-    if testingDelete:
-        # print("Testing posting and deleting")
-        res = site.publishPost(
-            "FOSDEM 2022 - FOSDEM 2022 will be online",
-            "https://fosdem.org/2022/news/2021-10-22-fosdem-online-2022/",
-            "",
-        )
-        print("res", res)
-        # idPost = res
-        # print(idPost)
-        # input("Delete? ")
-        # site.deletePostId(idPost)
-        # sys.exit()
-
-        i = 0
-        post = site.getPost(i)
-        title = site.getPostTitle(post)
-        link = site.getPostLink(post)
-        url = site.getPostUrl(post)
-        print(post)
-        print("Title: {}\nTuit: {}\nLink: {}\n".format(title, link, url))
-        print(f"Content: {site.getPostContentHtml(post)}\n")
-        input("Delete?")
-        site.delete(i)
-        return
-
-    myChan = None
-    channels = []
-    testingChannels = False
-    if testingChannels:
-        for i, chan in enumerate(apiSrc.getChannels()):
-            channels.append(chan.get("name", ""))
-            print(f"{i}) Chan: {chan.get('name','')}")
-
-        select = input("Which one? ")
-        if select.isdigit():
-            channels = [
-                channels[int(select)],
-            ]
-
-    testingDelete = False
-    if testingDelete:
-        for chan in channels:
-            apiSrc.setChannel(chan)
-
-            apiSrc.setPosts()
-
-            [
-                print(f"{i}) {apiSrc.getPostTitle(post)}")
-                for i, post in enumerate(apiSrc.getPosts())
-            ]
-            pos = input("Which post to delete (a for all)? ")
-            if pos.isdigit():
-                post = apiSrc.getPost(int(pos))
-                apiSrc.deletePost(post)
-            else:
-                for pos, post in enumerate(apiSrc.getPosts()):
-                    apiSrc.deletePost(post)
-
-        return
-
-    testingCleaning = False
-    if testingCleaning:
-        apiSrc.setPostsType("posts")
-        apiSrc.setChannel("tavern-of-the-bots")
-        apiSrc.setPosts()
-        ipList = {}
-        for i, post in enumerate(apiSrc.getPosts()):
-            title = apiSrc.getPostTitle(post)
-            link = apiSrc.getPostLink(post)
-            url = apiSrc.getPostUrl(post)
-            print("Title: {}\nTuit: {}\nLink: {}\n".format(title, link, url))
-            # if 'Rep' in link:
-            # if 'foto' in link:
-            # if '"args": ""' in link:
-            if "Hello" in title:
-                posIni = title.find("IP") + 4
-                posFin = title.find(" ", posIni) - 1
-                if title[posIni:posFin] not in ipList:
-                    print(title[posIni:posFin])
-                    ipList[title[posIni:posFin]] = 1
-                    print(ipList)
-                else:
-                    print(f"{link[posIni:posFin]}")
-                    input("Delete? ")
-                    print(f"Deleted {apiSrc.delete(i)}")
-
-            # time.sleep(5)
-
-    sys.exit()
-
-    res = site.search("url:fernand0")
-
-    for tt in res["statuses"]:
-        # print(tt)
-        print(
-            "- @{0} {1} https://twitter.com/{0}/status/{2}".format(
-                tt["user"]["name"], tt["text"], tt["id_str"]
-            )
-        )
-    sys.exit()
+    slack_module = moduleSlack()
+    tester = ModuleTester(slack_module)
+    tester.run()
 
 
 if __name__ == "__main__":
     main()
-
-    sys.exit()
-
-    print("Set Client")
-    site.setClient("fernand0-errbot")
-    print("sc", site.getClient())
-    site.setUrl(url)
-    site.setPosts()
-
-    print("Posts: {}".format(site.getPosts()))
-    sys.exit()
-    theChannel = site.getChanId(CHANNEL)
-    print("the Channel {} has code {}".format(CHANNEL, theChannel))
-    site.setPosts(CHANNEL)
-    # post = site.getPosts()[0] # Delete de last post
-    post = site.publishPost(CHANNEL, "test")
-    print(post)
-    input("Delete ?")
-    print(site.deletePost(post["ts"], CHANNEL))
-    res = site.search(
-        "links",
-        "https://elmundoesimperecto.com/",
-    )
-    print("res", res)
-    print("res", res["messages"]["total"])
-    sys.exit()
-    post = site.getPosts()[0]
-    print(site.getPostTitle(post))
-    print(site.getPostLink(post))
-    rep = site.publishPost("tavern-of-the-bots", "hello")
-    input("Delete %s?" % rep)
-    theChan = site.getChanId("tavern-of-the-bots")
-    rep = site.deletePost(rep["ts"], theChan)
-
-    sys.exit()
-
-    site.setPosts("links")
-    site.setPosts("tavern-of-the-bots")
-    print(site.getPosts())
-    print(site.getBots())
-    print(site.sc.api_call("channels.list"))
-    sys.exit()
-    rep = site.publishPost("tavern-of-the-bots", "hello")
-    site.deletePost(rep["ts"], theChan)
-    sys.exit()
-
-    site.setSocialNetworks(config, section)
-
-    if "buffer" in config.options(section):
-        site.setBufferapp(config.get(section, "buffer"))
-
-    if "cache" in config.options(section):
-        site.setProgram(config.get(section, "cache"))
-
-    theChannel = site.getChanId("links")
-
-    i = 0
-    listLinks = ""
-
-    lastUrl = ""
-    for i, post in enumerate(site.getPosts()):
-        url = site.getLink(i)
-        if urllib.parse.urlparse(url).netloc == lastUrl:
-            listLinks = listLinks + "%d>> %s\n" % (i, url)
-        else:
-            listLinks = listLinks + "%d) %s\n" % (i, url)
-        lastUrl = urllib.parse.urlparse(url).netloc
-        print(site.getTitle(i))
-        print(site.getLink(i))
-        print(site.getPostTitle(post))
-        print(site.getPostLink(post))
-        i = i + 1
-
-    click.echo_via_pager(listLinks)
-    i = input("Which one? [x] to exit ")
-    if i == "x":
-        sys.exit()
-
-    elem = int(i)
-    print(site.getPosts()[elem])
-
-    action = input("Delete [d], publish [p], exit [x] ")
-
-    if action == "x":
-        sys.exit()
-    elif action == "p":
-        if site.getBufferapp():
-            for profile in site.getSocialNetworks():
-                if profile[0] in site.getBufferapp():
-                    print("   getBuffer %s" % profile)
-                    socialNetwork = (
-                        profile,
-                        site.getSocialNetworks()[profile],
-                    )
-                    title = site.getTitle(elem)
-                    url = site.getLink(elem)
-                    listPosts = []
-                    listPosts.append((title, url))
-                    site.buffer[socialNetwork].addPosts(listPosts)
-
-        if site.getProgram():
-            for profile in site.getSocialNetworks():
-                if profile[0] in site.getProgram():
-                    print("   getProgram %s" % profile)
-
-                    socialNetwork = (
-                        profile,
-                        site.getSocialNetworks()[profile],
-                    )
-
-                    listP = site.cache[socialNetwork].getPosts()
-                    listPsts = site.obtainPostData(elem)
-                    listP = listP + [listPsts]
-                    # for i,l in enumerate(listP):
-                    #    print(i, l)
-                    # sys.exit()
-                    site.cache[socialNetwork].posts = listP
-                    site.cache[socialNetwork].updatePostsCache()
-        t = moduleTumblr.moduleTumblr()
-        t.setClient("fernand0")
-        # We need to publish it in the Tumblr blog since we won't publish it by
-        # usuarl means (it is deleted from queue).
-        t.publishPost(title, url, "")
-
-    site.deletePost(site.getId(j), theChannel)
-    # print(outputData['Slack']['pending'][elem][8])
 
 
 if __name__ == "__main__":

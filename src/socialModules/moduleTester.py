@@ -96,6 +96,7 @@ class ModuleTester:
         self.add_test("Image post test", self.test_image_post)
         self.add_test("Cache integration test", self.test_cache_integration)
         self.add_test("Post deletion test", self.test_deletion)
+        self.add_test("Edit post test", self.test_edit_post)
         self.add_test("Favorites management test", self.test_favorites_management)
         self.add_test("Cache content verification", self.test_cache_content)
 
@@ -148,6 +149,9 @@ class ModuleTester:
 
     def test_deletion(self, apiSrc):
         testing_utils.test_deletion(apiSrc)
+
+    def test_edit_post(self, apiSrc):
+        testing_utils.test_edit_post(apiSrc)
 
     def test_favorites_management(self, apiSrc):
         testing_utils.test_favorites_management(apiSrc)

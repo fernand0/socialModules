@@ -21,8 +21,6 @@ from socialModules.configMod import (
 fileName = socialModules.__file__
 path = f"{os.path.dirname(fileName)}"
 
-sys.path.append(path)
-
 hasSet = {}
 hasPublish = {}
 myModuleList = {}

@@ -36,7 +36,7 @@ def test_posts_retrieval(apiSrc):
 
         if posts:
             print(f"Retrieved {len(posts)} posts:")
-            for i, post in enumerate(posts[:5]):  # Show first 5
+            for i, post in enumerate(posts[:10]):  # Show first 5
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
                 url = apiSrc.getPostUrl(post)
@@ -99,8 +99,15 @@ def test_basic_post(apiSrc, get_post_id_callback):
         get_post_id_callback: A function that takes the result of the post and returns the post ID.
     """
     print("\n=== Testing Basic Post ===")
-    title = f"Test post from {apiSrc.get_name()}"
-    link = "https://example.com/test"
+    default_title = f"Test post from {apiSrc.get_name()}"
+    title = input(f"Enter title for the post (default: '{default_title}'): ").strip()
+    if not title:
+        title = default_title
+
+    link = input("Enter URL for the post (e.g., https://example.com/test): ").strip()
+    if not link:
+        print("No URL provided. Skipping basic post test.")
+        return
 
     print(f"Posting to {apiSrc.get_name()}:")
     print(f"  Title: {title}")
@@ -251,6 +258,54 @@ def test_favorites_management(apiSrc):
     except Exception as e:
         print(f"Error managing favorite: {e}")
 
+
+def test_edit_post(apiSrc):
+    """
+    Tests editing a post's title on the social media platform by selecting from a list.
+
+    Args:
+        apiSrc: The API source object for the module.
+    """
+    print("\n=== Testing Post Editing ===")
+    try:
+        print("Fetching recent posts...")
+        apiSrc.setPosts()
+        posts = apiSrc.getPosts()
+
+        if not posts:
+            print("No posts found to edit.")
+            return
+
+        print("Select a post to edit:")
+        for i, post in enumerate(posts[:10]):  # Show up to 10 posts
+            title = apiSrc.getPostTitle(post)
+            print(f"{i}) {title[:100]}{'...' if len(title) > 100 else ''}")
+
+        choice = input(f"Enter the number of the post to edit (0-{len(posts[:10])-1}): ").strip()
+        if not choice.isdigit() or not (0 <= int(choice) < len(posts[:10])):
+            print("Invalid selection. Skipping post edit test.")
+            return
+
+        post_to_edit = posts[int(choice)]
+        original_title = apiSrc.getPostTitle(post_to_edit)
+        print(f"\nSelected post: '{original_title}'")
+
+        new_title = input("Enter the new title for the post: ").strip()
+        if not new_title:
+            print("No new title provided. Skipping post edit test.")
+            return
+
+        print(f"Editing post with new title: '{new_title}'")
+        result = apiSrc.editApiTitle(post_to_edit, new_title)
+        print(f"Edit result: {result}")
+
+        if result and not str(result).startswith("Fail"):
+            print("Post title updated successfully.")
+        else:
+            print("Failed to update post title.")
+
+    except Exception as e:
+        print(f"Error editing post: {e}")
 
 def test_cache_content(apiSrc):
     """
