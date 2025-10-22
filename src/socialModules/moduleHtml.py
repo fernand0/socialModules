@@ -84,6 +84,7 @@ class moduleHtml(Content): #, Queue):
             requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
             response = http.get(url_to_download, verify=False, timeout=10)
+            print(f"Enc: {response.encoding}")
             response.raise_for_status()
 
         except requests.exceptions.RequestException as e:
@@ -280,7 +281,12 @@ class moduleHtml(Content): #, Queue):
             try:
                 response, _ = self.downloadUrl(url)
                 if response and response.ok:
-                    self.posts.append(response.text)
+                    import chardet
+                    # Sometimes the encoding seems to be declared wrongly
+                    # https://www.unizar.es/actualidad/vernoticia_ng.php?id=92934
+                    detected = chardet.detect(response.content)['encoding']
+                    response.encoding = detected
+                    self.posts.append(response.text) #content.decode('utf-8','ignore'))
                 else:
                     logging.warning(f"Failed to download content from {url}")
             except DownloadError as e:
@@ -294,6 +300,8 @@ class moduleHtml(Content): #, Queue):
         if not html_content:
             return ""
         soup = BeautifulSoup(html_content, "html.parser")
+        # soup = soup.prettify()
+        # soup = BeautifulSoup(soup, "html.parser")
         return self._extract_text(soup)
 
     def _extract_text(self, soup):
@@ -395,6 +403,19 @@ class moduleHtml(Content): #, Queue):
                 theSummaryLinks = ""
 
             return (soup.get_text().strip("\n"), theSummaryLinks)
+
+    #def getApiPostTitle(self, html_content):
+    def getPostTitle(self, html_content):
+        """
+        Extracts the title from the HTML content.
+        """
+        if not html_content:
+            return ""
+        soup = BeautifulSoup(html_content, "html.parser")
+        title_tag = soup.find("title")
+        if title_tag:
+            return title_tag.get_text(strip=True)
+        return ""
 
     def obtainPostData(self, post, debug=False):
         theSummary = post["summary"]
@@ -537,7 +558,8 @@ if __name__ == "__main__":
         blog = moduleHtml.moduleHtml()
         # New test case for setApiPosts and getPostContent
         print("\n--- Testing setApiPosts and getPostContent ---")
-        test_url = "https://github.com/fernand0/socialModules/blob/master/src/socialModules/moduleHtml.py"
+        url = input('Url? ')
+        test_url = url if url else "https://github.com/fernand0/socialModules/blob/master/src/socialModules/moduleHtml.py"
         blog.setUrl(test_url)
         print(f"Downloading content from: {test_url}")
         blog.setApiPosts()
@@ -547,7 +569,10 @@ if __name__ == "__main__":
             print("Extracting text content...")
             content = blog.getPostContent(html_content)
             print("Extracted Content:")
-            print(content[:500])  # Print first 500 characters
+            print(content)  # Print first 500 characters
+            print(type(content))  # Print first 500 characters
+            print("Title:")
+            print(blog.getPostTitle(html_content))
         else:
             print("Failed to download HTML content.")
         print("\n--- End of setApiPosts and getPostContent test ---")
