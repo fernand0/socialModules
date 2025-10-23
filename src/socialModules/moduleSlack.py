@@ -35,6 +35,8 @@ class moduleSlack(Content):  # , Queue):
         self.postaction = None
         self.service = "Slack"
 
+        msgLog = f"{self.indent} Nick: {self.nick}"
+        logMsg(msgLog, 2, 0)
         self.setUser(self.nick)
         # if self.user and self.user.find('/')>=0:
         #    self.name = self.user.split('/')[2].split('.')[0]
@@ -314,7 +316,7 @@ class moduleSlack(Content):  # , Queue):
 
         return post
 
-    def getApiPostTitle(self, post):
+    def getPostTitle(self, post):
         # print(f"Post: {post}")
         if ("attachments" in post) and ("title" in post["attachments"][0]):
             return post["attachments"][0]["title"]
@@ -345,9 +347,10 @@ class moduleSlack(Content):  # , Queue):
         else:
             return "No title"
 
-    def getApiPostUrl(self, post):
+    def getPostUrl(self, post):
         return (
-            f"https://{self.getUser()}.slack.com/archives/" f"{self.getChannel()}/p{self.getPostId(post)}"
+            f"https://{self.getUser()}.slack.com/archives/"
+            f"{self.getChannel()}/p{self.getPostId(post)}"
         )
 
     def getPostContent(self, post):
@@ -360,8 +363,8 @@ class moduleSlack(Content):  # , Queue):
             text = post.get("text", "")
         return text
 
-    def getApiPostLink(self, post):
-        link = ''
+    def getPostLink(self, post):
+        link = ""
         if "attachments" in post:
             link = post["attachments"][0]["original_url"]
         else:

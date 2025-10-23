@@ -31,8 +31,8 @@ class moduleTumblr(Content):  # , Queue):
         client = pytumblr.TumblrRestClient(keys[0], keys[1], keys[2], keys[3])
         # print(f"client: {client}")
         tumblr = self.user
-        # msgLog = f"{self.indent} Service {self.service} user {self.user}"
-        # logMsg(msgLog, 2, 0)
+        msgLog = f"{self.indent} Service {self.service} user {self.user}"
+        logMsg(msgLog, 1, 0)
         if isinstance(tumblr, str):
             self.url = f"https://{tumblr}.tumblr.com/"
         elif isinstance(tumblr[1], str):
@@ -141,6 +141,9 @@ class moduleTumblr(Content):  # , Queue):
                 logMsg(msgLog, 3, 0)
         elif "errors" in reply:
             res = f"failed! {res.get('errors','')} {reply}"
+        elif ("meta" in reply and 'status' in reply['meta']
+              and 'Forbidden' in reply['meta']['msg']):
+            res = f"Fail! {res.get('meta','')} {reply}"
 
         return res
 
@@ -186,15 +189,17 @@ class moduleTumblr(Content):  # , Queue):
             idPost = api.getPostId(post)
 
         try:
+            logging.info(f"api.getPostsType: {api.getPostsType()}")
+            logging.info(f"api.getUser: {api.getUser()}")
             if api.getPostsType() == "posts":
-                logging.debug(f"Title: {title} Link: {link}")
-                logging.debug(f"Content: {comment}")
+                logging.info(f"Title: {args} Link: {link} Comment: {comment}")
                 res = self.getClient().create_link(
                     self.getUser(),
                     state="queue",
                     title=title,
                     url=link,
                     description=comment,
+                    type='link'
                 )
             elif api.getPostsType() == "queue":
                 # logging.debug(f"idPost {idPost}")
@@ -276,7 +281,8 @@ def main():
     import logging
 
     logging.basicConfig(
-        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
+        stream=sys.stdout, level=logging.DEBUG,
+        format="%(asctime)s %(message)s"
     )
 
     import socialModules.moduleTumblr
@@ -285,7 +291,7 @@ def main():
 
     t.setClient("fernand0")
 
-    testingPostingWP = True
+    testingPostingWP = False
     if testingPostingWP:
         import socialModules.moduleWordpress
 
@@ -305,7 +311,7 @@ def main():
 
         return
 
-    testingPosting = False
+    testingPosting = True
     if testingPosting:
         title = "Test"
         link = "https://twitter.com/fernand0Test"

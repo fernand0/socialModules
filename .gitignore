@@ -7,4 +7,8 @@ dist/
 uv*
 .coverate
 .coverage
+<<<<<<< HEAD
 .env
+=======
+.lens/
+>>>>>>> 6f86eef0e8064c776e819563e1f6d3862c6eb456

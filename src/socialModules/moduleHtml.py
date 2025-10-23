@@ -404,8 +404,7 @@ class moduleHtml(Content): #, Queue):
 
             return (soup.get_text().strip("\n"), theSummaryLinks)
 
-    #def getApiPostTitle(self, html_content):
-    def getPostTitle(self, html_content):
+    def getApiPostTitle(self, html_content):
         """
         Extracts the title from the HTML content.
         """
