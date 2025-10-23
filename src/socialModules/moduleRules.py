@@ -988,15 +988,22 @@ class moduleRules:
         delete=False,
     ):
         indent = f"{name}"
-        res = {{}}
+        res = None #{{}}
         textEnd = ""
 
         # Destination
-        orig = f"{self.getNickRule(src)}@{self.getNameAction(src)} ({self.getTypeRule(src)})"
-        dest = f"{self.getNickAction(action)}@{self.getNameAction(action)} ({self.getTypeAction(action)})"
+        orig = (
+                f"{self.getNickRule(src)}@{self.getNameAction(src)} " 
+                f"({self.getTypeRule(src)})"
+                )
+        dest = (
+                f"{self.getNickAction(action)}@{self.getNameAction(action)} "
+                f"({self.getTypeAction(action)})"
+                )
         msgLog = f"{indent} Scheduling {orig} -> {dest}"
         logMsg(msgLog, 1, 1)
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
+        logMsg("Aquí", 1, 0)
         if not apiDst.getClient():
             msgLog = self.clientErrorMsg(
                 indent,
