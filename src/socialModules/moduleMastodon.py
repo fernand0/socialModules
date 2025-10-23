@@ -197,6 +197,7 @@ class moduleMastodon(Content):  # , Queue):
 
     def getPostContent(self, post):
         result = ""
+        print(f"Post content: {post}")
         if post and "content" in post:
             result = self.getAttribute(post, "content")
         return result

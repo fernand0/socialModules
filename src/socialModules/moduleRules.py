@@ -1281,7 +1281,14 @@ class moduleRules:
                 f"Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
             )
 
-            if res_dict and res_dict.get("success"):
+            if res_dict == "ok":
+                summary_msg = "Success. Action completed."
+                logMsg(
+                    f"[OK] Action for {rule_summary} -> {scheduled_action['rule_action']}: {summary_msg}",
+                    1,
+                    1,
+                )
+            elif isinstance(res_dict, dict) and res_dict.get("success"):
                 pub_res = res_dict.get("publication_result", "N/A")
                 post_act = res_dict.get("post_action_result", "N/A")
                 summary_msg = f"Success. Pub: '{pub_res}'. Post-Action: '{post_act}'."
@@ -1290,7 +1297,7 @@ class moduleRules:
                     1,
                     1,
                 )
-            elif res_dict:
+            elif isinstance(res_dict, dict):
                 error_msg = res_dict.get("error", "Unknown error")
                 logMsg(
                     f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {error_msg}",

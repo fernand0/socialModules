@@ -61,8 +61,10 @@ class moduleBlsk(Content):  # , Queue):
     def setApiPosts(self):
         posts = []
 
-        print(f"client: {self.client}")
-        posts, error = self.apiCall("get_timeline", api=self.client.app.bsky.feed)
+        posts, error = self.apiCall(commandName = "get_author_feed", 
+                                    actor = self.getUser())
+        print(f"Posts: {posts}")
+        print(f"Error: {error}")
 
         if error:
             return []
@@ -121,10 +123,7 @@ class moduleBlsk(Content):  # , Queue):
 
     def getApiPostLink(self, post):
         # FIXME: Are you sure? (inconsistent)
-        if self.getPostsType() == "favs":
-            content, link = self.extractPostLinks(post)
-        else:
-            link = self.getPostUrl(post)
+        content, link = self.extractPostLinks(post)
         return link
 
     def extractPostLinks(self, post, linksToAvoid=""):
