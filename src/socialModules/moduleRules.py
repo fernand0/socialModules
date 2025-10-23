@@ -643,7 +643,8 @@ class moduleRules:
         if isinstance(self.getActionComponent(action, 2), tuple):
             nick = self.getActionComponent(self.getActionComponent(action, 2), 1)
         else:
-            nick = self.getActionComponent(action, 2)
+            nick = self.getActionComponent(action, 3)
+            #FIXME: Problem with slack?
         return nick
 
     def getNameAction(self, action):
