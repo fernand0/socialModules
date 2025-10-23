@@ -739,7 +739,7 @@ class moduleRules:
         if isinstance(self.getActionComponent(action, 2), tuple):
             nick = self.getActionComponent(self.getActionComponent(action, 2), 1)
         else:
-            nick = self.getActionComponent(action, 3)
+            nick = self.getActionComponent(action, 2)
         return nick
 
     def getNameAction(self, action):
@@ -1028,8 +1028,14 @@ class moduleRules:
         delete=False,
     ):
         indent = f"{name}"
-        orig = f"{self.getNickRule(src)}@{self.getNameAction(src)} ({self.getTypeRule(src)})"
-        dest = f"{self.getNickAction(action)}@{self.getNameAction(action)} ({self.getTypeAction(action)})"
+        orig = (
+                f"{self.getNickRule(src)}@{self.getNameAction(src)} "
+                f"({self.getTypeRule(src)})"
+                )
+        dest = (
+                f"{self.getNickAction(action)}@{self.getNameAction(action)} "
+                f"({self.getTypeAction(action)})"
+                )
         logMsg(f"{indent} Scheduling {orig} -> {dest}", 1, 1)
         if not apiDst.getClient():
             msgLog = self.clientErrorMsg(

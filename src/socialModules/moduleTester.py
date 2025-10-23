@@ -35,46 +35,44 @@ class ModuleTester:
             name
             )
 
-        final_rules = []
+        final_rules_with_type = []
         seen_rules = set()
 
         for rule in rulesList:
             if not name.lower() in rule and rule in rules.rules:
                 for sub_rule in rules.rules[rule]:
                     if name.lower() in sub_rule and sub_rule not in seen_rules:
-                        final_rules.append(sub_rule)
+                        final_rules_with_type.append((sub_rule, 'dst'))
                         seen_rules.add(sub_rule)
             elif rule not in seen_rules:
-                final_rules.append(rule)
+                final_rules_with_type.append((rule, 'src'))
                 seen_rules.add(rule)
 
-        for i, rule in enumerate(final_rules):
-            print(f"{i}) {rule}")
+        for i, (rule_name, rule_type) in enumerate(final_rules_with_type):
+            print(f"{i}) {rule_name} ({rule_type})")
 
-        if not final_rules:
+        if not final_rules_with_type:
             print(f"No {name} rules found. Please configure {name} in your rules.")
             return False
 
         try:
-            sel = int(input(f"Which rule to use? (0-{len(final_rules)-1}): "))
-            if sel < 0 or sel >= len(final_rules):
+            sel = int(input(f"Which rule to use? (0-{len(final_rules_with_type)-1}): "))
+            if sel < 0 or sel >= len(final_rules_with_type):
                 print("Invalid selection")
                 return False
-            selected_rule = final_rules[sel]
+            selected_rule, rule_type = final_rules_with_type[sel]
         except (ValueError, IndexError):
             print("Invalid input, using first rule")
-            selected_rule = final_rules[0]
+            selected_rule, rule_type = final_rules_with_type[0]
 
-        print(f"Selected rule: {selected_rule}")
+        print(f"Selected rule: {selected_rule} (Type: {rule_type})")
 
         try:
-            # The selected_rule is now always a direct rule.
-            # The original logic was complex, trying both Dst and Src config readers.
-            # We'll try Dst first, then fall back to Src, which should cover all cases.
-            self.api_src = rules.readConfigDst("", selected_rule, None, None)
-            if not self.api_src:
+            if rule_type == 'src':
                 self.api_src = rules.readConfigSrc("", selected_rule, None)
-            
+            elif rule_type == 'dst':
+                self.api_src = rules.readConfigDst("", selected_rule, None, None)
+
             if self.api_src:
                 print(f"{name} client initialized for: {self.api_src.user}")
                 return True
