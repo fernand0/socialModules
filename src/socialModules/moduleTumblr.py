@@ -199,6 +199,7 @@ class moduleTumblr(Content):  # , Queue):
                     title=title,
                     url=link,
                     description=comment,
+                    type='link'
                 )
             elif api.getPostsType() == "queue":
                 # logging.debug(f"idPost {idPost}")
