@@ -1832,9 +1832,9 @@ class Content:
         return ""
 
     def getPostTitle(self, post):
-        title= "" 
-        try: 
-            title = self.getApiPostTitle(post) 
+        title= ""
+        try:
+            title = self.getApiPostTitle(post)
         except:
             print(f"post: {post}")
             title = post.get('title')
@@ -1854,7 +1854,7 @@ class Content:
                 link = post.get('link', '')
         except:
             print(f"post: {post}")
-            link = post.get('response_link', '')
+            link = post.get('link', '')
         return link
 
     def getApiPostUrl(self, post):
@@ -1869,7 +1869,7 @@ class Content:
                 url = post.get('url', '')
         except:
             logging.info(f"post: {post}")
-            url = post.get('link', '')
+            url = post.get('response_link', '')
         return url
 
     def getPostId(self, post):

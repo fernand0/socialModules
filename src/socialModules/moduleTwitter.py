@@ -336,7 +336,7 @@ class moduleTwitter(Content):  # , Queue):
         # title = title.split('http')[0]
         return title
 
-    def getApiPostUrl(self, post):
+    def getApiPostLink(self, post):
         logMsg("getApiPostUrl", 1, 0)
         idPost = self.getPostId(post)
         logMsg("getApiPostUrl", 1, 0)
@@ -348,7 +348,7 @@ class moduleTwitter(Content):  # , Queue):
             res = ""
         return res
 
-    def getApiPostLink(self, post):
+    def getApiPostUrl(self, post):
         # FIXME: Are you sure? (inconsistent)
         if self.getPostsType() == "favs":
             content, link = self.extractPostLinks(post)

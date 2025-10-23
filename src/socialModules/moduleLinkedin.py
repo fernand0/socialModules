@@ -295,7 +295,6 @@ class moduleLinkedin(Content):
             link = post.data.get('link')
         return post
 
-
     def getApiPostTitle(self, post):
         title = ''
         if ('text' in post.data):
