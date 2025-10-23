@@ -643,7 +643,7 @@ class moduleRules:
         if isinstance(self.getActionComponent(action, 2), tuple):
             nick = self.getActionComponent(self.getActionComponent(action, 2), 1)
         else:
-            nick = self.getActionComponent(action, 3)
+            nick = self.getActionComponent(action, 2)
         return nick
 
     def getNameAction(self, action):
@@ -759,7 +759,8 @@ class moduleRules:
 
         profile = self.getNameAction(action)
         account = self.getDestAction(action)
-        apiDst = getApi(profile, account, indent)
+        nick = self.getNickAction(action)
+        apiDst = getApi(profile, nick, indent)
         apiDst.setMoreValues(more)
         msgLog = f"{indent} apiDstt {apiDst}"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
