@@ -45,21 +45,17 @@ class moduleFlickr(Content): #, Queue):
             client = None
 
         if not authorized:
-            print("Aquí")
             # Get a request token
             flickr.get_request_token(oauth_callback='oob')
-            print("Aquí")
 
             # Open a browser at the authentication URL. Do this however
             # you want, as long as the user visits that URL.
             authorize_url = flickr.auth_url(perms='write')
-            print("Aquí")
             print(f"Visit {authorize_url} and copy the result")
 
             # Get the verifier code from the user. Do this however you
             # want, as long as the user gives the application the code.
             verifier = str(input('Verifier code: '))
-            print("Aquí")
 
             # Trade the request token for an access token
             flickr.get_access_token(verifier)
