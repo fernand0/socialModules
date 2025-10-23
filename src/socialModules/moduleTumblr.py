@@ -101,8 +101,19 @@ class moduleTumblr(Content):  # , Queue):
         return title
 
     def getApiPostLink(self, post):
-        msgLog = f"{self.indent} getPostUrl {post}"
-        logMsg(msgLog, 2, 0)
+        link = ""
+        if post and 'url' in post:
+            link = self.getAttribute(post, "url")
+
+        return link
+
+    def getPostContent(self, post):
+        result = ""
+        if post and "body" in post:
+            result = self.getAttribute(post, "body")
+        return result
+
+    def getApiPostUrl(self, post):
         url = ""
         if post:
             if "post_url" in post:
@@ -277,111 +288,41 @@ class moduleTumblr(Content):  # , Queue):
         return self.getClient().delete_post(self.getBlogName(), idPost)
 
 
+    def get_name(self):
+        return "Tumblr"
+
+    def get_default_user(self):
+        return "fernand0"
+
+    def get_default_post_type(self):
+        return "posts"
+
+    def register_specific_tests(self, tester):
+        tester.add_test("View dashboard", self.test_view_dashboard)
+
+    def get_user_info(self, client):
+        return client.info()['user']['name']
+
+    def get_post_id_from_result(self, result):
+        return result['id']
+
+    def test_view_dashboard(self, apiSrc):
+        posts = apiSrc.getClient().dashboard()['posts']
+        for i, post in enumerate(posts[:5]):
+            print(f"\n{i+1}. {post['blog_name']} - {post.get('summary', 'No summary')}")
+            print(f"   Link: {post['post_url']}")
+
 def main():
     import logging
-
     logging.basicConfig(
-        stream=sys.stdout, level=logging.DEBUG,
-        format="%(asctime)s %(message)s"
+        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
 
-    import socialModules.moduleTumblr
+    from socialModules.moduleTester import ModuleTester
 
-    t = socialModules.moduleTumblr.moduleTumblr()
-
-    t.setClient("fernand0")
-
-    testingPostingWP = False
-    if testingPostingWP:
-        import socialModules.moduleWordpress
-
-        wp = socialModules.moduleWordpress.moduleWordpress()
-        wp.setClient("avecesunafoto")
-        wp.setPostsType("posts")
-        wp.setPosts()
-        post = wp.getPost(0)
-        content = wp.getImagesCode(0)
-        print(f"Text: {content}")
-        return
-        title = wp.getPostTitle(post)
-        link = wp.getPostLink(post)
-        print(f"Title: {title}")
-        print(f"Link: {link}")
-        print(t.publishPost(title, link, content))
-
-        return
-
-    testingPosting = True
-    if testingPosting:
-        title = "Test"
-        link = "https://twitter.com/fernand0Test"
-        print(t.publishPost(title, link, ""))
-        return
-
-    testingDrafts = False
-    if testingDrafts:
-        print("Testing drafts")
-        t.setPostsType("drafts")
-        t.setPosts()
-        print(t.getPosts())
-        for i, post in enumerate(t.getPosts()):
-            print(f"{i}) {t.getPostTitle(post)}")
-        return
-
-    testingPosts = False
-    if testingPosts:
-        print("Testing posts")
-        t.setPosts()
-        print(t.getPosts())
-        for i, post in enumerate(t.getPosts()):
-            print(f"{i}) {t.getPostTitle(post)}")
-        return
-
-    testingQueue = False
-    if testingQueue:
-        print("Testing queue")
-        t.setPostsType("queue")
-        t.setPosts()
-        i = 0
-        print(t.getPosts())
-        for i, p in enumerate(t.getPosts()):
-            print(i, t.getPostTitle(p), t.getPostLink(p))
-        return
-
-    testingPost = False
-    if testingPost:
-        t.setPostsType("posts")
-        print("Testing posting in queue")
-        t.publishPost("Prueba", "https://fernand0.tumblr.com/", "")
-        return
-
-    print(len(t.getPosts()))
-    print(t.getPostTitle(t.getPosts()[i]))
-    print(t.getPostLink(t.getPosts()[i]))
-    print(t.getPostId(t.getPosts()[i]))
-    print(t.publish(i))
-    sys.exit()
-
-    config = configparser.ConfigParser()
-    config.read(CONFIGDIR + "/.rssBlogs")
-
-    section = "Blog2"
-    url = config.get(section, "url")
-    rssFeed = config.get(section, "rss")
-    logging.info(f" Blog RSS: {rssFeed}")
-    import socialModules.moduleRss
-
-    blog = socialModules.moduleRss.moduleRss()
-    # It does not preserve case
-    blog.setRssFeed(rssFeed)
-    blog.setUrl(url)
-    blog.setPosts()
-    post = blog.obtainPostData(1)
-
-    title = post[0]
-    link = post[1]
-    content = post[7]
-    t.publishPost(title, link, content)
+    tumblr_module = moduleTumblr()
+    tester = ModuleTester(tumblr_module)
+    tester.run()
 
 
 if __name__ == "__main__":
