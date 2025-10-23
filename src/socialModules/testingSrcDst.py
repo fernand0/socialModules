@@ -14,9 +14,7 @@ from configMod import *
 
 
 class srcDst:
-
     def readArgs(self):
-
         import argparse
 
         parser = argparse.ArgumentParser(
@@ -26,9 +24,8 @@ class srcDst:
             "--timeSlots",
             "-t",
             default=50,  # 50 minutes
-            help=("How many time slots we will have for publishing "
-                 f"(in minutes)"),
-            )
+            help=("How many time slots we will have for publishing " f"(in minutes)"),
+        )
         parser.add_argument(
             "checkBlog",
             default="",
@@ -55,8 +52,8 @@ class srcDst:
 
         return args
 
-def main():
 
+def main():
     logging.basicConfig(
         filename=LOGDIR + "/rssSocial.log",
         level=logging.INFO,
@@ -77,11 +74,10 @@ def main():
 
     return
 
-    command, args = input("Which command? ").split(' ')
+    command, args = input("Which command? ").split(" ")
 
     print(f"Command: {command}")
     print(f"Args: {args}")
-
 
     rul = None
 
@@ -97,26 +93,30 @@ def main():
         # print(link)
         for action in ruls[rul]:
             # print(f"Action: {action}")
-            if action[0] == 'cache':
-                apiDst = getApi('cache', (action[1], (action[2], action[3])))
+            if action[0] == "cache":
+                apiDst = getApi("cache", (action[1], (action[2], action[3])))
                 logging.info(apiDst)
-                apiDst.addPosts( [apiSrc.obtainPostData(j), ])
+                apiDst.addPosts(
+                    [
+                        apiSrc.obtainPostData(j),
+                    ]
+                )
             else:
                 apiDst = getApi(action[2], action[3])
                 apiDst.setPostsType(rul[3])
                 logging.info(apiDst)
-                apiDst.setPostsType('posts')
+                apiDst.setPostsType("posts")
                 apiDst.setPosts()
                 # print(apiDst.getPosts())
                 print(f"I'll publish: {title} - {link}")
-                apiDst.publishPost(title, link, '')
-        if rul[0] in ['slack']:
+                apiDst.publishPost(title, link, "")
+        if rul[0] in ["slack"]:
             # postaction !!
             idPost = apiSrc.getPostId(post)
             apiSrc.deleteApiPosts(idPost)
-        elif rul[0] in ['pocket']:
+        elif rul[0] in ["pocket"]:
             apiSrc.archive(j)
-        elif rul[0] in ['cache']:
+        elif rul[0] in ["cache"]:
             apiSrc.delete(j)
 
         # We can delete here because we have the data, but ... What happens if
@@ -149,13 +149,13 @@ def main():
         myIniKeys.append(iniK)
         logging.info(f"{elem} ({iniK}) - {len(available[elem])}")
         for params in available[elem]:
-            msgLog = (f"{elem} {params}")
+            msgLog = f"{elem} {params}"
             logMsg(msgLog, 2, 0)
             site = getApi(elem, params[1])
-            if hasattr(site, 'setPostsType'):
+            if hasattr(site, "setPostsType"):
                 site.setPostsType(params[2])
             site.setPosts()
-            msgLog = (f"Posts: {site.getPosts()}")
+            msgLog = f"Posts: {site.getPosts()}"
             logMsg(msgLog, 2, 0)
             if elem == "forum":
                 break

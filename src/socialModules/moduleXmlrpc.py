@@ -15,6 +15,7 @@ from pdfrw import PdfReader
 
 import socialModules.moduleCache
 from socialModules.configMod import *
+
 # https://github.com/fernand0/socialMeodules/blob/master/moduleCache.py
 from socialModules.moduleContent import *
 
@@ -22,11 +23,10 @@ from socialModules.moduleContent import *
 
 
 class moduleXmlrpc(Content):
-
     def setClient(self, nick):
         self.url = ""
         self.name = ""
-        self.rssFeed = ''
+        self.rssFeed = ""
         self.Id = 0
         self.socialNetworks = {}
         self.linksToAvoid = ""
@@ -37,7 +37,7 @@ class moduleXmlrpc(Content):
         self.program = None
         self.lastLinkPublished = {}
         self.keys = []
-        #self.logger = logging.getLogger(__name__)
+        # self.logger = logging.getLogger(__name__)
         self.user = nick
         self.setXmlRpc()
 
@@ -45,28 +45,28 @@ class moduleXmlrpc(Content):
         self.lastLinkPublished[socialNetwork] = (lastLink, lastTime)
 
     def getLastLinkPublished(self):
-        return(self.lastLinkPublished)
+        return self.lastLinkPublished
 
     def getLinksToAvoid(self):
-        return(self.linksToAvoid)
+        return self.linksToAvoid
 
-    def setLinksToAvoid(self,linksToAvoid):
+    def setLinksToAvoid(self, linksToAvoid):
         self.linksToAvoid = linksToAvoid
 
     def getTime(self):
-        return(self.time)
+        return self.time
 
     def setTime(self, time):
         self.time = time
 
     def getBufferapp(self):
-        return(self.bufferapp)
+        return self.bufferapp
 
     def setBufferapp(self, bufferapp):
         self.bufferapp = bufferapp
 
     def getProgram(self):
-        return(self.program)
+        return self.program
 
     def setProgram(self, program):
         self.program = program
@@ -75,23 +75,23 @@ class moduleXmlrpc(Content):
         return self.getXmlrpc()
 
     def getXmlrpc(self):
-        return(self.xmlrpc)
+        return self.xmlrpc
 
     def setXmlrpc(self, xmlrpc=None):
         self.xmlrpc = xmlrpc
 
     def setXmlRpc(self, xmlrpc=None):
-        #FIXME: ???
+        # FIXME: ???
         # We need to fix this
         logging.info(f"{self.indent} Xmlrpc: {xmlrpc}")
         conf = configparser.ConfigParser()
-        conf.read(CONFIGDIR + '/.blogaliarc')
+        conf.read(CONFIGDIR + "/.blogaliarc")
         for section in conf.sections():
-            usr = conf.get(section,'login')
-            pwd = conf.get(section,'password')
-            srv = conf.get(section,'server')
-            domain = self.url[self.url.find('.'):]
-            if srv.find(domain)>0:
+            usr = conf.get(section, "login")
+            pwd = conf.get(section, "password")
+            srv = conf.get(section, "server")
+            domain = self.url[self.url.find(".") :]
+            if srv.find(domain) > 0:
                 self.xmlrpc = (xmlrpc.client.ServerProxy(srv), usr, pwd)
                 blogId, blogName = self.blogId(srv, usr, pwd)
                 self.setId(blogId)
@@ -99,7 +99,7 @@ class moduleXmlrpc(Content):
         self.client = self.xmlrpc
 
     def getPostsXmlRpc(self):
-        return(self.postsXmlRpc)
+        return self.postsXmlRpc
 
     def setPosts(self):
         self.setPostsXmlRpc()
@@ -110,11 +110,12 @@ class moduleXmlrpc(Content):
         logging.info("xml %s" % self.Id)
         if self.xmlrpc and self.Id:
             logging.info("Yes")
-            self.postsXmlRpc = self.xmlrpc[0].blogger.getRecentPosts('', self.Id,
-                    self.xmlrpc[1], self.xmlrpc[2], 10)
+            self.postsXmlRpc = self.xmlrpc[0].blogger.getRecentPosts(
+                "", self.Id, self.xmlrpc[1], self.xmlrpc[2], 10
+            )
 
     def getId(self):
-        return(self.Id)
+        return self.Id
 
     def setId(self, Id):
         self.Id = Id
@@ -125,19 +126,19 @@ class moduleXmlrpc(Content):
         pwd = self.xmlrpc[2]
 
         listMet = server.system.listMethods()
-        if 'wp' in listMet[-1]:
-            userBlogs = server.wp.getUsersBlogs(usr,pwd)
+        if "wp" in listMet[-1]:
+            userBlogs = server.wp.getUsersBlogs(usr, pwd)
         else:
-            userBlogs = server.blogger.getUsersBlogs('',usr,pwd)
+            userBlogs = server.blogger.getUsersBlogs("", usr, pwd)
         for blog in userBlogs:
-            identifier = self.url[self.url.find('/')+2:self.url.find('.')]
-            if blog['url'].find(identifier) > 0:
-                return(blog['blogid'], blog['blogName'])
+            identifier = self.url[self.url.find("/") + 2 : self.url.find(".")]
+            if blog["url"].find(identifier) > 0:
+                return (blog["blogid"], blog["blogName"])
 
-        return(-1)
+        return -1
 
     def getKeys(self):
-        return(self.keys)
+        return self.keys
 
     def setKeys(self, keys):
         self.keys = keys
@@ -145,16 +146,16 @@ class moduleXmlrpc(Content):
     def getLinkPosition(self, link):
         i = 0
         # To be done
-        return(i)
+        return i
 
     def newPost(self, title, content):
         server = self.xmlrpc
-        data = { 'title': title, 'description': content}
+        data = {"title": title, "description": content}
         server[0].metaWeblog.newPost(self.Id, server[1], server[2], data, True)
 
     def editPost(self, idPost, title, content):
         server = self.xmlrpc
-        data = { 'title': title, 'description': content}
+        data = {"title": title, "description": content}
         server[0].metaWeblog.editPost(idPost, server[1], server[2], data, True)
 
     def selectPost(self):
@@ -166,124 +167,127 @@ class moduleXmlrpc(Content):
         i = 1
         print("Posts:")
         for post in posts:
-            print('%d) %s - %s' %(i, post['title'], post['postid']))
+            print("%d) %s - %s" % (i, post["title"], post["postid"]))
             i = i + 1
         thePost = int(input("Select one: "))
-        print("Post ... %s - %s" % (posts[thePost - 1]['title'], posts[thePost - 1]['postid']))
-        return posts[thePost - 1]['title'], posts[thePost - 1]['postid']
+        print(
+            "Post ... %s - %s"
+            % (posts[thePost - 1]["title"], posts[thePost - 1]["postid"])
+        )
+        return posts[thePost - 1]["title"], posts[thePost - 1]["postid"]
 
     def deletePost(self, idPost):
         logging.info("Deleting id %s" % idPost)
         result = None
         if self.xmlrpc:
             server = self.xmlrpc
-            result = server[0].blogger.deletePost('',idPost, server[1], server[2], True)
+            result = server[0].blogger.deletePost(
+                "", idPost, server[1], server[2], True
+            )
         logging.info(result)
-        return(result)
+        return result
 
     def extractImage(self, soup):
         pageImage = soup.findAll("img")
         #  Only the first one
         if len(pageImage) > 0:
-            imageLink = (pageImage[0]["src"])
+            imageLink = pageImage[0]["src"]
         else:
             imageLink = ""
 
-        if imageLink.find('?') > 0:
-            return imageLink[:imageLink.find('?')]
+        if imageLink.find("?") > 0:
+            return imageLink[: imageLink.find("?")]
         else:
             return imageLink
 
     def extractLinks(self, soup, linksToAvoid=""):
         j = 0
         linksTxt = ""
-        links = soup.find_all(["a","iframe"])
-        for link in soup.find_all(["a","iframe"]):
+        links = soup.find_all(["a", "iframe"])
+        for link in soup.find_all(["a", "iframe"]):
             theLink = ""
             if len(link.contents) > 0:
                 if not isinstance(link.contents[0], Tag):
                     # We want to avoid embdeded tags (mainly <img ... )
-                    if link.has_attr('href'):
-                        theLink = link['href']
+                    if link.has_attr("href"):
+                        theLink = link["href"]
                     else:
-                        if 'src' in link:
-                            theLink = link['src']
+                        if "src" in link:
+                            theLink = link["src"]
                         else:
                             continue
             else:
-                if 'src' in link:
-                    theLink = link['src']
+                if "src" in link:
+                    theLink = link["src"]
                 else:
                     continue
 
-            if ((linksToAvoid == "") or
-               (not re.search(linksToAvoid, theLink))):
-                    if theLink:
-                        link.append(" ["+str(j)+"]")
-                        linksTxt = linksTxt + "["+str(j)+"] " + \
-                            link.contents[0] + "\n"
-                        linksTxt = linksTxt + "    " + theLink + "\n"
-                        j = j + 1
+            if (linksToAvoid == "") or (not re.search(linksToAvoid, theLink)):
+                if theLink:
+                    link.append(" [" + str(j) + "]")
+                    linksTxt = linksTxt + "[" + str(j) + "] " + link.contents[0] + "\n"
+                    linksTxt = linksTxt + "    " + theLink + "\n"
+                    j = j + 1
 
         if linksTxt != "":
             theSummaryLinks = linksTxt
         else:
             theSummaryLinks = ""
 
-        return (soup.get_text().strip('\n'), theSummaryLinks)
+        return (soup.get_text().strip("\n"), theSummaryLinks)
 
     def obtainPostData(self, i, debug=False):
         if self.postsXmlRpc:
             posts = self.getPostsXmlRpc()
             print(posts[i])
             print(posts[i].keys())
-            theContent = ''
-            url = ''
-            firstLink = ''
+            theContent = ""
+            url = ""
+            firstLink = ""
             logging.debug("i %d", i)
             logging.debug("post %s", posts[i])
-            #print("i", i)
-            #print("post", posts[i])
-            if 'attachments' in posts[i]:
-                post = posts[i]['attachments'][0]
+            # print("i", i)
+            # print("post", posts[i])
+            if "attachments" in posts[i]:
+                post = posts[i]["attachments"][0]
             else:
                 post = posts[i]
 
-            if 'title' in post:
-                theTitle = post['title']
-                theLink = post['title_link']
-                if theLink.find('tumblr')>0:
-                    theTitle = post['text']
+            if "title" in post:
+                theTitle = post["title"]
+                theLink = post["title_link"]
+                if theLink.find("tumblr") > 0:
+                    theTitle = post["text"]
                 firstLink = theLink
-                if 'text' in post:
-                    content = post['text']
+                if "text" in post:
+                    content = post["text"]
                 else:
                     content = theLink
                 theSummary = content
                 theSummaryLinks = content
-                if 'image_url' in post:
-                    theImage = post['image_url']
-                elif 'thumb_url' in post:
-                    theImage = post['thumb_url']
+                if "image_url" in post:
+                    theImage = post["image_url"]
+                elif "thumb_url" in post:
+                    theImage = post["thumb_url"]
                 else:
                     logging.info("Fail image")
                     logging.info("Fail image %s", post)
-                    theImage = ''
-            elif 'text' in post:
-                if post['text'].startswith('<h'):
+                    theImage = ""
+            elif "text" in post:
+                if post["text"].startswith("<h"):
                     # It's an url
-                    url = post['text'][1:-1]
+                    url = post["text"][1:-1]
                     req = requests.get(url)
 
-                    if req.text.find('403 Forbidden')>=0:
+                    if req.text.find("403 Forbidden") >= 0:
                         theTitle = url
                         theSummary = url
                         content = url
                         theDescription = url
                     else:
-                        if url.lower().endswith('pdf'):
-                            nameFile = '/tmp/kkkkk.pdf'
-                            with open(nameFile,'wb') as f:
+                        if url.lower().endswith("pdf"):
+                            nameFile = "/tmp/kkkkk.pdf"
+                            with open(nameFile, "wb") as f:
                                 f.write(req.content)
                             theTitle = PdfReader(nameFile).Info.Title
                             if theTitle:
@@ -291,12 +295,12 @@ class moduleXmlrpc(Content):
                             else:
                                 theTitle = url
                             theUrl = url
-                            theSummary = ''
+                            theSummary = ""
                             content = theSummary
                             theDescription = theSummary
                         else:
-                            soup = BeautifulSoup(req.text, 'lxml')
-                            #print("soup", soup)
+                            soup = BeautifulSoup(req.text, "lxml")
+                            # print("soup", soup)
                             theTitle = soup.title
                             if theTitle:
                                 theTitle = str(theTitle.string)
@@ -304,61 +308,67 @@ class moduleXmlrpc(Content):
                                 # The last part of the path, without the dot part, and
                                 # capitized
                                 urlP = urllib.parse.urlparse(url)
-                                theTitle = os.path.basename(urlP.path).split('.')[0].capitalize()
+                                theTitle = (
+                                    os.path.basename(urlP.path)
+                                    .split(".")[0]
+                                    .capitalize()
+                                )
                             theSummary = str(soup.body)
                             content = theSummary
                             theDescription = theSummary
                 else:
-                    theSummary = post['text']
-                    content = post['text']
-                    theDescription = post['text']
-                    theTitle = post['text']
+                    theSummary = post["text"]
+                    content = post["text"]
+                    theDescription = post["text"]
+                    theTitle = post["text"]
             else:
-                theSummary = post['title']
-                content = post['title']
-                theDescription = post['title']
+                theSummary = post["title"]
+                content = post["title"]
+                theDescription = post["title"]
 
-            if 'original_url' in post:
-                theLink = post['original_url']
+            if "original_url" in post:
+                theLink = post["original_url"]
             elif url:
                 theLink = url
             else:
-                theLink = post['text']
+                theLink = post["text"]
 
-            if ('comment' in post):
-                comment = post['comment']
+            if "comment" in post:
+                comment = post["comment"]
             else:
                 comment = ""
 
-            #print("content", content)
+            # print("content", content)
             theSummaryLinks = ""
 
-            soup = BeautifulSoup(content, 'lxml')
-            if not content.startswith('http'):
+            soup = BeautifulSoup(content, "lxml")
+            if not content.startswith("http"):
                 link = soup.a
                 if link:
-                    firstLink = link.get('href')
+                    firstLink = link.get("href")
                     if firstLink:
-                        if firstLink[0] != 'h':
+                        if firstLink[0] != "h":
                             firstLink = theLink
 
             if not firstLink:
                 firstLink = theLink
 
-            if 'image_url' in post:
-                theImage = post['image_url']
+            if "image_url" in post:
+                theImage = post["image_url"]
             else:
                 theImage = None
             theLinks = theSummaryLinks
             theSummaryLinks = theContent + theLinks
 
             if self.getLinksToAvoid():
-                (theContent, theSummaryLinks) = self.extractLinks(soup, self.getLinkstoavoid())
+                (theContent, theSummaryLinks) = self.extractLinks(
+                    soup, self.getLinkstoavoid()
+                )
             else:
                 (theContent, theSummaryLinks) = self.extractLinks(soup, "")
 
-            if 'image_url' in post:
-                theImage = post['image_url']
+            if "image_url" in post:
+                theImage = post["image_url"]
             else:
                 theImage = None
             theLinks = theSummaryLinks
@@ -372,27 +382,38 @@ class moduleXmlrpc(Content):
         logging.debug("First Link:", firstLink)
         logging.debug("Summary:   ", content[:200])
         logging.debug("Sum links: ", theSummaryLinks)
-        logging.debug("the Links"  , theLinks)
+        logging.debug("the Links", theLinks)
         logging.debug("Comment:   ", comment)
         logging.debug("Image;     ", theImage)
         logging.debug("Post       ", theTitle + " " + theLink)
         logging.debug("==============================================")
         logging.debug("")
 
+        return (
+            theTitle,
+            theLink,
+            firstLink,
+            theImage,
+            theSummary,
+            content,
+            theSummaryLinks,
+            theContent,
+            theLinks,
+            comment,
+        )
 
-        return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
 
 def main():
     import socialModules.moduleXmlrpc
 
     config = configparser.ConfigParser()
-    config.read(CONFIGDIR + '/.rssBlogs')
+    config.read(CONFIGDIR + "/.rssBlogs")
 
     print("Configured blogs:")
 
     blogs = []
 
-    for b in ['Blog8', 'Blog2']:
+    for b in ["Blog8", "Blog2"]:
         blog = moduleXmlrpc.moduleXmlrpc()
         url = config.get(b, "url")
         blog.setUrl(url)
@@ -404,31 +425,30 @@ def main():
     sys.exit()
 
     for section in config.sections():
-        #print(section)
-        #print(config.options(section))
+        # print(section)
+        # print(config.options(section))
         blog = moduleXmlrpc.moduleXmlrpc()
         url = config.get(section, "url")
         blog.setUrl(url)
         optFields = ["linksToAvoid", "time", "buffer"]
-        if ("linksToAvoid" in config.options(section)):
+        if "linksToAvoid" in config.options(section):
             blog.setLinksToAvoid(config.get(section, "linksToAvoid"))
-        if ("time" in config.options(section)):
+        if "time" in config.options(section):
             blog.setTime(config.get(section, "time"))
-        if ("buffer" in config.options(section)):
+        if "buffer" in config.options(section):
             blog.setBufferapp(config.get(section, "buffer"))
-        if ("cache" in config.options(section)):
+        if "cache" in config.options(section):
             blog.setBufferapp(config.get(section, "cache"))
-        if ("xmlrpc" in config.options(section)):
+        if "xmlrpc" in config.options(section):
             blog.setXmlRpc()
 
         for option in config.options(section):
-            if ('ac' in option) or ('fb' in option):
+            if ("ac" in option) or ("fb" in option):
                 blog.addSocialNetwork((option, config.get(section, option)))
         blogs.append(blog)
 
-
     blogs[7].setPostsXmlrpc()
-    #print(blogs[7].getPostsXmlrpc().entries)
+    # print(blogs[7].getPostsXmlrpc().entries)
     numPosts = len(blogs[7].getPostsXmlrpc().entries)
     for i in range(numPosts):
         print(blog.obtainPostData(numPosts - 1 - i))
@@ -438,12 +458,12 @@ def main():
     for blog in blogs:
         print(blog.getUrl())
         print(blog.getSocialNetworks())
-        if 'twitterac' in blog.getSocialNetworks():
-            print(blog.getSocialNetworks()['twitterac'])
+        if "twitterac" in blog.getSocialNetworks():
+            print(blog.getSocialNetworks()["twitterac"])
         print(time.asctime(blog.datePost(5)))
         blog.obtainPostData(0)
-        if blog.getUrl().find('ando')>0:
-            blog.newPost('Prueba %s' % time.asctime(), 'description %s' % 'prueba')
+        if blog.getUrl().find("ando") > 0:
+            blog.newPost("Prueba %s" % time.asctime(), "description %s" % "prueba")
             print(blog.selectPost())
 
     for blog in blogs:
@@ -454,9 +474,8 @@ def main():
         posts = blog.getPostsXmlrpc()
         for post in posts:
             if "content" in post:
-                print(post['content'][:100])
+                print(post["content"][:100])
+
 
 if __name__ == "__main__":
     main()
-
-

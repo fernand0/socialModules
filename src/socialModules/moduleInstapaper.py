@@ -10,31 +10,29 @@ from socialModules.moduleContent import *
 
 
 class moduleInstapaper(Content):
-
     def getKeys(self, config):
         instapaper_key = config.get(self.user, "instapaper_key")
         instapaper_secret = config.get(self.user, "instapaper_secret")
         email = config.get(self.user, "email")
         password = config.get(self.user, "password")
 
-
-        return(instapaper_key, instapaper_secret, email, password)
+        return (instapaper_key, instapaper_secret, email, password)
 
     def authorize(self):
         logging.info("Starting authorize process")
         # Add Instapaper authorization logic here
 
     def initApi(self, keys):
-        msgLog = (f"{self.indent} Service {self.service} Start initApi {self.user}")
+        msgLog = f"{self.indent} Service {self.service} Start initApi {self.user}"
         logMsg(msgLog, 2, 0)
-        self.postaction='archive'
+        self.postaction = "archive"
 
         instapaper_key, instapaper_secret, email, password = keys
         # client = Instapaper(consumer_key=consumer_key, access_token=access_token)
         # client = None # Replace with actual Instapaper client initialization
         client = ipaper(instapaper_key, instapaper_secret)
         client.login(email, password)
-        msgLog = (f"{self.indent} service {self.service} End initApi")
+        msgLog = f"{self.indent} service {self.service} End initApi"
         logMsg(msgLog, 2, 0)
         return client
 
@@ -44,20 +42,20 @@ class moduleInstapaper(Content):
         try:
             posts = self.client.bookmarks()
         except:
-            msgLog = (f"setApiPosts generated an exception: {sys.exc_info()}")
+            msgLog = f"setApiPosts generated an exception: {sys.exc_info()}"
             logging.debug(f"Msggg: {msgLog}")
 
-        return(posts[:100])
+        return posts[:100]
 
     def processReply(self, reply):
-        res = ''
+        res = ""
         if reply:
             idPost = self.getPostId(reply)
             title = self.getPostTitle(reply)
             # res = f"{title} https://getinstapaper.com/read/{idPost}" # Adjust URL if necessary
-        msgLog=(f"     Res: {res}")
+        msgLog = f"     Res: {res}"
         logMsg(msgLog, 2, 0)
-        return(res)
+        return res
 
     def publishApiPost(self, *args, **kwargs):
         # Add Instapaper API call to publish a post here
@@ -68,7 +66,7 @@ class moduleInstapaper(Content):
         return "Not implemented"
 
     def archive(self, j):
-        msgLog = ("Archiving %d"% j)
+        msgLog = "Archiving %d" % j
         logMsg(msgLog, 1, 0)
         post = self.getPost(j)
         title = self.getPostTitle(post)
@@ -80,10 +78,10 @@ class moduleInstapaper(Content):
         logging.info(f"Id {idPost}")
         logMsg(msgLog, 2, 0)
         rep = self.archiveId(idPost)
-        msgLog = (f"Rep: {rep}")
+        msgLog = f"Rep: {rep}"
         logMsg(msgLog, 2, 0)
-        if 'Archived' in rep:
-            self.posts = self.posts[:j] + self.posts[j+1:]
+        if "Archived" in rep:
+            self.posts = self.posts[:j] + self.posts[j + 1 :]
         return rep
 
     def delete(self, j):
@@ -96,7 +94,7 @@ class moduleInstapaper(Content):
         return title
 
     def getPostId(self, post):
-        idPost = ''
+        idPost = ""
         # Extract ID from Instapaper post object
         return idPost
 
@@ -110,12 +108,12 @@ class moduleInstapaper(Content):
 
 
 def main():
-
-    logging.basicConfig(stream=sys.stdout,
-            level=logging.DEBUG,
-            format='%(asctime)s %(message)s')
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
+    )
 
     import socialModules.moduleRules
+
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
 
@@ -133,5 +131,5 @@ def main():
     #                 print(f"Title: {apiSrc.getPostTitle(post)}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

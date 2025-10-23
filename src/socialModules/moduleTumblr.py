@@ -17,7 +17,6 @@ from socialModules.moduleContent import Content
 
 
 class moduleTumblr(Content):  # , Queue):
-
     def getKeys(self, config):
         consumer_key = config.get("Buffer1", "consumer_key")
         consumer_secret = config.get("Buffer1", "consumer_secret")
@@ -168,6 +167,7 @@ class moduleTumblr(Content):  # , Queue):
 
     def publishApiPost(self, *args, **kwargs):
         import logging
+
         logging.debug(f"Args: {args} Kwargs: {kwargs}")
         if args and len(args) == 3 and args[0]:
             # logging.info(f"Tittt: args: {args}")
@@ -286,10 +286,11 @@ def main():
     t.setClient("fernand0")
 
     testingPostingWP = True
-    if testingPostingWP: 
+    if testingPostingWP:
         import socialModules.moduleWordpress
-        wp = socialModules.moduleWordpress.moduleWordpress() 
-        wp.setClient("avecesunafoto") 
+
+        wp = socialModules.moduleWordpress.moduleWordpress()
+        wp.setClient("avecesunafoto")
         wp.setPostsType("posts")
         wp.setPosts()
         post = wp.getPost(0)
@@ -300,12 +301,9 @@ def main():
         link = wp.getPostLink(post)
         print(f"Title: {title}")
         print(f"Link: {link}")
-        print(t.publishPost(title , link, content))
-
-
+        print(t.publishPost(title, link, content))
 
         return
-    
 
     testingPosting = False
     if testingPosting:

@@ -47,14 +47,14 @@ class PublicationCacheConfig:
 def get_cache_config():
     """Get current cache configuration"""
     return {
-        'cache_file': PublicationCacheConfig.CACHE_FILE,
-        'auto_cache_enabled': PublicationCacheConfig.AUTO_CACHE_ENABLED,
-        'excluded_services': PublicationCacheConfig.EXCLUDED_SERVICES,
-        'max_cache_size': PublicationCacheConfig.MAX_CACHE_SIZE,
-        'extract_response_links': PublicationCacheConfig.EXTRACT_RESPONSE_LINKS,
-        'custom_extractors': PublicationCacheConfig.CUSTOM_EXTRACTORS,
-        'cache_logging': PublicationCacheConfig.CACHE_LOGGING,
-        'cache_log_level': PublicationCacheConfig.CACHE_LOG_LEVEL,
+        "cache_file": PublicationCacheConfig.CACHE_FILE,
+        "auto_cache_enabled": PublicationCacheConfig.AUTO_CACHE_ENABLED,
+        "excluded_services": PublicationCacheConfig.EXCLUDED_SERVICES,
+        "max_cache_size": PublicationCacheConfig.MAX_CACHE_SIZE,
+        "extract_response_links": PublicationCacheConfig.EXTRACT_RESPONSE_LINKS,
+        "custom_extractors": PublicationCacheConfig.CUSTOM_EXTRACTORS,
+        "cache_logging": PublicationCacheConfig.CACHE_LOGGING,
+        "cache_log_level": PublicationCacheConfig.CACHE_LOG_LEVEL,
     }
 
 
@@ -71,15 +71,12 @@ def should_cache_publication(service, title, link):
         bool: True if should be cached
     """
     import logging
-    logging.info(f"Cacheeeessss")
+
     if not PublicationCacheConfig.AUTO_CACHE_ENABLED:
         return False
-    logging.info(f"Cacheeeessss+")
 
     if service.lower() in [s.lower() for s in PublicationCacheConfig.EXCLUDED_SERVICES]:
         return False
-    logging.info(f"Cacheeeessss++")
-    logging.info(f"Cacheeeessss++ {title} - {link}")
 
     if not title or not link:
         return False
@@ -126,17 +123,17 @@ def example_custom_configuration():
     print()
 
     # Example: Disable caching for test services
-    PublicationCacheConfig.EXCLUDED_SERVICES = ['test', 'debug', 'staging']
+    PublicationCacheConfig.EXCLUDED_SERVICES = ["test", "debug", "staging"]
     print("Excluded services updated:", PublicationCacheConfig.EXCLUDED_SERVICES)
 
     # Example: Add custom extractor for a proprietary platform
     def custom_myservice_extractor(reply):
         """Custom extractor for 'myservice' platform"""
-        if isinstance(reply, dict) and 'post_url' in reply:
-            return reply['post_url']
+        if isinstance(reply, dict) and "post_url" in reply:
+            return reply["post_url"]
         return None
 
-    PublicationCacheConfig.CUSTOM_EXTRACTORS['myservice'] = custom_myservice_extractor
+    PublicationCacheConfig.CUSTOM_EXTRACTORS["myservice"] = custom_myservice_extractor
     print("Custom extractor added for 'myservice'")
 
     # Example: Limit cache size
@@ -156,10 +153,10 @@ def example_conditional_caching():
     print("=== Conditional Caching Example ===\n")
 
     test_cases = [
-        ('twitter', 'My Article', 'https://blog.com/article'),
-        ('test', 'Test Post', 'https://test.com/post'),
-        ('facebook', '', 'https://blog.com/no-title'),
-        ('linkedin', 'Professional Post', ''),
+        ("twitter", "My Article", "https://blog.com/article"),
+        ("test", "Test Post", "https://test.com/post"),
+        ("facebook", "", "https://blog.com/no-title"),
+        ("linkedin", "Professional Post", ""),
     ]
 
     for service, title, link in test_cases:

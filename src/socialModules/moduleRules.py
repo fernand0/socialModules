@@ -644,6 +644,7 @@ class moduleRules:
             nick = self.getActionComponent(self.getActionComponent(action, 2), 1)
         else:
             nick = self.getActionComponent(action, 3)
+            #FIXME: Problem with slack?
         return nick
 
     def getNameAction(self, action):
@@ -759,7 +760,8 @@ class moduleRules:
 
         profile = self.getNameAction(action)
         account = self.getDestAction(action)
-        apiDst = getApi(profile, account, indent)
+        nick = self.getNickAction(action)
+        apiDst = getApi(profile, nick, indent)
         apiDst.setMoreValues(more)
         msgLog = f"{indent} apiDstt {apiDst}"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
@@ -987,15 +989,22 @@ class moduleRules:
         delete=False,
     ):
         indent = f"{name}"
-        res = {{}}
+        res = None #{{}}
         textEnd = ""
 
         # Destination
-        orig = f"{self.getNickRule(src)}@{self.getNameAction(src)} ({self.getTypeRule(src)})"
-        dest = f"{self.getNickAction(action)}@{self.getNameAction(action)} ({self.getTypeAction(action)})"
+        orig = (
+                f"{self.getNickRule(src)}@{self.getNameAction(src)} " 
+                f"({self.getTypeRule(src)})"
+                )
+        dest = (
+                f"{self.getNickAction(action)}@{self.getNameAction(action)} "
+                f"({self.getTypeAction(action)})"
+                )
         msgLog = f"{indent} Scheduling {orig} -> {dest}"
         logMsg(msgLog, 1, 1)
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
+        logMsg("Aquí", 1, 0)
         if not apiDst.getClient():
             msgLog = self.clientErrorMsg(
                 indent,

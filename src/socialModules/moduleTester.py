@@ -3,6 +3,7 @@
 import logging
 from socialModules.test_utils import testing_utils
 
+
 class TestOption:
     def __init__(self, name, test_function):
         self.name = name
@@ -15,6 +16,7 @@ class TestOption:
         except Exception as e:
             print(f"Error in {self.name} test: {e}")
 
+
 class ModuleTester:
     def __init__(self, module_instance):
         self.module = module_instance
@@ -25,53 +27,53 @@ class ModuleTester:
         # Common setup logic, like initializing rules and selecting a rule
         logging.info("Start setup")
         import socialModules.moduleRules
+
         rules = socialModules.moduleRules.moduleRules()
         rules.checkRules()
 
         name = self.module.get_name()
         rulesList = rules.selectRule(name, self.module.get_default_user(), self.module.get_default_post_type())
 
-        final_rules = []
+        final_rules_with_type = []
         seen_rules = set()
 
         for rule in rulesList:
             if not name.lower() in rule and rule in rules.rules:
                 for sub_rule in rules.rules[rule]:
                     if name.lower() in sub_rule and sub_rule not in seen_rules:
-                        final_rules.append(sub_rule)
+                        final_rules_with_type.append((sub_rule, 'dst'))
                         seen_rules.add(sub_rule)
             elif rule not in seen_rules:
-                final_rules.append(rule)
+                final_rules_with_type.append((rule, 'src'))
                 seen_rules.add(rule)
 
-        print(f"Available {name} rules:")
-        for i, rule in enumerate(final_rules):
-            print(f"{i}) {rule}")
+        for i, (rule_name, rule_type) in enumerate(final_rules_with_type):
+            print(f"{i}) {rule_name} ({rule_type})")
 
-        if not final_rules:
-            print(f"No {name} rules found. Please configure {name} in your rules.")
-            return False
-
-        try:
-            sel = int(input(f"Which rule to use? (0-{len(final_rules)-1}): "))
-            if sel < 0 or sel >= len(final_rules):
+        if not final_rules_with_type:
+            sel = int(input(f"Which rule to use? (0-{len(final_rules_with_type)-1}): "))
+            if sel < 0 or sel >= len(final_rules_with_type):
                 print("Invalid selection")
                 return False
-            selected_rule = final_rules[sel]
-        except (ValueError, IndexError):
-            print("Invalid input, using first rule")
-            selected_rule = final_rules[0]
-
-        print(f"Selected rule: {selected_rule}")
 
         try:
-            # The selected_rule is now always a direct rule.
-            # The original logic was complex, trying both Dst and Src config readers.
-            # We'll try Dst first, then fall back to Src, which should cover all cases.
-            self.api_src = rules.readConfigDst("", selected_rule, None, None)
-            if not self.api_src or not self.api_src.getClient():
+            sel = int(input(f"Which rule to use? (0-{len(final_rules_with_type)-1}): "))
+            if sel < 0 or sel >= len(final_rules_with_type):
+                print("Invalid selection")
+
+            selected_rule, rule_type = final_rules_with_type[sel]
+        except (ValueError, IndexError):
+            print("Invalid input, using first rule")
+            selected_rule, rule_type = final_rules_with_type[0]
+
+        print(f"Selected rule: {selected_rule} (Type: {rule_type})")
+
+        try:
+            if rule_type == 'src':
                 self.api_src = rules.readConfigSrc("", selected_rule, None)
-            
+            elif rule_type == 'dst':
+                self.api_src = rules.readConfigDst("", selected_rule, None, None)
+
             if self.api_src:
                 print(f"{name} client initialized for: {self.api_src.user}")
                 return True
@@ -93,13 +95,14 @@ class ModuleTester:
         self.add_test("Image post test", self.test_image_post)
         self.add_test("Cache integration test", self.test_cache_integration)
         self.add_test("Post deletion test", self.test_deletion)
+        self.add_test("Edit post test", self.test_edit_post)
         self.add_test("Favorites management test", self.test_favorites_management)
         self.add_test("Cache content verification", self.test_cache_content)
 
     def run(self):
         if not self.setup():
             return
-        
+
         self.register_common_tests()
         self.module.register_specific_tests(self)
 
@@ -114,7 +117,7 @@ class ModuleTester:
                 if choice == 0:
                     break
                 if 1 <= choice <= len(self.test_options):
-                    self.test_options[choice-1].run()
+                    self.test_options[choice - 1].run()
                 else:
                     print("Invalid choice")
             except ValueError:
@@ -145,6 +148,9 @@ class ModuleTester:
 
     def test_deletion(self, apiSrc):
         testing_utils.test_deletion(apiSrc)
+
+    def test_edit_post(self, apiSrc):
+        testing_utils.test_edit_post(apiSrc)
 
     def test_favorites_management(self, apiSrc):
         testing_utils.test_favorites_management(apiSrc)

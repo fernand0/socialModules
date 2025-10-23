@@ -11,8 +11,8 @@ from socialModules.configMod import *
 from socialModules.moduleContent import *
 # from socialModules.moduleQueue import *
 
-class moduleFlickr(Content): #, Queue):
 
+class moduleFlickr(Content):  # , Queue):
     def getKeys(self, config):
         KEY = config.get(self.user, "key")
         SECRET = config.get(self.user, "secret")
@@ -21,44 +21,50 @@ class moduleFlickr(Content): #, Queue):
 
     def initApi(self, keys):
         # FIXME: Do we call this method directly?
-        self.base_url = 'https://flickr.com'
+        self.base_url = "https://flickr.com"
         self.url = f"{self.base_url}/photos/{self.user}"
-        
+
         authorized = False
         try:
-            flickr = flickrapi.FlickrAPI(keys[0], keys[1], format='parsed-json',
-                        token_cache_location=f"{CONFIGDIR}")
-            if (not hasattr(flickr, 'token_valid') 
-                or not flickr.token_valid(perms='write')):
+            flickr = flickrapi.FlickrAPI(
+                keys[0],
+                keys[1],
+                format="parsed-json",
+                token_cache_location=f"{CONFIGDIR}",
+            )
+            if not hasattr(flickr, "token_valid") or not flickr.token_valid(
+                perms="write"
+            ):
                 authorized = False
             else:
                 authorized = True
         except requests.exceptions.ConnectionError:
-            res = self.report(self.indent, 'Error in initApi. Connection Error',
-                              '', sys.exc_info())
+            res = self.report(
+                self.indent, "Error in initApi. Connection Error", "", sys.exc_info()
+            )
         except flickrapi.exceptions.FlickrError:
-            res = self.report(self.indent, 'Error in initApi. Flickr Error',
-                              '', sys.exc_info())
+            res = self.report(
+                self.indent, "Error in initApi. Flickr Error", "", sys.exc_info()
+            )
         except:
-            res = self.report(self.indent, 'Error in initApi',
-                              '', sys.exc_info())
+            res = self.report(self.indent, "Error in initApi", "", sys.exc_info())
             client = None
 
         if not authorized:
             print("Aquí")
             # Get a request token
-            flickr.get_request_token(oauth_callback='oob')
+            flickr.get_request_token(oauth_callback="oob")
             print("Aquí")
 
             # Open a browser at the authentication URL. Do this however
             # you want, as long as the user visits that URL.
-            authorize_url = flickr.auth_url(perms='write')
+            authorize_url = flickr.auth_url(perms="write")
             print("Aquí")
             print(f"Visit {authorize_url} and copy the result")
 
             # Get the verifier code from the user. Do this however you
             # want, as long as the user gives the application the code.
-            verifier = str(input('Verifier code: '))
+            verifier = str(input("Verifier code: "))
             print("Aquí")
 
             # Trade the request token for an access token
@@ -86,21 +92,20 @@ class moduleFlickr(Content): #, Queue):
         return posts
 
     def setApiDrafts(self):
-
         posts = []
-        posts = self.apiCall('people.getPhotos', user_id='fernand0')
+        posts = self.apiCall("people.getPhotos", user_id="fernand0")
         # logging.debug(f"Post: {posts[0]}")
         # logging.debug(f"Post photos: {posts[0]['photos']}")
         # logging.debug(f"Post photos photo: {posts[0]['photos']['photo']}")
-        posts = posts[0]['photos']['photo']
+        posts = posts[0]["photos"]["photo"]
         return posts
 
     def getApiPostTitle(self, post):
         title = ""
         try:
-            title = post['title']
+            title = post["title"]
         except:
-            title = ''
+            title = ""
         return title
 
     def getApiPostUrl(self, post):
@@ -122,7 +127,7 @@ class moduleFlickr(Content): #, Queue):
         return result
 
     def getPostContentLink(self, post):
-        result = ''
+        result = ""
         return result
 
     def publishApiImage(self, *args, **kwargs):
@@ -145,14 +150,19 @@ class moduleFlickr(Content): #, Queue):
         return self.publishApiDraft(*args, **kwargs)
 
     def publishApiDraft(self, *args, **kwargs):
-        res = ''
+        res = ""
         logging.debug(f"Args: {args} Kwargs: {kwargs}")
         if kwargs:
-            post = kwargs.get('post', '')
-            api = kwargs.get('api', '')
+            post = kwargs.get("post", "")
+            api = kwargs.get("api", "")
         logging.debug(f"Post: {post} Api: {api}")
-        res = self.apiCall('photos.setPerms', photo_id=post['id'],
-                     is_public=1, is_friend=1, is_family=1)
+        res = self.apiCall(
+            "photos.setPerms",
+            photo_id=post["id"],
+            is_public=1,
+            is_friend=1,
+            is_family=1,
+        )
         logging.debug(f"Res: {res}")
         if not res:
             res = "OK. Published!"
@@ -161,23 +171,23 @@ class moduleFlickr(Content): #, Queue):
     def deleteApiPosts(self, idPost):
         res = None
 
-        return (res)
+        return res
 
     def deleteApiFavs(self, idPost):
         res = None
 
-        return (res)
+        return res
 
     def processReply(self, reply):
-        res = ''
+        res = ""
         msgLog = f"{self.indent}Reply: {reply}"
         logMsg(msgLog, 1, 1)
         origReply = reply[0]
-        if 'stat' in origReply and origReply.get('stat') == 'ok':
-            if not ('Fail!' in reply):
+        if "stat" in origReply and origReply.get("stat") == "ok":
+            if not ("Fail!" in reply):
                 idPost = self.getPostId(origReply)
-                res = (f"https://flickr.com/photos/{self.user}/status/{idPost}")
-        return (res)
+                res = f"https://flickr.com/photos/{self.user}/status/{idPost}"
+        return res
 
     def getPostHandle(self, post):
         res = None
@@ -187,18 +197,20 @@ class moduleFlickr(Content): #, Queue):
 
     def getPostId(self, post):
         try:
-            idPost = post.get('photoid').get('_content')
+            idPost = post.get("photoid").get("_content")
         except:
-            idpost = ''
+            idpost = ""
 
         return idPost
 
-def main():
 
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
-                        format='%(asctime)s %(message)s')
+def main():
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
+    )
 
     import socialModules.moduleRules
+
     rules = socialModules.moduleRules.moduleRules()
     rules.checkRules()
 
@@ -207,7 +219,7 @@ def main():
     testingPostsPos = False
     if testingPostsPos:
         apiSrc.setPosts()
-        apiSrc.lastLinkPublished='https://flickr.com/photos/fernand0/53624853058'
+        apiSrc.lastLinkPublished = "https://flickr.com/photos/fernand0/53624853058"
         print(f"Link: {apiSrc.getLastLinkPublished()}")
         print(f"Link: {apiSrc.getNextPost()}")
         print(f"Link: {apiSrc.getPosNextPost()}")
@@ -219,49 +231,48 @@ def main():
     testingPosts = False
     if testingPosts:
         apiSrc.setPosts()
-        for i,post in enumerate(apiSrc.getPosts()):
+        for i, post in enumerate(apiSrc.getPosts()):
             print(f"Post {i}): {post}")
         return
 
     testingPublishDraft = True
     if testingPublishDraft:
-        apiSrc.setPostsType('drafts')
+        apiSrc.setPostsType("drafts")
         apiSrc.setPosts()
         post = apiSrc.getPosts()[0]
         print(f"Post: {post}")
         input("Continue? ")
-        apiSrc.publishApiDraft(api= apiSrc.getClient(), post=post)
+        apiSrc.publishApiDraft(api=apiSrc.getClient(), post=post)
         return
 
     testingPost = False
     if testingPost:
-        apiSrc.publishPost("prueba","https://elmundoesimperfecto.com/", "")
+        apiSrc.publishPost("prueba", "https://elmundoesimperfecto.com/", "")
         return
 
     testingPostImages = False
     if testingPostImages:
-        image = '/tmp/2024-03-30_image.png'
+        image = "/tmp/2024-03-30_image.png"
         # Does not work with svg
         # image = '/tmp/2023-08-04_image.png'
 
-        title = 'Prueba imagen '
+        title = "Prueba imagen "
         altText = "Texto adicional"
 
         print(f"Testing posting with images")
-        res = apiSrc.publishImage("Prueba imagen", image, alt= altText)
+        res = apiSrc.publishImage("Prueba imagen", image, alt=altText)
         print(f"Res: {res}")
 
         return
-
 
     return
 
     testingPost = False
     if testingPost:
         print("Testing Post")
-        key = ('twitter', 'set', 'fernand0', 'posts')
+        key = ("twitter", "set", "fernand0", "posts")
         apiSrc = rules.readConfigSrc("", key, None)
-        keyD = ('direct', 'post', 'blsk', 'fernand0.bsky.social')
+        keyD = ("direct", "post", "blsk", "fernand0.bsky.social")
         indent = ""
         more = None
         apiDst = rules.readConfigDst(indent, keyD, more, apiSrc)
@@ -278,5 +289,5 @@ def main():
     return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

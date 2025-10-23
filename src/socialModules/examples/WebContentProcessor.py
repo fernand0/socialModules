@@ -15,9 +15,6 @@ import requests
 import argparse
 
 
-
-
-
 import socialModules
 from socialModules.configMod import *
 import socialModules.moduleHtml
@@ -240,8 +237,14 @@ class SocialMediaPoster:
                     apiSrc.setChannel("links")  # FIXME
 
                 if "smtp" in target:
-                    apiSrc.fromaddr = self.from_email if self.from_email else "ftricas@elmundoesimperfecto.com"
-                    apiSrc.to = self.to_email if self.to_email else social_media_targets[target]
+                    apiSrc.fromaddr = (
+                        self.from_email
+                        if self.from_email
+                        else "ftricas@elmundoesimperfecto.com"
+                    )
+                    apiSrc.to = (
+                        self.to_email if self.to_email else social_media_targets[target]
+                    )
                 msgLog = apiSrc.publishPost(title, url, read_data)
                 logging.info(msgLog)
             except Exception as e:
@@ -313,7 +316,7 @@ class WebContentProcessor:
                 f"Critical error during download or cleaning: {download_status}. Exiting."
             )
             social_media_poster = SocialMediaPoster(self.from_email, self.to_email)
-            error_title = cleaned_url # Changed to cleaned_url
+            error_title = cleaned_url  # Changed to cleaned_url
             error_body = f"Downloading not possible for URL: {cleaned_url}\nError: {download_status}"
             social_media_poster.post_to_social_media(
                 error_title, cleaned_url, "smtp", error_body, ""

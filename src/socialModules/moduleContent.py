@@ -72,9 +72,9 @@ class Content:
         Returns:
             bool: True if auto-cache is enabled
         """
-        enabled = getattr(self, 'auto_cache', True)
+        enabled = getattr(self, "auto_cache", True)
         if isinstance(enabled, str):
-            return enabled.lower() in ('true', 'yes', '1')
+            return enabled.lower() in ("true", "yes", "1")
         return bool(enabled)
 
     def setService(self, service, serviceData):
@@ -88,7 +88,10 @@ class Content:
             cmd(serviceData)
 
     def setClient(self, account):
-        msgLog = f"{self.indent} Start setClient account: {account}"
+        profile = ""
+        if hasattr(self, 'profile'):
+            profile = self.profile
+        msgLog = f"{self.indent} Start setClient profile: {profile} account: {account}"
         logMsg(msgLog, 1, 0)
         self.indent = f"{self.indent} "
 
@@ -103,21 +106,24 @@ class Content:
 
         configFile = f"{CONFIGDIR}/.rss{self.service}"
         res = None
-        msgLog = f"{self.indent} Config: {configFile}"  #: {src[1:]}"
+        msgLog = f"{self.indent}  Config file: {configFile}"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        res = configFile
+        res = ""
         try:
             config = configparser.RawConfigParser()
             config.read(configFile)
         except:
-            msgLog = (f"Does file {configFile} exist?\n"
-                      f"It is well formatted?\n"
-                      f" Does it contain an entry for your account?")
+            msgLog = (f"{self.indent}  "
+                f"Does file {configFile} exist?\n"
+                f"It is well formatted?\n"
+                f" Does it contain an entry for your account?"
+            )
             res = self.report({self.indent}, msgLog, 0, "")
 
-        msgLog = f"{self.indent} Res: {res}"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
-        if res and not "Fail" in res:
+        if res:
+            msgLog = f"{self.indent}  Res: {res}"  #: {src[1:]}"
+            logMsg(msgLog, 2, 0)
+        else:
             self.indent = f"{self.indent} "
             msgLog = f"{self.indent} Getting keys"
             logMsg(msgLog, 2, 0)
@@ -137,7 +143,7 @@ class Content:
         try:
             client = self.initApi(keys)
         except:
-            msgLog = (f"{self.indent} Exception {sys.exc_info()}")
+            msgLog = f"{self.indent} Exception {sys.exc_info()}"
             logMsg(msgLog, 2, 0)
             # To avoid submodules logging.
             # logger = logging.getLogger('my_module_name')
@@ -146,17 +152,16 @@ class Content:
             try:
                 client = self.initApi(keys)
             except:
-                msgLog = (f"{self.indent} Exception")
+                msgLog = f"{self.indent} Exception"
                 logMsg(msgLog, 2, 0)
                 if not config.sections and not keys:
                     self.report({self.service}, "No keys", "", "")
                 else:
                     self.report({self.service}, "Some problem", "", "")
 
-        msgLog = f"{self.indent} clienttt {client}"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} clienttt {client}"  #: {src[1:]}"
+        # logMsg(msgLog, 2, 0)
         self.client = client
-        self.indent = self.indent[:-1]
         self.indent = self.indent[:-1]
         self.indent = self.indent[:-1]
         msgLog = f"{self.indent} End setClientt"
@@ -192,8 +197,8 @@ class Content:
         self.nick = nick
 
     def getServer(self):
-        server = ''
-        if hasattr(self, 'server'):
+        server = ""
+        if hasattr(self, "server"):
             server = self.server
         return server
 
@@ -223,6 +228,8 @@ class Content:
         # We have a dictionary of values and we check for methods for
         # setting these values in our object
         self.indent = f"{self.indent} "
+        msgLog = f"{self.indent} Start setMoreValues"
+        logMsg(msgLog, 2, 0)
         if more:
             # Setting values available in more
             for option in more:
@@ -253,8 +260,8 @@ class Content:
                                 break
         if not self.getUser():
             self.setUser()
-        msgLog = f"{self.indent} End setMoreValues client {self.getClient()}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} End setMoreValues client {self.getClient()}"
+        # logMsg(msgLog, 2, 0)
         msgLog = f"{self.indent} End setMoreValues"
         logMsg(msgLog, 2, 0)
         self.indent = f"{self.indent[:-1]}"
@@ -330,7 +337,7 @@ class Content:
                 if publications:
                     msgLog = f"{self.indent} Found {len(publications)} publications in cache"
                     logMsg(msgLog, 2, 0)
-                    posts = [{'title': pub['title'], 'response_link':
+                    posts = [{'title': pub['title'], 'response_link': \
                               pub['response_link'], 'link': pub['original_link']} for pub in publications]
             except ImportError:
                 msgLog = f"{self.indent} PublicationCache module not found."
@@ -360,8 +367,8 @@ class Content:
         return url
 
     def fileNameBase(self, dst=None):
-        self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Start fileNameBase"
+        indent = f"{self.indent}  "
+        msgLog = f"{indent} Start fileNameBase"
         logMsg(msgLog, 2, 0)
 
         if hasattr(dst, "fileName") and dst.fileName:
@@ -386,14 +393,18 @@ class Content:
             user = src.getNick()
             service = src.getService()
 
-            dst.setNick()
+            dst.setNick(user)
             if hasattr(dst, "src") and isinstance(dst.src, tuple):
                 # It is a cache
                 # userD = dst.src[1][3]
                 # serviceD = dst.src[1][2]
                 # logging.info(f"Uuuuuu: {userD} - {serviceD}")
-                userD = dst.apiDst.getUser()
-                serviceD = dst.apiDst.getService()
+                if hasattr(dst, 'apiDst'):
+                    userD = dst.apiDst.getUser()
+                    serviceD = dst.apiDst.getService()
+                else:
+                    userD = dst.src[1][3]
+                    serviceD = dst.src[1][2]
                 # logging.info(f"Uuuuuu: {userD} - {serviceD}")
             else:
                 userD = dst.getUser()
@@ -408,9 +419,8 @@ class Content:
             fileName = f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}"
             self.fileName = fileName
 
-        msgLog = f"{self.indent} End fileNameBase"
+        msgLog = f"{indent} End fileNameBase"
         logMsg(msgLog, 2, 0)
-        self.indent = f"{self.indent[:-1]}"
         return fileName
 
     def updateLastLink(self, src, link):
@@ -481,18 +491,23 @@ class Content:
         return lastLink
 
     def setLastLink(self, src=None):
+        if src:
+            indent = src.indent
+        else:
+            indent = f"{self.indent} "
         msgLog = f"{self.indent} Start setLastLink"
         logMsg(msgLog, 1, 0)
+        self.indent = f"{self.indent} "
         if src:
             fileName = f"{src.fileNameBase(self)}.last"
         else:
             fileName = f"{self.fileNameBase(self)}.last"
         lastTime = ""
         linkLast = ""
-        checkR = checkFile(fileName, f"{self.indent} ")
-        msgLog = f"{self.indent} {checkR}"
-        logMsg(msgLog, 2, 0)
-        if "OK" in msgLog:
+        checkR = checkFile(fileName, f"{self.indent}")
+        # msgLog = f"{self.indent} {checkR}"
+        # logMsg(msgLog, 2, 0)
+        if "OK" in checkR:
             try:
                 with open(fileName, "rb") as f:
                     linkLast = f.read()
@@ -506,12 +521,16 @@ class Content:
         else:
             lastTime = 0
             self.report(self.service, msgLog, "", "")
-        # msgLog = f"{self.indent} {msgLog}"
-        # logMsg(msgLog, 2, 0)
+        if len(linkLast) >0:
+            msgLog = f"{self.indent} linkLast: {linkLast[0]}"
+            logMsg(msgLog, 2, 0)
+        msgLog = f"{self.indent} lastTime: {lastTime}"
+        logMsg(msgLog, 2, 0)
 
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime
         self.lastLink = linkLast
+        self.indent = self.indent[:-1]
         msgLog = f"{self.indent} End setLastLink"
         logMsg(msgLog, 1, 0)
 
@@ -563,6 +582,42 @@ class Content:
         else:
             print("not implemented!")
 
+    def getNextTime(self, src=None):
+        """
+        Lee la próxima hora de ejecución para una fuente dada de un fichero.
+        """
+        self.indent = f"{self.indent} "
+        msgLog = f"{self.indent}Start getNextTime"
+        logMsg(msgLog, 2, 0)
+
+        if not src:
+            logMsg(f"{self.indent}Error: El parámetro 'src' no puede ser None.", 3, 1)
+            self.indent = self.indent[:-1]
+            return None, None
+
+        fileNameNext = f"{src.fileNameBase(self)}.timeNext"
+
+        if not os.path.exists(fileNameNext):
+            logMsg(f"{self.indent}  Fichero de tiempo no existe: {fileNameNext}", 2, 0)
+            self.indent = self.indent[:-1]
+            return None, None
+
+        try:
+            with open(fileNameNext, "rb") as f:
+                tnow, tSleep = pickle.load(f)
+
+            msgLog = f"{self.indent}  Fichero leído: {fileNameNext}"
+            logMsg(msgLog, 2, 0)
+            self.indent = self.indent[:-1]
+            return tnow, tSleep
+
+        except (IOError, pickle.UnpicklingError) as e:
+            error_msg = f"Fallo al leer el fichero {fileNameNext}"
+            logMsg(f"{self.indent}{error_msg}", 3, 1)
+            self.report(self.service, error_msg, fileNameNext, e)
+            self.indent = self.indent[:-1]
+            return None, None
+
     def setNextTime(self, tnow, tSleep, src=None):
         """
         Guarda la próxima hora de ejecución para una fuente dada en un fichero.
@@ -582,15 +637,23 @@ class Content:
 
             # 'wb' creará el fichero si no existe, por lo que checkFile es redundante
             # a menos que se quiera un log específico si el fichero no existía.
+            # msgLog = f"{self.indent}Nowwww: {tnow}, tSleep {tSleep}"
+            # logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent}Nowwww: {(tnow,tSleep)}"
+            # logMsg(msgLog, 2, 0)
             with open(fileNameNext, "wb") as f:
                 pickle.dump((tnow, tSleep), f)
+            # msgLog = f"{self.indent}Nowwwd: {(tnow,tSleep)}"
+            # logMsg(msgLog, 2, 0)
 
             msgLog = f"{self.indent}  Fichero actualizado: {fileNameNext}"
             logMsg(msgLog, 2, 0)
 
         except (IOError, pickle.PicklingError) as e:
             # Un manejo de errores más específico que llamar a self.report
-            error_msg = f"Fallo al escribir en el fichero {fileNameNext or 'desconocido'}"
+            error_msg = (
+                f"Fallo al escribir en el fichero {fileNameNext or 'desconocido'}"
+            )
             logMsg(f"{self.indent}{error_msg}", 3, 1)
             self.report(self.service, error_msg, fileNameNext, e)
         finally:
@@ -715,6 +778,9 @@ class Content:
         posts = self.getPosts()
         if posts and (i >= 0) and (i < len(posts)):
             post = posts[i]
+        #elif posts:
+        #    # Sure? FIXME
+        #    post = posts[-1]
 
         msgLog = f"{self.indent} End getPost"
         logMsg(msgLog, 2, 0)
@@ -860,18 +926,20 @@ class Content:
                     )
 
                 if title[-1] in string.punctuation:
-                    text = (f'{text}\n<p>'
-                            f'<h4>{description}</h4>\n<a href="{url}">'
+                    text = (
+                        f"{text}\n<p>"
+                        f'<h4>{description}</h4>\n<a href="{url}">'
                         #'<img class="alignnone size-full '
                         #'wp-image-3306" src="{}"
-                            f"{srcTxt}</a></p>" #.format(text, description, url, srcTxt)
+                        f"{srcTxt}</a></p>"  # .format(text, description, url, srcTxt)
                     )
                 else:
-                    text = (f'{text}\n<p><h4>{description}</h4>'
-                            f'<a href="{url}">'
+                    text = (
+                        f"{text}\n<p><h4>{description}</h4>"
+                        f'<a href="{url}">'
                         #'<img class="alignnone size-full '
                         #'wp-image-3306" src="{}"
-                            f"{srcTxt}</a></p>" #.format(text, description, url, srcTxt)
+                        f"{srcTxt}</a></p>"  # .format(text, description, url, srcTxt)
                     )
             else:
                 title = iimg[1]
@@ -922,8 +990,10 @@ class Content:
                 else:
                     posLast = len(posts)
 
-            # msgLog = f"{self.indent} posLast: {posLast}"
-            # logMsg(msgLog, 2, 0)
+            msgLog = f"{self.indent} lastLinkkk: {lastLink}"
+            logMsg(msgLog, 1, 0)
+            msgLog = f"{self.indent} posLast: {posLast}"
+            logMsg(msgLog, 1, 0)
         msgLog = f"{self.indent} End getPosNextPost."
         logMsg(msgLog, 2, 0)
         return posLast
@@ -1157,8 +1227,7 @@ class Content:
         elif len(args) == 1:
             # apiSrc= args[0]
             listPosts = args  # [1]
-            msgLog = (f"{self.indent} Publishing post {listPosts}"
-                      f" len(args) == 1")
+            msgLog = f"{self.indent} Publishing post {listPosts}" f" len(args) == 1"
             logMsg(msgLog, 2, 0)
             return
         if more:
@@ -1201,8 +1270,7 @@ class Content:
                     reply = method(api=api, post=post)
                 else:
                     msgLog = (
-                        f"{self.indent} Calling method "
-                        f"with title, link, comment"
+                        f"{self.indent} Calling method " f"with title, link, comment"
                     )
                     logMsg(msgLog, 2, 0)
                     reply = method(title, link, comment)
@@ -1212,7 +1280,9 @@ class Content:
 
             # Integrate publication cache if successful and auto_cache is enabled
             if self.getAutoCache():
-                self._cache_publication_if_successful(reply, title, link, api, post, more)
+                self._cache_publication_if_successful(
+                    reply, title, link, api, post, more
+                )
 
         except:
             reply = self.report(self.service, title, link, sys.exc_info())
@@ -1231,9 +1301,9 @@ class Content:
                 # If we have api and post, try to get better information
                 if api and post:
                     try:
-                        if hasattr(api, 'getPostTitle'):
+                        if hasattr(api, "getPostTitle"):
                             pub_title = api.getPostTitle(post) or title
-                        if hasattr(api, 'getPostLink'):
+                        if hasattr(api, "getPostLink"):
                             pub_link = api.getPostLink(post) or link
                     except:
                         # Fallback to original values
@@ -1246,7 +1316,10 @@ class Content:
 
                 # Check if we should cache this publication
                 try:
-                    from examples.publication_cache_config import should_cache_publication
+                    from examples.publication_cache_config import (
+                        should_cache_publication,
+                    )
+
                     if not should_cache_publication(pub_service, pub_title, pub_link):
                         return
                 except ImportError:
@@ -1261,7 +1334,9 @@ class Content:
                 cache = PublicationCache()
 
                 # Extract response link from reply
-                response_link = self._extract_response_link_from_reply(reply, pub_service)
+                response_link = self._extract_response_link_from_reply(
+                    reply, pub_service
+                )
 
                 # Cache the publication
                 user = self.getUser() or self.getNick()
@@ -1274,7 +1349,7 @@ class Content:
                         source_service=source_service_name,
                         user=user,
                         response_link=response_link,
-                        publication_date=datetime.datetime.now().isoformat()
+                        publication_date=datetime.datetime.now().isoformat(),
                     )
 
                     if pub_id:
@@ -1300,6 +1375,7 @@ class Content:
             # Check for custom extractor first
             try:
                 from examples.publication_cache_config import get_custom_extractor
+
                 custom_extractor = get_custom_extractor(service)
                 if custom_extractor:
                     custom_result = custom_extractor(reply)
@@ -1312,43 +1388,44 @@ class Content:
             # Handle different reply formats
             if isinstance(reply, dict):
                 # Twitter-style responses
-                if service == 'twitter':
-                    if 'id' in reply:
+                if service == "twitter":
+                    if "id" in reply:
                         return f"https://twitter.com/user/status/{reply['id']}"
-                    elif 'data' in reply and 'id' in reply['data']:
+                    elif "data" in reply and "id" in reply["data"]:
                         return f"https://twitter.com/user/status/{reply['data']['id']}"
 
                 # Facebook-style responses
-                elif service == 'facebook':
-                    if 'id' in reply:
+                elif service == "facebook":
+                    if "id" in reply:
                         return f"https://facebook.com/post/{reply['id']}"
-                    elif 'post_id' in reply:
+                    elif "post_id" in reply:
                         return f"https://facebook.com/post/{reply['post_id']}"
 
                 # LinkedIn-style responses
-                elif service == 'linkedin':
-                    if 'id' in reply:
+                elif service == "linkedin":
+                    if "id" in reply:
                         return f"https://linkedin.com/feed/update/{reply['id']}"
 
                 # Mastodon-style responses
-                elif service == 'mastodon':
-                    if 'url' in reply:
-                        return reply['url']
+                elif service == "mastodon":
+                    if "url" in reply:
+                        return reply["url"]
 
                 # Generic URL extraction
-                for key in ['url', 'link', 'permalink', 'web_url']:
+                for key in ["url", "link", "permalink", "web_url"]:
                     if key in reply:
                         return reply[key]
 
             # Handle tuple responses (legacy format)
             elif isinstance(reply, tuple) and len(reply) > 1:
-                if isinstance(reply[1], dict) and 'id' in reply[1]:
+                if isinstance(reply[1], dict) and "id" in reply[1]:
                     return f"https://{service}.com/post/{reply[1]['id']}"
 
             # Handle string responses that might contain URLs
             elif isinstance(reply, str):
                 # Look for URLs in the response string
                 import re
+
                 url_pattern = r'https?://[^\s<>"{}|\\^`\[\]]+'
                 urls = re.findall(url_pattern, reply)
                 if urls:
@@ -1440,7 +1517,7 @@ class Content:
 
     def edit(self, j, newTitle):
         msgLog = f"{self.indent} do edit {j} - {newTitle}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 1, 0)
         update = self.do_edit(j, newTitle=newTitle)
         return update
 
@@ -1486,17 +1563,8 @@ class Content:
 
     def getLastTimePublished(self, indent=""):
         lastTime = ""
-        msgLog = f"{indent} No lastTimePublished"
         if hasattr(self, "lastTimePublished"):
             lastTime = self.lastTimePublished
-            if lastTime:
-                import time
-
-                myTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastTime))
-            else:
-                myTime = "No time"
-            msgLog = f"{indent} Last time: {myTime}"
-        logMsg(msgLog, 1, 1)
         return lastTime
 
     def getLinksToAvoid(self):
@@ -1619,7 +1687,7 @@ class Content:
                     linkS = linkS.decode()
                 url = self.getPostLink(entry)
                 # msgLog = (f"{self.indent} Url: {url} Link: {linkS}")
-                # logMsg(msgLog, 2, 0)
+                # logMsg(msgLog, 1, 0)
                 # lenCmp = min(len(url), len(linkS))
                 if url == linkS:
                     # When there are duplicates (there shouldn't be) it returns
@@ -1735,6 +1803,8 @@ class Content:
         # print("----Unexpected error: %s"% data[2])
 
     def show(self, j):
+        msgLog = f"{self.indent} do show {j}"
+        logMsg(msgLog, 1, 0)
         if j < len(self.getPosts()):
             post = self.getPosts()[j]
             title = self.getPostTitle(post)
@@ -1745,11 +1815,11 @@ class Content:
 
             reply = ""
             if title:
-                reply = reply + " " + title
+                reply = f"{reply} {title}"
             if content:
-                reply = reply + " " + content
+                reply = f"{reply} {content}"
             if link:
-                reply = reply + "\n" + link
+                reply = f"{reply}\n{link}"
         else:
             reply = ""
 

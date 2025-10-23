@@ -27,7 +27,6 @@ from socialModules.moduleGoogle import *
 
 
 class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
-
     def initApi(self, keys):
         self.service = "Gmail"
         msgLog = f"{self.indent} initApi {self.service}"
@@ -39,7 +38,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
             #'https://mail.google.com/']
         ]
 
-        service = self.authorize('gmail', 'v1')
+        service = self.authorize("gmail", "v1")
 
         return service
 
@@ -90,7 +89,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         if not hasattr(self, "labels") or not self.labels:
             self.setLabels()
         if isinstance(sel, dict):
-            sel = sel['name']
+            sel = sel["name"]
         logging.info(f"Labels: {self.labels}")
         logging.info(f"Labels: {sel}")
         return list(filter(lambda x: sel in x["name"], self.labels))
@@ -127,7 +126,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def modifyLabels(self, messageId, oldLabelId, labelId):
         api = self.getClient()
         if isinstance(oldLabelId, dict):
-            oldLabelId = oldLabelId.get('id')
+            oldLabelId = oldLabelId.get("id")
         list_labels = {
             "removeLabelIds": [
                 oldLabelId,
@@ -234,7 +233,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         if isinstance(label, str):
             self.setLabels()
             label = self.getLabels(label)
-            if len(label)>0:
+            if len(label) > 0:
                 label = label[0]
                 msgLog = f"{self.indent} Label: {label}"
                 logMsg(msgLog, 2, 0)
@@ -298,7 +297,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def getMessage(self, idPost):
         api = self.getClient()
-        if 'draft' in self.getPostsType():
+        if "draft" in self.getPostsType():
             message = api.users().drafts().get(userId="me", id=idPost).execute()
         else:
             message = api.users().messages().get(userId="me", id=idPost).execute()
@@ -493,8 +492,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         elif isinstance(message, tuple):
             # logging.debug(message)
             idPost = message
-        elif 'id' in message:
-            idPost = message.get('id')
+        elif "id" in message:
+            idPost = message.get("id")
 
         return idPost
 
@@ -514,7 +513,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def getPostBody(self, message):
         logging.debug(f"Message: {message}")
-        if 'body' in message:
+        if "body" in message:
             mess = message["body"]
         res = self.getHeader(mess, "payload")
         if not res:
@@ -869,17 +868,13 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         try:
             # credentials = self.authorize()
             res = (
-                api.getClient()
-                .events()
-                .insert(calendarId=idCal, body=event)
-                .execute()
+                api.getClient().events().insert(calendarId=idCal, body=event).execute()
             )
             # logging.info("Res: %s" % res)
         except:
             res = self.report("Gmail", idPost, "", sys.exc_info())
 
         return f"Res: {res}"
-
 
 
 def main():

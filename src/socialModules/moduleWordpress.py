@@ -38,6 +38,8 @@ class moduleWordpress(Content):  # ,Queue):
         self.access_token = None
 
         self.access_token = keys[0]
+        logging.info(f"Access: {self.access_token}")
+
         self.headers = {"Authorization": "Bearer " + self.access_token}
         self.my_site = "{}.wordpress.com".format(self.user)
 
@@ -81,7 +83,7 @@ class moduleWordpress(Content):  # ,Queue):
         url = f"https://{self.user}.wordpress.com/"
         name = self.user
         # Second the authentication data of the blog
-        config = configparser.ConfigParser(interpolation=None)
+        config = configparser.RawConfigParser(interpolation=None)
         configWordpress = CONFIGDIR + "/.rssWordpress"
         config.read(configWordpress)
         try:
@@ -101,8 +103,8 @@ class moduleWordpress(Content):  # ,Queue):
             print(f"split: {splitUrl.fragment}")
             result = urllib.parse.parse_qsl(splitUrl.fragment)
             print(f"result: {result}")
-            result = urllib.parse.parse_qsl(splitUrl.fragment)
-            token = urllib.parse.unquote(result[0][1])
+            token = urllib.parse.unquote(result[0][1]) #Wrong?
+            token = result[0][1]
             print(f"token: {token}")
             print(f"name: {name}")
             config.set(name, "access_token", token)
@@ -352,11 +354,11 @@ class moduleWordpress(Content):  # ,Queue):
             imgs = soup.find_all("img")
             for img in imgs:
                 logging.debug(f"extract img: {img}")
-                src = img.get("src","")
-                alt = img.get("alt","")
-                if '(' in alt and ')' in alt:
-                    posI = alt.find('(')
-                    posF = alt.find(')')+1
+                src = img.get("src", "")
+                alt = img.get("alt", "")
+                if "(" in alt and ")" in alt:
+                    posI = alt.find("(")
+                    posF = alt.find(")") + 1
                     title = alt[posI:posF]
                     res.append((src, src, title, alt))
                 else:

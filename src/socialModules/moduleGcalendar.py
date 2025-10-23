@@ -19,7 +19,6 @@ from socialModules.moduleGoogle import *
 
 
 class moduleGcalendar(Content, socialGoogle):
-
     def initApi(self, keys):
         self.service = "Gcalendar"
         msgLog = f"{self.indent} initApi {self.service}"
@@ -29,7 +28,7 @@ class moduleGcalendar(Content, socialGoogle):
             "https://www.googleapis.com/auth/calendar",
         ]
 
-        service = self.authorize('calendar', 'v3')
+        service = self.authorize("calendar", "v3")
         self.active = "primary"
 
         return service
@@ -98,7 +97,7 @@ class moduleGcalendar(Content, socialGoogle):
         return text
 
     def getPostId(self, post):
-        text = post.get('id')
+        text = post.get("id")
         return text
 
     def getPostAbstract(self, post):
@@ -187,23 +186,21 @@ class moduleGcalendar(Content, socialGoogle):
             # FIXME: We need to do something here
             # Example:
             # calendar_result = api_dst.publishPost(post={'event':event,'idCal':selected_calendar}, api=api_dst)
-            event = more.get("post", "").get("event","")
+            event = more.get("post", "").get("event", "")
             api = more.get("api", "")
             idCal = more.get("post", "").get("idCal")
         res = "Fail!"
         try:
             # credentials = self.authorize()
             res = (
-                api.getClient()
-                .events()
-                .insert(calendarId=idCal, body=event)
-                .execute()
+                api.getClient().events().insert(calendarId=idCal, body=event).execute()
             )
             # logging.info("Res: %s" % res)
         except:
             res = self.report("Gmail", idCal, "", sys.exc_info())
 
         return f"Res: {res}"
+
 
 def main():
     logging.basicConfig(
