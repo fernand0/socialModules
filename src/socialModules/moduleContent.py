@@ -290,6 +290,9 @@ class Content:
     def setApiPosts(self):
         pass
 
+    def setApiFavs(self):
+        pass
+
     def setPosts(self):
         msgLog = f"{self.indent} Start setPosts"
         logMsg(msgLog, 2, 0)
@@ -302,8 +305,6 @@ class Content:
         logMsg(msgLog, 2, 0)
         typePosts  = 'posts'
         if hasattr(self, "getPostsType") and self.getPostsType():
-            # typeposts = self.getPostsType()
-            logging.info("hasattr")
             if self.getPostsType() in [
                 "posts",
                 "drafts",
@@ -312,16 +313,13 @@ class Content:
                 "search",
                 "queue",
             ]:
-                logging.debug("hasattr known")
                 typePosts = self.getPostsType()
                 cmd = getattr(self, f"setApi{self.getPostsType().capitalize()}")
             else:
-                logging.debug("hasattr else")
                 if not self.getChannel():
                     self.setChannel(self.getPostsType())
                 cmd = getattr(self, "setApiPosts")
         else:
-            logging.debug("no hasattr else")
             cmd = getattr(self, "setApiPosts")
 
         self.indent = f"{self.indent} "
