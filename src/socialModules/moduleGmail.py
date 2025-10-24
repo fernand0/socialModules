@@ -721,6 +721,20 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
         return "Deleted %s" % title
 
+    def get_user_info(self, client):
+        # For Gmail, we can return the user's email address
+        try:
+            profile = client.users().getProfile(userId='me').execute()
+            return profile.get('emailAddress', 'Gmail User')
+        except Exception as e:
+            return f"Gmail User (Error: {e})"
+
+    def get_post_id_from_result(self, result):
+        # Assuming result is the message object itself after publishing
+        if isinstance(result, dict) and "id" in result:
+            return result["id"]
+        return None
+
     def copyMessage(self, message, labels=""):
         notAllowedLabels = ["DRAFTS", "SENT"]
         api = self.getClient()
@@ -882,174 +896,8 @@ def main():
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
 
-    import moduleRules
+    from socialModules.moduleTester import ModuleTester
 
-    rules = moduleRules.moduleRules()
-    rules.checkRules()
-
-    print(f"Selecting rule")
-    apiSrc = rules.selectRuleInteractive()
-
-    if not apiSrc.getClient().__getstate__():
-        return
-
-    testingBody = True
-    if testingBody:
-        apiSrc.setPostsType("posts")
-        apiSrc.setChannel("INBOX")
-        apiSrc.setPosts()
-        for i, post in enumerate(apiSrc.getPosts()):
-            # print(f"Post: {post}")
-            title = apiSrc.getPostTitle(post)
-            print(f"{i}) Subject: {title}")
-            content = apiSrc.getPostContent(post)
-            print(f"Text: {content}")
-            idPost = apiSrc.getPostId(post)
-            print(f"Id: {idPost}")
-            res = (
-                apiSrc.getClient()
-                .users()
-                .messages()
-                .get(userId="me", id=idPost)
-                .execute()
-            )
-            body = apiSrc.getPostBody(res)
-            print(f"Body: {body}")
-        return
-
-    testingPostsLabel = False
-    if testingPostsLabel:
-        print(f"{apiSrc.listFolders()}")
-        print(f"{apiSrc.getLabels('zAgenda')}")
-        labelId = apiSrc.getLabels("zAgenda")[0]
-        apiSrc.assignPosts(apiSrc.setApiMessages(label=labelId))
-        for i, post in enumerate(apiSrc.getPosts()):
-            title = apiSrc.getPostTitle(post)
-            print(f"{i}) {title}")
-            print(f"{post}")
-            print(f"{apiSrc.getMessageId(apiSrc.getPostId(post))}")
-        return
-
-    testingDrafts = False
-    if testingDrafts:
-        for key in rules.rules.keys():
-            print(f"Key: {key}")
-            if (key[0] == "gmail") and ("ftricas" in key[2]) and (key[3] == "posts"):
-                print(
-                    f"SKey: {key}\n"
-                    f"SRule: {rules.rules[key]}\n"
-                    f"SMore: {rules.more[key]}"
-                )
-                apiSrc = rules.readConfigSrc("", key, rules.more[key])
-                apiSrc.setPosts()
-                post = apiSrc.getNextPost()
-                print(f"titleeeee: {apiSrc.getPostTitle(post)}")
-                print(f"linkkkkk: {apiSrc.getPostLink(post)}")
-                for i, post in enumerate(apiSrc.getPosts()):
-                    print(f"{i}) Subject: {apiSrc.getPostTitle(post)}")
-                    print(f"{i}) Link: {apiSrc.getPostLink(post)}")
-                    # print(f"{i}) {apiSrc.getPostLinks(post)}")
-
-        return
-
-    return
-    import moduleGmail
-
-    # instantiate the api object
-
-    config = configparser.ConfigParser()
-    config.read(CONFIGDIR + "/.rssBlogs")
-
-    accounts = ["Blog35"]  #'Blog13','Blog14','Blog15','Blog24']
-    # [Blog15]
-    # url:test@gmail.com
-    # Gmail:test@gmail.com
-    # posts:drafts
-
-    for acc in accounts:
-        print("Account: {}".format(acc))
-        url = config.get(acc, "url")
-        api = moduleGmail.moduleGmail()
-        api.setClient(url)
-        print(api.name)
-        # if 'posts' in config.options(Acc):
-        #    self.setPostType(config.get(Acc, 'posts'))
-        print("Test setPosts")
-        api.setPostsType("messages")
-        res = api.setPosts()
-        print("Test getPosts")
-        # print(api.getPosts())
-        # api.setPostsType('messages')
-        # print("Test setPosts (posts)")
-        # res = api.setPosts()
-        # print("Test getPosts")
-        for post in api.getPosts():
-            print(post)
-            print(api.getPostTitle(post))
-            print(api.getPostLink(post))
-
-    sys.exit()
-    print(api.getPosts())
-    print(api.getPosts()[0])
-    print(len(api.getPosts()[0]))
-    api = moduleGmail.moduleGmail()
-    api.setClient(("gmail", "ftricas@elmundoesimperfecto.com"))
-    api.setPosts()
-    print(api.getPosts())
-    print(api.getPosts()[0])
-    print(len(api.getPosts()[0]))
-    sys.exit()
-    # It has 8 elements
-    # print(api.obtainPostData(0))
-    # print('G21', api.selectAndExecute('show', 'G21'))
-    # print('G23', api.selectAndExecute('show', 'G23'))
-    # print('G05', api.selectAndExecute('show', 'G05'))
-    # sys.exit()
-    # print('G29', api.selectAndExecute('publish', 'G29'))
-    # print('G29', api.selectAndExecute('delete', 'G29'))
-    # print('G25', api.selectAndExecute('edit', 'G27'+' '+'Cebollinos (hechos)'))
-    # print('M18', api.editPost('M18', 'Vaya'))
-    # print('M10', api.publishPost('M10'))
-    # sys.exit()
-    # api.editPost(pp, api.getPosts(), "M17", 'Prueba.')
-
-    logging.basicConfig(  # filename='example.log',
-        level=logging.DEBUG, format="%(asctime)s %(message)s"
-    )
-
-    print("profiles")
-    print(api.profile)
-    # postsP, profiles = api.listPosts(pp)
-    print("-> Posts", postsP)
-    print(apil.getPostsFormatted())
-    sys.exit()
-    api.editPost(pp, api.getPosts(), "M11", "No avanza.")
-    sys.exit()
-    msg = 353
-    copyMessage(api[1], msg)
-
-    # publishPost(api, pp, postsP, ('G',1))
-    # deletePost(api, pp, postsP, ('M0',0))
-    # sys.exit()
-
-    # publishPost(api, pp, profiles, ('F',1))
-
-    # posts.update(postsP)
-    # print("-> Posts",posts)
-    # #print("Posts",profiles)
-    # print("Keys",posts.keys())
-    # print(pp.pformat(profiles))
-    # print("Pending",type(profiles))
-    # print(pp.pformat(profiles))
-    # profiles = listSentPosts(api, pp, "")
-    # print("Sent",type(profiles))
-    # print(pp.pformat(profiles))
-    # print(type(profiles[1]),pp.pformat(profiles[1]))
-
-    # if profiles:
-    #    toPublish, toWhere = input("Which one do you want to publish? ").split(' ')
-    #    #publishPost(api, pp, profiles, toPublish)
-
-
-if __name__ == "__main__":
-    main()
+    gmail_module = moduleGmail()
+    tester = ModuleTester(gmail_module)
+    tester.run()

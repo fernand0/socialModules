@@ -32,7 +32,7 @@ class ModuleTester:
         rules.checkRules()
 
         name = self.module.getService()
-        rulesList = rules.selectRule(name) #, self.module.get_default_user(), self.module.get_default_post_type())
+        rulesList = rules.selectRule(name)
 
         final_rules_with_type = []
         seen_rules = set()
@@ -99,12 +99,17 @@ class ModuleTester:
         self.add_test("Favorites management test", self.test_favorites_management)
         self.add_test("Cache content verification", self.test_cache_content)
 
+    def register_specific_tests(self, tester):
+        # Default: no specific tests for now
+        pass
+
     def run(self):
         if not self.setup():
             return
 
         self.register_common_tests()
-        self.module.register_specific_tests(self)
+        if hasattr(self.module, 'register_specific_tests'):
+            self.module.register_specific_tests(self)
 
         while True:
             print(f"\n=== Interactive {self.module.getService()} Testing ===")

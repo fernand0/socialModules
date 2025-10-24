@@ -100,7 +100,7 @@ def test_basic_post(apiSrc, get_post_id_callback):
         get_post_id_callback: A function that takes the result of the post and returns the post ID.
     """
     print("\n=== Testing Basic Post ===")
-    default_title = f"Test post from {apiSrc.get_name()}"
+    default_title = f"Test post from {apiSrc.getService()}"
     title = input(f"Enter title for the post (default: '{default_title}'): ").strip()
     if not title:
         title = default_title
@@ -110,7 +110,7 @@ def test_basic_post(apiSrc, get_post_id_callback):
         print("No URL provided. Skipping basic post test.")
         return
 
-    print(f"Posting to {apiSrc.get_name()}:")
+    print(f"Posting to {apiSrc.getService()}:")
     print(f"  Title: {title}")
     print(f"  Link: {link}")
 
@@ -150,10 +150,10 @@ def test_image_post(apiSrc, get_post_id_callback):
         print("Skipping image test")
         return
 
-    title = f"Test image post from {apiSrc.get_name()}"
-    alt_text = f"Test image from {apiSrc.get_name()}"
+    title = f"Test image post from {apiSrc.getService()}"
+    alt_text = f"Test image from {apiSrc.getService()}"
 
-    print(f"Posting image to {apiSrc.get_name()}:")
+    print(f"Posting image to {apiSrc.getService()}:")
     print(f"  Image: {image_path}")
     print(f"  Title: {title}")
     print(f"  Alt text: {alt_text}")
@@ -191,7 +191,7 @@ def test_cache_integration(apiSrc):
     title = "Cache integration test"
     link = "https://example.com/cache-test"
 
-    print(f"Posting to {apiSrc.get_name()} with auto-cache enabled...")
+    print(f"Posting to {apiSrc.getService()} with auto-cache enabled...")
     try:
         result = apiSrc.publishPost(title, link, "")
         print(f"Post result: {result}")
@@ -200,8 +200,8 @@ def test_cache_integration(apiSrc):
         from socialModules.modulePublicationCache import PublicationCache
 
         cache = PublicationCache()
-        pubs = cache.get_publications_by_service(apiSrc.get_name().lower())
-        print(f"{apiSrc.get_name()} publications in cache: {len(pubs)}")
+        pubs = cache.get_publications_by_service(apiSrc.getService().lower())
+        print(f"{apiSrc.getService()} publications in cache: {len(pubs)}")
 
         if pubs:
             latest = pubs[-1]
@@ -322,12 +322,12 @@ def test_cache_content(apiSrc):
         cache = PublicationCache()
 
         service = (
-            input(f"Enter service to check (default: {apiSrc.get_name().lower()}): ")
+            input(f"Enter service to check (default: {apiSrc.getService().lower()}): ")
             .strip()
             .lower()
         )
         if not service:
-            service = apiSrc.get_name().lower()
+            service = apiSrc.getService().lower()
 
         service_pubs = cache.get_publications_by_service(service)
         print(f"\nFound {len(service_pubs)} publications for service '{service}':")
