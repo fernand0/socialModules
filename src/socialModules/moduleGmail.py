@@ -901,3 +901,6 @@ def main():
     gmail_module = moduleGmail()
     tester = ModuleTester(gmail_module)
     tester.run()
+
+if __name__ == "__main__":
+    main()
