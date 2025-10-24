@@ -302,15 +302,6 @@ class moduleLinkedin(Content):
             title = post.data.get('text')
         return post
 
-    def get_name(self):
-        return "Linkedin"
-
-    def get_default_user(self):
-        return "fernand0"
-
-    def get_default_post_type(self):
-        return "posts"
-
     def register_specific_tests(self, tester):
         pass
 

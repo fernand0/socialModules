@@ -287,16 +287,6 @@ class moduleTumblr(Content):  # , Queue):
         logMsg(msgLog, 1, 0)
         return self.getClient().delete_post(self.getBlogName(), idPost)
 
-
-    def get_name(self):
-        return "Tumblr"
-
-    def get_default_user(self):
-        return "fernand0"
-
-    def get_default_post_type(self):
-        return "posts"
-
     def register_specific_tests(self, tester):
         tester.add_test("View dashboard", self.test_view_dashboard)
 

@@ -440,19 +440,6 @@ class moduleSlack(Content):  # , Queue):
         except:
             return self.report("Slack", text, sys.exc_info())
 
-
-
-
-
-    def get_name(self):
-        return "Slack"
-
-    def get_default_user(self):
-        return "fernand0"
-
-    def get_default_post_type(self):
-        return "posts"
-
     def register_specific_tests(self, tester):
         tester.add_test("Search test", self.test_search)
         tester.add_test("List channels test", self.test_list_channels)

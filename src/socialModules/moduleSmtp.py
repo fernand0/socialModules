@@ -273,16 +273,6 @@ class moduleSmtp(Content):  # , Queue):
         except Exception as e:
             return False, f"Connection failed: {e}"
 
-    def get_name(self):
-        return "SMTP"
-
-    def get_default_user(self):
-        # This should be a valid user from your configuration
-        return "ftricas@elmundoesimperfecto.com"
-
-    def get_default_post_type(self):
-        return ""
-
     def register_specific_tests(self, tester):
         """Registers SMTP-specific tests with the ModuleTester."""
         tester.add_test("Basic Email", self._test_basic_email)

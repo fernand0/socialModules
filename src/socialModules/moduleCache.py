@@ -698,16 +698,6 @@ class moduleCache(Content):  # ,Queue):
         logMsg(msgLog, 1, 0)
         return f"{self.getPostTitle(post)}"
 
-
-    def get_name(self):
-        return "cache"
-
-    def get_default_user(self):
-        return ""
-
-    def get_default_post_type(self):
-        return "posts"
-
     def register_specific_tests(self, tester):
         tester.add_test("Edit post title", self.test_edit_title)
         tester.add_test("Edit post link", self.test_edit_link)

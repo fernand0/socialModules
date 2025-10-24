@@ -327,16 +327,6 @@ class moduleBlsk(Content):  # , Queue):
 
         return res
 
-
-    def get_name(self):
-        return "blsk"
-
-    def get_default_user(self):
-        return "fernand0.bsky.social"
-
-    def get_default_post_type(self):
-        return "posts"
-
     def register_specific_tests(self, tester):
         # No specific tests for now
         pass

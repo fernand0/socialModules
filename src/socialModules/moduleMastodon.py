@@ -218,15 +218,6 @@ class moduleMastodon(Content):  # , Queue):
     def search(self, text):
         pass
 
-    def get_name(self):
-        return "Mastodon"
-
-    def get_default_user(self):
-        return "@fernand0"
-
-    def get_default_post_type(self):
-        return "favs"
-
     def register_specific_tests(self, tester):
         pass
 

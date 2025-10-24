@@ -1693,15 +1693,6 @@ class moduleImap(Content):  # , Queue):
 
         return posts
 
-    def get_name(self):
-        return "IMAP"
-
-    def get_default_user(self):
-        return ""
-
-    def get_default_post_type(self):
-        return "posts"
-
     def register_specific_tests(self, tester):
         tester.add_test("List folders", self.test_list_folders)
         tester.add_test("Test drafts", self.test_drafts)
