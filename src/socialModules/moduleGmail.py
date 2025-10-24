@@ -216,7 +216,27 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return posts
 
     def setChannel(self, channel=""):
-        self.channel = channel
+        if not channel:
+            folder = self.selectFolder()
+            print(f"Folder: {folder}")
+            self.channel = folder
+        else:
+            self.channel = channel
+
+    def checkConnected(self):
+        try:
+            self.getClient().users().getProfile(userId='me').execute()
+        except Exception as e:
+            logMsg(f"Gmail connection issue detected: {e}", 3, 0)
+            self.setClient(f"{self.user}")
+            try:
+                self.getClient().users().getProfile(userId='me').execute()
+                logMsg("Gmail reconnection successful.", 1, 0)
+            except Exception as e:
+                log_msg = f"Gmail reconnection failed for user {self.user}."
+                logMsg(f"{log_msg} Error: {e}", 3, 0)
+                self.report(self.service, "", "", sys.exc_info())
+                raise ConnectionError(log_msg) from e
 
     def getChannel(self):
         return self.channel
@@ -553,7 +573,15 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return results["labels"]
 
     def nameFolder(self, label):
-        return self.getLabelName(label)
+        folder = label
+        if isinstance(label, str):
+            if label and label[0].isdigit():
+                pos = label.find(") ")
+                if pos >= 0:
+                    folder = label[pos + 2 :]
+            elif isinstance(label, dict):
+                folder = self.getLabelName(label)
+        return folder
 
     def getLabelName(self, label):
         api = self.getClient()
@@ -577,6 +605,70 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 break
 
         return labelId
+
+    def listFolderNames(self, data, inNameFolder=""):
+        listFolders = ""
+        i = 0
+
+        for name in data:
+            if isinstance(name, dict):
+                folder_name = self.getChannelName(name)
+            else:
+                folder_name = name
+            if inNameFolder.lower() in folder_name.lower():
+                if listFolders:
+                    listFolders += f"\n{i}) {self.nameFolder(folder_name)}"
+                else:
+                    listFolders = f"{i}) {self.nameFolder(folder_name)}"
+            i += 1
+        return listFolders
+
+    def selectFolder(self, moreMessages="", newFolderName="", folderM=""):
+
+        data = self.listFolders()
+        listAllFolders = self.listFolderNames(data, moreMessages)
+        if not listAllFolders:
+            listAllFolders = self.listFolderNames(data, "")
+        listFolders = listAllFolders
+        while listFolders:
+            if "\n" not in listFolders:
+                print(f"Nottt: {listFolders}")
+                nF = listFolders
+                if isinstance(listFolders, dict):
+                    nF = self.getChannelName(listFolders)
+                nF = nF.strip("\n")
+                print("nameFolder", nF)
+                return nF
+
+            rows, columns = os.popen("stty size", "r").read().split()
+            if listFolders.count("\n") > int(rows) - 2:
+                click.echo_via_pager(listFolders)
+            else:
+                print(listFolders)
+
+            inNameFolder = input(
+                f"Folder number [-cf] Create Folder // A string to select a smaller set of folders ({folderM}) "
+            )
+            if not inNameFolder and folderM:
+                inNameFolder = folderM
+
+            if inNameFolder == "-cf":
+                if newFolderName:
+                    nfn = newFolderName
+                else:
+                    nfn = input(f"New folder name? ({folderM})")
+                    if not nfn:
+                        nfn = folderM
+                iFolder = self.createLabel(nfn)
+                return iFolder
+
+            listFolders = self.listFolderNames(listFolders.split("\n"), inNameFolder)
+            if not inNameFolder:
+                listAllFolders = self.listFolderNames(data, "")
+                listFolders = ""
+            if not listFolders:
+                listFolders = listAllFolders
+
 
     def editl(self, j, newTitle):
         return "Not implemented!"
@@ -854,6 +946,14 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     #######################################################
     # These need work
     #######################################################
+
+    def register_specific_tests(self, tester):
+        tester.add_test("Change Mailbox Folder", self.test_change_folder)
+
+    def test_change_folder(self, apiSrc):
+        print("\n--- Changing Mailbox Folder ---")
+        apiSrc.setChannel()
+        print(f"Folder set to '{apiSrc.getChannel()}'")
 
     def listSentPosts(self, pp, service=""):
         # Undefined
