@@ -109,6 +109,7 @@ class Content:
         msgLog = f"{self.indent}  Config file: {configFile}"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         res = ""
+        keys = ""  # Ensure keys is always defined
         try:
             config = configparser.RawConfigParser()
             config.read(configFile)
@@ -118,7 +119,7 @@ class Content:
                 f"It is well formatted?\n"
                 f" Does it contain an entry for your account?"
             )
-            res = self.report({self.indent}, msgLog, 0, "")
+            res = self.report(self.indent, msgLog, 0, "")
 
         if res:
             msgLog = f"{self.indent}  Res: {res}"  #: {src[1:]}"
@@ -127,7 +128,6 @@ class Content:
             self.indent = f"{self.indent} "
             msgLog = f"{self.indent} Getting keys"
             logMsg(msgLog, 2, 0)
-            keys = ""
             try:
                 keys = self.getKeys(config)
                 # logging.debug(f"{self.indent} user {self.user}")
@@ -149,21 +149,28 @@ class Content:
             # logger = logging.getLogger('my_module_name')
             # https://stackoverflow.com/questions/35325042/python-logging-disable-logging-from-imported-modules
 
-            try:
-                client = self.initApi(keys)
-            except:
-                msgLog = f"{self.indent} Exception"
-                logMsg(msgLog, 2, 0)
-                if not config.sections and not keys:
-                    self.report({self.service}, "No keys", "", "")
-                else:
-                    self.report({self.service}, "Some problem", "", "")
+            # try:
+            #     client = self.initApi(keys)
+            # except:
+            #     msgLog = f"{self.indent} Exception"
+            #     logMsg(msgLog, 2, 0)
+            #     if not config.sections and not keys:
+            #         self.report({self.service}, "No keys", "", "")
+            #     else:
+            #         self.report({self.service}, "Some problem", "", "")
 
         # msgLog = f"{self.indent} clienttt {client}"  #: {src[1:]}"
         # logMsg(msgLog, 2, 0)
+        if isinstance(client, str) and 'Error' in client:
+            client = None
+        if client is None:
+            msgLog = f"{self.indent} Error: Failed to initialize client for service '{self.service}'."
+            logMsg(msgLog, 3, 1)
+            # Optionally, you can raise an exception here:
+            # raise RuntimeError(msgLog)
         self.client = client
-        self.indent = self.indent[:-1]
-        self.indent = self.indent[:-1]
+        self.indent = self.indent[:-1] if self.indent else ""
+        self.indent = self.indent[:-1] if self.indent else ""
         msgLog = f"{self.indent} End setClientt"
         logMsg(msgLog, 1, 0)
 
