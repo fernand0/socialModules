@@ -223,13 +223,23 @@ def getModule(profile, indent=""):
     msgLog = f"{indent} Start getModule {profile}"
     logMsg(msgLog, 2, 0)
     serviceName = profile.capitalize()
+    module_name = "socialModules.module" + serviceName
+    class_name = "module" + serviceName
 
-    mod = importlib.import_module("socialModules.module" + serviceName)
-    cls = getattr(mod, "module" + serviceName)
-    api = cls(indent)
-    msgLog = f"{indent} End getModule"
-    logMsg(msgLog, 2, 0)
-    indent = indent[:-1]
+    api = None  # Initialize api to None
+
+    try:
+        mod = importlib.import_module(module_name)
+        cls = getattr(mod, class_name)
+        api = cls(indent)
+        msgLog = f"{indent} End getModule"
+        logMsg(msgLog, 2, 0)
+        indent = indent[:-1]
+    except ImportError:
+        logMsg(f"{indent} Module {module_name} not found.", 3, 1)
+    except AttributeError:
+        logMsg(f"{indent} Class {class_name} not found in module {module_name}.", 3, 1)
+    
     return api
 
 
