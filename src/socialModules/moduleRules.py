@@ -1184,6 +1184,7 @@ class moduleRules:
                 if select and (select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"):
                     continue
 
+<<<<<<< HEAD
                 scheduled_actions.append({
                     "rule_key": rule_key,
                     "rule_metadata": rule_metadata,
@@ -1193,6 +1194,41 @@ class moduleRules:
                     "args": args,
                     "simmulate": args.simmulate,
                 })
+=======
+                    apiSrc = self.readConfigSrc(indent, rule_key, rule_metadata)
+                    if not apiSrc:
+                        logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
+                        continue
+
+                    apiDst = self.readConfigDst(indent, rule_action, rule_metadata, apiSrc)
+                    if not apiDst:
+                        logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
+                        continue
+
+                    timeSlots, noWait = self._get_action_properties(
+                        rule_action, rule_metadata, args
+                    )
+
+                    if self._should_skip_publication(
+                        apiDst, apiSrc, noWait, timeSlots, f"{nameA}"
+                    ):
+                        continue
+                    scheduled_actions.append(
+                        {
+                            "rule_key": rule_key,
+                            "rule_metadata": rule_metadata,
+                            "rule_action": rule_action,
+                            "rule_index": i,
+                            "action_index": action_index,
+                            "args": args,
+                            "simmulate": args.simmulate,
+                            "apiSrc": apiSrc,
+                            "apiDst": apiDst,
+                            "name_action": name_action,
+                            "nameA": nameA,
+                        }
+                    )
+>>>>>>> c1870c7 (Refactor: Make _prepare_actions more robust and add tests)
         return scheduled_actions
 
     def _run_actions_concurrently(self, scheduled_actions, max_workers=75):
