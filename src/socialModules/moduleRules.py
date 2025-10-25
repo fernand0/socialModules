@@ -1051,7 +1051,39 @@ class moduleRules:
             )
             logMsg(msgLog, 1, 1)
 
+            msgLog = (
+                f"{indent} Sleeping {tL:.2f} seconds ({numAct} actions) "
+                f"to launch all processes"
+            )
+            logMsg(msgLog, 1, 0)
+            numAct = max(3, numAct)  # Less than 3 is too small
+            time.sleep(tL)
+
+            msgLog = f"{indent} Go!"
+            logMsg(msgLog, 1, 0)
+            indent = f"{indent} "
+
+            textEnd = f"{msgLog}"
+
+            time.sleep(1)
+
+            msgLog = ""
+            if nextPost:
+                num = apiDst.getMax()
+            else:
+                num = 1
+            numAct = num # Initialize numAct here
+
             if num > 0:
+                theAction = self.getTypeAction(action)
+                msgLog = (
+                    f"{indent}I'll publish {numAct} {theAction} "
+                    f"from {apiSrc.getUrl()} "
+                    f"in {self.getNickAction(action)}@"
+                    f"{self.getProfileAction(action)}"
+                )
+                logMsg(msgLog, 1, 1)
+
                 tNow = time.time()
                 hours = float(apiDst.getTime()) * 60 * 60
 
@@ -1062,53 +1094,42 @@ class moduleRules:
                 else:
                     diffTime = hours + 1
 
-                if noWait or (diffTime > hours):
-                    tSleep = random.random() * float(timeSlots) * 60
+                tSleep = random.random() * float(timeSlots) * 60
 
-                    # Reserve the time slot by setting the new time
-                    apiDst.setNextTime(tNow, tSleep, apiSrc)
+                # Reserve the time slot by setting the new time
+                apiDst.setNextTime(tNow, tSleep, apiSrc)
 
-                    if tSleep > 0.0:
-                        msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
-                    else:
-                        tSleep = 2.0
-                        msgLog = f"{indent} No Waiting"
+                if tSleep > 0.0:
+                    msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
+                else:
+                    tSleep = 2.0
+                    msgLog = f"{indent} No Waiting"
 
-                    logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
+                logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
 
-                    for i in range(num):
-                        time.sleep(tSleep)
-                        if "minutes" in msgLog:
-                            logMsg(f"{indent} End Waiting {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
+                for i in range(numAct):
+                    time.sleep(tSleep)
+                    if "minutes" in msgLog:
+                        logMsg(f"{indent} End Waiting {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
 
-                        res = self.executePublishAction(
-                            indent,
-                            msgAction,
-                            apiSrc,
-                            apiDst,
-                            simmulate,
-                            nextPost,
-                            pos,
-                        )
-
-                    # If no publication happened, restore the previous time
-                    if not res.get("success") and backup_time[0] is not None:
-                        logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
-                        apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
-
-                elif diffTime <= hours:
-                    msgLog = (
-                        f"{indent} Not enough time passed. "
-                        f"We will wait at least "
-                        f"{(hours-diffTime)/(60*60):2.2f} hours."
+                    res = self.executePublishAction(
+                        indent,
+                        msgAction,
+                        apiSrc,
+                        apiDst,
+                        simmulate,
+                        nextPost,
+                        pos,
                     )
-                    logMsg(msgLog, 1, 1)
-                    textEnd = ""
+
+                # If no publication happened, restore the previous time
+                if not res.get("success") and backup_time[0] is not None:
+                    logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
+                    apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
 
             else:
-                if num <= 0:
-                    msgLog = f"{indent} No posts available"
-                    logMsg(msgLog, 1, 1)
+                msgLog = f"{indent} No posts available"
+                logMsg(msgLog, 1, 1)
 
             indent = f"{indent[:-1]}"
             logMsg(f"{indent} End executeAction {textEnd}", 2, 0)
@@ -1180,44 +1201,59 @@ class moduleRules:
 
             for action_index, rule_action in enumerate(rule_actions):
                 # Rule selection if --checkBlog is used
+                name_action = f"[{self.getNameAction(rule_key)}{i}]"
+                nameR_action = f"{name_action:->12}>"
+                nameA =  f"{nameR_action} Action {action_index}:"
 
                 if select and (select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"):
                     continue
 
-                    apiSrc = self.readConfigSrc(indent, rule_key, rule_metadata)
-                    if not apiSrc:
-                        logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
-                        continue
+                apiSrc = self.readConfigSrc(nameR_action, rule_key, rule_metadata)
+                if not apiSrc:
+                    logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
+                    continue
 
-                    apiDst = self.readConfigDst(indent, rule_action, rule_metadata, apiSrc)
-                    if not apiDst:
-                        logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
-                        continue
+                apiDst = self.readConfigDst(nameR_action, rule_action, rule_metadata, apiSrc)
+                if not apiDst:
+                    logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
+                    continue
 
-                    timeSlots, noWait = self._get_action_properties(
-                        rule_action, rule_metadata, args
-                    )
+                timeSlots, noWait = self._get_action_properties(
+                    rule_action, rule_metadata, args
+                )
 
-                    if self._should_skip_publication(
-                        apiDst, apiSrc, noWait, timeSlots, f"{nameA}"
-                    ):
-                        continue
-                    scheduled_actions.append(
-                        {
-                            "rule_key": rule_key,
-                            "rule_metadata": rule_metadata,
-                            "rule_action": rule_action,
-                            "rule_index": i,
-                            "action_index": action_index,
-                            "args": args,
-                            "simmulate": args.simmulate,
-                            "apiSrc": apiSrc,
-                            "apiDst": apiDst,
-                            "name_action": name_action,
-                            "nameA": nameA,
-                        }
-                    )
+                if self._should_skip_publication(
+                    apiDst, apiSrc, noWait, timeSlots, f"{nameA}"
+                ):
+                    continue
+                scheduled_actions.append(
+                    {
+                        "rule_key": rule_key,
+                        "rule_metadata": rule_metadata,
+                        "rule_action": rule_action,
+                        "rule_index": i,
+                        "action_index": action_index,
+                        "args": args,
+                        "simmulate": args.simmulate,
+                        "apiSrc": apiSrc,
+                        "apiDst": apiDst,
+                        "name_action": name_action,
+                        "nameA": nameA,
+                    }
+                )
         return scheduled_actions
+
+    def _get_action_properties(self, rule_action, rule_metadata, args):
+        timeSlots = args.timeSlots
+        noWait = args.noWait
+
+        if (self.getNameAction(rule_action) in "cache") or (
+            (self.getNameAction(rule_action) == "direct")
+            and (self.getProfileAction(rule_action) == "pocket")
+        ):
+            timeSlots = 0
+            noWait = True
+        return timeSlots, noWait
 
     def _run_actions_concurrently(self, scheduled_actions, max_workers=75):
         """
@@ -1254,18 +1290,6 @@ class moduleRules:
         args = scheduled_action["args"]
         simmulate = scheduled_action["simmulate"]
 
-        # Apply special timeSlots treatment for cache and pocket actions
-        timeSlots = args.timeSlots
-        noWait = args.noWait
-
-        if (self.getNameAction(rule_action) in "cache") or (
-            (self.getNameAction(rule_action) == "direct")
-            and (self.getProfileAction(rule_action) == "pocket")
-        ):
-            # We will always load new items in the cache
-            timeSlots = 0
-            noWait = True
-
         # Prepare arguments for executeAction
         msgAction = (
             f"{self.getNameAction(rule_action)} "
@@ -1290,6 +1314,32 @@ class moduleRules:
             nameA,
             action_index,
         )
+
+    def _should_skip_publication(self, apiDst, apiSrc, noWait, timeSlots, nameA):
+        indent = nameA
+        num = apiDst.getMax()
+        if num <= 0:
+            logMsg(f"{indent} No posts available", 1, 1)
+            return True
+
+        tNow = time.time()
+        hours = float(apiDst.getTime()) * 60 * 60
+        lastTime = apiDst.getLastTimePublished(f"{indent}")
+
+        if lastTime:
+            diffTime = tNow - lastTime
+        else:
+            diffTime = hours + 1
+
+        if not noWait and (diffTime <= hours):
+            msgLog = (
+                f"{indent} Not enough time passed. "
+                f"We will wait at least "
+                f"{(hours-diffTime)/(60*60):2.2f} hours."
+            )
+            logMsg(msgLog, 1, 1)
+            return True
+        return False
 
     def _report_results(self, action_results, action_errors):
         """

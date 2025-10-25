@@ -163,7 +163,7 @@ mock_api_instance.getLastTimePublished.return_value = time.time() - 3600 # Mock 
 mock_api_instance.setPostsType.return_value = None
 mock_api_instance.setMoreValues.return_value = None
 mock_api_instance.setUrl.return_value = None
-mock_api_instance.setLastLink.return_value = None
+mock_api_instance.getMax.return_value = 1
 
 
 @patch('socialModules.configMod.getModule', return_value=mock_api_instance)
