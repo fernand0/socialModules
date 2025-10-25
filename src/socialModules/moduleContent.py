@@ -91,7 +91,10 @@ class Content:
         profile = ""
         if hasattr(self, 'profile'):
             profile = self.profile
-        msgLog = f"{self.indent} Start setClient profile: {profile} account: {account}"
+        msgLog = (
+                f"{self.indent} Start setClient profile: "
+                f" {profile} account: {account}"
+                )
         logMsg(msgLog, 1, 0)
         self.indent = f"{self.indent} "
 
@@ -161,6 +164,8 @@ class Content:
 
         # msgLog = f"{self.indent} clienttt {client}"  #: {src[1:]}"
         # logMsg(msgLog, 2, 0)
+        if 'Error' in client:
+            client = None
         self.client = client
         self.indent = self.indent[:-1]
         self.indent = self.indent[:-1]
