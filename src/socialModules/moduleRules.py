@@ -1184,17 +1184,6 @@ class moduleRules:
                 if select and (select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"):
                     continue
 
-<<<<<<< HEAD
-                scheduled_actions.append({
-                    "rule_key": rule_key,
-                    "rule_metadata": rule_metadata,
-                    "rule_action": rule_action,
-                    "rule_index": i,
-                    "action_index": action_index,
-                    "args": args,
-                    "simmulate": args.simmulate,
-                })
-=======
                     apiSrc = self.readConfigSrc(indent, rule_key, rule_metadata)
                     if not apiSrc:
                         logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
@@ -1228,7 +1217,6 @@ class moduleRules:
                             "nameA": nameA,
                         }
                     )
->>>>>>> c1870c7 (Refactor: Make _prepare_actions more robust and add tests)
         return scheduled_actions
 
     def _run_actions_concurrently(self, scheduled_actions, max_workers=75):
