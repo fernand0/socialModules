@@ -247,12 +247,11 @@ def getApi(profile, nick, indent="", channel=None):
     msgLog = f"{indent} Start getApi with channel {channel}"
     logMsg(msgLog, 2, 0)
 
-    # msgLog = (f"{indent}  Profile {profile} "
-    #           f"Nick {nick}")
-    # logMsg(msgLog, 2, 0)
     api = getModule(profile, indent)
-    # msgLog = (f"{indent}  Api {api}")
-    # logMsg(msgLog, 2, 0)
+
+    if api is None:
+        logMsg(f"{indent} Failed to get API module for profile: {profile}", 3, 1)
+        return None
 
     api.profile = profile
     api.nick = nick
@@ -263,7 +262,6 @@ def getApi(profile, nick, indent="", channel=None):
     api.indent = f"{indent[:-1]}"
     api.setPostsType("posts")
 
-    # indent = indent[:-1]
     msgLog = f"{indent} End getApi"
     logMsg(msgLog, 2, 0)
     return api

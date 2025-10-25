@@ -1,5 +1,6 @@
 import pytest
-from socialModules.configMod import getModule
+from unittest.mock import patch
+from socialModules.configMod import getModule, getApi
 
 def test_getModule_success():
     # Assuming 'Rss' is a valid module that can be loaded
@@ -7,10 +8,15 @@ def test_getModule_success():
     assert module is not None
 
 def test_getModule_importerror():
-    with pytest.raises(ModuleNotFoundError):
-        getModule('NonExistentModule')
+    module = getModule('NonExistentModule')
+    assert module is None
 
+@patch('socialModules.configMod.getModule', return_value=None)
+def test_getApi_fail(mock_get_module):
+    api = getApi('NonExistentModule', 'test_nick')
+    assert api is None
 
 # To test AttributeError, we would need to create a dummy module
 # without the expected class, which is more involved.
 # For now, we'll stick to testing ImportError.
+
