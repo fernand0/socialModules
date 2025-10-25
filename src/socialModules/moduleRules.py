@@ -696,7 +696,7 @@ class moduleRules:
         idR = ""
         if isinstance(self.getRuleComponent(rule, 2), tuple):
             subC = self.getRuleComponent(rule, 2)
-            idR = f"{self.getRuleComponent(subC, 3)}@{self.getRuleComponent(subC, 2)}@{self.getRuleComponent(rule, 0)}[{self.getRuleComponent(rule, 3)}]".format(self.getRuleComponent(rule, 0)))
+            idR = f"{self.getRuleComponent(subC, 3)}@{self.getRuleComponent(subC, 2)}@{self.getRuleComponent(rule, 0)}[{self.getRuleComponent(rule, 3)}]".format(self.getRuleComponent(rule, 0))
         else:
             idR = f"{self.getRuleComponent(rule, 2)}@{self.getNameRule(rule)}"
         return idR
