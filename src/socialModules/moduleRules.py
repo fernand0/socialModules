@@ -696,7 +696,7 @@ class moduleRules:
         idR = ""
         if isinstance(self.getRuleComponent(rule, 2), tuple):
             subC = self.getRuleComponent(rule, 2)
-            idR = f"{self.getRuleComponent(subC, 3)}@{self.getRuleComponent(subC, 2)}@{self.getRuleComponent(rule, 0)}[{self.getRuleComponent(rule, 3)}]"  # @{self.getRuleComponent(rule, 0)}]
+            idR = f"{self.getRuleComponent(subC, 3)}@{self.getRuleComponent(subC, 2)}@{self.getRuleComponent(rule, 0)}[{self.getRuleComponent(rule, 3)}]".format(self.getRuleComponent(rule, 0)))
         else:
             idR = f"{self.getRuleComponent(rule, 2)}@{self.getNameRule(rule)}"
         return idR
@@ -727,23 +727,12 @@ class moduleRules:
     def readConfigSrc(self, indent, src, more):
         msgLog = f"{indent} Start readConfigSrc {src}"
         logMsg(msgLog, 2, 1)
-        indent = f"{indent} "
-
+        child_indent = f"{indent} "
         profile = self.getNameRule(src)
         account = self.getProfileRule(src)
         if more and "channel" in more:
-            apiSrc = getApi(profile, account, indent, more["channel"])
+            apiSrc = getApi(profile, account, child_indent, more["channel"])
         else:
-<<<<<<< HEAD
-            apiSrc = getApi(profile, account, indent)
-        msgLog = f"{indent} readConfigSrc clientttt {apiSrc.getClient()}"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
-        apiSrc.src = src
-        apiSrc.setPostsType(src[-1])
-        apiSrc.setMoreValues(more)
-
-        indent = f"{indent[:-1]}"
-=======
             apiSrc = getApi(profile, account, child_indent)
 
         if apiSrc is not None:
@@ -756,7 +745,6 @@ class moduleRules:
         else:
             logMsg(f"{indent} Failed to get API for source: {src}", 3, 1)
 
->>>>>>> 67c7ed9 (Refactor: Single return in readConfigSrc)
         msgLog = f"{indent} End readConfigSrc"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         return apiSrc
@@ -868,7 +856,7 @@ class moduleRules:
             logMsg(msgLog, 1, 1)
             resMsg += f" Post Action: {resPost}"
             if (
-                (res and ("failed!" not in res) and ("Fail!" not in res))
+                (res and ("failed!" not in res) and ("Fail!" not in res)) 
                 or (res and ("abusive!" in res))
                 or (
                     ((not res) and ("OK. Published!" not in res))
@@ -998,7 +986,7 @@ class moduleRules:
         delete=False,
     ):
         indent = f"{name}"
-        res = None #{{"success": False, "error": ""}} #{{}}
+        res = None #{{"success": False, "error": ""}} #{{"}}
         textEnd = ""
 
         # Destination
