@@ -235,16 +235,86 @@ def test_readConfigSrc_fail(mock_get_api):
 
 @patch('socialModules.moduleRules.getApi', return_value=None)
 
+
+
 def test_readConfigDst_fail(mock_get_api):
+
+
 
     rules = moduleRules()
 
+
+
     action = ('direct', 'post', 'some_service', 'some_account')
+
+
 
     more = {}
 
+
+
     apiSrc = MagicMock()
+
+
 
     apiDst = rules.readConfigDst('', action, more, apiSrc)
 
+
+
     assert apiDst is None
+
+
+
+
+
+
+
+@patch('socialModules.moduleRules.moduleRules.readConfigSrc', return_value=None)
+
+
+
+def test_prepare_actions_readConfigSrc_fail(mock_read_config_src):
+
+
+
+    rules = make_basic_rules()
+
+
+
+    scheduled_actions = rules._prepare_actions(rules.args, None)
+
+
+
+    assert len(scheduled_actions) == 0
+
+
+
+
+
+
+
+@patch('socialModules.moduleRules.moduleRules.readConfigSrc', return_value=MagicMock())
+
+
+
+@patch('socialModules.moduleRules.moduleRules.readConfigDst', return_value=None)
+
+
+
+def test_prepare_actions_readConfigDst_fail(mock_read_config_dst, mock_read_config_src):
+
+
+
+    rules = make_basic_rules()
+
+
+
+    scheduled_actions = rules._prepare_actions(rules.args, None)
+
+
+
+    assert len(scheduled_actions) == 0
+
+
+
+

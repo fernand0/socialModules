@@ -1249,7 +1249,14 @@ class moduleRules:
                     indent = nameA
 
                     apiSrc = self.readConfigSrc(indent, rule_key, rule_metadata)
+                    if not apiSrc:
+                        logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
+                        continue
+
                     apiDst = self.readConfigDst(indent, rule_action, rule_metadata, apiSrc)
+                    if not apiDst:
+                        logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
+                        continue
 
                     timeSlots, noWait = self._get_action_properties(
                         rule_action, rule_metadata, args
