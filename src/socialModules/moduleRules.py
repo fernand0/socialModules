@@ -192,7 +192,7 @@ class moduleRules:
         api = None
         for service in services["regular"]:
             if ("service" in config[section]) and (
-                service == config[section]["service"]
+                service == config[section]["service"])
             ):
                 theService = service
                 api = getModule(service, indent)
@@ -717,7 +717,7 @@ class moduleRules:
             url = url.replace(service, "")
         url = url.replace("https", "").replace("http", "")
         url = url.replace("---", "").replace(".com", "")
-        url = url.replace("-(", "(").replace("- ", " ")
+        url = url.replace("-", "(").replace("- ", " ")
         url = url.replace(":", "").replace("/", "")
         return url
 
@@ -1072,20 +1072,22 @@ class moduleRules:
         time.sleep(tL)
         logMsg(f"{child_indent} Go!", 1, 0)
         grandchild_indent = f"{child_indent} "
-        res = ""
+        res = {}
         time.sleep(1)
         msgLog = ""
         if nextPost:
             num = apiDst.getMax()
         else:
             num = 1
-        theAction = self.getTypeAction(action)
-        msgFrom = (f"{theAction} from {apiSrc.getUrl()} in "
-                   f"{self.getNickAction(action)}@"
-                   f"{self.getProfileAction(action)}"
-                   )
-        logMsg(f"{grandchild_indent}I'll publish {num} {msgFrom}", 1, 1)
+
         if num > 0:
+            theAction = self.getTypeAction(action)
+            msgFrom = (f"{theAction} from {apiSrc.getUrl()} in "
+                       f"{self.getNickAction(action)}@"
+                       f"{self.getProfileAction(action)}\n"
+                       )
+            logMsg(f"{grandchild_indent}I'll publish {num} {msgFrom}", 1, 1)
+
             tNow = time.time()
             hours = float(apiDst.getTime()) * 60 * 60
             lastTime = apiDst.getLastTimePublished(f"{grandchild_indent}")
@@ -1093,207 +1095,222 @@ class moduleRules:
                 diffTime = tNow - lastTime
             else:
                 diffTime = hours + 1
-            if noWait or (diffTime > hours):
-                tSleep = random.random() * float(timeSlots) * 60
-                logMsg(f"{grandchild_indent}tSleep {tSleep}", 2, 0)
-                if not noWait:
-                    apiDst.setNextTime(tNow, tSleep, apiSrc)
-                if tSleep > 0.0:
-                    msgLog = f"{grandchild_indent} Waiting {tSleep/60:2.2f} minutes"
-                else:
-                    tSleep = 2.0
-                    msgLog = f"{grandchild_indent} No Waiting"
-                logMsg(f"{msgLog} for {msgFrom}", 1, 1)
-                for i in range(num):
-                    time.sleep(tSleep)
-                    if "minutes" in msgLog:
-                        logMsg(f"{grandchild_indent} End Waiting "
-                               f"{msgFrom}", 1, 1)
-                    res = self.executePublishAction(
-                        grandchild_indent,
-                        msgAction,
-                        apiSrc,
-                        apiDst,
-                        simmulate,
-                        nextPost,
-                        pos,
-                        src=src,
-                    )
-                logging.info(f"{grandchild_indent}Resssss: {res}")
-                if (not res or (res and not "OK" in res)) and backup_time[
-                    0
-                ] is not None:
-                    logMsg(
-                        (f"{grandchild_indent} No publication occurred. "
-                        f"Restoring previous next-run time."),
-                        1,
-                        1,
-                    )
-                    apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
-            elif diffTime <= hours:
-                msgLog = f"{grandchild_indent} Not enough time passed. We will wait at least {(hours-diffTime)/(60*60):2.2f} hours."
-                logMsg(msgLog, 1, 1)
+
+            tSleep = random.random() * float(timeSlots) * 60
+
+            # Reserve the time slot by setting the new time
+            apiDst.setNextTime(tNow, tSleep, apiSrc)
+
+            if tSleep > 0.0:
+                msgLog = f"{grandchild_indent} Waiting {tSleep/60:2.2f} minutes"
+            else:
+                tSleep = 2.0
+                msgLog = f"{grandchild_indent} No Waiting"
+
+            logMsg(f"{msgLog} for {msgFrom}", 1, 1)
+
+            for i in range(num):
+                time.sleep(tSleep)
+                if "minutes" in msgLog:
+                    logMsg(f"{grandchild_indent} End Waiting {msgFrom}", 1, 1)
+
+                res = self.executePublishAction(
+                    grandchild_indent,
+                    msgAction,
+                    apiSrc,
+                    apiDst,
+                    simmulate,
+                    nextPost,
+                    pos,
+                )
+
+            # If no publication happened, restore the previous time
+            if not res.get("success") and backup_time[0] is not None:
+                logMsg(f"{grandchild_indent} No publication occurred. Restoring previous next-run time.", 1, 1)
+                apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
+
         else:
-            if num <= 0:
-                msgLog = f"{grandchild_indent} No posts available"
-                logMsg(msgLog, 1, 1)
+            msgLog = f"{grandchild_indent} No posts available"
+            logMsg(msgLog, 1, 1)
+
         logMsg(f"{child_indent} End executeAction {msgLog}", 2, 0)
-        return f"{child_indent} {res} {msgLog}"
+        return res
+
 
     def executeRules(self, max_workers=None):
         import os
 
         logMsg("Start Executing rules", 1, 2)
+        self.indent = ""
         args = self.args
         select = args.checkBlog
         simmulate = args.simmulate
+        # Prepare actions to execute
         scheduled_actions = self._prepare_actions(args, select)
+        # Determine number of threads
         if max_workers is not None:
-            pass
+            pass  # use the explicit value
         elif "SOCIALMODULES_MAX_WORKERS" in os.environ:
             max_workers = int(os.environ["SOCIALMODULES_MAX_WORKERS"])
         else:
             num_actions = max(1, len(scheduled_actions))
-            max_workers = min(num_actions, 100)
-        action_results, action_errors = self._run_actions_concurrently(
-            scheduled_actions, max_workers=max_workers
-        )
+            max_workers = min(num_actions, 100)  # reasonable maximum
+        # Execute actions concurrently
+        action_results, action_errors = self._run_actions_concurrently(scheduled_actions, max_workers=max_workers)
+        # Report results and errors
         self._report_results(action_results, action_errors)
-        logMsg(f"End Executing rules with {len(scheduled_actions)} "
-               f"actions.", 1, 2)
+        logMsg(f"End Executing rules with {len(scheduled_actions)} actions.", 1, 2)
         return
 
-    def _should_skip_publication(self, apiDst, apiSrc, noWait, timeSlots, indent=""):
-        skip = False
-        import time
+    def _should_skip_publication(self, apiDst, apiSrc, noWait, timeSlots, nameA):
+        indent = nameA
+        num = apiDst.getMax()
+        if num <= 0:
+            logMsg(f"{indent} No posts available", 1, 1)
+            return True
+
         tNow = time.time()
         hours = float(apiDst.getTime()) * 60 * 60
-        # logMsg(f"{indent}Hours: {hours} noWait: {noWait}")
         lastTime = apiDst.getLastTimePublished(f"{indent}")
+
         if lastTime:
-            myTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(lastTime))
-            msgLog = f"{indent} Last time: {myTime}"
+            diffTime = tNow - lastTime
         else:
-            msgLog = f"{indent} No lastTimePublished"
-        logMsg(msgLog, 1, 1)
-        if lastTime is not None:
-            timeSlots_seconds = float(timeSlots) * 60
-            next_pub_time = lastTime + hours
-            # logMsg(f"{indent}timeSlots: {timeSlots}")
-            # logMsg(f"{indent}next_pub: {next_pub_time} tNOw+: {tNow + timeSlots_seconds}")
-            if not noWait and next_pub_time >= tNow + timeSlots_seconds:
-                next_pub_time_formatted = datetime.datetime.fromtimestamp(
-                    next_pub_time
-                ).strftime("%Y-%m-%d %H:%M:%S")
-                tNow_formatted = datetime.datetime.fromtimestamp(tNow).strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                )
-                window_end_formatted = datetime.datetime.fromtimestamp(
-                    tNow + timeSlots_seconds
-                ).strftime("%Y-%m-%d %H:%M:%S")
-                time_left_seconds = next_pub_time - tNow
-                hours_left = int(time_left_seconds // 3600)
-                minutes_left = int((time_left_seconds % 3600) // 60)
-                seconds_left = int(time_left_seconds % 60)
-                time_left_formatted = f"{hours_left}h {minutes_left}m {seconds_left}s"
-                msgLog = (f"{indent}Publication time starts at "
-                          f"{next_pub_time_formatted} (in "
-                          f"{time_left_formatted}). It's outside "
-                          f"the {timeSlots} min window [{tNow_formatted} "
-                          f"to {window_end_formatted}]. Skipping."
-                          )
-                logMsg(msgLog, 1, 1)
-                skip = True
-        return skip
+            diffTime = hours + 1
+
+        if not noWait and (diffTime <= hours):
+            msgLog = (
+                f"{indent} Not enough time passed. "
+                f"We will wait at least "
+                f"{(hours-diffTime)/(60*60):2.2f} hours."
+            )
+            logMsg(msgLog, 1, 1)
+            return True
+        return False
 
     def _prepare_actions(self, args, select):
+        """
+        Prepares the list of actions to execute, filtering and collecting all
+        necessary information.  Returns a list of dictionaries with data for
+        each action.
+        """
         scheduled_actions = []
         previous = ""
-        i = 0
+        i = 0  # Initialize i outside the loop to avoid UnboundLocalError
         for rule_index, rule_key in enumerate(sorted(self.rules.keys())):
+            # Repetition control by action name
             rule_metadata = self.more[rule_key] if rule_key in self.more else None
+            if rule_metadata and rule_metadata.get("hold") == "yes":
+                msgHold = f"[HOLD] {self.getNickSrc(rule_key)} ({self.getNickAction(rule_key)})"
+                logMsg(msgHold, 1, 0)
+                continue
             rule_actions = self.rules[rule_key]
             if self.getNameAction(rule_key) != previous:
                 i = 0
             else:
                 i = i + 1
+            nameR = f"[{self.getNameAction(rule_key)}{i}]"
+            msgLog = (f"{nameR:->12}> "
+                          f"Preparing actions for rule: "
+                          f"{self.getNickSrc(rule_key)}@"
+                          f"{self.getNameRule(rule_key)} "
+                          f"({self.getNickAction(rule_key)})")
+            logMsg(msgLog, 1, 1)
+            previous = self.getNameAction(rule_key)
 
-            if rule_metadata and rule_metadata.get("hold") == "yes":
-                name_action = f"[{self.getNameAction(rule_key)}]"
-                nameR = f"{name_action:->12}>"
-                logMsg(
-                    (f"{nameR} [HOLD] {self.getNickSrc(rule_key)} "
-                    f"({self.getNickAction(rule_key)})"
-                    f"-> {self.getDestAction(rule_actions[0])}@"
-                    f"{self.getNameAction(rule_actions[0])}"),
-                    1,
-                    0,
-                )
-            else:
+            for action_index, rule_action in enumerate(rule_actions):
+                # Rule selection if --checkBlog is used
                 name_action = f"[{self.getNameAction(rule_key)}{i}]"
-                nameR = f"{name_action:->12}>"
-                logMsg(
-                    (f"{nameR} Preparing actions for rule: "
-                    f"{self.getNickSrc(rule_key)}@{self.getNameRule(rule_key)} "
-                    f"({self.getNickAction(rule_key)})"
-                     ),
-                    1, 1)
-                previous = self.getNameAction(rule_key)
-                for action_index, rule_action in enumerate(rule_actions):
-                    if select and (
-                        select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"
-                    ):
-                        continue
+                nameR_action = f"{name_action:->12}>"
+                nameA =  f"{nameR_action} Action {action_index}:"
 
-                    nameA = f"{nameR}  Action {action_index}:"
-                    indent = nameA
+                if select and (select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"):
+                    continue
 
-                    apiSrc = self.readConfigSrc(indent, rule_key, rule_metadata)
-                    if not apiSrc:
-                        logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
-                        continue
+                apiSrc = self.readConfigSrc(nameR_action, rule_key, rule_metadata)
+                if not apiSrc:
+                    logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
+                    continue
 
-                    apiDst = self.readConfigDst(indent, rule_action, rule_metadata, apiSrc)
-                    if not apiDst:
-                        logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
-                        continue
+                apiDst = self.readConfigDst(nameR_action, rule_action, rule_metadata, apiSrc)
+                if not apiDst:
+                    logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
+                    continue
 
-                    timeSlots, noWait = self._get_action_properties(
-                        rule_action, rule_metadata, args
-                    )
+                timeSlots, noWait = self._get_action_properties(
+                    rule_action, rule_metadata, args
+                )
 
-                    if self._should_skip_publication(
-                        apiDst, apiSrc, noWait, timeSlots, f"{nameA}"
-                    ):
-                        continue
-                    scheduled_actions.append(
-                        {
-                            "rule_key": rule_key,
-                            "rule_metadata": rule_metadata,
-                            "rule_action": rule_action,
-                            "rule_index": i,
-                            "action_index": action_index,
-                            "args": args,
-                            "simmulate": args.simmulate,
-                            "apiSrc": apiSrc,
-                            "apiDst": apiDst,
-                            "name_action": name_action,
-                            "nameA": nameA,
-                        }
-                    )
+                if self._should_skip_publication(
+                    apiDst, apiSrc, noWait, timeSlots, f"{nameA}"
+                ):
+                    continue
+                scheduled_actions.append(
+                    {
+                        "rule_key": rule_key,
+                        "rule_metadata": rule_metadata,
+                        "rule_action": rule_action,
+                        "rule_index": i,
+                        "action_index": action_index,
+                        "args": args,
+                        "simmulate": args.simmulate,
+                        "apiSrc": apiSrc,
+                        "apiDst": apiDst,
+                        "name_action": name_action,
+                        "nameA": nameA,
+                        "timeSlots": timeSlots, # Add timeSlots to scheduled_actions
+                        "noWait": noWait,       # Add noWait to scheduled_actions
+                    }
+                )
         return scheduled_actions
 
+    def _get_action_properties(self, rule_action, rule_metadata, args):
+        timeSlots = args.timeSlots
+        noWait = args.noWait
+
+        action_name = self.getNameAction(rule_action)
+        profile_action = self.getProfileAction(rule_action)
+
+        # Hardcoded logic for specific services
+        if (action_name == "cache") or (
+            action_name == "direct" and profile_action == "pocket"
+        ):
+            timeSlots = 0
+            noWait = True
+
+        # Override with rule-specific metadata if present
+        if rule_metadata and "timeSlots" in rule_metadata:
+            try:
+                timeSlots = float(rule_metadata["timeSlots"])
+            except ValueError:
+                logMsg(
+                    (f"WARNING: Invalid timeSlots value in rule metadata: "
+                     f"{rule_metadata['timeSlots']}"),
+                    2, 1,)
+
+        if rule_metadata and "noWait" in rule_metadata:
+            noWait_str = str(rule_metadata["noWait"]).lower()
+            noWait = noWait_str in ("true", "1", "t", "y", "yes")
+
+        return timeSlots, noWait
+
     def _run_actions_concurrently(self, scheduled_actions, max_workers=75):
+        """
+        Executes actions in parallel using ThreadPoolExecutor.
+        Returns two lists: results and errors.
+        """
         action_results = []
         action_errors = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
             future_to_action = {
-                pool.submit(self._execute_single_action, sa): sa
-                for sa in scheduled_actions
+                pool.submit(
+                    self._execute_single_action,
+                    scheduled_action
+                ): scheduled_action for scheduled_action in scheduled_actions
             }
             for future in concurrent.futures.as_completed(future_to_action):
                 scheduled_action = future_to_action[future]
-                res = ""
+                res = ''
                 try:
                     res = future.result()
                     action_results.append((scheduled_action, res))
@@ -1302,6 +1319,9 @@ class moduleRules:
         return action_results, action_errors
 
     def _execute_single_action(self, scheduled_action):
+        """
+        Executes a single action (wrapper for executeAction).
+        """
         rule_key = scheduled_action["rule_key"]
         rule_metadata = scheduled_action["rule_metadata"]
         rule_action = scheduled_action["rule_action"]
@@ -1309,20 +1329,19 @@ class moduleRules:
         simmulate = scheduled_action["simmulate"]
         apiSrc = scheduled_action["apiSrc"]
         apiDst = scheduled_action["apiDst"]
-
-        timeSlots, noWait = self._get_action_properties(
-            rule_action, rule_metadata, args
-        )
+        timeSlots = scheduled_action["timeSlots"] # Get from scheduled_action
+        noWait = scheduled_action["noWait"]       # Get from scheduled_action
 
         msgAction = (
-                #f"{self.getNameAction(rule_action)} "
+            f"{self.getNameAction(rule_action)} "
             f"{self.getNickAction(rule_action)}@"
             f"{self.getProfileAction(rule_action)} "
-            f"({self.getTypeAction(rule_action)})"
-        )
-        # logMsg(f"=========> {msgAction}", 1,1)
-        action_index = scheduled_action.get("action_index", 0)
-        nameA = scheduled_action["nameA"]
+            f"({self.getTypeAction(rule_action)})")
+        rule_index = scheduled_action.get('rule_index', 0)
+        action_index = scheduled_action.get('action_index', 0)
+        name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
+        nameR = f"{name_action:->12}>"
+        nameA =  f"{nameR} Action {action_index}:"
         return self.executeAction(
             rule_key,
             rule_metadata,
@@ -1338,19 +1357,49 @@ class moduleRules:
         )
 
     def _report_results(self, action_results, action_errors):
-        for scheduled_action, res in action_results:
-            if not res:
-                res = ""
+        """
+        Reports the results and errors of action execution.
+        """
+        for scheduled_action, res_dict in action_results:
             rule_key = scheduled_action["rule_key"]
             rule_index = scheduled_action.get("rule_index", "")
             rule_summary = (
                 f"Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
             )
-            logMsg(
-                f"[OK] Action executed for {rule_summary} -> {scheduled_action['rule_action']}: {res}",
-                1,
-                1,
-            )
+
+            if res_dict == "ok":
+                summary_msg = "Success. Action completed."
+                logMsg(
+                    f"[OK] Action for {rule_summary} -> {scheduled_action['rule_action']}: {summary_msg}",
+                    1,
+                    1,
+                )
+            elif isinstance(res_dict, dict) and res_dict.get("success"):
+                pub_res = res_dict.get("publication_result", "N/A")
+                post_act = res_dict.get("post_action_result", "N/A")
+                summary_msg = f"Success. Pub: 
+'{pub_res}'. Post-Action: 
+'{post_act}'."
+                logMsg(
+                    f"[OK] Action for {rule_summary} -> {scheduled_action['rule_action']}: {summary_msg}",
+                    1,
+                    1,
+                )
+            elif isinstance(res_dict, dict):
+                error_msg = res_dict.get("error", "Unknown error")
+                logMsg(
+                    f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {error_msg}",
+                    3,
+                    1,
+                )
+            else:
+                # Fallback for empty or non-dict results
+                logMsg(
+                    f"[WARN] Action for {rule_summary} -> {scheduled_action['rule_action']} produced an invalid result: {res_dict}",
+                    2,
+                    1,
+                )
+
         for scheduled_action, exc in action_errors:
             rule_key = scheduled_action["rule_key"]
             rule_index = scheduled_action.get("rule_index", "")
@@ -1363,130 +1412,92 @@ class moduleRules:
                 1,
             )
 
-    def _get_action_properties(self, rule_action, rule_metadata, args):
-        timeSlots = args.timeSlots
-        noWait = args.noWait
-
-        action_name = self.getNameAction(rule_action)
-        profile_action = self.getProfileAction(rule_action)
-
-        # Hardcoded logic for specific services
-        if (action_name == "cache"): #or (
-        #    action_name == "direct" and profile_action == "pocket"
-        #)
-        #:
-            # logMsg(f"======{action_name}: {args.noWait}")
-            timeSlots = 0
-            noWait = True
-
-        # Override with rule-specific metadata if present
-        if "timeSlots" in rule_metadata:
-            try:
-                timeSlots = float(rule_metadata["timeSlots"])
-            except ValueError:
-                logMsg(
-                    (f"WARNING: Invalid timeSlots value in rule metadata: "
-                     f"{rule_metadata['timeSlots']}"),
-                    2, 1,)
-
-        if "noWait" in rule_metadata:
-            noWait_str = str(rule_metadata["noWait"]).lower()
-            noWait = noWait_str in ("true", "1", "t", "y", "yes")
-
-        return timeSlots, noWait
-
-    def debug_filenames(self):
-        logMsg("Debugging filenames", 1, 2)
-        print("-" * 80)
-        for rule_key, rule_actions in self.rules.items():
-            print(f"Rule: {rule_key}")
-            rule_metadata = self.more.get(rule_key)
-            apiSrc = self.readConfigSrc("", rule_key, rule_metadata)
-
-            for i, action in enumerate(rule_actions):
-                apiDst = self.readConfigDst("", action, rule_metadata, apiSrc)
-                filename = apiDst.fileNameBase(apiSrc)
-
-                print(f"  > Action {i}: {action}")
-                print(f"    Filename base: {filename}")
-
-                # Get content of .last file
-                last_link = apiDst.getLastLink(apiSrc)
-                if last_link:
-                    print(f"    Last Link    : {last_link}")
-                else:
-                    print("    Last Link    : Not found or is empty")
-
-                # Get content of .timeNext file
-                tnow, tsleep = apiDst.getNextTime(src=apiSrc)
-                if tnow is not None and tsleep is not None:
-                    last_run_time = datetime.datetime.fromtimestamp(tnow)
-                    print(
-                        f"    Last Run     : {last_run_time.strftime('%Y-%m-%d %H:%M:%S')}"
-                    )
-                    print(f"    Sleep Time   : {tsleep:.2f} seconds")
-                else:
-                    print("    Next Run     : Not scheduled")
-            print("-" * 80)
-
     def _configure_service_api(
-        self,
-        api,
-        destination,
-        channel=None,
-        from_email=None,
-        to_email=None,
-        account=None,
-        indent="",
+        self, api, destination, channel=None, from_email=None, to_email=None, account=None
     ):
-        child_indent = f"{indent}  "
+        """
+        Configure service-specific API settings
+
+        Args:
+            api: Service API instance
+            destination: Service name
+            channel: Channel for services that support it
+            from_email: Email origin for SMTP services
+            to_email: Email destination for SMTP services
+            account: Account name (fallback for email)
+        """
         try:
+            # Set channel if supported and provided
             if hasattr(api, "setChannel") and channel:
                 api.setChannel(channel)
-                logMsg(f"{child_indent}Channel set to '{channel}' for {destination}", 2, 0)
+                logging.debug(f"Channel set to \n'{channel}' for {destination}")
+
+            # Configure SMTP-specific settings
             if "smtp" in destination.lower():
-                if hasattr(api, "fromaddr"):
+                if hasattr(api, 'fromaddr'):
                     api.fromaddr = from_email or "default@example.com"
-                    logMsg(f"{child_indent}SMTP fromaddr set to {api.fromaddr}", 2, 0)
-                if hasattr(api, "to"):
+                    logging.debug(f"SMTP fromaddr set to {api.fromaddr}")
+
+                if hasattr(api, 'to'):
                     api.to = to_email or account
-                    logMsg(f"{child_indent}SMTP to set to {api.to}", 2, 0)
+                    logging.debug(f"SMTP to set to {api.to}")
+
         except Exception as e:
-            logMsg(f"{child_indent}Error configuring {destination} API: {e}", 2, 1)
+            logging.warning(f"Error configuring {destination} API: {e}")
 
     def _extract_image_url(self, api, destination):
+        """
+        Extract image URL from API response in a generic way
+
+        Args:
+            api: Service API instance
+            destination: Service name
+
+        Returns:
+            str or None: Image URL if found
+        """
+        image_url = None
         try:
-            if not hasattr(api, "lastRes") or not api.lastRes:
-                return None
-            response = api.lastRes
-            if (
-                isinstance(response, dict)
-                and "media_attachments" in response
-                and response["media_attachments"]
-                and isinstance(response["media_attachments"], list)
-                and len(response["media_attachments"]) > 0
-                and "url" in response["media_attachments"][0]
-            ):
-                return response["media_attachments"][0]["url"]
-            if isinstance(response, dict) and "media" in response:
-                media = response["media"]
-                if isinstance(media, dict) and "media_url" in media:
-                    return media["media_url"]
-                elif (
-                    isinstance(media, list)
-                    and len(media) > 0
-                    and "media_url" in media[0]
+            if hasattr(api, "lastRes") and api.lastRes:
+                response = api.lastRes
+
+                # Try different response formats
+                # Mastodon format
+                if (
+                    isinstance(response, dict)
+                    and "media_attachments" in response
+                    and response["media_attachments"]
+                    and isinstance(response["media_attachments"], list)
+                    and len(response["media_attachments"]) > 0
+                    and "url" in response["media_attachments"][0]
                 ):
-                    return media[0]["media_url"]
-            if isinstance(response, dict):
-                for url_field in ["url", "image_url", "media_url", "attachment_url"]:
-                    if url_field in response:
-                        return response[url_field]
-            logging.debug(f"No image URL found in {destination} response")
-            return None
+                    image_url = response["media_attachments"][0]["url"]
+
+                # Twitter format
+                elif isinstance(response, dict) and "media" in response:
+                    media = response["media"]
+                    if isinstance(media, dict) and "media_url" in media:
+                        image_url = media["media_url"]
+                    elif (
+                        isinstance(media, list)
+                        and len(media) > 0
+                        and "media_url" in media[0]
+                    ):
+                        image_url = media[0]["media_url"]
+
+                # Generic URL field
+                elif isinstance(response, dict):
+                    for url_field in ["url", "image_url", "media_url", "attachment_url"]:
+                        if url_field in response:
+                            image_url = response[url_field]
+                            break
+                if not image_url:
+                    logging.debug(f"No image URL found in {destination} response")
+
         except Exception as e:
             logging.warning(f"Error extracting image URL from {destination}: {e}")
-            return None
+
+        return image_url
 
     def _publish_to_single_destination(
         self,
@@ -1500,90 +1511,149 @@ class moduleRules:
         channel=None,
         from_email=None,
         to_email=None,
-        indent="",
     ):
+        """
+        Publish to a single destination
+
+        Args:
+            destination: Service name
+            account: Account name
+            title: Publication title
+            url: Content URL
+            content: Publication content
+            image_path: Image path to publish
+            alt_text: Alternative text for image
+            channel: Channel for services that support it
+            from_email: Email origin for SMTP
+            to_email: Email destination for SMTP
+
+        Returns:
+            dict: Publication result
+        """
         service_key = f"{destination}_{account}"
-        child_indent = f"{indent}  "
+        result_dict = {{}}
+
         try:
+            # Create key for readConfigDst
             key = ("direct", "post", destination, account)
-            api = self.readConfigDst(child_indent, key, None, None)
+
+            # Get service API
+            api = self.readConfigDst("  ", key, None, None)
+
             if not api:
-                logMsg(f"{child_indent}Could not initialize API for {destination}", 3, 1)
-                return {
+                result_dict = {
                     "success": False,
                     "error": f"Could not initialize API for {destination}",
                     "service": service_key,
                 }
-            self._configure_service_api(
-                api, destination, channel, from_email, to_email, account, indent=child_indent
-            )
-            image_url = None
-            if image_path and hasattr(api, "publishImage"):
-                try:
-                    logMsg(f"{child_indent}Publishing image to {destination}...", 1, 1)
-                    image_result = api.publishImage(title, image_path, alt=alt_text)
-                    image_url = self._extract_image_url(api, destination)
-                    logMsg(f"{child_indent}Image published to {destination}: {image_result}", 1, 1)
-                except Exception as e:
-                    logMsg(f"{child_indent}Error publishing image to {destination}: {e}", 3, 1)
-            logMsg(f"{child_indent}Publishing post to {destination}...", 1, 1)
-            result = api.publishPost(title, url, content)
-            if self._is_publication_successful(result):
-                logMsg(f"{child_indent}Successfully published to {destination}: {result}", 1, 1)
-                return {
-                    "success": True,
-                    "result": result,
-                    "image_url": image_url,
-                    "service": service_key,
-                }
             else:
-                logMsg(f"{child_indent}Publication to {destination} returned unsuccessful result: {result}", 2, 1)
-                return {
-                    "success": False,
-                    "error": f"Publication returned unsuccessful result: {result}",
-                    "result": result,
-                    "service": service_key,
-                }
+                # Configure service-specific settings
+                self._configure_service_api(
+                    api, destination, channel, from_email, to_email, account
+                )
+
+                # Publish image if provided
+                image_url = None
+                if image_path and hasattr(api, "publishImage"):
+                    try:
+                        image_result = api.publishImage(title, image_path, alt=alt_text)
+                        image_url = self._extract_image_url(api, destination)
+                        logging.info(f"Image published to {destination}: {image_result}")
+                    except Exception as e:
+                        logging.error(f"Error publishing image to {destination}: {e}")
+                        # Continue with text post even if image fails
+
+                # Publish main post
+                result = api.publishPost(title, url, content)
+
+                # Validate result
+                if self._is_publication_successful(result):
+                    logging.info(f"Successfully published to {destination}: {result}")
+                    result_dict = {
+                        "success": True,
+                        "result": result,
+                        "image_url": image_url,
+                        "service": service_key,
+                    }
+                else:
+                    result_dict = {
+                        "success": False,
+                        "error": f"Publication returned unsuccessful result: {result}",
+                        "result": result,
+                        "service": service_key,
+                    }
+
         except Exception as e:
             error_msg = f"Error publishing to {destination}: {e}"
-            logMsg(f"{child_indent}{error_msg}", 3, 1)
-            return {"success": False, "error": str(e), "service": service_key}
+            logging.error(error_msg)
+            result_dict = {"success": False, "error": str(e), "service": service_key}
+        return result_dict
 
     def _is_publication_successful(self, result):
+        """
+        Determine if a publication result indicates success
+
+        Args:
+            result: Publication result from API
+
+        Returns:
+            bool: True if successful
+        """
+        successful = True
         if result is None:
-            return False
-        if isinstance(result, str) and result.startswith("Fail"):
-            return False
-        if isinstance(result, dict):
+            successful = False
+
+        # String results starting with "Fail" are failures
+        elif isinstance(result, str) and result.startswith("Fail"):
+            successful = False
+
+        # Dict results with explicit success/error indicators
+        elif isinstance(result, dict):
             if "success" in result:
-                return result["success"]
-            if "error" in result:
-                return False
-        return bool(result)
+                successful = result["success"]
+            elif "error" in result:
+                successful = False
+            else:
+                successful = bool(result)
+        else:
+            successful = bool(result)
+
+        return successful
 
     def _validate_destinations(self, destinations):
+        """
+        Validate and normalize destinations parameter
+
+        Args:
+            destinations: Dict or list of destinations
+
+        Returns:
+            list: Normalized list of (service, account) tuples
+
+        Raises:
+            ValueError: If destinations format is invalid
+        """
         if not destinations:
             raise ValueError("Destinations cannot be empty")
+
+        normalized = []
         if isinstance(destinations, dict):
-            return [
-                (service, account)
-                for service, account in destinations.items()
-                if account
+            normalized = [
+                (service, account) for service, account in destinations.items() if account
             ]
         elif isinstance(destinations, (list, tuple)):
-            normalized = []
             for item in destinations:
                 if isinstance(item, (list, tuple)) and len(item) >= 2:
                     service, account = item[0], item[1]
-                    if account:
+                    if account:  # Skip empty accounts
                         normalized.append((service, account))
                 else:
                     raise ValueError(f"Invalid destination format: {item}")
-            return normalized
         else:
             raise ValueError(
                 f"Destinations must be dict or list, got {type(destinations)}"
             )
+        return normalized
 
     def publish_to_multiple_destinations(
         self,
@@ -1596,96 +1666,151 @@ class moduleRules:
         channel=None,
         from_email=None,
         to_email=None,
-        indent="",
     ):
+        """
+        Publishes content to multiple destinations using unified logic
+
+        Args:
+            destinations: Dict with {service: account} or list of tuples (service, account)
+            title: Publication title
+            url: Content URL (optional)
+            content: Publication content (optional)
+            image_path: Image path to publish (optional)
+            alt_text: Alternative text for image (optional)
+            channel: Specific channel for some services (optional)
+            from_email: Origin email for SMTP (optional)
+            to_email: Destination email for SMTP (optional)
+
+        Returns:
+            Dict with results from each publication
+
+        Raises:
+            ValueError: If parameters are invalid
+        """
+        results = {{}}
+        # Validate inputs
         if not title and not content:
             raise ValueError("Either title or content must be provided")
-        child_indent = f"{indent}  "
+
         try:
             dest_items = self._validate_destinations(destinations)
+            if not dest_items:
+                logging.warning("No valid destinations found")
+            else:
+                logging.info(
+                    f"Starting publication to {len(dest_items)} destinations: {title}"
+                )
+
+                # Publish to each destination
+                for destination, account in dest_items:
+                    logging.info(f"Publishing to: {destination} - {account}")
+
+                    result = self._publish_to_single_destination(
+                        destination=destination,
+                        account=account,
+                        title=title,
+                        url=url,
+                        content=content,
+                        image_path=image_path,
+                        alt_text=alt_text,
+                        channel=channel,
+                        from_email=from_email,
+                        to_email=to_email,
+                    )
+
+                    results[result["service"]] = {
+                        "success": result["success"],
+                        "result": result.get("result"),
+                        "error": result.get("error"),
+                        "image_url": result.get("image_url"),
+                    }
+
+                # Log summary
+                successful = sum(1 for r in results.values() if r.get("success"))
+                total = len(results)
+                logging.info(f"Publication completed: {successful}/{total} successful")
+
         except ValueError as e:
-            logMsg(f"{child_indent}Invalid destinations: {e}", 3, 1)
-            return {"error": str(e)}
-        if not dest_items:
-            logMsg(f"{child_indent}No valid destinations found", 2, 1)
-            return {}
-        logMsg(f"{child_indent}Starting publication to {len(dest_items)} destinations: {title}", 1, 1)
-        results = {}
-        for destination, account in dest_items:
-            grandchild_indent = f"{child_indent}  "
-            logMsg(f"{grandchild_indent}Publishing to: {destination} - {account}", 1, 1)
-            result = self._publish_to_single_destination(
-                destination=destination,
-                account=account,
-                title=title,
-                url=url,
-                content=content,
-                image_path=image_path,
-                alt_text=alt_text,
-                channel=channel,
-                from_email=from_email,
-                to_email=to_email,
-                indent=grandchild_indent,
-            )
-            results[result["service"]] = {
-                "success": result["success"],
-                "result": result.get("result"),
-                "error": result.get("error"),
-                "image_url": result.get("image_url"),
-            }
-        successful = sum(1 for r in results.values() if r.get("success"))
-        total = len(results)
-        logMsg(f"{child_indent}Publication completed: {successful}/{total} successful", 1, 1)
+            logging.error(f"Invalid destinations: {e}")
+            results = {"error": str(e)}
+
         return results
 
     def publish_message_to_destinations(self, destinations, message, **kwargs):
+        """
+        Simplified method to publish only a message
+
+        Args:
+            destinations: Dict with {service: account} or list of tuples
+            message: Message to publish
+            **kwargs: Additional parameters passed to publish_to_multiple_destinations
+
+        Returns:
+            Dict with results
+
+        Raises:
+            ValueError: If message is empty
+        """
         if not message or not message.strip():
             raise ValueError("Message cannot be empty")
-        indent = kwargs.pop("indent", "")
+
         return self.publish_to_multiple_destinations(
             destinations=destinations,
             title=message,
-            url=kwargs.get("url", ""),
-            content=kwargs.get("content", ""),
-            image_path=kwargs.get("image_path"),
-            alt_text=kwargs.get("alt_text", ""),
-            channel=kwargs.get("channel"),
-            from_email=kwargs.get("from_email"),
-            to_email=kwargs.get("to_email"),
-            indent=indent,
+            url=kwargs.get('url', ''),
+            content=kwargs.get('content', ''),
+            image_path=kwargs.get('image_path'),
+            alt_text=kwargs.get('alt_text', ''),
+            channel=kwargs.get('channel'),
+            from_email=kwargs.get('from_email'),
+            to_email=kwargs.get('to_email')
         )
 
     def get_publication_summary(self, results):
+        """
+        Generate a summary of publication results
+
+        Args:
+            results: Results dict from publish_to_multiple_destinations
+
+        Returns:
+            dict: Summary with statistics and details
+        """
+        summary = {{}}
         if not results or "error" in results:
-            return {
+            summary = {
                 "total": 0,
                 "successful": 0,
                 "failed": 0,
                 "success_rate": 0.0,
                 "error": results.get("error") if results else "No results",
             }
-        successful_services = [k for k, v in results.items() if v.get("success")]
-        failed_services = [k for k, v in results.items() if not v.get("success")]
-        total = len(results)
-        successful_count = len(successful_services)
-        return {
-            "total": total,
-            "successful": successful_count,
-            "failed": len(failed_services),
-            "success_rate": successful_count / total if total > 0 else 0.0,
-            "successful_services": successful_services,
-            "failed_services": failed_services,
-            "response_links": {
-                k: v.get("image_url") or v.get("result")
-                for k, v in results.items()
-                if v.get("success") and (v.get("image_url") or v.get("result"))
-            },
-            "errors": {
-                k: v.get("error")
-                for k, v in results.items()
-                if not v.get("success") and v.get("error")
-            },
-        }
+        else:
+            successful_services = [k for k, v in results.items() if v.get("success")]
+            failed_services = [k for k, v in results.items() if not v.get("success")]
+
+            total = len(results)
+            successful_count = len(successful_services)
+
+            summary = {
+                "total": total,
+                "successful": successful_count,
+                "failed": len(failed_services),
+                "success_rate": successful_count / total if total > 0 else 0.0,
+                "successful_services": successful_services,
+                "failed_services": failed_services,
+                "response_links": {
+                    k: v.get("image_url") or v.get("result")
+                    for k, v in results.items()
+                    if v.get("success") and (v.get("image_url") or v.get("result"))
+                },
+                "errors": {
+                    k: v.get("error")
+                    for k, v in results.items()
+                    if not v.get("success") and v.get("error")
+                },
+            }
+        return summary
 
     def readArgs(self):
         import argparse
@@ -1696,7 +1821,7 @@ class moduleRules:
         parser.add_argument(
             "--timeSlots",
             "-t",
-            default=50,
+            default=50,  # 50 minutes
             help=("How many time slots we will have for publishing (in minutes)"),
         )
         parser.add_argument(
@@ -1741,17 +1866,20 @@ def main():
     mode = logging.DEBUG
     logging.basicConfig(
         filename=f"{LOGDIR}/rssSocial.log",
+        # stream=sys.stdout,
         level=mode,
         format="%(asctime)s [%(filename).12s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
+
     rules = moduleRules()
+
     rules.readArgs()
+    rules.indent = ""
     rules.checkRules()
-    if rules.args.debug_filenames:
-        rules.debug_filenames()
-        return
+
     rules.executeRules()
+
     return
 
 

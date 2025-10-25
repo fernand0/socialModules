@@ -8,3 +8,4 @@ uv*
 .coverate
 .coverage
 .lens
+.env

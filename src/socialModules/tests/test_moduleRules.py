@@ -134,8 +134,14 @@ def test_duplicate_destinations(tmp_path):
 def make_basic_rules():
     rules = moduleRules()
     # Simulate minimal rules and metadata
-    rules.rules = {"src1": ["action1", "action2"], "src2": ["action3"]}
-    rules.more = {"src1": {}, "src2": {}}
+    rules.rules = {
+        ("rss", "set", "src_nick", "posts"): [("direct", "post", "dst_service", "dst_account_1"), ("direct", "post", "dst_service", "dst_account_2")],
+        ("rss", "set", "src_nick_2", "posts"): [("direct", "post", "dst_service_3", "dst_account_3")]
+    }
+    rules.more = {
+        ("rss", "set", "src_nick", "posts"): {},
+        ("rss", "set", "src_nick_2", "posts"): {}
+    }
     rules.args = MagicMock()
     rules.args.checkBlog = ""
     rules.args.simmulate = False
@@ -154,37 +160,80 @@ mock_api_instance.getUrl.return_value = "http://mock.url"
 mock_api_instance.getClient.return_value = MagicMock() # Mock the client object
 mock_api_instance.getTime.return_value = 60.0 # Mock getTime to return a float (e.g., 60 minutes)
 mock_api_instance.getLastTimePublished.return_value = time.time() - 3600 # Mock last published time (e.g., 1 hour ago)
+mock_api_instance.setPostsType.return_value = None
+mock_api_instance.setMoreValues.return_value = None
+mock_api_instance.setUrl.return_value = None
+mock_api_instance.getMax.return_value = 1
 
 
 @patch('socialModules.configMod.getModule', return_value=mock_api_instance)
 @patch('socialModules.configMod.getApi', return_value=mock_api_instance)
-def test_executeRules_calls_executeAction(mock_get_api, mock_get_module):
+@patch('socialModules.moduleRules.moduleRules._execute_single_action')
+@patch('socialModules.moduleRules.moduleRules.readConfigSrc')
+@patch('socialModules.moduleRules.moduleRules.readConfigDst')
+def test_executeRules_calls_executeAction(mock_read_config_dst, mock_read_config_src, mock_execute_single_action, mock_get_api, mock_get_module):
+    mock_api_src_instance = MagicMock()
+    mock_api_src_instance.getUrl.return_value = "http://mock.url"
+    mock_api_src_instance.setPostsType.return_value = None
+    mock_api_src_instance.setMoreValues.return_value = None
+    mock_api_src_instance.indent = ""
+    mock_api_src_instance.getPostLink.return_value = "mock_post_link"
+    mock_api_src_instance.getPosts.return_value = []
+    mock_api_src_instance.getPostAction.return_value = "delete"
+
+    mock_api_dst_instance = MagicMock()
+    mock_api_dst_instance.getClient.return_value = MagicMock()
+    mock_api_dst_instance.getNextTime.return_value = (time.time(), 100.0)
+    mock_api_dst_instance.getTime.return_value = 60.0
+    mock_api_dst_instance.getLastTimePublished.return_value = time.time() - 3600
+    mock_api_dst_instance.setNextTime.return_value = None
+    mock_api_dst_instance.getMax.return_value = 1
+    mock_api_dst_instance.publishPost.return_value = "OK. Published!"
+    mock_api_dst_instance.updateLastLink.return_value = "OK"
+    mock_api_dst_instance.fileNameBase.return_value = "/tmp/mock_file"
+
+
+    mock_read_config_src.return_value = mock_api_src_instance
+    mock_read_config_dst.return_value = mock_api_dst_instance
+
     rules = make_basic_rules()
-    called = []
-
-    def fake_single_action(scheduled_action):
-        called.append(scheduled_action)
-        return "ok"
-
-    with patch('socialModules.moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
-        rules.executeRules(max_workers=2)
-    assert len(called) == 3  # 3 actions
+    rules.executeRules(max_workers=2)
+    assert mock_execute_single_action.call_count == 3
 
 
 @patch('socialModules.configMod.getModule', return_value=mock_api_instance)
 @patch('socialModules.configMod.getApi', return_value=mock_api_instance)
-def test_executeRules_respects_hold(mock_get_api, mock_get_module):
+@patch('socialModules.moduleRules.moduleRules._execute_single_action')
+@patch('socialModules.moduleRules.moduleRules.readConfigSrc')
+@patch('socialModules.moduleRules.moduleRules.readConfigDst')
+def test_executeRules_respects_hold(mock_read_config_dst, mock_read_config_src, mock_execute_single_action, mock_get_api, mock_get_module):
+    mock_api_src_instance = MagicMock()
+    mock_api_src_instance.getUrl.return_value = "http://mock.url"
+    mock_api_src_instance.setPostsType.return_value = None
+    mock_api_src_instance.setMoreValues.return_value = None
+    mock_api_src_instance.indent = ""
+    mock_api_src_instance.getPostLink.return_value = "mock_post_link"
+    mock_api_src_instance.getPosts.return_value = []
+    mock_api_src_instance.getPostAction.return_value = "delete"
+
+    mock_api_dst_instance = MagicMock()
+    mock_api_dst_instance.getClient.return_value = MagicMock()
+    mock_api_dst_instance.getNextTime.return_value = (time.time(), 100.0)
+    mock_api_dst_instance.getTime.return_value = 60.0
+    mock_api_dst_instance.getLastTimePublished.return_value = time.time() - 3600
+    mock_api_dst_instance.setNextTime.return_value = None
+    mock_api_dst_instance.getMax.return_value = 1
+    mock_api_dst_instance.publishPost.return_value = "OK. Published!"
+    mock_api_dst_instance.updateLastLink.return_value = "OK"
+    mock_api_dst_instance.fileNameBase.return_value = "/tmp/mock_file"
+
+    mock_read_config_src.return_value = mock_api_src_instance
+    mock_read_config_dst.return_value = mock_api_dst_instance
+
     rules = make_basic_rules()
-    rules.more["src1"] = {"hold": "yes"}
-    called = []
-
-    def fake_single_action(scheduled_action):
-        called.append(scheduled_action)
-        return "ok"
-
-    with patch('socialModules.moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
-        rules.executeRules()
-    assert len(called) == 1  # Only src2/action3
+    rules.more[('rss', 'set', 'src_nick', 'posts')] = {"hold": "yes"}
+    rules.executeRules()
+    assert mock_execute_single_action.call_count == 1
 
 
 @patch('socialModules.configMod.getModule', return_value=mock_api_instance)
@@ -218,103 +267,31 @@ def test_executeRules_with_checkBlog(mock_get_api, mock_get_module):
     assert all(a["rule_key"] == "src1" for a in called)
 
 @patch('socialModules.moduleRules.getApi', return_value=None)
-
 def test_readConfigSrc_fail(mock_get_api):
-
     rules = moduleRules()
-
     src = ('rss', 'set', 'some_nick', 'posts')
-
     more = {}
-
     apiSrc = rules.readConfigSrc('', src, more)
-
     assert apiSrc is None
 
-
-
 @patch('socialModules.moduleRules.getApi', return_value=None)
-
-
-
 def test_readConfigDst_fail(mock_get_api):
-
-
-
     rules = moduleRules()
-
-
-
     action = ('direct', 'post', 'some_service', 'some_account')
-
-
-
     more = {}
-
-
-
     apiSrc = MagicMock()
-
-
-
     apiDst = rules.readConfigDst('', action, more, apiSrc)
-
-
-
     assert apiDst is None
 
-
-
-
-
-
-
 @patch('socialModules.moduleRules.moduleRules.readConfigSrc', return_value=None)
-
-
-
 def test_prepare_actions_readConfigSrc_fail(mock_read_config_src):
-
-
-
     rules = make_basic_rules()
-
-
-
     scheduled_actions = rules._prepare_actions(rules.args, None)
-
-
-
     assert len(scheduled_actions) == 0
-
-
-
-
-
-
 
 @patch('socialModules.moduleRules.moduleRules.readConfigSrc', return_value=MagicMock())
-
-
-
 @patch('socialModules.moduleRules.moduleRules.readConfigDst', return_value=None)
-
-
-
 def test_prepare_actions_readConfigDst_fail(mock_read_config_dst, mock_read_config_src):
-
-
-
     rules = make_basic_rules()
-
-
-
     scheduled_actions = rules._prepare_actions(rules.args, None)
-
-
-
     assert len(scheduled_actions) == 0
-
-
-
-
