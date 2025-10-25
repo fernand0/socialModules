@@ -734,6 +734,7 @@ class moduleRules:
         if more and "channel" in more:
             apiSrc = getApi(profile, account, indent, more["channel"])
         else:
+<<<<<<< HEAD
             apiSrc = getApi(profile, account, indent)
         msgLog = f"{indent} readConfigSrc clientttt {apiSrc.getClient()}"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
@@ -742,9 +743,22 @@ class moduleRules:
         apiSrc.setMoreValues(more)
 
         indent = f"{indent[:-1]}"
+=======
+            apiSrc = getApi(profile, account, child_indent)
+
+        if apiSrc is not None:
+            # msgLog = f"{child_indent} readConfigSrc clientttt {apiSrc.getClient()}"  #: {src[1:]}"
+            # logMsg(msgLog, 2, 0)
+            apiSrc.src = src
+            apiSrc.setPostsType(src[-1])
+            apiSrc.setMoreValues(more)
+            apiSrc.indent = indent
+        else:
+            logMsg(f"{indent} Failed to get API for source: {src}", 3, 1)
+
+>>>>>>> 67c7ed9 (Refactor: Single return in readConfigSrc)
         msgLog = f"{indent} End readConfigSrc"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        apiSrc.indent = indent
         return apiSrc
 
     def getActionComponent(self, action, pos):
