@@ -164,7 +164,7 @@ class Content:
 
         # msgLog = f"{self.indent} clienttt {client}"  #: {src[1:]}"
         # logMsg(msgLog, 2, 0)
-        if 'Error' in client:
+        if isinstance(client, str) and 'Error' in client:
             client = None
         self.client = client
         self.indent = self.indent[:-1]
