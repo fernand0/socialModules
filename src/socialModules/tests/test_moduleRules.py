@@ -216,3 +216,20 @@ def test_executeRules_with_checkBlog(mock_get_api, mock_get_module):
         rules.executeRules()
     # Only actions from src1
     assert all(a["rule_key"] == "src1" for a in called)
+
+@patch('socialModules.moduleRules.getApi', return_value=None)
+def test_readConfigSrc_fail(mock_get_api):
+    rules = moduleRules()
+    src = ('rss', 'set', 'some_nick', 'posts')
+    more = {}
+    apiSrc = rules.readConfigSrc('', src, more)
+    assert apiSrc is None
+
+@patch('socialModules.moduleRules.getApi', return_value=None)
+def test_readConfigDst_fail(mock_get_api):
+    rules = moduleRules()
+    action = ('direct', 'post', 'some_service', 'some_account')
+    more = {}
+    apiSrc = MagicMock()
+    apiDst = rules.readConfigDst('', action, more, apiSrc)
+    assert apiDst is None

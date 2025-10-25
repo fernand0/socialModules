@@ -756,36 +756,31 @@ class moduleRules:
     def readConfigDst(self, indent, action, more, apiSrc):
         msgLog = f"{indent} Start readConfigDst {action}"  #: {src[1:]}"
         logMsg(msgLog, 2, 1)
-        indent = f"{indent} "
-
+        child_indent = f"{indent} "
         profile = self.getNameAction(action)
         account = self.getDestAction(action)
-        nick = self.getNickAction(action)
-        apiDst = getApi(profile, nick, indent)
-        apiDst.setMoreValues(more)
-        msgLog = f"{indent} apiDstt {apiDst}"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
-        msgLog = f"{indent} apiDstt {apiDst.client}"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
+        apiDst = getApi(profile, account, child_indent)
 
-        if apiSrc:
-            apiDst.setUrl(apiSrc.getUrl())
+        if apiDst is not None:
+            apiDst.setMoreValues(more)
+            apiDst.indent = child_indent
+            # msgLog = f"{child_indent} apiDstt {apiDst}"  #: {src[1:]}"
+            # logMsg(msgLog, 2, 0)
+            # msgLog = f"{child_indent} apiDstt {apiDst.client}"  #: {src[1:]}"
+            # logMsg(msgLog, 2, 0)
+            if apiSrc:
+                apiDst.setUrl(apiSrc.getUrl())
+            else:
+                apiDst.setUrl(None)
+            if apiSrc:
+                apiDst.setLastLink(apiSrc)
+            else:
+                apiDst.setLastLink(apiDst)
         else:
-            apiDst.setUrl(None)
+            logMsg(f"{indent} Failed to get API for destination: {action}", 3, 1)
 
-        if apiSrc:
-            apiDst.setLastLink(apiSrc)
-        else:
-            # FIXME. Do we need this?
-            apiDst.setLastLink(apiDst)
-
-        # FIXME: best in readConfigSrc (readConfigDst, since we need it)?
-        # PROBLEMS -> the same lastLink for each action ????
-
-        indent = f"{indent[:-1]}"
         msgLog = f"{indent} End readConfigDst"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        apiDst.indent = indent
         return apiDst
 
     def testDifferPosts(self, apiSrc, lastLink, listPosts):
@@ -989,7 +984,7 @@ class moduleRules:
         delete=False,
     ):
         indent = f"{name}"
-        res = None #{{}}
+        res = None #{{"success": False, "error": ""}} #{{}}
         textEnd = ""
 
         # Destination
