@@ -857,20 +857,25 @@ class moduleRules:
         profile = self.getNameAction(action)
         account = self.getDestAction(action)
         apiDst = getApi(profile, account, child_indent)
-        apiDst.setMoreValues(more)
-        apiDst.indent = child_indent
-        # msgLog = f"{child_indent} apiDstt {apiDst}"  #: {src[1:]}"
-        # logMsg(msgLog, 2, 0)
-        # msgLog = f"{child_indent} apiDstt {apiDst.client}"  #: {src[1:]}"
-        # logMsg(msgLog, 2, 0)
-        if apiSrc:
-            apiDst.setUrl(apiSrc.getUrl())
+
+        if apiDst is not None:
+            apiDst.setMoreValues(more)
+            apiDst.indent = child_indent
+            # msgLog = f"{child_indent} apiDstt {apiDst}"  #: {src[1:]}"
+            # logMsg(msgLog, 2, 0)
+            # msgLog = f"{child_indent} apiDstt {apiDst.client}"  #: {src[1:]}"
+            # logMsg(msgLog, 2, 0)
+            if apiSrc:
+                apiDst.setUrl(apiSrc.getUrl())
+            else:
+                apiDst.setUrl(None)
+            if apiSrc:
+                apiDst.setLastLink(apiSrc)
+            else:
+                apiDst.setLastLink(apiDst)
         else:
-            apiDst.setUrl(None)
-        if apiSrc:
-            apiDst.setLastLink(apiSrc)
-        else:
-            apiDst.setLastLink(apiDst)
+            logMsg(f"{indent} Failed to get API for destination: {action}", 3, 1)
+
         msgLog = f"{indent} End readConfigDst"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         return apiDst
