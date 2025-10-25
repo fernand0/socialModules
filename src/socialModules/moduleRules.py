@@ -829,14 +829,19 @@ class moduleRules:
             apiSrc = getApi(profile, account, child_indent, more["channel"])
         else:
             apiSrc = getApi(profile, account, child_indent)
-        # msgLog = f"{child_indent} readConfigSrc clientttt {apiSrc.getClient()}"  #: {src[1:]}"
-        # logMsg(msgLog, 2, 0)
-        apiSrc.src = src
-        apiSrc.setPostsType(src[-1])
-        apiSrc.setMoreValues(more)
+
+        if apiSrc is not None:
+            # msgLog = f"{child_indent} readConfigSrc clientttt {apiSrc.getClient()}"  #: {src[1:]}"
+            # logMsg(msgLog, 2, 0)
+            apiSrc.src = src
+            apiSrc.setPostsType(src[-1])
+            apiSrc.setMoreValues(more)
+            apiSrc.indent = indent
+        else:
+            logMsg(f"{indent} Failed to get API for source: {src}", 3, 1)
+
         msgLog = f"{indent} End readConfigSrc"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        apiSrc.indent = indent
         return apiSrc
 
     def getActionComponent(self, action, pos):
