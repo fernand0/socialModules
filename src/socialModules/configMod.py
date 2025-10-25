@@ -267,7 +267,6 @@ def getApi(profile, nick, indent="", channel=None):
     logMsg(msgLog, 2, 0)
     return api
 
-
 def nameModule():
     import inspect
 
