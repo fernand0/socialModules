@@ -223,13 +223,23 @@ def getModule(profile, indent=""):
     msgLog = f"{indent} Start getModule {profile}"
     logMsg(msgLog, 2, 0)
     serviceName = profile.capitalize()
+    module_name = "socialModules.module" + serviceName
+    class_name = "module" + serviceName
 
-    mod = importlib.import_module("socialModules.module" + serviceName)
-    cls = getattr(mod, "module" + serviceName)
-    api = cls(indent)
-    msgLog = f"{indent} End getModule"
-    logMsg(msgLog, 2, 0)
-    indent = indent[:-1]
+    api = None  # Initialize api to None
+
+    try:
+        mod = importlib.import_module(module_name)
+        cls = getattr(mod, class_name)
+        api = cls(indent)
+        msgLog = f"{indent} End getModule"
+        logMsg(msgLog, 2, 0)
+        indent = indent[:-1]
+    except ImportError:
+        logMsg(f"{indent} Module {module_name} not found.", 3, 1)
+    except AttributeError:
+        logMsg(f"{indent} Class {class_name} not found in module {module_name}.", 3, 1)
+    
     return api
 
 
@@ -237,23 +247,20 @@ def getApi(profile, nick, indent="", channel=None):
     msgLog = f"{indent} Start getApi with channel {channel}"
     logMsg(msgLog, 2, 0)
 
-    # msgLog = (f"{indent}  Profile {profile} "
-    #           f"Nick {nick}")
-    # logMsg(msgLog, 2, 0)
     api = getModule(profile, indent)
-    # msgLog = (f"{indent}  Api {api}")
-    # logMsg(msgLog, 2, 0)
 
-    api.profile = profile
-    api.nick = nick
-    api.indent = f"{indent} "
-    api.setClient(nick)
-    if channel:
-        api.setPage(channel)
-    api.indent = f"{indent[:-1]}"
-    api.setPostsType("posts")
+    if api is not None:
+        api.profile = profile
+        api.nick = nick
+        api.indent = f"{indent} "
+        api.setClient(nick)
+        if channel:
+            api.setPage(channel)
+        api.indent = f"{indent[:-1]}"
+        api.setPostsType("posts")
+    else:
+        logMsg(f"{indent} Failed to get API module for profile: {profile}", 3, 1)
 
-    # indent = indent[:-1]
     msgLog = f"{indent} End getApi"
     logMsg(msgLog, 2, 0)
     return api

@@ -829,14 +829,19 @@ class moduleRules:
             apiSrc = getApi(profile, account, child_indent, more["channel"])
         else:
             apiSrc = getApi(profile, account, child_indent)
-        # msgLog = f"{child_indent} readConfigSrc clientttt {apiSrc.getClient()}"  #: {src[1:]}"
-        # logMsg(msgLog, 2, 0)
-        apiSrc.src = src
-        apiSrc.setPostsType(src[-1])
-        apiSrc.setMoreValues(more)
+
+        if apiSrc is not None:
+            # msgLog = f"{child_indent} readConfigSrc clientttt {apiSrc.getClient()}"  #: {src[1:]}"
+            # logMsg(msgLog, 2, 0)
+            apiSrc.src = src
+            apiSrc.setPostsType(src[-1])
+            apiSrc.setMoreValues(more)
+            apiSrc.indent = indent
+        else:
+            logMsg(f"{indent} Failed to get API for source: {src}", 3, 1)
+
         msgLog = f"{indent} End readConfigSrc"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
-        apiSrc.indent = indent
         return apiSrc
 
     def getActionComponent(self, action, pos):
@@ -852,20 +857,25 @@ class moduleRules:
         profile = self.getNameAction(action)
         account = self.getDestAction(action)
         apiDst = getApi(profile, account, child_indent)
-        apiDst.setMoreValues(more)
-        apiDst.indent = child_indent
-        # msgLog = f"{child_indent} apiDstt {apiDst}"  #: {src[1:]}"
-        # logMsg(msgLog, 2, 0)
-        # msgLog = f"{child_indent} apiDstt {apiDst.client}"  #: {src[1:]}"
-        # logMsg(msgLog, 2, 0)
-        if apiSrc:
-            apiDst.setUrl(apiSrc.getUrl())
+
+        if apiDst is not None:
+            apiDst.setMoreValues(more)
+            apiDst.indent = child_indent
+            # msgLog = f"{child_indent} apiDstt {apiDst}"  #: {src[1:]}"
+            # logMsg(msgLog, 2, 0)
+            # msgLog = f"{child_indent} apiDstt {apiDst.client}"  #: {src[1:]}"
+            # logMsg(msgLog, 2, 0)
+            if apiSrc:
+                apiDst.setUrl(apiSrc.getUrl())
+            else:
+                apiDst.setUrl(None)
+            if apiSrc:
+                apiDst.setLastLink(apiSrc)
+            else:
+                apiDst.setLastLink(apiDst)
         else:
-            apiDst.setUrl(None)
-        if apiSrc:
-            apiDst.setLastLink(apiSrc)
-        else:
-            apiDst.setLastLink(apiDst)
+            logMsg(f"{indent} Failed to get API for destination: {action}", 3, 1)
+
         msgLog = f"{indent} End readConfigDst"  #: {src[1:]}"
         logMsg(msgLog, 2, 0)
         return apiDst
@@ -1239,7 +1249,14 @@ class moduleRules:
                     indent = nameA
 
                     apiSrc = self.readConfigSrc(indent, rule_key, rule_metadata)
+                    if not apiSrc:
+                        logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
+                        continue
+
                     apiDst = self.readConfigDst(indent, rule_action, rule_metadata, apiSrc)
+                    if not apiDst:
+                        logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
+                        continue
 
                     timeSlots, noWait = self._get_action_properties(
                         rule_action, rule_metadata, args

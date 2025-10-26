@@ -114,9 +114,9 @@ class moduleFlickr(Content):  # , Queue):
         return res
 
     def getPostLink(self, post):
-        logging.debug(f"{self.indent} Post: {post}")
+        #logging.debug(f"{self.indent} Post: {post}")
         link = f"{self.url}/{post['id']}"
-        logging.debug(f"{self.indent} Post link: {link}")
+        #logging.debug(f"{self.indent} Post link: {link}")
         return link
 
     def extractPostLinks(self, post, linksToAvoid=""):
