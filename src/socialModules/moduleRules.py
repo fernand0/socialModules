@@ -191,7 +191,7 @@ class moduleRules:
         theService = None
         api = None
         for service in services["regular"]:
-            if ("service" in config[section]) and (
+            if (("service" in config[section]) and (
                 service == config[section]["service"])
             ):
                 theService = service
@@ -1377,9 +1377,7 @@ class moduleRules:
             elif isinstance(res_dict, dict) and res_dict.get("success"):
                 pub_res = res_dict.get("publication_result", "N/A")
                 post_act = res_dict.get("post_action_result", "N/A")
-                summary_msg = f"Success. Pub: 
-'{pub_res}'. Post-Action: 
-'{post_act}'."
+                summary_msg = f"Success. Pub: '{pub_res}'. Post-Action: '{post_act}'."
                 logMsg(
                     f"[OK] Action for {rule_summary} -> {scheduled_action['rule_action']}: {summary_msg}",
                     1,
