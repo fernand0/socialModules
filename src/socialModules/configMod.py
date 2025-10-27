@@ -249,24 +249,24 @@ def getApi(profile, nick, indent="", channel=None):
 
     api = getModule(profile, indent)
 
+    result_api = None
+
     if api is None:
         logMsg(f"{indent} Failed to get API module for profile: {profile}", 3, 1)
-        msgLog = f"{indent} End getApi"
-        logMsg(msgLog, 2, 0)
-        return None
-
-    api.profile = profile
-    api.nick = nick
-    api.indent = f"{indent} "
-    api.setClient(nick)
-    if channel:
-        api.setPage(channel)
-    api.indent = f"{indent[:-1]}"
-    api.setPostsType("posts")
+    else:
+        api.profile = profile
+        api.nick = nick
+        api.indent = f"{indent} "
+        api.setClient(nick)
+        if channel:
+            api.setPage(channel)
+        api.indent = f"{indent[:-1]}"
+        api.setPostsType("posts")
+        result_api = api
 
     msgLog = f"{indent} End getApi"
     logMsg(msgLog, 2, 0)
-    return api
+    return result_api
 
 
 def nameModule():
