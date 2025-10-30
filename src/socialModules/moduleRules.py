@@ -1289,6 +1289,9 @@ class moduleRules:
         rule_action = scheduled_action["rule_action"]
         args = scheduled_action["args"]
         simmulate = scheduled_action["simmulate"]
+        apiSrc = scheduled_action["apiSrc"]
+        timeSlots = scheduled_action["timeSlots"]
+        noWait = scheduled_action["noWait"]
 
         # Prepare arguments for executeAction
         msgAction = (
@@ -1301,7 +1304,6 @@ class moduleRules:
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
         nameR = f"{name_action:->12}>"
         nameA =  f"{nameR} Action {action_index}:"
-        apiSrc = self.readConfigSrc(nameR, rule_key, rule_metadata)
         return self.executeAction(
             rule_key,
             rule_metadata,
