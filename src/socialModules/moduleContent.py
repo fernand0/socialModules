@@ -300,7 +300,7 @@ class Content:
     def setApiPosts(self):
         pass
 
-    def setPosts(self):
+    def setPosts(self, cache=False):
         msgLog = f"{self.indent} Start setPosts"
         logMsg(msgLog, 2, 0)
         # nick = self.getNick()
@@ -336,7 +336,7 @@ class Content:
         msgLog = f"{self.indent} Command: {cmd}"
         logMsg(msgLog, 2, 0)
         posts = cmd()
-        if not posts:
+        if not posts and cache:
             msgLog = f"{self.indent} No posts found, checking PublicationCache"
             logMsg(msgLog, 2, 0)
             try:

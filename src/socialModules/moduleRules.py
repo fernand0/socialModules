@@ -1389,7 +1389,8 @@ class moduleRules:
             elif isinstance(res_dict, dict):
                 error_msg = res_dict.get("error", "Unknown error")
                 logMsg(
-                    f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {error_msg}",
+                    f"[ERROR] Action failed for {rule_summary} -> "
+                    f"{scheduled_action['rule_action']}: {error_msg}",
                     3,
                     1,
                 )
