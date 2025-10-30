@@ -1710,6 +1710,24 @@ class moduleImap(Content):  # , Queue):
         for folder in folders:
             print(f"Folder: {apiSrc.getChannelName(folder)}")
         print(f"Special folders: {apiSrc.special}")
+        selected_folder = apiSrc.selectFolderN()
+        print(f"Selected folder: {selected_folder}")
+        apiSrc.setPage(selected_folder)
+        print(f"Current page: {apiSrc.getChannel()}")
+
+    def test_publishing_draft(self, apiSrc):
+        apiSrc.setPostsType("drafts")
+        apiSrc.setPosts()
+        if apiSrc.getPosts():
+            posts = [apiSrc.getPostSubject(post[1]) for post in apiSrc.getPosts()]
+            sel, post = select_from_list(posts, identifier="Subject")
+            print(sel)
+            return
+            post = apiSrc.getPosts()[0]
+            apiSrc.publishApiDraft(post)
+
+    def test_publishing(self, apiSrc):
+        apiSrc.publishPost("Mensaje", "https://www.unizar.es/", "")
 
     def test_drafts(self, apiSrc):
         apiSrc.setPostsType('drafts')
