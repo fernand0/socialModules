@@ -27,15 +27,15 @@ OK = "OK"
 # import logging
 # import inspect
 # import os
-# 
+#
 # # 1. Configurar el formato del log para incluir el nuevo atributo
 # logging.basicConfig(
 #     format="%(asctime)s [%(filename)s -> %(caller_file)s] %(levelname)s: %(message)s",
 #     level=logging.INFO
 # )
-# 
+#
 # logger = logging.getLogger(__name__)
-# 
+#
 # # 2. Función de log mejorada para obtener el origen de forma automática
 # def log_con_origen(logger_obj, mensaje):
 #     """
@@ -46,18 +46,18 @@ OK = "OK"
 #     # (en este caso, 'mi_funcion_en_main').
 #     # La posición [0] sería la pila de 'log_con_origen'.
 #     caller_frame = inspect.stack()[1]
-# 
+#
 #     # 'caller_frame.filename' contiene la ruta completa del archivo de origen.
 #     # 'os.path.basename' extrae solo el nombre del archivo.
 #     caller_file = os.path.basename(caller_frame.filename)
-# 
+#
 #     # Realiza la llamada al logger, pasando el nombre del archivo como 'extra'
 #     logger_obj.info(mensaje, extra={'caller_file': caller_file})
-# 
+#
 # # 3. Archivo 'mi_modulo.py'
 # def mi_funcion_en_modulo():
 #     log_con_origen(logger, "Este mensaje se llama desde mi_modulo.")
-# 
+#
 # # 4. Archivo 'main.py'
 # if __name__ == "__main__":
 #     from mi_modulo import mi_funcion_en_modulo
@@ -121,7 +121,6 @@ def getNextTime(blog, socialNetwork, indent=""):
     else:
         self.report(self.service, msgLog, "", "")
         return 0, 0
-
 
 def checkFile(fileName, indent=""):
     msgLog = f"{indent} Start checkFile"
@@ -239,7 +238,7 @@ def getModule(profile, indent=""):
         logMsg(f"{indent} Module {module_name} not found.", 3, 1)
     except AttributeError:
         logMsg(f"{indent} Class {class_name} not found in module {module_name}.", 3, 1)
-    
+
     return api
 
 

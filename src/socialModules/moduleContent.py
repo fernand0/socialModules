@@ -451,7 +451,10 @@ class Content:
         logMsg(msgLog, 2, 0)
         msgLog = checkFile(fileName, self.indent)
         if "OK" not in msgLog:
-            msgLog = f"file {fileName} does not exist. " f"I'm going to create it."
+            msgLog = (
+                    f"file {fileName} does not exist. "
+                    f"I'm going to create it."
+                    )
             logMsg(msgLog, 3, 0)
         with open(fileName, "w") as f:
             if link:
@@ -527,7 +530,8 @@ class Content:
 
         else:
             lastTime = 0
-            self.report(self.service, msgLog, "", "")
+            logMsg( f"[WARN] File: {fileName} does not exist", 2, 1,)
+            # self.report(self.service, msgLog, "", "")
         if len(linkLast) >0:
             msgLog = f"{self.indent} linkLast: {linkLast[0]}"
             logMsg(msgLog, 2, 0)
@@ -1783,7 +1787,8 @@ class Content:
     def report(self, profile, post, link, data):
         if post:
             msg = [
-                f"Report: failed! " f"{datetime.datetime.now().isoformat()}",
+                f"Report: failed! "
+                f"{datetime.datetime.now().isoformat()}",
                 f"Post: {post}",
             ]
         else:
