@@ -286,7 +286,7 @@ class moduleImap(Content):  # , Queue):
                 else:
                     data = ""
                     try:
-                        cadSearch = "(" + header + ' "' + content + '")' 
+                        cadSearch = "(" + header + ' "' + content + '")'
                         typ, data = M.search(None, cadSearch)
                     except:
                         cadSearch = "(HEADER " + header + ' "' + content + '")'
@@ -549,7 +549,7 @@ class moduleImap(Content):  # , Queue):
         # i = 1 # Removed unused variable
         print(f"Msg: {msg}")
         if "List-Id" in msg:
-            return ("List-Id", msg["List-Id"][msg["List-id"].find("<") + 1 : -1])
+            return ("List-Id", msg["List-Id"][msg["List-Id"].find("<") + 1 : -1])
         else:
             textHeaders, nameHeaders = self.get_headers_content(M, msg)
             # import locale # Removed unused import
@@ -899,7 +899,12 @@ class moduleImap(Content):  # , Queue):
         return ""
 
     def printMessage(
-        self, M, msg, rows=24, columns=80, headers=["From", "To", "Subject", "Date"]
+        self,
+        M,
+        msg,
+        rows=24,
+        columns=80,
+        headers=["From", "To", "Subject", "Date"],
     ):
         for head in headers:
             print(
@@ -1077,8 +1082,8 @@ class moduleImap(Content):  # , Queue):
                 logMsg(f"IMAP NOOP command returned status '{status}'.", 3, 0)
                 raise imaplib.IMAP4.error("NOOP failed")
         except (imaplib.IMAP4.abort, imaplib.IMAP4.error, AttributeError):
-            logMsg(f"IMAP connection issue detected. Attempting to reconnect for user {self.user}... account {self.src}", 1, 0)
-            self.setClient(f"{self.src}")
+            logMsg(f"IMAP connection issue detected. Attempting to reconnect for user {self.user}...", 1, 0)
+            self.setClient(f"{self.user}")
             try:
                 status, _ = self.getClient().noop()
                 if status == 'OK':
@@ -1290,7 +1295,7 @@ class moduleImap(Content):  # , Queue):
             if pos >= 0:
                 folder = folder[pos + 4 :]
         elif "." in folder:
-            pos = folder.find('"." ')
+            pos = folder.find('".." ')
             if pos >= 0:
                 folder = folder[pos + 4 :]
 
@@ -1516,10 +1521,12 @@ class moduleImap(Content):  # , Queue):
 
         # Return the combined HTML content
         return mail_content.strip()
+    def getPostContent(self, msg):
         """
         Extracts the plain text content from an email message, handling multipart and HTML parts.
         Returns the concatenated plain text from all relevant parts.
         """
+        print("getPostContent")
         # Support both (id, msg) tuples and just msg
         post = msg[1] if isinstance(msg, tuple) else msg
         mail_content = ""
@@ -1531,10 +1538,16 @@ class moduleImap(Content):  # , Queue):
                 if part.get_content_maintype() == "multipart":
                     continue
                 # Extract text from each part (plain or html)
-                mail_content += self._extract_text(part)
+                txt = self._extract_text(part)
+                if not isinstance(txt, str):
+                    txt = txt.decode('utf-8')
+                mail_content += txt
         else:
             # If not multipart, extract text directly
             mail_content = self._extract_text(post)
+
+        # import quopri
+        # mail_content = quopri.decodestring(bytes(mail_content,'utf-8'), header=True)#.decode('utf-8')
 
         # Return the combined and stripped plain text content
         return mail_content.strip()
@@ -1580,7 +1593,7 @@ class moduleImap(Content):  # , Queue):
                 links.append(link)
         return links
 
-    def getPostLink(self, msg):
+    def getApiPostLink(self, msg):
         post = msg[1]
         theLink = ""
         if post:
@@ -1614,7 +1627,7 @@ class moduleImap(Content):  # , Queue):
         post = msg[1]
         return post.get("List-Id")
 
-    def getPostTitle(self, msg):
+    def getApiPostTitle(self, msg):
         post = msg[1]
         return self.getPostSubject(post)
 
@@ -1647,7 +1660,7 @@ class moduleImap(Content):  # , Queue):
         msgLog = f"Folder: {folder}"
         logMsg(msgLog, 2, 0)
         nameF = self.nameFolder(folder)
-        logging.debug(f"Folder: {nameF}")
+        logMsg(f"Folder: {nameF}",2 , 0)
         self.channel = nameF
         logging.debug(f"Select: {M.select(nameF)}")
         # data = M.sort('ARRIVAL', 'UTF-8', 'ALL')
@@ -1685,129 +1698,19 @@ class moduleImap(Content):  # , Queue):
 
         return posts
 
-    def sendMessage(self, msg):
-        smtpsrv = "localhost"
-        logging.debug(f"Msg (sendMessage): {type(msg)}")
-        fromaddr = msg.get("from")
-        logging.debug(f"Msg (sendMessage): {fromaddr}")
-        toaddrs = msg["to"]
-        logging.debug(f"Msg (sendMessage): {fromaddr}")
-        res = None
-        try:
-            # FIXME: we should use moduleSmtp
-            server = smtplib.SMTP(smtpsrv)
-            server.connect(smtpsrv, 587)
-            server.starttls()
-
-            res = server.send_message(msg)
-            server.quit()
-        except:
-            res = self.report(self.service, "", "", sys.exc_info())
-
-        if not res:
-            res = "OK"
-        return res
-
-    def publishApiDrafts(self, *args, **kwargs):
-        return self.publishApiDraft(*args, **kwargs)
-
-    def publishApiDraft(self, *args, **kwargs):
-        logging.debug(f"Args: {args} Kwargs: {kwargs}")
-        if kwargs:
-            post = kwargs.get("post", "")
-            api = kwargs.get("api", "")
-        logging.debug(f"Post: {post} Api: {api}")
-        idMsg, msg = post
-        res = self.sendMessage(msg)
-        logging.info(f"Res: {res}")
-        resMove = self.moveMails(self.getClient(), idMsg, "Trash")
-        logging.info(f"Res move: {resMove}")
-        return res
-
-    def publishApiPost(self, *args, **kwargs):
-        link = None
-        logging.debug(f"Tittt: args: {args} kwargs: {kwargs}")
-        if args and len(args) == 3 and args[0]:
-            logging.info(f"Tittt: args: {args}")
-            post, link, comment = args
-        if kwargs:
-            logging.debug(f"Tittt: kwargs: {kwargs}")
-            more = kwargs
-            # logging.debug(f"More: {more}")
-            # FIXME: We need to do something here
-            post = more.get("post", "")
-            api = more.get("api", "")
-            # logging.debug(f"Post: {post}")
-            # idPost = api.getPostId(post)
-            # logging.info(f"Postt: {post['meta']}")
-            # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]
-            # idPost = post['list']['id'] #[1:-1]
-            # logging.info(f"Post id: {idPost}")
-        res = "Fail!"
-        try:
-            if isinstance(post, tuple) and isinstance(post[1], email.message.Message):
-                msg = post[1]
-            else:
-                destaddr = self.user
-                toaddrs = self.user
-                fromaddr = self.user
-                smtpsrv = "localhost"
-                theUrl = link
-                subject = post.split("\n")[0]
-
-                msg = MIMEMultipart()
-                msg["From"] = fromaddr
-                msg["To"] = destaddr
-                msg["Date"] = time.asctime(time.localtime(time.time()))
-                msg["X-URL"] = theUrl
-                msg["X-print"] = theUrl
-                msg["Subject"] = subject
-                htmlDoc = f"Title: {subject} \n\n" f"Url: {link} \n\n" f"{post}"
-                adj = MIMEApplication(htmlDoc)
-                encoders.encode_base64(adj)
-                name = "notumblr"
-                ext = ".html"
-                adj.add_header(
-                    "Content-Disposition", 'attachment; filename="%s"' % name + ext
-                )
-
-                msg.attach(adj)
-                msg.attach(MIMEText(f"[{subject}]({theUrl})\n\n" f"URL: {theUrl}\n"))
-
-            self.sendMessage(msg)
-            res = "OK. Published!"
-        except:
-            res = self.report(self.service, "", "", sys.exc_info())
-
-        return f"Res: {res}"
-
-    def get_name(self):
-        return "IMAP"
-
-    def get_default_user(self):
-        return ""
-
-    def get_default_post_type(self):
-        return "posts"
-
     def register_specific_tests(self, tester):
-        tester.add_test("Test Folders", self.test_folders)
-        tester.add_test("Test Publishing Draft", self.test_publishing_draft)
-        tester.add_test("Test Publishing", self.test_publishing)
-        tester.add_test("Test Drafts", self.test_drafts)
-        tester.add_test("Test Posts", self.test_posts)
-        tester.add_test("Test Attachment", self.test_attachment)
-        tester.add_test("Test Click", self.test_click)
-        tester.add_test("Test New", self.test_new)
-        tester.add_test("Test Move Mail", self.test_move_mail)
+        tester.add_test("List folders", self.test_list_folders)
+        tester.add_test("Test drafts", self.test_drafts)
+        tester.add_test("Test posts", self.test_posts)
+        tester.add_test("Test attachments", self.test_attachments)
 
     def get_user_info(self, client):
-        return f"{client.user}"
+        return f"User: {self.user}"
 
     def get_post_id_from_result(self, result):
-        return result
+        return result[0]
 
-    def test_folders(self, apiSrc):
+    def test_list_folders(self, apiSrc):
         folders = apiSrc.getChannels()
         for folder in folders:
             print(f"Folder: {apiSrc.getChannelName(folder)}")
@@ -1832,30 +1735,36 @@ class moduleImap(Content):  # , Queue):
         apiSrc.publishPost("Mensaje", "https://www.unizar.es/", "")
 
     def test_drafts(self, apiSrc):
-        apiSrc.setChannel(apiSrc.special["Drafts"])
+        apiSrc.setPostsType('drafts')
         apiSrc.setPosts()
-        for post in apiSrc.getPosts():
-            print(f"Title: {apiSrc.getPostTitle(post)}")
-            print(f"Content: {apiSrc.getPostContent(post)}")
+        if apiSrc.getPosts():
+            posts = [apiSrc.getPostSubject(post[1]) for post in apiSrc.getPosts()]
+            sel, post = select_from_list(posts, identifier="Subject")
+            print(sel)
+            return
+            post = apiSrc.getPosts()[0]
+            apiSrc.publishApiDraft(post)
 
     def test_posts(self, apiSrc):
+        folder = apiSrc.selectFolderN()
+        apiSrc.setChannel(folder)
         apiSrc.setPosts()
+        print(apiSrc.getPosts())
         for i, post in enumerate(apiSrc.getPosts()):
             print(f"{i}) Title: {apiSrc.getPostTitle(post)}")
-            print(f"     Text: {apiSrc.getPostContent(post)}")
 
         selPost = input("Select one: ")
-        if selPost and selPost.isdigit() and (int(selPost) <= i):
-            print(
-                f"{i}) Title: "
-                f"{apiSrc.getPostTitle(apiSrc.getPosts()[int(selPost)])}"
-            )
-            input("Send?")
-            res = apiSrc.publishPost(api=apiSrc, post=post)
-            print(f"Res: {res}")
+        if selPost and selPost.isdigit() and (int(selPost)<=i):
+            print(f"{i}) Title: "
+                  f"{apiSrc.getPostTitle(apiSrc.getPosts()[int(selPost)])}")
+            print(f"{i}) Content: "
+                  f"{apiSrc.getPostContent(apiSrc.getPosts()[int(selPost)])}")
+            #res = apiSrc.publishPost(api = apiSrc, post = apiSrc.getPosts()[int(selPost)])
+            #print(f"Res: {res}")
 
-    def test_attachment(self, apiSrc):
-        apiSrc.setChannel("INBOX")
+    def test_attachments(self, apiSrc):
+        folder = apiSrc.selectFolderN()
+        apiSrc.setChannel(folder)
         apiSrc.setPosts()
         for i, post in enumerate(apiSrc.getPosts()):
             print(f"{i}) {apiSrc.getPostTitle(post)}")
@@ -1869,6 +1778,21 @@ class moduleImap(Content):  # , Queue):
         with open(f"/tmp/{fileName}", "wb") as f:
             f.write(myFile)
 
+
+def main():
+    logging.basicConfig(
+        stream=sys.stdout,
+        level=logging.INFO,
+        format='%(asctime)s %(message)s')
+
+    from socialModules.moduleTester import ModuleTester
+
+    imap_module = moduleImap()
+    tester = ModuleTester(imap_module)
+    tester.run()
+
+
+if __name__ == '__main__':
     def test_click(self, apiSrc):
         apiSrc.setPosts()
 
@@ -1977,17 +1901,5 @@ class moduleImap(Content):  # , Queue):
         nameF = apiDst.getChannelName(folderDst)
 
 
-def main():
-    logging.basicConfig(
-        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
-    )
-
-    from socialModules.moduleTester import ModuleTester
-
-    imap_module = moduleImap()
-    tester = ModuleTester(imap_module)
-    tester.run()
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

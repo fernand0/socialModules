@@ -30,7 +30,7 @@ class ModuleTester:
         rules = socialModules.moduleRules.moduleRules()
         rules.checkRules()
 
-        name = self.module.get_name()
+        name = self.module.getService()
         rulesList = rules.selectRule(
             name
             )
@@ -106,7 +106,7 @@ class ModuleTester:
         self.module.register_specific_tests(self)
 
         while True:
-            print(f"\n=== Interactive {self.module.get_name()} Testing ===")
+            print(f"\n=== Interactive {self.module.getService()} Testing ===")
             for i, option in enumerate(self.test_options):
                 print(f"{i+1}. {option.name}")
             print("0. Exit")
