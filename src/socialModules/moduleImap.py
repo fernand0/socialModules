@@ -1077,8 +1077,8 @@ class moduleImap(Content):  # , Queue):
                 logMsg(f"IMAP NOOP command returned status '{status}'.", 3, 0)
                 raise imaplib.IMAP4.error("NOOP failed")
         except (imaplib.IMAP4.abort, imaplib.IMAP4.error, AttributeError):
-            logMsg(f"IMAP connection issue detected. Attempting to reconnect for user {self.user}...", 1, 0)
-            self.setClient(f"{self.user}")
+            logMsg(f"IMAP connection issue detected. Attempting to reconnect for user {self.user}... account {self.src}", 1, 0)
+            self.setClient(f"{self.src}")
             try:
                 status, _ = self.getClient().noop()
                 if status == 'OK':

@@ -913,7 +913,7 @@ class moduleRules:
     def executePostAction(
         self, indent, msgAction, apiSrc, apiDst, simmulate, nextPost, pos, res
     ):
-        resPost = ""
+        resPost = f"{res}"
         resMsg = ""
         logMsg(f"{indent}Trying to execute Post Action", 1, 1)
         logMsg(f"{indent}Post Action ressss {res}", 1, 1)
@@ -1000,7 +1000,7 @@ class moduleRules:
                     res and ("Fail!" not in res) and ("failed!" not in res)
                 ):
                     link = apiSrc.getPostLink(post)
-                    if (src
+                    if (apiSrc
                         # and self.getNameRule(src) != "cache"
                         # and ('imgur' not in link or apiDst.profile != 'imgur')
                         ):
@@ -1125,7 +1125,8 @@ class moduleRules:
                 )
 
             # If no publication happened, restore the previous time
-            if not res.get("success") and backup_time[0] is not None:
+
+            if isinstance(res, dict) and not res.get("success") and backup_time[0] is not None:
                 logMsg(f"{grandchild_indent} No publication occurred. Restoring previous next-run time.", 1, 1)
                 apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
 
@@ -1367,7 +1368,9 @@ class moduleRules:
                 f"Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
             )
 
-            if res_dict == "ok":
+            logging.info(f"Res_dict: {res_dict}")
+
+            if isinstance(res_dict, str) and "OK" in res_dict:
                 summary_msg = "Success. Action completed."
                 logMsg(
                     f"[OK] Action for {rule_summary} -> {scheduled_action['rule_action']}: {summary_msg}",

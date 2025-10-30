@@ -135,7 +135,7 @@ class moduleTumblr(Content):  # , Queue):
             try:
                 # msgLog = (f"{self.indent} Res: {reply['id']}")
                 # logMsg(msgLog, 2, 0)
-                res = f"https://{self.service}.com/{self.user}/{reply['id']}"
+                res = f"OK! https://{self.service}.com/{self.user}/{reply['id']}"
             except:
                 msgLog = f"{self.indent} Temporal: error {reply}"
                 logMsg(msgLog, 3, 0)
