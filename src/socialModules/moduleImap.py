@@ -172,7 +172,9 @@ class moduleImap(Content):  # , Queue):
         if not channel:
             self.setChannel()
             channel = self.getChannel()
-        posts = self.listMessages(self.getClient(), channel)
+        postsN = self.listMessages(self.getClient(), channel)
+        posts =  [element[1] for element in postsN]
+        # self.listMessages(self.getClient(), channel)
         return posts
 
     def getChannels(self):
@@ -331,7 +333,7 @@ class moduleImap(Content):  # , Queue):
 
                     if status == "OK":
                         # If the list of messages is too long it won't work
-                        flag = "\Deleted"
+                        flag = "\\Deleted"
                         result = M.store(msgs, "+FLAGS", flag)
                         if result[0] == "OK":
                             msgLog = "%s: %d messages have been deleted." % (msgTxt, i)
@@ -1355,7 +1357,7 @@ class moduleImap(Content):  # , Queue):
                 flagsM = data[0][0]
                 print("flags", flagsM)
                 if not (b"Deleted" in flagsM):
-                    M.store(msgId, "-FLAGS", "\Seen")
+                    M.store(msgId, "-FLAGS", "\\Seen")
 
                     if typ == "OK":
                         message = data[0][1]
@@ -1368,7 +1370,7 @@ class moduleImap(Content):  # , Queue):
                         res = MD.append(folder, flags, None, message)
 
                         if res[0] == "OK":
-                            M.store(msgId, "+FLAGS", "\Seen")
+                            M.store(msgId, "+FLAGS", "\\Seen")
                 i = i + 1
             MD.close()
             MD.logout()
@@ -1385,7 +1387,7 @@ class moduleImap(Content):  # , Queue):
                 print("Message %d %s (%d)" % (i, msgId, lenM))
                 typ, data = M.fetch(msgId, "(FLAGS RFC822)")
                 flagsM = data[0][0]
-                M.store(msgId, "-FLAGS", "\Seen")
+                M.store(msgId, "-FLAGS", "\\Seen")
 
                 if typ == "OK":
                     print("flagsM %s" % flagsM)
@@ -1398,8 +1400,8 @@ class moduleImap(Content):  # , Queue):
                         msgLog = "Reply %s" % rep
                         logMsg(msgLog, 2, 0)
                         if rep != "Fail!":
-                            M.store(msgId, "+FLAGS", "\Seen")
-                            flag = "\Deleted"
+                            M.store(msgId, "+FLAGS", "\\Seen")
+                            flag = "\\Deleted"
                             M.store(msgId, "+FLAGS", flag)
                         time.sleep(0.1)
                 i = i + 1
@@ -1460,7 +1462,7 @@ class moduleImap(Content):  # , Queue):
                     res = "Fail!"
                     continue
 
-                flag = "\Deleted"
+                flag = "\\Deleted"
                 result = M.store(chunk_str, "+FLAGS", flag)
                 if result[0] != "OK":
                     print("Failed to delete chunk!")
@@ -1589,7 +1591,10 @@ class moduleImap(Content):  # , Queue):
         return links
 
     def getApiPostLink(self, msg):
-        post = msg[1]
+        if isinstance(msg, tuple):
+            post = msg[1]
+        else:
+            post = msg
         theLink = ""
         if post:
             # msgLog = (f"Post: {post}")
@@ -1619,11 +1624,17 @@ class moduleImap(Content):  # , Queue):
         return post.get("To")
 
     def getPostListId(self, msg):
-        post = msg[1]
+        if isinstance(msg, tuple):
+            post = msg[1]
+        else:
+            post = msg
         return post.get("List-Id")
 
     def getApiPostTitle(self, msg):
-        post = msg[1]
+        if isinstance(msg, tuple):
+            post = msg[1]
+        else:
+            post = msg
         return self.getPostSubject(post)
 
     def getPostSubject(self, msg):
