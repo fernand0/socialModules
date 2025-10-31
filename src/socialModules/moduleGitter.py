@@ -104,7 +104,7 @@ class moduleGitter(Content):  # ,Queue):
         pos = post.get("text", "").rfind("http")
         title = newTitle
         if pos >= 0:
-            title = f"{title} {post.get("text","")[pos:]}"
+            title = f"{title} {post.get('text','')[pos:]}"
             post["text"] = title
 
     def getApiPostTitle(self, post):

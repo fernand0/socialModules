@@ -235,7 +235,7 @@ class Content:
         # We have a dictionary of values and we check for methods for
         # setting these values in our object
         self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Start setMoreValues"
+        msgLog = f"{self.indent} Start setMoreValues {more}"
         logMsg(msgLog, 2, 0)
         if more:
             # Setting values available in more

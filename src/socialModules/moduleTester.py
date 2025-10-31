@@ -27,9 +27,18 @@ class ModuleTester:
         # Common setup logic, like initializing rules and selecting a rule
         logging.info("Start setup")
         import socialModules.moduleRules
+        import sys
+        from io import StringIO
+
+        # Redirect stdout
+        old_stdout = sys.stdout
+        sys.stdout = mystdout = StringIO()
 
         rules = socialModules.moduleRules.moduleRules()
         rules.checkRules()
+
+        # Restore stdout
+        sys.stdout = old_stdout
 
         name = self.module.getService()
         rulesList = rules.selectRule(name)
@@ -70,7 +79,7 @@ class ModuleTester:
 
         try:
             if rule_type == 'src':
-                self.api_src = rules.readConfigSrc("", selected_rule, None)
+                self.api_src = rules.readConfigSrc("", selected_rule, rules.more[selected_rule])
             elif rule_type == 'dst':
                 self.api_src = rules.readConfigDst("", selected_rule, None, None)
 

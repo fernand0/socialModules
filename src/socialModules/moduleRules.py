@@ -76,7 +76,10 @@ class moduleRules:
             logMsg(msgLog, 1, 1)
             self.indent = f"{self.indent}{section}>"
             try:
-                self._process_section(section, config, services, sources, sources_available, more, destinations, temp_rules, rulesNew, rule_metadata, implicit_rules)
+                self._process_section(section, config, services, sources, 
+                                      sources_available, more, destinations, 
+                                      temp_rules, rulesNew, rule_metadata, 
+                                      implicit_rules)
             except ConfigError as ce:
                 logMsg(f"ERROR in section [{section}]: {ce}", 3, 1)
                 raise  # Reraise the exception so tests can catch it
@@ -746,7 +749,7 @@ class moduleRules:
             logMsg(f"{indent} Failed to get API for source: {src}", 3, 1)
 
         msgLog = f"{indent} End readConfigSrc"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, 1)
         return apiSrc
 
     def getActionComponent(self, action, pos):

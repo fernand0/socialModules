@@ -242,7 +242,6 @@ def getModule(profile, indent=""):
     
     return api
 
-
 def getApi(profile, nick, indent="", channel=None):
     msgLog = f"{indent} Start getApi with channel {channel}"
     logMsg(msgLog, 2, 0)
@@ -267,7 +266,6 @@ def getApi(profile, nick, indent="", channel=None):
     msgLog = f"{indent} End getApi"
     logMsg(msgLog, 2, 0)
     return api
-
 
 def nameModule():
     import inspect
