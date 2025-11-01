@@ -121,6 +121,37 @@ def test_favorites(apiSrc):
     except Exception as e:
         print(f"Error retrieving favorites: {e}")
 
+def test_queue_retrieval(apiSrc):
+    """
+    Tests retrieving queued posts from the social media platform.
+
+    Args:
+        apiSrc: The API source object for the module.
+    """
+    print("\n=== Testing Queue Retrieval ===")
+    try:
+        apiSrc.setPostsType('queue')
+        apiSrc.setPosts()
+        posts = apiSrc.getPosts()
+
+        if posts:
+            print(f"Retrieved {len(posts)} queued posts:")
+            for i, post in enumerate(posts[:10]):  # Show first 10
+                title = apiSrc.getPostTitle(post)
+                link = apiSrc.getPostLink(post)
+
+                print(f"\n{i+1}. Queued post:")
+                print(f"   Title: {title[:100]}{'...' if len(title) > 100 else ''}")
+                print(f"   Link: {link}")
+
+            if len(posts) > 10:
+                print(f"\n... and {len(posts) - 10} more queued posts")
+        else:
+            print("No queued posts found")
+    except Exception as e:
+        print(f"Error retrieving queued posts: {e}")
+
+
 
 def test_basic_post(apiSrc, get_post_id_callback):
     """

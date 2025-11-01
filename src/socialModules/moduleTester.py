@@ -101,6 +101,7 @@ class ModuleTester:
         self.add_test("Posts retrieval test", self.test_posts_retrieval)
         self.add_test("Drafts retrieval test", self.test_drafts_retrieval)
         self.add_test("Favorites test", self.test_favorites)
+        self.add_test("Queue retrieval test", self.test_queue_retrieval)
         self.add_test("Basic post test", self.test_basic_post)
         self.add_test("Image post test", self.test_image_post)
         self.add_test("Cache integration test", self.test_cache_integration)
@@ -154,6 +155,9 @@ class ModuleTester:
 
     def test_favorites(self, apiSrc):
         testing_utils.test_favorites(apiSrc)
+
+    def test_queue_retrieval(self, apiSrc):
+        testing_utils.test_queue_retrieval(apiSrc)
 
     def test_basic_post(self, apiSrc):
         testing_utils.test_basic_post(apiSrc, self.module.get_post_id_from_result)
