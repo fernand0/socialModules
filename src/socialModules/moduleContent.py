@@ -1842,7 +1842,8 @@ class Content:
             title = self.getApiPostTitle(post)
         except:
             print(f"post: {post}")
-            title = post.get('title')
+            if not title and hasattr(post, 'get'):
+                title = post.get('title')
         return title;
 
     def getPostDate(self, post):
@@ -1855,11 +1856,12 @@ class Content:
         link = ""
         try:
             link = self.getApiPostLink(post)
-            if not link:
+            if not link and hasattr(post, 'get'):
                 link = post.get('link', '')
         except:
             print(f"post: {post}")
-            link = post.get('link', '')
+            if not link and hasattr(post, 'get'):
+                link = post.get('link', '')
         return link
 
     def getApiPostUrl(self, post):
@@ -1870,11 +1872,12 @@ class Content:
         url = ""
         try:
             url = self.getApiPostUrl(post)
-            if not url:
+            if not url and hasattr(post, 'get'):
                 url = post.get('url', '')
         except:
             logging.info(f"post: {post}")
-            url = post.get('response_link', '')
+            if not url and hasattr(post, 'get'):
+                url = post.get('response_link', '')
         return url
 
     def getPostId(self, post):
