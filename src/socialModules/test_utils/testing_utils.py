@@ -56,6 +56,37 @@ def test_posts_retrieval(apiSrc):
         print(f"Error retrieving posts: {e}")
 
 
+def test_drafts_retrieval(apiSrc):
+    """
+    Tests retrieving drafts from the social media platform.
+
+    Args:
+        apiSrc: The API source object for the module.
+    """
+    print("\n=== Testing Drafts Retrieval ===")
+    try:
+        apiSrc.setPostsType('drafts')
+        apiSrc.setPosts()
+        posts = apiSrc.getPosts()
+
+        if posts:
+            print(f"Retrieved {len(posts)} drafts:")
+            for i, post in enumerate(posts[:10]):  # Show first 10
+                title = apiSrc.getPostTitle(post)
+                link = apiSrc.getPostLink(post)
+
+                print(f"\n{i+1}. Draft:")
+                print(f"   Title: {title[:100]}{'...' if len(title) > 100 else ''}")
+                print(f"   Link: {link}")
+
+            if len(posts) > 10:
+                print(f"\n... and {len(posts) - 10} more drafts")
+        else:
+            print("No drafts found")
+    except Exception as e:
+        print(f"Error retrieving drafts: {e}")
+
+
 def test_favorites(apiSrc):
     """
     Tests retrieving favorites from the social media platform.
