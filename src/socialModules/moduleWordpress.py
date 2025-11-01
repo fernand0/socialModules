@@ -14,6 +14,12 @@ from socialModules.moduleContent import Content
 
 
 class moduleWordpress(Content):  # ,Queue):
+    def get_user_info(self, client):
+        return f"{self.user}"
+
+    def get_post_id_from_result(self, result):
+        return result.id
+
     def getKeys(self, config):
         access_token = config[self.user]["access_token"]
         return (access_token,)
@@ -440,81 +446,16 @@ class moduleWordpress(Content):  # ,Queue):
 
 
 def main():
+    import logging
     logging.basicConfig(
-        stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s"
+        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
 
-    import moduleWordpress
+    from socialModules.moduleTester import ModuleTester
 
-    wp = moduleWordpress.moduleWordpress()
-    wp.setClient("avecesunafoto")
-    wp.setPostsType("posts")
-    wp.setPosts()
-    res = wp.getPosts()
-    print(f"Res: {res}")
-    if (not res) or (res[:4] == "Fail"):
-        wp.authorize()
-    res = wp.getPosts()
-
-    return
-    print("Testing tags")
-    wp.setTags()
-    print(wp.getTags())
-    # print(wp.checkTags(['test']))
-
-    print("Testing posts")
-    wp.setPostsType("posts")
-    wp.setPosts()
-    for i, post in enumerate(wp.getPosts()):
-        print("{}) {} {}".format(i, wp.getPostTitle(post), wp.getPostLink(post)))
-        print(wp.obtainPostData(i))
-
-    sel = input("Select one ")
-    pos = int(sel)
-    post = wp.getPost(pos)
-    print("{}) {} {}".format(pos, wp.getPostTitle(post), wp.getPostLink(post)))
-    wp.publishPost(wp.getPostTitle(post), wp.getPostLink(post), "")
-    sys.exit()
-
-    # wp.publishPost(post, '', title)
-
-    # pos = wp.getLinkPosition('https://avecesunafoto.wordpress.com/2020/03/10/gamoncillo/')
-    # img = wp.obtainPostData(pos)
-    # print(img)
-    # if img[3]:
-    #    print(img[3])
-    #    print(len(img[3]))
-    ##for i in img[3]:
-    #    #resizeImage(i)
-    #    #input('next?')
-
-    print("Testing posting")
-    # print(title, post)
-
-    sys.exit()
-
-    sys.exit()
-    for i, post in enumerate(wp.getPosts()):
-        print("p", i, ") ", post)
-        # print("@%s: %s" %(tweet[2], tweet[0]))
-
-    print(pos)
-    print(wp.getPosts()[pos])
-    title = wp.obtainPostData(pos)
-    sys.exit()
-    print("Testing title and link")
-
-    for i, post in enumerate(wp.getPosts()):
-        title = wp.getPostTitle(post)
-        link = wp.getPostLink(post)
-        # url = tw.getPostUrl(post)
-        print("{}) Title: {}\nLink: {}\nUrl:{}\n".format(i, title, link, link))
-
-    print("Testing obtainPostData")
-    for i, post in enumerate(wp.getPosts()):
-        print(i, ") ", wp.obtainPostData(i))
-
-    sys.exit()
+    wordpress_module = moduleWordpress()
+    tester = ModuleTester(wordpress_module)
+    tester.run()
 
 
 if __name__ == "__main__":
