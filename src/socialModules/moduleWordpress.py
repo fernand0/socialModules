@@ -20,6 +20,12 @@ class moduleWordpress(Content):  # ,Queue):
     def get_post_id_from_result(self, result):
         return result.id
 
+    def get_user_info(self, client):
+        return f"{self.user}"
+
+    def get_post_id_from_result(self, result):
+        return result.id
+
     def getKeys(self, config):
         access_token = config[self.user]["access_token"]
         return (access_token,)
