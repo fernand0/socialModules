@@ -99,11 +99,11 @@ class ModuleTester:
     def register_common_tests(self):
         self.add_test("Connection test", self.test_connection)
         self.add_test("Posts retrieval test", self.test_posts_retrieval)
-        if hasattr(self.module, 'setApiDrafts'):
+        if 'setApiDrafts' in self.module.__class__.__dict__:
             self.add_test("Drafts retrieval test", self.test_drafts_retrieval)
-        if hasattr(self.module, 'setApiFavs'):
+        if 'setApiFavs' in self.module.__class__.__dict__:
             self.add_test("Favorites test", self.test_favorites)
-        if hasattr(self.module, 'setApiQueue'):
+        if 'setApiQueue' in self.module.__class__.__dict__:
             self.add_test("Queue retrieval test", self.test_queue_retrieval)
         self.add_test("Basic post test", self.test_basic_post)
         self.add_test("Image post test", self.test_image_post)
@@ -122,7 +122,7 @@ class ModuleTester:
             return
 
         self.register_common_tests()
-        if hasattr(self.module, 'register_specific_tests'):
+        if 'register_specific_tests' in self.module.__class__.__dict__:
             self.module.register_specific_tests(self)
 
         while True:
