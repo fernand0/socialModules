@@ -5,6 +5,7 @@ import dateparser
 import dateutil
 import flickrapi
 import sys
+import logging
 from atproto import Client, models
 
 from socialModules.configMod import *
@@ -51,21 +52,17 @@ class moduleFlickr(Content):  # , Queue):
             client = None
 
         if not authorized:
-            print("Aquí")
             # Get a request token
-            flickr.get_request_token(oauth_callback="oob")
-            print("Aquí")
+            flickr.get_request_token(oauth_callback='oob')
 
             # Open a browser at the authentication URL. Do this however
             # you want, as long as the user visits that URL.
-            authorize_url = flickr.auth_url(perms="write")
-            print("Aquí")
+            authorize_url = flickr.auth_url(perms='write')
             print(f"Visit {authorize_url} and copy the result")
 
             # Get the verifier code from the user. Do this however you
             # want, as long as the user gives the application the code.
-            verifier = str(input("Verifier code: "))
-            print("Aquí")
+            verifier = str(input('Verifier code: '))
 
             # Trade the request token for an access token
             flickr.get_access_token(verifier)
@@ -100,7 +97,7 @@ class moduleFlickr(Content):  # , Queue):
         posts = posts[0]["photos"]["photo"]
         return posts
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         title = ""
         try:
             title = post["title"]
@@ -108,13 +105,13 @@ class moduleFlickr(Content):  # , Queue):
             title = ""
         return title
 
-    def getPostUrl(self, post):
-        res = ""
+    def getApiPostUrl(self, post):
+        res = ''
 
         return res
 
-    def getPostLink(self, post):
-        #logging.debug(f"{self.indent} Post: {post}")
+    def getApiPostLink(self, post):
+        logging.debug(f"{self.indent} Post: {post}")
         link = f"{self.url}/{post['id']}"
         #logging.debug(f"{self.indent} Post link: {link}")
         return link
@@ -203,90 +200,16 @@ class moduleFlickr(Content):  # , Queue):
 
         return idPost
 
-
 def main():
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
 
-    import socialModules.moduleRules
+    from socialModules.moduleTester import ModuleTester
 
-    rules = socialModules.moduleRules.moduleRules()
-    rules.checkRules()
-
-    apiSrc = rules.selectRuleInteractive()
-
-    testingPostsPos = False
-    if testingPostsPos:
-        apiSrc.setPosts()
-        apiSrc.lastLinkPublished = "https://flickr.com/photos/fernand0/53624853058"
-        print(f"Link: {apiSrc.getLastLinkPublished()}")
-        print(f"Link: {apiSrc.getNextPost()}")
-        print(f"Link: {apiSrc.getPosNextPost()}")
-        print(f"Link: {apiSrc.getPosNextPost()}")
-        post = apiSrc.getPosts()[0]
-        print(f"Url: {apiSrc.getPostUrl(post)}")
-        return
-
-    testingPosts = False
-    if testingPosts:
-        apiSrc.setPosts()
-        for i, post in enumerate(apiSrc.getPosts()):
-            print(f"Post {i}): {post}")
-        return
-
-    testingPublishDraft = True
-    if testingPublishDraft:
-        apiSrc.setPostsType("drafts")
-        apiSrc.setPosts()
-        post = apiSrc.getPosts()[0]
-        print(f"Post: {post}")
-        input("Continue? ")
-        apiSrc.publishApiDraft(api=apiSrc.getClient(), post=post)
-        return
-
-    testingPost = False
-    if testingPost:
-        apiSrc.publishPost("prueba", "https://elmundoesimperfecto.com/", "")
-        return
-
-    testingPostImages = False
-    if testingPostImages:
-        image = "/tmp/2024-03-30_image.png"
-        # Does not work with svg
-        # image = '/tmp/2023-08-04_image.png'
-
-        title = "Prueba imagen "
-        altText = "Texto adicional"
-
-        print(f"Testing posting with images")
-        res = apiSrc.publishImage("Prueba imagen", image, alt=altText)
-        print(f"Res: {res}")
-
-        return
-
-    return
-
-    testingPost = False
-    if testingPost:
-        print("Testing Post")
-        key = ("twitter", "set", "fernand0", "posts")
-        apiSrc = rules.readConfigSrc("", key, None)
-        keyD = ("direct", "post", "blsk", "fernand0.bsky.social")
-        indent = ""
-        more = None
-        apiDst = rules.readConfigDst(indent, keyD, more, apiSrc)
-
-        # Example of long post
-        title = "'The situation has become appalling': fake scientific papers push research credibility to crisis point |  Peer review and scientific publishing |  The Guardian"
-        link = "https://www.theguardian.com/science/2024/feb/03/the-situation-has-become-appalling-fake-scientific-papers-push-research-credibility-to-crisis-point"
-        print(f"Publishing {apiDst.publishPost(title, link, '')}")
-        delete = input("Delete (write the id)? ")
-        if delete:
-            print(f"Deleting: {apiDst.deleteApiPosts(delete)}")
-
-        return
-    return
+    flickr_module = moduleFlickr()
+    tester = ModuleTester(flickr_module)
+    tester.run()
 
 
 if __name__ == "__main__":

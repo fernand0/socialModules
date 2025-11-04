@@ -19,8 +19,9 @@ class moduleMastodon(Content):  # , Queue):
         # if self.user.startswith('@'):
         #    self.user = self.user[1:]
 
-        access_token = config[self.user]["access_token"]
-        return (access_token,)
+        logMsg(f"User: {self.user}", 1, 0)
+        access_token = config[self.user]['access_token']
+        return ((access_token, ))
 
     def initApi(self, keys):
         pos = self.user.find("@", 1)  # The first character can be @
@@ -34,9 +35,11 @@ class moduleMastodon(Content):  # , Queue):
         return client
 
     def setApiPosts(self):
+        logging.info(f"setApiPosts {self.getClient()}")
         posts = []
         if self.getClient():
             try:
+                logging.info(f"meeeee: {self.getClient().me()}")
                 posts = self.getClient().account_statuses(self.getClient().me())
             except:
                 posts = []
@@ -149,8 +152,9 @@ class moduleMastodon(Content):  # , Queue):
             title = f"{self.user}'s {self.service}"
         return title
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         result = ""
+        logging.info(f"Post: {post}")
         # import pprint
         # print(f"post: {post}")
         # pprint.pprint(post)
@@ -181,14 +185,11 @@ class moduleMastodon(Content):  # , Queue):
         #     result = self.getAttribute(post['card'], 'title')
         return result
 
-    def getPostUrl(self, post):
-        return self.getAttribute(post, "url")
+    def getApiPostUrl(self, post):
+        return self.getAttribute(post, 'url')
 
-    def getPostLink(self, post):
-        if self.getPostsType() == "favs":
-            content, link = self.extractPostLinks(post)
-        else:
-            link = self.getPostUrl(post)
+    def getApiPostLink(self, post):
+        content, link = self.extractPostLinks(post)
         return link
 
     def extractPostLinks(self, post, linksToAvoid=""):
@@ -196,6 +197,7 @@ class moduleMastodon(Content):  # , Queue):
 
     def getPostContent(self, post):
         result = ""
+        print(f"Post content: {post}")
         if post and "content" in post:
             result = self.getAttribute(post, "content")
         return result
@@ -215,15 +217,6 @@ class moduleMastodon(Content):  # , Queue):
 
     def search(self, text):
         pass
-
-    def get_name(self):
-        return "Mastodon"
-
-    def get_default_user(self):
-        return "@fernand0"
-
-    def get_default_post_type(self):
-        return "favs"
 
     def register_specific_tests(self, tester):
         pass

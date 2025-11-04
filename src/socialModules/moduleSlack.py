@@ -35,6 +35,8 @@ class moduleSlack(Content):  # , Queue):
         self.postaction = None
         self.service = "Slack"
 
+        msgLog = f"{self.indent} Nick: {self.nick}"
+        logMsg(msgLog, 2, 0)
         self.setUser(self.nick)
         # if self.user and self.user.find('/')>=0:
         #    self.name = self.user.split('/')[2].split('.')[0]
@@ -345,9 +347,10 @@ class moduleSlack(Content):  # , Queue):
         else:
             return "No title"
 
-    def getPostUrl(self, post):
+    def getApiPostUrl(self, post):
         return (
-            f"https://{self.getUser()}.slack.com/archives/" f"{self.getChannel()}/p{self.getPostId(post)}"
+            f"https://{self.getUser()}.slack.com/archives/"
+            f"{self.getChannel()}/p{self.getPostId(post)}"
         )
 
     def getPostContent(self, post):
@@ -360,7 +363,7 @@ class moduleSlack(Content):  # , Queue):
             text = post.get("text", "")
         return text
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         link = ""
         if "attachments" in post:
             link = post["attachments"][0]["original_url"]
@@ -436,19 +439,6 @@ class moduleSlack(Content):  # , Queue):
                 return res
         except:
             return self.report("Slack", text, sys.exc_info())
-
-
-
-
-
-    def get_name(self):
-        return "Slack"
-
-    def get_default_user(self):
-        return "fernand0"
-
-    def get_default_post_type(self):
-        return "posts"
 
     def register_specific_tests(self, tester):
         tester.add_test("Search test", self.test_search)

@@ -25,15 +25,23 @@ class ModuleTester:
 
     def setup(self):
         # Common setup logic, like initializing rules and selecting a rule
+        logging.info("Start setup")
         import socialModules.moduleRules
+        import sys
+        from io import StringIO
+
+        # Redirect stdout
+        old_stdout = sys.stdout
+        sys.stdout = mystdout = StringIO()
 
         rules = socialModules.moduleRules.moduleRules()
         rules.checkRules()
 
+        # Restore stdout
+        sys.stdout = old_stdout
+
         name = self.module.getService()
-        rulesList = rules.selectRule(
-            name
-            )
+        rulesList = rules.selectRule(name)
 
         final_rules_with_type = []
         seen_rules = set()
@@ -52,14 +60,16 @@ class ModuleTester:
             print(f"{i}) {rule_name} ({rule_type})")
 
         if not final_rules_with_type:
-            print(f"No {name} rules found. Please configure {name} in your rules.")
-            return False
+            sel = int(input(f"Which rule to use? (0-{len(final_rules_with_type)-1}): "))
+            if sel < 0 or sel >= len(final_rules_with_type):
+                print("Invalid selection")
+                return False
 
         try:
             sel = int(input(f"Which rule to use? (0-{len(final_rules_with_type)-1}): "))
             if sel < 0 or sel >= len(final_rules_with_type):
                 print("Invalid selection")
-                return False
+
             selected_rule, rule_type = final_rules_with_type[sel]
         except (ValueError, IndexError):
             print("Invalid input, using first rule")
@@ -69,7 +79,7 @@ class ModuleTester:
 
         try:
             if rule_type == 'src':
-                self.api_src = rules.readConfigSrc("", selected_rule, None)
+                self.api_src = rules.readConfigSrc("", selected_rule, rules.more[selected_rule])
             elif rule_type == 'dst':
                 self.api_src = rules.readConfigDst("", selected_rule, None, None)
 
@@ -89,7 +99,12 @@ class ModuleTester:
     def register_common_tests(self):
         self.add_test("Connection test", self.test_connection)
         self.add_test("Posts retrieval test", self.test_posts_retrieval)
-        self.add_test("Favorites test", self.test_favorites)
+        if 'setApiDrafts' in self.module.__class__.__dict__:
+            self.add_test("Drafts retrieval test", self.test_drafts_retrieval)
+        if 'setApiFavs' in self.module.__class__.__dict__:
+            self.add_test("Favorites test", self.test_favorites)
+        if 'setApiQueue' in self.module.__class__.__dict__:
+            self.add_test("Queue retrieval test", self.test_queue_retrieval)
         self.add_test("Basic post test", self.test_basic_post)
         self.add_test("Image post test", self.test_image_post)
         self.add_test("Cache integration test", self.test_cache_integration)
@@ -98,12 +113,17 @@ class ModuleTester:
         self.add_test("Favorites management test", self.test_favorites_management)
         self.add_test("Cache content verification", self.test_cache_content)
 
+    def register_specific_tests(self, tester):
+        # Default: no specific tests for now
+        pass
+
     def run(self):
         if not self.setup():
             return
 
         self.register_common_tests()
-        self.module.register_specific_tests(self)
+        if 'register_specific_tests' in self.module.__class__.__dict__:
+            self.module.register_specific_tests(self)
 
         while True:
             print(f"\n=== Interactive {self.module.getService()} Testing ===")
@@ -133,8 +153,14 @@ class ModuleTester:
     def test_posts_retrieval(self, apiSrc):
         testing_utils.test_posts_retrieval(apiSrc)
 
+    def test_drafts_retrieval(self, apiSrc):
+        testing_utils.test_drafts_retrieval(apiSrc)
+
     def test_favorites(self, apiSrc):
         testing_utils.test_favorites(apiSrc)
+
+    def test_queue_retrieval(self, apiSrc):
+        testing_utils.test_queue_retrieval(apiSrc)
 
     def test_basic_post(self, apiSrc):
         testing_utils.test_basic_post(apiSrc, self.module.get_post_id_from_result)

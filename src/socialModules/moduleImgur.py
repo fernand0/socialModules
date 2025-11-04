@@ -7,6 +7,7 @@ from imgurpython import ImgurClient
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+from socialModules.test_utils import testing_utils
 # from socialModules.moduleQueue import *
 
 
@@ -39,6 +40,10 @@ class moduleImgur(Content):  # , Queue):
             reply = self.report(self.service, "", "", sys.exc_info())
 
         return client
+
+    def get_user_info(self, client):
+        return f"{self.user}"
+
 
     def setApiPosts(self):
         posts = []
@@ -129,7 +134,7 @@ class moduleImgur(Content):  # , Queue):
             post = posts[i]
         elif posts and i < -1:
             # When pos is -1 the post is is position 0, the last one.
-            # When pos is < -1 there can be drafts and we just want 
+            # When pos is < -1 there can be drafts and we just want
             # to post the first one
             pos = len(posts)
             post = posts[pos-1]
@@ -143,8 +148,8 @@ class moduleImgur(Content):  # , Queue):
     def setPostTitle(self, post, newTitle):
         post.title = newTitle
 
-    def getPostTitle(self, post):
-        print(f"Post: {post}")
+    def getApiPostTitle(self, post):
+        title = ""
         try:
             title = post.title
         except:
@@ -166,15 +171,16 @@ class moduleImgur(Content):  # , Queue):
     def setPostLink(self, post, newLink):
         post.link = newLink
 
-    def getPostLink(self, post):
-        if self.getPostsType() == "cache":
+    def getApiPostLink(self, post):
+        link = ""
+        if self.getPostsType() == 'cache':
             return post[1]
         else:
             try:
                 link = post.link
             except:
                 link = ""
-            return link
+        return link
 
     def getPostImage(self, post):
         # FIXME. Need rethinking
@@ -375,257 +381,15 @@ class moduleImgur(Content):  # , Queue):
 
 def main():
     import logging
-
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
-    import socialModules.moduleRules
 
-    rules = socialModules.moduleRules.moduleRules()
-    rules.checkRules()
+    from socialModules.moduleTester import ModuleTester
 
-    # Example:
-    #
-    # src: ('imgur', 'set', 'https://imgur.com/user/ftricas', 'drafts')
-    #
-    # More: Src {'url': 'https://imgur.com/user/ftricas', 'service': 'imgur', 'posts': 'drafts', 'cache': 'imgur', 'imgur': 'ftricas', 'time': '23.1', 'max': '1'}
-    print(rules.rules.keys())
-
-    indent = ""
-    mySrc = None
-    for src in rules.rules.keys():
-        if src[0] == "imgur":
-            print(f"Src: {src}")
-            more = rules.more[src]
-            mySrc = src
-            # break
-    apiSrc = rules.readConfigSrc(indent, mySrc, more)
-
-    testingImages = False
-    if testingImages:
-        apiSrc.setPostsType("posts")
-        apiSrc.setPosts()
-        for i, post in enumerate(apiSrc.getPosts()):
-            print(f"Title: {apiSrc.getPostTitle(post)}")
-            print(f"Link: {apiSrc.getPostLink(post)}")
-            print(f"Text: {apiSrc.getImagesCode(i)}")
-
-        return
-
-    testingDrafts = True
-    if testingDrafts:
-        apiSrc.setPostsType("drafts")
-        apiSrc.setPosts()
-        print(f"Posts: {apiSrc.getPosts()}")
-        for i, post in enumerate(apiSrc.getPosts()):
-            print(f"{i}) {apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
-
-        post = apiSrc.getNextPost()
-        print(f"Post: {post}")
-        print(f"{apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
-
-
-        return
-
-    testingPosts = False
-    if testingPosts:
-        apiSrc.setPosts()
-        print(f"Posts: {apiSrc.getPosts()}")
-
-        return
-
-    testingDrafts = False
-    if testingDrafts:
-        apiSrc.setPostsType("drafts")
-        apiSrc.setPosts()
-        lastLink = "https://imgur.com/a/plNolxs"
-        # img.lastLinkPublished = lastLink
-        # i = img.getLinkPosition(lastLink)
-        # num = 1
-        listPosts = apiSrc.getPosts()
-        print(listPosts)
-        for i, post in enumerate(listPosts):
-            print(f"{i}) {apiSrc.getPostTitle(post)}" f" {apiSrc.getPostLink(post)}")
-        # listPosts2 = apiSrc.getNumNextPost(1)
-        # print(listPosts2)
-        # print(f"post: {apiSrc.getNextPost()}")
-        # print(f"Title: {apiSrc.getPostTitle(apiSrc.getNextPost())}")
-        # print(f"Id: {apiSrc.getPostId(apiSrc.getNextPost())}")
-        return
-
-    publishCache = False
-    if publishCache:
-        apiSrc.setPosts()
-        for i, post in enumerate(apiSrc.getPosts()):
-            print(f"{i}) {apiSrc.getPostTitle(post)}")
-        pos = int(input("Which post? "))
-        post = apiSrc.getPost(pos)
-        print(f"Post: {post}")
-        print(f"Title: {apiSrc.getPostTitle(post)}")
-        input("Add? ")
-
-        import moduleCache
-
-        cache = moduleCache.moduleCache()
-        # cache.setClient(('https://imgur.com/user/ftricas',
-        #                 ('wordpress', 'avecesunafoto')))
-        # cache.setClient(('https://imgur.com/user/ftricas',
-        #                 ('imgur', 'ftricas')))
-        cache.setClient(
-            (("imgur", "https://imgur.com/user/ftricas"), "imgur@ftricas", "posts")
-        )
-        cache.socialNetwork = "imgur"
-        cache.nick = "ftricas"
-        apiSrc.socialNetwork = "imgur"
-        apiSrc.nick = "ftricas"
-        apiSrc.user = "https://imgur.com/user/ftricas"
-        cache.fileName = cache.fileNameBase(apiSrc)
-        cache.setPostsType("posts")
-        cache.setPosts()
-        print(cache.getPosts())
-        cache.publishPost(api=apiSrc, post=post)
-        return
-
-    extractImages = False
-    if extractImages:
-        apiSrc.setPostsType("drafts")
-        apiSrc.setPosts()
-
-        for i, post in enumerate(apiSrc.getPosts()[:25]):
-            print(f"{i}) {apiSrc.getPostTitle(post)}")
-        pos = int(input("Position? "))
-        res = apiSrc.extractImages(apiSrc.getPosts()[pos])
-        print(res)
-
-        return
-
-    publishWordpress = False
-    # Testing Wordpress publishing
-    if publishWordpress:
-        apiSrc.setPostsType("posts")
-        apiSrc.setPosts()
-
-        for i, post in enumerate(apiSrc.getPosts()[:25]):
-            print(f"{i}) {apiSrc.getPostTitle(post)}")
-        pos = int(input("Position? "))
-        service = "wordpress"
-        nick = "avecesunafoto"
-        socialNetwork = (service, nick)  # img.getSocialNetworks()[service])
-        for src in rules.rules.keys():
-            if (src[0] == "imgur") and (rules.rules[src][0][2] == "wordpress"):
-                action = rules.rules[src][0]
-                more = rules.more[src]
-                break
-
-        apiDst = rules.readConfigDst("", action, more, apiSrc)
-        rules.executePublishAction("", "", apiSrc, apiDst, False, False, pos)
-
-        return
-    img = moduleImgur.moduleImgur()
-    acc = "Blog20"
-    url = config.get(acc, "url")
-    img.setUrl(url)
-    name = url.split("/")[-1]
-    img.setClient(name)
-    img.setPostsType(config.get(acc, "posts"))
-    img.setPosts()
-    img.setSocialNetworks(config)
-    print(img.getSocialNetworks())
-
-    input("Go?")
-    service = "wordpress"
-    nick = "avecesunafoto"
-    socialNetwork = (service, nick)  # img.getSocialNetworks()[service])
-
-    img.setPostsType("posts")
-    img.setPosts()
-
-    for i, post in enumerate(img.getPosts()[:6]):
-        print(f"{i}) {img.getPostTitle(post)}")
-    pos = int(input("Position? ")) + 1
-
-    if publishWordpress:
-        listPosts = img.getNumPostsData(1, pos, "")
-        print(listPosts[0])
-        post = listPosts[0]
-        title = post[0]
-        postWP = post[-1]
-        tags = post[-2]
-        print(title)
-        print(postWP)
-        print(tags)
-        input("Publish? ")
-        import moduleWordpress
-
-        wp = moduleWordpress.moduleWordpress()
-        wp.setClient("avecesunafoto")
-
-        print(wp.publishPost(title, "", postWP, tags=tags))
-
-    sys.exit()
-    for service in img.getSocialNetworks():
-        socialNetwork = (service, img.getSocialNetworks()[service])
-
-        linkLast, lastTime = checkLastLink(img.getUrl(), socialNetwork)
-        print("linkLast {} {}".format(socialNetwork, linkLast))
-        i = img.getLinkPosition(linkLast)
-        print(i)
-        print(img.getNumPostsData(2, i))
-
-    sys.exit()
-    fileName = fileNamePath(img.url)
-    urls = getLastLink(fileName)
-    thePost = None
-    for i, post in enumerate(img.getPosts()):
-        print(f"{i}) {img.getPostTitle(post)} {img.getPostLink(post)}")
-        if not img.getPostTitle(post).startswith(">"):
-            if not (img.getPostLink(post).encode() in urls[0]):
-                print("--->", img.getPostTitle(post))
-                thePost = post
-
-    if thePost:
-        res = downloadUrl(img.getPostLink(thePost))
-
-        print()
-        print(res)
-        sys.exit()
-
-        print(f"Wordpressing! {res[0][2]}")
-        import moduleWordpress
-
-        wp = moduleWordpress.moduleWordpress()
-        wp.setClient("avecesunafoto")
-        title = res[0][2]
-        text = ""
-        for iimg in res:
-            text = (
-                '{}\n<p><a href="{}"><img class="alignnone size-full '
-                'wp-image-3306" src="{}" alt="" width="776" '
-                'height="1035" /></a></p>'.format(text, iimg[0], iimg[1])
-            )
-
-        print("----")
-        print(title)
-        print(text)
-
-        theUrls = [
-            img.getPostLink(thePost).encode(),
-        ] + urls[0]
-        wp.publishPost(text, "", title)
-
-        updateLastLink(img.url, theUrls)
-
-        text = ""
-        for img in res:
-            text = (
-                '{}\n<p><a href="{}"><img class="alignnone size-full '
-                'wp-image-3306" src="{}" alt="" '
-                'width="776" height="1035" /></a>'
-                "</p>".format(text, img[0], img[1])
-            )
-
-        print("---")
-        print(text)
+    imgur_module = moduleImgur()
+    tester = ModuleTester(imgur_module)
+    tester.run()
 
 
 if __name__ == "__main__":

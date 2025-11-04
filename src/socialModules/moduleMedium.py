@@ -14,6 +14,12 @@ from socialModules.moduleContent import *
 
 
 class moduleMedium(Content):  # ,Queue):
+    def get_user_info(self, client):
+        return f"{self.user}"
+
+    def get_post_id_from_result(self, result):
+        return result.get('id')
+
     # def authorize(self):
     #     config = configparser.ConfigParser()
     #     configFile = CONFIGDIR + '/.rssMedium'
@@ -201,61 +207,24 @@ class moduleMedium(Content):  # ,Queue):
             logging.debug(res)
         return res
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         if "title" in post:
             return post["title"].replace("\n", " ")
 
-    def getPostLink(self, post):
-        return post["link"]
-
+    def getApiPostLink(self, post):
+        return(post['link'])
 
 def main():
+    import logging
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
 
-    import moduleMedium
+    from socialModules.moduleTester import ModuleTester
 
-    testingImages = False
-    if testingImages:
-        tel = moduleMedium.moduleMedium()
-
-        tel.setClient("fernand0")
-        tel.publishImage(
-            "Prueba",
-            "/tmp/2023-01-22_image.png",
-            content="Evolución precio para el día 2021-11-01",
-        )
-
-        return
-
-    testingBotElectrico = False
-    if testingBotElectrico:
-        url = "https://medium.com/@botElectrico"
-        tel = moduleMedium.moduleMedium()
-
-        tel.setClient("botElectrico")
-        tel.publishImage(
-            "Prueba",
-            "/tmp/2021-11-01_image.png",
-            content="Evolución precio para el día 2021-11-01",
-        )
-
-        return
-
-    testingPosts = True
-    if testingPosts:
-        config = configparser.ConfigParser()
-        config.read(CONFIGDIR + "/.rssBlogs")
-
-        tel = moduleMedium.moduleMedium()
-
-        tel.setClient("fernand0")
-
-        tel.setPosts()
-        for i, post in enumerate(tel.getPosts()):
-            print(f"{i}) {tel.getPostTitle(post)} {tel.getPostLink(post)}")
-        return
+    medium_module = moduleMedium()
+    tester = ModuleTester(medium_module)
+    tester.run()
 
 
 if __name__ == "__main__":

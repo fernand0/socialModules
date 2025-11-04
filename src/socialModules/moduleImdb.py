@@ -11,16 +11,16 @@ import urllib
 
 import requests
 import tmdbsimple as tmdb
+from bs4 import BeautifulSoup
 
 from socialModules.moduleContent import *
-# from socialModules.moduleQueue import *
 
 
-class moduleImdb(Content):  # ,Queue):
+class moduleImdb(Content):
     def setClient(self, init=()):
         self.service = "Imdb"
         self.client = None
-        self.url = None
+        # self.url = None
         self.fileTV = "/tmp/tv.html"
         self.gen = "CN"
         self.cache = False
@@ -170,7 +170,7 @@ class moduleImdb(Content):  # ,Queue):
         # logging.info(f"Posts: {posts}")
         self.posts = sorted(posts, key=lambda d: d["hi"])
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         logging.debug("getPostTitle {}".format(post))
         if isinstance(post, tuple):
             if post:
@@ -180,9 +180,11 @@ class moduleImdb(Content):  # ,Queue):
         else:
             return post.get("t", "")
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
+        print(f"Post: {post}")
+        print(f"Url: {self.url}")
         if isinstance(post, dict):
-            return post.get("URL", "")
+            return urllib.parse.urljoin(self.url, post.get("URL", ""))
         return ""
 
     def getPostCode(self, post):
@@ -397,110 +399,24 @@ class moduleImdb(Content):  # ,Queue):
             idPost = post["ts"]
         return idPost
 
-    # def extractDataMessage(self, i):
-    #     logging.info("Service %s"% self.service)
-    #     (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment) = (None, None, None, None, None, None, None, None, None, None)
+    def register_specific_tests(self, tester):
+        pass
 
-    #     if i < len(self.getPosts()):
-    #         post = self.getPosts()[i]
-    #         logging.info("Post --- {}".format(str(post)))
-    #         theTitle = self.getPostTitle(post)
-    #         theLink = None #self.getPostLink(post)
-    #         code = self.getPostCode(post)
-    #         average = self.getPostAvg(post)
-    #         comment = '[{}] - ({}) {}-{}'.format(average, code,
-    #                 self.getPostTimeIni(post),
-    #                 self.getPostTimeEnd(post))
-    #         theContent = ""
-    #         if len(post)>6 :
-    #             theContent = '\n{}\n{}\n{} ({})'.format(post[5+2],
-    #                 post[5+4], post[5+1], post[5+3])
-    #         logging.info("Post content {}".format(theContent))
+    def get_user_info(self, client):
+        return ""
 
-    #     return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
-
+    def get_post_id_from_result(self, result):
+        return None
 
 def main():
     logging.basicConfig(
-        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
-    )
+    stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s")
 
-    import moduleRules
-
-    rules = moduleRules.moduleRules()
-    rules.checkRules()
-
-    # Example:
-    #
-    # Src: ('imdb', 'set', 'http://www.movistarplus.es/programacion-tv/?v=json', 'posts')
-    #
-    # More: {'url': 'http://www.movistarplus.es/programacion-tv/?v=json', 'service': 'imdb', 'imdb': 'fernand0', 'posts': 'posts', 'search': 'http://www.movistarplus.es/programacion-tv/{}/?v=json', 'direct': 'gmail', 'gmail': 'fernand0+tv@elmundoesimperfecto.com', 'hold': 'yes'}
-
-    MODULE = "imdb"
-
-    indent = ""
-    for src in rules.rules.keys():
-        if src[0] == MODULE:
-            print(f"Src: {src}")
-            more = rules.more[src]
-            break
-    apiSrc = rules.readConfigSrc(indent, src, more)
-
-    testingPosts = True
-    if testingPosts:
-        print("Testing posts")
-        apiSrc.setPostsType("posts")
-        apiSrc.setPosts()
-
-        print("Testing title and link")
-
-        for i, post in enumerate(apiSrc.getPosts()):
-            if True:  # post['GENERO'] == 'Cine':
-                print(f"Post: {post}")
-                title = apiSrc.getPostTitle(post)
-                link = apiSrc.getPostLink(post)
-                print(f"DAte: ({apiSrc.getPostDate(post)})")
-                print(f"Code: {apiSrc.getPostCode(post)} ")
-                print(f"Avg: [{apiSrc.getPostAvg(post)}] ")
-                print(
-                    f"Ini-fin: {apiSrc.getPostTimeIni(post)}-{apiSrc.getPostTimeEnd(post)} "
-                )
-                print(f"plot: {apiSrc.getPostPlot(post)}\n ")
-                print(f"Stars: {apiSrc.getPostStars(post)}")
-
-                url = apiSrc.getPostUrl(post)
-                theId = apiSrc.getPostId(post)
-                summary = apiSrc.getPostContent(post)
-                image = apiSrc.getPostImage(post)
-                print(
-                    f"{i}) Title: {title}\n"
-                    f"Link: {link}\n"
-                    f"Url: {url}\nId: {theId}\n"
-                    f"Content: {summary} {image}"
-                )
-                if "Molly" in title:
-                    return
-
-        return
-
-    return
-
-    site = moduleImdb.moduleImdb()
-    site.setClient((url, None))
-    print("Testing set posts")
-    site.setPosts()
-    print("Testing get posts")
-    # print(site.getPosts())
-    for i, post in enumerate(site.getPosts()[-10:]):
-        print(post)
-
-    sys.exit()
-
-    print("post", site.setPostMoreData(site.getPosts()[0]))
-
-    # print(site.getPosts()[2])
-    # print(site.setPostMoreData(2))
-
+    from socialModules.moduleTester import ModuleTester
+    
+    imdb_module = moduleImdb()
+    tester = ModuleTester(imdb_module)
+    tester.run()
 
 if __name__ == "__main__":
     main()

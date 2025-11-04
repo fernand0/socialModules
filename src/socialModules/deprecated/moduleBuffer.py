@@ -295,7 +295,7 @@ class moduleBuffer(Content, Queue):
             return link
         return None
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         if post:
             if "text" in post:
                 title = post["text"]

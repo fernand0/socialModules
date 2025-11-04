@@ -31,6 +31,7 @@ def test_posts_retrieval(apiSrc):
     """
     print("\n=== Testing Posts Retrieval ===")
     try:
+        apiSrc.setPostsType('posts')
         apiSrc.setPosts()
         posts = apiSrc.getPosts()
 
@@ -40,9 +41,9 @@ def test_posts_retrieval(apiSrc):
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
                 url = apiSrc.getPostUrl(post)
-                post_id = apiSrc.getPostId(post)
+                #post_id = apiSrc.getPostId(post)
 
-                print(f"\n{i+1}. Post ID: {post_id}")
+                #print(f"\n{i+1}. Post ID: {post_id}")
                 print(f"   Title: {title[:100]}{'...' if len(title) > 100 else ''}")
                 print(f"   Link: {link}")
                 print(f"   URL: {url}")
@@ -53,6 +54,37 @@ def test_posts_retrieval(apiSrc):
             print("No posts found")
     except Exception as e:
         print(f"Error retrieving posts: {e}")
+
+
+def test_drafts_retrieval(apiSrc):
+    """
+    Tests retrieving drafts from the social media platform.
+
+    Args:
+        apiSrc: The API source object for the module.
+    """
+    print("\n=== Testing Drafts Retrieval ===")
+    try:
+        apiSrc.setPostsType('drafts')
+        apiSrc.setPosts()
+        posts = apiSrc.getPosts()
+
+        if posts:
+            print(f"Retrieved {len(posts)} drafts:")
+            for i, post in enumerate(posts[:10]):  # Show first 10
+                title = apiSrc.getPostTitle(post)
+                link = apiSrc.getPostLink(post)
+
+                print(f"\n{i+1}. Draft:")
+                print(f"   Title: {title[:100]}{'...' if len(title) > 100 else ''}")
+                print(f"   Link: {link}")
+
+            if len(posts) > 10:
+                print(f"\n... and {len(posts) - 10} more drafts")
+        else:
+            print("No drafts found")
+    except Exception as e:
+        print(f"Error retrieving drafts: {e}")
 
 
 def test_favorites(apiSrc):
@@ -89,6 +121,37 @@ def test_favorites(apiSrc):
     except Exception as e:
         print(f"Error retrieving favorites: {e}")
 
+def test_queue_retrieval(apiSrc):
+    """
+    Tests retrieving queued posts from the social media platform.
+
+    Args:
+        apiSrc: The API source object for the module.
+    """
+    print("\n=== Testing Queue Retrieval ===")
+    try:
+        apiSrc.setPostsType('queue')
+        apiSrc.setPosts()
+        posts = apiSrc.getPosts()
+
+        if posts:
+            print(f"Retrieved {len(posts)} queued posts:")
+            for i, post in enumerate(posts[:10]):  # Show first 10
+                title = apiSrc.getPostTitle(post)
+                link = apiSrc.getPostLink(post)
+
+                print(f"\n{i+1}. Queued post:")
+                print(f"   Title: {title[:100]}{'...' if len(title) > 100 else ''}")
+                print(f"   Link: {link}")
+
+            if len(posts) > 10:
+                print(f"\n... and {len(posts) - 10} more queued posts")
+        else:
+            print("No queued posts found")
+    except Exception as e:
+        print(f"Error retrieving queued posts: {e}")
+
+
 
 def test_basic_post(apiSrc, get_post_id_callback):
     """
@@ -99,7 +162,7 @@ def test_basic_post(apiSrc, get_post_id_callback):
         get_post_id_callback: A function that takes the result of the post and returns the post ID.
     """
     print("\n=== Testing Basic Post ===")
-    default_title = f"Test post from {apiSrc.get_name()}"
+    default_title = f"Test post from {apiSrc.getService()}"
     title = input(f"Enter title for the post (default: '{default_title}'): ").strip()
     if not title:
         title = default_title
@@ -109,7 +172,7 @@ def test_basic_post(apiSrc, get_post_id_callback):
         print("No URL provided. Skipping basic post test.")
         return
 
-    print(f"Posting to {apiSrc.get_name()}:")
+    print(f"Posting to {apiSrc.getService()}:")
     print(f"  Title: {title}")
     print(f"  Link: {link}")
 
@@ -149,10 +212,10 @@ def test_image_post(apiSrc, get_post_id_callback):
         print("Skipping image test")
         return
 
-    title = f"Test image post from {apiSrc.get_name()}"
-    alt_text = f"Test image from {apiSrc.get_name()}"
+    title = f"Test image post from {apiSrc.getService()}"
+    alt_text = f"Test image from {apiSrc.getService()}"
 
-    print(f"Posting image to {apiSrc.get_name()}:")
+    print(f"Posting image to {apiSrc.getService()}:")
     print(f"  Image: {image_path}")
     print(f"  Title: {title}")
     print(f"  Alt text: {alt_text}")
@@ -190,7 +253,7 @@ def test_cache_integration(apiSrc):
     title = "Cache integration test"
     link = "https://example.com/cache-test"
 
-    print(f"Posting to {apiSrc.get_name()} with auto-cache enabled...")
+    print(f"Posting to {apiSrc.getService()} with auto-cache enabled...")
     try:
         result = apiSrc.publishPost(title, link, "")
         print(f"Post result: {result}")
@@ -199,8 +262,8 @@ def test_cache_integration(apiSrc):
         from socialModules.modulePublicationCache import PublicationCache
 
         cache = PublicationCache()
-        pubs = cache.get_publications_by_service(apiSrc.get_name().lower())
-        print(f"{apiSrc.get_name()} publications in cache: {len(pubs)}")
+        pubs = cache.get_publications_by_service(apiSrc.getService().lower())
+        print(f"{apiSrc.getService()} publications in cache: {len(pubs)}")
 
         if pubs:
             latest = pubs[-1]
@@ -321,12 +384,12 @@ def test_cache_content(apiSrc):
         cache = PublicationCache()
 
         service = (
-            input(f"Enter service to check (default: {apiSrc.get_name().lower()}): ")
+            input(f"Enter service to check (default: {apiSrc.getService().lower()}): ")
             .strip()
             .lower()
         )
         if not service:
-            service = apiSrc.get_name().lower()
+            service = apiSrc.getService().lower()
 
         service_pubs = cache.get_publications_by_service(service)
         print(f"\nFound {len(service_pubs)} publications for service '{service}':")

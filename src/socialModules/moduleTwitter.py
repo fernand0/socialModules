@@ -106,10 +106,10 @@ class moduleTwitter(Content):  # , Queue):
         # API v1.1
         # posts = self.apiCall(self.getClient().get_favorites,
         # API v2
-        posts = self.apiCall(self.getClient().get_liked_tweets, id=self.user)  # ,
-        # user_auth=True) #,
-        # tweet_mode='extended')
-
+        posts = self.apiCall(self.getClient().get_liked_tweets,
+                             id=self.user) #,
+                             # user_auth=True) #,
+                #tweet_mode='extended')
         return posts
 
     def processReply(self, reply):
@@ -296,6 +296,7 @@ class moduleTwitter(Content):  # , Queue):
 
     def getPostId(self, post):
         logging.info(f"Postttt: {post}")
+        idPost = ''
         if isinstance(post, str) or isinstance(post, int):
             # It is the tweet URL
             idPost = post
@@ -320,7 +321,7 @@ class moduleTwitter(Content):  # , Queue):
             title = f"{self.user}'s {self.service}"
         return title
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         # msgLog = (f"{self.indent} Postttt: {post}")
         # logMsg(msgLog, 2, 0)
         # print(f"post: {post}")
@@ -335,22 +336,25 @@ class moduleTwitter(Content):  # , Queue):
         # title = title.split('http')[0]
         return title
 
-    def getPostUrl(self, post):
+    def getApiPostLink(self, post):
+        logMsg("getApiPostUrl", 1, 0)
         idPost = self.getPostId(post)
+        logMsg("getApiPostUrl", 1, 0)
         msgLog = f"{self.indent} getPostUrl: {post}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 1, 0)
         if idPost:
             res = f"{self.base_url}/{self.user}/status/{idPost}"
         else:
             res = ""
         return res
 
-    def getPostLink(self, post):
+    def getApiPostUrl(self, post):
         # FIXME: Are you sure? (inconsistent)
         if self.getPostsType() == "favs":
             content, link = self.extractPostLinks(post)
         else:
-            link = self.getPostUrl(post)
+            link = post.data.get('link')
+            # whatever
         return link
 
     def extractPostLinks(self, post, linksToAvoid=""):
@@ -394,15 +398,6 @@ class moduleTwitter(Content):  # , Queue):
         if res:
             return res.get("statuses", [])
 
-    def get_name(self):
-        return "Twitter"
-
-    def get_default_user(self):
-        return "fernand0"
-
-    def get_default_post_type(self):
-        return "posts"
-
     def register_specific_tests(self, tester):
         tester.add_test("Search test", self.test_search)
 
@@ -440,7 +435,6 @@ def main():
     twitter_module = moduleTwitter()
     tester = ModuleTester(twitter_module)
     tester.run()
-
 
 if __name__ == "__main__":
     main()

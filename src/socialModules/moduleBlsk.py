@@ -61,8 +61,10 @@ class moduleBlsk(Content):  # , Queue):
     def setApiPosts(self):
         posts = []
 
-        print(f"client: {self.client}")
-        posts, error = self.apiCall("get_timeline", api=self.client.app.bsky.feed)
+        posts, error = self.apiCall(commandName = "get_author_feed", 
+                                    actor = self.getUser())
+        print(f"Posts: {posts}")
+        print(f"Error: {error}")
 
         if error:
             return []
@@ -97,15 +99,15 @@ class moduleBlsk(Content):  # , Queue):
 
         return posts
 
-    def getPostTitle(self, post):
-        title = ""
+    def getApiPostTitle(self, post):
+        title = ''
         try:
             title = post.post.record.text
         except:
             title = ""
         return title
 
-    def getPostUrl(self, post):
+    def getApiPostUrl(self, post):
         idPost = self.getPostId(post)
         msgLog = f"{self.indent} getPostUrl: {post}"
         logMsg(msgLog, 2, 0)
@@ -119,12 +121,9 @@ class moduleBlsk(Content):  # , Queue):
         logMsg(msgLog, 2, 0)
         return res
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         # FIXME: Are you sure? (inconsistent)
-        if self.getPostsType() == "favs":
-            content, link = self.extractPostLinks(post)
-        else:
-            link = self.getPostUrl(post)
+        content, link = self.extractPostLinks(post)
         return link
 
     def extractPostLinks(self, post, linksToAvoid=""):
@@ -327,16 +326,6 @@ class moduleBlsk(Content):  # , Queue):
             res = f"Fail! Unexpected reply type: {type(reply)}"
 
         return res
-
-
-    def get_name(self):
-        return "blsk"
-
-    def get_default_user(self):
-        return "fernand0.bsky.social"
-
-    def get_default_post_type(self):
-        return "posts"
 
     def register_specific_tests(self, tester):
         # No specific tests for now

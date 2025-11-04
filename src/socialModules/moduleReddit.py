@@ -10,6 +10,12 @@ from socialModules.moduleContent import *
 
 
 class moduleReddit(Content):  # , Queue):
+    def get_user_info(self, client):
+        return f"{self.user}"
+
+    def get_post_id_from_result(self, result):
+        return result.id
+
     def getKeys(self, config):
         user = self.user
         idR = config.get(user, "id")
@@ -160,7 +166,8 @@ class moduleReddit(Content):  # , Queue):
     def getPages(self):
         return self.groups
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
+        print(f"Post: {post}")
         title = ""
         try:
             title = post.title
@@ -168,13 +175,17 @@ class moduleReddit(Content):  # , Queue):
             title = ""
         return title
 
-    def getPostUrl(self, post):
-        res = ""
+    def getApiPostUrl(self, post):
+        link = ''
+        try:
+            print(f"{post.__dir__()}")
+            link = f"{urllib.parse.urljoin(self.getUrl(),post.permalink)}"
+        except:
+            link = ""
+        return link
 
-        return res
-
-    def getPostLink(self, post):
-        link = ""
+    def getApiPostLink(self, post):
+        link = ''
         try:
             link = post.url
         except:
@@ -259,103 +270,16 @@ class moduleReddit(Content):  # , Queue):
 
 
 def main():
-    logLevel = logging.DEBUG
+    import logging
     logging.basicConfig(
-        stream=sys.stdout, level=logLevel, format="%(asctime)s %(message)s"
+        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
 
-    import socialModules.moduleRules
+    from socialModules.moduleTester import ModuleTester
 
-    rules = socialModules.moduleRules.moduleRules()
-    rules.checkRules()
-
-    apiSrc = rules.selectRuleInteractive()
-
-    testingErrbot = False
-    if testingErrbot:
-        print(f"Src: {apiSrc.src}")
-        print(f"More: {rules.more[apiSrc.src]}")
-        print(f"Base url: {apiSrc.base_url}")
-        print(f"Base url rss: {apiSrc.clientRss.base_url}")
-        print(f"Rss: {apiSrc.getPage()}")
-        print(f"Rss: {apiSrc.clientRss.getRss()}")
-        apiSrc.setPostsType(apiSrc.src[3])
-        apiSrc.setPosts()
-        for i, post in enumerate(apiSrc.getPosts()):
-            print(f"{i}) {apiSrc.getPostTitle(post)} - {apiSrc.getPostLink(post)}")
-        show = "yes"
-        while show:
-            show = input("Do you want to see some post? ")
-            if show:
-                post = apiSrc.getPosts()[int(show)]
-                contentHtml = apiSrc.getPostContent(post)
-                soup = BeautifulSoup(contentHtml, "lxml")
-                (theContent, theSummaryLinks) = apiSrc.extractLinks(soup, "")
-                content = f"{theContent}\n{theSummaryLinks}"
-
-                print(f"{apiSrc.getPostTitle(post)}\n" f"{content}")
-
-        return
-
-    print(f"Client: {apiSrc.getClient()}")
-
-    testingPosts = True
-    if testingPosts:
-        print("aquí")
-        print(apiSrc.getClient().read_only)
-        apiSrc.setPostsType("posts")
-        apiSrc.setPosts()
-        print("ahora")
-        print(apiSrc.getPosts())
-        print("después")
-        for i, post in enumerate(apiSrc.getPosts()):
-            logging.debug(f"Post {i}): {post}")
-            try:
-                print(f" -Title {apiSrc.getPostTitle(post)}")
-                print(f" -Link {apiSrc.getPostLink(post)}")
-                print(f" -Time {apiSrc.getPostTime(post)}")
-                print(f" -Content link {apiSrc.getPostContentLink(post)}")
-                print(f" -Post link {apiSrc.extractPostLinks(post)}")
-                print(f"Len: {len(apiSrc.getPosts())}")
-            except:
-                print(f"Post: {post}")
-
-        return
-
-    testingGroups = False
-    if testingGroups:
-        print(f"Pages:")
-        for page in apiSrc.getPages():
-            print(f"  {page}")
-        return
-
-    testingGroupsPosts = False
-    if testingGroupsPosts:
-        print(f"Posts in groups")
-        for page in apiSrc.getPages():
-            apiSrc.setPage(page)
-            apiSrc.setPosts()
-            apiSrc.setLastLink(None)
-            lastLink = apiSrc.getLastLinkPublished()
-            print(f"Last link: {lastLink}")
-            for i, post in enumerate(apiSrc.getPosts()):
-                try:
-                    print(f"  -Title {apiSrc.getPostTitle(post)}")
-                    print(f"  -Link {apiSrc.getPostLink(post)}")
-                    print(f"  -Time {apiSrc.getPostTime(post)}")
-                    print(
-                        f"  -Comments {apiSrc.getPostContent(post).count('/comments/')}"
-                    )
-                    if post["updated"] != post["published"]:
-                        print(f"Different!")
-                except:
-                    print(f" Post {i}): {post}")
-            resUpdate = apiSrc.updateLastLink((page, "cache"), "")
-            print(f"Update: {resUpdate}")
-            import time
-
-            time.sleep(1)
-        return
+    reddit_module = moduleReddit()
+    tester = ModuleTester(reddit_module)
+    tester.run()
 
 
 if __name__ == "__main__":

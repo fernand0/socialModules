@@ -404,8 +404,7 @@ class moduleHtml(Content): #, Queue):
 
             return (soup.get_text().strip("\n"), theSummaryLinks)
 
-    #def getApiPostTitle(self, html_content):
-    def getPostTitle(self, html_content):
+    def getApiPostTitle(self, html_content):
         """
         Extracts the title from the HTML content.
         """
@@ -563,14 +562,12 @@ if __name__ == "__main__":
         blog.setUrl(test_url)
         print(f"Downloading content from: {test_url}")
         blog.setApiPosts()
-        if blog.posts:
-            print("Successfully downloaded HTML content.")
-            html_content = blog.posts[0]
+        if blog.getPosts():
+            html_content = blog.getPosts()[0]
             print("Extracting text content...")
             content = blog.getPostContent(html_content)
             print("Extracted Content:")
-            print(content)  # Print first 500 characters
-            print(type(content))  # Print first 500 characters
+            print(content[:500])  # Print first 500 characters
             print("Title:")
             print(blog.getPostTitle(html_content))
         else:

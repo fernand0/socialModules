@@ -238,7 +238,7 @@ class Content:
         # We have a dictionary of values and we check for methods for
         # setting these values in our object
         self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Start setMoreValues"
+        msgLog = f"{self.indent} Start setMoreValues {more}"
         logMsg(msgLog, 2, 0)
         if more:
             # Setting values available in more
@@ -300,7 +300,10 @@ class Content:
     def setApiPosts(self):
         pass
 
-    def setPosts(self, cache=False):
+    def setApiFavs(self):
+        pass
+
+    def setPosts(self):
         msgLog = f"{self.indent} Start setPosts"
         logMsg(msgLog, 2, 0)
         # nick = self.getNick()
@@ -310,9 +313,8 @@ class Content:
         # typeposts = self.getPostsType()
         msgLog = f"{self.indent} Posts type {self.getPostsType()}"
         logMsg(msgLog, 2, 0)
+        typePosts  = 'posts'
         if hasattr(self, "getPostsType") and self.getPostsType():
-            # typeposts = self.getPostsType()
-            logging.info("hasattr")
             if self.getPostsType() in [
                 "posts",
                 "drafts",
@@ -321,22 +323,20 @@ class Content:
                 "search",
                 "queue",
             ]:
-                logging.debug("hasattr known")
+                typePosts = self.getPostsType()
                 cmd = getattr(self, f"setApi{self.getPostsType().capitalize()}")
             else:
-                logging.debug("hasattr else")
                 if not self.getChannel():
                     self.setChannel(self.getPostsType())
                 cmd = getattr(self, "setApiPosts")
         else:
-            logging.debug("no hasattr else")
             cmd = getattr(self, "setApiPosts")
 
         self.indent = f"{self.indent} "
         msgLog = f"{self.indent} Command: {cmd}"
         logMsg(msgLog, 2, 0)
         posts = cmd()
-        if not posts and cache:
+        if not posts and typePosts in ['posts']:
             msgLog = f"{self.indent} No posts found, checking PublicationCache"
             logMsg(msgLog, 2, 0)
             try:
@@ -345,7 +345,8 @@ class Content:
                 if publications:
                     msgLog = f"{self.indent} Found {len(publications)} publications in cache"
                     logMsg(msgLog, 2, 0)
-                    posts = [{'title': pub['title'], 'link': pub['original_link']} for pub in publications]
+                    posts = [{'title': pub['title'], 'response_link': \
+                              pub['response_link'], 'link': pub['original_link']} for pub in publications]
             except ImportError:
                 msgLog = f"{self.indent} PublicationCache module not found."
                 logMsg(msgLog, 3, 0)
@@ -1840,17 +1841,52 @@ class Content:
     def getPostComment(self, post):
         return ""
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         return ""
+
+    def getPostTitle(self, post):
+        title= ""
+        try:
+            title = self.getApiPostTitle(post)
+        except:
+            print(f"post: {post}")
+            if not title and hasattr(post, 'get'):
+                title = post.get('title')
+        return title;
 
     def getPostDate(self, post):
         return ""
 
+    def getApiPostLink(self, post):
+        return ""
+
     def getPostLink(self, post):
+        link = ""
+        try:
+            link = self.getApiPostLink(post)
+            if not link and hasattr(post, 'get'):
+                link = post.get('link', '')
+        except:
+            print(f"post: {post}")
+            if not link and hasattr(post, 'get'):
+                link = post.get('link', '')
+        return link
+
+    def getApiPostUrl(self, post):
         return ""
 
     def getPostUrl(self, post):
-        return ""
+        logging.info(f"getPostUrl")
+        url = ""
+        try:
+            url = self.getApiPostUrl(post)
+            if not url and hasattr(post, 'get'):
+                url = post.get('url', '')
+        except:
+            logging.info(f"post: {post}")
+            if not url and hasattr(post, 'get'):
+                url = post.get('response_link', '')
+        return url
 
     def getPostId(self, post):
         return ""

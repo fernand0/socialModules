@@ -391,7 +391,7 @@ class moduleCache(Content):  # ,Queue):
             # #     title = post[0]
             return post
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         # self.indent = f"{self.indent} "
         # msgLog = (f"{self.indent} Start getPostTitle.")
         # logMsg(msgLog, 2, 0)
@@ -422,7 +422,7 @@ class moduleCache(Content):  # ,Queue):
         # self.indent = self.indent[:-1]
         return title
 
-    def getPostLink(self, post):
+    def getApiPostLink(self, post):
         # self.indent = f"{self.indent} "
         # msgLog = (f"{self.indent} Start getPostLink.")
         # logMsg(msgLog, 2, 0)
@@ -697,16 +697,6 @@ class moduleCache(Content):  # ,Queue):
         msgLog = f"{self.indent} Moved {self.getPostTitle(post)}"
         logMsg(msgLog, 1, 0)
         return f"{self.getPostTitle(post)}"
-
-
-    def get_name(self):
-        return "cache"
-
-    def get_default_user(self):
-        return ""
-
-    def get_default_post_type(self):
-        return "posts"
 
     def register_specific_tests(self, tester):
         tester.add_test("Edit post title", self.test_edit_title)

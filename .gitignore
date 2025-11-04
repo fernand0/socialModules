@@ -7,5 +7,6 @@ dist/
 uv*
 .coverate
 .coverage
+.env
 .lens
 .env

@@ -92,7 +92,7 @@ class moduleGcalendar(Content, socialGoogle):
 
         return "orig. " + date + " Translated." + theDate
 
-    def getPostTitle(self, post):
+    def getApiPostTitle(self, post):
         text = post.get("summary")
         return text
 
@@ -202,75 +202,28 @@ class moduleGcalendar(Content, socialGoogle):
         return f"Res: {res}"
 
 
+
+    def get_user_info(self, client):
+        # For Gcalendar, we can return the active calendar's summary
+        if hasattr(self, 'active'):
+            return f"Active Calendar: {self.active}"
+        return "Gcalendar User"
+
+    def get_post_id_from_result(self, result):
+        # Assuming result is the event object itself
+        return self.getPostId(result)
+
+
 def main():
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
 
-    import moduleRules
+    from socialModules.moduleTester import ModuleTester
 
-    rules = moduleRules.moduleRules()
-    rules.checkRules()
-
-    print(f"Selecting rule")
-    apiSrc = rules.selectRuleInteractive()
-
-    if not apiSrc.getClient().__getstate__():
-        return
-
-    print(f"Testing list")
-    testingList = True
-    if testingList:
-        apiSrc.setCalendarList()
-        print(f"List: {apiSrc.getCalendarList()}")
-        for i, cal in enumerate(apiSrc.getCalendarList()):
-            print(f"{i}) {cal.get('summary')}")
-        option = input("Select one: ")
-
-        apiSrc.setActive(apiSrc.getCalendarList()[int(option)].get("id"))
-        import datetime
-        from dateutil import parser
-        import pytz
-
-        today = datetime.datetime.combine(
-            datetime.date.today(), datetime.datetime.min.time()
-        )
-        today = pytz.utc.localize(today)
-        # today = pytz.utc.localize(parser.parse("2022-07-11"))
-
-        date = input("Date? (today) ")
-        print(f"Date: *{date}*")
-        apiSrc.setPosts(date)
-        print(f"\nHoy: {str(today)[:10]}")
-        print(f"Citas [{apiSrc.getCalendarList()[int(option)].get('summary')}]:")
-
-        prevDifTime = ""
-        for i, event in enumerate(apiSrc.getPosts()):
-            # if event['eventType'] == 'workingLocation':
-            #     continue
-            if "start" in event:
-                if "dateTime" in event["start"]:
-                    dd = event["start"]["dateTime"]
-                    d1 = parser.parse(dd)
-                else:
-                    if "date" in event["start"]:
-                        dd = event["start"]["date"]
-                        d1 = parser.parse(dd)
-                        d1 = pytz.utc.localize(d1)
-            else:
-                d1 = today
-
-            difTime = str(d1 - today).split(",")[0]
-            if difTime != prevDifTime:
-                # difTimeP = parser.parse(difTime)
-                print(f"In {difTime} ({str(d1)[:10]})")
-                prevDifTime = difTime
-            if abs((d1 - today).days) < 7:
-                text = apiSrc.getPostAbstract(event)
-                print(f" Abstract: {text}")
-                # text = apiSrc.getPostTitle(event)
-                # print(f"Title: {text}*")
-    return
+    gcalendar_module = moduleGcalendar()
+    tester = ModuleTester(gcalendar_module)
+    tester.run()
 
 
 if __name__ == "__main__":
