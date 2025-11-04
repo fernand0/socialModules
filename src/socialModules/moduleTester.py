@@ -112,6 +112,7 @@ class ModuleTester:
         self.add_test("Edit post test", self.test_edit_post)
         self.add_test("Favorites management test", self.test_favorites_management)
         self.add_test("Cache content verification", self.test_cache_content)
+        self.add_test("Select post by position", self.test_select_post_by_position)
 
     def register_specific_tests(self, tester):
         # Default: no specific tests for now
@@ -182,3 +183,6 @@ class ModuleTester:
 
     def test_cache_content(self, apiSrc):
         testing_utils.test_cache_content(apiSrc)
+
+    def test_select_post_by_position(self, apiSrc):
+        testing_utils.test_select_post_by_position(apiSrc)

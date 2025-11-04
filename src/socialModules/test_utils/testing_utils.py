@@ -408,3 +408,45 @@ def test_cache_content(apiSrc):
 
     except Exception as e:
         print(f"Error checking cache content: {e}")
+
+
+def test_select_post_by_position(apiSrc):
+    """
+    Tests selecting a specific post by its position from the social media platform.
+
+    Args:
+        apiSrc: The API source object for the module.
+    """
+    print("\n=== Testing Select Post by Position ===")
+    try:
+        apiSrc.setPostsType('posts')
+        apiSrc.setPosts()
+        posts = apiSrc.getPosts()
+
+        if not posts:
+            print("No posts found to select.")
+            return
+
+        print(f"Retrieved {len(posts)} posts. Select one by its number:")
+        for i, post in enumerate(posts):
+            title = apiSrc.getPostTitle(post)
+            link = apiSrc.getPostLink(post)
+            print(f"{i+1}. Title: {title[:100]}{'...' if len(title) > 100 else ''} (Link: {link})")
+
+        try:
+            choice = int(input(f"Enter the number of the post to view (1-{len(posts)}): "))
+            if 1 <= choice <= len(posts):
+                selected_post = posts[choice - 1]
+                print(f"\n--- Details for Post {choice} ---")
+                print(f"Title: {apiSrc.getPostTitle(selected_post)}")
+                print(f"Link: {apiSrc.getPostLink(selected_post)}")
+                print(f"URL: {apiSrc.getPostUrl(selected_post)}")
+                print(f"Content: {apiSrc.getPostContent(selected_post)}")
+                # Add more details as needed, e.g., image, author, date
+            else:
+                print("Invalid selection.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+
+    except Exception as e:
+        print(f"Error selecting post by position: {e}")
