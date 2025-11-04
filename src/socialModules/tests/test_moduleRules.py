@@ -231,11 +231,7 @@ def test_executeRules_respects_hold(mock_read_config_dst, mock_read_config_src, 
     mock_read_config_dst.return_value = mock_api_dst_instance
 
     rules = make_basic_rules()
-<<<<<<< HEAD
-    rules.more[('rss', 'set', 'src_nick', 'posts')] = {"hold": "yes"}
-=======
     rules.more[("rss", "set", "src_nick", "posts")] = {"hold": "yes"}
->>>>>>> devel
     rules.executeRules()
     assert mock_execute_single_action.call_count == 1
 
