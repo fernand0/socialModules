@@ -918,6 +918,8 @@ class moduleRules:
         if not post:
             msgLog = f"{indent}No post to schedule in {msgAction}"
             logMsg(msgLog, 1, 1)
+            result_dict["success"] = True
+            result_dict["error"] = None
         else:
             title = apiSrc.getPostTitle(post)
             link = apiSrc.getPostLink(post)
@@ -1004,7 +1006,6 @@ class moduleRules:
         msgLog = f"{indent} Scheduling {orig} -> {dest}"
         logMsg(msgLog, 1, 1)
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
-        logMsg("Aquí", 1, 0)
         if not apiDst.getClient():
             msgLog = self.clientErrorMsg(
                 indent,
@@ -1225,8 +1226,9 @@ class moduleRules:
                     rule_action, rule_metadata, args
                 )
 
+
                 if self._should_skip_publication(
-                    apiDst, apiSrc, noWait, timeSlots, f"{nameA}"
+                    apiDst, apiSrc, noWait, f"{nameA}"
                 ):
                     continue
                 scheduled_actions.append(
@@ -1242,6 +1244,8 @@ class moduleRules:
                         "apiDst": apiDst,
                         "name_action": name_action,
                         "nameA": nameA,
+                        "timeSlots": timeSlots, # Add timeSlots to scheduled_actions
+                        "noWait": noWait,       # Add noWait to scheduled_actions
                     }
                 )
         return scheduled_actions
@@ -1320,7 +1324,7 @@ class moduleRules:
             action_index,
         )
 
-    def _should_skip_publication(self, apiDst, apiSrc, noWait, timeSlots, nameA):
+    def _should_skip_publication(self, apiDst, apiSrc, noWait, nameA):
         indent = nameA
         num = apiDst.getMax()
         if num <= 0:
@@ -1330,6 +1334,9 @@ class moduleRules:
         tNow = time.time()
         hours = float(apiDst.getTime()) * 60 * 60
         lastTime = apiDst.getLastTimePublished(f"{indent}")
+        logging.info(f"{indent} noWaitttt: {noWait}")
+        logging.info(f"{indent} lastttt {lastTime}")
+        logging.info(f"{indent} hours {hours}")
 
         if lastTime:
             diffTime = tNow - lastTime
