@@ -1355,10 +1355,12 @@ class moduleRules:
         Reports the results and errors of action execution.
         """
         for scheduled_action, res_dict in action_results:
+            print(f"Scheduled: {scheduled_action}. Res: {res_dict}")
             rule_key = scheduled_action["rule_key"]
             rule_index = scheduled_action.get("rule_index", "")
+            name_action = scheduled_action["nameA"]
             rule_summary = (
-                f"Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
+                f"{name_action} Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
             )
 
             if res_dict == "ok":
@@ -1395,8 +1397,9 @@ class moduleRules:
         for scheduled_action, exc in action_errors:
             rule_key = scheduled_action["rule_key"]
             rule_index = scheduled_action.get("rule_index", "")
+            name_action = scheduled_action["nameA"]
             rule_summary = (
-                f"Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
+                f"{name_action} Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
             )
             logMsg(
                 f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {exc}",
