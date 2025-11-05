@@ -76,9 +76,9 @@ class moduleRules:
             logMsg(msgLog, 1, 1)
             self.indent = f"{self.indent}{section}>"
             try:
-                self._process_section(section, config, services, sources, 
-                                      sources_available, more, destinations, 
-                                      temp_rules, rulesNew, rule_metadata, 
+                self._process_section(section, config, services, sources,
+                                      sources_available, more, destinations,
+                                      temp_rules, rulesNew, rule_metadata,
                                       implicit_rules)
             except ConfigError as ce:
                 logMsg(f"ERROR in section [{section}]: {ce}", 3, 1)
@@ -624,7 +624,7 @@ class moduleRules:
             url = url.replace(service, "")
         url = url.replace("https", "").replace("http", "")
         url = url.replace("---", "").replace(".com", "")
-        url = url.replace("-", "(").replace("- ", " ")
+        url = url.replace("-(", "(").replace("- ", " ")
         url = url.replace(":", "").replace("/", "")
         return url
 
@@ -859,7 +859,7 @@ class moduleRules:
             logMsg(msgLog, 1, 1)
             resMsg += f" Post Action: {resPost}"
             if (
-                (res and ("failed!" not in res) and ("Fail!" not in res)) 
+                (res and ("failed!" not in res) and ("Fail!" not in res))
                 or (res and ("abusive!" in res))
                 or (
                     ((not res) and ("OK. Published!" not in res))
@@ -996,7 +996,7 @@ class moduleRules:
 
         # Destination
         orig = (
-                f"{self.getNickRule(src)}@{self.getNameAction(src)} " 
+                f"{self.getNickRule(src)}@{self.getNameAction(src)} "
                 f"({self.getTypeRule(src)})"
                 )
         dest = (
@@ -1334,9 +1334,6 @@ class moduleRules:
         tNow = time.time()
         hours = float(apiDst.getTime()) * 60 * 60
         lastTime = apiDst.getLastTimePublished(f"{indent}")
-        logging.info(f"{indent} noWaitttt: {noWait}")
-        logging.info(f"{indent} lastttt {lastTime}")
-        logging.info(f"{indent} hours {hours}")
 
         if lastTime:
             diffTime = tNow - lastTime
