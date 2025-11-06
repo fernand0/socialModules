@@ -303,7 +303,7 @@ class Content:
     def setApiFavs(self):
         pass
 
-    def setPosts(self):
+    def setPosts(self, use_cache=False):
         msgLog = f"{self.indent} Start setPosts"
         logMsg(msgLog, 2, 0)
         # nick = self.getNick()
@@ -336,7 +336,7 @@ class Content:
         msgLog = f"{self.indent} Command: {cmd}"
         logMsg(msgLog, 2, 0)
         posts = cmd()
-        if not posts and typePosts in ['posts']:
+        if use_cache and not posts and typePosts in ['posts']:
             msgLog = f"{self.indent} No posts found, checking PublicationCache"
             logMsg(msgLog, 2, 0)
             try:
@@ -777,8 +777,8 @@ class Content:
         return posts
 
     def getPosts(self):
-        posts = None
-        if hasattr(self, "posts"):
+        posts = []
+        if hasattr(self, "posts") and self.posts:
             posts = self.posts
         return posts
 
