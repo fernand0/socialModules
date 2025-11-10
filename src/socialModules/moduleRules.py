@@ -421,6 +421,68 @@ class moduleRules:
 
         return apiDst
 
+    def interactive_publish_with_rule(self):
+        """
+        Allows interactive selection of a rule and an action, then prompts for
+        a title and a link to publish using the selected destination.
+        """
+        print("\n--- Interactive Publishing ---")
+
+        # 1. Select a rule (source)
+        apiSrc = self.selectRuleInteractive()
+        if not apiSrc:
+            print("No rule selected or API source not found. Aborting.")
+            return
+
+        # 2. Select an action (destination)
+        # We need to pass the service name of the selected rule to filter actions
+        selected_service = self.getNameRule(apiSrc.src)
+        apiDst = self.selectActionInteractive(service=selected_service)
+        if not apiDst:
+            print("No action selected or API destination not found. Aborting.")
+            return
+
+        # 3. Prompt for title and link
+        title = input("Enter title for publication: ")
+        link = input("Enter link for publication (optional): ")
+        content = input("Enter content for publication (optional): ")
+
+        if not title and not content:
+            print("Title or content must be provided for publication. Aborting.")
+            return
+
+        print(f"\nPublishing '{title}' to {self.getNameAction(apiDst.action)}@{self.getProfileAction(apiDst.action)}...")
+
+        # 4. Call the publish method
+        try:
+            # Assuming publishPost can take title, url, content directly
+            # The apiDst.action is a tuple like ('direct', 'post', 'service', 'account')
+            # We need to extract the actual destination service and account from it
+            destination_service = self.getNameAction(apiDst.action)
+            destination_account = self.getDestAction(apiDst.action)
+
+            # Use the unified publishing method
+            results = self.publish_to_multiple_destinations(
+                destinations={destination_service: destination_account},
+                title=title,
+                url=link,
+                content=content
+            )
+            summary = self.get_publication_summary(results)
+            print("\n--- Publication Summary ---")
+            print(f"Total attempts: {summary['total']}")
+            print(f"Successful publications: {summary['successful']}")
+            for service, res_link in summary['response_links'].items():
+                print(f"  - {service}: {res_link}")
+            if summary['failed'] > 0:
+                print(f"Failed publications: {summary['failed']}")
+                for service, error in summary['errors'].items():
+                    print(f"  - {service}: {error}")
+            print("---------------------------\n")
+
+        except Exception as e:
+            print(f"An error occurred during publication: {e}")
+
     def selectRuleInteractive(self, service=None):
         if not service:
             nameModule = os.path.basename(inspect.stack()[1].filename)
