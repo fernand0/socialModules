@@ -1902,6 +1902,13 @@ class moduleRules:
             help="no wait for time restrictions",
         )
         parser.add_argument(
+            "--interactive",
+            "-i",
+            default=False,
+            action="store_true",
+            help="interactive publishing mode",
+        )
+        parser.add_argument(
             "--rules",
             "-r",
             default=False,
@@ -1927,7 +1934,10 @@ def main():
     rules.indent = ""
     rules.checkRules()
 
-    rules.executeRules()
+    if rules.args.interactive:
+        rules.interactive_publish_with_rule()
+    else:
+        rules.executeRules()
 
     return
 
