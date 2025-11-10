@@ -1849,7 +1849,6 @@ class Content:
         try:
             title = self.getApiPostTitle(post)
         except:
-            print(f"post: {post}")
             if not title and hasattr(post, 'get'):
                 title = post.get('title')
         return title;

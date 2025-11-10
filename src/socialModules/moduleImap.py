@@ -549,9 +549,10 @@ class moduleImap(Content):  # , Queue):
 
     def selectHeaderAuto(self, M, msg):
         # i = 1 # Removed unused variable
-        print(f"Msg: {msg}")
         if "List-Id" in msg:
-            return ("List-Id", msg["List-Id"][msg["List-Id"].find("<") + 1 : -1])
+            header = "List-Id"
+            textHeader = msg["List-Id"][msg["List-Id"].find("<") + 1 : -1]
+            filterCond = textHeader
         else:
             textHeaders, nameHeaders = self.get_headers_content(M, msg)
             # import locale # Removed unused import
@@ -1613,7 +1614,10 @@ class moduleImap(Content):  # , Queue):
         return result
 
     def getHeader(self, msg, header):
-        post = msg[1]
+        if isinstance(msg, tuple):
+            post = msg[1]
+        else:
+            post = msg
         return safe_get(post, [header])
 
     def getPostDate(self, msg):
@@ -1621,7 +1625,10 @@ class moduleImap(Content):  # , Queue):
         return post.get("Date")
 
     def getPostFrom(self, msg):
-        post = msg[1]
+        if isinstance(msg, tuple):
+            post = msg[1]
+        else:
+            post = msg
         return post.get("From")
 
     def getPostTo(self, msg):
