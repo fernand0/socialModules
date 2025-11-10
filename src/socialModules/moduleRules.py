@@ -407,19 +407,36 @@ class moduleRules:
         self.availableList = myList if myList else []
         self.rules = {key: rulesNew[key] for key in rulesNew if rulesNew[key]}
 
-    def selectActionInteractive(self, service=None):
-        if not service:
-            nameModule = os.path.basename(inspect.stack()[1].filename)
-            service = nameModule.split(".")[0][6:].casefold()
-        selActions = self.selectAction(service)
+    def selectActionInteractive(self, apiSrc = None):
+        selActions = None
+        if apiSrc:
+            rule = apiSrc.src
+            selActions = self.rules[rule]
 
         print("Actions:")
         for i, act in enumerate(selActions):
             print(f"{i}) {act}")
         iAct = input("Which action? ")
-        apiDst = self.readConfigDst("", iAct, None, None)
+        #apiDst = self.readConfigDst("", selActions[int(iAct)], None, apiSrc)
+        #apiDst = self.readConfigDst(nameR_action, rule_action, rule_metadata, apiSrc)
 
-        return apiDst
+        return selActions[int(iAct)]
+
+    def selectServiceInteractive(self):
+        """
+        Lists the available services and prompts the user to select one.
+        """
+        print("\n--- Select a Service ---")
+        services = self.getServices()["regular"]
+        for i, service in enumerate(services):
+            print(f"{i}) {service}")
+        iService = input("Which service? ")
+        try:
+            selected_service = services[int(iService)]
+            return selected_service
+        except (ValueError, IndexError):
+            print("Invalid selection. Aborting.")
+            return None
 
     def interactive_publish_with_rule(self):
         """
@@ -428,21 +445,25 @@ class moduleRules:
         """
         print("\n--- Interactive Publishing ---")
 
-        # 1. Select a rule (source)
-        apiSrc = self.selectRuleInteractive()
+        # 1. Select a service
+        selected_service = self.selectServiceInteractive()
+        if not selected_service:
+            print("No service selected. Aborting.")
+            return
+
+        # 2. Select a rule (source)
+        apiSrc = self.selectRuleInteractive(service=selected_service)
         if not apiSrc:
             print("No rule selected or API source not found. Aborting.")
             return
 
-        # 2. Select an action (destination)
-        # We need to pass the service name of the selected rule to filter actions
-        selected_service = self.getNameRule(apiSrc.src)
-        apiDst = self.selectActionInteractive(service=selected_service)
-        if not apiDst:
+        # 3. Select an action (destination)
+        action = self.selectActionInteractive(apiSrc=apiSrc)
+        if not action:
             print("No action selected or API destination not found. Aborting.")
             return
 
-        # 3. Prompt for title and link
+        # 4. Prompt for title and link
         title = input("Enter title for publication: ")
         link = input("Enter link for publication (optional): ")
         content = input("Enter content for publication (optional): ")
@@ -451,24 +472,44 @@ class moduleRules:
             print("Title or content must be provided for publication. Aborting.")
             return
 
-        print(f"\nPublishing '{title}' to {self.getNameAction(apiDst.action)}@{self.getProfileAction(apiDst.action)}...")
+        print(f"\nPublishing '{title}' ") #to {self.getNameAction(apiDst.action)}@{self.getProfileAction(apiDst.action)}...")
 
-        # 4. Call the publish method
+        # 5. Call the publish method
         try:
             # Assuming publishPost can take title, url, content directly
             # The apiDst.action is a tuple like ('direct', 'post', 'service', 'account')
             # We need to extract the actual destination service and account from it
-            destination_service = self.getNameAction(apiDst.action)
-            destination_account = self.getDestAction(apiDst.action)
+            # destination_service = self.getNameAction(apiDst.action)
+            # destination_account = self.getDestAction(apiDst.action)
+
+
+            apiDst = self.readConfigDst("", action, self.more[apiSrc.src], apiSrc)
+            result_dict = {
+                           "success": False,
+                           "publication_result": None,
+                           "link_updated": False,
+                           "post_action_result": None,
+                           "error": "No post found",
+                           }
+            post = {"title":title, "link":link, "content":content}
+            publication_res = apiDst.publishPost(api=apiSrc, post=post)
+            is_success = "Fail!" not in str(publication_res) and "failed!" not in str(publication_res)
+            result_dict["success"] = is_success
+            #results = (action,res)
+            if is_success:
+                result_dict["error"] = None
+            resUpdate = apiDst.updateLastLink(apiSrc, link)
 
             # Use the unified publishing method
-            results = self.publish_to_multiple_destinations(
-                destinations={destination_service: destination_account},
-                title=title,
-                url=link,
-                content=content
-            )
-            summary = self.get_publication_summary(results)
+            # results = self.publish_to_multiple_destinations(
+            #     destinations={destination_service: destination_account},
+            #     title=title,
+            #     url=link,
+            #     content=content
+            # )
+            print(f"Res: {resUpdate}")
+            summary = result_dict #self.get_publication_summary(results)
+            print(f"Summary: {summary}")
             print("\n--- Publication Summary ---")
             print(f"Total attempts: {summary['total']}")
             print(f"Successful publications: {summary['successful']}")
@@ -1171,7 +1212,8 @@ class moduleRules:
                     tSleep = 2.0
                     msgLog = f"{indent} No Waiting"
 
-                logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
+                logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in "
+                       f"{self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
 
                 for i in range(numAct):
                     time.sleep(tSleep)
