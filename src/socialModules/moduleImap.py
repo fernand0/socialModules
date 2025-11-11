@@ -333,7 +333,7 @@ class moduleImap(Content):  # , Queue):
 
                     if status == "OK":
                         # If the list of messages is too long it won't work
-                        flag = "\\Deleted"
+                        flag = r"\Deleted"
                         result = M.store(msgs, "+FLAGS", flag)
                         if result[0] == "OK":
                             msgLog = "%s: %d messages have been deleted." % (msgTxt, i)
@@ -1406,8 +1406,8 @@ class moduleImap(Content):  # , Queue):
                         msgLog = "Reply %s" % rep
                         logMsg(msgLog, 2, 0)
                         if rep != "Fail!":
-                            M.store(msgId, "+FLAGS", "\\Seen")
-                            flag = "\\Deleted"
+                            M.store(msgId, "+FLAGS", r"\Seen")
+                            flag = r"\Deleted"
                             M.store(msgId, "+FLAGS", flag)
                         time.sleep(0.1)
                 i = i + 1
@@ -1468,7 +1468,7 @@ class moduleImap(Content):  # , Queue):
                     res = "Fail!"
                     continue
 
-                flag = "\\Deleted"
+                flag = r"\Deleted"
                 result = M.store(chunk_str, "+FLAGS", flag)
                 if result[0] != "OK":
                     print("Failed to delete chunk!")
