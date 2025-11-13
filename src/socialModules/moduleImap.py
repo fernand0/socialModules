@@ -1580,6 +1580,12 @@ class moduleImap(Content):  # , Queue):
         print(f"Typeeee: {type(extracted_text)}")
         cleaning_pattern = re.compile(r'[\u000A\u200C\u00A0\u2007\u00AD]+')
         clean_text = cleaning_pattern.sub(' ', extracted_text)
+        pattern = r'[\r]'
+        replacement = r'\n'
+        clean_text = re.sub(pattern, replacement, clean_text)
+        pattern = r'[\s\n]{3,}'
+        replacement = r'\n\n'
+        clean_text = re.sub(pattern, replacement, clean_text)
         return clean_text
 
     def getPostLinks(self, msg):
