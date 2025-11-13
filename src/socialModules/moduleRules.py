@@ -490,6 +490,7 @@ class moduleRules:
                            "link_updated": False,
                            "post_action_result": None,
                            "error": "No post found",
+                           "total": 0,
                            }
             post = {"title":title, "link":link, "content":content}
             publication_res = apiDst.publishPost(api=apiSrc, post=post)
@@ -498,6 +499,7 @@ class moduleRules:
             #results = (action,res)
             if is_success:
                 result_dict["error"] = None
+                result_dict["successful"] = 1
             resUpdate = apiDst.updateLastLink(apiSrc, link)
 
             # Use the unified publishing method

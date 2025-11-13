@@ -203,7 +203,7 @@ class moduleTumblr(Content):  # , Queue):
             logging.info(f"api.getPostsType: {api.getPostsType()}")
             logging.info(f"api.getUser: {api.getUser()}")
             if api.getPostsType() == "posts":
-                logging.info(f"Title: {args} Link: {link} Comment: {comment}")
+                logging.info(f"Title: {title} Link: {link} Comment: {comment}")
                 res = self.getClient().create_link(
                     self.getUser(),
                     state="queue",
@@ -228,7 +228,7 @@ class moduleTumblr(Content):  # , Queue):
             logMsg(msgLog, 3, 0)
             res = self.report("Tumblr", post, link, sys.exc_info())
 
-        return f"{self.processReply(res)}. Title: {title}. Link: {link}"
+        return f"{res}"
 
     def publishh(self, j):
         # This is not publishing but changing state -> editing
