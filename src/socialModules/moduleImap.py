@@ -1670,8 +1670,12 @@ class moduleImap(Content):  # , Queue):
         return subject
 
     def getPostId(self, msg):
-        print(f"Msgggg: {msg}")
-        return msg[0]
+        if isinstance(msg, tuple):
+            post = msg[1]
+        else:
+            post = msg
+        postId = post.get('Message-ID','')
+        return postId
 
     def getPostAttachmentPdf(self, msg):
         if msg.is_multipart():
