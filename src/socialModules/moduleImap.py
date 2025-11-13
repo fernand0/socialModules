@@ -1577,8 +1577,6 @@ class moduleImap(Content):  # , Queue):
             # FIXME: does this belong here?
             extracted_text = extracted_text.decode("utf-8")
 
-        print(f"Typeeee: {type(extracted_text)}")
-        #cleaning_pattern = re.compile(r'[\u000A\u200C\u00A0\u2007\u00AD]+')
         cleaning_pattern = re.compile(r'[\u000A\u200C\u00A0\u2007\u00AD\u034F]+')
         clean_text = cleaning_pattern.sub(' ', extracted_text)
         pattern = r'[\r]'
@@ -1685,6 +1683,10 @@ class moduleImap(Content):  # , Queue):
         else:
             post = msg
         postId = post.get('Message-ID','')
+        if postId.startswith('<'):
+            postId = postId[1:]
+        if postId.startswith('>'):
+            postId = postId[:-1]
         return postId
 
     def getPostAttachmentPdf(self, msg):
