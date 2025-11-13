@@ -1524,6 +1524,7 @@ class moduleImap(Content):  # , Queue):
 
         # Return the combined HTML content
         return mail_content.strip()
+
     def getPostContent(self, msg):
         """
         Extracts the plain text content from an email message, handling multipart and HTML parts.
@@ -1557,23 +1558,24 @@ class moduleImap(Content):  # , Queue):
 
     def _extract_text(self, part):
         content_type = part.get_content_type()
+        extracted_text = ""  # Initialize result variable
         try:
             if content_type == "text/plain":
                 payload = part.get_payload(decode=True)
                 charset = part.get_content_charset() or "utf-8"
-                return payload.decode(charset, errors="replace")
+                extracted_text = payload.decode(charset, errors="replace")
             elif content_type == "text/html":
                 payload = part.get_payload(decode=True)
                 charset = part.get_content_charset() or "utf-8"
                 html = payload.decode(charset, errors="replace")
                 soup = BeautifulSoup(html, "html.parser")
-                text = soup.get_text("\n")
-                cleaning_pattern = re.compile(r'[\u000A\u200C\u00A0\u2007\u00AD]+')
-                clean_text = cleaning_pattern.sub(' ', text)
-                return clean_text
+                extracted_text = soup.get_text("\n")
         except Exception as e:
             logging.warning(f"Error decoding part: {e}")
-        return ""
+            extracted_text = ""
+        cleaning_pattern = re.compile(r'[\u000A\u200C\u00A0\u2007\u00AD]+')
+        clean_text = cleaning_pattern.sub(' ', extracted_text)
+        return clean_text
 
     def getPostLinks(self, msg):
         if isinstance(msg, tuple):
