@@ -29,10 +29,10 @@ class moduleBlsk(Content):  # , Queue):
         try:
             profile = client.login(keys[0], keys[1])
             self.me = client.get_profile(actor=keys[0])
-        except atproto_client.exceptions.NetworkError:
-            self.report(
-                self.service, "Error in setApiFavs. Network Error. ", "", sys.exc_info()
-            )
+        # except atproto_client.exceptions.NetworkError:
+        #     self.report(
+        #         self.service, "Error in setApiFavs. Network Error. ", "", sys.exc_info()
+        #     )
         except:
             res = self.report(self.indent, "Error in initApi", "", sys.exc_info())
             client = None

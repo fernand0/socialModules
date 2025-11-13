@@ -494,6 +494,7 @@ class moduleRules:
                            }
             post = {"title":title, "link":link, "content":content}
             publication_res = apiDst.publishPost(api=apiSrc, post=post)
+            print(f"Pub Res: {publication_res}")
             is_success = "Fail!" not in str(publication_res) and "failed!" not in str(publication_res)
             result_dict["success"] = is_success
             #results = (action,res)
