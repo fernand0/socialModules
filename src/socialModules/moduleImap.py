@@ -1631,7 +1631,10 @@ class moduleImap(Content):  # , Queue):
         return safe_get(post, [header])
 
     def getPostDate(self, msg):
-        post = msg[1]
+        if isinstance(msg, tuple):
+            post = msg[1]
+        else:
+            post = msg
         return post.get("Date")
 
     def getPostFrom(self, msg):
