@@ -1567,7 +1567,10 @@ class moduleImap(Content):  # , Queue):
                 charset = part.get_content_charset() or "utf-8"
                 html = payload.decode(charset, errors="replace")
                 soup = BeautifulSoup(html, "html.parser")
-                return soup.get_text("\n")
+                text = soup.get_text("\n")
+                patron_limpieza = re.compile(r'[\u000A\u200C\u00A0\u2007\u00AD]+')
+                texto_limpio = patron_limpieza.sub(' ', text)
+                return texto_limpio
         except Exception as e:
             logging.warning(f"Error decoding part: {e}")
         return ""
