@@ -1670,6 +1670,7 @@ class moduleImap(Content):  # , Queue):
         return subject
 
     def getPostId(self, msg):
+        print(f"Msgggg: {msg}")
         return msg[0]
 
     def getPostAttachmentPdf(self, msg):
