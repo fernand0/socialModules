@@ -1524,6 +1524,7 @@ class moduleImap(Content):  # , Queue):
 
         # Return the combined HTML content
         return mail_content.strip()
+
     def getPostContent(self, msg):
         """
         Extracts the plain text content from an email message, handling multipart and HTML parts.
@@ -1557,20 +1558,34 @@ class moduleImap(Content):  # , Queue):
 
     def _extract_text(self, part):
         content_type = part.get_content_type()
+        extracted_text = ""  # Initialize result variable
         try:
             if content_type == "text/plain":
                 payload = part.get_payload(decode=True)
                 charset = part.get_content_charset() or "utf-8"
-                return payload.decode(charset, errors="replace")
+                extracted_text = payload.decode(charset, errors="replace")
             elif content_type == "text/html":
                 payload = part.get_payload(decode=True)
                 charset = part.get_content_charset() or "utf-8"
                 html = payload.decode(charset, errors="replace")
                 soup = BeautifulSoup(html, "html.parser")
-                return soup.get_text("\n")
+                extracted_text = soup.get_text("\n")
         except Exception as e:
             logging.warning(f"Error decoding part: {e}")
-        return ""
+            extracted_text = ""
+        if isinstance(extracted_text, bytes):
+            # FIXME: does this belong here?
+            extracted_text = extracted_text.decode("utf-8")
+
+        cleaning_pattern = re.compile(r'[\u000A\u200C\u00A0\u2007\u00AD\u034F]+')
+        clean_text = cleaning_pattern.sub(' ', extracted_text)
+        pattern = r'[\r]'
+        replacement = r'\n'
+        clean_text = re.sub(pattern, replacement, clean_text)
+        pattern = r'[\s\n]{3,}'
+        replacement = r'\n\n'
+        clean_text = re.sub(pattern, replacement, clean_text)
+        return clean_text
 
     def getPostLinks(self, msg):
         if isinstance(msg, tuple):
@@ -1621,7 +1636,10 @@ class moduleImap(Content):  # , Queue):
         return safe_get(post, [header])
 
     def getPostDate(self, msg):
-        post = msg[1]
+        if isinstance(msg, tuple):
+            post = msg[1]
+        else:
+            post = msg
         return post.get("Date")
 
     def getPostFrom(self, msg):
@@ -1660,7 +1678,16 @@ class moduleImap(Content):  # , Queue):
         return subject
 
     def getPostId(self, msg):
-        return msg[0]
+        if isinstance(msg, tuple):
+            post = msg[1]
+        else:
+            post = msg
+        postId = post.get('Message-ID','')
+        if postId.startswith('<'):
+            postId = postId[1:]
+        if postId.startswith('>'):
+            postId = postId[:-1]
+        return postId
 
     def getPostAttachmentPdf(self, msg):
         if msg.is_multipart():

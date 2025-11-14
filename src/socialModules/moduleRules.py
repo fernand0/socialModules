@@ -1098,7 +1098,7 @@ class moduleRules:
         delete=False,
     ):
         indent = f"{name}"
-        res = None #{{"success": False, "error": ""}} #{{"}}
+        res = None #{"success": False, "error": ""} #{}
         textEnd = ""
 
         # Destination
@@ -1124,7 +1124,7 @@ class moduleRules:
             if msgLog:
                 logMsg(msgLog, 3, 1)
                 sys.stderr.write(f"Error: {msgLog}\n")
-            res = {{"success": False, "error": f"End: {msgLog}"}}
+            res = {"success": False, "error": f"End: {msgLog}"}
         else:
             # Backup the current next-run time before making changes
             backup_time = apiDst.getNextTime(apiSrc)
@@ -1632,7 +1632,7 @@ class moduleRules:
             dict: Publication result
         """
         service_key = f"{destination}_{account}"
-        result_dict = {{}}
+        result_dict = {}
 
         try:
             # Create key for readConfigDst
@@ -1788,7 +1788,7 @@ class moduleRules:
         Raises:
             ValueError: If parameters are invalid
         """
-        results = {{}}
+        results = {}
         # Validate inputs
         if not title and not content:
             raise ValueError("Either title or content must be provided")
@@ -1877,7 +1877,7 @@ class moduleRules:
         Returns:
             dict: Summary with statistics and details
         """
-        summary = {{}}
+        summary = {}
         if not results or "error" in results:
             summary = {
                 "total": 0,
