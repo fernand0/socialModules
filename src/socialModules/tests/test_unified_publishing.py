@@ -197,11 +197,6 @@ def test_smtp_special_handling(mock_publish, rules_instance):
     mock_publish.assert_called_once_with(
         destinations=destinations,
         title="Email Title",
-        url="",
-        content="",
-        image_path=None,
-        alt_text="",
-        channel=None,
         from_email="from@example.com",
         to_email="to@example.com"
     )
