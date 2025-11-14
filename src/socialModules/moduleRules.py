@@ -501,6 +501,7 @@ class moduleRules:
             if is_success:
                 result_dict["error"] = None
                 result_dict["successful"] = 1
+                result_dict["response_links"] = [ publication_res, ]
             resUpdate = apiDst.updateLastLink(apiSrc, link)
 
             # Use the unified publishing method
