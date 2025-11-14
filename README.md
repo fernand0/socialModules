@@ -82,6 +82,21 @@ cd socialModules
 pip install -e .
 ```
 
+---
+
+## Command-Line Arguments
+
+The main script `moduleRules.py` accepts the following arguments:
+
+*   `--timeSlots` / `-t` (default: 50): Defines the number of time slots (in minutes) for publishing.
+*   `[Blog]` (positional): Allows selecting a specific blog to process. Example: `python3 src/socialModules/moduleRules.py MyBlog`
+*   `--simmulate` / `-s`: If used, simulates publications without actually executing them.
+*   `--noWait` / `-n`: Ignores time restrictions between publications.
+*   `--interactive` / `-i`: Enables interactive publishing mode, allowing manual selection of rules and actions.
+*   `--rules` / `-r`: Displays the list of configured rules and actions.
+
+---
+
 ## Quick Start: Unified Publishing & Caching
 
 This example demonstrates publishing a single piece of content to multiple platforms and automatically caching the results.

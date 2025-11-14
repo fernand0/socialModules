@@ -91,7 +91,10 @@ class Content:
         profile = ""
         if hasattr(self, 'profile'):
             profile = self.profile
-        msgLog = f"{self.indent} Start setClient profile: {profile} account: {account}"
+        msgLog = (
+                f"{self.indent} Start setClient profile: "
+                f" {profile} account: {account}"
+                )
         logMsg(msgLog, 1, 0)
         self.indent = f"{self.indent} "
 
@@ -300,7 +303,7 @@ class Content:
     def setApiFavs(self):
         pass
 
-    def setPosts(self):
+    def setPosts(self, use_cache=False):
         msgLog = f"{self.indent} Start setPosts"
         logMsg(msgLog, 2, 0)
         # nick = self.getNick()
@@ -333,7 +336,7 @@ class Content:
         msgLog = f"{self.indent} Command: {cmd}"
         logMsg(msgLog, 2, 0)
         posts = cmd()
-        if not posts and typePosts in ['posts']:
+        if use_cache and not posts and typePosts in ['posts']:
             msgLog = f"{self.indent} No posts found, checking PublicationCache"
             logMsg(msgLog, 2, 0)
             try:
@@ -449,7 +452,10 @@ class Content:
         logMsg(msgLog, 2, 0)
         msgLog = checkFile(fileName, self.indent)
         if "OK" not in msgLog:
-            msgLog = f"file {fileName} does not exist. " f"I'm going to create it."
+            msgLog = (
+                    f"file {fileName} does not exist. "
+                    f"I'm going to create it."
+                    )
             logMsg(msgLog, 3, 0)
         with open(fileName, "w") as f:
             if link:
@@ -525,7 +531,8 @@ class Content:
 
         else:
             lastTime = 0
-            self.report(self.service, msgLog, "", "")
+            logMsg( f"[WARN] File: {fileName} does not exist", 2, 1,)
+            # self.report(self.service, msgLog, "", "")
         if len(linkLast) >0:
             msgLog = f"{self.indent} linkLast: {linkLast[0]}"
             logMsg(msgLog, 2, 0)
@@ -770,8 +777,8 @@ class Content:
         return posts
 
     def getPosts(self):
-        posts = None
-        if hasattr(self, "posts"):
+        posts = []
+        if hasattr(self, "posts") and self.posts:
             posts = self.posts
         return posts
 
@@ -1781,7 +1788,8 @@ class Content:
     def report(self, profile, post, link, data):
         if post:
             msg = [
-                f"Report: failed! " f"{datetime.datetime.now().isoformat()}",
+                f"Report: failed! "
+                f"{datetime.datetime.now().isoformat()}",
                 f"Post: {post}",
             ]
         else:
@@ -1841,7 +1849,6 @@ class Content:
         try:
             title = self.getApiPostTitle(post)
         except:
-            print(f"post: {post}")
             if not title and hasattr(post, 'get'):
                 title = post.get('title')
         return title;

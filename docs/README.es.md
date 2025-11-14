@@ -74,6 +74,19 @@ Lista de disponibles:
 
 ---
 
+## Argumentos de Línea de Comandos
+
+El script principal `moduleRules.py` acepta los siguientes argumentos:
+
+*   `--timeSlots` / `-t` (por defecto: 50): Define la cantidad de intervalos de tiempo (en minutos) para la publicación.
+*   `[Blog]` (posicional): Permite seleccionar un blog específico para procesar. Ejemplo: `python3 src/socialModules/moduleRules.py MiBlog`
+*   `--simmulate` / `-s`: Si se usa, simula las publicaciones sin ejecutarlas realmente.
+*   `--noWait` / `-n`: Ignora las restricciones de tiempo entre publicaciones.
+*   `--interactive` / `-i`: Habilita el modo de publicación interactivo, permitiendo seleccionar reglas y acciones manualmente.
+*   `--rules` / `-r`: Muestra la lista de reglas y acciones configuradas.
+
+---
+
 ## Ejecución de los tests automáticos
 
 1. Ve al directorio raíz del proyecto.

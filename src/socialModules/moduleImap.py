@@ -333,7 +333,7 @@ class moduleImap(Content):  # , Queue):
 
                     if status == "OK":
                         # If the list of messages is too long it won't work
-                        flag = "\\Deleted"
+                        flag = r"\Deleted"
                         result = M.store(msgs, "+FLAGS", flag)
                         if result[0] == "OK":
                             msgLog = "%s: %d messages have been deleted." % (msgTxt, i)
@@ -549,9 +549,10 @@ class moduleImap(Content):  # , Queue):
 
     def selectHeaderAuto(self, M, msg):
         # i = 1 # Removed unused variable
-        print(f"Msg: {msg}")
         if "List-Id" in msg:
-            return ("List-Id", msg["List-Id"][msg["List-id"].find("<") + 1 : -1])
+            header = "List-Id"
+            textHeader = msg["List-Id"][msg["List-Id"].find("<") + 1 : -1]
+            filterCond = textHeader
         else:
             textHeaders, nameHeaders = self.get_headers_content(M, msg)
             # import locale # Removed unused import
@@ -901,7 +902,12 @@ class moduleImap(Content):  # , Queue):
         return ""
 
     def printMessage(
-        self, M, msg, rows=24, columns=80, headers=["From", "To", "Subject", "Date"]
+        self,
+        M,
+        msg,
+        rows=24,
+        columns=80,
+        headers=["From", "To", "Subject", "Date"],
     ):
         for head in headers:
             print(
@@ -1292,7 +1298,7 @@ class moduleImap(Content):  # , Queue):
             if pos >= 0:
                 folder = folder[pos + 4 :]
         elif "." in folder:
-            pos = folder.find('"." ')
+            pos = folder.find('".." ')
             if pos >= 0:
                 folder = folder[pos + 4 :]
 
@@ -1400,8 +1406,8 @@ class moduleImap(Content):  # , Queue):
                         msgLog = "Reply %s" % rep
                         logMsg(msgLog, 2, 0)
                         if rep != "Fail!":
-                            M.store(msgId, "+FLAGS", "\\Seen")
-                            flag = "\\Deleted"
+                            M.store(msgId, "+FLAGS", r"\Seen")
+                            flag = r"\Deleted"
                             M.store(msgId, "+FLAGS", flag)
                         time.sleep(0.1)
                 i = i + 1
@@ -1462,7 +1468,7 @@ class moduleImap(Content):  # , Queue):
                     res = "Fail!"
                     continue
 
-                flag = "\\Deleted"
+                flag = r"\Deleted"
                 result = M.store(chunk_str, "+FLAGS", flag)
                 if result[0] != "OK":
                     print("Failed to delete chunk!")
@@ -1518,6 +1524,7 @@ class moduleImap(Content):  # , Queue):
 
         # Return the combined HTML content
         return mail_content.strip()
+
     def getPostContent(self, msg):
         """
         Extracts the plain text content from an email message, handling multipart and HTML parts.
@@ -1551,20 +1558,34 @@ class moduleImap(Content):  # , Queue):
 
     def _extract_text(self, part):
         content_type = part.get_content_type()
+        extracted_text = ""  # Initialize result variable
         try:
             if content_type == "text/plain":
                 payload = part.get_payload(decode=True)
                 charset = part.get_content_charset() or "utf-8"
-                return payload.decode(charset, errors="replace")
+                extracted_text = payload.decode(charset, errors="replace")
             elif content_type == "text/html":
                 payload = part.get_payload(decode=True)
                 charset = part.get_content_charset() or "utf-8"
                 html = payload.decode(charset, errors="replace")
                 soup = BeautifulSoup(html, "html.parser")
-                return soup.get_text("\n")
+                extracted_text = soup.get_text("\n")
         except Exception as e:
             logging.warning(f"Error decoding part: {e}")
-        return ""
+            extracted_text = ""
+        if isinstance(extracted_text, bytes):
+            # FIXME: does this belong here?
+            extracted_text = extracted_text.decode("utf-8")
+
+        cleaning_pattern = re.compile(r'[\u000A\u200C\u00A0\u2007\u00AD\u034F]+')
+        clean_text = cleaning_pattern.sub(' ', extracted_text)
+        pattern = r'[\r]'
+        replacement = r'\n'
+        clean_text = re.sub(pattern, replacement, clean_text)
+        pattern = r'[\s\n]{3,}'
+        replacement = r'\n\n'
+        clean_text = re.sub(pattern, replacement, clean_text)
+        return clean_text
 
     def getPostLinks(self, msg):
         if isinstance(msg, tuple):
@@ -1608,15 +1629,24 @@ class moduleImap(Content):  # , Queue):
         return result
 
     def getHeader(self, msg, header):
-        post = msg[1]
+        if isinstance(msg, tuple):
+            post = msg[1]
+        else:
+            post = msg
         return safe_get(post, [header])
 
     def getPostDate(self, msg):
-        post = msg[1]
+        if isinstance(msg, tuple):
+            post = msg[1]
+        else:
+            post = msg
         return post.get("Date")
 
     def getPostFrom(self, msg):
-        post = msg[1]
+        if isinstance(msg, tuple):
+            post = msg[1]
+        else:
+            post = msg
         return post.get("From")
 
     def getPostTo(self, msg):
@@ -1648,7 +1678,16 @@ class moduleImap(Content):  # , Queue):
         return subject
 
     def getPostId(self, msg):
-        return msg[0]
+        if isinstance(msg, tuple):
+            post = msg[1]
+        else:
+            post = msg
+        postId = post.get('Message-ID','')
+        if postId.startswith('<'):
+            postId = postId[1:]
+        if postId.startswith('>'):
+            postId = postId[:-1]
+        return postId
 
     def getPostAttachmentPdf(self, msg):
         if msg.is_multipart():
@@ -1905,18 +1944,6 @@ if __name__ == '__main__':
         nameF = apiDst.getChannelName(folderDst)
 
 
-def main():
-    logging.basicConfig(
-        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
-    )
-
-    from socialModules.moduleTester import ModuleTester
-
-    imap_module = moduleImap()
-    tester = ModuleTester(imap_module)
-    tester.run()
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
 

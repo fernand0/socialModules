@@ -113,7 +113,7 @@ class moduleFlickr(Content):  # , Queue):
     def getApiPostLink(self, post):
         logging.debug(f"{self.indent} Post: {post}")
         link = f"{self.url}/{post['id']}"
-        logging.debug(f"{self.indent} Post link: {link}")
+        #logging.debug(f"{self.indent} Post link: {link}")
         return link
 
     def extractPostLinks(self, post, linksToAvoid=""):

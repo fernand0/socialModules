@@ -76,9 +76,9 @@ class moduleRules:
             logMsg(msgLog, 1, 1)
             self.indent = f"{self.indent}{section}>"
             try:
-                self._process_section(section, config, services, sources, 
-                                      sources_available, more, destinations, 
-                                      temp_rules, rulesNew, rule_metadata, 
+                self._process_section(section, config, services, sources,
+                                      sources_available, more, destinations,
+                                      temp_rules, rulesNew, rule_metadata,
                                       implicit_rules)
             except ConfigError as ce:
                 logMsg(f"ERROR in section [{section}]: {ce}", 3, 1)
@@ -407,19 +407,126 @@ class moduleRules:
         self.availableList = myList if myList else []
         self.rules = {key: rulesNew[key] for key in rulesNew if rulesNew[key]}
 
-    def selectActionInteractive(self, service=None):
-        if not service:
-            nameModule = os.path.basename(inspect.stack()[1].filename)
-            service = nameModule.split(".")[0][6:].casefold()
-        selActions = self.selectAction(service)
+    def selectActionInteractive(self, apiSrc = None):
+        selActions = None
+        if apiSrc:
+            rule = apiSrc.src
+            selActions = self.rules[rule]
 
         print("Actions:")
         for i, act in enumerate(selActions):
             print(f"{i}) {act}")
         iAct = input("Which action? ")
-        apiDst = self.readConfigDst("", iAct, None, None)
+        #apiDst = self.readConfigDst("", selActions[int(iAct)], None, apiSrc)
+        #apiDst = self.readConfigDst(nameR_action, rule_action, rule_metadata, apiSrc)
 
-        return apiDst
+        return selActions[int(iAct)]
+
+    def selectServiceInteractive(self):
+        """
+        Lists the available services and prompts the user to select one.
+        """
+        print("\n--- Select a Service ---")
+        services = self.getServices()["regular"]
+        for i, service in enumerate(services):
+            print(f"{i}) {service}")
+        iService = input("Which service? ")
+        try:
+            selected_service = services[int(iService)]
+            return selected_service
+        except (ValueError, IndexError):
+            print("Invalid selection. Aborting.")
+            return None
+
+    def interactive_publish_with_rule(self):
+        """
+        Allows interactive selection of a rule and an action, then prompts for
+        a title and a link to publish using the selected destination.
+        """
+        print("\n--- Interactive Publishing ---")
+
+        # 1. Select a service
+        selected_service = self.selectServiceInteractive()
+        if not selected_service:
+            print("No service selected. Aborting.")
+            return
+
+        # 2. Select a rule (source)
+        apiSrc = self.selectRuleInteractive(service=selected_service)
+        if not apiSrc:
+            print("No rule selected or API source not found. Aborting.")
+            return
+
+        # 3. Select an action (destination)
+        action = self.selectActionInteractive(apiSrc=apiSrc)
+        if not action:
+            print("No action selected or API destination not found. Aborting.")
+            return
+
+        # 4. Prompt for title and link
+        title = input("Enter title for publication: ")
+        link = input("Enter link for publication (optional): ")
+        content = input("Enter content for publication (optional): ")
+
+        if not title and not content:
+            print("Title or content must be provided for publication. Aborting.")
+            return
+
+        print(f"\nPublishing '{title}' ") #to {self.getNameAction(apiDst.action)}@{self.getProfileAction(apiDst.action)}...")
+
+        # 5. Call the publish method
+        try:
+            # Assuming publishPost can take title, url, content directly
+            # The apiDst.action is a tuple like ('direct', 'post', 'service', 'account')
+            # We need to extract the actual destination service and account from it
+            # destination_service = self.getNameAction(apiDst.action)
+            # destination_account = self.getDestAction(apiDst.action)
+
+
+            apiDst = self.readConfigDst("", action, self.more[apiSrc.src], apiSrc)
+            result_dict = {
+                           "success": False,
+                           "publication_result": None,
+                           "link_updated": False,
+                           "post_action_result": None,
+                           "error": "No post found",
+                           "total": 0,
+                           }
+            post = {"title":title, "link":link, "content":content}
+            publication_res = apiDst.publishPost(api=apiSrc, post=post)
+            print(f"Pub Res: {publication_res}")
+            is_success = "Fail!" not in str(publication_res) and "failed!" not in str(publication_res)
+            result_dict["success"] = is_success
+            #results = (action,res)
+            if is_success:
+                result_dict["error"] = None
+                result_dict["successful"] = 1
+                result_dict["response_links"] = [ publication_res, ]
+            resUpdate = apiDst.updateLastLink(apiSrc, link)
+
+            # Use the unified publishing method
+            # results = self.publish_to_multiple_destinations(
+            #     destinations={destination_service: destination_account},
+            #     title=title,
+            #     url=link,
+            #     content=content
+            # )
+            print(f"Res: {resUpdate}")
+            summary = result_dict #self.get_publication_summary(results)
+            print(f"Summary: {summary}")
+            print("\n--- Publication Summary ---")
+            print(f"Total attempts: {summary['total']}")
+            print(f"Successful publications: {summary['successful']}")
+            for service, res_link in summary['response_links'].items():
+                print(f"  - {service}: {res_link}")
+            if summary['failed'] > 0:
+                print(f"Failed publications: {summary['failed']}")
+                for service, error in summary['errors'].items():
+                    print(f"  - {service}: {error}")
+            print("---------------------------\n")
+
+        except Exception as e:
+            print(f"An error occurred during publication: {e}")
 
     def selectRuleInteractive(self, service=None):
         if not service:
@@ -832,7 +939,7 @@ class moduleRules:
         pos,
         res,
     ):
-        resPost = ""
+        resPost = f"{res}"
         resMsg = ""
         msgLog = f"{indent}Trying to execute Post Action"
         logMsg(msgLog, 1, 1)
@@ -859,7 +966,7 @@ class moduleRules:
             logMsg(msgLog, 1, 1)
             resMsg += f" Post Action: {resPost}"
             if (
-                (res and ("failed!" not in res) and ("Fail!" not in res)) 
+                (res and ("failed!" not in res) and ("Fail!" not in res))
                 or (res and ("abusive!" in res))
                 or (
                     ((not res) and ("OK. Published!" not in res))
@@ -918,6 +1025,8 @@ class moduleRules:
         if not post:
             msgLog = f"{indent}No post to schedule in {msgAction}"
             logMsg(msgLog, 1, 1)
+            result_dict["success"] = True
+            result_dict["error"] = None
         else:
             title = apiSrc.getPostTitle(post)
             link = apiSrc.getPostLink(post)
@@ -989,12 +1098,12 @@ class moduleRules:
         delete=False,
     ):
         indent = f"{name}"
-        res = None #{{"success": False, "error": ""}} #{{"}}
+        res = None #{"success": False, "error": ""} #{}
         textEnd = ""
 
         # Destination
         orig = (
-                f"{self.getNickRule(src)}@{self.getNameAction(src)} " 
+                f"{self.getNickRule(src)}@{self.getNameAction(src)} "
                 f"({self.getTypeRule(src)})"
                 )
         dest = (
@@ -1004,7 +1113,6 @@ class moduleRules:
         msgLog = f"{indent} Scheduling {orig} -> {dest}"
         logMsg(msgLog, 1, 1)
         apiDst = self.readConfigDst(indent, action, more, apiSrc)
-        logMsg("Aquí", 1, 0)
         if not apiDst.getClient():
             msgLog = self.clientErrorMsg(
                 indent,
@@ -1016,7 +1124,7 @@ class moduleRules:
             if msgLog:
                 logMsg(msgLog, 3, 1)
                 sys.stderr.write(f"Error: {msgLog}\n")
-            res = {{"success": False, "error": f"End: {msgLog}"}}
+            res = {"success": False, "error": f"End: {msgLog}"}
         else:
             # Backup the current next-run time before making changes
             backup_time = apiDst.getNextTime(apiSrc)
@@ -1108,7 +1216,8 @@ class moduleRules:
                     tSleep = 2.0
                     msgLog = f"{indent} No Waiting"
 
-                logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
+                logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in "
+                       f"{self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
 
                 for i in range(numAct):
                     time.sleep(tSleep)
@@ -1225,8 +1334,9 @@ class moduleRules:
                     rule_action, rule_metadata, args
                 )
 
+
                 if self._should_skip_publication(
-                    apiDst, apiSrc, noWait, timeSlots, f"{nameA}"
+                    apiDst, apiSrc, noWait, f"{nameA}"
                 ):
                     continue
                 scheduled_actions.append(
@@ -1242,6 +1352,8 @@ class moduleRules:
                         "apiDst": apiDst,
                         "name_action": name_action,
                         "nameA": nameA,
+                        "timeSlots": timeSlots, # Add timeSlots to scheduled_actions
+                        "noWait": noWait,       # Add noWait to scheduled_actions
                     }
                 )
         return scheduled_actions
@@ -1320,7 +1432,7 @@ class moduleRules:
             action_index,
         )
 
-    def _should_skip_publication(self, apiDst, apiSrc, noWait, timeSlots, nameA):
+    def _should_skip_publication(self, apiDst, apiSrc, noWait, nameA):
         indent = nameA
         num = apiDst.getMax()
         if num <= 0:
@@ -1351,10 +1463,12 @@ class moduleRules:
         Reports the results and errors of action execution.
         """
         for scheduled_action, res_dict in action_results:
+            print(f"Scheduled: {scheduled_action}. Res: {res_dict}")
             rule_key = scheduled_action["rule_key"]
             rule_index = scheduled_action.get("rule_index", "")
+            name_action = scheduled_action["nameA"]
             rule_summary = (
-                f"Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
+                f"{name_action} Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
             )
 
             if res_dict == "ok":
@@ -1391,8 +1505,9 @@ class moduleRules:
         for scheduled_action, exc in action_errors:
             rule_key = scheduled_action["rule_key"]
             rule_index = scheduled_action.get("rule_index", "")
+            name_action = scheduled_action["nameA"]
             rule_summary = (
-                f"Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
+                f"{name_action} Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
             )
             logMsg(
                 f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {exc}",
@@ -1517,7 +1632,7 @@ class moduleRules:
             dict: Publication result
         """
         service_key = f"{destination}_{account}"
-        result_dict = {{}}
+        result_dict = {}
 
         try:
             # Create key for readConfigDst
@@ -1673,7 +1788,7 @@ class moduleRules:
         Raises:
             ValueError: If parameters are invalid
         """
-        results = {{}}
+        results = {}
         # Validate inputs
         if not title and not content:
             raise ValueError("Either title or content must be provided")
@@ -1762,7 +1877,7 @@ class moduleRules:
         Returns:
             dict: Summary with statistics and details
         """
-        summary = {{}}
+        summary = {}
         if not results or "error" in results:
             summary = {
                 "total": 0,
@@ -1833,6 +1948,13 @@ class moduleRules:
             help="no wait for time restrictions",
         )
         parser.add_argument(
+            "--interactive",
+            "-i",
+            default=False,
+            action="store_true",
+            help="interactive publishing mode",
+        )
+        parser.add_argument(
             "--rules",
             "-r",
             default=False,
@@ -1858,7 +1980,10 @@ def main():
     rules.indent = ""
     rules.checkRules()
 
-    rules.executeRules()
+    if rules.args.interactive:
+        rules.interactive_publish_with_rule()
+    else:
+        rules.executeRules()
 
     return
 
