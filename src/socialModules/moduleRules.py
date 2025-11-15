@@ -1284,7 +1284,11 @@ class moduleRules:
     def _get_last_time_filename(self, rule_key, rule_action):
         nameSrc = self.getNameRule(rule_key).capitalize()
         typeSrc = self.getTypeRule(rule_key)
-        user_src = self.getNickRule(rule_key)
+        user_src_raw = self.getNickRule(rule_key)
+        if user_src_raw and (user_src_raw.startswith("http---") or user_src_raw.startswith("https---")):
+            user_src = user_src_raw.split("---", 1)[1]
+        else:
+            user_src = user_src_raw
         service_src = nameSrc
 
         nameDst = self.getNameAction(rule_action).capitalize()
