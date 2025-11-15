@@ -865,7 +865,7 @@ class moduleRules:
             res = action[pos]
         return res
 
-    def readConfigDst(self, indent, action, more, apiSrc):
+    def readConfigDst(self, indent, action, more, apiSrc=None):
         msgLog = f"{indent} Start readConfigDst {action}"  #: {src[1:]}"
         logMsg(msgLog, 2, 1)
         child_indent = f"{indent} "
@@ -1281,6 +1281,65 @@ class moduleRules:
         logMsg(msgLog, 1, 2)
         return
 
+    def _get_last_time_filename(self, rule_key, rule_action):
+        nameSrc = self.getNameRule(rule_key)
+        typeSrc = self.getTypeRule(rule_key)
+        user_src = self.getNickRule(rule_key)
+        service_src = nameSrc
+
+        nameDst = self.getNameAction(rule_action)
+        typeDst = self.getTypeAction(rule_action)
+        user_dst = self.getNickAction(rule_action)
+        service_dst = nameDst
+
+        fileName = (
+            f"{nameSrc}_{typeSrc}_"
+            f"{user_src}_{service_src}__"
+            f"{nameDst}_{typeDst}_"
+            f"{user_dst}_{service_dst}"
+        )
+        fileName = f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}.last"
+        return fileName
+
+    def _get_publication_check_data(self, rule_key, rule_action, rule_metadata):
+        max_val = rule_metadata.get('max', 1) if rule_metadata else 1
+        time_val = rule_metadata.get('time', 0) if rule_metadata else 0
+
+        last_time_file = self._get_last_time_filename(rule_key, rule_action)
+        last_time_val = 0
+        if os.path.exists(last_time_file):
+            last_time_val = os.path.getctime(last_time_file)
+
+        return int(max_val), float(time_val), last_time_val
+
+    def _should_skip_publication_early(self, rule_key, rule_action, rule_metadata, noWait, nameA):
+        max_val, time_val, last_time_val = self._get_publication_check_data(rule_key, rule_action, rule_metadata)
+        
+        indent = nameA
+        num = max_val
+        if num <= 0:
+            logMsg(f"{indent} No posts available", 1, 1)
+            return True
+
+        tNow = time.time()
+        hours = float(time_val) * 60 * 60
+        lastTime = last_time_val
+
+        if lastTime:
+            diffTime = tNow - lastTime
+        else:
+            diffTime = hours + 1
+
+        if not noWait and (diffTime <= hours):
+            msgLog = (
+                f"{indent} Not enough time passed. "
+                f"We will wait at least "
+                f"{(hours-diffTime)/(60*60):2.2f} hours."
+            )
+            logMsg(msgLog, 1, 1)
+            return True
+        return False
+
     def _prepare_actions(self, args, select):
         """
         Prepares the list of actions to execute, filtering and collecting all
@@ -1320,6 +1379,13 @@ class moduleRules:
                 if select and (select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"):
                     continue
 
+                timeSlots, noWait = self._get_action_properties(
+                    rule_action, rule_metadata, args
+                )
+
+                if self._should_skip_publication_early(rule_key, rule_action, rule_metadata, noWait, f"{nameA}"):
+                    continue
+
                 apiSrc = self.readConfigSrc(nameR_action, rule_key, rule_metadata)
                 if not apiSrc:
                     logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
@@ -1328,14 +1394,6 @@ class moduleRules:
                 apiDst = self.readConfigDst(nameR_action, rule_action, rule_metadata, apiSrc)
                 if not apiDst:
                     logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
-                    continue
-
-                timeSlots, noWait = self._get_action_properties(
-                    rule_action, rule_metadata, args
-                )
-
-
-                if self._should_skip_publication(apiDst, noWait, f"{nameA}"):
                     continue
                 scheduled_actions.append(
                     {
@@ -1429,32 +1487,6 @@ class moduleRules:
             nameA,
             action_index,
         )
-
-    def _should_skip_publication(self, apiDst, noWait, nameA):
-        indent = nameA
-        num = apiDst.getMax()
-        if num <= 0:
-            logMsg(f"{indent} No posts available", 1, 1)
-            return True
-
-        tNow = time.time()
-        hours = float(apiDst.getTime()) * 60 * 60
-        lastTime = apiDst.getLastTimePublished(f"{indent}")
-
-        if lastTime:
-            diffTime = tNow - lastTime
-        else:
-            diffTime = hours + 1
-
-        if not noWait and (diffTime <= hours):
-            msgLog = (
-                f"{indent} Not enough time passed. "
-                f"We will wait at least "
-                f"{(hours-diffTime)/(60*60):2.2f} hours."
-            )
-            logMsg(msgLog, 1, 1)
-            return True
-        return False
 
     def _report_results(self, action_results, action_errors):
         """
