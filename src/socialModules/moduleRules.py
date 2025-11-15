@@ -1282,12 +1282,12 @@ class moduleRules:
         return
 
     def _get_last_time_filename(self, rule_key, rule_action):
-        nameSrc = self.getNameRule(rule_key)
+        nameSrc = self.getNameRule(rule_key).capitalize()
         typeSrc = self.getTypeRule(rule_key)
         user_src = self.getNickRule(rule_key)
         service_src = nameSrc
 
-        nameDst = self.getNameAction(rule_action)
+        nameDst = self.getNameAction(rule_action).capitalize()
         typeDst = self.getTypeAction(rule_action)
         user_dst = self.getNickAction(rule_action)
         service_dst = nameDst
@@ -1299,6 +1299,7 @@ class moduleRules:
             f"{user_dst}_{service_dst}"
         )
         fileName = f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}.last"
+        logging.info(f"fileNameeee: {fileName}")
         return fileName
 
     def _get_publication_check_data(self, rule_key, rule_action, rule_metadata):
@@ -1325,6 +1326,8 @@ class moduleRules:
         hours = float(time_val) * 60 * 60
         lastTime = last_time_val
 
+
+        logging.info(f"lastTimeeee: {lastTime}")
         if lastTime:
             diffTime = tNow - lastTime
         else:
@@ -1375,8 +1378,9 @@ class moduleRules:
                 name_action = f"[{self.getNameAction(rule_key)}{i}]"
                 nameR_action = f"{name_action:->12}>"
                 nameA =  f"{nameR_action} Action {action_index}:"
+                nameRule = f"{self.getNameRule(rule_key).lower()}{i}"
 
-                if select and (select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"):
+                if select and (select.lower() != nameRule):
                     continue
 
                 timeSlots, noWait = self._get_action_properties(
@@ -1386,12 +1390,12 @@ class moduleRules:
                 if self._should_skip_publication_early(rule_key, rule_action, rule_metadata, noWait, f"{nameA}"):
                     continue
 
-                apiSrc = self.readConfigSrc(nameR_action, rule_key, rule_metadata)
+                apiSrc = self.readConfigSrc(nameA, rule_key, rule_metadata)
                 if not apiSrc:
                     logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
                     continue
 
-                apiDst = self.readConfigDst(nameR_action, rule_action, rule_metadata, apiSrc)
+                apiDst = self.readConfigDst(nameA, rule_action, rule_metadata, apiSrc)
                 if not apiDst:
                     logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
                     continue
