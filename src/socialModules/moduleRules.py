@@ -1285,17 +1285,32 @@ class moduleRules:
         nameSrc = self.getNameRule(rule_key).capitalize()
         typeSrc = self.getTypeRule(rule_key)
         user_src_raw = self.getNickRule(rule_key)
-        if user_src_raw and (user_src_raw.startswith("http---") or user_src_raw.startswith("https---")):
-            user_src = user_src_raw.split("---", 1)[1]
+        logging.info(f"Userrrr: {user_src_raw}")
+        if user_src_raw and (user_src_raw.startswith("http://") or user_src_raw.startswith("https://")):
+            user_src = user_src_raw.split("//", 1)[1]
         else:
             user_src = user_src_raw
-        service_src = nameSrc
+        logging.info(f"Userrrr: {user_src}")
 
-        nameDst = self.getNameAction(rule_action).capitalize()
-        typeDst = self.getTypeAction(rule_action)
-        user_dst = self.getNickAction(rule_action)
-        service_dst = nameDst
+        service_src = self.getNameRule(rule_key).capitalize()
 
+        if self.getNameAction(rule_action) == 'cache':
+            # Handle cache destination: extract details from the nested rule_action
+            inner_rule_action = rule_action[2] # This is the actual destination rule tuple
+            nameDst = 'Cache'
+            typeDst = 'posts' # Always 'posts' for consistency
+            user_dst_raw = self.getDestAction(inner_rule_action)
+            logging.info(f"Userrrrr: {user_dst_raw}")
+            if user_dst_raw and (user_dst_raw.startswith("http://") or user_dst_raw.startswith("https://")):
+                user_dst = user_dst_raw.split("//", 1)[1] 
+            else: 
+                user_dst = user_dst_raw
+            service_dst = self.getNameAction(inner_rule_action).capitalize()
+        else:
+            nameDst = self.getNameAction(rule_action).capitalize()
+            typeDst = 'posts' # Always 'posts' for consistency
+            user_dst = self.getNickAction(rule_action)
+            service_dst = self.getNameAction(rule_action).capitalize()
         fileName = (
             f"{nameSrc}_{typeSrc}_"
             f"{user_src}_{service_src}__"
