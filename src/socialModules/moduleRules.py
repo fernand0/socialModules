@@ -1335,9 +1335,7 @@ class moduleRules:
                 )
 
 
-                if self._should_skip_publication(
-                    apiDst, apiSrc, noWait, f"{nameA}"
-                ):
+                if self._should_skip_publication(apiDst, noWait, f"{nameA}"):
                     continue
                 scheduled_actions.append(
                     {
@@ -1432,7 +1430,7 @@ class moduleRules:
             action_index,
         )
 
-    def _should_skip_publication(self, apiDst, apiSrc, noWait, nameA):
+    def _should_skip_publication(self, apiDst, noWait, nameA):
         indent = nameA
         num = apiDst.getMax()
         if num <= 0:
