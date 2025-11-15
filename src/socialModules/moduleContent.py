@@ -238,7 +238,9 @@ class Content:
         # We have a dictionary of values and we check for methods for
         # setting these values in our object
         self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Start setMoreValues {more}"
+        msgLog = f"{self.indent} Start setMoreValues"
+        logMsg(msgLog, 2, 0)
+        msgLog = f"{self.indent}  More: {more}"
         logMsg(msgLog, 2, 0)
         if more:
             # Setting values available in more
@@ -426,6 +428,8 @@ class Content:
             )
             fileName = f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}"
             self.fileName = fileName
+        msgLog = f"{indent}  File: {fileName}"
+        logMsg(msgLog, 2, 0)
 
         msgLog = f"{indent} End fileNameBase"
         logMsg(msgLog, 2, 0)

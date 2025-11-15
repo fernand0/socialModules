@@ -1316,16 +1316,18 @@ class moduleRules:
                 name_action = f"[{self.getNameAction(rule_key)}{i}]"
                 nameR_action = f"{name_action:->12}>"
                 nameA =  f"{nameR_action} Action {action_index}:"
+                nameRule = f"{self.getNameRule(rule_key).lower()}{i}"
 
-                if select and (select.lower() != f"{self.getNameRule(rule_key).lower()}{i}"):
+                if select and (select.lower() != nameRule):
                     continue
 
-                apiSrc = self.readConfigSrc(nameR_action, rule_key, rule_metadata)
+                apiSrc = self.readConfigSrc(nameA, rule_key, rule_metadata)
                 if not apiSrc:
                     logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
                     continue
 
-                apiDst = self.readConfigDst(nameR_action, rule_action, rule_metadata, apiSrc)
+                apiDst = self.readConfigDst(nameA, rule_action, 
+                                            rule_metadata, apiSrc)
                 if not apiDst:
                     logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
                     continue
