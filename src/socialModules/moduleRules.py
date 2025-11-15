@@ -8,7 +8,7 @@ import sys
 import time
 
 import socialModules
-from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR, select_from_list
+from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR, DATADIR, select_from_list
 
 fileName = socialModules.__file__
 path = f"{os.path.dirname(fileName)}"
@@ -1395,6 +1395,7 @@ class moduleRules:
                 if not apiDst:
                     logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
                     continue
+
                 scheduled_actions.append(
                     {
                         "rule_key": rule_key,
