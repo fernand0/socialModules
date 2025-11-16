@@ -174,15 +174,17 @@ def test_empty_destinations(mock_publish, rules_instance):
         title="Test"
     )
 
-@patch('socialModules.moduleRules.moduleRules.publish_to_multiple_destinations')
-def test_smtp_special_handling(mock_publish, rules_instance):
+@patch('socialModules.moduleRules.moduleRules._publish_to_single_destination')
+def test_smtp_special_handling(mock_single_destination_publish, rules_instance):
     """
     Tests that SMTP-specific parameters are correctly handled.
     """
     # Arrange
     destinations = {"smtp": "smtp_acc"}
-    mock_publish.return_value = {
-        "smtp_acc": {"success": True, "result": "Email sent"}
+    mock_single_destination_publish.return_value = {
+        "success": True,
+        "result": "Email sent",
+        "service": "smtp_smtp_acc"
     }
 
     # Act
@@ -194,8 +196,9 @@ def test_smtp_special_handling(mock_publish, rules_instance):
     )
 
     # Assert
-    mock_publish.assert_called_once_with(
-        destinations=destinations,
+    mock_single_destination_publish.assert_called_once_with(
+        destination="smtp",
+        account="smtp_acc",
         title="Email Title",
         url="",
         content="",
