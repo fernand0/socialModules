@@ -6,6 +6,7 @@ import os
 import random
 import sys
 import time
+import urllib
 
 import socialModules
 from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR, DATADIR, select_from_list
@@ -1281,16 +1282,29 @@ class moduleRules:
         logMsg(msgLog, 1, 2)
         return
 
+    def _extract_nick_from_url(self, url):
+        result = url
+        url_parsed = urllib.parse.urlparse(url)
+        #if url and (url.startswith("http")):
+        #    result = url.split("//", 1)[1]
+        if (((url_parsed.netloc.count('.')>1)
+             and (url_parsed.netloc.split('.')[0] in ['www']))
+            or (url_parsed.netloc.count('.') == 1)):
+                result = f"{url_parsed.netloc}{url_parsed.path}"
+        else:
+            result = f"{url_parsed.netloc}"
+        if url_parsed.query:
+            result = f"{result}?{url_parsed.query}"
+
+        return result
+
     def _get_last_time_filename(self, rule_key, rule_action):
+        logging.info(f"Rulee: {rule_key}")
+        logging.info(f"Actionnn: {rule_action}")
         nameSrc = self.getNameRule(rule_key).capitalize()
         typeSrc = self.getTypeRule(rule_key)
         user_src_raw = self.getNickRule(rule_key)
-        logging.info(f"Userrrr: {user_src_raw}")
-        if user_src_raw and (user_src_raw.startswith("http://") or user_src_raw.startswith("https://")):
-            user_src = user_src_raw.split("//", 1)[1]
-        else:
-            user_src = user_src_raw
-        logging.info(f"Userrrr: {user_src}")
+        user_src = self._extract_nick_from_url(user_src_raw)
 
         service_src = self.getNameRule(rule_key).capitalize()
 
@@ -1302,8 +1316,8 @@ class moduleRules:
             user_dst_raw = self.getDestAction(inner_rule_action)
             logging.info(f"Userrrrr: {user_dst_raw}")
             if user_dst_raw and (user_dst_raw.startswith("http://") or user_dst_raw.startswith("https://")):
-                user_dst = user_dst_raw.split("//", 1)[1] 
-            else: 
+                user_dst = user_dst_raw.split("//", 1)[1]
+            else:
                 user_dst = user_dst_raw
             service_dst = self.getNameAction(inner_rule_action).capitalize()
         else:
@@ -1311,6 +1325,11 @@ class moduleRules:
             typeDst = 'posts' # Always 'posts' for consistency
             user_dst = self.getNickAction(rule_action)
             service_dst = self.getNameAction(rule_action).capitalize()
+        if user_src.endswith('/'):
+            user_src = user_src[:-1]
+        if nameSrc == 'Cache':
+            typeSrc = 'posts'
+            service_src = self.getSecondNameRule(rule_key).capitalize()
         fileName = (
             f"{nameSrc}_{typeSrc}_"
             f"{user_src}_{service_src}__"
@@ -1334,7 +1353,7 @@ class moduleRules:
 
     def _should_skip_publication_early(self, rule_key, rule_action, rule_metadata, noWait, nameA):
         max_val, time_val, last_time_val = self._get_publication_check_data(rule_key, rule_action, rule_metadata)
-        
+
         indent = nameA
         num = max_val
         if num <= 0:
