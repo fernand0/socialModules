@@ -642,7 +642,7 @@ class Content:
         logMsg(msgLog, 2, 0)
 
         if not src:
-            logMsg(f"{self.indent}Error: El parámetro 'src' no puede ser None.", 3, 1)
+            logMsg(f"{self.indent}Error: 'src' parameter cannot be None.", 3, 1)
             self.indent = self.indent[:-1]
             return
 

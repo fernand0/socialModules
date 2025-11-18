@@ -877,6 +877,7 @@ class moduleRules:
         apiDst = getApi(profile, account, child_indent)
 
         if apiDst is not None:
+            apiDst.action = action
             apiDst.setMoreValues(more)
             apiDst.indent = child_indent
             if fileName:
@@ -1117,7 +1118,9 @@ class moduleRules:
                 )
         msgLog = f"{indent} Scheduling {orig} -> {dest}"
         logMsg(msgLog, 1, 1)
-        apiDst = self.readConfigDst(indent, action, more, apiSrc)
+        base_name = self._get_filename_base(apiSrc.src, action)
+        apiDst = self.readConfigDst(indent, action, more, apiSrc, fileName=base_name)
+        # FIXME: Is this needed?
         if not apiDst.getClient():
             msgLog = self.clientErrorMsg(
                 indent,
@@ -1227,7 +1230,9 @@ class moduleRules:
                 for i in range(numAct):
                     time.sleep(tSleep)
                     if "minutes" in msgLog:
-                        logMsg(f"{indent} End Waiting {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
+                        logMsg(f"{indent} End Waiting {theAction} from "
+                               f"{apiSrc.getUrl()} in {self.getNickAction(action)}"
+                               f"@{self.getProfileAction(action)}", 1, 1)
 
                     res = self.executePublishAction(
                         indent,

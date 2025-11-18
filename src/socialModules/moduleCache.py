@@ -147,6 +147,7 @@ class moduleCache(Content):  # ,Queue):
         msgLog = f"{self.indent} Start setApiPosts"
         logMsg(msgLog, 2, 0)
         fileNameQ = f"{self.fileNameBase(self.apiDst)}.queue"
+        #FIXME: This fileNameBase must be replaced
         msgLog = f"{self.indent} File: %s" % fileNameQ
         logMsg(msgLog, 2, 0)
         listP = []
