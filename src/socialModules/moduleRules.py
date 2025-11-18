@@ -9,7 +9,7 @@ import time
 import urllib
 
 import socialModules
-from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR, DATADIR, select_from_list
+from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR, DATADIR, select_from_list, extract_nick_from_url
 
 fileName = socialModules.__file__
 path = f"{os.path.dirname(fileName)}"
@@ -1039,7 +1039,7 @@ class moduleRules:
             if link:
                 msgLog = (
                     f"{msgLog} Recording Link: {link} "
-                    f"in file {apiDst.fileNameBase(apiSrc)}.last"
+                    f"in file {apiSrc.fileNameBase(apiDst)}.last"
                 )
 
             if simmulate:
@@ -1286,22 +1286,6 @@ class moduleRules:
         logMsg(msgLog, 1, 2)
         return
 
-    def _extract_nick_from_url(self, url):
-        result = url
-        url_parsed = urllib.parse.urlparse(url)
-        #if url and (url.startswith("http")):
-        #    result = url.split("//", 1)[1]
-        if (((url_parsed.netloc.count('.')>1)
-             and (url_parsed.netloc.split('.')[0] in ['www']))
-            or (url_parsed.netloc.count('.') == 1)):
-                result = f"{url_parsed.netloc}{url_parsed.path}"
-        else:
-            result = f"{url_parsed.netloc}"
-        if url_parsed.query:
-            result = f"{result}?{url_parsed.query}"
-
-        return result
-
     def _get_filename_base(self, rule_key, rule_action):
         logging.info(f"Ruleee: {rule_key}")
         logging.info(f"Actionnn: {rule_action}")
@@ -1310,7 +1294,7 @@ class moduleRules:
         user_src_raw = self.getNickRule(rule_key)
         logging.info(f"Userrrr: {user_src_raw}")
         if user_src_raw.startswith('http'):
-            user_src = self._extract_nick_from_url(user_src_raw)
+            user_src = extract_nick_from_url(user_src_raw)
         else:
             user_src = user_src_raw
         logging.info(f"Userrrr: {user_src}")
@@ -1347,7 +1331,7 @@ class moduleRules:
             f"{user_dst}_{service_dst}"
         )
         base_name = base_name.replace('/','-').replace(':','-')
-        logging.info(f"fileNameeee: {base_name}")
+        logging.info(f"fileNameeee:  ~/.mySocial/data/{base_name}")
         return base_name
 
     def _get_publication_check_data(self, rule_key, rule_action, rule_metadata):

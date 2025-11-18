@@ -19,7 +19,7 @@ importlib.reload(sys)
 from crontab import CronTab
 
 import socialModules
-from socialModules.configMod import *
+from socialModules.configMod import *, extract_nick_from_url
 from socialModules.moduleContent import *
 # from socialModules.moduleQueue import *
 
@@ -59,6 +59,7 @@ class moduleCache(Content):  # ,Queue):
         return "posts"
 
     def fileNameBase(self, dst=None):
+        # FIXME: we should avoid this?
         indent = f"{self.indent}  "
         msgLog = f"{indent} Start fileNameBase (c)"
         logMsg(msgLog, 2, 0)
@@ -76,7 +77,9 @@ class moduleCache(Content):  # ,Queue):
             # self.setNick()
             # user = self.getNick()
             user = self.apiSrc.getNick()
-            # logging.info(f"Userrrrrrr: {user} - {self.getUser()}")
+            logging.info(f"Userrrrrrr: {user} - {self.getUser()}")
+            if user.startswith('http'):
+                user = extract_nick_from_url(user)
             # self.setServiceAux()
             service = self.apiSrc.getService()
 
