@@ -835,7 +835,7 @@ class moduleRules:
             )
         return f"{msgLog}"
 
-    def readConfigSrc(self, indent, src, more):
+    def readConfigSrc(self, indent, src, more, fileName=None):
         msgLog = f"{indent} Start readConfigSrc {src}"
         logMsg(msgLog, 2, 1)
         child_indent = f"{indent} "
@@ -853,6 +853,8 @@ class moduleRules:
             apiSrc.setPostsType(src[-1])
             apiSrc.setMoreValues(more)
             apiSrc.indent = indent
+            if fileName:
+                apiSrc.fileName = fileName
         else:
             logMsg(f"{indent} Failed to get API for source: {src}", 3, 1)
 
@@ -866,7 +868,7 @@ class moduleRules:
             res = action[pos]
         return res
 
-    def readConfigDst(self, indent, action, more, apiSrc=None):
+    def readConfigDst(self, indent, action, more, apiSrc=None, fileName=None):
         msgLog = f"{indent} Start readConfigDst {action}"  #: {src[1:]}"
         logMsg(msgLog, 2, 1)
         child_indent = f"{indent} "
@@ -877,6 +879,8 @@ class moduleRules:
         if apiDst is not None:
             apiDst.setMoreValues(more)
             apiDst.indent = child_indent
+            if fileName:
+                apiDst.fileName = fileName
             # msgLog = f"{child_indent} apiDstt {apiDst}"  #: {src[1:]}"
             # logMsg(msgLog, 2, 0)
             # msgLog = f"{child_indent} apiDstt {apiDst.client}"  #: {src[1:]}"
@@ -1298,13 +1302,18 @@ class moduleRules:
 
         return result
 
-    def _get_last_time_filename(self, rule_key, rule_action):
-        logging.info(f"Rulee: {rule_key}")
+    def _get_filename_base(self, rule_key, rule_action):
+        logging.info(f"Ruleee: {rule_key}")
         logging.info(f"Actionnn: {rule_action}")
         nameSrc = self.getNameRule(rule_key).capitalize()
         typeSrc = self.getTypeRule(rule_key)
         user_src_raw = self.getNickRule(rule_key)
-        user_src = self._extract_nick_from_url(user_src_raw)
+        logging.info(f"Userrrr: {user_src_raw}")
+        if user_src_raw.startswith('http'):
+            user_src = self._extract_nick_from_url(user_src_raw)
+        else:
+            user_src = user_src_raw
+        logging.info(f"Userrrr: {user_src}")
 
         service_src = self.getNameRule(rule_key).capitalize()
 
@@ -1314,9 +1323,9 @@ class moduleRules:
             nameDst = 'Cache'
             typeDst = 'posts' # Always 'posts' for consistency
             user_dst_raw = self.getDestAction(inner_rule_action)
-            logging.info(f"Userrrrr: {user_dst_raw}")
             if user_dst_raw and (user_dst_raw.startswith("http://") or user_dst_raw.startswith("https://")):
                 user_dst = user_dst_raw.split("//", 1)[1]
+                # FIXME Is this needed?
             else:
                 user_dst = user_dst_raw
             service_dst = self.getNameAction(inner_rule_action).capitalize()
@@ -1330,21 +1339,24 @@ class moduleRules:
         if nameSrc == 'Cache':
             typeSrc = 'posts'
             service_src = self.getSecondNameRule(rule_key).capitalize()
-        fileName = (
+
+        base_name = (
             f"{nameSrc}_{typeSrc}_"
             f"{user_src}_{service_src}__"
             f"{nameDst}_{typeDst}_"
             f"{user_dst}_{service_dst}"
         )
-        fileName = f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}.last"
-        logging.info(f"fileNameeee: {fileName}")
-        return fileName
+        base_name = base_name.replace('/','-').replace(':','-')
+        logging.info(f"fileNameeee: {base_name}")
+        return base_name
 
     def _get_publication_check_data(self, rule_key, rule_action, rule_metadata):
         max_val = rule_metadata.get('max', 1) if rule_metadata else 1
         time_val = rule_metadata.get('time', 0) if rule_metadata else 0
 
-        last_time_file = self._get_last_time_filename(rule_key, rule_action)
+        base_name = self._get_filename_base(rule_key, rule_action)
+        last_time_file = f"{DATADIR}/{base_name}.last"
+
         last_time_val = 0
         if os.path.exists(last_time_file):
             last_time_val = os.path.getctime(last_time_file)
@@ -1428,12 +1440,13 @@ class moduleRules:
                 if self._should_skip_publication_early(rule_key, rule_action, rule_metadata, noWait, f"{nameA}"):
                     continue
 
-                apiSrc = self.readConfigSrc(nameA, rule_key, rule_metadata)
+                base_name = self._get_filename_base(rule_key, rule_action)
+                apiSrc = self.readConfigSrc(nameA, rule_key, rule_metadata, fileName=base_name)
                 if not apiSrc:
                     logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
                     continue
 
-                apiDst = self.readConfigDst(nameA, rule_action, rule_metadata, apiSrc)
+                apiDst = self.readConfigDst(nameA, rule_action, rule_metadata, apiSrc, fileName=base_name)
                 if not apiDst:
                     logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
                     continue

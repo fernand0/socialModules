@@ -379,9 +379,12 @@ class Content:
         msgLog = f"{indent} Start fileNameBase"
         logMsg(msgLog, 2, 0)
 
-        if hasattr(dst, "fileName") and dst.fileName:
+        if hasattr(self, "fileName"):
+            fileName = self.fileName
+        elif hasattr(dst, "fileName") and dst.fileName:
             fileName = dst.fileName
         else:
+            # FIXME Is this needed?
             src = self
             typeSrc = "posts"
             if hasattr(src, "getPostsType"):
