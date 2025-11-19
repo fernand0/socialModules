@@ -626,9 +626,9 @@ class moduleRules:
                     elif myModule == f"module{service.capitalize()}":
                         target = method[len("set") :].lower()
                     if target and (
-                        target.lower()
-                        in ["posts", "drafts", "favs", "messages", "queue", "search"]
-                    ):
+                            target.lower()
+                            in ["posts", "drafts", "favs", "messages", "queue", "search"]
+                            ):
                         toAppend = (action, target)
                         if toAppend not in methods:
                             methods.append(toAppend)
@@ -1136,6 +1136,16 @@ class moduleRules:
         else:
             # Backup the current next-run time before making changes
             backup_time = apiDst.getNextTime(apiSrc)
+            base_name = self._get_filename_base(src, action)
+            fileNameNext = f"{DATADIR}/{base_name}.timeNext"
+            with open(fileNameNext, "rb") as f:
+                import pickle
+                tNow, tSleep = pickle.load(f)
+            backup_time2 = (tNow, tSleep)
+            sp = " "*35
+            logging.info(f"{indent} backkkkk: {backup_time}\n"
+                         f"{sp}"
+                         f"{indent} backkkkk: {backup_time2}")
 
             tL = random.random() * numAct
             indent = f"{indent} "
@@ -1338,6 +1348,23 @@ class moduleRules:
         base_name = base_name.replace('/','-').replace(':','-')
         logging.info(f"fileNameeee:  ~/.mySocial/data/{base_name}")
         return base_name
+
+    def getNextTime(self, src, action):
+        # We need to import pickle here because it's used only in this specific context
+        import pickle 
+
+        base_name = self._get_filename_base(src, action)
+        fileNameNext = os.path.join(DATADIR, f"{base_name}.timeNext")
+        
+        # Check if the file exists before trying to read it
+        if not os.path.exists(fileNameNext):
+            # Return a default value or raise an error if the file doesn't exist
+            # Returning (None, None) to indicate that the next time is not set
+            return (None, None)
+            
+        with open(fileNameNext, "rb") as f:
+            tNow, tSleep = pickle.load(f)
+        return (tNow, tSleep)
 
     def _get_publication_check_data(self, rule_key, rule_action, rule_metadata):
         max_val = rule_metadata.get('max', 1) if rule_metadata else 1

@@ -19,7 +19,7 @@ importlib.reload(sys)
 from crontab import CronTab
 
 import socialModules
-from socialModules.configMod import *, extract_nick_from_url
+from socialModules.configMod import *
 from socialModules.moduleContent import *
 # from socialModules.moduleQueue import *
 

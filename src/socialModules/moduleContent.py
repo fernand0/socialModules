@@ -610,7 +610,7 @@ class Content:
             self.indent = self.indent[:-1]
             return None, None
 
-        fileNameNext = f"{src.fileNameBase(self)}.timeNext"
+        fileNameNext = f"{DATADIR}/{src.fileNameBase(self)}.timeNext"
 
         if not os.path.exists(fileNameNext):
             logMsg(f"{self.indent}  Fichero de tiempo no existe: {fileNameNext}", 2, 0)
@@ -648,7 +648,7 @@ class Content:
 
         fileNameNext = None
         try:
-            fileNameNext = f"{src.fileNameBase(self)}.timeNext"
+            fileNameNext = f"{DATADIR}/{src.fileNameBase(self)}.timeNext"
 
             # 'wb' creará el fichero si no existe, por lo que checkFile es redundante
             # a menos que se quiera un log específico si el fichero no existía.
