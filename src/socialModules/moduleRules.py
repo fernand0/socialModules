@@ -1136,12 +1136,7 @@ class moduleRules:
         else:
             # Backup the current next-run time before making changes
             backup_time = apiDst.getNextTime(apiSrc)
-            base_name = self._get_filename_base(src, action)
-            fileNameNext = f"{DATADIR}/{base_name}.timeNext"
-            with open(fileNameNext, "rb") as f:
-                import pickle
-                tNow, tSleep = pickle.load(f)
-            backup_time2 = (tNow, tSleep)
+            backup_time2 = self.getNextTime(src, action)
             sp = " "*35
             logging.info(f"{indent} backkkkk: {backup_time}\n"
                          f"{sp}"
