@@ -877,11 +877,15 @@ class moduleRules:
         apiDst = getApi(profile, account, child_indent)
 
         if apiDst is not None:
+            if apiSrc:
+                apiDst.src = apiSrc.src
             apiDst.action = action
             apiDst.setMoreValues(more)
             apiDst.indent = child_indent
             if fileName:
                 apiDst.fileName = fileName
+            if isinstance(action[2], tuple):
+                apiDst.dst_fileName = self._get_filename_base(action, action[2])
             # msgLog = f"{child_indent} apiDstt {apiDst}"  #: {src[1:]}"
             # logMsg(msgLog, 2, 0)
             # msgLog = f"{child_indent} apiDstt {apiDst.client}"  #: {src[1:]}"
@@ -1297,12 +1301,10 @@ class moduleRules:
         nameSrc = self.getNameRule(rule_key).capitalize()
         typeSrc = self.getTypeRule(rule_key)
         user_src_raw = self.getNickRule(rule_key)
-        logging.info(f"Userrrr: {user_src_raw}")
         if user_src_raw.startswith('http'):
             user_src = extract_nick_from_url(user_src_raw)
         else:
             user_src = user_src_raw
-        logging.info(f"Userrrr: {user_src}")
 
         service_src = self.getNameRule(rule_key).capitalize()
 
