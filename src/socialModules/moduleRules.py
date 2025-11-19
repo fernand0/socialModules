@@ -1336,22 +1336,67 @@ class moduleRules:
             f"{user_dst}_{service_dst}"
         )
         base_name = base_name.replace('/','-').replace(':','-')
+    def _get_filename_base(self, rule_key, rule_action):
+        logging.info(f"Ruleee: {rule_key}")
+        logging.info(f"Actionnn: {rule_action}")
+        nameSrc = self.getNameRule(rule_key).capitalize()
+        typeSrc = self.getTypeRule(rule_key)
+        user_src_raw = self.getNickRule(rule_key)
+        logging.info(f"Userrrr: {user_src_raw}")
+        if user_src_raw.startswith('http'):
+            user_src = extract_nick_from_url(user_src_raw)
+        else:
+            user_src = user_src_raw
+        logging.info(f"Userrrr: {user_src}")
+
+        service_src = self.getNameRule(rule_key).capitalize()
+
+        if self.getNameAction(rule_action) == 'cache':
+            # Handle cache destination: extract details from the nested rule_action
+            inner_rule_action = rule_action[2] # This is the actual destination rule tuple
+            nameDst = 'Cache'
+            typeDst = 'posts' # Always 'posts' for consistency
+            user_dst_raw = self.getDestAction(inner_rule_action)
+            if user_dst_raw and (user_dst_raw.startswith("http://") or user_dst_raw.startswith("https://")):
+                user_dst = user_dst_raw.split("//", 1)[1]
+                # FIXME Is this needed?
+            else:
+                user_dst = user_dst_raw
+            service_dst = self.getNameAction(inner_rule_action).capitalize()
+        else:
+            nameDst = self.getNameAction(rule_action).capitalize()
+            typeDst = 'posts' # Always 'posts' for consistency
+            user_dst = self.getNickAction(rule_action)
+            service_dst = self.getNameAction(rule_action).capitalize()
+        if user_src.endswith('/'):
+            user_src = user_src[:-1]
+        if nameSrc == 'Cache':
+            typeSrc = 'posts'
+            service_src = self.getSecondNameRule(rule_key).capitalize()
+
+        base_name = (
+            f"{nameSrc}_{typeSrc}_"
+            f"{user_src}_{service_src}__"
+            f"{nameDst}_{typeDst}_"
+            f"{user_dst}_{service_dst}"
+        )
+        base_name = base_name.replace('/','-').replace(':','-')
         logging.info(f"fileNameeee:  ~/.mySocial/data/{base_name}")
         return base_name
 
-        def getNextTime(self, src, action):
-            # We need to import pickle here because it's used only in this specific context
-            import pickle
-    
-            tNow, tSleep = None, None
-            base_name = self._get_filename_base(src, action)
-            fileNameNext = os.path.join(DATADIR, f"{base_name}.timeNext")
-    
-            if os.path.exists(fileNameNext):
-                with open(fileNameNext, "rb") as f:
-                    tNow, tSleep = pickle.load(f)
-    
-            return (tNow, tSleep)
+    def getNextTime(self, src, action):
+        # We need to import pickle here because it's used only in this specific context
+        import pickle
+
+        tNow, tSleep = None, None
+        base_name = self._get_filename_base(src, action)
+        fileNameNext = os.path.join(DATADIR, f"{base_name}.timeNext")
+
+        if os.path.exists(fileNameNext):
+            with open(fileNameNext, "rb") as f:
+                tNow, tSleep = pickle.load(f)
+
+        return (tNow, tSleep)
     def _get_publication_check_data(self, rule_key, rule_action, rule_metadata):
         max_val = rule_metadata.get('max', 1) if rule_metadata else 1
         time_val = rule_metadata.get('time', 0) if rule_metadata else 0
