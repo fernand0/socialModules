@@ -1135,12 +1135,9 @@ class moduleRules:
             res = {"success": False, "error": f"End: {msgLog}"}
         else:
             # Backup the current next-run time before making changes
-            backup_time = apiDst.getNextTime(apiSrc)
-            backup_time2 = self.getNextTime(src, action)
+            backup_time = self.getNextTime(src, action)
             sp = " "*35
-            logging.info(f"{indent} backkkkk: {backup_time}\n"
-                         f"{sp}"
-                         f"{indent} backkkkk: {backup_time2}")
+            logging.info(f"{indent} backkkkk: {backup_time}")
 
             tL = random.random() * numAct
             indent = f"{indent} "
