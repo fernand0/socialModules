@@ -101,27 +101,6 @@ def fileNamePath(url, socialNetwork=()):
         theName = os.path.expanduser(myFile)
     return theName
 
-
-# def setNextTime(blog, socialNetwork, tNow, tSleep):
-#     fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext'
-#     with open(fileNameNext,'wb') as f:
-#         pickle.dump((tNow, tSleep), f)
-#     return fileNameNext
-
-
-def getNextTime(blog, socialNetwork, indent=""):
-    fileNameNext = fileNamePath(blog.getUrl(), socialNetwork) + ".timeNext"
-    msgLog = f"fileNameNext {fileNameNext}"
-    logMsg(msgLog, 2, 0)
-    msgLog = checkFile(fileNameNext, indent)
-    if "OK" in msgLog:
-        with open(fileNameNext, "rb") as f:
-            tNow, tSleep = pickle.load(f)
-        return tNow, tSleep
-    else:
-        self.report(self.service, msgLog, "", "")
-        return 0, 0
-
 def checkFile(fileName, indent=""):
     msgLog = f"{indent} Start checkFile"
     logMsg(msgLog, 2, 0)

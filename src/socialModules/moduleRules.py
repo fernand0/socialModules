@@ -1216,7 +1216,7 @@ class moduleRules:
                 tSleep = random.random() * float(timeSlots) * 60
 
                 # Reserve the time slot by setting the new time
-                apiDst.setNextTime(tNow, tSleep, apiSrc)
+                self.setNextTime(src, action, tNow, tSleep)
 
                 if tSleep > 0.0:
                     msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
@@ -1244,10 +1244,10 @@ class moduleRules:
                         pos,
                     )
 
-                # If no publication happened, restore the previous time
+                # If no publication occurred, restore the previous time
                 if not res.get("success") and backup_time[0] is not None:
                     logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
-                    apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
+                    self.setNextTime(src, action, backup_time[0], backup_time[1])
 
             else:
                 msgLog = f"{indent} No posts available"
@@ -1397,6 +1397,19 @@ class moduleRules:
                 tNow, tSleep = pickle.load(f)
 
         return (tNow, tSleep)
+
+    def setNextTime(self, src, action, tNow, tSleep):
+        import pickle
+        base_name = self._get_filename_base(src, action)
+        fileNameNext = os.path.join(DATADIR, f"{base_name}.timeNext")
+
+        try:
+            with open(fileNameNext, "wb") as f:
+                pickle.dump((tNow, tSleep), f)
+            logMsg(f"  Time file updated: {fileNameNext}", 2, 0)
+        except (IOError, pickle.PicklingError) as e:
+            logMsg(f"Failed to write to time file {fileNameNext}: {e}", 3, 1)
+
     def _get_publication_check_data(self, rule_key, rule_action, rule_metadata):
         max_val = rule_metadata.get('max', 1) if rule_metadata else 1
         time_val = rule_metadata.get('time', 0) if rule_metadata else 0

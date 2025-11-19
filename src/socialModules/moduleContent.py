@@ -597,83 +597,8 @@ class Content:
         else:
             print("not implemented!")
 
-    def getNextTime(self, src=None):
-        """
-        Lee la próxima hora de ejecución para una fuente dada de un fichero.
-        """
-        self.indent = f"{self.indent} "
-        msgLog = f"{self.indent}Start getNextTime"
-        logMsg(msgLog, 2, 0)
 
-        if not src:
-            logMsg(f"{self.indent}Error: El parámetro 'src' no puede ser None.", 3, 1)
-            self.indent = self.indent[:-1]
-            return None, None
 
-        fileNameNext = f"{DATADIR}/{src.fileNameBase(self)}.timeNext"
-
-        if not os.path.exists(fileNameNext):
-            logMsg(f"{self.indent}  Fichero de tiempo no existe: {fileNameNext}", 2, 0)
-            self.indent = self.indent[:-1]
-            return None, None
-
-        try:
-            with open(fileNameNext, "rb") as f:
-                tnow, tSleep = pickle.load(f)
-
-            msgLog = f"{self.indent}  Fichero leído: {fileNameNext}"
-            logMsg(msgLog, 2, 0)
-            self.indent = self.indent[:-1]
-            return tnow, tSleep
-
-        except (IOError, pickle.UnpicklingError) as e:
-            error_msg = f"Fallo al leer el fichero {fileNameNext}"
-            logMsg(f"{self.indent}{error_msg}", 3, 1)
-            self.report(self.service, error_msg, fileNameNext, e)
-            self.indent = self.indent[:-1]
-            return None, None
-
-    def setNextTime(self, tnow, tSleep, src=None):
-        """
-        Guarda la próxima hora de ejecución para una fuente dada en un fichero.
-        """
-        self.indent = f"{self.indent} "
-        msgLog = f"{self.indent}Start setNextTime"
-        logMsg(msgLog, 2, 0)
-
-        if not src:
-            logMsg(f"{self.indent}Error: 'src' parameter cannot be None.", 3, 1)
-            self.indent = self.indent[:-1]
-            return
-
-        fileNameNext = None
-        try:
-            fileNameNext = f"{DATADIR}/{src.fileNameBase(self)}.timeNext"
-
-            # 'wb' creará el fichero si no existe, por lo que checkFile es redundante
-            # a menos que se quiera un log específico si el fichero no existía.
-            # msgLog = f"{self.indent}Nowwww: {tnow}, tSleep {tSleep}"
-            # logMsg(msgLog, 2, 0)
-            # msgLog = f"{self.indent}Nowwww: {(tnow,tSleep)}"
-            # logMsg(msgLog, 2, 0)
-            with open(fileNameNext, "wb") as f:
-                pickle.dump((tnow, tSleep), f)
-            # msgLog = f"{self.indent}Nowwwd: {(tnow,tSleep)}"
-            # logMsg(msgLog, 2, 0)
-
-            msgLog = f"{self.indent}  Fichero actualizado: {fileNameNext}"
-            logMsg(msgLog, 2, 0)
-
-        except (IOError, pickle.PicklingError) as e:
-            # Un manejo de errores más específico que llamar a self.report
-            error_msg = (
-                f"Fallo al escribir en el fichero {fileNameNext or 'desconocido'}"
-            )
-            logMsg(f"{self.indent}{error_msg}", 3, 1)
-            self.report(self.service, error_msg, fileNameNext, e)
-        finally:
-            # Asegurarse de que el indentado siempre se restaura
-            self.indent = self.indent[:-1]
 
     def setNumPosts(self, numposts):
         self.numposts = numposts
