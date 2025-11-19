@@ -836,6 +836,8 @@ class moduleRules:
         return f"{msgLog}"
 
     def readConfigSrc(self, indent, src, more, fileName=None):
+        if not fileName:
+            fileName = self._get_filename_base(src, None)
         msgLog = f"{indent} Start readConfigSrc {src}"
         logMsg(msgLog, 2, 1)
         child_indent = f"{indent} "
@@ -1097,12 +1099,12 @@ class moduleRules:
         more,
         action,
         msgAction,
-        apiSrc,
+        #apiSrc,
         noWait,
         timeSlots,
         simmulate,
         name="",
-        numAct=1,
+        action_index=1,
         nextPost=True,
         pos=-1,
         delete=False,
@@ -1123,6 +1125,10 @@ class moduleRules:
         msgLog = f"{indent} Scheduling {orig} -> {dest}"
         logMsg(msgLog, 1, 1)
         base_name = self._get_filename_base(apiSrc.src, action)
+        apiSrc = self.readConfigSrc(indent, src, more, fileName=base_name)
+        if not apiSrc:
+            logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
+
         apiDst = self.readConfigDst(indent, action, more, apiSrc, fileName=base_name)
         # FIXME: Is this needed?
         if not apiDst.getClient():
@@ -1141,14 +1147,14 @@ class moduleRules:
             # Backup the current next-run time before making changes
             backup_time = self.getNextTime(src, action)
 
-            tL = random.random() * numAct
+            tL = random.random() * action_index # 'Progressive' delay
             indent = f"{indent} "
             msgLog = (
-                f"{indent} Sleeping {tL:.2f} seconds ({numAct} actions) "
+                f"{indent} Sleeping {tL:.2f} seconds ({action_index} actions) "
                 f"to launch all processes"
             )
             logMsg(msgLog, 1, 0)
-            numAct = max(3, numAct)  # Less than 3 is too small
+            numAct = max(3, action_index)  # Less than 3 is too small
             time.sleep(tL)
 
             msgLog = f"{indent} Go!"
@@ -1158,29 +1164,6 @@ class moduleRules:
             textEnd = f"{msgLog}"
 
             time.sleep(1)
-
-            msgLog = ""
-            if nextPost:
-                num = apiDst.getMax()
-            else:
-                num = 1
-
-            theAction = self.getTypeAction(action)
-            msgLog = (
-                f"{indent}I'll publish {num} {theAction} "
-                f"from {apiSrc.getUrl()} "
-                f"in {self.getNickAction(action)}@"
-                f"{self.getProfileAction(action)}"
-            )
-            logMsg(msgLog, 1, 1)
-
-            msgLog = (
-                f"{indent} Sleeping {tL:.2f} seconds ({numAct} actions) "
-                f"to launch all processes"
-            )
-            logMsg(msgLog, 1, 0)
-            numAct = max(3, numAct)  # Less than 3 is too small
-            time.sleep(tL)
 
             msgLog = f"{indent} Go!"
             logMsg(msgLog, 1, 0)
@@ -1296,8 +1279,6 @@ class moduleRules:
         return
 
     def _get_filename_base(self, rule_key, rule_action):
-        logging.info(f"Ruleee: {rule_key}")
-        logging.info(f"Actionnn: {rule_action}")
         nameSrc = self.getNameRule(rule_key).capitalize()
         typeSrc = self.getTypeRule(rule_key)
         user_src_raw = self.getNickRule(rule_key)
@@ -1394,7 +1375,6 @@ class moduleRules:
         lastTime = last_time_val
 
 
-        logging.info(f"lastTimeeee: {lastTime}")
         if lastTime:
             diffTime = tNow - lastTime
         else:
@@ -1458,15 +1438,15 @@ class moduleRules:
                     continue
 
                 base_name = self._get_filename_base(rule_key, rule_action)
-                apiSrc = self.readConfigSrc(nameA, rule_key, rule_metadata, fileName=base_name)
-                if not apiSrc:
-                    logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
-                    continue
+                # apiSrc = self.readConfigSrc(nameA, rule_key, rule_metadata, fileName=base_name)
+                # if not apiSrc:
+                #     logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
+                #     continue
 
-                apiDst = self.readConfigDst(nameA, rule_action, rule_metadata, apiSrc, fileName=base_name)
-                if not apiDst:
-                    logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
-                    continue
+                # apiDst = self.readConfigDst(nameA, rule_action, rule_metadata, apiSrc, fileName=base_name)
+                # if not apiDst:
+                #     logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
+                #     continue
 
                 scheduled_actions.append(
                     {
@@ -1477,8 +1457,6 @@ class moduleRules:
                         "action_index": action_index,
                         "args": args,
                         "simmulate": args.simmulate,
-                        "apiSrc": apiSrc,
-                        "apiDst": apiDst,
                         "name_action": name_action,
                         "nameA": nameA,
                         "timeSlots": timeSlots, # Add timeSlots to scheduled_actions
@@ -1533,7 +1511,7 @@ class moduleRules:
         rule_action = scheduled_action["rule_action"]
         args = scheduled_action["args"]
         simmulate = scheduled_action["simmulate"]
-        apiSrc = scheduled_action["apiSrc"]
+        # apiSrc = scheduled_action["apiSrc"]
         timeSlots = scheduled_action["timeSlots"]
         noWait = scheduled_action["noWait"]
 
@@ -1553,7 +1531,7 @@ class moduleRules:
             rule_metadata,
             rule_action,
             msgAction,
-            apiSrc,
+            #apiSrc,
             noWait,
             timeSlots,
             simmulate,

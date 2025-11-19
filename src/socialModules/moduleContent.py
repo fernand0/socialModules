@@ -512,10 +512,11 @@ class Content:
         msgLog = f"{self.indent} Start setLastLink"
         logMsg(msgLog, 1, 0)
         self.indent = f"{self.indent} "
-        if src:
-            fileName = f"{src.fileNameBase(self)}.last"
-        else:
-            fileName = f"{self.fileNameBase(self)}.last"
+        fileName = f"{DATADIR}/{self.fileName}.last"
+        # if src:
+        #     fileName = f"{src.fileNameBase(self)}.last"
+        # else:
+        #     fileName = f"{self.fileNameBase(self)}.last"
         lastTime = ""
         linkLast = ""
         checkR = checkFile(fileName, f"{self.indent}")

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import logging
+logging.basicConfig(level=logging.DEBUG)
 from socialModules.test_utils import testing_utils
 
 
