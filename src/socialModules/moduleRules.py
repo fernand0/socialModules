@@ -1110,7 +1110,7 @@ class moduleRules:
         delete=False,
     ):
         indent = f"{name}"
-        res = None #{"success": False, "error": ""} #{}
+        res = {"success": False, "error": "No execution"}
         textEnd = ""
 
         # Destination
@@ -1124,124 +1124,140 @@ class moduleRules:
                 )
         msgLog = f"{indent} Scheduling {orig} -> {dest}"
         logMsg(msgLog, 1, 1)
-        base_name = self._get_filename_base(apiSrc.src, action)
-        apiSrc = self.readConfigSrc(indent, src, more, fileName=base_name)
-        if not apiSrc:
-            logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
+        base_name = self._get_filename_base(src, action)
 
-        apiDst = self.readConfigDst(indent, action, more, apiSrc, fileName=base_name)
-        # FIXME: Is this needed?
-        if not apiDst.getClient():
-            msgLog = self.clientErrorMsg(
-                indent,
-                apiDst,
-                "Destination",
-                (f"{self.getNameRule(src)}@" f"{self.getProfileRule(src)}"),
-                self.getNickAction(src),
-            )
-            if msgLog:
-                logMsg(msgLog, 3, 1)
-                sys.stderr.write(f"Error: {msgLog}\n")
-            res = {"success": False, "error": f"End: {msgLog}"}
+        # Backup the current next-run time before making changes
+        backup_time = self.getNextTime(src, action)
+
+        tL = random.random() * action_index # 'Progressive' delay
+        indent = f"{indent} "
+        msgLog = (
+            f"{indent} Sleeping {tL:.2f} seconds ({action_index} actions) "
+            f"to launch all processes"
+        )
+        logMsg(msgLog, 1, 0)
+        numAct = max(3, action_index)  # Less than 3 is too small
+        time.sleep(tL)
+
+        msgLog = f"{indent} Go!"
+        logMsg(msgLog, 1, 0)
+        indent = f"{indent} "
+
+        textEnd = f"{msgLog}"
+
+        time.sleep(1)
+
+        msgLog = f"{indent} Go!"
+        logMsg(msgLog, 1, 0)
+        indent = f"{indent} "
+
+        textEnd = f"{msgLog}"
+
+        time.sleep(1)
+
+        msgLog = ""
+
+        # Get scheduling data without full API instantiation
+        rule_metadata = more
+        max_val, time_val, last_time_val = self._get_publication_check_data(src, action, rule_metadata)
+
+        if nextPost:
+            num = max_val
         else:
-            # Backup the current next-run time before making changes
-            backup_time = self.getNextTime(src, action)
+            num = 1
 
-            tL = random.random() * action_index # 'Progressive' delay
-            indent = f"{indent} "
-            msgLog = (
-                f"{indent} Sleeping {tL:.2f} seconds ({action_index} actions) "
-                f"to launch all processes"
-            )
-            logMsg(msgLog, 1, 0)
-            numAct = max(3, action_index)  # Less than 3 is too small
-            time.sleep(tL)
+        if num > 0:
+            tNow = time.time()
+            hours = float(time_val) * 60 * 60
+            lastTime = last_time_val
 
-            msgLog = f"{indent} Go!"
-            logMsg(msgLog, 1, 0)
-            indent = f"{indent} "
+            if lastTime:
+                diffTime = tNow - lastTime
+            else:
+                diffTime = hours + 1
 
-            textEnd = f"{msgLog}"
+            tSleep = random.random() * float(timeSlots) * 60
 
-            time.sleep(1)
+            # Reserve the time slot by setting the new time
+            self.setNextTime(src, action, tNow, tSleep)
 
-            msgLog = f"{indent} Go!"
-            logMsg(msgLog, 1, 0)
-            indent = f"{indent} "
+            if tSleep > 0.0:
+                msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
+            else:
+                tSleep = 2.0
+                msgLog = f"{indent} No Waiting"
 
-            textEnd = f"{msgLog}"
+            theAction = self.getTypeAction(action)
+            logMsg(f"{msgLog} for {theAction} from {self.getNickRule(src)} in "
+                   f"{self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
 
-            time.sleep(1)
+            # Wait BEFORE instantiation
+            if not simmulate:
+                time.sleep(tSleep)
+            if "minutes" in msgLog:
+                logMsg(f"{indent} End Waiting {theAction} from "
+                       f"{self.getNickRule(src)} in {self.getNickAction(action)}"
+                       f"@{self.getProfileAction(action)}", 1, 1)
 
-            msgLog = ""
+            # Instantiate APIs ONCE, after the wait
+            apiSrc = self.readConfigSrc(indent, src, more, fileName=base_name)
+            if not apiSrc:
+                logMsg(f"ERROR: Could not create apiSrc for rule {src}", 3, 1)
+                return res
+
+            apiDst = self.readConfigDst(indent, action, more, apiSrc, fileName=base_name)
+
+            if not apiDst.getClient():
+                msgLog = self.clientErrorMsg(
+                    indent,
+                    apiDst,
+                    "Destination",
+                    (f"{self.getNameRule(src)}@" f"{self.getProfileRule(src)}"),
+                    self.getNickAction(src),
+                )
+                if msgLog:
+                    logMsg(msgLog, 3, 1)
+                    sys.stderr.write(f"Error: {msgLog}\n")
+                res = {"success": False, "error": f"End: {msgLog}"}
+                return res
+
+            # Calculate numAct correctly using the instantiated apiDst
             if nextPost:
                 num = apiDst.getMax()
             else:
                 num = 1
-            numAct = num # Initialize numAct here
+            numAct = num
 
-            if num > 0:
-                theAction = self.getTypeAction(action)
-                msgLog = (
-                    f"{indent}I'll publish {numAct} {theAction} "
-                    f"from {apiSrc.getUrl()} "
-                    f"in {self.getNickAction(action)}@"
-                    f"{self.getProfileAction(action)}"
+            msgLog = (
+                f"{indent}I'll publish {numAct} {theAction} "
+                f"from {apiSrc.getUrl()} "
+                f"in {self.getNickAction(action)}@"
+                f"{self.getProfileAction(action)}"
+            )
+            logMsg(msgLog, 1, 1)
+
+            for i in range(numAct):
+                res = self.executePublishAction(
+                    indent,
+                    msgAction,
+                    apiSrc,
+                    apiDst,
+                    simmulate,
+                    nextPost,
+                    pos,
                 )
-                logMsg(msgLog, 1, 1)
 
-                tNow = time.time()
-                hours = float(apiDst.getTime()) * 60 * 60
+            # If no publication occurred, restore the previous time
+            if not res.get("success") and backup_time[0] is not None:
+                logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
+                self.setNextTime(src, action, backup_time[0], backup_time[1])
 
-                lastTime = apiDst.getLastTimePublished(f"{indent}")
+        else:
+            msgLog = f"{indent} No posts available"
+            logMsg(msgLog, 1, 1)
 
-                if lastTime:
-                    diffTime = tNow - lastTime
-                else:
-                    diffTime = hours + 1
-
-                tSleep = random.random() * float(timeSlots) * 60
-
-                # Reserve the time slot by setting the new time
-                self.setNextTime(src, action, tNow, tSleep)
-
-                if tSleep > 0.0:
-                    msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
-                else:
-                    tSleep = 2.0
-                    msgLog = f"{indent} No Waiting"
-
-                logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in "
-                       f"{self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
-
-                for i in range(numAct):
-                    time.sleep(tSleep)
-                    if "minutes" in msgLog:
-                        logMsg(f"{indent} End Waiting {theAction} from "
-                               f"{apiSrc.getUrl()} in {self.getNickAction(action)}"
-                               f"@{self.getProfileAction(action)}", 1, 1)
-
-                    res = self.executePublishAction(
-                        indent,
-                        msgAction,
-                        apiSrc,
-                        apiDst,
-                        simmulate,
-                        nextPost,
-                        pos,
-                    )
-
-                # If no publication occurred, restore the previous time
-                if not res.get("success") and backup_time[0] is not None:
-                    logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
-                    self.setNextTime(src, action, backup_time[0], backup_time[1])
-
-            else:
-                msgLog = f"{indent} No posts available"
-                logMsg(msgLog, 1, 1)
-
-            indent = f"{indent[:-1]}"
-            logMsg(f"{indent} End executeAction {textEnd}", 2, 0)
+        indent = f"{indent[:-1]}"
+        logMsg(f"{indent} End executeAction {textEnd}", 2, 0)
         return res
 
     def executeRules(self, max_workers=None):
