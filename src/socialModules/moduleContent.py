@@ -449,8 +449,9 @@ class Content:
         msgLog = f"{self.indent} updating {msgupdate}"
         logMsg(msgLog, 1, 0)
 
-        self.fileName = ""
-        fileName = f"{src.fileNameBase(self)}.last"
+        #self.fileName = ""
+        # fileName = f"{src.fileNameBase(self)}.last"
+        fileName = f"{DATADIR}/{self.fileName}.last"
         msgLog = f"{self.indent} fileName {fileName}"
         logMsg(msgLog, 2, 0)
         msgLog = checkFile(fileName, self.indent)
