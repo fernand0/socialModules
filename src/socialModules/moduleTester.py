@@ -80,7 +80,10 @@ class ModuleTester:
 
         try:
             if rule_type == 'src':
-                self.api_src = rules.readConfigSrc("", selected_rule, rules.more[selected_rule])
+                print(f"Rule: {selected_rule}")
+                print(f"Actions: {rules.rules[selected_rule]}")
+                base_name = rules._get_filename_base(selected_rule, rules.rules[selected_rule][0])
+                self.api_src = rules.readConfigSrc("", selected_rule, rules.more[selected_rule], base_name)
             elif rule_type == 'dst':
                 self.api_src = rules.readConfigDst("", selected_rule, None, None)
 
