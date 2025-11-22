@@ -99,8 +99,8 @@ class moduleRules:
 
     def _process_section(self, section, config, services, sources, sources_available, more, destinations, temp_rules, rulesNew, rule_metadata, implicit_rules):
         """
-        Processes a section of the configuration file, identifying sources and destinations.
-        Validates the presence of required keys and data types.
+        Processes a section of the configuration file, identifying sources and
+        destinations.  Validates the presence of required keys and data types.
         """
         # Robustly validate required keys and ensure they are not empty
         required_keys = ["url", "service"]
@@ -142,7 +142,8 @@ class moduleRules:
         theService = None
         api = None
         for service in services["regular"]:
-            if ("service" in config[section]) and (service == config[section]["service"]):
+            if (("service" in config[section]) 
+                and (service == config[section]["service"])):
                 theService = service
                 api = getModule(service, self.indent)
                 api.setUrl(url)
@@ -162,6 +163,9 @@ class moduleRules:
                     if "posts" in section_metadata:
                         if section_metadata["posts"] == method[1]:
                             toAppend = (theService, "set", api.getNick(), method[1])
+                        else:
+                            toAppend = None
+
                     else:
                         toAppend = (theService, "set", api.getNick(), method[1])
                     if toAppend not in sources:
@@ -610,7 +614,7 @@ class moduleRules:
                 hasSet[service] = listMethods
 
             for method in listMethods:
-                if (not method.startswith("__")) and (method.find("set") >= 0):
+                if ((not method.startswith("__")) and (method.find("set") >= 0)):
                     action = "set"
                     target = ""
                     # FIXME: indenting inside modules?
