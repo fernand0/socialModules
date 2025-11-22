@@ -1046,7 +1046,8 @@ class moduleRules:
             if link:
                 msgLog = (
                     f"{msgLog} Recording Link: {link} "
-                    f"in file {apiSrc.fileNameBase(apiDst)}.last"
+                    #f"in file {apiSrc.fileNameBase(apiDst)}.last"
+                    f"in file {DATADIR}/{apiSrc.fileName}.last"
                 )
 
             if simmulate:

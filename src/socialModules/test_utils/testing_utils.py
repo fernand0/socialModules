@@ -22,6 +22,25 @@ def test_connection(apiSrc, get_user_info_callback):
         print(f"✗ Connection failed: {e}")
 
 
+def test_authorization(apiSrc):
+    """
+    Tests the authorization process for a module.
+
+    Args:
+        apiSrc: The API source object for the module.
+    """
+    print("\n=== Testing Authorization ===")
+    try:
+        if hasattr(apiSrc, 'authorize'):
+            print("Calling authorize()...")
+            apiSrc.authorize()
+            print("authorize() finished.")
+        else:
+            print("authorize() method not found in API object.")
+    except Exception as e:
+        print(f"Error during authorization: {e}")
+
+
 def test_posts_retrieval(apiSrc):
     """
     Tests retrieving posts from the social media platform.

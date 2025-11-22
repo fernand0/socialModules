@@ -109,6 +109,8 @@ class ModuleTester:
             self.add_test("Favorites test", self.test_favorites)
         if 'setApiQueue' in self.module.__class__.__dict__:
             self.add_test("Queue retrieval test", self.test_queue_retrieval)
+        if hasattr(self.module, 'authorize'):
+            self.add_test("Authorization test", self.test_authorization)
         self.add_test("Basic post test", self.test_basic_post)
         self.add_test("Image post test", self.test_image_post)
         self.add_test("Cache integration test", self.test_cache_integration)
@@ -154,6 +156,9 @@ class ModuleTester:
 
     def test_connection(self, apiSrc):
         testing_utils.test_connection(apiSrc, self.module.get_user_info)
+
+    def test_authorization(self, apiSrc):
+        testing_utils.test_authorization(apiSrc)
 
     def test_posts_retrieval(self, apiSrc):
         testing_utils.test_posts_retrieval(apiSrc)

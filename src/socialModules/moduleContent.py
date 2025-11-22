@@ -481,7 +481,8 @@ class Content:
         # url = self.getUrl()
         service = self.service.lower()
         # nick = self.getUser()
-        fileName = f"{apiSrc.fileNameBase(self)}.last"
+        # fileName = f"{apiSrc.fileNameBase(self)}.last"
+        fileName = f"{DATADIR}/{self.fileName}.last"
         linkLast = ""
 
         msgLog = checkFile(fileName, self.indent)
@@ -557,7 +558,8 @@ class Content:
         # you always need to check lastLink?
         # example: gmail, twitter
         if other:
-            fileName = self.fileNameBase(other)
+            # fileName = self.fileNameBase(other)
+            fileName = f"{DATADIR}/{self.fileName}.last"
             lastTime2 = ""
             if os.path.isfile(fileName):
                 lastTime2 = os.path.getctime(fileName)
@@ -568,7 +570,8 @@ class Content:
             # url = self.getUrl()
             # service = self.service.lower()
             # nick = self.getUser()
-            fn = f"{self.fileNameBase(other)}.last"
+            # fn = f"{self.fileNameBase(other)}.last"
+            fn = f"{DATADIR}/{self.fileName}.last"
             # fn = (f"{fileNamePath(url, (service, nick))}.last")
             lastTime = os.path.getctime(fn)
             myLastLink = self.getLastLink()
@@ -586,7 +589,8 @@ class Content:
     def setNextAvailableTime(self, tnow, tSleep, dst=None):
         fileNameNext = ""
         if dst:
-            fileNameNext = f"{self.fileNameBase(dst)}.timeavailable"
+            # fileNameNext = f"{self.fileNameBase(dst)}.timeavailable"
+            filaNameNext = f"{DATADIR}/{self.fileName}.timeavailable"
             msgLog = checkFile(fileNameNext, self.indent)
             if "OK" not in msgLog:
                 msgLog = (
