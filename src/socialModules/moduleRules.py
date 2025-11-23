@@ -1596,12 +1596,12 @@ class moduleRules:
                 rule_key = held_action["rule_key"]
                 rule_index = held_action.get("rule_index", "")
                 name_action = held_action["name_action"]
-                rule_summary = (
-                    f"{name_action} Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
-                )
+                # rule_summary = (
+                #     f"{name_action} Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
+                # )
                 summary_msg = "Rule on hold."
                 logMsg(
-                    f"[OK] (Held) {rule_summary}: {summary_msg}",
+                    f"{name_action} [OK] (Held) {summary_msg}",
                     1,
                     1,
                 )
@@ -1617,7 +1617,7 @@ class moduleRules:
             if res_dict == "ok":
                 summary_msg = "Success. Action completed."
                 logMsg(
-                    f"[OK] Action for {rule_summary} -> {scheduled_action['rule_action']}: {summary_msg}",
+                    f"{name_action} [OK] {summary_msg}",
                     1,
                     1,
                 )
@@ -1626,21 +1626,21 @@ class moduleRules:
                 post_act = res_dict.get("post_action_result", "N/A")
                 summary_msg = f"Success. Pub: '{pub_res}'. Post-Action: '{post_act}'."
                 logMsg(
-                    f"[OK] Action for {rule_summary} -> {scheduled_action['rule_action']}: {summary_msg}",
+                    f"{name_action} [OK] {summary_msg}",
                     1,
                     1,
                 )
             elif isinstance(res_dict, dict):
                 error_msg = res_dict.get("error", "Unknown error")
                 logMsg(
-                    f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {error_msg}",
+                    f"{name_action} [ERROR] {error_msg}",
                     3,
                     1,
                 )
             else:
                 # Fallback for empty or non-dict results
                 logMsg(
-                    f"[WARN] Action for {rule_summary} -> {scheduled_action['rule_action']} produced an invalid result: {res_dict}",
+                    f"{name_action} [WARN] Action produced an invalid result: {res_dict}",
                     2,
                     1,
                 )
@@ -1653,7 +1653,7 @@ class moduleRules:
                 f"{name_action} Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
             )
             logMsg(
-                f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {exc}",
+                f"{name_action} [ERROR] {exc}",
                 3,
                 1,
             )
