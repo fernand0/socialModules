@@ -53,7 +53,7 @@ class Content:
         self.hold = None
         # Publication cache configuration
         self.auto_cache = True
-        self.fileName
+        self.fileName = ""
 
     def setAutoCache(self, enabled=True):
         """
