@@ -39,6 +39,7 @@ class moduleBlsk(Content):  # , Queue):
         # if hasattr(client, 'app'):
         #     client = client.app.bsky.feed
         self.api = client
+        self.fileName = ""
         return client
 
     def getClient(self):
