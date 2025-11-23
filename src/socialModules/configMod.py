@@ -207,10 +207,11 @@ def getModule(profile, indent=""):
     api = None  # Initialize api to None
 
     try:
-        mod = importlib.import_module(module_name)
         logging.info("1")
-        cls = getattr(mod, class_name)
+        mod = importlib.import_module(module_name)
         logging.info("2")
+        cls = getattr(mod, class_name)
+        logging.info("3")
         api = cls(indent)
         msgLog = f"{indent} End getModule"
         logMsg(msgLog, 2, 0)
