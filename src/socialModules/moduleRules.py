@@ -143,7 +143,8 @@ class moduleRules:
         theService = None
         api = None
         for service in services["regular"]:
-            if ("service" in config[section]) and (service == config[section]["service"]):
+            if (("service" in config[section]) 
+                and (service == config[section]["service"])):
                 theService = service
                 api = getModule(service, self.indent)
                 api.setUrl(url)

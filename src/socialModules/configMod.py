@@ -201,14 +201,16 @@ def getModule(profile, indent=""):
     msgLog = f"{indent} Start getModule {profile}"
     logMsg(msgLog, 2, 0)
     serviceName = profile.capitalize()
-    module_name = "socialModules.module" + serviceName
-    class_name = "module" + serviceName
+    module_name = f"socialModules.module{serviceName}"
+    class_name = f"module{serviceName}"
 
     api = None  # Initialize api to None
 
     try:
         mod = importlib.import_module(module_name)
+        logging.info("1")
         cls = getattr(mod, class_name)
+        logging.info("2")
         api = cls(indent)
         msgLog = f"{indent} End getModule"
         logMsg(msgLog, 2, 0)
