@@ -1420,10 +1420,6 @@ class moduleRules:
         for rule_index, rule_key in enumerate(sorted(self.rules.keys())):
             # Repetition control by action name
             rule_metadata = self.more[rule_key] if rule_key in self.more else None
-            if rule_metadata and rule_metadata.get("hold") == "yes":
-                msgHold = f"[HOLD] {self.getNickSrc(rule_key)} ({self.getNickAction(rule_key)})"
-                logMsg(msgHold, 1, 0)
-                continue
             rule_actions = self.rules[rule_key]
             if self.getNameAction(rule_key) != previous:
                 i = 0
@@ -1437,6 +1433,13 @@ class moduleRules:
                           f"({self.getNickAction(rule_key)})")
             logMsg(msgLog, 1, 1)
             previous = self.getNameAction(rule_key)
+            if rule_metadata and rule_metadata.get("hold") == "yes":
+                msgHold = (f"{nameR:->12}> " 
+                           f"[HOLD] {self.getNickSrc(rule_key)} "
+                           f"({self.getNickAction(rule_key)})"
+                           )
+                logMsg(msgHold, 1, 0)
+                continue
 
             for action_index, rule_action in enumerate(rule_actions):
                 # Rule selection if --checkBlog is used
