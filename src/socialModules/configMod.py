@@ -209,7 +209,7 @@ def getModule(profile, indent=""):
     try:
         logging.info("1")
         mod = importlib.import_module(module_name)
-        logging.info("2")
+        logging.info(f"2 {mod}")
         cls = getattr(mod, class_name)
         logging.info(f"3 {cls}")
         api = cls(indent)
