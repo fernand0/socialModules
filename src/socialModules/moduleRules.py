@@ -90,8 +90,8 @@ class moduleRules:
             self.indent = f"{self.indent[:-(len(section)+2)]}"
 
         self._finalize_rules(config, services, sources, sources_available, more, destinations, rulesNew)
-        self._set_available_and_rules(rulesNew, more)
         self.more = rule_metadata
+        self._set_available_and_rules(rulesNew, more)
         self.indentLess()
         msgLog = "End Checking rules"
         logMsg(msgLog, 1, 2)
@@ -125,6 +125,15 @@ class moduleRules:
         logMsg(msgLog, 2, 0)
         if fromSrv:
             fromSrv = (fromSrv[0], fromSrv[1], fromSrv[2], postsType)
+            if fromSrv not in rule_metadata:
+                rule_metadata[fromSrv] = section_metadata
+
+            # This is the fix:
+            # Ensure held rules are added to rulesNew even with no actions
+            if section_metadata.get('hold') == 'yes':
+                if fromSrv not in rulesNew:
+                    rulesNew[fromSrv] = []
+
             msgLog = f"{self.indent} Checking actions for {service}"
             logMsg(msgLog, 1, 0)
             self._process_destinations(section, config, service, services, fromSrv, section_metadata, api, destinations, temp_rules, rule_metadata, implicit_rules)
@@ -407,7 +416,16 @@ class moduleRules:
         myList = [f"{elem}) {available[elem]['name']}: {len(available[elem]['data'])}" for elem in available]
         self.available = available
         self.availableList = myList if myList else []
-        self.rules = {key: rulesNew[key] for key in rulesNew if rulesNew[key]}
+        # Modified line: include rules if they have actions OR if they are on hold
+        final_rules = {}
+        for key in rulesNew:
+            if rulesNew.get(key): # If there are actions, include it
+                final_rules[key] = rulesNew[key]
+            else: # No actions, check if it's on hold
+                rule_metadata = self.more.get(key)
+                if rule_metadata and rule_metadata.get("hold") == "yes":
+                    final_rules[key] = [] # Keep the held rule with an empty action list
+        self.rules = final_rules
 
     def selectActionInteractive(self, apiSrc = None):
         selActions = None
@@ -1279,7 +1297,7 @@ class moduleRules:
         select = args.checkBlog
         simmulate = args.simmulate
         # Prepare actions to execute
-        scheduled_actions = self._prepare_actions(args, select)
+        scheduled_actions, held_actions = self._prepare_actions(args, select)
         # Determine number of threads
         if max_workers is not None:
             pass  # use the explicit value
@@ -1291,7 +1309,7 @@ class moduleRules:
         # Execute actions concurrently
         action_results, action_errors = self._run_actions_concurrently(scheduled_actions, max_workers=max_workers)
         # Report results and errors
-        self._report_results(action_results, action_errors)
+        self._report_results(action_results, action_errors, held_actions)
         msgLog = f"End Executing rules with {len(scheduled_actions)} actions."
         logMsg(msgLog, 1, 2)
         return
@@ -1415,11 +1433,12 @@ class moduleRules:
         each action.
         """
         scheduled_actions = []
+        held_actions = []
         previous = ""
         i = 0  # Initialize i outside the loop to avoid UnboundLocalError
         for rule_index, rule_key in enumerate(sorted(self.rules.keys())):
             # Repetition control by action name
-            rule_metadata = self.more[rule_key] if rule_key in self.more else None
+            rule_metadata = self.more.get(rule_key)
             rule_actions = self.rules[rule_key]
             if self.getNameAction(rule_key) != previous:
                 i = 0
@@ -1439,6 +1458,14 @@ class moduleRules:
                            f"({self.getNickAction(rule_key)})"
                            )
                 logMsg(msgHold, 1, 0)
+                held_actions.append({
+                    "rule_key": rule_key,
+                    "rule_metadata": rule_metadata,
+                    "rule_action": None,
+                    "rule_index": i,
+                    "action_index": -1,
+                    "name_action": nameR,
+                })
                 continue
 
             for action_index, rule_action in enumerate(rule_actions):
@@ -1484,7 +1511,7 @@ class moduleRules:
                         "noWait": noWait,       # Add noWait to scheduled_actions
                     }
                 )
-        return scheduled_actions
+        return scheduled_actions, held_actions
 
     def _get_action_properties(self, rule_action, rule_metadata, args):
         timeSlots = args.timeSlots
@@ -1560,10 +1587,24 @@ class moduleRules:
             action_index,
         )
 
-    def _report_results(self, action_results, action_errors):
+    def _report_results(self, action_results, action_errors, held_actions=None):
         """
         Reports the results and errors of action execution.
         """
+        if held_actions:
+            for held_action in held_actions:
+                rule_key = held_action["rule_key"]
+                rule_index = held_action.get("rule_index", "")
+                name_action = held_action["name_action"]
+                rule_summary = (
+                    f"{name_action} Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
+                )
+                summary_msg = "Rule on hold."
+                logMsg(
+                    f"[OK] (Held) {rule_summary}: {summary_msg}",
+                    1,
+                    1,
+                )
         for scheduled_action, res_dict in action_results:
             print(f"Scheduled: {scheduled_action}. Res: {res_dict}")
             rule_key = scheduled_action["rule_key"]
