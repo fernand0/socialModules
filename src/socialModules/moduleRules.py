@@ -847,12 +847,7 @@ class moduleRules:
         return res
 
     def clientErrorMsg(self, indent, api, typeC, rule, action):
-        msgLog = ""
-        if "rss" not in rule:
-            msgLog = (
-                f"{indent} {typeC} Error. " f"No client for {rule} ({action}). End."
-            )
-        return f"{msgLog}"
+        return (f"{indent} {typeC} Error. " f"No client for {rule} ({action}). End.")
 
     def readConfigSrc(self, indent, src, more, fileName=None):
         if not fileName:
@@ -1226,19 +1221,20 @@ class moduleRules:
                 return res
 
             apiDst = self.readConfigDst(indent, action, more, apiSrc, fileName=base_name)
+            print(f"DEBUG: apiDst in executeAction: {apiDst}")
+            print(f"DEBUG: apiDst.getClient() in executeAction: {apiDst.getClient()}")
 
             if not apiDst.getClient():
-                msgLog = self.clientErrorMsg(
+                client_error_msg = self.clientErrorMsg(
                     indent,
                     apiDst,
                     "Destination",
                     (f"{self.getNameRule(src)}@" f"{self.getProfileRule(src)}"),
-                    self.getNickAction(src),
+                    self.getNickAction(action),
                 )
-                if msgLog:
-                    logMsg(msgLog, 3, 1)
-                    sys.stderr.write(f"Error: {msgLog}\n")
-                res = {"success": False, "error": f"End: {msgLog}"}
+                logMsg(client_error_msg, 3, 1)
+                sys.stderr.write(f"Error: {client_error_msg}\n")
+                res = {"success": False, "error": f"End: {client_error_msg}"}
                 return res
 
             # Calculate numAct correctly using the instantiated apiDst
@@ -1444,8 +1440,9 @@ class moduleRules:
                 i = 0
             else:
                 i = i + 1
-            nameR = f"[{self.getNameAction(rule_key)}{i}]"
-            msgLog = (f"{nameR:->12}> "
+            name_action = f"[{self.getNameAction(rule_key)}{i}]"
+            name_action = f"{name_action:->12}> "
+            msgLog = (f"{name_action}"
                           f"Preparing actions for rule: "
                           f"{self.getNickSrc(rule_key)}@"
                           f"{self.getNameRule(rule_key)} "
@@ -1453,7 +1450,7 @@ class moduleRules:
             logMsg(msgLog, 1, 1)
             previous = self.getNameAction(rule_key)
             if rule_metadata and rule_metadata.get("hold") == "yes":
-                msgHold = (f"{nameR:->12}> " 
+                msgHold = (f"{name_action}" 
                            f"[HOLD] {self.getNickSrc(rule_key)} "
                            f"({self.getNickAction(rule_key)})"
                            )
@@ -1464,15 +1461,13 @@ class moduleRules:
                     "rule_action": None,
                     "rule_index": i,
                     "action_index": -1,
-                    "name_action": nameR,
+                    "name_action": name_action,
                 })
                 continue
 
             for action_index, rule_action in enumerate(rule_actions):
                 # Rule selection if --checkBlog is used
-                name_action = f"[{self.getNameAction(rule_key)}{i}]"
-                nameR_action = f"{name_action:->12}>"
-                nameA =  f"{nameR_action} Action {action_index}:"
+                nameA =  f"{name_action} Action {action_index}:"
                 nameRule = f"{self.getNameRule(rule_key).lower()}{i}"
 
                 if select and (select.lower() != nameRule):
@@ -1572,8 +1567,7 @@ class moduleRules:
         rule_index = scheduled_action.get('rule_index', 0)
         action_index = scheduled_action.get('action_index', 0)
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
-        nameR = f"{name_action:->12}>"
-        nameA =  f"{nameR} Action {action_index}:"
+        nameA =  f"{name_action:->12}> Action {action_index}:"
         return self.executeAction(
             rule_key,
             rule_metadata,
