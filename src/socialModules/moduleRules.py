@@ -1052,6 +1052,7 @@ class moduleRules:
             msgLog = f"{indent}No post to schedule in {msgAction}"
             logMsg(msgLog, 1, 1)
             result_dict["success"] = True
+            result_dict["publication_result"] = "No posts available" 
             result_dict["error"] = None
         else:
             title = apiSrc.getPostTitle(post)
@@ -1068,6 +1069,7 @@ class moduleRules:
                 msgLog = f"{indent}Would schedule in {msgAction} {msgLog}"
                 logMsg(msgLog, 1, 1)
                 result_dict["success"] = True
+                result_dict["publication_result"] = "No posting (simmulation)" 
                 result_dict["error"] = "Simulation"
             else:
                 publication_res = apiDst.publishPost(api=apiSrc, post=post)
@@ -1221,8 +1223,6 @@ class moduleRules:
                 return res
 
             apiDst = self.readConfigDst(indent, action, more, apiSrc, fileName=base_name)
-            print(f"DEBUG: apiDst in executeAction: {apiDst}")
-            print(f"DEBUG: apiDst.getClient() in executeAction: {apiDst.getClient()}")
 
             if not apiDst.getClient():
                 client_error_msg = self.clientErrorMsg(
@@ -1252,16 +1252,21 @@ class moduleRules:
             )
             logMsg(msgLog, 1, 1)
 
-            for i in range(numAct):
-                res = self.executePublishAction(
-                    indent,
-                    msgAction,
-                    apiSrc,
-                    apiDst,
-                    simmulate,
-                    nextPost,
-                    pos,
-                )
+            if numAct>0:
+                for i in range(numAct):
+                    res = self.executePublishAction(
+                        indent,
+                        msgAction,
+                        apiSrc,
+                        apiDst,
+                        simmulate,
+                        nextPost,
+                        pos,
+                    )
+            else: res = {"success": True, 
+                         "publication_result": "Limit for publications reached", 
+                         "post_action_result": None, 
+                         }
 
             # If no publication occurred, restore the previous time
             if not res.get("success") and backup_time[0] is not None:
@@ -1617,8 +1622,11 @@ class moduleRules:
                 )
             elif isinstance(res_dict, dict) and res_dict.get("success"):
                 pub_res = res_dict.get("publication_result", "N/A")
-                post_act = res_dict.get("post_action_result", "N/A")
-                summary_msg = f"Success. Pub: '{pub_res}'. Post-Action: '{post_act}'."
+                post_act = res_dict.get("post_action_result")
+                summary_msg = f"Success. Pub: '{pub_res}'"
+                if post_act:
+                    summary_msg += f". Post-Action: '{post_act}'"
+                summary_msg += "."
                 logMsg(
                     f"{name_action} [OK] {summary_msg}",
                     1,
