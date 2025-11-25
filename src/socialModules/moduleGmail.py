@@ -216,6 +216,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return posts
 
     def setChannel(self, channel=""):
+        logging.info(f"Channel: {channel}")
         if not channel:
             folder = self.selectFolder()
             print(f"Folder: {folder}")
@@ -251,6 +252,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         msgLog = f"{self.indent} Label: {label}"
         logMsg(msgLog, 2, 0)
         if isinstance(label, str):
+            if not label:
+                label = "INBOX"
             self.setLabels()
             label = self.getLabels(label)
             if len(label) > 0:
@@ -565,7 +568,10 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         else:
             text = self.getHeader(message, "snippet")
 
-        return text
+        if isinstance(text, bytes):
+            extracted_text = text.decode("utf-8")
+
+        return extracted_text
 
     def getLabelList(self):
         api = self.getClient()
@@ -632,12 +638,13 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         listFolders = listAllFolders
         while listFolders:
             if "\n" not in listFolders:
-                print(f"Nottt: {listFolders}")
+                logging.info(f"Nottt: {listFolders}")
                 nF = listFolders
                 if isinstance(listFolders, dict):
                     nF = self.getChannelName(listFolders)
                 nF = nF.strip("\n")
-                print("nameFolder", nF)
+                nF = nF.split(') ')[1]
+                logging.info("nameFolder", nF)
                 return nF
 
             rows, columns = os.popen("stty size", "r").read().split()

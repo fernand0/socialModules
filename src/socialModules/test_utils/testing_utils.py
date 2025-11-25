@@ -450,6 +450,8 @@ def test_select_post_by_position(apiSrc):
         for i, post in enumerate(posts):
             title = apiSrc.getPostTitle(post)
             link = apiSrc.getPostLink(post)
+            text = apiSrc.getPostContent(post)
+            body = apiSrc.getPostBody(post)
             print(f"{i+1}. Title: {title[:100]}{'...' if len(title) > 100 else ''} (Link: {link})")
 
         try:
@@ -461,6 +463,7 @@ def test_select_post_by_position(apiSrc):
                 print(f"Link: {apiSrc.getPostLink(selected_post)}")
                 print(f"URL: {apiSrc.getPostUrl(selected_post)}")
                 print(f"Content: {apiSrc.getPostContent(selected_post)}")
+                print(f"Body: {apiSrc.getPostBody(selected_post)}")
                 # Add more details as needed, e.g., image, author, date
             else:
                 print("Invalid selection.")
