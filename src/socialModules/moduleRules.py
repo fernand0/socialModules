@@ -9,7 +9,9 @@ import time
 import urllib
 
 import socialModules
-from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR, DATADIR, select_from_list, extract_nick_from_url
+from socialModules.configMod import (CONFIGDIR, DATADIR, LOGDIR, getApi,
+                                     getModule, logMsg, select_from_list,
+                                     thread_local, extract_nick_from_url)
 
 fileName = socialModules.__file__
 path = f"{os.path.dirname(fileName)}"
@@ -152,7 +154,7 @@ class moduleRules:
         theService = None
         api = None
         for service in services["regular"]:
-            if (("service" in config[section]) 
+            if (("service" in config[section])
                 and (service == config[section]["service"])):
                 theService = service
                 api = getModule(service, self.indent)
@@ -1052,7 +1054,7 @@ class moduleRules:
             msgLog = f"{indent}No post to schedule in {msgAction}"
             logMsg(msgLog, 1, 1)
             result_dict["success"] = True
-            result_dict["publication_result"] = "No posts available" 
+            result_dict["publication_result"] = "No posts available"
             result_dict["error"] = None
         else:
             title = apiSrc.getPostTitle(post)
@@ -1064,12 +1066,14 @@ class moduleRules:
                     #f"in file {apiSrc.fileNameBase(apiDst)}.last"
                     f"in file {DATADIR}/{apiSrc.fileName}.last"
                 )
+            # Log the title and link information
+            logMsg(f"{indent}{msgLog}", 1, 1)
 
             if simmulate:
                 msgLog = f"{indent}Would schedule in {msgAction} {msgLog}"
                 logMsg(msgLog, 1, 1)
                 result_dict["success"] = True
-                result_dict["publication_result"] = "No posting (simmulation)" 
+                result_dict["publication_result"] = "No posting (simmulation)"
                 result_dict["error"] = "Simulation"
             else:
                 publication_res = apiDst.publishPost(api=apiSrc, post=post)
@@ -1126,7 +1130,8 @@ class moduleRules:
         pos=-1,
         delete=False,
     ):
-        indent = f"{name}"
+        # indent = f"{name}"
+        indent = f""
         res = {"success": False, "error": "No execution"}
         textEnd = ""
 
@@ -1263,9 +1268,9 @@ class moduleRules:
                         nextPost,
                         pos,
                     )
-            else: res = {"success": True, 
-                         "publication_result": "Limit for publications reached", 
-                         "post_action_result": None, 
+            else: res = {"success": True,
+                         "publication_result": "Limit for publications reached",
+                         "post_action_result": None,
                          }
 
             # If no publication occurred, restore the previous time
@@ -1381,7 +1386,6 @@ class moduleRules:
         try:
             with open(fileNameNext, "wb") as f:
                 pickle.dump((tNow, tSleep), f)
-            logMsg(f"  Time file updated: {fileNameNext}", 2, 0)
         except (IOError, pickle.PicklingError) as e:
             logMsg(f"Failed to write to time file {fileNameNext}: {e}", 3, 1)
 
@@ -1401,31 +1405,33 @@ class moduleRules:
     def _should_skip_publication_early(self, rule_key, rule_action, rule_metadata, noWait, nameA):
         max_val, time_val, last_time_val = self._get_publication_check_data(rule_key, rule_action, rule_metadata)
 
+        should_skip = False
         indent = nameA
         num = max_val
         if num <= 0:
-            logMsg(f"{indent} No posts available", 1, 1)
-            return True
+            msLog = f"{indent} Max number of posts does not allow publishing"
+            logMsg(msgLog, 1, 1)
+            should_skip = True
 
         tNow = time.time()
         hours = float(time_val) * 60 * 60
         lastTime = last_time_val
 
+        if not should_skip: # Only check if not already skipping
+            if lastTime:
+                diffTime = tNow - lastTime
+            else:
+                diffTime = hours + 1
 
-        if lastTime:
-            diffTime = tNow - lastTime
-        else:
-            diffTime = hours + 1
-
-        if not noWait and (diffTime <= hours):
-            msgLog = (
-                f"{indent} Not enough time passed. "
-                f"We will wait at least "
-                f"{(hours-diffTime)/(60*60):2.2f} hours."
-            )
-            logMsg(msgLog, 1, 1)
-            return True
-        return False
+            if not noWait and (diffTime <= hours):
+                msgLog = (
+                    f"{indent} Not enough time passed. "
+                    f"We will wait at least "
+                    f"{(hours-diffTime)/(60*60):2.2f} hours."
+                )
+                logMsg(msgLog, 1, 1)
+                should_skip = True
+        return should_skip
 
     def _prepare_actions(self, args, select):
         """
@@ -1455,7 +1461,7 @@ class moduleRules:
             logMsg(msgLog, 1, 1)
             previous = self.getNameAction(rule_key)
             if rule_metadata and rule_metadata.get("hold") == "yes":
-                msgHold = (f"{name_action}" 
+                msgHold = (f"{name_action}"
                            f"[HOLD] {self.getNickSrc(rule_key)} "
                            f"({self.getNickAction(rule_key)})"
                            )
@@ -1483,18 +1489,10 @@ class moduleRules:
                 )
 
                 if self._should_skip_publication_early(rule_key, rule_action, rule_metadata, noWait, f"{nameA}"):
+                    #FIXME: Add to the result
                     continue
 
                 base_name = self._get_filename_base(rule_key, rule_action)
-                # apiSrc = self.readConfigSrc(nameA, rule_key, rule_metadata, fileName=base_name)
-                # if not apiSrc:
-                #     logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
-                #     continue
-
-                # apiDst = self.readConfigDst(nameA, rule_action, rule_metadata, apiSrc, fileName=base_name)
-                # if not apiDst:
-                #     logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
-                #     continue
 
                 scheduled_actions.append(
                     {
@@ -1573,18 +1571,22 @@ class moduleRules:
         action_index = scheduled_action.get('action_index', 0)
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
         nameA =  f"{name_action:->12}> Action {action_index}:"
-        return self.executeAction(
-            rule_key,
-            rule_metadata,
-            rule_action,
-            msgAction,
-            #apiSrc,
-            noWait,
-            timeSlots,
-            simmulate,
-            nameA,
-            action_index,
-        )
+        try:
+            thread_local.nameA = nameA
+            return self.executeAction(
+                rule_key,
+                rule_metadata,
+                rule_action,
+                msgAction,
+                #apiSrc,
+                noWait,
+                timeSlots,
+                simmulate,
+                nameA,
+                action_index,
+            )
+        finally:
+            thread_local.nameA = None
 
     def _report_results(self, action_results, action_errors, held_actions=None):
         """

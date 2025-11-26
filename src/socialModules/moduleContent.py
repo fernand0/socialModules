@@ -543,8 +543,8 @@ class Content:
         if len(linkLast) >0:
             msgLog = f"{self.indent} linkLast: {linkLast[0]}"
             logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent} lastTime: {lastTime}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} lastTime: {lastTime}"
+        # logMsg(msgLog, 2, 0)
 
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime
@@ -937,10 +937,10 @@ class Content:
                 else:
                     posLast = len(posts)
 
-            msgLog = f"{self.indent} lastLinkkk: {lastLink}"
-            logMsg(msgLog, 1, 0)
-            msgLog = f"{self.indent} posLast: {posLast}"
-            logMsg(msgLog, 1, 0)
+            # msgLog = f"{self.indent} lastLinkkk: {lastLink}"
+            # logMsg(msgLog, 1, 0)
+            # msgLog = f"{self.indent} posLast: {posLast}"
+            # logMsg(msgLog, 1, 0)
         msgLog = f"{self.indent} End getPosNextPost."
         logMsg(msgLog, 2, 0)
         return posLast
@@ -1126,11 +1126,11 @@ class Content:
         try:
             post = self.getNextPost(apiDst)
             if post:
-                msgLog = f"{self.indent} deleting post {post}"
-                logMsg(msgLog, 2, 0)
+                #msgLog = f"{self.indent} Deleting post {post}"
+                #logMsg(msgLog, 2, 0)
                 idPost = self.getPostId(post)
-                msgLog = f"{self.indent} post Id post {idPost}"
-                logMsg(msgLog, 2, 0)
+                # msgLog = f"{self.indent} post Id post {idPost}"
+                # logMsg(msgLog, 2, 0)
                 if (
                     hasattr(self, "getPostsType")
                     and (self.getPostsType())
@@ -1151,8 +1151,8 @@ class Content:
     def publishPost(self, *args, **more):
         msgLog = f"{self.indent} Start publishPost"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent} Args: {args} More: {more}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} Args: {args} More: {more}"
+        # logMsg(msgLog, 2, 0)
         api = ""
         post = ""
         # Do we need these?
@@ -1162,7 +1162,7 @@ class Content:
         nameMethod = "Post"
         listPosts = []
         if len(args) == 3:
-            logging.info(f"Args: {args}")
+            # logging.info(f"Args: {args}")
             title = args[0]
             link = args[1]
             comment = args[2]
@@ -1411,7 +1411,7 @@ class Content:
         return result
 
     def delete(self, j):
-        msgLog = f"{self.indent} deleting post pos: {j}"
+        msgLog = f"{self.indent} Deleting post pos: {j}"
         logMsg(msgLog, 2, 0)
         post = self.getPost(j)
         idPost = self.getPostId(post)

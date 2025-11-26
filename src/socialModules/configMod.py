@@ -5,9 +5,13 @@ import logging
 import os
 import pickle
 import sys
+import threading
 import urllib
 
 import requests
+
+thread_local = threading.local()
+
 # from PIL import Image
 
 HOME = os.path.expanduser("~")
@@ -24,49 +28,46 @@ FAIL = "Fail!"
 OK = "OK"
 
 
-# import logging
-# import inspect
-# import os
-#
-# # 1. Configurar el formato del log para incluir el nuevo atributo
-# logging.basicConfig(
-#     format="%(asctime)s [%(filename)s -> %(caller_file)s] %(levelname)s: %(message)s",
-#     level=logging.INFO
-# )
-#
-# logger = logging.getLogger(__name__)
-#
-# # 2. Función de log mejorada para obtener el origen de forma automática
-# def log_con_origen(logger_obj, mensaje):
-#     """
-#     Función de log que obtiene automáticamente el nombre del archivo
-#     que la invocó, usando el módulo 'inspect'.
-#     """
-#     # Obtiene la pila de llamadas. La posición [1] es la función que nos llamó
-#     # (en este caso, 'mi_funcion_en_main').
-#     # La posición [0] sería la pila de 'log_con_origen'.
-#     caller_frame = inspect.stack()[1]
-#
-#     # 'caller_frame.filename' contiene la ruta completa del archivo de origen.
-#     # 'os.path.basename' extrae solo el nombre del archivo.
-#     caller_file = os.path.basename(caller_frame.filename)
-#
-#     # Realiza la llamada al logger, pasando el nombre del archivo como 'extra'
-#     logger_obj.info(mensaje, extra={'caller_file': caller_file})
-#
-# # 3. Archivo 'mi_modulo.py'
-# def mi_funcion_en_modulo():
-#     log_con_origen(logger, "Este mensaje se llama desde mi_modulo.")
-#
-# # 4. Archivo 'main.py'
-# if __name__ == "__main__":
-#     from mi_modulo import mi_funcion_en_modulo
-#     mi_funcion_en_modulo()
-#      mi_funcion_en_modulo()
-#
-# __name__
+
+class ContextFilter(logging.Filter):
+    """
+    This is a filter which injects the 'nameA' attribute into the log record.
+    """
+    def filter(self, record):
+        record.nameA = getattr(thread_local, 'nameA', '') or ''
+        return True
+
+# Configure the root logger with both file and console handlers
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.DEBUG)
+
+# Create formatter
+formatter = logging.Formatter(
+    fmt="%(asctime)s [%(filename)-12s] %(nameA)s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+# Create and configure file handler
+file_handler = logging.FileHandler(f"{LOGDIR}/rssSocial.log")
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(formatter)
+file_handler.addFilter(ContextFilter())
+
+# Create and configure console handler
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setLevel(logging.DEBUG)
+console_handler.setFormatter(formatter)
+console_handler.addFilter(ContextFilter())
+
+# Add handlers to root logger
+root_logger.addHandler(file_handler)
+root_logger.addHandler(console_handler)
 
 def logMsg(msgLog, log=1, output=1):
+    # name_action = getattr(thread_local, 'nameA', None)
+    # if name_action:
+    #     msgLog = f"{name_action} {msgLog}"
+
     if log == 1:
         logging.info(msgLog)
     elif log == 2:
