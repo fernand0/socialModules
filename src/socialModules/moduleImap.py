@@ -1677,6 +1677,12 @@ class moduleImap(Content):  # , Queue):
         subject = str(email.header.make_header(theHeader))
         return subject
 
+    def getPostpos(self, msg):
+        pos = -1
+        if isinstance(msg, tuple):
+            pos = msg[0]
+        return pos
+        
     def getPostId(self, msg):
         if isinstance(msg, tuple):
             post = msg[1]
