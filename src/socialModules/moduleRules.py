@@ -1066,6 +1066,8 @@ class moduleRules:
                     #f"in file {apiSrc.fileNameBase(apiDst)}.last"
                     f"in file {DATADIR}/{apiSrc.fileName}.last"
                 )
+            # Log the title and link information
+            logMsg(f"{indent}{msgLog}", 1, 1)
 
             if simmulate:
                 msgLog = f"{indent}Would schedule in {msgAction} {msgLog}"
