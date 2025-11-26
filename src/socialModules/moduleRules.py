@@ -152,7 +152,7 @@ class moduleRules:
         theService = None
         api = None
         for service in services["regular"]:
-            if (("service" in config[section]) 
+            if (("service" in config[section])
                 and (service == config[section]["service"])):
                 theService = service
                 api = getModule(service, self.indent)
@@ -1400,32 +1400,37 @@ class moduleRules:
     def _should_skip_publication_early(self, rule_key, rule_action, rule_metadata, noWait, nameA):
         max_val, time_val, last_time_val = self._get_publication_check_data(rule_key, rule_action, rule_metadata)
 
+        should_skip = False
         indent = nameA
         num = max_val
         if num <= 0:
             msLog = f"{indent} Max number of posts does not allow publishing"
             logMsg(msgLog, 1, 1)
+<<<<<<< Updated upstream
             return True
+=======
+            should_skip = True
+>>>>>>> Stashed changes
 
         tNow = time.time()
         hours = float(time_val) * 60 * 60
         lastTime = last_time_val
 
+        if not should_skip: # Only check if not already skipping
+            if lastTime:
+                diffTime = tNow - lastTime
+            else:
+                diffTime = hours + 1
 
-        if lastTime:
-            diffTime = tNow - lastTime
-        else:
-            diffTime = hours + 1
-
-        if not noWait and (diffTime <= hours):
-            msgLog = (
-                f"{indent} Not enough time passed. "
-                f"We will wait at least "
-                f"{(hours-diffTime)/(60*60):2.2f} hours."
-            )
-            logMsg(msgLog, 1, 1)
-            return True
-        return False
+            if not noWait and (diffTime <= hours):
+                msgLog = (
+                    f"{indent} Not enough time passed. "
+                    f"We will wait at least "
+                    f"{(hours-diffTime)/(60*60):2.2f} hours."
+                )
+                logMsg(msgLog, 1, 1)
+                should_skip = True
+        return should_skip
 
     def _prepare_actions(self, args, select):
         """
@@ -1455,7 +1460,7 @@ class moduleRules:
             logMsg(msgLog, 1, 1)
             previous = self.getNameAction(rule_key)
             if rule_metadata and rule_metadata.get("hold") == "yes":
-                msgHold = (f"{name_action}" 
+                msgHold = (f"{name_action}"
                            f"[HOLD] {self.getNickSrc(rule_key)} "
                            f"({self.getNickAction(rule_key)})"
                            )
@@ -1487,15 +1492,6 @@ class moduleRules:
                     continue
 
                 base_name = self._get_filename_base(rule_key, rule_action)
-                # apiSrc = self.readConfigSrc(nameA, rule_key, rule_metadata, fileName=base_name)
-                # if not apiSrc:
-                #     logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
-                #     continue
-
-                # apiDst = self.readConfigDst(nameA, rule_action, rule_metadata, apiSrc, fileName=base_name)
-                # if not apiDst:
-                #     logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
-                #     continue
 
                 scheduled_actions.append(
                     {
