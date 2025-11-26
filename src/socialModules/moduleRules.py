@@ -1381,7 +1381,6 @@ class moduleRules:
         try:
             with open(fileNameNext, "wb") as f:
                 pickle.dump((tNow, tSleep), f)
-            logMsg(f"  Time file updated: {fileNameNext}", 2, 0)
         except (IOError, pickle.PicklingError) as e:
             logMsg(f"Failed to write to time file {fileNameNext}: {e}", 3, 1)
 
@@ -1404,7 +1403,8 @@ class moduleRules:
         indent = nameA
         num = max_val
         if num <= 0:
-            logMsg(f"{indent} No posts available", 1, 1)
+            msLog = f"{indent} Max number of posts does not allow publishing"
+            logMsg(msgLog, 1, 1)
             return True
 
         tNow = time.time()
@@ -1483,6 +1483,7 @@ class moduleRules:
                 )
 
                 if self._should_skip_publication_early(rule_key, rule_action, rule_metadata, noWait, f"{nameA}"):
+                    #FIXME: Add to the result
                     continue
 
                 base_name = self._get_filename_base(rule_key, rule_action)

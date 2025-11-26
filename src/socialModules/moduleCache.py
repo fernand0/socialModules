@@ -342,8 +342,8 @@ class moduleCache(Content):  # ,Queue):
 
         with open(fileNameQ, "wb") as f:
             posts = self.getPosts()
-            msgLog = f"{self.indent} Posts updating {self.service} {posts}"
-            logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent} Posts updating {self.service} {posts}"
+            # logMsg(msgLog, 2, 0)
             pickle.dump(posts, f)
 
         # msgLog = (f"Posts: {str(self.getPosts())}")
