@@ -9,7 +9,9 @@ import time
 import urllib
 
 import socialModules
-from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR, DATADIR, select_from_list, extract_nick_from_url
+from socialModules.configMod import (CONFIGDIR, DATADIR, LOGDIR, getApi,
+                                     getModule, logMsg, select_from_list,
+                                     thread_local, extract_nick_from_url)
 
 fileName = socialModules.__file__
 path = f"{os.path.dirname(fileName)}"
@@ -1052,7 +1054,7 @@ class moduleRules:
             msgLog = f"{indent}No post to schedule in {msgAction}"
             logMsg(msgLog, 1, 1)
             result_dict["success"] = True
-            result_dict["publication_result"] = "No posts available" 
+            result_dict["publication_result"] = "No posts available"
             result_dict["error"] = None
         else:
             title = apiSrc.getPostTitle(post)
@@ -1069,7 +1071,7 @@ class moduleRules:
                 msgLog = f"{indent}Would schedule in {msgAction} {msgLog}"
                 logMsg(msgLog, 1, 1)
                 result_dict["success"] = True
-                result_dict["publication_result"] = "No posting (simmulation)" 
+                result_dict["publication_result"] = "No posting (simmulation)"
                 result_dict["error"] = "Simulation"
             else:
                 publication_res = apiDst.publishPost(api=apiSrc, post=post)
@@ -1126,7 +1128,8 @@ class moduleRules:
         pos=-1,
         delete=False,
     ):
-        indent = f"{name}"
+        # indent = f"{name}"
+        indent = f""
         res = {"success": False, "error": "No execution"}
         textEnd = ""
 
@@ -1263,9 +1266,9 @@ class moduleRules:
                         nextPost,
                         pos,
                     )
-            else: res = {"success": True, 
-                         "publication_result": "Limit for publications reached", 
-                         "post_action_result": None, 
+            else: res = {"success": True,
+                         "publication_result": "Limit for publications reached",
+                         "post_action_result": None,
                          }
 
             # If no publication occurred, restore the previous time
@@ -1406,11 +1409,7 @@ class moduleRules:
         if num <= 0:
             msLog = f"{indent} Max number of posts does not allow publishing"
             logMsg(msgLog, 1, 1)
-<<<<<<< Updated upstream
-            return True
-=======
             should_skip = True
->>>>>>> Stashed changes
 
         tNow = time.time()
         hours = float(time_val) * 60 * 60
@@ -1570,18 +1569,22 @@ class moduleRules:
         action_index = scheduled_action.get('action_index', 0)
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
         nameA =  f"{name_action:->12}> Action {action_index}:"
-        return self.executeAction(
-            rule_key,
-            rule_metadata,
-            rule_action,
-            msgAction,
-            #apiSrc,
-            noWait,
-            timeSlots,
-            simmulate,
-            nameA,
-            action_index,
-        )
+        try:
+            thread_local.nameA = nameA
+            return self.executeAction(
+                rule_key,
+                rule_metadata,
+                rule_action,
+                msgAction,
+                #apiSrc,
+                noWait,
+                timeSlots,
+                simmulate,
+                nameA,
+                action_index,
+            )
+        finally:
+            thread_local.nameA = None
 
     def _report_results(self, action_results, action_errors, held_actions=None):
         """

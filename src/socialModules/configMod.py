@@ -5,9 +5,13 @@ import logging
 import os
 import pickle
 import sys
+import threading
 import urllib
 
 import requests
+
+thread_local = threading.local()
+
 # from PIL import Image
 
 HOME = os.path.expanduser("~")
@@ -67,6 +71,10 @@ OK = "OK"
 # __name__
 
 def logMsg(msgLog, log=1, output=1):
+    name_action = getattr(thread_local, 'nameA', None)
+    if name_action:
+        msgLog = f"{name_action} {msgLog}"
+
     if log == 1:
         logging.info(msgLog)
     elif log == 2:
