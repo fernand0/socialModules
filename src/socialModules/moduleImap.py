@@ -383,7 +383,7 @@ class moduleImap(Content):  # , Queue):
         msg_data = []
         msg_numbers = []
         j = 0
-        print("%d messsages in folder: %s" % (len(messages), folder))
+        print("%d messages in folder: %s" % (len(messages), folder))
         if startMsg == 0:
             startMsg = len(messages) - numMsgs + 1
         else:
@@ -1450,13 +1450,10 @@ class moduleImap(Content):  # , Queue):
 
     def moveMails(self, M, msgs, folder):
         if hasattr(self, "channel"):
-            logging.info(f"moveMailssss {self.channel}")
             self.getClient().select(self.channel)
-            logging.info(f"moveMailssssss {self.channel}")
         else:
             channel = self.getPostsType()
             M.select(channel.capitalize())
-        logging.info(f"aquisssssss {msgs}")
         if isinstance(msgs, bytes):
             msgs = msgs.decode('ascii')
 
