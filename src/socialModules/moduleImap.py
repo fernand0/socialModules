@@ -1430,6 +1430,7 @@ class moduleImap(Content):  # , Queue):
 
     def deleteApiPosts(self, idPost):
         try:
+            logging.info(f"moveMailssss {self.special['Trash']}")
             res = self.moveMails(
                 self.getClient(), str(idPost).encode(), self.special["Trash"]
             )
@@ -1444,7 +1445,6 @@ class moduleImap(Content):  # , Queue):
             self.moveMails(M, messageId, "Trash")
 
     def moveMails(self, M, msgs, folder):
-        logging.info(f"moveMailssss")
         logging.info(f"moveMailssss {self.channel}")
         if hasattr(self, "channel"):
             M.select(self.channel)
