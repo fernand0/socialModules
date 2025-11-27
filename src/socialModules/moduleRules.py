@@ -1169,14 +1169,6 @@ class moduleRules:
 
         time.sleep(1)
 
-        msgLog = f"{indent} Go!"
-        logMsg(msgLog, 1, 0)
-        indent = f"{indent} "
-
-        textEnd = f"{msgLog}"
-
-        time.sleep(1)
-
         msgLog = ""
 
         # Get scheduling data without full API instantiation
@@ -1218,7 +1210,8 @@ class moduleRules:
                 time.sleep(tSleep)
             if "minutes" in msgLog:
                 logMsg(f"{indent} End Waiting {theAction} from "
-                       f"{self.getNickRule(src)} in {self.getNickAction(action)}"
+                       f"{self.getNickRule(src)} in "
+                       f"{self.getNickAction(action)}"
                        f"@{self.getProfileAction(action)}", 1, 1)
 
             # Instantiate APIs ONCE, after the wait

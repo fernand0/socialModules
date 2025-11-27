@@ -230,7 +230,8 @@ def getApi(profile, nick, indent="", channel=None):
     result_api = None
 
     if api is None:
-        logMsg(f"{indent} Failed to get API module for profile: {profile}", 3, 1)
+        logMsg(f"{indent} Failed to get API module for profile: "
+               f"{profile}", 3, 1)
     else:
         api.profile = profile
         api.nick = nick
