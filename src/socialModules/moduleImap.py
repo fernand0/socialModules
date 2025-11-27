@@ -1430,6 +1430,7 @@ class moduleImap(Content):  # , Queue):
 
     def deleteApiPosts(self, idPost):
         try:
+            logging.info(f"moveMailssss {self.special}")
             logging.info(f"moveMailssss {self.special['Trash']}")
             res = self.moveMails(
                 self.getClient(), str(idPost).encode(), self.special["Trash"]
