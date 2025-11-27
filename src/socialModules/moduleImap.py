@@ -1435,7 +1435,7 @@ class moduleImap(Content):  # , Queue):
             logging.info(f"moveMailssss {self.special['Trash']}")
             logging.info(f"moveMailssssssss")
             res = self.moveMails(
-                self.getClient(), str(idPost).encode(), self.special["Trash"]
+                self.getClient(), [str(idPost).encode(), ], self.special["Trash"]
             )
         except:
             logging.warning("Some error moving mails to Trash")
