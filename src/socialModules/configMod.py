@@ -43,7 +43,7 @@ root_logger.setLevel(logging.DEBUG)
 
 # Create formatter
 formatter = logging.Formatter(
-    fmt="%(asctime)s [%(filename)-12s] %(nameA)s %(message)s",
+    fmt="%(asctime)s [%(filename).12s] %(nameA)s %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
