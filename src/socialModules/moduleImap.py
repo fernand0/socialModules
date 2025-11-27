@@ -1450,7 +1450,6 @@ class moduleImap(Content):  # , Queue):
             self.moveMails(M, messageId, "Trash")
 
     def moveMails(self, M, msgs, folder):
-        logging.info(f"moveMailssss {self.channel}")
         if hasattr(self, "channel"):
             M.select(self.channel)
         else:

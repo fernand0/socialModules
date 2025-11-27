@@ -25,6 +25,7 @@ from socialModules.configMod import *
 from socialModules.moduleContent import *
 from socialModules.moduleGoogle import *
 
+import googleapiclient
 
 class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def initApi(self, keys):
