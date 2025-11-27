@@ -1439,6 +1439,8 @@ class moduleImap(Content):  # , Queue):
             )
         except:
             logging.warning("Some error moving mails to Trash")
+            res = "Fail!"
+        return res
 
     def modifyLabels(self, messageId, oldLabelId, labelId):
         M = self.getClient()
