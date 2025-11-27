@@ -130,6 +130,9 @@ class moduleImap(Content):  # , Queue):
             parts = str(folder).split(self.separator)
             for special in specialFolders:
                 if special in parts[0]:
+                    logging.info(f"Special: {special}")
+                    logging.info(f"Special: {parts}")
+                    logging.info(f"Special: {self.getChannelName(folder)}")
                     self.special[special] = self.getChannelName(folder)
 
         return client
@@ -1430,10 +1433,6 @@ class moduleImap(Content):  # , Queue):
 
     def deleteApiPosts(self, idPost):
         try:
-            logging.info(f"moveMailssssssss")
-            logging.info(f"moveMailssss {self.special}")
-            logging.info(f"moveMailssss {self.special['Trash']}")
-            logging.info(f"moveMailssssssss")
             res = self.moveMails(
                 self.getClient(), str(idPost).encode(), self.special["Trash"]
             )
@@ -1448,12 +1447,16 @@ class moduleImap(Content):  # , Queue):
             self.moveMails(M, messageId, "Trash")
 
     def moveMails(self, M, msgs, folder):
-        logging.info(f"moveMailssss {self.channel}")
         if hasattr(self, "channel"):
-            M.select(self.channel)
+            logging.info(f"moveMailssss {self.channel}")
+            self.getClient().select(self.channel)
+            logging.info(f"moveMailssssss {self.channel}")
         else:
             channel = self.getPostsType()
             M.select(channel.capitalize())
+        logging.info(f"aquisssssss {msgs}")
+        if isinstance(msgs, bytes):
+            msgs = msgs.decode('ascii')
 
         msgLog = f"Copying {len(msgs.split(','))} messages to {folder}"
         logMsg(msgLog, 1, 0)
@@ -1687,7 +1690,7 @@ class moduleImap(Content):  # , Queue):
         if isinstance(msg, tuple):
             pos = msg[0]
         return pos
-        
+
     def getPostId(self, msg):
         if isinstance(msg, tuple):
             post = msg[1]
@@ -1755,7 +1758,7 @@ class moduleImap(Content):  # , Queue):
         return posts
 
     def register_specific_tests(self, tester):
-        tester.add_test("List folders", self.test_list_folders)
+        tester.add_test("Change folder", self.test_list_folders)
         tester.add_test("Test drafts", self.test_drafts)
         tester.add_test("Test posts", self.test_posts)
         tester.add_test("Test attachments", self.test_attachments)
@@ -1845,6 +1848,7 @@ def main():
     imap_module = moduleImap()
     tester = ModuleTester(imap_module)
     tester.run()
+
 
 if __name__ == '__main__':
     def test_click(self, apiSrc):

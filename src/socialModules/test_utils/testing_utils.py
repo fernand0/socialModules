@@ -21,6 +21,9 @@ def test_connection(apiSrc, get_user_info_callback):
     except Exception as e:
         print(f"✗ Connection failed: {e}")
 
+    print(f"Special: {apiSrc.special}")
+    print(f"Special: {apiSrc.separator}")
+
 
 def test_authorization(apiSrc):
     """
