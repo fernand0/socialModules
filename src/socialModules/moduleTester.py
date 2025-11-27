@@ -114,7 +114,7 @@ class ModuleTester:
         self.add_test("Basic post test", self.test_basic_post)
         self.add_test("Image post test", self.test_image_post)
         self.add_test("Cache integration test", self.test_cache_integration)
-        self.add_test("Post deletion test", self.test_deletion)
+        self.add_test("Delete post test", self.test_deletion)
         self.add_test("Edit post test", self.test_edit_post)
         self.add_test("Favorites management test", self.test_favorites_management)
         self.add_test("Cache content verification", self.test_cache_content)
