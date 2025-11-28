@@ -25,7 +25,6 @@ from socialModules.configMod import *
 from socialModules.moduleContent import *
 from socialModules.moduleGoogle import *
 
-
 class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def initApi(self, keys):
         self.service = "Gmail"
@@ -145,7 +144,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 .modify(userId="me", id=messageId, body=list_labels)
                 .execute()
             )
-        except googleapiclient.errors.httperror as e:
+        except googleapiclient.errors.HttpError as e:
             logging.error(f"Error deleting email: {e}")
             message = ""
 
