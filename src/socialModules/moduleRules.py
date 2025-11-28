@@ -1452,20 +1452,26 @@ class moduleRules:
             else:
                 i = i + 1
             name_action = f"[{self.getNameAction(rule_key)}{i}]"
-            name_action = f"{name_action:->12}> "
-            msgLog = (f"{name_action}"
-                          f"Preparing actions for rule: "
+            name_action = f"{name_action:->12}>"
+            msgLog = (f"Preparing actions for rule: "
                           f"{self.getNickSrc(rule_key)}@"
                           f"{self.getNameRule(rule_key)} "
                           f"({self.getNickAction(rule_key)})")
-            logMsg(msgLog, 1, 1)
+            try:
+                thread_local.nameA = name_action
+                logMsg(msgLog, 1, 1)
+            finally:
+                thread_local.nameA = None
             previous = self.getNameAction(rule_key)
             if rule_metadata and rule_metadata.get("hold") == "yes":
-                msgHold = (f"{name_action}"
-                           f"[HOLD] {self.getNickSrc(rule_key)} "
+                msgHold = (f"[HOLD] {self.getNickSrc(rule_key)} "
                            f"({self.getNickAction(rule_key)})"
                            )
-                logMsg(msgHold, 1, 0)
+                try:
+                    thread_local.nameA = name_action
+                    logMsg(msgHold, 1, 0)
+                finally:
+                    thread_local.nameA = None
                 held_actions.append({
                     "rule_key": rule_key,
                     "rule_metadata": rule_metadata,
@@ -1601,11 +1607,15 @@ class moduleRules:
                 #     f"{name_action} Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
                 # )
                 summary_msg = "Rule on hold."
-                logMsg(
-                    f"{name_action} [OK] (Held) {summary_msg}",
-                    1,
-                    1,
-                )
+                try:
+                    thread_local.nameA = name_action
+                    logMsg(
+                        f"[OK] (Held) {summary_msg}",
+                        1,
+                        1,
+                    )
+                finally:
+                    thread_local.nameA = None
         for scheduled_action, res_dict in action_results:
             print(f"Scheduled: {scheduled_action}. Res: {res_dict}")
             rule_key = scheduled_action["rule_key"]
@@ -1617,11 +1627,15 @@ class moduleRules:
 
             if res_dict == "ok":
                 summary_msg = "Success. Action completed."
-                logMsg(
-                    f"{name_action} [OK] {summary_msg}",
-                    1,
-                    1,
-                )
+                try:
+                    thread_local.nameA = name_action
+                    logMsg(
+                        f"[OK] {summary_msg}",
+                        1,
+                        1,
+                    )
+                finally:
+                    thread_local.nameA = None
             elif isinstance(res_dict, dict) and res_dict.get("success"):
                 pub_res = res_dict.get("publication_result", "N/A")
                 post_act = res_dict.get("post_action_result")
@@ -1629,25 +1643,37 @@ class moduleRules:
                 if post_act:
                     summary_msg += f". Post-Action: '{post_act}'"
                 summary_msg += "."
-                logMsg(
-                    f"{name_action} [OK] {summary_msg}",
-                    1,
-                    1,
-                )
+                try:
+                    thread_local.nameA = name_action
+                    logMsg(
+                        f"[OK] {summary_msg}",
+                        1,
+                        1,
+                    )
+                finally:
+                    thread_local.nameA = None
             elif isinstance(res_dict, dict):
                 error_msg = res_dict.get("error", "Unknown error")
-                logMsg(
-                    f"{name_action} [ERROR] {error_msg}",
-                    3,
-                    1,
-                )
+                try:
+                    thread_local.nameA = name_action
+                    logMsg(
+                        f"[ERROR] {error_msg}",
+                        3,
+                        1,
+                    )
+                finally:
+                    thread_local.nameA = None
             else:
                 # Fallback for empty or non-dict results
-                logMsg(
-                    f"{name_action} [WARN] Action produced an invalid result: {res_dict}",
-                    2,
-                    1,
-                )
+                try:
+                    thread_local.nameA = name_action
+                    logMsg(
+                        f"[WARN] Action produced an invalid result: {res_dict}",
+                        2,
+                        1,
+                    )
+                finally:
+                    thread_local.nameA = None
 
         for scheduled_action, exc in action_errors:
             rule_key = scheduled_action["rule_key"]
@@ -1656,11 +1682,15 @@ class moduleRules:
             rule_summary = (
                 f"{name_action} Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
             )
-            logMsg(
-                f"{name_action} [ERROR] {exc}",
-                3,
-                1,
-            )
+            try:
+                thread_local.nameA = name_action
+                logMsg(
+                    f"[ERROR] {exc}",
+                    3,
+                    1,
+                )
+            finally:
+                thread_local.nameA = None
 
     def _configure_service_api(self, api, destination, channel=None, from_email=None, to_email=None, account=None):
         """
