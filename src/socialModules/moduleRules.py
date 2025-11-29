@@ -1296,7 +1296,7 @@ class moduleRules:
         select = args.checkBlog
         simmulate = args.simmulate
         # Prepare actions to execute
-        scheduled_actions, held_actions = self._prepare_actions(args, select)
+        scheduled_actions, held_actions, skipped_actions = self._prepare_actions(args, select)
         # Determine number of threads
         if max_workers is not None:
             pass  # use the explicit value
@@ -1308,7 +1308,7 @@ class moduleRules:
         # Execute actions concurrently
         action_results, action_errors = self._run_actions_concurrently(scheduled_actions, max_workers=max_workers)
         # Report results and errors
-        self._report_results(action_results, action_errors, held_actions)
+        self._report_results(action_results, action_errors, held_actions, skipped_actions)
         msgLog = f"End Executing rules with {len(scheduled_actions)} actions."
         logMsg(msgLog, 1, 2)
         return
@@ -1424,7 +1424,7 @@ class moduleRules:
                 )
                 logMsg(msgLog, 1, 1)
                 should_skip = True
-        return should_skip
+        return should_skip, msgLog
 
     def _prepare_actions(self, args, select):
         """
@@ -1434,6 +1434,7 @@ class moduleRules:
         """
         scheduled_actions = []
         held_actions = []
+        skipped_actions = []
         previous = ""
         i = 0  # Initialize i outside the loop to avoid UnboundLocalError
         for rule_index, rule_key in enumerate(sorted(self.rules.keys())):
@@ -1487,8 +1488,18 @@ class moduleRules:
                     rule_action, rule_metadata, args
                 )
 
-                if self._should_skip_publication_early(rule_key, rule_action, rule_metadata, noWait, f"{nameA}"):
-                    #FIXME: Add to the result
+                should_skip, skip_reason_msg = self._should_skip_publication_early(rule_key, rule_action, rule_metadata, noWait, f"{nameA}")
+                if should_skip:
+                    skipped_actions.append({
+                        "rule_key": rule_key,
+                        "rule_metadata": rule_metadata,
+                        "rule_action": rule_action,
+                        "rule_index": i,
+                        "action_index": action_index,
+                        "name_action": name_action,
+                        "nameA": nameA,
+                        "skip_reason": skip_reason_msg,
+                    })
                     continue
 
                 base_name = self._get_filename_base(rule_key, rule_action)
@@ -1508,7 +1519,7 @@ class moduleRules:
                         "noWait": noWait,       # Add noWait to scheduled_actions
                     }
                 )
-        return scheduled_actions, held_actions
+        return scheduled_actions, held_actions, skipped_actions
 
     def _get_action_properties(self, rule_action, rule_metadata, args):
         timeSlots = args.timeSlots
@@ -1587,7 +1598,7 @@ class moduleRules:
         finally:
             thread_local.nameA = None
 
-    def _report_results(self, action_results, action_errors, held_actions=None):
+    def _report_results(self, action_results, action_errors, held_actions=None, skipped_actions=None):
         """
         Reports the results and errors of action execution.
         """
@@ -1605,6 +1616,25 @@ class moduleRules:
                     logMsg(
                         f"[OK] (Held) {summary_msg}",
                         1,
+                        1,
+                    )
+                finally:
+                    thread_local.nameA = None
+
+        if skipped_actions:
+            for skipped_action in skipped_actions:
+                rule_key = skipped_action["rule_key"]
+                rule_action = skipped_action["rule_action"]
+                rule_index = skipped_action.get("rule_index", "")
+                name_action = skipped_action["name_action"]
+                skip_reason = skipped_action["skip_reason"]
+
+                summary_msg = f"Skipped. Reason: {skip_reason.strip()}"
+                try:
+                    thread_local.nameA = name_action
+                    logMsg(
+                        f"[WARN] (Skipped) {summary_msg}",
+                        2,
                         1,
                     )
                 finally:
