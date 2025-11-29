@@ -1401,8 +1401,9 @@ class moduleRules:
         should_skip = False
         indent = nameA
         num = max_val
+        skip_reason = ""
         if num <= 0:
-            msLog = f"{indent} Max number of posts does not allow publishing"
+            msgLog = f"{indent} Max number of posts does not allow publishing"
             logMsg(msgLog, 1, 1)
             should_skip = True
 
@@ -1417,14 +1418,15 @@ class moduleRules:
                 diffTime = hours + 1
 
             if not noWait and (diffTime <= hours):
-                msgLog = (
-                    f"{indent} Not enough time passed. "
+                skip_reason = (
+                    f"Not enough time passed. "
                     f"We will wait at least "
                     f"{(hours-diffTime)/(60*60):2.2f} hours."
                 )
+                msgLog = (f"{indent} {skip_reason}")
                 logMsg(msgLog, 1, 1)
                 should_skip = True
-        return should_skip, msgLog
+        return should_skip, skip_reason
 
     def _prepare_actions(self, args, select):
         """
@@ -1614,7 +1616,7 @@ class moduleRules:
                 try:
                     thread_local.nameA = name_action
                     logMsg(
-                        f"[OK] (Held) {summary_msg}",
+                            f" Actions: [OK] (Held) {summary_msg}",
                         1,
                         1,
                     )
@@ -1629,13 +1631,13 @@ class moduleRules:
                 name_action = skipped_action["name_action"]
                 skip_reason = skipped_action["skip_reason"]
 
-                summary_msg = f"Skipped. Reason: {skip_reason.strip()}"
+                summary_msg = f"{skip_reason.strip()}"
                 try:
                     thread_local.nameA = name_action
                     logMsg(
-                        f"[WARN] (Skipped) {summary_msg}",
-                        2,
-                        1,
+                            f" Actions: [WARN] (Skipped) {summary_msg}", 
+                            2, 
+                            1,
                     )
                 finally:
                     thread_local.nameA = None
