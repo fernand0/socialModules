@@ -5,9 +5,13 @@ import logging
 import os
 import pickle
 import sys
+import threading
 import urllib
 
 import requests
+
+thread_local = threading.local()
+
 # from PIL import Image
 
 HOME = os.path.expanduser("~")
@@ -24,49 +28,46 @@ FAIL = "Fail!"
 OK = "OK"
 
 
-# import logging
-# import inspect
-# import os
-#
-# # 1. Configurar el formato del log para incluir el nuevo atributo
-# logging.basicConfig(
-#     format="%(asctime)s [%(filename)s -> %(caller_file)s] %(levelname)s: %(message)s",
-#     level=logging.INFO
-# )
-#
-# logger = logging.getLogger(__name__)
-#
-# # 2. Función de log mejorada para obtener el origen de forma automática
-# def log_con_origen(logger_obj, mensaje):
-#     """
-#     Función de log que obtiene automáticamente el nombre del archivo
-#     que la invocó, usando el módulo 'inspect'.
-#     """
-#     # Obtiene la pila de llamadas. La posición [1] es la función que nos llamó
-#     # (en este caso, 'mi_funcion_en_main').
-#     # La posición [0] sería la pila de 'log_con_origen'.
-#     caller_frame = inspect.stack()[1]
-#
-#     # 'caller_frame.filename' contiene la ruta completa del archivo de origen.
-#     # 'os.path.basename' extrae solo el nombre del archivo.
-#     caller_file = os.path.basename(caller_frame.filename)
-#
-#     # Realiza la llamada al logger, pasando el nombre del archivo como 'extra'
-#     logger_obj.info(mensaje, extra={'caller_file': caller_file})
-#
-# # 3. Archivo 'mi_modulo.py'
-# def mi_funcion_en_modulo():
-#     log_con_origen(logger, "Este mensaje se llama desde mi_modulo.")
-#
-# # 4. Archivo 'main.py'
-# if __name__ == "__main__":
-#     from mi_modulo import mi_funcion_en_modulo
-#     mi_funcion_en_modulo()
-#      mi_funcion_en_modulo()
-#
-# __name__
+
+class ContextFilter(logging.Filter):
+    """
+    This is a filter which injects the 'nameA' attribute into the log record.
+    """
+    def filter(self, record):
+        record.nameA = getattr(thread_local, 'nameA', '') or ''
+        return True
+
+# Configure the root logger with both file and console handlers
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.DEBUG)
+
+# Create formatter
+formatter = logging.Formatter(
+    fmt="%(asctime)s [%(filename).12s] %(nameA)s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+# Create and configure file handler
+file_handler = logging.FileHandler(f"{LOGDIR}/rssSocial.log")
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(formatter)
+file_handler.addFilter(ContextFilter())
+
+# Create and configure console handler
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setLevel(logging.DEBUG)
+console_handler.setFormatter(formatter)
+console_handler.addFilter(ContextFilter())
+
+# Add handlers to root logger
+root_logger.addHandler(file_handler)
+root_logger.addHandler(console_handler)
 
 def logMsg(msgLog, log=1, output=1):
+    # name_action = getattr(thread_local, 'nameA', None)
+    # if name_action:
+    #     msgLog = f"{name_action} {msgLog}"
+
     if log == 1:
         logging.info(msgLog)
     elif log == 2:
@@ -100,27 +101,6 @@ def fileNamePath(url, socialNetwork=()):
         myFile = f"{DATADIR}/{myNetloc}_" f"{socialNetwork[0]}_{socialNetwork[1]}"
         theName = os.path.expanduser(myFile)
     return theName
-
-
-# def setNextTime(blog, socialNetwork, tNow, tSleep):
-#     fileNameNext = fileNamePath(blog.getUrl(), socialNetwork)+'.timeNext'
-#     with open(fileNameNext,'wb') as f:
-#         pickle.dump((tNow, tSleep), f)
-#     return fileNameNext
-
-
-def getNextTime(blog, socialNetwork, indent=""):
-    fileNameNext = fileNamePath(blog.getUrl(), socialNetwork) + ".timeNext"
-    msgLog = f"fileNameNext {fileNameNext}"
-    logMsg(msgLog, 2, 0)
-    msgLog = checkFile(fileNameNext, indent)
-    if "OK" in msgLog:
-        with open(fileNameNext, "rb") as f:
-            tNow, tSleep = pickle.load(f)
-        return tNow, tSleep
-    else:
-        self.report(self.service, msgLog, "", "")
-        return 0, 0
 
 def checkFile(fileName, indent=""):
     msgLog = f"{indent} Start checkFile"
@@ -222,8 +202,8 @@ def getModule(profile, indent=""):
     msgLog = f"{indent} Start getModule {profile}"
     logMsg(msgLog, 2, 0)
     serviceName = profile.capitalize()
-    module_name = "socialModules.module" + serviceName
-    class_name = "module" + serviceName
+    module_name = f"socialModules.module{serviceName}"
+    class_name = f"module{serviceName}"
 
     api = None  # Initialize api to None
 
@@ -250,7 +230,8 @@ def getApi(profile, nick, indent="", channel=None):
     result_api = None
 
     if api is None:
-        logMsg(f"{indent} Failed to get API module for profile: {profile}", 3, 1)
+        logMsg(f"{indent} Failed to get API module for profile: "
+               f"{profile}", 3, 1)
     else:
         api.profile = profile
         api.nick = nick
@@ -376,3 +357,19 @@ def select_from_list(
         name = sel
 
     return sel, name
+
+def extract_nick_from_url(url):
+    result = url
+    url_parsed = urllib.parse.urlparse(url)
+    #if url and (url.startswith("http")):
+    #    result = url.split("//", 1)[1]
+    if (((url_parsed.netloc.count('.')>1)
+         and (url_parsed.netloc.split('.')[0] in ['www']))
+        or (url_parsed.netloc.count('.') == 1)):
+            result = f"{url_parsed.netloc}{url_parsed.path}"
+    else:
+        result = f"{url_parsed.netloc}"
+    if url_parsed.query:
+        result = f"{result}?{url_parsed.query}"
+
+    return result

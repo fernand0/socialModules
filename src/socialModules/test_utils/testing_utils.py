@@ -21,6 +21,28 @@ def test_connection(apiSrc, get_user_info_callback):
     except Exception as e:
         print(f"✗ Connection failed: {e}")
 
+    print(f"Special: {apiSrc.special}")
+    print(f"Special: {apiSrc.separator}")
+
+
+def test_authorization(apiSrc):
+    """
+    Tests the authorization process for a module.
+
+    Args:
+        apiSrc: The API source object for the module.
+    """
+    print("\n=== Testing Authorization ===")
+    try:
+        if hasattr(apiSrc, 'authorize'):
+            print("Calling authorize()...")
+            apiSrc.authorize()
+            print("authorize() finished.")
+        else:
+            print("authorize() method not found in API object.")
+    except Exception as e:
+        print(f"Error during authorization: {e}")
+
 
 def test_authorization(apiSrc):
     """
@@ -450,6 +472,8 @@ def test_select_post_by_position(apiSrc):
         for i, post in enumerate(posts):
             title = apiSrc.getPostTitle(post)
             link = apiSrc.getPostLink(post)
+            text = apiSrc.getPostContent(post)
+            body = apiSrc.getPostBody(post)
             print(f"{i+1}. Title: {title[:100]}{'...' if len(title) > 100 else ''} (Link: {link})")
 
         try:
@@ -461,6 +485,7 @@ def test_select_post_by_position(apiSrc):
                 print(f"Link: {apiSrc.getPostLink(selected_post)}")
                 print(f"URL: {apiSrc.getPostUrl(selected_post)}")
                 print(f"Content: {apiSrc.getPostContent(selected_post)}")
+                print(f"Body: {apiSrc.getPostBody(selected_post)}")
                 # Add more details as needed, e.g., image, author, date
             else:
                 print("Invalid selection.")

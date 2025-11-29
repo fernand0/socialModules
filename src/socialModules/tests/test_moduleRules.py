@@ -285,20 +285,49 @@ def test_readConfigDst_fail(mock_get_api):
     apiDst = rules.readConfigDst('', action, more, apiSrc)
     assert apiDst is None
 
+def make_basic_scheduled_action():
+    # Helper to create a basic scheduled_action dictionary for testing
+    return {
+        "rule_key": ("rss", "set", "src_nick", "posts"),
+        "rule_metadata": {},
+        "rule_action": ("direct", "post", "telegram", "dst_account_1"),
+        "rule_index": 0,
+        "action_index": 0,
+        "args": MagicMock(simmulate=False, timeSlots=1, noWait=True),
+        "simmulate": False,
+        "name_action": "[rss0]",
+        "nameA": "----------[rss0]> Action 0:",
+        "timeSlots": 1,
+        "noWait": True,
+    }
+
+
 @patch('socialModules.moduleRules.moduleRules.readConfigSrc', return_value=None)
-def test_prepare_actions_readConfigSrc_fail(mock_read_config_src, tmp_path):
-    rules = make_basic_rules(tmp_path)
-    scheduled_actions = rules._prepare_actions(rules.args, None)
-    assert len(scheduled_actions) == 0
+def test_execute_single_action_readConfigSrc_fail(mock_read_config_src, tmp_path):
+    rules = moduleRules()
+    # Mock rules.args and rules.more as they are expected by _execute_single_action
+    rules.args = MagicMock(simmulate=False, timeSlots=1, noWait=True)
+    rules.more = {} 
+
+    scheduled_action = make_basic_scheduled_action()
+    result = rules._execute_single_action(scheduled_action)
+
+    assert result["success"] is False
+    assert "error" in result
+    assert "apiSrc for rule" in result["error"] or "No execution" in result["error"]
+
 
 @patch('socialModules.moduleRules.moduleRules.readConfigSrc', return_value=MagicMock())
-@patch('socialModules.moduleRules.moduleRules.readConfigDst', return_value=None)
-def test_prepare_actions_readConfigDst_fail(mock_read_config_dst, mock_read_config_src, tmp_path):
-    rules = make_basic_rules(tmp_path)
-    scheduled_actions = rules._prepare_actions(rules.args, None)
-    assert len(scheduled_actions) == 0
+@patch('socialModules.moduleRules.moduleRules.readConfigDst', return_value=MagicMock(getClient=MagicMock(return_value=None)))
+def test_execute_single_action_readConfigDst_fail(mock_read_config_dst, mock_read_config_src, tmp_path):
+    rules = moduleRules()
+    # Mock rules.args and rules.more as they are expected by _execute_single_action
+    rules.args = MagicMock(simmulate=False, timeSlots=1, noWait=True)
+    rules.more = {} 
 
+    scheduled_action = make_basic_scheduled_action()
+    result = rules._execute_single_action(scheduled_action)
 
-
-
-
+    assert result["success"] is False
+    assert "error" in result
+    assert "client for" in result["error"] or "No execution" in result["error"]
