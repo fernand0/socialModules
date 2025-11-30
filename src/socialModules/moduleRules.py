@@ -2168,14 +2168,6 @@ class moduleRules:
 
 def main():
     mode = logging.DEBUG
-    logging.basicConfig(
-        filename=f"{LOGDIR}/rssSocial.log",
-        # stream=sys.stdout,
-        level=mode,
-        format="%(asctime)s [%(filename).12s] %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-
     rules = moduleRules()
 
     rules.readArgs()

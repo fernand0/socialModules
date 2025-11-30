@@ -39,7 +39,8 @@ class ContextFilter(logging.Filter):
 
 # Configure the root logger with both file and console handlers
 root_logger = logging.getLogger()
-root_logger.setLevel(logging.DEBUG)
+mode = logging.DEBUG
+root_logger.setLevel(mode)
 
 # Create formatter
 formatter = logging.Formatter(
