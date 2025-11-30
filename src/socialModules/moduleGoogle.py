@@ -87,7 +87,7 @@ class socialGoogle:
                     creds = pickle.load(fToken)
             except:
                 msgLog = f"{self.indent}  No credentials to pickle"
-                logMsg(msgLog, 2, True)
+                logMsg(msgLog, 2, False)
 
         except:
             msgLog = f"{self.indent}  creds except {sys.exc_info()}"

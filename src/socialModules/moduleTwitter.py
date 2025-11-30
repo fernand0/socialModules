@@ -118,7 +118,7 @@ class moduleTwitter(Content):  # , Queue):
         Extracts the URL from a successful publication.
         """
         msgLog = f"{self.indent}Reply: {reply}"
-        logMsg(msgLog, 1, True)
+        logMsg(msgLog, 1, False)
 
         # Handle Tweepy v2 Response object
         if hasattr(reply, "data") and isinstance(reply.data, dict):

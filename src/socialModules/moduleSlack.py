@@ -214,28 +214,28 @@ class moduleSlack(Content):  # , Queue):
         self.updatePostsCache()
 
     def setPostLink(self, post, newLink):
-        logMsg(f"Post: {post}", 1, True)
+        logMsg(f"Post: {post}", 1, False)
         if "attachments" in post:
             post["attachments"][0]["original_url"] = newLink
         else:
             text = post["text"]
             if text.startswith("<") and text.count("<") == 1:
-                logMsg("Starts", 2, True)
+                logMsg("Starts", 2, False)
                 # The link is the only text
                 post["text"][1:-1] = newLink
             elif text.find("<h") >= 0:
-                logMsg("<h", 2, True)
+                logMsg("<h", 2, False)
                 pos = text.rfind("<h")
                 # text[pos + 1 : -1] = newLink
                 text = f"{text[:pos]} {newLink} (n)"
                 post["text"] = text
             else:
-                logMsg("http", 2, True)
-                logMsg(f"text: {text}", 2, True)
+                logMsg("http", 2, False)
+                logMsg(f"text: {text}", 2, False)
                 pos = text.rfind("http")
-                logMsg(f"text pos: {pos}", 2, True)
+                logMsg(f"text pos: {pos}", 2, False)
                 text = f"{text[:pos]} {newLink}"
-                logMsg(f"textt: {text}", 2, True)
+                logMsg(f"textt: {text}", 2, False)
                 post["text"] = text
             msgLog = f"PPost: {post}"
             logMsg(msgLog, 2, False)
@@ -304,7 +304,7 @@ class moduleSlack(Content):  # , Queue):
                     pos = text.find("<h")
                 else:
                     pos = text.rfind("http")
-                logMsg(f"text pos: {pos}", 2, True)
+                logMsg(f"text pos: {pos}", 2, False)
                 if pos >= 0:
                     title = newTitle + " " + text[pos:]
                 else:

@@ -62,7 +62,7 @@ class moduleHtml(Content): #, Queue):
 
     def downloadUrl(self, url_to_download):
         msgLog = f"Downloading: {url_to_download}"
-        logMsg(msgLog, 1, True)
+        logMsg(msgLog, 1, False)
 
         response = None
         moreContent = ""
@@ -88,16 +88,16 @@ class moduleHtml(Content): #, Queue):
             response.raise_for_status()
 
         except requests.exceptions.RequestException as e:
-            logMsg(f"Requests failed after 2 attempts: {e}", 2, True)
+            logMsg(f"Requests failed after 2 attempts: {e}", 2, False)
             response = None # Ensure response is None on failure
 
         # Third attempt with pycurl if requests failed
         if response is None or not response.ok:
             sleep_time = random.uniform(0, 2)
-            logMsg(f"Requests failed. Waiting for {sleep_time:.2f} seconds before trying with pycurl.", 1, True)
+            logMsg(f"Requests failed. Waiting for {sleep_time:.2f} seconds before trying with pycurl.", 1, False)
             time.sleep(sleep_time)
 
-            logMsg(f"Making a third attempt with pycurl.", 2, True)
+            logMsg(f"Making a third attempt with pycurl.", 2, False)
             try:
                 buffer = BytesIO()
                 c = pycurl.Curl()
@@ -117,16 +117,16 @@ class moduleHtml(Content): #, Queue):
                     response._content = buffer.getvalue()
                     response.url = c.getinfo(pycurl.EFFECTIVE_URL)
                 else:
-                    logMsg(f"pycurl failed with status code {status_code}", 3, True)
+                    logMsg(f"pycurl failed with status code {status_code}", 3, False)
                     response = None
 
                 c.close()
 
             except pycurl.error as e:
-                logMsg(f"pycurl failed: {e}", 3, True)
+                logMsg(f"pycurl failed: {e}", 3, False)
                 response = None
             except Exception as e:
-                logMsg(f"An unexpected error occurred with pycurl: {e}", 3, True)
+                logMsg(f"An unexpected error occurred with pycurl: {e}", 3, False)
                 response = None
 
         return response, None
@@ -141,7 +141,7 @@ class moduleHtml(Content): #, Queue):
         moreContent = ""
         pos = response.text.find("https://www.blogger.com/feeds/")
         if pos >= 0:
-            logMsg(f"Blogger", 1, True)
+            logMsg(f"Blogger", 1, False)
             pos2 = response.text.find('"', pos + 1)
             theUrl2 = response.text[pos:pos2]
             import moduleRss

@@ -65,7 +65,7 @@ class moduleImgur(Content):  # , Queue):
                 albums = client.get_account_albums(user)
             except:
                 msgLog = f"{self.indent} Failed connection"
-                logMsg(msgLog, 1, True)
+                logMsg(msgLog, 1, False)
 
             if albums:
                 for album in albums:
@@ -100,7 +100,7 @@ class moduleImgur(Content):  # , Queue):
                 albums = client.get_account_albums(user)
             except:
                 msgLog = f"{self.indent} Error getting albums"
-                logMsg(msgLog, 3, True)
+                logMsg(msgLog, 3, False)
                 albums = []
 
             for album in albums:
