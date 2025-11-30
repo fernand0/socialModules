@@ -2167,7 +2167,6 @@ class moduleRules:
 
 
 def main():
-    mode = logging.DEBUG
     rules = moduleRules()
 
     rules.readArgs()
