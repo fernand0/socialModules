@@ -111,7 +111,7 @@ class moduleBlsk(Content):  # , Queue):
     def getApiPostUrl(self, post):
         idPost = self.getPostId(post)
         msgLog = f"{self.indent} getPostUrl: {post}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         if idPost:
             user = self.getPostHandle(post)
             idPost = idPost.split("/")[-1]
@@ -119,7 +119,7 @@ class moduleBlsk(Content):  # , Queue):
         else:
             res = ""
         msgLog = f"{self.indent} getPostUrl res: {res}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         return res
 
     def getApiPostLink(self, post):
@@ -257,7 +257,7 @@ class moduleBlsk(Content):  # , Queue):
             embed_external = None
 
         msgLog = f"{self.indent}Publishing {title} ({len(title)})"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         client = self.api
         try:
             res, error = self.apiCall(
@@ -269,14 +269,14 @@ class moduleBlsk(Content):  # , Queue):
             res = self.report(self.service, f"Other Exception: {title} {link}", title, sys.exc_info())
 
         msgLog = f"{self.indent}Res: {res} "
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         return res
 
     def deleteApiPosts(self, idPost):
         res = None
 
         msgLog = f"{self.indent} deleteApiPosts deleting: {idPost}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         res, error = self.apiCall("delete_post", self.api, post_uri=idPost)
 
         return res
@@ -287,7 +287,7 @@ class moduleBlsk(Content):  # , Queue):
         res = self.api.delete_like(idPost)
         # res, error = self.apiCall('delete_like', self.api,  like_uri=idPost)
         msgLog = f"{self.indent} res: {res}"  # error: {error}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         return res
 
     def getPostHandle(self, post):
@@ -310,7 +310,7 @@ class moduleBlsk(Content):  # , Queue):
     def processReply(self, reply):
         res = ""
         msgLog = f"{self.indent}Reply: {reply}"
-        logMsg(msgLog, 1, 1)
+        logMsg(msgLog, 1, True)
 
         if hasattr(reply, "uri"):
             # Success: The reply object has a 'uri', which is the post identifier.
