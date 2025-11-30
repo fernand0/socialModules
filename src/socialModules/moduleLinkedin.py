@@ -181,7 +181,7 @@ class moduleLinkedin(Content):
             comment = api.getPostComment(title)
 
         msgLog = f"{self.indent} Publishing: {title} - {link} - {comment}"
-logMsg(msgLog, 1, False)
+        logMsg(msgLog, 1, False)
         try:
             try:
                 # me_response = self.getClient().get(resource_path=ME_RESOURCE,
