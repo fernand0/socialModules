@@ -29,6 +29,11 @@ class ConfigError(Exception):
 
 
 class moduleRules:
+    def __init__(self):
+        # Initialize args with a default verbose value
+        import argparse
+        self.args = argparse.Namespace(verbose=True)
+
     def indentPlus(self):
         if not hasattr(self, "indent"):
             self.indent = " "

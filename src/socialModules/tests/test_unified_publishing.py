@@ -200,10 +200,14 @@ def test_smtp_special_handling(mock_single_destination_publish, rules_instance):
         destination="smtp",
         account="smtp_acc",
         title="Email Title",
+        url="",
+        content="",
+        image_path=None,
+        alt_text="",
+        channel=None,
         from_email="from@example.com",
         to_email="to@example.com"
     )
-
 @patch('socialModules.moduleRules.getApi')
 def test_channel_special_handling(mock_get_api, rules_instance):
     """

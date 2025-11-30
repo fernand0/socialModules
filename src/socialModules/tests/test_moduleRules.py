@@ -144,7 +144,7 @@ def make_basic_rules(tmp_path):
     """
     config_file = make_config_file(tmp_path, config_content)
     rules.checkRules(configFile=config_file)
-    rules.args = MagicMock()
+    rules.args = MagicMock(verbose=True)
     rules.args.checkBlog = ""
     rules.args.simmulate = False
     rules.args.noWait = True
