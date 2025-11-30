@@ -113,12 +113,12 @@ class moduleReddit(Content):  # , Queue):
 
     def setChannel(self, page=None):
         msgLog = f"{self.indent} Start setChannel with channel {page}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         self.setPage(page)
 
     def setPage(self, page=None):
         msgLog = f"{self.indent} Start setPage with page {page}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         if page:
             self.page = page
         else:

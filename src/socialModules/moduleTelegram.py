@@ -45,7 +45,7 @@ class moduleTelegram(Content):
 
     def setClient(self, channel):
         msgLog = f"{self.indent} Start setClient account: {channel}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         self.indent = f"{self.indent} "
         try:
             config = configparser.ConfigParser()
@@ -69,7 +69,7 @@ class moduleTelegram(Content):
         self.channel = channel
         self.indent = self.indent[:-1]
         msgLog = f"{self.indent} End setClientt"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
 
     def setChannel(self, channel):
         self.channel = channel
@@ -79,7 +79,7 @@ class moduleTelegram(Content):
             f"{self.indent} Service {self.service} publishing args "
             f"{args}: kwargs {kwargs}"
         )
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         post, image = args
         more = kwargs
 

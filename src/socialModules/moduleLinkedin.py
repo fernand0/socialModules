@@ -181,7 +181,7 @@ class moduleLinkedin(Content):
             comment = api.getPostComment(title)
 
         msgLog = f"{self.indent} Publishing: {title} - {link} - {comment}"
-        logMsg(msgLog, 1, 0)
+logMsg(msgLog, 1, False)
         try:
             try:
                 # me_response = self.getClient().get(resource_path=ME_RESOURCE,
@@ -190,7 +190,7 @@ class moduleLinkedin(Content):
                 )
 
                 msgLog = f"{self.indent} Response: {me_response}"
-                logMsg(msgLog, 2, 0)
+                logMsg(msgLog, 2, False)
                 POSTS_RESOURCE = "/posts"
                 if link and "id" in me_response.entity:
                     entity = {

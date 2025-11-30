@@ -65,7 +65,7 @@ class moduleImgur(Content):  # , Queue):
                 albums = client.get_account_albums(user)
             except:
                 msgLog = f"{self.indent} Failed connection"
-                logMsg(msgLog, 1, 1)
+                logMsg(msgLog, 1, True)
 
             if albums:
                 for album in albums:
@@ -77,7 +77,7 @@ class moduleImgur(Content):  # , Queue):
                         posts.append(album)
         else:
             msgLog = f"{self.indent} setApiPosts No client configured!"
-            logMsg(msgLog, 3, 0)
+            logMsg(msgLog, 3, False)
         return posts
 
     def setApiDrafts(self):
@@ -100,7 +100,7 @@ class moduleImgur(Content):  # , Queue):
                 albums = client.get_account_albums(user)
             except:
                 msgLog = f"{self.indent} Error getting albums"
-                logMsg(msgLog, 3, 1)
+                logMsg(msgLog, 3, True)
                 albums = []
 
             for album in albums:
@@ -114,7 +114,7 @@ class moduleImgur(Content):  # , Queue):
                     # logging.info(f"Draft: {info}")
         else:
             msgLog = f"{self.indent} setApiDrafts No client configured!"
-            logMsg(msgLog, 3, 0)
+            logMsg(msgLog, 3, False)
 
         return posts
 
@@ -127,7 +127,7 @@ class moduleImgur(Content):  # , Queue):
     def getPost(self, i):
         self.indent = f"{self.indent} "
         msgLog = f"{self.indent} Start getPost pos {i}."
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         post = None
         posts = self.getPosts()
         if posts and (i >= 0) and (i < len(posts)):
@@ -140,7 +140,7 @@ class moduleImgur(Content):  # , Queue):
             post = posts[pos-1]
 
         msgLog = f"{self.indent} End getPost"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         self.indent = self.indent[:-1]
         return post
 
@@ -195,7 +195,7 @@ class moduleImgur(Content):  # , Queue):
     def processReply(self, reply):
         res = ""
         msgLog = f"{self.indent}Reply: {reply}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
 
         if isinstance(reply, dict) and "link" in reply:
             # Success: The reply is a dictionary with the image link.
@@ -223,7 +223,7 @@ class moduleImgur(Content):  # , Queue):
         msgLog = (
             f"{self.indent} Publishing next post from {apiSrc} in " f"{self.service}"
         )
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         try:
             post = apiSrc.getNextPost()
             if post:
@@ -252,16 +252,16 @@ class moduleImgur(Content):  # , Queue):
         # # This method publishes (as public post) some gallery that is in draft
         # mode
         msgLog = f"{self.indent} Publishing in: {self.service}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         msgLog = f"{self.indent}  Post: {post}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         api = self.getClient()
         # idPost = self.getPostId(post)
         res = FAIL
         try:
             res_api = api.share_on_imgur(idPost, title, terms=0)
             msgLog = f"{self.indent} Res: {res_api}"
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
             if res_api:
                 res = OK
         except imgurpython.helpers.error.ImgurClientError as e:
@@ -276,24 +276,24 @@ class moduleImgur(Content):  # , Queue):
 
     def delete(self, j):
         msgLog = f"{self.indent} Deleting {j}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         post = self.obtainPostData(j)
         msgLog = f"{self.indent} Deleting {post[0]}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         post = self.obtainPostData(j)
         idPost = self.posts[j].id
         msgLog = f"{self.indent} id {idPost}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         post = self.obtainPostData(j)
         msgLog = f"{self.indent} {self.getClient().album_delete(idPost)}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         # FIXME is this ok?
         sys.exit()
         self.posts = self.posts[:j] + self.posts[j + 1 :]
         self.updatePostsCache()
 
         msgLog = f"{self.indent} Deleted {post[0]}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         return f"{post[0]}"
 
     def extractImages(self, post):
@@ -340,7 +340,7 @@ class moduleImgur(Content):  # , Queue):
                         description = "({})".format(myDate)
                 except:
                     msgLog = f"{self.indent} Name in different format " f"{img.name}"
-                    logMsg(msgLog, 3, 0)
+                    logMsg(msgLog, 3, False)
 
             res.append((urlImg, title, description, tags))
         return res
@@ -349,14 +349,14 @@ class moduleImgur(Content):  # , Queue):
         listPosts = []
         posts = self.getPosts()
         msgLog = f"{self.indent} Eo posts: {posts}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         msgLog = f"{self.indent} Eo posts last: {lastLink}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         num = 1
         # Only one post each time
         j = 0
         msgLog = f"{self.indent} i: {i}, len: {len(posts)}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         for ii in range(min(i, len(posts)), 0, -1):
             # logging.info(f"iii: {ii}")
             ii = ii - 1

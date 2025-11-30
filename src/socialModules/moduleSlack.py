@@ -28,7 +28,7 @@ class moduleSlack(Content):  # , Queue):
     def initApi(self, keys):
         self.indent = f"{self.indent} "
         msgLog = f"{self.indent} Start initApi"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         self.slack_token = None
         self.user_slack_token = None
         self.channel = None
@@ -36,7 +36,7 @@ class moduleSlack(Content):  # , Queue):
         self.service = "Slack"
 
         msgLog = f"{self.indent} Nick: {self.nick}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         self.setUser(self.nick)
         # if self.user and self.user.find('/')>=0:
         #    self.name = self.user.split('/')[2].split('.')[0]
@@ -53,7 +53,7 @@ class moduleSlack(Content):  # , Queue):
         self.user_slack_token = keys[1]
 
         msgLog = f"{self.indent} End initApi"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         self.indent = self.indent[:-1]
         return client
 
@@ -88,7 +88,7 @@ class moduleSlack(Content):  # , Queue):
             listChannels = self.getChannels()[3]
             # FIXME. There should be a better way
             msgLog = f"{self.indent} List of channels: {listChannels}"
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
             channel = listChannels.get("name", "")
         theChannel = self.getChanId(channel)
         self.channel = theChannel
@@ -130,7 +130,7 @@ class moduleSlack(Content):  # , Queue):
 
     def setApiPosts(self):
         msgLog = f"{self.indent} Service {self.service} Start setApiPosts"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         if not hasattr(self, "channel") or not self.channel:
             # FIXME
             # Can we improve this in mosuleSlack and moduleFacebook?
@@ -146,7 +146,7 @@ class moduleSlack(Content):  # , Queue):
             posts = []
 
         msgLog = f"{self.indent} Service {self.service} End setApiPosts"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         # logging.debug(f"Posts: {posts}")
         return posts
 
@@ -174,7 +174,7 @@ class moduleSlack(Content):  # , Queue):
             self.setChannel()
             chan = self.getChannel()
         msgLog = f"{self.indent} Service {self.service} Channel: {chan}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         self.getClient().token = self.user_slack_token
         data = {"channel": chan, "text": f"{title} {link}"}
         result = self.getClient().api_call("chat.postMessage", data=data)  # ,
@@ -214,36 +214,36 @@ class moduleSlack(Content):  # , Queue):
         self.updatePostsCache()
 
     def setPostLink(self, post, newLink):
-        logMsg(f"Post: {post}", 1, 1)
+        logMsg(f"Post: {post}", 1, True)
         if "attachments" in post:
             post["attachments"][0]["original_url"] = newLink
         else:
             text = post["text"]
             if text.startswith("<") and text.count("<") == 1:
-                logMsg("Starts", 2,1)
+                logMsg("Starts", 2, True)
                 # The link is the only text
                 post["text"][1:-1] = newLink
             elif text.find("<h") >= 0:
-                logMsg("<h", 2,1)
+                logMsg("<h", 2, True)
                 pos = text.rfind("<h")
                 # text[pos + 1 : -1] = newLink
                 text = f"{text[:pos]} {newLink} (n)"
                 post["text"] = text
             else:
-                logMsg("http", 2,1)
-                logMsg(f"text: {text}", 2,1)
+                logMsg("http", 2, True)
+                logMsg(f"text: {text}", 2, True)
                 pos = text.rfind("http")
-                logMsg(f"text pos: {pos}", 2,1)
+                logMsg(f"text pos: {pos}", 2, True)
                 text = f"{text[:pos]} {newLink}"
-                logMsg(f"textt: {text}", 2,1)
+                logMsg(f"textt: {text}", 2, True)
                 post["text"] = text
             msgLog = f"PPost: {post}"
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
 
     def getPost(self, i):
         self.indent = f"{self.indent} "
         msgLog = f"{self.indent} Start getPost pos {i}."
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         post = None
         posts = self.getPosts()
         if posts and (i >= 0) and (i < len(posts)):
@@ -252,7 +252,7 @@ class moduleSlack(Content):  # , Queue):
             post = posts[len(posts) - 1]
 
         msgLog = f"{self.indent} End getPost"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         self.indent = self.indent[:-1]
         return post
 
@@ -304,7 +304,7 @@ class moduleSlack(Content):  # , Queue):
                     pos = text.find("<h")
                 else:
                     pos = text.rfind("http")
-                logMsg(f"text pos: {pos}", 2,1)
+                logMsg(f"text pos: {pos}", 2, True)
                 if pos >= 0:
                     title = newTitle + " " + text[pos:]
                 else:
@@ -342,7 +342,7 @@ class moduleSlack(Content):  # , Queue):
                 pos = text.rfind("http")
                 title = text[:pos]
             msgLog = f"{self.indent} Post text: {text}"
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
             return title
         else:
             return "No title"
@@ -386,7 +386,7 @@ class moduleSlack(Content):  # , Queue):
 
     def getChanId(self, name):
         msgLog = f"{self.indent} Service {self.service} Start getChanId"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
 
         self.getClient().token = self.user_slack_token
         chanList = self.getClient().api_call("conversations.list")["channels"]
@@ -426,7 +426,7 @@ class moduleSlack(Content):  # , Queue):
 
     def search(self, channel, text):
         msgLog = "{self.indent} Searching in Slack..."
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         try:
             self.getClient().token = self.slack_token
             data = {"query": text}
