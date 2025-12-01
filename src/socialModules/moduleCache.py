@@ -58,46 +58,49 @@ class moduleCache(Content):  # ,Queue):
     def getPostsType(self):
         return "posts"
 
-    def fileNameBase(self, dst=None):
-        indent = f"{self.indent}  "
-        msgLog = f"{indent} Start fileNameBase (c)"
-        logMsg(msgLog, 2, 0)
-        myDst = dst
-        if hasattr(self, "fileName") and self.fileName:
-            fileName = self.fileName
-        else:
-            src = self
-            typeSrc = "posts"
-            typeDst = "posts"
+    # def fileNameBase(self, dst=None):
+    #     # FIXME: we should avoid this?
+    #     indent = f"{self.indent}  "
+    #     msgLog = f"{indent} Start fileNameBase (c)"
+    #     logMsg(msgLog, 2, 0)
+    #     myDst = dst
+    #     if hasattr(self, "fileName") and self.fileName:
+    #         fileName = self.fileName
+    #     else:
+    #         src = self
+    #         typeSrc = "posts"
+    #         typeDst = "posts"
 
-            # nameSrc = type(src).__name__
-            nameSrc = src.getNameModule()
+    #         # nameSrc = type(src).__name__
+    #         nameSrc = src.getNameModule()
 
-            # self.setNick()
-            # user = self.getNick()
-            user = self.apiSrc.getNick()
-            # logging.info(f"Userrrrrrr: {user} - {self.getUser()}")
-            # self.setServiceAux()
-            service = self.apiSrc.getService()
+    #         # self.setNick()
+    #         # user = self.getNick()
+    #         user = self.apiSrc.getNick()
+    #         logging.info(f"Userrrrrrr: {user} - {self.getUser()}")
+    #         if user.startswith('http'):
+    #             user = extract_nick_from_url(user)
+    #         # self.setServiceAux()
+    #         service = self.apiSrc.getService()
 
-            userD = self.apiDst.getUser()
-            serviceD = self.apiDst.getService()
-            # userD = self.src[1][3]
-            # serviceD = self.src[1][2]
-            nameDst = serviceD.capitalize()
+    #         userD = self.apiDst.getUser()
+    #         serviceD = self.apiDst.getService()
+    #         # userD = self.src[1][3]
+    #         # serviceD = self.src[1][2]
+    #         nameDst = serviceD.capitalize()
 
-            fileName = (
-                f"{nameSrc}_{typeSrc}_"
-                f"{user}_{service}__"
-                f"{nameDst}_{typeDst}_"
-                f"{userD}_{serviceD}"
-            )
-            fileName = f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}"
-            self.fileName = fileName
+    #         fileName = (
+    #             f"{nameSrc}_{typeSrc}_"
+    #             f"{user}_{service}__"
+    #             f"{nameDst}_{typeDst}_"
+    #             f"{userD}_{serviceD}"
+    #         )
+    #         fileName = f"{DATADIR}/{fileName.replace('/','-').replace(':','-')}"
+    #         self.fileName = fileName
 
-        msgLog = f"{indent} End fileNameBase"
-        logMsg(msgLog, 2, 0)
-        return fileName
+    #     msgLog = f"{indent} End fileNameBase"
+    #     logMsg(msgLog, 2, 0)
+    #     return fileName
 
     def initApi(self, keys):
         self.user = self.src[2]
@@ -143,7 +146,12 @@ class moduleCache(Content):  # ,Queue):
         self.indent = f"{self.indent} "
         msgLog = f"{self.indent} Start setApiPosts"
         logMsg(msgLog, 2, 0)
-        fileNameQ = f"{self.fileNameBase(self.apiDst)}.queue"
+        # fileNameQ = f"{self.fileNameBase(self.apiDst)}.queue"
+        # #FIXME: This fileNameBase must be replaced
+        if hasattr(self, 'action') and self.action[0] == 'cache':
+            fileNameQ = f"{DATADIR}/{self.dst_fileName}.queue"
+        else:
+            fileNameQ = f"{DATADIR}/{self.fileName}.queue"
         msgLog = f"{self.indent} File: %s" % fileNameQ
         logMsg(msgLog, 2, 0)
         listP = []
@@ -284,11 +292,15 @@ class moduleCache(Content):  # ,Queue):
         return link
 
     def updatePosts(self, src):
-        if self.fileName:
-            fileName = self.fileName
+        if hasattr(self, 'action') and self.action[0] == 'cache':
+            fileNameQ = f"{DATADIR}/{self.dst_fileName}.queue"
         else:
-            fileName = self.fileNameBase(self)
-        fileNameQ = f"{fileName}.queue"
+            fileNameQ = f"{DATADIR}/{self.fileName}.queue"
+        # if self.fileName:
+        #     fileName = self.fileName
+        # else:
+        #     fileName = self.fileNameBase(self)
+        # fileNameQ = f"{fileName}.queue"
 
         with open(fileNameQ, "wb") as f:
             posts = self.getPosts()
@@ -303,7 +315,11 @@ class moduleCache(Content):  # ,Queue):
     def updatePostsCache(self):
         # fileNameQ = fileNamePath(self.url,
         #         (self.socialNetwork, self.nick)) + ".queue"
-        fileNameQ = f"{self.fileNameBase(None)}.queue"
+        # fileNameQ = f"{self.fileNameBase(None)}.queue"
+        if hasattr(self, 'action') and self.action[0] == 'cache':
+            fileNameQ = f"{DATADIR}/{self.dst_fileName}.queue"
+        else:
+            fileNameQ = f"{DATADIR}/{self.fileName}.queue"
 
         # if hasattr(self, 'fileName'):
         #    fileNameQ = f"{self.fileName}.queue"
@@ -326,8 +342,8 @@ class moduleCache(Content):  # ,Queue):
 
         with open(fileNameQ, "wb") as f:
             posts = self.getPosts()
-            msgLog = f"{self.indent} Posts updating {self.service} {posts}"
-            logMsg(msgLog, 2, 0)
+            # msgLog = f"{self.indent} Posts updating {self.service} {posts}"
+            # logMsg(msgLog, 2, 0)
             pickle.dump(posts, f)
 
         # msgLog = (f"Posts: {str(self.getPosts())}")

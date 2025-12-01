@@ -182,7 +182,7 @@ class moduleSmtp(Content):  # , Queue):
             else:
                 server = self.client
                 respN = server.noop()
-                logging.info(f"Noop: {respN}")
+                # logging.info(f"Noop: {respN}")
                 if isinstance(respN, tuple):
                     respN = respN[0]
                 if not (respN == 250):
@@ -194,10 +194,10 @@ class moduleSmtp(Content):  # , Queue):
                     # server.starttls(context=context)
                     server.login(self.user, self.password)
 
-            msgLog = f"From: {fromaddr} To:{toaddrs}"
-            logMsg(msgLog, 2, 0)
-            msgLog = f"Msg: {msg.as_string()[:250]}"
-            logMsg(msgLog, 2, 0)
+            # msgLog = f"From: {fromaddr} To:{toaddrs}"
+            # logMsg(msgLog, 2, 0)
+            # msgLog = f"Msg: {msg.as_string()[:250]}"
+            # logMsg(msgLog, 2, 0)
 
             try:
                 res = server.sendmail(fromaddr, toaddrs, msg.as_string())

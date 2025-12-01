@@ -6,9 +6,12 @@ import os
 import random
 import sys
 import time
+import urllib
 
 import socialModules
-from socialModules.configMod import logMsg, getApi, getModule, CONFIGDIR, LOGDIR, select_from_list
+from socialModules.configMod import (CONFIGDIR, DATADIR, LOGDIR, getApi,
+                                     getModule, logMsg, select_from_list,
+                                     thread_local, extract_nick_from_url)
 
 fileName = socialModules.__file__
 path = f"{os.path.dirname(fileName)}"
@@ -56,7 +59,7 @@ class moduleRules:
                 configFile = f"{CONFIGDIR}/{configFile}"
                 config.read(configFile)
         except Exception as e:
-            logMsg(f"ERROR: Could not read configuration file: {e}", 3, 1)
+            logMsg(f"ERROR: Could not read configuration file: {e}", 3, self.args.verbose)
             raise ConfigError(f"Could not read configuration file: {e}")
 
         self.indentPlus()
@@ -73,7 +76,7 @@ class moduleRules:
                 continue
             msgLog = f" Section: {section}"
             self.indentPlus()
-            logMsg(msgLog, 1, 1)
+            logMsg(msgLog, 1, self.args.verbose)
             self.indent = f"{self.indent}{section}>"
             try:
                 self._process_section(section, config, services, sources,
@@ -81,21 +84,21 @@ class moduleRules:
                                       temp_rules, rulesNew, rule_metadata,
                                       implicit_rules)
             except ConfigError as ce:
-                logMsg(f"ERROR in section [{section}]: {ce}", 3, 1)
+                logMsg(f"ERROR in section [{section}]: {ce}", 3, self.args.verbose)
                 raise  # Reraise the exception so tests can catch it
             except Exception as e:
-                logMsg(f"UNEXPECTED ERROR in section [{section}]: {e}", 3, 1)
+                logMsg(f"UNEXPECTED ERROR in section [{section}]: {e}", 3, self.args.verbose)
                 continue
             self.indent = f"{self.indent[:-(len(section)+2)]}"
 
         self._finalize_rules(config, services, sources, sources_available, more, destinations, rulesNew)
-        self._set_available_and_rules(rulesNew, more)
         self.more = rule_metadata
+        self._set_available_and_rules(rulesNew, more)
         self.indentLess()
         msgLog = "End Checking rules"
         logMsg(msgLog, 1, 2)
         msgLog = f"Rules: {rulesNew}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
 
     def _process_section(self, section, config, services, sources, sources_available, more, destinations, temp_rules, rulesNew, rule_metadata, implicit_rules):
         """
@@ -110,22 +113,31 @@ class moduleRules:
                 raise ConfigError(f"Missing required key '{key}' or it is empty in section [{section}]")
         url = section_dict["url"]
         msgLog = f"{self.indent} Url: {url}"
-        logMsg(msgLog, 1, 1)
+        logMsg(msgLog, 1, self.args.verbose)
         section_metadata = dict(config.items(section))
         toAppend, theService, api = self._process_sources(section, config, services, url, section_metadata, sources, sources_available, more)
         fromSrv = toAppend
         msgLog = f"{self.indent} We will append: {toAppend}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         if toAppend:
             service = toAppend[0]
         postsType = section_dict.get("posts", "posts")
         self.indentPlus()
         msgLog = f"{self.indent} Type: {postsType}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         if fromSrv:
             fromSrv = (fromSrv[0], fromSrv[1], fromSrv[2], postsType)
+            if fromSrv not in rule_metadata:
+                rule_metadata[fromSrv] = section_metadata
+
+            # This is the fix:
+            # Ensure held rules are added to rulesNew even with no actions
+            if section_metadata.get('hold') == 'yes':
+                if fromSrv not in rulesNew:
+                    rulesNew[fromSrv] = []
+
             msgLog = f"{self.indent} Checking actions for {service}"
-            logMsg(msgLog, 1, 0)
+            logMsg(msgLog, 1, False)
             self._process_destinations(section, config, service, services, fromSrv, section_metadata, api, destinations, temp_rules, rule_metadata, implicit_rules)
         self._process_rule_keys(section_metadata, services, fromSrv, rulesNew, rule_metadata)
         # Save the section name in section_metadata for traceability
@@ -158,7 +170,9 @@ class moduleRules:
                 methods = self.hasSetMethods(service)
                 for method in methods:
                     if not isinstance(method, tuple) or len(method) != 2:
-                        logMsg(f"WARNING: Unexpected method in {service}: {method}", 2, 1)
+                        logMsg(f"WARNING: Unexpected method in {service}: {method}", 
+                               2, 
+                               self.args.verbose)
                         continue
                     if "posts" in section_metadata:
                         if section_metadata["posts"] == method[1]:
@@ -177,7 +191,7 @@ class moduleRules:
 
                 self.indentLess()
                 msgLog = f"{self.indent} Service: {service}"
-                logMsg(msgLog, 1, 1)
+                logMsg(msgLog, 1, self.args.verbose)
         return toAppend, theService, api
 
     def _process_destinations(self, section, config, service, services, fromSrv, section_metadata, api, destinations, temp_rules, rule_metadata, implicit_rules):
@@ -220,12 +234,12 @@ class moduleRules:
                 msgLog = (
                           f"{self.indent} Service {service} -> {serviceD} checking "
                           )
-                logMsg(msgLog, 2, 0)
+                logMsg(msgLog, 2, False)
 
                 methods = self.hasPublishMethod(serviceD)
                 for method in methods:
                     if not isinstance(method, tuple) or len(method) != 2:
-                        logMsg(f"WARNING: Unexpected method in {serviceD}: {method}", 2, 1)
+                        logMsg(f"WARNING: Unexpected method in {serviceD}: {method}", 2, self.args.verbose)
                         continue
                     mmethod = method[1] if method[1] else "post"
                     toAppend = ("direct", mmethod, serviceD, config.get(section, serviceD))
@@ -260,10 +274,10 @@ class moduleRules:
         Validates the presence and type of required values.
         """
         msgLog = f"{self.indent} Processing services in more"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         self.indentPlus()
         msgLog = f"{self.indent} section_metadata: {section_metadata}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         self.indentPlus()
         orig = None
         dest = None
@@ -272,18 +286,18 @@ class moduleRules:
             if not orig:
                 if service in services["special"]:
                     msgLog = f"{self.indent} Service {service} special"
-                    logMsg(msgLog, 2, 0)
+                    logMsg(msgLog, 2, False)
                     orig = service
                 elif service in services["regular"]:
                     msgLog = f"{self.indent} Service {service} regular"
-                    logMsg(msgLog, 2, 0)
+                    logMsg(msgLog, 2, False)
                     orig = service
                 else:
                     msgLog = f"{self.indent} Service {service} not interesting"
-                    logMsg(msgLog, 2, 0)
+                    logMsg(msgLog, 2, False)
             else:
                 msgLog = f"{self.indent} Service {service} not orig"
-                logMsg(msgLog, 2, 0)
+                logMsg(msgLog, 2, False)
                 if (key in services["special"]) or (key in services["regular"]):
                     if key == "cache":
                         dest = key
@@ -319,12 +333,12 @@ class moduleRules:
                                 rule_metadata[fromCacheNew] = section_metadata
                         self.indentPlus()
                         msgLog = f"{self.indent} Rule: {orig} -> {key}({dest})"
-                        logMsg(msgLog, 2, 0)
+                        logMsg(msgLog, 2, False)
                         self.indentPlus()
                         msgLog = f"{self.indent} from Srv: {fromSrv}"
-                        logMsg(msgLog, 2, 0)
+                        logMsg(msgLog, 2, False)
                         msgLog = f"{self.indent} dest Rule: {destRule}"
-                        logMsg(msgLog, 2, 0)
+                        logMsg(msgLog, 2, False)
                         self.indentLess()
                         self.indentLess()
                         channels = section_metadata["channel"].split(",") if "channel" in section_metadata else ["set"]
@@ -361,14 +375,14 @@ class moduleRules:
         self.indent = f"{self.indent} Destinations:"
         for dst in destinations:
             if not isinstance(dst, tuple) or len(dst) < 4:
-                logMsg(f"WARNING: Unexpected destination: {dst}", 2, 1)
+                logMsg(f"WARNING: Unexpected destination: {dst}", 2, self.args.verbose)
                 continue
             if dst[0] == "direct":
                 service = dst[2]
                 methods = self.hasSetMethods(service)
                 for method in methods:
                     if not isinstance(method, tuple) or len(method) != 2:
-                        logMsg(f"WARNING: Unexpected method in {service}: {method}", 2, 1)
+                        logMsg(f"WARNING: Unexpected method in {service}: {method}", 2, self.args.verbose)
                         continue
                     toAppend = (service, "set", dst[3], method[1])
                     if toAppend[:4] not in sources:
@@ -409,7 +423,16 @@ class moduleRules:
         myList = [f"{elem}) {available[elem]['name']}: {len(available[elem]['data'])}" for elem in available]
         self.available = available
         self.availableList = myList if myList else []
-        self.rules = {key: rulesNew[key] for key in rulesNew if rulesNew[key]}
+        # Modified line: include rules if they have actions OR if they are on hold
+        final_rules = {}
+        for key in rulesNew:
+            if rulesNew.get(key): # If there are actions, include it
+                final_rules[key] = rulesNew[key]
+            else: # No actions, check if it's on hold
+                rule_metadata = self.more.get(key)
+                if rule_metadata and rule_metadata.get("hold") == "yes":
+                    final_rules[key] = [] # Keep the held rule with an empty action list
+        self.rules = final_rules
 
     def selectActionInteractive(self, apiSrc = None):
         selActions = None
@@ -601,12 +624,12 @@ class moduleRules:
     def hasSetMethods(self, service):
         self.indentPlus()
         msgLog = f"{self.indent} Service {service} checking set methods"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         methods = []
         if service != "social":
             if service in hasSet:
                 msgLog = f"{self.indent} Service {service} cached"
-                logMsg(msgLog, 2, 0)
+                logMsg(msgLog, 2, False)
                 listMethods = hasSet[service]
             else:
                 clsService = getModule(service, self.indent)
@@ -629,9 +652,9 @@ class moduleRules:
                     elif myModule == f"module{service.capitalize()}":
                         target = method[len("set") :].lower()
                     if target and (
-                        target.lower()
-                        in ["posts", "drafts", "favs", "messages", "queue", "search"]
-                    ):
+                            target.lower()
+                            in ["posts", "drafts", "favs", "messages", "queue", "search"]
+                            ):
                         toAppend = (action, target)
                         if toAppend not in methods:
                             methods.append(toAppend)
@@ -641,10 +664,10 @@ class moduleRules:
     def hasPublishMethod(self, service):
         self.indentPlus()
         msgLog = f"{self.indent} Start " f"Checking service publish methods"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         if service in hasPublish:
             msgLog = f"{self.indent}  Service {service} cached"
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
             listMethods = hasPublish[service]
         else:
             clsService = getModule(service, self.indent)
@@ -664,7 +687,7 @@ class moduleRules:
 
                 if target and (target != "image"):
                     msgLog = f"{self.indent} Service target: {target}"
-                    logMsg(msgLog, 2, 0)
+                    logMsg(msgLog, 2, False)
                     toAppend = (action, target)
                     if toAppend not in methods:
                         methods.append(toAppend)
@@ -673,7 +696,7 @@ class moduleRules:
 
     def getServices(self):
         msgLog = f"{self.indent} Start getServices"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         modulesFiles = os.listdir(path)
         modules = {"special": ["cache", "direct"], "regular": [], "other": ["service"]}
         # Initialized with some special services
@@ -686,7 +709,7 @@ class moduleRules:
                     modules["regular"].append(moduleName)
 
         msgLog = f"{self.indent} End getServices"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         return modules
 
     def printDict(self, myList, title):
@@ -831,16 +854,13 @@ class moduleRules:
         return res
 
     def clientErrorMsg(self, indent, api, typeC, rule, action):
-        msgLog = ""
-        if "rss" not in rule:
-            msgLog = (
-                f"{indent} {typeC} Error. " f"No client for {rule} ({action}). End."
-            )
-        return f"{msgLog}"
+        return (f"{indent} {typeC} Error. " f"No client for {rule} ({action}). End.")
 
-    def readConfigSrc(self, indent, src, more):
+    def readConfigSrc(self, indent, src, more, fileName=None):
+        if not fileName:
+            fileName = self._get_filename_base(src, None)
         msgLog = f"{indent} Start readConfigSrc {src}"
-        logMsg(msgLog, 2, 1)
+        logMsg(msgLog, 2, self.args.verbose)
         child_indent = f"{indent} "
         profile = self.getNameRule(src)
         account = self.getProfileRule(src)
@@ -851,16 +871,18 @@ class moduleRules:
 
         if apiSrc is not None:
             # msgLog = f"{child_indent} readConfigSrc clientttt {apiSrc.getClient()}"  #: {src[1:]}"
-            # logMsg(msgLog, 2, 0)
+            # logMsg(msgLog, 2, False)
             apiSrc.src = src
             apiSrc.setPostsType(src[-1])
             apiSrc.setMoreValues(more)
             apiSrc.indent = indent
+            if fileName:
+                apiSrc.fileName = fileName
         else:
-            logMsg(f"{indent} Failed to get API for source: {src}", 3, 1)
+            logMsg(f"{indent} Failed to get API for source: {src}", 3, self.args.verbose)
 
         msgLog = f"{indent} End readConfigSrc"  #: {src[1:]}"
-        logMsg(msgLog, 2, 1)
+        logMsg(msgLog, 2, self.args.verbose)
         return apiSrc
 
     def getActionComponent(self, action, pos):
@@ -869,21 +891,28 @@ class moduleRules:
             res = action[pos]
         return res
 
-    def readConfigDst(self, indent, action, more, apiSrc):
+    def readConfigDst(self, indent, action, more, apiSrc=None, fileName=None):
         msgLog = f"{indent} Start readConfigDst {action}"  #: {src[1:]}"
-        logMsg(msgLog, 2, 1)
+        logMsg(msgLog, 2, self.args.verbose)
         child_indent = f"{indent} "
         profile = self.getNameAction(action)
         account = self.getDestAction(action)
         apiDst = getApi(profile, account, child_indent)
 
         if apiDst is not None:
+            if apiSrc:
+                apiDst.src = apiSrc.src
+            apiDst.action = action
             apiDst.setMoreValues(more)
             apiDst.indent = child_indent
+            if fileName:
+                apiDst.fileName = fileName
+            if isinstance(action[2], tuple):
+                apiDst.dst_fileName = self._get_filename_base(action, action[2])
             # msgLog = f"{child_indent} apiDstt {apiDst}"  #: {src[1:]}"
-            # logMsg(msgLog, 2, 0)
+            # logMsg(msgLog, 2, False)
             # msgLog = f"{child_indent} apiDstt {apiDst.client}"  #: {src[1:]}"
-            # logMsg(msgLog, 2, 0)
+            # logMsg(msgLog, 2, False)
             if apiSrc:
                 apiDst.setUrl(apiSrc.getUrl())
             else:
@@ -893,10 +922,10 @@ class moduleRules:
             else:
                 apiDst.setLastLink(apiDst)
         else:
-            logMsg(f"{indent} Failed to get API for destination: {action}", 3, 1)
+            logMsg(f"{indent} Failed to get API for destination: {action}", 3, self.args.verbose)
 
         msgLog = f"{indent} End readConfigDst"  #: {src[1:]}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         return apiDst
 
     def testDifferPosts(self, apiSrc, lastLink, listPosts):
@@ -946,28 +975,28 @@ class moduleRules:
         resPost = f"{res}"
         resMsg = ""
         msgLog = f"{indent}Trying to execute Post Action"
-        logMsg(msgLog, 1, 1)
+        logMsg(msgLog, 1, self.args.verbose)
         postaction = apiSrc.getPostAction()
         if postaction:
             msgLog = f"{indent}Post Action {postaction} " f"(nextPost = {nextPost})"
-            logMsg(msgLog, 1, 1)
+            logMsg(msgLog, 1, self.args.verbose)
 
             if "OK. Published!" in res:
                 msgLog = f"{indent} Res {res} is OK"
-                logMsg(msgLog, 1, 0)
+                logMsg(msgLog, 1, False)
                 if nextPost:
                     msgLog = f"{indent}Post Action next post"
-                    logMsg(msgLog, 2, 0)
+                    logMsg(msgLog, 2, False)
                     cmdPost = getattr(apiSrc, f"{postaction}NextPost")
                     resPost = cmdPost()
                 else:
                     msgLog = f"{indent}Post Action pos post"
-                    logMsg(msgLog, 2, 0)
+                    logMsg(msgLog, 2, False)
                     cmdPost = getattr(apiSrc, f"{postaction}")
                     resPost = cmdPost(pos)
                     # FIXME inconsistent
             msgLog = f"{indent}End {postaction}, reply: {resPost} "
-            logMsg(msgLog, 1, 1)
+            logMsg(msgLog, 1, self.args.verbose)
             resMsg += f" Post Action: {resPost}"
             if (
                 (res and ("failed!" not in res) and ("Fail!" not in res))
@@ -979,7 +1008,7 @@ class moduleRules:
             ):
                 msgLog = f"{indent} Res {res} is not OK"
                 # FIXME Some OK publishing follows this path (mastodon, linkedin, ...)
-                logMsg(msgLog, 1, 0)
+                logMsg(msgLog, 1, False)
 
                 if nextPost:
                     cmdPost = getattr(apiSrc, f"{postaction}NextPost")
@@ -989,16 +1018,16 @@ class moduleRules:
                     resPost = cmdPost(pos)
                 # FIXME inconsistent
                 msgLog = f"{indent}Post Action command {cmdPost}"
-                logMsg(msgLog, 1, 1)
+                logMsg(msgLog, 1, self.args.verbose)
                 msgLog = f"{indent}End {postaction}, reply: {resPost} "
-                logMsg(msgLog, 1, 1)
+                logMsg(msgLog, 1, self.args.verbose)
                 resMsg += f"Post Action: {resPost}"
             else:
                 msgLog = f"{indent}Something went wrong"
-                logMsg(msgLog, 1, 1)
+                logMsg(msgLog, 1, self.args.verbose)
         else:
             msgLog = f"{indent}No Post Action"
-            logMsg(msgLog, 1, 1)
+            logMsg(msgLog, 1, self.args.verbose)
 
         return resMsg
 
@@ -1028,8 +1057,9 @@ class moduleRules:
 
         if not post:
             msgLog = f"{indent}No post to schedule in {msgAction}"
-            logMsg(msgLog, 1, 1)
+            logMsg(msgLog, 1, self.args.verbose)
             result_dict["success"] = True
+            result_dict["publication_result"] = "No posts available"
             result_dict["error"] = None
         else:
             title = apiSrc.getPostTitle(post)
@@ -1038,19 +1068,23 @@ class moduleRules:
             if link:
                 msgLog = (
                     f"{msgLog} Recording Link: {link} "
-                    f"in file {apiDst.fileNameBase(apiSrc)}.last"
+                    #f"in file {apiSrc.fileNameBase(apiDst)}.last"
+                    f"in file {DATADIR}/{apiSrc.fileName}.last"
                 )
+            # Log the title and link information
+            logMsg(f"{indent}{msgLog}", 1, self.args.verbose)
 
             if simmulate:
                 msgLog = f"{indent}Would schedule in {msgAction} {msgLog}"
-                logMsg(msgLog, 1, 1)
+                logMsg(msgLog, 1, self.args.verbose)
                 result_dict["success"] = True
+                result_dict["publication_result"] = "No posting (simmulation)"
                 result_dict["error"] = "Simulation"
             else:
                 publication_res = apiDst.publishPost(api=apiSrc, post=post)
                 result_dict["publication_result"] = publication_res
                 msgLog = f"{indent}Reply: {publication_res}"
-                logMsg(msgLog, 1, 1)
+                logMsg(msgLog, 1, self.args.verbose)
 
                 is_success = "Fail!" not in str(publication_res) and "failed!" not in str(
                     publication_res
@@ -1081,7 +1115,7 @@ class moduleRules:
                 msgLog = f"{indent}Available {len(apiSrc.getPosts())-1}"
             else:
                 msgLog = f"{indent}Available {len(apiSrc.getPosts())}"
-            logMsg(msgLog, 1, 1)
+            logMsg(msgLog, 1, self.args.verbose)
 
         return result_dict
 
@@ -1091,18 +1125,19 @@ class moduleRules:
         more,
         action,
         msgAction,
-        apiSrc,
+        #apiSrc,
         noWait,
         timeSlots,
         simmulate,
         name="",
-        numAct=1,
+        action_index=1,
         nextPost=True,
         pos=-1,
         delete=False,
     ):
-        indent = f"{name}"
-        res = None #{"success": False, "error": ""} #{}
+        # indent = f"{name}"
+        indent = f""
+        res = {"success": False, "error": "No execution"}
         textEnd = ""
 
         # Destination
@@ -1115,119 +1150,117 @@ class moduleRules:
                 f"({self.getTypeAction(action)})"
                 )
         msgLog = f"{indent} Scheduling {orig} -> {dest}"
-        logMsg(msgLog, 1, 1)
-        apiDst = self.readConfigDst(indent, action, more, apiSrc)
-        if not apiDst.getClient():
-            msgLog = self.clientErrorMsg(
-                indent,
-                apiDst,
-                "Destination",
-                (f"{self.getNameRule(src)}@" f"{self.getProfileRule(src)}"),
-                self.getNickAction(src),
-            )
-            if msgLog:
-                logMsg(msgLog, 3, 1)
-                sys.stderr.write(f"Error: {msgLog}\n")
-            res = {"success": False, "error": f"End: {msgLog}"}
+        logMsg(msgLog, 1, self.args.verbose)
+        base_name = self._get_filename_base(src, action)
+
+        # Backup the current next-run time before making changes
+        backup_time = self.getNextTime(src, action)
+
+        tL = random.random() * action_index # 'Progressive' delay
+        indent = f"{indent} "
+        msgLog = (
+            f"{indent} Sleeping {tL:.2f} seconds ({action_index} actions) "
+            f"to launch all processes"
+        )
+        logMsg(msgLog, 1, False)
+        numAct = max(3, action_index)  # Less than 3 is too small
+        time.sleep(tL)
+
+        msgLog = f"{indent} Go!"
+        logMsg(msgLog, 1, False)
+        indent = f"{indent} "
+
+        textEnd = f"{msgLog}"
+
+        time.sleep(1)
+
+        msgLog = ""
+
+        # Get scheduling data without full API instantiation
+        rule_metadata = more
+        max_val, time_val, last_time_val = self._get_publication_check_data(src, action, rule_metadata)
+
+        if nextPost:
+            num = max_val
         else:
-            # Backup the current next-run time before making changes
-            backup_time = apiDst.getNextTime(apiSrc)
+            num = 1
 
-            tL = random.random() * numAct
-            indent = f"{indent} "
-            msgLog = (
-                f"{indent} Sleeping {tL:.2f} seconds ({numAct} actions) "
-                f"to launch all processes"
-            )
-            logMsg(msgLog, 1, 0)
-            numAct = max(3, numAct)  # Less than 3 is too small
-            time.sleep(tL)
+        if num > 0:
+            tNow = time.time()
+            hours = float(time_val) * 60 * 60
+            lastTime = last_time_val
 
-            msgLog = f"{indent} Go!"
-            logMsg(msgLog, 1, 0)
-            indent = f"{indent} "
+            if lastTime:
+                diffTime = tNow - lastTime
+            else:
+                diffTime = hours + 1
 
-            textEnd = f"{msgLog}"
+            tSleep = random.random() * float(timeSlots) * 60
 
-            time.sleep(1)
+            # Reserve the time slot by setting the new time
+            self.setNextTime(src, action, tNow, tSleep)
 
-            msgLog = ""
+            if tSleep > 0.0:
+                msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
+            else:
+                tSleep = 2.0
+                msgLog = f"{indent} No Waiting"
+
+            theAction = self.getTypeAction(action)
+            logMsg(f"{msgLog} for {theAction} from {self.getNickRule(src)} in "
+                   f"{self.getNickAction(action)}@{self.getProfileAction(action)}", 
+                   1, 
+                   self.args.verbose)
+
+            # Wait BEFORE instantiation
+            if not simmulate:
+                time.sleep(tSleep)
+            if "minutes" in msgLog:
+                logMsg(f"{indent} End Waiting {theAction} from "
+                       f"{self.getNickRule(src)} in "
+                       f"{self.getNickAction(action)}"
+                       f"@{self.getProfileAction(action)}", 
+                       1, 
+                       self.args.verbose)
+
+            # Instantiate APIs ONCE, after the wait
+            apiSrc = self.readConfigSrc(indent, src, more, fileName=base_name)
+            if not apiSrc:
+                logMsg(f"ERROR: Could not create apiSrc for rule {src}", 3, self.args.verbose)
+                return res
+
+            apiDst = self.readConfigDst(indent, action, more, apiSrc, fileName=base_name)
+
+            if not apiDst.getClient():
+                client_error_msg = self.clientErrorMsg(
+                    indent,
+                    apiDst,
+                    "Destination",
+                    (f"{self.getNameRule(src)}@" f"{self.getProfileRule(src)}"),
+                    self.getNickAction(action),
+                )
+                logMsg(client_error_msg, 3, self.args.verbose)
+                sys.stderr.write(f"Error: {client_error_msg}\n")
+                res = {"success": False, "error": f"End: {client_error_msg}"}
+                return res
+
+            # Calculate numAct correctly using the instantiated apiDst
             if nextPost:
                 num = apiDst.getMax()
             else:
                 num = 1
+            numAct = num
 
-            theAction = self.getTypeAction(action)
             msgLog = (
-                f"{indent}I'll publish {num} {theAction} "
+                f"{indent}I'll publish {numAct} {theAction} "
                 f"from {apiSrc.getUrl()} "
                 f"in {self.getNickAction(action)}@"
                 f"{self.getProfileAction(action)}"
             )
-            logMsg(msgLog, 1, 1)
+            logMsg(msgLog, 1, self.args.verbose)
 
-            msgLog = (
-                f"{indent} Sleeping {tL:.2f} seconds ({numAct} actions) "
-                f"to launch all processes"
-            )
-            logMsg(msgLog, 1, 0)
-            numAct = max(3, numAct)  # Less than 3 is too small
-            time.sleep(tL)
-
-            msgLog = f"{indent} Go!"
-            logMsg(msgLog, 1, 0)
-            indent = f"{indent} "
-
-            textEnd = f"{msgLog}"
-
-            time.sleep(1)
-
-            msgLog = ""
-            if nextPost:
-                num = apiDst.getMax()
-            else:
-                num = 1
-            numAct = num # Initialize numAct here
-
-            if num > 0:
-                theAction = self.getTypeAction(action)
-                msgLog = (
-                    f"{indent}I'll publish {numAct} {theAction} "
-                    f"from {apiSrc.getUrl()} "
-                    f"in {self.getNickAction(action)}@"
-                    f"{self.getProfileAction(action)}"
-                )
-                logMsg(msgLog, 1, 1)
-
-                tNow = time.time()
-                hours = float(apiDst.getTime()) * 60 * 60
-
-                lastTime = apiDst.getLastTimePublished(f"{indent}")
-
-                if lastTime:
-                    diffTime = tNow - lastTime
-                else:
-                    diffTime = hours + 1
-
-                tSleep = random.random() * float(timeSlots) * 60
-
-                # Reserve the time slot by setting the new time
-                apiDst.setNextTime(tNow, tSleep, apiSrc)
-
-                if tSleep > 0.0:
-                    msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
-                else:
-                    tSleep = 2.0
-                    msgLog = f"{indent} No Waiting"
-
-                logMsg(f"{msgLog} for {theAction} from {apiSrc.getUrl()} in "
-                       f"{self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
-
+            if numAct>0:
                 for i in range(numAct):
-                    time.sleep(tSleep)
-                    if "minutes" in msgLog:
-                        logMsg(f"{indent} End Waiting {theAction} from {apiSrc.getUrl()} in {self.getNickAction(action)}@{self.getProfileAction(action)}", 1, 1)
-
                     res = self.executePublishAction(
                         indent,
                         msgAction,
@@ -1237,18 +1270,22 @@ class moduleRules:
                         nextPost,
                         pos,
                     )
+            else: res = {"success": True,
+                         "publication_result": "Limit for publications reached",
+                         "post_action_result": None,
+                         }
 
-                # If no publication happened, restore the previous time
-                if not res.get("success") and backup_time[0] is not None:
-                    logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, 1)
-                    apiDst.setNextTime(backup_time[0], backup_time[1], apiSrc)
+            # If no publication occurred, restore the previous time
+            if not res.get("success") and backup_time[0] is not None:
+                logMsg(f"{indent} No publication occurred. Restoring previous next-run time.", 1, self.args.verbose)
+                self.setNextTime(src, action, backup_time[0], backup_time[1])
 
-            else:
-                msgLog = f"{indent} No posts available"
-                logMsg(msgLog, 1, 1)
+        else:
+            msgLog = f"{indent} No posts available"
+            logMsg(msgLog, 1, self.args.verbose)
 
-            indent = f"{indent[:-1]}"
-            logMsg(f"{indent} End executeAction {textEnd}", 2, 0)
+        indent = f"{indent[:-1]}"
+        logMsg(f"{indent} End executeAction {textEnd}", 2, False)
         return res
 
     def executeRules(self, max_workers=None):
@@ -1268,7 +1305,7 @@ class moduleRules:
         select = args.checkBlog
         simmulate = args.simmulate
         # Prepare actions to execute
-        scheduled_actions = self._prepare_actions(args, select)
+        scheduled_actions, held_actions, skipped_actions = self._prepare_actions(args, select)
         # Determine number of threads
         if max_workers is not None:
             pass  # use the explicit value
@@ -1280,10 +1317,125 @@ class moduleRules:
         # Execute actions concurrently
         action_results, action_errors = self._run_actions_concurrently(scheduled_actions, max_workers=max_workers)
         # Report results and errors
-        self._report_results(action_results, action_errors)
+        self._report_results(action_results, action_errors, held_actions, skipped_actions)
         msgLog = f"End Executing rules with {len(scheduled_actions)} actions."
         logMsg(msgLog, 1, 2)
         return
+
+    def _get_filename_base(self, rule_key, rule_action):
+        nameSrc = self.getNameRule(rule_key).capitalize()
+        typeSrc = self.getTypeRule(rule_key)
+        user_src_raw = self.getNickRule(rule_key)
+        if user_src_raw.startswith('http'):
+            user_src = extract_nick_from_url(user_src_raw)
+        else:
+            user_src = user_src_raw
+
+        service_src = self.getNameRule(rule_key).capitalize()
+
+        if self.getNameAction(rule_action) == 'cache':
+            # Handle cache destination: extract details from the nested rule_action
+            inner_rule_action = rule_action[2] # This is the actual destination rule tuple
+            nameDst = 'Cache'
+            typeDst = 'posts' # Always 'posts' for consistency
+            user_dst_raw = self.getDestAction(inner_rule_action)
+            if user_dst_raw and (user_dst_raw.startswith("http://") or user_dst_raw.startswith("https://")):
+                user_dst = user_dst_raw.split("//", 1)[1]
+                # FIXME Is this needed?
+            else:
+                user_dst = user_dst_raw
+            service_dst = self.getNameAction(inner_rule_action).capitalize()
+        else:
+            nameDst = self.getNameAction(rule_action).capitalize()
+            typeDst = 'posts' # Always 'posts' for consistency
+            user_dst = self.getNickAction(rule_action)
+            service_dst = self.getNameAction(rule_action).capitalize()
+        if user_src.endswith('/'):
+            user_src = user_src[:-1]
+        if nameSrc == 'Cache':
+            typeSrc = 'posts'
+            service_src = self.getSecondNameRule(rule_key).capitalize()
+
+        base_name = (
+            f"{nameSrc}_{typeSrc}_"
+            f"{user_src}_{service_src}__"
+            f"{nameDst}_{typeDst}_"
+            f"{user_dst}_{service_dst}"
+        )
+        base_name = base_name.replace('/','-').replace(':','-')
+        return base_name
+
+
+    def getNextTime(self, src, action):
+        # We need to import pickle here because it's used only in this specific context
+        import pickle
+
+        tNow, tSleep = None, None
+        base_name = self._get_filename_base(src, action)
+        fileNameNext = os.path.join(DATADIR, f"{base_name}.timeNext")
+
+        if os.path.exists(fileNameNext):
+            with open(fileNameNext, "rb") as f:
+                tNow, tSleep = pickle.load(f)
+
+        return (tNow, tSleep)
+
+    def setNextTime(self, src, action, tNow, tSleep):
+        import pickle
+        base_name = self._get_filename_base(src, action)
+        fileNameNext = os.path.join(DATADIR, f"{base_name}.timeNext")
+
+        try:
+            with open(fileNameNext, "wb") as f:
+                pickle.dump((tNow, tSleep), f)
+        except (IOError, pickle.PicklingError) as e:
+            logMsg(f"Failed to write to time file {fileNameNext}: {e}", 3, self.args.verbose)
+
+    def _get_publication_check_data(self, rule_key, rule_action, rule_metadata):
+        max_val = rule_metadata.get('max', 1) if rule_metadata else 1
+        time_val = rule_metadata.get('time', 0) if rule_metadata else 0
+
+        base_name = self._get_filename_base(rule_key, rule_action)
+        last_time_file = f"{DATADIR}/{base_name}.last"
+
+        last_time_val = 0
+        if os.path.exists(last_time_file):
+            last_time_val = os.path.getctime(last_time_file)
+
+        return int(max_val), float(time_val), last_time_val
+
+    def _should_skip_publication_early(self, rule_key, rule_action, rule_metadata, noWait, nameA):
+        max_val, time_val, last_time_val = self._get_publication_check_data(rule_key, rule_action, rule_metadata)
+
+        should_skip = False
+        indent = nameA
+        num = max_val
+        skip_reason = ""
+        if num <= 0:
+            msgLog = f"{indent} Max number of posts does not allow publishing"
+            logMsg(msgLog, 1, self.args.verbose)
+            should_skip = True
+
+        tNow = time.time()
+        hours = float(time_val) * 60 * 60
+        lastTime = last_time_val
+
+        if not should_skip: # Only check if not already skipping
+            if lastTime:
+                diffTime = tNow - lastTime
+            else:
+                diffTime = hours + 1
+
+            if not noWait and (diffTime <= hours):
+                skip_reason = (
+                    f"Not enough time passed. "
+                    f"We will wait at least "
+                    f"{(hours-diffTime)/(60*60):2.2f} hours."
+                )
+                msgLog = (f"{indent} {skip_reason}")
+                logMsg(msgLog, 1, self.args.verbose)
+                should_skip = True
+        return should_skip, skip_reason
 
     def _prepare_actions(self, args, select):
         """
@@ -1292,59 +1444,77 @@ class moduleRules:
         each action.
         """
         scheduled_actions = []
+        held_actions = []
+        skipped_actions = []
         previous = ""
         i = 0  # Initialize i outside the loop to avoid UnboundLocalError
         for rule_index, rule_key in enumerate(sorted(self.rules.keys())):
             # Repetition control by action name
-            rule_metadata = self.more[rule_key] if rule_key in self.more else None
-            if rule_metadata and rule_metadata.get("hold") == "yes":
-                msgHold = f"[HOLD] {self.getNickSrc(rule_key)} ({self.getNickAction(rule_key)})"
-                logMsg(msgHold, 1, 0)
-                continue
+            rule_metadata = self.more.get(rule_key)
             rule_actions = self.rules[rule_key]
             if self.getNameAction(rule_key) != previous:
                 i = 0
             else:
                 i = i + 1
-            nameR = f"[{self.getNameAction(rule_key)}{i}]"
-            msgLog = (f"{nameR:->12}> "
-                          f"Preparing actions for rule: "
+            name_action = f"[{self.getNameAction(rule_key)}{i}]"
+            name_action = f"{name_action:->12}>"
+            msgLog = (f"Preparing actions for rule: "
                           f"{self.getNickSrc(rule_key)}@"
                           f"{self.getNameRule(rule_key)} "
                           f"({self.getNickAction(rule_key)})")
-            logMsg(msgLog, 1, 1)
+            try:
+                thread_local.nameA = name_action
+                logMsg(msgLog, 1, self.args.verbose)
+            finally:
+                thread_local.nameA = None
             previous = self.getNameAction(rule_key)
+            if rule_metadata and rule_metadata.get("hold") == "yes":
+                msgHold = (f"[HOLD] {self.getNickSrc(rule_key)} "
+                           f"({self.getNickAction(rule_key)})"
+                           )
+                try:
+                    thread_local.nameA = name_action
+                    logMsg(msgHold, 1, False)
+                finally:
+                    thread_local.nameA = None
+                held_actions.append({
+                    "rule_key": rule_key,
+                    "rule_metadata": rule_metadata,
+                    "rule_action": None,
+                    "rule_index": i,
+                    "action_index": -1,
+                    "name_action": name_action,
+                })
+                continue
 
             for action_index, rule_action in enumerate(rule_actions):
                 # Rule selection if --checkBlog is used
-                name_action = f"[{self.getNameAction(rule_key)}{i}]"
-                nameR_action = f"{name_action:->12}>"
-                nameA =  f"{nameR_action} Action {action_index}:"
+                nameA =  f"{name_action} Action {action_index}:"
                 nameRule = f"{self.getNameRule(rule_key).lower()}{i}"
 
                 if select and (select.lower() != nameRule):
-                    continue
-
-                apiSrc = self.readConfigSrc(nameA, rule_key, rule_metadata)
-                if not apiSrc:
-                    logMsg(f"ERROR: Could not create apiSrc for rule {rule_key}", 3, 1)
-                    continue
-
-                apiDst = self.readConfigDst(nameA, rule_action, 
-                                            rule_metadata, apiSrc)
-                if not apiDst:
-                    logMsg(f"ERROR: Could not create apiDst for rule {rule_action}", 3, 1)
                     continue
 
                 timeSlots, noWait = self._get_action_properties(
                     rule_action, rule_metadata, args
                 )
 
-
-                if self._should_skip_publication(
-                    apiDst, apiSrc, noWait, f"{nameA}"
-                ):
+                should_skip, skip_reason_msg = self._should_skip_publication_early(rule_key, rule_action, rule_metadata, noWait, f"{nameA}")
+                if should_skip:
+                    skipped_actions.append({
+                        "rule_key": rule_key,
+                        "rule_metadata": rule_metadata,
+                        "rule_action": rule_action,
+                        "rule_index": i,
+                        "action_index": action_index,
+                        "name_action": name_action,
+                        "nameA": nameA,
+                        "skip_reason": skip_reason_msg,
+                    })
                     continue
+
+                base_name = self._get_filename_base(rule_key, rule_action)
+
                 scheduled_actions.append(
                     {
                         "rule_key": rule_key,
@@ -1354,15 +1524,13 @@ class moduleRules:
                         "action_index": action_index,
                         "args": args,
                         "simmulate": args.simmulate,
-                        "apiSrc": apiSrc,
-                        "apiDst": apiDst,
                         "name_action": name_action,
                         "nameA": nameA,
                         "timeSlots": timeSlots, # Add timeSlots to scheduled_actions
                         "noWait": noWait,       # Add noWait to scheduled_actions
                     }
                 )
-        return scheduled_actions
+        return scheduled_actions, held_actions, skipped_actions
 
     def _get_action_properties(self, rule_action, rule_metadata, args):
         timeSlots = args.timeSlots
@@ -1410,7 +1578,7 @@ class moduleRules:
         rule_action = scheduled_action["rule_action"]
         args = scheduled_action["args"]
         simmulate = scheduled_action["simmulate"]
-        apiSrc = scheduled_action["apiSrc"]
+        # apiSrc = scheduled_action["apiSrc"]
         timeSlots = scheduled_action["timeSlots"]
         noWait = scheduled_action["noWait"]
 
@@ -1423,53 +1591,66 @@ class moduleRules:
         rule_index = scheduled_action.get('rule_index', 0)
         action_index = scheduled_action.get('action_index', 0)
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
-        nameR = f"{name_action:->12}>"
-        nameA =  f"{nameR} Action {action_index}:"
-        return self.executeAction(
-            rule_key,
-            rule_metadata,
-            rule_action,
-            msgAction,
-            apiSrc,
-            noWait,
-            timeSlots,
-            simmulate,
-            nameA,
-            action_index,
-        )
-
-    def _should_skip_publication(self, apiDst, apiSrc, noWait, nameA):
-        indent = nameA
-        num = apiDst.getMax()
-        if num <= 0:
-            logMsg(f"{indent} No posts available", 1, 1)
-            return True
-
-        tNow = time.time()
-        hours = float(apiDst.getTime()) * 60 * 60
-        lastTime = apiDst.getLastTimePublished(f"{indent}")
-
-        if lastTime:
-            diffTime = tNow - lastTime
-        else:
-            diffTime = hours + 1
-
-        if not noWait and (diffTime <= hours):
-            msgLog = (
-                f"{indent} Not enough time passed. "
-                f"We will wait at least "
-                f"{(hours-diffTime)/(60*60):2.2f} hours."
+        nameA =  f"{name_action:->12}> Action {action_index}:"
+        try:
+            thread_local.nameA = nameA
+            return self.executeAction(
+                rule_key,
+                rule_metadata,
+                rule_action,
+                msgAction,
+                #apiSrc,
+                noWait,
+                timeSlots,
+                simmulate,
+                nameA,
+                action_index,
             )
-            logMsg(msgLog, 1, 1)
-            return True
-        return False
+        finally:
+            thread_local.nameA = None
 
-    def _report_results(self, action_results, action_errors):
+    def _report_results(self, action_results, action_errors, held_actions=None, skipped_actions=None):
         """
         Reports the results and errors of action execution.
         """
+        if held_actions:
+            for held_action in held_actions:
+                rule_key = held_action["rule_key"]
+                rule_index = held_action.get("rule_index", "")
+                name_action = held_action["name_action"]
+                # rule_summary = (
+                #     f"{name_action} Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
+                # )
+                summary_msg = "Rule on hold."
+                try:
+                    thread_local.nameA = name_action
+                    logMsg(
+                            f" Actions: [OK] (Held) {summary_msg}",
+                        1,
+                        self.args.verbose,
+                    )
+                finally:
+                    thread_local.nameA = None
+
+        if skipped_actions:
+            for skipped_action in skipped_actions:
+                rule_key = skipped_action["rule_key"]
+                rule_action = skipped_action["rule_action"]
+                rule_index = skipped_action.get("rule_index", "")
+                name_action = skipped_action["name_action"]
+                skip_reason = skipped_action["skip_reason"]
+
+                summary_msg = f"{skip_reason.strip()}"
+                try:
+                    thread_local.nameA = name_action
+                    logMsg(
+                            f" Actions: [WARN] (Skipped) {summary_msg}", 
+                            2, 
+                            1,
+                    )
+                finally:
+                    thread_local.nameA = None
         for scheduled_action, res_dict in action_results:
-            print(f"Scheduled: {scheduled_action}. Res: {res_dict}")
             rule_key = scheduled_action["rule_key"]
             rule_index = scheduled_action.get("rule_index", "")
             name_action = scheduled_action["nameA"]
@@ -1479,34 +1660,53 @@ class moduleRules:
 
             if res_dict == "ok":
                 summary_msg = "Success. Action completed."
-                logMsg(
-                    f"[OK] Action for {rule_summary} -> {scheduled_action['rule_action']}: {summary_msg}",
-                    1,
-                    1,
-                )
+                try:
+                    thread_local.nameA = name_action
+                    logMsg(
+                        f"[OK] {summary_msg}",
+                        1,
+                        1,
+                    )
+                finally:
+                    thread_local.nameA = None
             elif isinstance(res_dict, dict) and res_dict.get("success"):
                 pub_res = res_dict.get("publication_result", "N/A")
-                post_act = res_dict.get("post_action_result", "N/A")
-                summary_msg = f"Success. Pub: '{pub_res}'. Post-Action: '{post_act}'."
-                logMsg(
-                    f"[OK] Action for {rule_summary} -> {scheduled_action['rule_action']}: {summary_msg}",
-                    1,
-                    1,
-                )
+                post_act = res_dict.get("post_action_result")
+                summary_msg = f"Success. Pub: '{pub_res}'"
+                if post_act:
+                    summary_msg += f". Post-Action: '{post_act}'"
+                summary_msg += "."
+                try:
+                    thread_local.nameA = name_action
+                    logMsg(
+                        f"[OK] {summary_msg}",
+                        1,
+                        1,
+                    )
+                finally:
+                    thread_local.nameA = None
             elif isinstance(res_dict, dict):
                 error_msg = res_dict.get("error", "Unknown error")
-                logMsg(
-                    f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {error_msg}",
-                    3,
-                    1,
-                )
+                try:
+                    thread_local.nameA = name_action
+                    logMsg(
+                        f"[ERROR] {error_msg}",
+                        3,
+                        1,
+                    )
+                finally:
+                    thread_local.nameA = None
             else:
                 # Fallback for empty or non-dict results
-                logMsg(
-                    f"[WARN] Action for {rule_summary} -> {scheduled_action['rule_action']} produced an invalid result: {res_dict}",
-                    2,
-                    1,
-                )
+                try:
+                    thread_local.nameA = name_action
+                    logMsg(
+                        f"[WARN] Action produced an invalid result: {res_dict}",
+                        2,
+                        1,
+                    )
+                finally:
+                    thread_local.nameA = None
 
         for scheduled_action, exc in action_errors:
             rule_key = scheduled_action["rule_key"]
@@ -1515,11 +1715,15 @@ class moduleRules:
             rule_summary = (
                 f"{name_action} Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
             )
-            logMsg(
-                f"[ERROR] Action failed for {rule_summary} -> {scheduled_action['rule_action']}: {exc}",
-                3,
-                1,
-            )
+            try:
+                thread_local.nameA = name_action
+                logMsg(
+                    f"[ERROR] {exc}",
+                    3,
+                    1,
+                )
+            finally:
+                thread_local.nameA = None
 
     def _configure_service_api(self, api, destination, channel=None, from_email=None, to_email=None, account=None):
         """
@@ -1967,19 +2171,19 @@ class moduleRules:
             action="store_true",
             help="Show the list of rules and actions",
         )
+        parser.add_argument(
+            "--verbose",
+            "-v",
+            default=True,
+            action="store_true",
+            help="Enable verbose output (print to console)",
+        )
         self.args = parser.parse_args()
+        if not self.args:
+            self.args.verbose = True
 
 
 def main():
-    mode = logging.DEBUG
-    logging.basicConfig(
-        filename=f"{LOGDIR}/rssSocial.log",
-        # stream=sys.stdout,
-        level=mode,
-        format="%(asctime)s [%(filename).12s] %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-
     rules = moduleRules()
 
     rules.readArgs()

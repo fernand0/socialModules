@@ -130,6 +130,9 @@ class moduleImap(Content):  # , Queue):
             parts = str(folder).split(self.separator)
             for special in specialFolders:
                 if special in parts[0]:
+                    logging.info(f"Special: {special}")
+                    logging.info(f"Special: {parts}")
+                    logging.info(f"Special: {self.getChannelName(folder)}")
                     self.special[special] = self.getChannelName(folder)
 
         return client
@@ -380,7 +383,7 @@ class moduleImap(Content):  # , Queue):
         msg_data = []
         msg_numbers = []
         j = 0
-        print("%d messsages in folder: %s" % (len(messages), folder))
+        print("%d messages in folder: %s" % (len(messages), folder))
         if startMsg == 0:
             startMsg = len(messages) - numMsgs + 1
         else:
@@ -1435,6 +1438,8 @@ class moduleImap(Content):  # , Queue):
             )
         except:
             logging.warning("Some error moving mails to Trash")
+            res = "Fail!"
+        return res
 
     def modifyLabels(self, messageId, oldLabelId, labelId):
         M = self.getClient()
@@ -1445,10 +1450,12 @@ class moduleImap(Content):  # , Queue):
 
     def moveMails(self, M, msgs, folder):
         if hasattr(self, "channel"):
-            M.select(self.channel)
+            self.getClient().select(self.channel)
         else:
             channel = self.getPostsType()
             M.select(channel.capitalize())
+        if isinstance(msgs, bytes):
+            msgs = msgs.decode('ascii')
 
         msgLog = f"Copying {len(msgs.split(','))} messages to {folder}"
         logMsg(msgLog, 1, 0)
@@ -1677,6 +1684,12 @@ class moduleImap(Content):  # , Queue):
         subject = str(email.header.make_header(theHeader))
         return subject
 
+    def getPostPos(self, msg):
+        pos = -1
+        if isinstance(msg, tuple):
+            pos = msg[0]
+        return pos
+
     def getPostId(self, msg):
         if isinstance(msg, tuple):
             post = msg[1]
@@ -1744,7 +1757,7 @@ class moduleImap(Content):  # , Queue):
         return posts
 
     def register_specific_tests(self, tester):
-        tester.add_test("List folders", self.test_list_folders)
+        tester.add_test("Change folder", self.test_list_folders)
         tester.add_test("Test drafts", self.test_drafts)
         tester.add_test("Test posts", self.test_posts)
         tester.add_test("Test attachments", self.test_attachments)
@@ -1834,6 +1847,7 @@ def main():
     imap_module = moduleImap()
     tester = ModuleTester(imap_module)
     tester.run()
+
 
 if __name__ == '__main__':
     def test_click(self, apiSrc):

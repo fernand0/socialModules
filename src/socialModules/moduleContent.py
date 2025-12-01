@@ -53,6 +53,7 @@ class Content:
         self.hold = None
         # Publication cache configuration
         self.auto_cache = True
+        self.fileName = ""
 
     def setAutoCache(self, enabled=True):
         """
@@ -381,9 +382,12 @@ class Content:
         msgLog = f"{indent} Start fileNameBase"
         logMsg(msgLog, 2, 0)
 
-        if hasattr(dst, "fileName") and dst.fileName:
+        if hasattr(self, "fileName"):
+            fileName = self.fileName
+        elif hasattr(dst, "fileName") and dst.fileName:
             fileName = dst.fileName
         else:
+            # FIXME Is this needed?
             src = self
             typeSrc = "posts"
             if hasattr(src, "getPostsType"):
@@ -450,8 +454,9 @@ class Content:
         msgLog = f"{self.indent} updating {msgupdate}"
         logMsg(msgLog, 1, 0)
 
-        self.fileName = ""
-        fileName = f"{src.fileNameBase(self)}.last"
+        #self.fileName = ""
+        # fileName = f"{src.fileNameBase(self)}.last"
+        fileName = f"{DATADIR}/{self.fileName}.last"
         msgLog = f"{self.indent} fileName {fileName}"
         logMsg(msgLog, 2, 0)
         msgLog = checkFile(fileName, self.indent)
@@ -481,7 +486,8 @@ class Content:
         # url = self.getUrl()
         service = self.service.lower()
         # nick = self.getUser()
-        fileName = f"{apiSrc.fileNameBase(self)}.last"
+        # fileName = f"{apiSrc.fileNameBase(self)}.last"
+        fileName = f"{DATADIR}/{self.fileName}.last"
         linkLast = ""
 
         msgLog = checkFile(fileName, self.indent)
@@ -513,10 +519,11 @@ class Content:
         msgLog = f"{self.indent} Start setLastLink"
         logMsg(msgLog, 1, 0)
         self.indent = f"{self.indent} "
-        if src:
-            fileName = f"{src.fileNameBase(self)}.last"
-        else:
-            fileName = f"{self.fileNameBase(self)}.last"
+        fileName = f"{DATADIR}/{self.fileName}.last"
+        # if src:
+        #     fileName = f"{src.fileNameBase(self)}.last"
+        # else:
+        #     fileName = f"{self.fileNameBase(self)}.last"
         lastTime = ""
         linkLast = ""
         checkR = checkFile(fileName, f"{self.indent}")
@@ -540,8 +547,8 @@ class Content:
         if len(linkLast) >0:
             msgLog = f"{self.indent} linkLast: {linkLast[0]}"
             logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent} lastTime: {lastTime}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} lastTime: {lastTime}"
+        # logMsg(msgLog, 2, 0)
 
         self.lastLinkPublished = linkLast
         self.lastTimePublished = lastTime
@@ -556,7 +563,8 @@ class Content:
         # you always need to check lastLink?
         # example: gmail, twitter
         if other:
-            fileName = self.fileNameBase(other)
+            # fileName = self.fileNameBase(other)
+            fileName = f"{DATADIR}/{self.fileName}.last"
             lastTime2 = ""
             if os.path.isfile(fileName):
                 lastTime2 = os.path.getctime(fileName)
@@ -567,7 +575,8 @@ class Content:
             # url = self.getUrl()
             # service = self.service.lower()
             # nick = self.getUser()
-            fn = f"{self.fileNameBase(other)}.last"
+            # fn = f"{self.fileNameBase(other)}.last"
+            fn = f"{DATADIR}/{self.fileName}.last"
             # fn = (f"{fileNamePath(url, (service, nick))}.last")
             lastTime = os.path.getctime(fn)
             myLastLink = self.getLastLink()
@@ -585,7 +594,8 @@ class Content:
     def setNextAvailableTime(self, tnow, tSleep, dst=None):
         fileNameNext = ""
         if dst:
-            fileNameNext = f"{self.fileNameBase(dst)}.timeavailable"
+            # fileNameNext = f"{self.fileNameBase(dst)}.timeavailable"
+            filaNameNext = f"{DATADIR}/{self.fileName}.timeavailable"
             msgLog = checkFile(fileNameNext, self.indent)
             if "OK" not in msgLog:
                 msgLog = (
@@ -598,83 +608,8 @@ class Content:
         else:
             print("not implemented!")
 
-    def getNextTime(self, src=None):
-        """
-        Lee la próxima hora de ejecución para una fuente dada de un fichero.
-        """
-        self.indent = f"{self.indent} "
-        msgLog = f"{self.indent}Start getNextTime"
-        logMsg(msgLog, 2, 0)
 
-        if not src:
-            logMsg(f"{self.indent}Error: El parámetro 'src' no puede ser None.", 3, 1)
-            self.indent = self.indent[:-1]
-            return None, None
 
-        fileNameNext = f"{src.fileNameBase(self)}.timeNext"
-
-        if not os.path.exists(fileNameNext):
-            logMsg(f"{self.indent}  Fichero de tiempo no existe: {fileNameNext}", 2, 0)
-            self.indent = self.indent[:-1]
-            return None, None
-
-        try:
-            with open(fileNameNext, "rb") as f:
-                tnow, tSleep = pickle.load(f)
-
-            msgLog = f"{self.indent}  Fichero leído: {fileNameNext}"
-            logMsg(msgLog, 2, 0)
-            self.indent = self.indent[:-1]
-            return tnow, tSleep
-
-        except (IOError, pickle.UnpicklingError) as e:
-            error_msg = f"Fallo al leer el fichero {fileNameNext}"
-            logMsg(f"{self.indent}{error_msg}", 3, 1)
-            self.report(self.service, error_msg, fileNameNext, e)
-            self.indent = self.indent[:-1]
-            return None, None
-
-    def setNextTime(self, tnow, tSleep, src=None):
-        """
-        Guarda la próxima hora de ejecución para una fuente dada en un fichero.
-        """
-        self.indent = f"{self.indent} "
-        msgLog = f"{self.indent}Start setNextTime"
-        logMsg(msgLog, 2, 0)
-
-        if not src:
-            logMsg(f"{self.indent}Error: El parámetro 'src' no puede ser None.", 3, 1)
-            self.indent = self.indent[:-1]
-            return
-
-        fileNameNext = None
-        try:
-            fileNameNext = f"{src.fileNameBase(self)}.timeNext"
-
-            # 'wb' creará el fichero si no existe, por lo que checkFile es redundante
-            # a menos que se quiera un log específico si el fichero no existía.
-            # msgLog = f"{self.indent}Nowwww: {tnow}, tSleep {tSleep}"
-            # logMsg(msgLog, 2, 0)
-            # msgLog = f"{self.indent}Nowwww: {(tnow,tSleep)}"
-            # logMsg(msgLog, 2, 0)
-            with open(fileNameNext, "wb") as f:
-                pickle.dump((tnow, tSleep), f)
-            # msgLog = f"{self.indent}Nowwwd: {(tnow,tSleep)}"
-            # logMsg(msgLog, 2, 0)
-
-            msgLog = f"{self.indent}  Fichero actualizado: {fileNameNext}"
-            logMsg(msgLog, 2, 0)
-
-        except (IOError, pickle.PicklingError) as e:
-            # Un manejo de errores más específico que llamar a self.report
-            error_msg = (
-                f"Fallo al escribir en el fichero {fileNameNext or 'desconocido'}"
-            )
-            logMsg(f"{self.indent}{error_msg}", 3, 1)
-            self.report(self.service, error_msg, fileNameNext, e)
-        finally:
-            # Asegurarse de que el indentado siempre se restaura
-            self.indent = self.indent[:-1]
 
     def setNumPosts(self, numposts):
         self.numposts = numposts
@@ -1006,10 +941,10 @@ class Content:
                 else:
                     posLast = len(posts)
 
-            msgLog = f"{self.indent} lastLinkkk: {lastLink}"
-            logMsg(msgLog, 1, 0)
-            msgLog = f"{self.indent} posLast: {posLast}"
-            logMsg(msgLog, 1, 0)
+            # msgLog = f"{self.indent} lastLinkkk: {lastLink}"
+            # logMsg(msgLog, 1, 0)
+            # msgLog = f"{self.indent} posLast: {posLast}"
+            # logMsg(msgLog, 1, 0)
         msgLog = f"{self.indent} End getPosNextPost."
         logMsg(msgLog, 2, 0)
         return posLast
@@ -1195,11 +1130,11 @@ class Content:
         try:
             post = self.getNextPost(apiDst)
             if post:
-                msgLog = f"{self.indent} deleting post {post}"
-                logMsg(msgLog, 2, 0)
+                #msgLog = f"{self.indent} Deleting post {post}"
+                #logMsg(msgLog, 2, 0)
                 idPost = self.getPostId(post)
-                msgLog = f"{self.indent} post Id post {idPost}"
-                logMsg(msgLog, 2, 0)
+                # msgLog = f"{self.indent} post Id post {idPost}"
+                # logMsg(msgLog, 2, 0)
                 if (
                     hasattr(self, "getPostsType")
                     and (self.getPostsType())
@@ -1220,8 +1155,8 @@ class Content:
     def publishPost(self, *args, **more):
         msgLog = f"{self.indent} Start publishPost"
         logMsg(msgLog, 2, 0)
-        msgLog = f"{self.indent} Args: {args} More: {more}"
-        logMsg(msgLog, 2, 0)
+        # msgLog = f"{self.indent} Args: {args} More: {more}"
+        # logMsg(msgLog, 2, 0)
         api = ""
         post = ""
         # Do we need these?
@@ -1231,7 +1166,7 @@ class Content:
         nameMethod = "Post"
         listPosts = []
         if len(args) == 3:
-            logging.info(f"Args: {args}")
+            # logging.info(f"Args: {args}")
             title = args[0]
             link = args[1]
             comment = args[2]
@@ -1480,7 +1415,7 @@ class Content:
         return result
 
     def delete(self, j):
-        msgLog = f"{self.indent} deleting post pos: {j}"
+        msgLog = f"{self.indent} Deleting post pos: {j}"
         logMsg(msgLog, 2, 0)
         post = self.getPost(j)
         idPost = self.getPostId(post)
