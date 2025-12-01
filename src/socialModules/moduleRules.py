@@ -1439,7 +1439,7 @@ class moduleRules:
         max_val, time_val, last_time_val = self._get_publication_check_data(rule_key, rule_action, rule_metadata)
 
         should_skip = False
-        indent = nameA
+        indent = "" #nameA
         num = max_val
         skip_reason = ""
         if num <= 0:
@@ -1458,6 +1458,7 @@ class moduleRules:
                 diffTime = hours + 1
 
             if not noWait and (diffTime <= hours):
+                thread_local.nameA = nameA
                 skip_reason = (
                     f"Not enough time passed. "
                     f"We will wait at least "
