@@ -2179,8 +2179,6 @@ class moduleRules:
             help="Enable verbose output (print to console)",
         )
         self.args = parser.parse_args()
-        if not self.args:
-            self.args.verbose = True
 
 
 def main():
