@@ -202,7 +202,7 @@ class moduleRules:
                     if desired_posts_type == method_target:
                         source_tuple = (theService, method_action, api.getNick(), method_target)
                         break
-                elif method_target == "post": # If no 'posts' specified, default to 'post' method
+                else: #if method_target == "post": # If no 'posts' specified, default to 'post' method
                     source_tuple = (theService, method_action, api.getNick(), method_target)
                     break
             
