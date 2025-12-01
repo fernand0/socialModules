@@ -5,8 +5,17 @@ from socialModules.moduleRules import moduleRules
 @pytest.fixture
 def rules_instance():
     """Pytest fixture to create a moduleRules instance with a mocked checkRules method."""
+    class _TestArgs:
+        def __init__(self):
+            self.verbose = False
+            self.timeSlots = 0
+            self.noWait = False
+            self.checkBlog = None
+            self.simmulate = False
+
+    test_args = _TestArgs()
     with patch.object(moduleRules, 'checkRules') as mock_check_rules:
-        rules = moduleRules()
+        rules = moduleRules(args=test_args)
         rules.available = {
             'twitter_acc': {'name': 'twitter'},
             'mastodon_acc': {'name': 'mastodon'},

@@ -29,10 +29,19 @@ class ConfigError(Exception):
 
 
 class moduleRules:
-    def __init__(self):
-        # Initialize args with a default verbose value
-        import argparse
-        self.args = argparse.Namespace(verbose=True)
+    def __init__(self, args=None):
+        class _DummyArgs:
+            def __init__(self):
+                self.verbose = False
+                self.timeSlots = 0
+                self.noWait = False
+                self.checkBlog = None
+                self.simmulate = False
+
+        if args is None:
+            self.args = _DummyArgs()
+        else:
+            self.args = args
 
     def indentPlus(self):
         if not hasattr(self, "indent"):
@@ -83,6 +92,7 @@ class moduleRules:
             self.indentPlus()
             logMsg(msgLog, 1, self.args.verbose)
             self.indent = f"{self.indent}{section}>"
+
             try:
                 self._process_section(section, config, services, sources,
                                       sources_available, more, destinations,
@@ -94,11 +104,16 @@ class moduleRules:
             except Exception as e:
                 logMsg(f"UNEXPECTED ERROR in section [{section}]: {e}", 3, self.args.verbose)
                 continue
+
             self.indent = f"{self.indent[:-(len(section)+2)]}"
 
         self._finalize_rules(config, services, sources, sources_available, more, destinations, rulesNew)
+        msgLog = f"Rules: {rulesNew} after _finalize_rules"
+        logMsg(msgLog, 2, False)
         self.more = rule_metadata
         self._set_available_and_rules(rulesNew, more)
+        msgLog = f"Rules: {rulesNew} after _set_available_and_rules"
+        logMsg(msgLog, 2, False)
         self.indentLess()
         msgLog = "End Checking rules"
         logMsg(msgLog, 1, 2)
@@ -107,8 +122,8 @@ class moduleRules:
 
     def _process_section(self, section, config, services, sources, sources_available, more, destinations, temp_rules, rulesNew, rule_metadata, implicit_rules):
         """
-        Processes a section of the configuration file, identifying sources and destinations.
-        Validates the presence of required keys and data types.
+        Processes a section of the configuration file, identifying sources and
+        destinations.  Validates the presence of required keys and data types.
         """
         # Robustly validate required keys and ensure they are not empty
         required_keys = ["url", "service"]
@@ -150,51 +165,65 @@ class moduleRules:
         self.indentLess()
 
     def _process_sources(self, section, config, services, url, section_metadata, sources, sources_available, more):
-        """
-        Identifies and registers the source services of a section.
-        Validates the presence and type of required values.
-        Optimized for efficiency using sets.
-        """
-        toAppend = ""
+        source_tuple = None
         theService = None
         api = None
-        for service in services["regular"]:
-            if (("service" in config[section])
-                and (service == config[section]["service"])):
-                theService = service
-                api = getModule(service, self.indent)
-                api.setUrl(url)
-                if service in config[section]:
-                    serviceData = config.get(section, service)
-                    api.setService(service, serviceData)
-                if service in config[section]:
-                    api.setNick(config[section][service])
-                else:
-                    api.setNick()
-                self.indentPlus()
-                methods = self.hasSetMethods(service)
-                for method in methods:
-                    if not isinstance(method, tuple) or len(method) != 2:
-                        logMsg(f"WARNING: Unexpected method in {service}: {method}", 
-                               2, 
-                               self.args.verbose)
-                        continue
-                    if "posts" in section_metadata:
-                        if section_metadata["posts"] == method[1]:
-                            toAppend = (theService, "set", api.getNick(), method[1])
-                    else:
-                        toAppend = (theService, "set", api.getNick(), method[1])
-                    if toAppend not in sources:
-                        if ("posts" in section_metadata) and (section_metadata["posts"] == method[1]):
-                            sources.add(toAppend)
-                            more.append(section_metadata)
-                        else:
-                            sources_available.add(toAppend)
+        
+        # Determine the service name for this section
+        section_service_name = config[section].get("service")
+        if not section_service_name:
+            logMsg(f"ERROR: No 'service' defined in section [{section}]", 3, self.args.verbose)
+            return None, None, None
 
-                self.indentLess()
-                msgLog = f"{self.indent} Service: {service}"
-                logMsg(msgLog, 1, self.args.verbose)
-        return toAppend, theService, api
+        # Process regular services
+        if section_service_name in services["regular"]:
+            theService = section_service_name
+            api = getModule(theService, self.indent)
+            api.setUrl(url)
+            if theService in config[section]:
+                api.setService(theService, config.get(section, theService))
+            if theService in config[section]:
+                api.setNick(config[section][theService])
+            else:
+                api.setNick()
+            
+            self.indentPlus()
+            methods = self.hasSetMethods(theService)
+            desired_posts_type = section_metadata.get("posts")
+
+            for method_action, method_target in methods:
+                if not isinstance(method_action, str) or not isinstance(method_target, str):
+                    logMsg(f"WARNING: Unexpected method in {theService}: {method_action, method_target}",
+                           2,
+                           self.args.verbose)
+                    continue
+
+                if desired_posts_type: # If 'posts' is specified, find that specific method
+                    if desired_posts_type == method_target:
+                        source_tuple = (theService, method_action, api.getNick(), method_target)
+                        break
+                elif method_target == "post": # If no 'posts' specified, default to 'post' method
+                    source_tuple = (theService, method_action, api.getNick(), method_target)
+                    break
+            
+            if source_tuple:
+                if source_tuple not in sources:
+                    sources.add(source_tuple)
+                    more.append(section_metadata) # Add metadata for the found source
+            else:
+                # If no source_tuple was created, it means no suitable method was found
+                logMsg(f"WARNING: No suitable source method found for service '{theService}' "
+                       f"with posts type '{desired_posts_type}' in section [{section}]",
+                       2, self.args.verbose)
+                # Add None to sources_available, to reflect that a source could not be formed
+                # This might need further refinement depending on desired behavior for missing sources
+                sources_available.add(None) 
+
+            self.indentLess()
+            msgLog = f"{self.indent} Service: {theService}"
+            logMsg(msgLog, 1, self.args.verbose)
+
+        return source_tuple, theService, api
 
     def _process_destinations(self, section, config, service, services, fromSrv, section_metadata, api, destinations, temp_rules, rule_metadata, implicit_rules):
         """
@@ -343,6 +372,7 @@ class moduleRules:
                         logMsg(msgLog, 2, False)
                         self.indentLess()
                         self.indentLess()
+
                         channels = section_metadata["channel"].split(",") if "channel" in section_metadata else ["set"]
                         for chan in channels:
                             if fromSrv and (destRuleNew or destRule):
@@ -356,15 +386,12 @@ class moduleRules:
                                 rule_metadata[fromSrvN] = dict(section_metadata)
                                 if chan != "set":
                                     rule_metadata[fromSrvN].update({"posts": chan, "channel": chan})
+
         self.indentLess()
         self.indentLess()
 
     def _finalize_rules(self, config, services, sources, sources_available, more, destinations, rulesNew):
-        """
-        Adds implicit sources and destinations that can be sources.
-        Validates the structure of the data before adding them.
-        Optimized for efficiency using sets.
-        """
+
         for src in sources_available:
             if src:
                 if src not in rulesNew:
@@ -372,6 +399,7 @@ class moduleRules:
                 if src not in sources:
                     sources.add(src)
                     more.append({})
+
         logging.info(f"Srcs: {list(sources)}")
         logging.info(f"SrcsA: {list(sources_available)}")
         self.indent = f"{self.indent} Destinations:"
@@ -398,6 +426,7 @@ class moduleRules:
                 if toAppend[:4] not in sources:
                     sources.add(toAppend[:4])
                     more.append({})
+
 
         # Convert sets to lists for compatibility with the rest of the code
         self._srcs = list(sources)
@@ -639,7 +668,7 @@ class moduleRules:
                 hasSet[service] = listMethods
 
             for method in listMethods:
-                if (not method.startswith("__")) and (method.find("set") >= 0):
+                if ((not method.startswith("__")) and (method.find("set") >= 0)):
                     action = "set"
                     target = ""
                     # FIXME: indenting inside modules?
