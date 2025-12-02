@@ -178,7 +178,7 @@ class moduleFlickr(Content):  # , Queue):
     def processReply(self, reply):
         res = ""
         msgLog = f"{self.indent}Reply: {reply}"
-        logMsg(msgLog, 1, 1)
+        logMsg(msgLog, 1, False)
         origReply = reply[0]
         if "stat" in origReply and origReply.get("stat") == "ok":
             if not ("Fail!" in reply):

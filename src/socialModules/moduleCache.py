@@ -45,7 +45,7 @@ class moduleCache(Content):  # ,Queue):
 
     def getProfileR(self, rule):
         msgLog = f"{self.indent} getProfileR {rule}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         return rule[2:]
 
     def setPostsType(self, postsType):
@@ -62,7 +62,7 @@ class moduleCache(Content):  # ,Queue):
     #     # FIXME: we should avoid this?
     #     indent = f"{self.indent}  "
     #     msgLog = f"{indent} Start fileNameBase (c)"
-    #     logMsg(msgLog, 2, 0)
+    #     logMsg(msgLog, 2, False)
     #     myDst = dst
     #     if hasattr(self, "fileName") and self.fileName:
     #         fileName = self.fileName
@@ -99,7 +99,7 @@ class moduleCache(Content):  # ,Queue):
     #         self.fileName = fileName
 
     #     msgLog = f"{indent} End fileNameBase"
-    #     logMsg(msgLog, 2, 0)
+    #     logMsg(msgLog, 2, False)
     #     return fileName
 
     def initApi(self, keys):
@@ -145,7 +145,7 @@ class moduleCache(Content):  # ,Queue):
     def setApiPosts(self):
         self.indent = f"{self.indent} "
         msgLog = f"{self.indent} Start setApiPosts"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         # fileNameQ = f"{self.fileNameBase(self.apiDst)}.queue"
         # #FIXME: This fileNameBase must be replaced
         if hasattr(self, 'action') and self.action[0] == 'cache':
@@ -153,7 +153,7 @@ class moduleCache(Content):  # ,Queue):
         else:
             fileNameQ = f"{DATADIR}/{self.fileName}.queue"
         msgLog = f"{self.indent} File: %s" % fileNameQ
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         listP = []
         try:
             resFile = checkFile(fileNameQ, f"{self.indent} ")
@@ -173,10 +173,10 @@ class moduleCache(Content):  # ,Queue):
             listP = []
 
         # msgLog = f"{self.indent} listP: {listP}"
-        # logMsg(msgLog, 2, 0)
+        # logMsg(msgLog, 2, False)
 
         msgLog = f"{self.indent} End setApiPosts"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         self.indent = self.indent[:-1]
 
         return listP
@@ -186,18 +186,18 @@ class moduleCache(Content):  # ,Queue):
         if hasattr(self, "max"):  # and self.max:
             maxVal = int(self.max)
         # msgLog = f"{self.indent} maxVal {maxVal}"
-        # logMsg(msgLog, 2, 0)
+        # logMsg(msgLog, 2, False)
         self.setPosts()
         lenMax = len(self.getPosts())
         # msgLog = f"{self.indent} len {lenMax}"
-        # logMsg(msgLog, 2, 0)
+        # logMsg(msgLog, 2, False)
         num = 1
         if maxVal > 1:
             num = maxVal - lenMax
         if num < 0:
             num = 0
         # msgLog = f"{self.indent} num {num}"
-        # logMsg(msgLog, 2, 0)
+        # logMsg(msgLog, 2, False)
         return num
 
     def getPosNextPost(self, apiDst=None):
@@ -216,7 +216,7 @@ class moduleCache(Content):  # ,Queue):
         self.setProfile(self.service)
         profile = self.getProfile()
         msgLog = "Profile %s" % profile
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
 
         profile.id = profile["id"]
         profile.profile_id = profile["service_id"]
@@ -307,7 +307,7 @@ class moduleCache(Content):  # ,Queue):
             pickle.dump(posts, f)
 
         msgLog = f"{self.indent} Writing in {fileNameQ}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         # msgLog = ("Posts: {}".format(str(self.getPosts())))
 
         return "Ok"
@@ -332,18 +332,18 @@ class moduleCache(Content):  # ,Queue):
         #    nick = self.getUser()
 
         # msgLog = (f"{self.indent} Url: {url} service {service} nick {nick}")
-        # logMsg(msgLog, 2, 0)
+        # logMsg(msgLog, 2, False)
         msgLog = f"{self.indent} File Queue: {fileNameQ}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         # msgLog = ("Posts antes: {}".format(str(self.getPosts())))
 
         msgLog = f"{self.indent} Writing in {fileNameQ}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
 
         with open(fileNameQ, "wb") as f:
             posts = self.getPosts()
             # msgLog = f"{self.indent} Posts updating {self.service} {posts}"
-            # logMsg(msgLog, 2, 0)
+            # logMsg(msgLog, 2, False)
             pickle.dump(posts, f)
 
         # msgLog = (f"Posts: {str(self.getPosts())}")
@@ -410,13 +410,13 @@ class moduleCache(Content):  # ,Queue):
     def getApiPostTitle(self, post):
         # self.indent = f"{self.indent} "
         # msgLog = (f"{self.indent} Start getPostTitle.")
-        # logMsg(msgLog, 2, 0)
+        # logMsg(msgLog, 2, False)
         title = ""
         if post:
             title = self.apiSrc.getPostTitle(post)
             # if hasattr(self, 'auxClass'):
             #     # msgLog = (f"{self.indent} auxClass: {self.auxClass}")
-            #     # logMsg(msgLog, 2, 0)
+            #     # logMsg(msgLog, 2, False)
             #     if isinstance(self.auxClass, str):
             #         myModule = f"module{self.auxClass.capitalize()}"
             #         import importlib
@@ -434,14 +434,14 @@ class moduleCache(Content):  # ,Queue):
             #     # Old style
             #     title = post[0]
         # msgLog = (f"{self.indent} End getPostTitle.")
-        # logMsg(msgLog, 2, 0)
+        # logMsg(msgLog, 2, False)
         # self.indent = self.indent[:-1]
         return title
 
     def getApiPostLink(self, post):
         # self.indent = f"{self.indent} "
         # msgLog = (f"{self.indent} Start getPostLink.")
-        # logMsg(msgLog, 2, 0)
+        # logMsg(msgLog, 2, False)
         link = ""
         if post:
             link = self.apiSrc.getPostLink(post)
@@ -460,7 +460,7 @@ class moduleCache(Content):  # ,Queue):
             # else:
             #     link = post[1]
         # msgLog = (f"{self.indent} End getPostLink.")
-        # logMsg(msgLog, 2, 0)
+        # logMsg(msgLog, 2, False)
         # self.indent = self.indent[:-1]
         return link
 
@@ -511,7 +511,7 @@ class moduleCache(Content):  # ,Queue):
 
     def insert(self, j, text):
         msgLog = f"{self.indent} Inserting {text}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         posts = self.getPosts()
         # We do not use j, Maybe in the future.
         # logging.info(f"posts {posts}")
@@ -526,7 +526,7 @@ class moduleCache(Content):  # ,Queue):
         # link and so on.
         reply = ""
         msgLog = f"{self.indent} publishing next post in {self.service}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         try:
             post = apiSrc.getNextPost()
             if post:
@@ -594,7 +594,7 @@ class moduleCache(Content):  # ,Queue):
             idPost = self.getIdPosition(idPost)
 
         # msgLog = (f"{self.indent} id: {idPost}")
-        # logMsg(msgLog, 2, 0)
+        # logMsg(msgLog, 2, False)
         self.deleteApi(idPost)
         return f"OK. Deleted post {idPost}"
 
@@ -637,7 +637,7 @@ class moduleCache(Content):  # ,Queue):
 
     def deleteApi(self, j):
         # msgLog = (f"{self.indent} Deleting: {j}")
-        # logMsg(msgLog, 1, 0)
+        # logMsg(msgLog, 1, False)
         posts = self.getPosts()
         # logging.debug(f"Posts antes: {posts}")
         # logging.debug(f"Posts .antes: {self.getPosts()}")
@@ -664,13 +664,13 @@ class moduleCache(Content):  # ,Queue):
 
     def copy(self, j, dest):
         msgLog = f"{self.indent} Copying {j} to {dest}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         posts = self.getPosts()
         post = posts[j : j + 1]
         msgLog = f"Copying: {self.getPostTitle(post)}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         msgLog = f"Destination: {dest}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         # msgLog = (f"Posts: {posts}")
         # msgLog = (f"Post: {post}")
 
@@ -689,17 +689,17 @@ class moduleCache(Content):  # ,Queue):
         self.assignPosts(posts)
         self.updatePostsCache()
         msgLog = f"{self.indent} Moved {self.getPostTitle(post)}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         return "%s" % self.getPostTitle(post)
 
     def move(self, j, dest):
         k = int(dest)
         msgLog = f"{self.indent} Moving %d to %d" % (j, k)
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         posts = self.getPosts()
         post = posts[j]
         msgLog = f"{self.indent} Moving {self.getPostTitle(post)}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         if j > k:
             for i in range(j - 1, k - 1, -1):
                 posts[i + 1] = posts[i]
@@ -711,7 +711,7 @@ class moduleCache(Content):  # ,Queue):
         self.assignPosts(posts)
         self.updatePostsCache()
         msgLog = f"{self.indent} Moved {self.getPostTitle(post)}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         return f"{self.getPostTitle(post)}"
 
     def register_specific_tests(self, tester):

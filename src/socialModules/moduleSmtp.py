@@ -136,7 +136,7 @@ class moduleSmtp(Content):  # , Queue):
 
             if comment:
                 msgLog = f"{self.indent} Doc: {htmlDoc}"
-                logMsg(msgLog, 2, 0)
+                logMsg(msgLog, 2, False)
 
             subtype = "html"
             # if htmlDoc.startswith('<'):

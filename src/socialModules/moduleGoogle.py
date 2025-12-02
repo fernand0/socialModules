@@ -64,50 +64,50 @@ class socialGoogle:
         SCOPES = self.scopes
 
         msgLog = f"{self.indent} Authorizing..."
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         msgLog = f"{self.indent}  Connecting {self.service}"  #: {account}")
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         pos = self.user.rfind("@")
         self.server = self.user[pos + 1 :]
         self.nick = self.user[:pos]
 
         msgLog = f"{self.indent}  server: {self.server} nick: {self.nick}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         creds = None
 
         try:
             fileTokenStore = self.confTokenName((self.server, self.nick))
             # It's a pickled file
             msgLog = f"{self.indent}  filetokenstore: {fileTokenStore}"
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
             try:
                 with open(fileTokenStore, "rb") as fToken:
                     msgLog = f"{self.indent}   Unpickle: {fileTokenStore}"
-                    logMsg(msgLog, 2, 0)
+                    logMsg(msgLog, 2, False)
                     creds = pickle.load(fToken)
             except:
                 msgLog = f"{self.indent}  No credentials to pickle"
-                logMsg(msgLog, 2, 1)
+                logMsg(msgLog, 2, False)
 
         except:
             msgLog = f"{self.indent}  creds except {sys.exc_info()}"
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
             creds = None
 
         if not creds:
             msgLog = f"{self.indent} No creds"
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
         if creds and creds.expired and creds.refresh_token:
             msgLog = (
                 f"{self.indent} Needs to refresh token GMail"
                 # f"Exp {creds.expired} - Ref {creds.refresh_token}"
             )
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
             try:
                 creds.refresh(Request())
             except:
                 msgLog = sys.exc_info()
-                logMsg(msgLog, 2, 0)
+                logMsg(msgLog, 2, False)
                 if os.path.exists(fileTokenStore):
                     os.remove(fileTokenStore)
                     print(
@@ -122,15 +122,15 @@ class socialGoogle:
             # It only works in local, since it launches a brower
 
             msgLog = f"{self.indent} Needs to re-authorize token {self.service}"
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
             fileCredStore = self.confName((self.server, self.nick))
             msgLog = f"{self.indent}  fileCred: {fileCredStore}"
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
             # It's a json file
             try:
                 if not os.path.exists(fileCredStore):
                     msgLog = f"{self.indent}  fileCred: {fileCredStore} does not exist"
-                    logMsg(msgLog, 2, 0)
+                    logMsg(msgLog, 2, False)
                 else:
                     print(
                         f"This won't work on remote, you need a local browser to pass the oauth process"
@@ -143,7 +143,7 @@ class socialGoogle:
                     # Save the credentials for the next run
                     with open(fileTokenStore, "wb") as token:
                         msgLog = f"{self.indent}   Pickle: {fileTokenStore}"
-                        logMsg(msgLog, 2, 0)
+                        logMsg(msgLog, 2, False)
                         pickle.dump(creds, token)
             except FileNotFoundError:
                 print("noooo")
@@ -157,23 +157,23 @@ class socialGoogle:
                 # creds = 'Fail!'
 
         msgLog = f"{self.indent}  building service {creds} {type(creds)}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         if isinstance(creds, google.oauth2.credentials.Credentials):
             try:
                 msgLog = f"{self.indent}  building service {serviceName}"
-                logMsg(msgLog, 2, 0)
+                logMsg(msgLog, 2, False)
                 service = build(serviceName, version, credentials=creds)
             except:
                 service = self.report(self.service, "", "", sys.exc_info())
 
         # msgLog = f"{self.indent} {service.__getstate__()}"
-        # logMsg(msgLog, 1, 0)
+        # logMsg(msgLog, 1, False)
         # if not service._credentials_validated:
         #     msgLog = f"{self.indent} Problem with credentials"
-        #     logMsg(msgLog, 1, 0)
+        #     logMsg(msgLog, 1, False)
         #     fileCredStore = self.confName((self.server, self.nick))
         #     msgLog = f"{self.indent} fileCredStore: {fileCredStore}"
-        #     logMsg(msgLog, 1, 0)
+        #     logMsg(msgLog, 1, False)
         #     flow = InstalledAppFlow.from_client_secrets_file(
         #         fileCredStore, SCOPES, redirect_uri="http://localhost"
         #     )
@@ -182,7 +182,7 @@ class socialGoogle:
         #     # Save the credentials for the next run
         #     with open(fileTokenStore, "wb") as token:
         #         msgLog = f"{self.indent}   Pickle: {fileTokenStore}"
-        #         logMsg(msgLog, 2, 0)
+        #         logMsg(msgLog, 2, False)
         #         pickle.dump(creds, token)
 
         return service

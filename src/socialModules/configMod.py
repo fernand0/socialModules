@@ -63,7 +63,7 @@ console_handler.addFilter(ContextFilter())
 root_logger.addHandler(file_handler)
 root_logger.addHandler(console_handler)
 
-def logMsg(msgLog, log=1, output=1):
+def logMsg(msgLog, log=1, print_to_console=True):
     # name_action = getattr(thread_local, 'nameA', None)
     # if name_action:
     #     msgLog = f"{name_action} {msgLog}"
@@ -75,9 +75,9 @@ def logMsg(msgLog, log=1, output=1):
     elif log == 3:
         logging.warning(msgLog)
 
-    if output == 1:
+    if print_to_console is True:
         print(f"{msgLog}")
-    elif output == 2:
+    elif print_to_console == 2:
         print("====================================")
         print("{}".format(msgLog))
         print("====================================")

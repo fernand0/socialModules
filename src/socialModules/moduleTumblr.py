@@ -32,7 +32,7 @@ class moduleTumblr(Content):  # , Queue):
         # print(f"client: {client}")
         tumblr = self.user
         msgLog = f"{self.indent} Service {self.service} user {self.user}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         if isinstance(tumblr, str):
             self.url = f"https://{tumblr}.tumblr.com/"
         elif isinstance(tumblr[1], str):
@@ -40,7 +40,7 @@ class moduleTumblr(Content):  # , Queue):
         elif isinstance(tumblr, tuple):
             self.url = f"https://{tumblr[1][1]}.tumblr.com/"
         # msgLog = (f"{self.indent} Url: {self.url}")
-        # logMsg(msgLog, 2, 0)
+        # logMsg(msgLog, 2, False)
 
         return client
 
@@ -93,7 +93,7 @@ class moduleTumblr(Content):  # , Queue):
 
     def getApiPostTitle(self, post):
         msgLog = f"{self.indent} getPostTitle {post}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         title = ""
         if post:
             if "summary" in post:
@@ -122,7 +122,7 @@ class moduleTumblr(Content):  # , Queue):
 
     def getPostId(self, post):
         msgLog = f"{self.indent} getPostId {post}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         idPost = ""
         if post:
             if "id" in post:
@@ -131,7 +131,7 @@ class moduleTumblr(Content):  # , Queue):
 
     def getPostState(self, post):
         msgLog = f"{self.indent} getPostState {post}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         state = ""
         if post:
             if "state" in post:
@@ -140,16 +140,16 @@ class moduleTumblr(Content):  # , Queue):
 
     def processReply(self, reply):
         msgLog = f"{self.indent} Res: %s" % reply
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         res = reply
         if "id" in reply:
             try:
                 # msgLog = (f"{self.indent} Res: {reply['id']}")
-                # logMsg(msgLog, 2, 0)
+                # logMsg(msgLog, 2, False)
                 res = f"OK! https://{self.service}.com/{self.user}/{reply['id']}"
             except:
                 msgLog = f"{self.indent} Temporal: error {reply}"
-                logMsg(msgLog, 3, 0)
+                logMsg(msgLog, 3, False)
         elif "errors" in reply:
             res = f"failed! {res.get('errors','')} {reply}"
         elif ("meta" in reply and 'status' in reply['meta']
@@ -165,11 +165,11 @@ class moduleTumblr(Content):  # , Queue):
         msgLog = (
             f"{self.indent} Publishing next post from {apiSrc} in " f"{self.service}"
         )
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         try:
             post = apiSrc.getNextPost()
             msgLog = f"{self.indent} Next post from {apiSrc} is {post}"
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
             if post:
                 reply = self.publishApiPost(api=apiSrc, post=post)
             else:
@@ -225,7 +225,7 @@ class moduleTumblr(Content):  # , Queue):
                 )
         except ConnectionError:  # as connectionError:
             msgLog = f"Connection error in {self.service}"
-            logMsg(msgLog, 3, 0)
+            logMsg(msgLog, 3, False)
             res = self.report("Tumblr", post, link, sys.exc_info())
 
         return f"{res}"
@@ -237,7 +237,7 @@ class moduleTumblr(Content):  # , Queue):
         res = ""
         if hasattr(self, "getPostsType") and (self.getPostsType() == "queue"):
             msgLog = f"Publishing queued state {j}"
-            logMsg(msgLog, 1, 0)
+            logMsg(msgLog, 1, False)
 
             # res = self.do_edit(j, newState='published')
         else:
@@ -279,12 +279,12 @@ class moduleTumblr(Content):  # , Queue):
     def deleteApi(self, j):
         idPost = self.getId(j)
         msgLog = f"{self.indent} Deleting post %s" % idPost
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         return self.getClient().delete_post(self.getBlogName(), idPost)
 
     def deleteApiQueue(self, idPost):
         msgLog = "{self.indent} Deleting from queue %s" % idPost
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         return self.getClient().delete_post(self.getBlogName(), idPost)
 
     def register_specific_tests(self, tester):

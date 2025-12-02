@@ -30,7 +30,7 @@ class moduleTwitter(Content):  # , Queue):
 
     def initApi(self, keys):
         msgLog = f"{self.indent} Service {self.service} Start initApi {self.user}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         # FIXME: Do we call this method directly?
         self.base_url = "https://twitter.com"
         self.url = f"{self.base_url}/{self.user}"
@@ -54,17 +54,17 @@ class moduleTwitter(Content):  # , Queue):
         self.api = api
 
         msgLog = f"{self.indent} service {self.service} End initApi"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         return client
 
     def apiCall(self, command, **kwargs):
         msgLog = f"   Calling: {command} with arguments {kwargs}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         res = []
 
         try:
             msgLog = f"{self.indent}Command {command} "
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
             res = command(**kwargs)
         except:
             res = self.report("", res, "", sys.exc_info())
@@ -118,7 +118,7 @@ class moduleTwitter(Content):  # , Queue):
         Extracts the URL from a successful publication.
         """
         msgLog = f"{self.indent}Reply: {reply}"
-        logMsg(msgLog, 1, 1)
+        logMsg(msgLog, 1, False)
 
         # Handle Tweepy v2 Response object
         if hasattr(reply, "data") and isinstance(reply.data, dict):
@@ -275,10 +275,10 @@ class moduleTwitter(Content):  # , Queue):
             # will reflect this.
 
             msgLog = f"{self.indent}Publishing {title} "
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
             res = self.apiCall(self.getClient().create_tweet, text=title)
             msgLog = f"{self.indent}Res: {res} "
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
         return res
 
     def deleteApiPosts(self, idPost):
@@ -323,7 +323,7 @@ class moduleTwitter(Content):  # , Queue):
 
     def getApiPostTitle(self, post):
         # msgLog = (f"{self.indent} Postttt: {post}")
-        # logMsg(msgLog, 2, 0)
+        # logMsg(msgLog, 2, False)
         # print(f"post: {post}")
         title = ""
         try:
@@ -337,11 +337,11 @@ class moduleTwitter(Content):  # , Queue):
         return title
 
     def getApiPostLink(self, post):
-        logMsg("getApiPostUrl", 1, 0)
+        logMsg("getApiPostUrl", 1, False)
         idPost = self.getPostId(post)
-        logMsg("getApiPostUrl", 1, 0)
+        logMsg("getApiPostUrl", 1, False)
         msgLog = f"{self.indent} getPostUrl: {post}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         if idPost:
             res = f"{self.base_url}/{self.user}/status/{idPost}"
         else:

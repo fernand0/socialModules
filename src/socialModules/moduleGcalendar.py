@@ -22,7 +22,7 @@ class moduleGcalendar(Content, socialGoogle):
     def initApi(self, keys):
         self.service = "Gcalendar"
         msgLog = f"{self.indent} initApi {self.service}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         self.scopes = [
             "https://www.googleapis.com/auth/calendar.readonly",
             "https://www.googleapis.com/auth/calendar",

@@ -4,6 +4,18 @@ import os
 from unittest.mock import patch, MagicMock
 import time # Import time for mocking getNextTime
 
+
+@pytest.fixture
+def mock_rules_args():
+    """Provides a MagicMock args object for moduleRules tests."""
+    mock_args = MagicMock()
+    mock_args.verbose = False
+    mock_args.timeSlots = 0
+    mock_args.noWait = False
+    mock_args.checkBlog = None
+    mock_args.simmulate = False
+    return mock_args
+
 # Utility to create a temporary configuration file
 
 def make_config_file(tmp_path, content):
@@ -12,7 +24,7 @@ def make_config_file(tmp_path, content):
     return str(config_file)
 
 
-def test_missing_url(tmp_path):
+def test_missing_url(tmp_path, mock_rules_args):
     # Missing 'url' key
     config_content = """
     [blog1]
@@ -20,12 +32,12 @@ def test_missing_url(tmp_path):
     reddit = user
     """
     config_file = make_config_file(tmp_path, config_content)
-    rules = moduleRules()
+    rules = moduleRules(args=mock_rules_args)
     with pytest.raises(ConfigError):
         rules.checkRules(configFile=config_file)
 
 
-def test_valid_config(tmp_path):
+def test_valid_config(tmp_path, mock_rules_args):
     config_content = """
     [blog1]
     url = http://example.com/rss
@@ -35,7 +47,7 @@ def test_valid_config(tmp_path):
     direct = telegram
     """
     config_file = make_config_file(tmp_path, config_content)
-    rules = moduleRules()
+    rules = moduleRules(args=mock_rules_args)
     rules.checkRules(configFile=config_file)
     # There should be a source named 'reddit' in available (service name)
     assert any("reddit" in v["name"] for v in rules.available.values())
@@ -43,7 +55,7 @@ def test_valid_config(tmp_path):
     assert any("reddit" in str(src) for src in rules.rules)
 
 
-def test_no_duplicates(tmp_path):
+def test_no_duplicates(tmp_path, mock_rules_args):
     config_content = """
     [blog1]
     url = http://example.com/rss
@@ -53,14 +65,14 @@ def test_no_duplicates(tmp_path):
     direct = telegram
     """
     config_file = make_config_file(tmp_path, config_content)
-    rules = moduleRules()
+    rules = moduleRules(args=mock_rules_args)
     rules.checkRules(configFile=config_file)
     # There should be no duplicates in sources
     srcs = [d["src"] for v in rules.available.values() for d in v["data"]]
     assert len(srcs) == len(set(srcs))
 
 
-def test_empty_url(tmp_path):
+def test_empty_url(tmp_path, mock_rules_args):
     config_content = """
     [blog1]
     url =
@@ -68,12 +80,12 @@ def test_empty_url(tmp_path):
     reddit = user
     """
     config_file = make_config_file(tmp_path, config_content)
-    rules = moduleRules()
+    rules = moduleRules(args=mock_rules_args)
     with pytest.raises(ConfigError):
         rules.checkRules(configFile=config_file)
 
 
-def test_multiple_sections(tmp_path):
+def test_multiple_sections(tmp_path, mock_rules_args):
     config_content = """
     [blog1]
     url = http://example.com/rss
@@ -90,14 +102,14 @@ def test_multiple_sections(tmp_path):
     direct = slack
     """
     config_file = make_config_file(tmp_path, config_content)
-    rules = moduleRules()
+    rules = moduleRules(args=mock_rules_args)
     rules.checkRules(configFile=config_file)
     names = [v["name"] for v in rules.available.values()]
     assert "reddit" in names
     assert "mastodon" in names
 
 
-def test_non_numeric_max(tmp_path):
+def test_non_numeric_max(tmp_path, mock_rules_args):
     config_content = """
     [blog1]
     url = http://example.com/rss
@@ -108,13 +120,13 @@ def test_non_numeric_max(tmp_path):
     direct = telegram
     """
     config_file = make_config_file(tmp_path, config_content)
-    rules = moduleRules()
+    rules = moduleRules(args=mock_rules_args)
     rules.checkRules(configFile=config_file)
     more = [d["more"] for v in rules.available.values() for d in v["data"]]
     assert any("max" in m for m in more)
 
 
-def test_duplicate_destinations(tmp_path):
+def test_duplicate_destinations(tmp_path, mock_rules_args):
     config_content = """
     [blog1]
     url = http://example.com/rss
@@ -125,14 +137,14 @@ def test_duplicate_destinations(tmp_path):
     direct = telegram
     """
     config_file = make_config_file(tmp_path, config_content)
-    rules = moduleRules()
+    rules = moduleRules(args=mock_rules_args)
     # We expect a configuration error due to duplicate keys
     with pytest.raises(ConfigError):
         rules.checkRules(configFile=config_file)
 
 
-def make_basic_rules(tmp_path):
-    rules = moduleRules()
+def make_basic_rules(tmp_path, mock_rules_args):
+    rules = moduleRules(args=mock_rules_args)
     config_content = """
     [blog1]
     url = http://example.com/rss
@@ -144,7 +156,7 @@ def make_basic_rules(tmp_path):
     """
     config_file = make_config_file(tmp_path, config_content)
     rules.checkRules(configFile=config_file)
-    rules.args = MagicMock()
+    rules.args = MagicMock(verbose=True)
     rules.args.checkBlog = ""
     rules.args.simmulate = False
     rules.args.noWait = True
@@ -173,7 +185,7 @@ mock_api_instance.getMax.return_value = 1
 @patch('socialModules.moduleRules.moduleRules._execute_single_action')
 @patch('socialModules.moduleRules.moduleRules.readConfigSrc')
 @patch('socialModules.moduleRules.moduleRules.readConfigDst')
-def test_executeRules_calls_executeAction(mock_read_config_dst, mock_read_config_src, mock_execute_single_action, mock_get_api, mock_get_module, tmp_path):
+def test_executeRules_calls_executeAction(mock_read_config_dst, mock_read_config_src, mock_execute_single_action, mock_get_api, mock_get_module, tmp_path, mock_rules_args):
     mock_api_src_instance = MagicMock()
     mock_api_src_instance.getUrl.return_value = "http://mock.url"
     mock_api_src_instance.setPostsType.return_value = None
@@ -198,7 +210,7 @@ def test_executeRules_calls_executeAction(mock_read_config_dst, mock_read_config
     mock_read_config_src.return_value = mock_api_src_instance
     mock_read_config_dst.return_value = mock_api_dst_instance
 
-    rules = make_basic_rules(tmp_path)
+    rules = make_basic_rules(tmp_path, mock_rules_args)
     rules.executeRules(max_workers=2)
     assert mock_execute_single_action.call_count == 1
 
@@ -208,7 +220,7 @@ def test_executeRules_calls_executeAction(mock_read_config_dst, mock_read_config
 @patch('socialModules.moduleRules.moduleRules._execute_single_action')
 @patch('socialModules.moduleRules.moduleRules.readConfigSrc')
 @patch('socialModules.moduleRules.moduleRules.readConfigDst')
-def test_executeRules_respects_hold(mock_read_config_dst, mock_read_config_src, mock_execute_single_action, mock_get_api, mock_get_module, tmp_path):
+def test_executeRules_respects_hold(mock_read_config_dst, mock_read_config_src, mock_execute_single_action, mock_get_api, mock_get_module, tmp_path, mock_rules_args):
     mock_api_src_instance = MagicMock()
     mock_api_src_instance.getUrl.return_value = "http://mock.url"
     mock_api_src_instance.setPostsType.return_value = None
@@ -232,7 +244,7 @@ def test_executeRules_respects_hold(mock_read_config_dst, mock_read_config_src, 
     mock_read_config_src.return_value = mock_api_src_instance
     mock_read_config_dst.return_value = mock_api_dst_instance
 
-    rules = make_basic_rules(tmp_path)
+    rules = make_basic_rules(tmp_path, mock_rules_args)
     rules.more[("rss", "set", "src_nick", "posts")] = {"hold": "yes"}
     rules.executeRules()
     assert mock_execute_single_action.call_count == 1
@@ -240,8 +252,8 @@ def test_executeRules_respects_hold(mock_read_config_dst, mock_read_config_src, 
 
 @patch('socialModules.configMod.getModule', return_value=mock_api_instance)
 @patch('socialModules.configMod.getApi', return_value=mock_api_instance)
-def test_executeRules_handles_exceptions(mock_get_api, mock_get_module, tmp_path):
-    rules = make_basic_rules(tmp_path)
+def test_executeRules_handles_exceptions(mock_get_api, mock_get_module, tmp_path, mock_rules_args):
+    rules = make_basic_rules(tmp_path, mock_rules_args)
 
     def fake_single_action(scheduled_action):
         if scheduled_action["rule_action"] == "action2":
@@ -254,9 +266,9 @@ def test_executeRules_handles_exceptions(mock_get_api, mock_get_module, tmp_path
 
 @patch('socialModules.configMod.getModule', return_value=mock_api_instance)
 @patch('socialModules.configMod.getApi', return_value=mock_api_instance)
-def test_executeRules_with_checkBlog(mock_get_api, mock_get_module, tmp_path):
-    rules = make_basic_rules(tmp_path)
-    rules.args.checkBlog = "src1"
+def test_executeRules_with_checkBlog(mock_get_api, mock_get_module, tmp_path, mock_rules_args):
+    rules = make_basic_rules(tmp_path, mock_rules_args)
+    mock_rules_args.checkBlog = "src1"
     called = []
 
     def fake_single_action(scheduled_action):
@@ -269,16 +281,16 @@ def test_executeRules_with_checkBlog(mock_get_api, mock_get_module, tmp_path):
     assert all(a["rule_key"] == "src1" for a in called)
 
 @patch('socialModules.moduleRules.getApi', return_value=None)
-def test_readConfigSrc_fail(mock_get_api):
-    rules = moduleRules()
+def test_readConfigSrc_fail(mock_get_api, mock_rules_args):
+    rules = moduleRules(args=mock_rules_args)
     src = ('rss', 'set', 'some_nick', 'posts')
     more = {}
     apiSrc = rules.readConfigSrc('', src, more)
     assert apiSrc is None
 
 @patch('socialModules.moduleRules.getApi', return_value=None)
-def test_readConfigDst_fail(mock_get_api):
-    rules = moduleRules()
+def test_readConfigDst_fail(mock_get_api, mock_rules_args):
+    rules = moduleRules(args=mock_rules_args)
     action = ('direct', 'post', 'some_service', 'some_account')
     more = {}
     apiSrc = MagicMock()
@@ -303,10 +315,12 @@ def make_basic_scheduled_action():
 
 
 @patch('socialModules.moduleRules.moduleRules.readConfigSrc', return_value=None)
-def test_execute_single_action_readConfigSrc_fail(mock_read_config_src, tmp_path):
-    rules = moduleRules()
+def test_execute_single_action_readConfigSrc_fail(mock_read_config_src, tmp_path, mock_rules_args):
+    rules = moduleRules(args=mock_rules_args)
     # Mock rules.args and rules.more as they are expected by _execute_single_action
-    rules.args = MagicMock(simmulate=False, timeSlots=1, noWait=True)
+    mock_rules_args.simmulate = False
+    mock_rules_args.timeSlots = 1
+    mock_rules_args.noWait = True
     rules.more = {} 
 
     scheduled_action = make_basic_scheduled_action()
@@ -319,10 +333,12 @@ def test_execute_single_action_readConfigSrc_fail(mock_read_config_src, tmp_path
 
 @patch('socialModules.moduleRules.moduleRules.readConfigSrc', return_value=MagicMock())
 @patch('socialModules.moduleRules.moduleRules.readConfigDst', return_value=MagicMock(getClient=MagicMock(return_value=None)))
-def test_execute_single_action_readConfigDst_fail(mock_read_config_dst, mock_read_config_src, tmp_path):
-    rules = moduleRules()
+def test_execute_single_action_readConfigDst_fail(mock_read_config_dst, mock_read_config_src, tmp_path, mock_rules_args):
+    rules = moduleRules(args=mock_rules_args)
     # Mock rules.args and rules.more as they are expected by _execute_single_action
-    rules.args = MagicMock(simmulate=False, timeSlots=1, noWait=True)
+    mock_rules_args.simmulate = False
+    mock_rules_args.timeSlots = 1
+    mock_rules_args.noWait = True
     rules.more = {} 
 
     scheduled_action = make_basic_scheduled_action()
