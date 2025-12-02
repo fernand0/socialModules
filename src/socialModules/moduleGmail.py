@@ -569,6 +569,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
         if isinstance(text, bytes):
             extracted_text = text.decode("utf-8")
+        else:
+            extracted_text = text
 
         return extracted_text
 
