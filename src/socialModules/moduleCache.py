@@ -147,7 +147,7 @@ class moduleCache(Content):  # ,Queue):
         msgLog = f"{self.indent} Start setApiPosts"
         logMsg(msgLog, 2, 0)
         # fileNameQ = f"{self.fileNameBase(self.apiDst)}.queue"
-        # #FIXME: This fileNameBase must be replaced
+        #  #FIXME: This fileNameBase must be replaced
         if hasattr(self, 'action') and self.action[0] == 'cache':
             fileNameQ = f"{DATADIR}/{self.dst_fileName}.queue"
         else:
