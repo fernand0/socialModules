@@ -178,6 +178,9 @@ class moduleSmtp(Content):  # , Queue):
 
                     #     adj = MIMEText(htmlDoc, _subtype=subtype)
                     #     msg.attach(adj)
+            else:
+                fromaddr = msg["From"] 
+                toaddrs = msg["To"] 
 
             if not self.client:
                 smtpsrv = "localhost"
