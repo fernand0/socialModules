@@ -4,6 +4,7 @@ import smtplib
 import sys
 import time
 
+import email
 from email import encoders
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
