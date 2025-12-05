@@ -1166,8 +1166,9 @@ class moduleRules:
         pos=-1,
         delete=False,
     ):
-        # indent = f"{name}"
         indent = f""
+        if name:
+            indent = f"{name}"
         res = {"success": False, "error": "No execution"}
         textEnd = ""
 
@@ -1635,7 +1636,7 @@ class moduleRules:
                 noWait,
                 timeSlots,
                 simmulate,
-                nameA,
+                "", #Previously nameA
                 action_index,
             )
         finally:
