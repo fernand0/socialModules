@@ -1086,6 +1086,9 @@ class moduleRules:
         else:
             post = apiSrc.getPost(pos)
 
+        logging.info(f"{indent}Post: {post}")
+        logging.info(f"{indent}Post type: {type(post)}")
+
         if not post:
             msgLog = f"{indent}No post to schedule in {msgAction}"
             logMsg(msgLog, 1, self.args.verbose)
