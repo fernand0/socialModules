@@ -1226,8 +1226,11 @@ class Content:
                     logMsg(msgLog, 2, False)
                     reply = method(title, link, comment)
 
-            logging.info(f"Reply publish: {reply}")
+            msgLog = f"Reply publish: {reply}"
+            logMsg(msgLog, 2, False)
             reply = self.processReply(reply)
+            msgLog = f"Reply: {reply}"
+            logMsg(msgLog, 2, False)
 
             # Integrate publication cache if successful and auto_cache is enabled
             if self.getAutoCache():

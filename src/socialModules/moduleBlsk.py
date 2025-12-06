@@ -309,8 +309,8 @@ class moduleBlsk(Content):  # , Queue):
 
     def processReply(self, reply):
         res = ""
-        msgLog = f"{self.indent}Reply: {reply}"
-        logMsg(msgLog, 1, False)
+        # msgLog = f"{self.indent}Reply: {reply}"
+        # logMsg(msgLog, 1, False)
 
         if hasattr(reply, "uri"):
             # Success: The reply object has a 'uri', which is the post identifier.
