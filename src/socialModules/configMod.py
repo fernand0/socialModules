@@ -75,11 +75,14 @@ def logMsg(msgLog, log=1, print_to_console=True):
     elif log == 3:
         logging.warning(msgLog)
 
+    if hasattr(thread_local, 'nameA') and thread_local.nameA:
+        msgLog = f"{thread_local.nameA}{msgLog}"
+
     if print_to_console is True:
         print(f"{msgLog}")
     elif print_to_console == 2:
         print("====================================")
-        print("{}".format(msgLog))
+        print(f"{msgLog}")
         print("====================================")
 
 
