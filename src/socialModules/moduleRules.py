@@ -1112,7 +1112,8 @@ class moduleRules:
                 msgLog = f"{indent}Would schedule in {msgAction} {msgLog}"
                 logMsg(msgLog, 1, self.args.verbose)
                 result_dict["success"] = True
-                result_dict["publication_result"] = "No posting (simmulation)"
+                result_dict["publication_result"] = (f"No posting (simmulation)."
+                                                     f"{msgLog}")
                 result_dict["error"] = "Simulation"
             else:
                 publication_res = apiDst.publishPost(api=apiSrc, post=post)
@@ -1287,7 +1288,7 @@ class moduleRules:
             numAct = num
 
             msgLog = (
-                f"{indent}I'll publish {numAct} {theAction} "
+                f"{indent}I'll publish {numAct} in {theAction} "
                 f"from {apiSrc.getUrl()} "
                 f"in {self.getNickAction(action)}@"
                 f"{self.getProfileAction(action)}"
@@ -1681,7 +1682,7 @@ class moduleRules:
                 try:
                     thread_local.nameA = name_action
                     logMsg(
-                            f" Actions: [WARN] (Skipped) {summary_msg}", 
+                            f" Actions: [WARN] (Skipped). {summary_msg}", 
                             2, 
                             True,
                     )
@@ -1709,7 +1710,7 @@ class moduleRules:
             elif isinstance(res_dict, dict) and res_dict.get("success"):
                 pub_res = res_dict.get("publication_result", "N/A")
                 post_act = res_dict.get("post_action_result")
-                summary_msg = f"Success. Pub: '{pub_res}'"
+                summary_msg = f"Success. {pub_res}"
                 if post_act:
                     summary_msg += f". Post-Action: '{post_act}'"
                 summary_msg += "."
