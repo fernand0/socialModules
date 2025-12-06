@@ -453,13 +453,18 @@ class moduleWordpress(Content):  # ,Queue):
 
 def main():
     import logging
+    import sys
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
 
+    wordpress_module = moduleWordpress()
+    if len(sys.argv) > 1 and (sys.argv[1] == 'authenticate' or sys.argv[1] == 'authorize'):
+        wordpress_module.authorize()
+        sys.exit(0)
+
     from socialModules.moduleTester import ModuleTester
 
-    wordpress_module = moduleWordpress()
     tester = ModuleTester(wordpress_module)
     tester.run()
 
