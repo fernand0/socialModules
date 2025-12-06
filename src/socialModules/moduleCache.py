@@ -546,6 +546,8 @@ class moduleCache(Content):  # ,Queue):
             more = kwargs
             api = more["api"]
             post = more["post"]
+            title = self.getPostTitle(post)
+            link = self.getPostLink(post)
         # logging.debug(f"more: {more}")
         self.setPosts()
         # FIXME. Do we need this?
@@ -554,7 +556,7 @@ class moduleCache(Content):  # ,Queue):
         posts.append(more["post"])
         self.assignPosts(posts)
         self.updatePosts(more["api"])
-        return "OK. Published!"
+        return f"OK. Published! Title: {title} Link: {link}"
 
     def getPostId(self, post):
         idPost = ""
@@ -713,6 +715,9 @@ class moduleCache(Content):  # ,Queue):
         msgLog = f"{self.indent} Moved {self.getPostTitle(post)}"
         logMsg(msgLog, 1, False)
         return f"{self.getPostTitle(post)}"
+
+
+    #def processReply(self, reply):
 
     def register_specific_tests(self, tester):
         tester.add_test("Edit post title", self.test_edit_title)
