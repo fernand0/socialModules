@@ -61,7 +61,7 @@ console_handler.addFilter(ContextFilter())
 
 # Add handlers to root logger
 root_logger.addHandler(file_handler)
-root_logger.addHandler(console_handler)
+#root_logger.addHandler(console_handler)
 
 def logMsg(msgLog, log=1, print_to_console=True):
     # name_action = getattr(thread_local, 'nameA', None)

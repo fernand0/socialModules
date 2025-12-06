@@ -1663,7 +1663,8 @@ class moduleRules:
                     logMsg(
                             f" Actions: [OK] (Held) {summary_msg}",
                         1,
-                        self.args.verbose,
+                        #self.args.verbose,
+                        True,
                     )
                 finally:
                     thread_local.nameA = None
@@ -1682,7 +1683,7 @@ class moduleRules:
                     logMsg(
                             f" Actions: [WARN] (Skipped) {summary_msg}", 
                             2, 
-                            1,
+                            True,
                     )
                 finally:
                     thread_local.nameA = None
@@ -1701,7 +1702,7 @@ class moduleRules:
                     logMsg(
                         f"[OK] {summary_msg}",
                         1,
-                        1,
+                        True,
                     )
                 finally:
                     thread_local.nameA = None
@@ -1717,7 +1718,7 @@ class moduleRules:
                     logMsg(
                         f"[OK] {summary_msg}",
                         1,
-                        1,
+                        True,
                     )
                 finally:
                     thread_local.nameA = None
@@ -1728,7 +1729,7 @@ class moduleRules:
                     logMsg(
                         f"[ERROR] {error_msg}",
                         3,
-                        1,
+                        True,
                     )
                 finally:
                     thread_local.nameA = None
@@ -1739,7 +1740,7 @@ class moduleRules:
                     logMsg(
                         f"[WARN] Action produced an invalid result: {res_dict}",
                         2,
-                        1,
+                        True,
                     )
                 finally:
                     thread_local.nameA = None
@@ -1756,7 +1757,7 @@ class moduleRules:
                 logMsg(
                     f"[ERROR] {exc}",
                     3,
-                    1,
+                    True,
                 )
             finally:
                 thread_local.nameA = None
@@ -2210,7 +2211,7 @@ class moduleRules:
         parser.add_argument(
             "--verbose",
             "-v",
-            default=True,
+            default=False,
             action="store_true",
             help="Enable verbose output (print to console)",
         )

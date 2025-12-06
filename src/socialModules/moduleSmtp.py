@@ -101,83 +101,83 @@ class moduleSmtp(Content):  # , Queue):
                 link = api.getPostLink(thePost)
                 res = "Fail!"
 
-                    if self.to:
-                        destaddr = self.to
-                        toaddrs = self.to
+                if self.to:
+                    destaddr = self.to
+                    toaddrs = self.to
+                else:
+                    destaddr = self.user
+                    toaddrs = self.user
+                if hasattr(self, "fromaddr") and self.fromaddr:
+                    logging.info(f"{self.indent} 1")
+                    fromaddr = self.fromaddr
+                else:
+                    logging.info(f"{self.indent} 2")
+                    fromaddr = self.user
+                theUrl = link
+                if post:
+                    subject = post.split("\n")[0]
+                else:
+                    if link:
+                        subject = link
                     else:
-                        destaddr = self.user
-                        toaddrs = self.user
-                    if hasattr(self, "fromaddr") and self.fromaddr:
-                        logging.info(f"{self.indent} 1")
-                        fromaddr = self.fromaddr
-                    else:
-                        logging.info(f"{self.indent} 2")
-                        fromaddr = self.user
-                    theUrl = link
-                    if post:
-                        subject = post.split("\n")[0]
-                    else:
-                        if link:
-                            subject = link
-                        else:
-                            subject = "No subject"
+                        subject = "No subject"
 
-                    msg = MIMEMultipart()
-                    msg["From"] = fromaddr
-                    msg["To"] = destaddr
-                    msg["Date"] = time.asctime(time.localtime(time.time()))
-                    msg["X-URL"] = theUrl
-                    msg["X-print"] = theUrl
-                    msg["Subject"] = subject
+                msg = MIMEMultipart()
+                msg["From"] = fromaddr
+                msg["To"] = destaddr
+                msg["Date"] = time.asctime(time.localtime(time.time()))
+                msg["X-URL"] = theUrl
+                msg["X-print"] = theUrl
+                msg["Subject"] = subject
 
-                    # Construct the email body
-                    body_content = ""
-                    if comment:
-                        body_content = comment
-                    else:
-                        body_content = post
+                # Construct the email body
+                body_content = ""
+                if comment:
+                    body_content = comment
+                else:
+                    body_content = post
 
-                    htmlDoc = self._create_html_email(subject, link, body_content)
+                htmlDoc = self._create_html_email(subject, link, body_content)
 
-                    if comment:
-                        msgLog = f"{self.indent} Doc: {htmlDoc}"
-                        logMsg(msgLog, 2, False)
+                if comment:
+                    msgLog = f"{self.indent} Doc: {htmlDoc}"
+                    logMsg(msgLog, 2, False)
 
-                    subtype = "html"
-                    # if htmlDoc.startswith('<'):
-                    #     subtype = 'html'
-                    # else:
-                    #     subtype = 'plain'
+                subtype = "html"
+                # if htmlDoc.startswith('<'):
+                #     subtype = 'html'
+                # else:
+                #     subtype = 'plain'
 
-                    adj = MIMEText(htmlDoc, _subtype=subtype)
-                    msg.attach(adj)
+                adj = MIMEText(htmlDoc, _subtype=subtype)
+                msg.attach(adj)
 
-                    #     adj = MIMEApplication(htmlDoc)
-                    #     encoders.encode_base64(adj)
-                    #     name = 'content'
-                    #     ext = '.html'
+                #     adj = MIMEApplication(htmlDoc)
+                #     encoders.encode_base64(adj)
+                #     name = 'content'
+                #     ext = '.html'
 
-                    #     adj.add_header('Content-Disposition',
-                    #                    f'attachment; filename="{name}{ext}"')
-                    #     adj.add_header('Content-Type','application/octet-stream')
+                #     adj.add_header('Content-Disposition',
+                #                    f'attachment; filename="{name}{ext}"')
+                #     adj.add_header('Content-Type','application/octet-stream')
 
-                    #     msg.attach(adj)
+                #     msg.attach(adj)
 
-                    #     if htmlDoc.startswith('<'):
-                    #         subtype = 'html'
-                    #     else:
-                    #         subtype = 'plain'
+                #     if htmlDoc.startswith('<'):
+                #         subtype = 'html'
+                #     else:
+                #         subtype = 'plain'
 
-                    #     adj = MIMEText(htmlDoc, _subtype=subtype)
-                    #     msg.attach(adj)
-                    # else:
-                    #     if htmlDoc.startswith('<'):
-                    #         subtype = 'html'
-                    #     else:
-                    #         subtype = 'plain'
+                #     adj = MIMEText(htmlDoc, _subtype=subtype)
+                #     msg.attach(adj)
+                # else:
+                #     if htmlDoc.startswith('<'):
+                #         subtype = 'html'
+                #     else:
+                #         subtype = 'plain'
 
-                    #     adj = MIMEText(htmlDoc, _subtype=subtype)
-                    #     msg.attach(adj)
+                #     adj = MIMEText(htmlDoc, _subtype=subtype)
+                #     msg.attach(adj)
             else: # msg IS already an email.message.Message
                 fromaddr = msg["From"]
                 toaddrs = msg["To"]
