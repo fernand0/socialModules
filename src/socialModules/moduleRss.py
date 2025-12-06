@@ -70,7 +70,7 @@ class moduleRss(Content):  # , Queue):
 
     def setClient(self, feed):
         msgLog = f"{self.indent} Start setClient account: {feed}"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         self.indent = f"{self.indent} "
         self.service = None
         self.rssFeed = ""
@@ -98,11 +98,11 @@ class moduleRss(Content):  # , Queue):
 
         self.indent = self.indent[:-1]
         msgLog = f"{self.indent} End setClient"
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
 
     def setApiSearch(self):
         msgLog = f"{self.indent} Setting posts (search)"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
 
         posts = self.setApiPosts()
         search = self.getSearch()
@@ -120,14 +120,14 @@ class moduleRss(Content):  # , Queue):
 
     def setApiPosts(self):
         msgLog = f"{self.indent} Service {self.service} Start setApiPosts"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
 
         if self.rssFeed.find("http") >= 0:
             urlRss = self.getRssFeed()
         else:
             urlRss = urllib.parse.urljoin(self.url, self.getRssFeed())
         msgLog = f"{self.indent} Service {self.service} Feed: {urlRss}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         # if 'github.com' in urlRss:
         #     self.feed = feedparser.parse(urlRss,
         #             request_headers={'Accept':'application/atom+xml'})
@@ -142,7 +142,7 @@ class moduleRss(Content):  # , Queue):
             )
 
         msgLog = f"{self.indent} Service {self.service} Feed content: {self.feed}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         posts = self.feed.entries
         if hasattr(self.feed.feed, "title"):
             self.title = self.feed.feed.title
@@ -150,7 +150,7 @@ class moduleRss(Content):  # , Queue):
             self.title = self.user
 
         msgLog = f"{self.indent} Service {self.service} End setApiPosts"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         return posts
 
     def getSiteTitle(self):

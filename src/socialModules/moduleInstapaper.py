@@ -24,7 +24,7 @@ class moduleInstapaper(Content):
 
     def initApi(self, keys):
         msgLog = f"{self.indent} Service {self.service} Start initApi {self.user}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         self.postaction = "archive"
 
         instapaper_key, instapaper_secret, email, password = keys
@@ -33,7 +33,7 @@ class moduleInstapaper(Content):
         client = ipaper(instapaper_key, instapaper_secret)
         client.login(email, password)
         msgLog = f"{self.indent} service {self.service} End initApi"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         return client
 
     def setApiPosts(self):
@@ -54,7 +54,7 @@ class moduleInstapaper(Content):
             title = self.getPostTitle(reply)
             # res = f"{title} https://getinstapaper.com/read/{idPost}" # Adjust URL if necessary
         msgLog = f"     Res: {res}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         return res
 
     def publishApiPost(self, *args, **kwargs):
@@ -67,19 +67,19 @@ class moduleInstapaper(Content):
 
     def archive(self, j):
         msgLog = "Archiving %d" % j
-        logMsg(msgLog, 1, 0)
+        logMsg(msgLog, 1, False)
         post = self.getPost(j)
         title = self.getPostTitle(post)
         idPost = self.getPostId(post)
         logging.info(f"Post {post}")
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         logging.info(f"Title {title}")
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         logging.info(f"Id {idPost}")
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         rep = self.archiveId(idPost)
         msgLog = f"Rep: {rep}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         if "Archived" in rep:
             self.posts = self.posts[:j] + self.posts[j + 1 :]
         return rep

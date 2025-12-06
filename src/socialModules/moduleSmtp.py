@@ -100,7 +100,7 @@ class moduleSmtp(Content):  # , Queue):
                 post = api.getPostTitle(thePost)
                 link = api.getPostLink(thePost)
                 res = "Fail!"
-                if True:
+
                     if self.to:
                         destaddr = self.to
                         toaddrs = self.to
@@ -141,7 +141,7 @@ class moduleSmtp(Content):  # , Queue):
 
                     if comment:
                         msgLog = f"{self.indent} Doc: {htmlDoc}"
-                        logMsg(msgLog, 2, 0)
+                        logMsg(msgLog, 2, False)
 
                     subtype = "html"
                     # if htmlDoc.startswith('<'):
@@ -178,9 +178,10 @@ class moduleSmtp(Content):  # , Queue):
 
                     #     adj = MIMEText(htmlDoc, _subtype=subtype)
                     #     msg.attach(adj)
-            else:
-                fromaddr = msg["From"] 
-                toaddrs = msg["To"] 
+            else: # msg IS already an email.message.Message
+                fromaddr = msg["From"]
+                toaddrs = msg["To"]
+                destaddr = toaddrs # If msg is an email, destaddr should be the same as toaddrs
 
             if not self.client:
                 smtpsrv = "localhost"
@@ -203,9 +204,9 @@ class moduleSmtp(Content):  # , Queue):
                     server.login(self.user, self.password)
 
             # msgLog = f"From: {fromaddr} To:{toaddrs}"
-            # logMsg(msgLog, 2, 0)
+            # logMsg(msgLog, 2, False)
             # msgLog = f"Msg: {msg.as_string()[:250]}"
-            # logMsg(msgLog, 2, 0)
+            # logMsg(msgLog, 2, False)
 
             try:
                 res = server.sendmail(fromaddr, toaddrs, msg.as_string())

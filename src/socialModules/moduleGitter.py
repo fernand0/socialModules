@@ -38,7 +38,7 @@ class moduleGitter(Content):  # ,Queue):
             client = gitterpy.client.GitterClient(self.token)
         except:
             msgLog = "Account not configured"
-            logMsg(msgLog, 3, 0)
+            logMsg(msgLog, 3, False)
             if sys.exc_info()[0]:
                 # logging.warning("Unexpected error: {}".format(
                 #     sys.exc_info()[0]))
@@ -67,7 +67,7 @@ class moduleGitter(Content):  # ,Queue):
         if not self.channel:
             # It will set the owner channel by default
             msgLog = f"No channel defined, setting the first one (if any)"
-            logMsg(msgLog, 3, 0)
+            logMsg(msgLog, 3, False)
             self.setChannel()
         posts = []
         try:
@@ -166,7 +166,7 @@ class moduleGitter(Content):  # ,Queue):
 
     def getChanId(self, name):
         msgLog = "{self.indent} getChanId {self.service}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
 
         chanList = self.getClient().rooms.rooms_list
         for channel in chanList:

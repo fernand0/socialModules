@@ -156,10 +156,11 @@ def make_basic_rules(tmp_path, mock_rules_args):
     """
     config_file = make_config_file(tmp_path, config_content)
     rules.checkRules(configFile=config_file)
-    mock_rules_args.checkBlog = ""
-    mock_rules_args.simmulate = False
-    mock_rules_args.noWait = True
-    mock_rules_args.timeSlots = 1
+    rules.args = MagicMock(verbose=True)
+    rules.args.checkBlog = ""
+    rules.args.simmulate = False
+    rules.args.noWait = True
+    rules.args.timeSlots = 1
     return rules
 
 # Mock API instance for consistent behavior across tests

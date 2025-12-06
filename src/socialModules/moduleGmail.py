@@ -29,7 +29,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def initApi(self, keys):
         self.service = "Gmail"
         msgLog = f"{self.indent} initApi {self.service}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         self.scopes = [
             "https://www.googleapis.com/auth/gmail.readonly",
             "https://www.googleapis.com/auth/gmail.labels",
@@ -54,7 +54,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         api = self.getClient()
         label_id = self.getLabelId(labelName)
         msgLog = f"{self.indent} Label id: {label_id}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         return api.users().labels().delete(userId="me", id=label_id).execute()
 
     def updateLabel(self, label_id, labelName):
@@ -227,14 +227,14 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         try:
             self.getClient().users().getProfile(userId='me').execute()
         except Exception as e:
-            logMsg(f"Gmail connection issue detected: {e}", 3, 0)
+            logMsg(f"Gmail connection issue detected: {e}", 3, False)
             self.setClient(f"{self.user}")
             try:
                 self.getClient().users().getProfile(userId='me').execute()
-                logMsg("Gmail reconnection successful.", 1, 0)
+                logMsg("Gmail reconnection successful.", 1, False)
             except Exception as e:
                 log_msg = f"Gmail reconnection failed for user {self.user}."
-                logMsg(f"{log_msg} Error: {e}", 3, 0)
+                logMsg(f"{log_msg} Error: {e}", 3, False)
                 self.report(self.service, "", "", sys.exc_info())
                 raise ConnectionError(log_msg) from e
 
@@ -249,7 +249,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def setApiMessages(self, label=None, mode=""):
         msgLog = f"{self.indent} Label: {label}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         if isinstance(label, str):
             if not label:
                 label = "INBOX"
@@ -258,10 +258,10 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
             if len(label) > 0:
                 label = label[0]
                 msgLog = f"{self.indent} Label: {label}"
-                logMsg(msgLog, 2, 0)
+                logMsg(msgLog, 2, False)
             else:
                 msgLog = f"{self.indent} The label does not exist"
-                logMsg(msgLog, 2, 0)
+                logMsg(msgLog, 2, False)
         if label:
             posts = self.getListLabel(label["id"])
         else:
@@ -427,7 +427,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def getPostContentHtml(self, post):
         msgLog = f"{self.indent} getPostDate"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         # message = self.getMessageId(self.getPostId(post))
         if post:
             snippet = self.getHeader(post, "snippet")
@@ -453,10 +453,10 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         theLink = ""
         if post:
             msgLog = f"{self.indent} Post: {post}"
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
             links = self.getPostLinks(post)
             msgLog = f"{self.indent} Links: {links}"
-            logMsg(msgLog, 2, 0)
+            logMsg(msgLog, 2, False)
             if links:
                 theLink = links[0]
 
@@ -466,9 +466,9 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def getApiPostTitle(self, post):
         msgLog = f"{self.indent} getPostTitle"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         # msgLog = f"{self.indent} {post}"
-        # logMsg(msgLog, 2, 0)
+        # logMsg(msgLog, 2, False)
         title = ""
         if post:
             title = self.getHeader(post)
@@ -476,9 +476,9 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def getPostDate(self, post):
         msgLog = f"{self.indent} getPostDate"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         # msgLog = f"{self.indent} Post: {post}"
-        # logMsg(msgLog, 2, 0)
+        # logMsg(msgLog, 2, False)
         if post:
             date = self.getHeader(post, "internalDate")
             # date = int(self.getHeader(post,'internalDate'))/1000
@@ -489,9 +489,9 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def getHeader(self, message, header="Subject"):
         msgLog = f"{self.indent} getHeader {header}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         msgLog = f"{self.indent} Message: {message}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         # if "message" in message:
         #     message = message["message"]
         if "meta" in message:
@@ -596,16 +596,16 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         api = self.getClient()
         results = self.getLabelList()
         msgLog = f"{self.indent} Labels: {results}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         msgLog = f"{self.indent} Name: {name}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         labelId = None
         for label in results:
             if (label["name"].lower() == name.lower()) or (
                 label["name"].lower() == name.lower().replace("-", " ")
             ):
                 msgLog = f"{self.indent} {label}"
-                logMsg(msgLog, 2, 0)
+                logMsg(msgLog, 2, False)
                 labelId = label["id"]
                 break
 
@@ -681,9 +681,9 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def edit(self, j, newTitle):
         msgLog = f"{self.indent} edit"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         msgLog = f"{self.indent} New title: {newTitle}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         thePost = self.obtainPostData(j)
         oldTitle = thePost[0]
         # logging.info("servicename %s" %self.service)
@@ -710,7 +710,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         )
 
         msgLog = f"{self.indent} Update {update}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         update = "Changed " + title + " with " + newTitle
         return update
 
@@ -748,9 +748,9 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def trash(self, j, typePost="drafts"):
         msgLog = f"{self.indent} trash"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         msgLog = f"{self.indent} Trashing {j}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
 
         api = self.getClient()
         idPost = self.getPosts()[j]["list"]["id"]  # thePost[-1]
@@ -779,21 +779,21 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         api = self.getClient()
         result = api.users().messages().trash(userId="me", id=idPost).execute()
         msgLog = f"{self.indent} Res: {result}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         return result
 
     def deleteApiPostDelete(self, idPost):
         api = self.getClient()
         result = api.users().messages().delete(userId="me", id=idPost).execute()
         msgLog = f"{self.indent} Res: {result}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         return result
 
     def delete(self, j):
         msgLog = f"{self.indent} getHeader"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
         msgLog = f"{self.indent} Deleting {j}"
-        logMsg(msgLog, 2, 0)
+        logMsg(msgLog, 2, False)
 
         typePost = self.getPostsType()
         # logging.info(f"Deleting {typePost}")
@@ -877,7 +877,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
             else:
                 subj = ""
             msgLog = f"{self.indent} Subject {subj}"
-            logMsg(msgLog, 1, 0)
+            logMsg(msgLog, 1, False)
         else:
             if "raw" in message:
                 mesGE = message["raw"]
@@ -902,7 +902,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
             # https://github.com/google/import-mailbox-to-gmail/blob/master/import-mailbox-to-gmail.py
 
             msgLog = f"{self.indent} Fail 1! Trying another method."
-            logMsg(msgLog, 3, 0)
+            logMsg(msgLog, 3, False)
 
             try:
                 if not isinstance(message, dict):
@@ -932,7 +932,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 # logging.info("messageR method")
             except:
                 msgLog = "Error with message %s" % message
-                logMsg(msgLog, 3, 0)
+                logMsg(msgLog, 3, False)
                 return "Fail 2!"
 
         msg_labels = {"removeLabelIds": [], "addLabelIds": ["UNREAD", labelId]}
