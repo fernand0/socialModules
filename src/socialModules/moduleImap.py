@@ -176,7 +176,7 @@ class moduleImap(Content):  # , Queue):
             self.setChannel()
             channel = self.getChannel()
         postsN = self.listMessages(self.getClient(), channel)
-        posts =  [element[1] for element in postsN]
+        posts = postsN #[element[1] for element in postsN]
         # self.listMessages(self.getClient(), channel)
         return posts
 
@@ -1433,8 +1433,11 @@ class moduleImap(Content):  # , Queue):
 
     def deleteApiPosts(self, idPost):
         try:
+            if isinstance(idPost, int):
+                idPost = str(idPost)
+            print(f"IdPostttt: {idPost}")
             res = self.moveMails(
-                self.getClient(), str(idPost).encode(), self.special["Trash"]
+                self.getClient(), idPost, self.special["Trash"]
             )
         except:
             logging.warning("Some error moving mails to Trash")
@@ -1459,6 +1462,7 @@ class moduleImap(Content):  # , Queue):
 
         msgLog = f"Copying {len(msgs.split(','))} messages to {folder}"
         logMsg(msgLog, 1, False)
+        print(f"Msgssss: {msgs} {type(msgs)}")
 
         res = "OK"
         msgList = msgs.split(',')
@@ -1529,8 +1533,8 @@ class moduleImap(Content):  # , Queue):
         else:
             # If not multipart, extract HTML directly if present
             if post.get_content_type() == "text/html":
-                payload = part.get_payload(decode=True)
-                charset = part.get_content_charset() or "utf-8"
+                payload = post.get_payload(decode=True)
+                charset = post.get_content_charset() or "utf-8"
                 html = payload.decode(charset, errors="replace")
                 mail_content = html
             else:
