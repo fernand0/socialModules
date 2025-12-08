@@ -559,7 +559,7 @@ class moduleRules:
             if is_success:
                 result_dict["error"] = None
                 result_dict["successful"] = 1
-                result_dict["response_links"] = [ publication_res, ]
+                result_dict["response_links"] = {'item': publication_res, }
             resUpdate = apiDst.updateLastLink(apiSrc, link)
 
             # Use the unified publishing method
@@ -571,6 +571,7 @@ class moduleRules:
             # )
             print(f"Res: {resUpdate}")
             summary = result_dict #self.get_publication_summary(results)
+            summary['failed'] = 0
             print(f"Summary: {summary}")
             print("\n--- Publication Summary ---")
             print(f"Total attempts: {summary['total']}")

@@ -1507,8 +1507,9 @@ class moduleImap(Content):  # , Queue):
 
     def getPostContentHtml(self, msg):
         """
-        Extracts the HTML content from an email message, using the _extract_text helper for decoding.
-        Returns the concatenated HTML text from all relevant parts.
+        Extracts the HTML content from an email message, using the
+        _extract_text helper for decoding.  Returns the concatenated HTML text
+        from all relevant parts.
         """
         post = msg[1] if isinstance(msg, tuple) else msg
         mail_content = ""
@@ -1521,11 +1522,17 @@ class moduleImap(Content):  # , Queue):
                     continue
                 # Only extract HTML parts
                 if part.get_content_type() == "text/html":
-                    mail_content += self._extract_text(part)
+                    payload = part.get_payload(decode=True)
+                    charset = part.get_content_charset() or "utf-8"
+                    html = payload.decode(charset, errors="replace")
+                    mail_content += html
         else:
             # If not multipart, extract HTML directly if present
             if post.get_content_type() == "text/html":
-                mail_content = self._extract_text(post)
+                payload = part.get_payload(decode=True)
+                charset = part.get_content_charset() or "utf-8"
+                html = payload.decode(charset, errors="replace")
+                mail_content = html
             else:
                 mail_content = ""
 
