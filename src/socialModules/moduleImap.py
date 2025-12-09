@@ -1702,6 +1702,12 @@ class moduleImap(Content):  # , Queue):
         return pos
 
     def getPostId(self, msg):
+        pos = -1
+        if isinstance(msg, tuple):
+            pos = msg[0]
+        return pos
+
+    def getPostIdM(self, msg):
         if isinstance(msg, tuple):
             post = msg[1]
         else:
