@@ -1010,7 +1010,9 @@ class moduleRules:
         logMsg(msgLog, 1, self.args.verbose)
         postaction = apiSrc.getPostAction()
         if postaction:
-            msgLog = f"{indent}Post Action {postaction} " f"(nextPost = {nextPost})"
+            msgLog = (f"{indent}Post Action {postaction} " 
+                      f"(nextPost = {nextPost})"
+                      )
             logMsg(msgLog, 1, self.args.verbose)
 
             if "OK. Published!" in res:
