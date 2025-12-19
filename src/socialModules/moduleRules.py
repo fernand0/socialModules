@@ -135,6 +135,8 @@ class moduleRules:
         msgLog = f"{self.indent} Url: {url}"
         logMsg(msgLog, 1, self.args.verbose)
         section_metadata = dict(config.items(section))
+        # Save the section name in section_metadata for traceability
+        section_metadata['section_name'] = section
         toAppend, theService, api = self._process_sources(section, config, services, url, section_metadata, sources, sources_available, more)
         fromSrv = toAppend
         msgLog = f"{self.indent} We will append: {toAppend}"
@@ -160,8 +162,6 @@ class moduleRules:
             logMsg(msgLog, 1, False)
             self._process_destinations(section, config, service, services, fromSrv, section_metadata, api, destinations, temp_rules, rule_metadata, implicit_rules)
         self._process_rule_keys(section_metadata, services, fromSrv, rulesNew, rule_metadata)
-        # Save the section name in section_metadata for traceability
-        section_metadata['section_name'] = section
         self.indentLess()
 
     def _process_sources(self, section, config, services, url, section_metadata, sources, sources_available, more):
@@ -1530,9 +1530,9 @@ class moduleRules:
             for action_index, rule_action in enumerate(rule_actions):
                 # Rule selection if --checkBlog is used
                 nameA =  f"{name_action} Action {action_index}:"
-                nameRule = f"{self.getNameRule(rule_key).lower()}{i}"
+                section_name = rule_metadata.get("section_name", "") if rule_metadata else ""
 
-                if select and (select.lower() != nameRule):
+                if select and (select.lower() != section_name.lower()):
                     continue
 
                 timeSlots, noWait = self._get_action_properties(
