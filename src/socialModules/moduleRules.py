@@ -1704,7 +1704,7 @@ class moduleRules:
                 try:
                     thread_local.nameA = name_action
                     logMsg(
-                        f"[OK] {summary_msg}",
+                        f" [OK] {summary_msg}",
                         1,
                         True,
                     )

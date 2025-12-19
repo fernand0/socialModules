@@ -27,7 +27,10 @@ class moduleInstapaper(Content):
         # Add Instapaper authorization logic here
 
     def initApi(self, keys):
-        msgLog = f"{self.indent} Service {self.service} Start initApi {self.user}"
+        msgLog = (
+                f"{self.indent} Service {self.service} Start initApi " 
+                f"{self.user}"
+                )
         logMsg(msgLog, 2, False)
         self.postaction = "archive"
 
