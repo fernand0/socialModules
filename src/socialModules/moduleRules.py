@@ -1530,9 +1530,9 @@ class moduleRules:
             for action_index, rule_action in enumerate(rule_actions):
                 # Rule selection if --checkBlog is used
                 nameA =  f"{name_action} Action {action_index}:"
-                section_name = rule_metadata.get("section_name", "") if rule_metadata else ""
+                nameRule = f"{self.getNameRule(rule_key).lower()}{i}"
 
-                if select and (select.lower() != section_name.lower()):
+                if select and (select.lower() != nameRule):
                     continue
 
                 timeSlots, noWait = self._get_action_properties(
