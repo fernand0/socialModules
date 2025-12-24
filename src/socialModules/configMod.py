@@ -47,11 +47,24 @@ formatter = logging.Formatter(
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
+if not os.path.exists(LOGDIR):
+    try:
+        os.makedirs(LOGDIR)
+    except OSError as e:
+        sys.stderr.write(f"Error creating log directory {LOGDIR}: {e}\n")
+
+if os.path.exists(LOGDIR) and not os.access(LOGDIR, os.W_OK):
+    sys.stderr.write(f"Error: No write permissions for log directory {LOGDIR}\n")
+
 # Create and configure file handler
-file_handler = logging.FileHandler(f"{LOGDIR}/rssSocial.log")
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(formatter)
-file_handler.addFilter(ContextFilter())
+try:
+    file_handler = logging.FileHandler(f"{LOGDIR}/rssSocial.log")
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
+    file_handler.addFilter(ContextFilter())
+    root_logger.addHandler(file_handler)
+except Exception as e:
+    sys.stderr.write(f"Error setting up file handler: {e}\n")
 
 # Create and configure console handler
 console_handler = logging.StreamHandler(sys.stdout)
@@ -60,7 +73,7 @@ console_handler.setFormatter(formatter)
 console_handler.addFilter(ContextFilter())
 
 # Add handlers to root logger
-root_logger.addHandler(file_handler)
+# root_logger.addHandler(file_handler)
 #root_logger.addHandler(console_handler)
 
 def logMsg(msgLog, log=1, print_to_console=True):
