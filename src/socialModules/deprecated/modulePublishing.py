@@ -1,5 +1,3 @@
-<moved to deprecated>
-
 import configparser
 import logging
 import os

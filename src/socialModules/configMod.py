@@ -168,7 +168,7 @@ def checkLastLink(url, socialNetwork=()):
 
 def newUpdateLastLink(url, link, lastLink, socialNetwork=()):
     if isinstance(lastLink, list):
-        link = "\n".join(["{}".format(post[1]) for post in listPosts])
+        link = "\n".join(["{}".format(post[1]) for post in lastLink])
         link = link + "\n" + "\n".join(lastLink)
 
     fileName = fileNamePath(url, socialNetwork) + ".last"
@@ -185,11 +185,6 @@ def newUpdateLastLink(url, link, lastLink, socialNetwork=()):
 
 
 def updateLastLink(url, link, socialNetwork=(), indent=""):
-    try:
-        # FIXME: not self here
-        indent = self.indent
-    except:
-        indent = ""
     msgLog = f"{indent} updateLastLink {socialNetwork}"
     logMsg(msgLog, 1, 0)
     msgLog = f"{indent} Url: {url} Link: {link} " f"SocialNetwork: {socialNetwork}"
