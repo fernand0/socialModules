@@ -253,7 +253,7 @@ class moduleWordpress(Content):  # ,Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        print(f"Args: {args} kwargs: {kwargs}")
+        # print(f"Args: {args} kwargs: {kwargs}")
         tags = []
         # if args and len(args)>3:
         #     tags = postData[3]
@@ -271,7 +271,7 @@ class moduleWordpress(Content):  # ,Queue):
             pos = api.getLinkPosition(link)
             comment = api.getImagesCode(pos)
             tags = api.getImagesTags(pos)
-            print(f"Comment: {comment}")
+            # print(f"Comment: {comment}")
 
         if tags:
             idTags = self.checkTags(tags)
@@ -279,10 +279,10 @@ class moduleWordpress(Content):  # ,Queue):
             idTags = ",".join(str(v) for v in idTags)
         else:
             idTags = ""
-        print(f"title: {title}")
-        print(f"link: {link}")
-        print(f"content: {comment}")
-        print(f"tags: {tags}")
+        # print(f"title: {title}")
+        # print(f"link: {link}")
+        # print(f"content: {comment}")
+        # print(f"tags: {tags}")
 
         payload = {
             "title": title,
@@ -296,7 +296,7 @@ class moduleWordpress(Content):  # ,Queue):
             headers=self.headers,
             data=payload,
         )
-        print(f"Resss: {res}")
+        #print(f"Resss: {res}")
         return res
 
     # def publishPostt(self, post, link='', comment='', tags=[]):
@@ -453,13 +453,18 @@ class moduleWordpress(Content):  # ,Queue):
 
 def main():
     import logging
+    import sys
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
 
+    wordpress_module = moduleWordpress()
+    if len(sys.argv) > 1 and (sys.argv[1] == 'authenticate' or sys.argv[1] == 'authorize'):
+        wordpress_module.authorize()
+        sys.exit(0)
+
     from socialModules.moduleTester import ModuleTester
 
-    wordpress_module = moduleWordpress()
     tester = ModuleTester(wordpress_module)
     tester.run()
 

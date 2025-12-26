@@ -225,7 +225,7 @@ class Content:
         try:
             return post.get(selector, "")
         except:
-            print(f"Attribute: {post}")
+            #print(f"Attribute: {post}")
             return ""
         # result = ""
         # try:
@@ -569,7 +569,7 @@ class Content:
             if os.path.isfile(fileName):
                 lastTime2 = os.path.getctime(fileName)
             myLastLink2 = self.getLastLinkNew(other)
-            print(f"myLastLink2: {myLastLink2} {lastTime2}")
+            #print(f"myLastLink2: {myLastLink2} {lastTime2}")
             return myLastLink2, lastTime2
         try:
             # url = self.getUrl()
@@ -837,7 +837,7 @@ class Content:
         # FIXME: use some template system.
         res = self.getImages(i)
         # print(self.getPosts()[i])
-        print(f"imagesCode: {res}")
+        # print(f"imagesCode: {res}")
         url = self.getPostLink(self.getPosts()[i])
         text = ""
         for iimg in res:
@@ -1226,8 +1226,11 @@ class Content:
                     logMsg(msgLog, 2, False)
                     reply = method(title, link, comment)
 
-            logging.info(f"Reply publish: {reply}")
+            msgLog = f"Reply publish: {reply}"
+            logMsg(msgLog, 2, False)
             reply = self.processReply(reply)
+            msgLog = f"Reply: {reply}"
+            logMsg(msgLog, 2, False)
 
             # Integrate publication cache if successful and auto_cache is enabled
             if self.getAutoCache():

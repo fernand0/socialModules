@@ -69,22 +69,28 @@ class moduleHtml(Content): #, Queue):
 
         # First and second attempts with requests
         try:
-            retry_strategy = Retry(
-                total=2,  # Two attempts
-                backoff_factor=1,
-                status_forcelist=[429, 500, 502, 503, 504],
-                allowed_methods=["HEAD", "GET", "OPTIONS"]
-            )
-            adapter = HTTPAdapter(max_retries=retry_strategy)
-            http = requests.Session()
-            http.mount("https://", adapter)
-            http.mount("http://", adapter)
+            if 'medium' in url_to_download:
+                headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+                response = requests.get(url_to_download, headers=headers)
+            else:
+                retry_strategy = Retry(
+                    total=2,  # Two attempts
+                    backoff_factor=1,
+                    status_forcelist=[429, 500, 502, 503, 504],
+                    allowed_methods=["HEAD", "GET", "OPTIONS"]
+                )
+                adapter = HTTPAdapter(max_retries=retry_strategy)
+                http = requests.Session()
+                http.mount("https://", adapter)
+                http.mount("http://", adapter)
 
-            from requests.packages.urllib3.exceptions import InsecureRequestWarning
-            requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+                from requests.packages.urllib3.exceptions import InsecureRequestWarning
+                requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+                headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
 
-            response = http.get(url_to_download, verify=False, timeout=10)
-            print(f"Enc: {response.encoding}")
+                response = http.get(url_to_download,
+                                    verify=False, timeout=10, headers=headers)
+                print(f"Enc: {response.encoding}")
             response.raise_for_status()
 
         except requests.exceptions.RequestException as e:
@@ -291,6 +297,16 @@ class moduleHtml(Content): #, Queue):
                     logging.warning(f"Failed to download content from {url}")
             except DownloadError as e:
                 logging.error(f"Download error for {url}: {e}")
+
+    def getPostId(self, url, service=""):
+        # FIXME: does it belong here?
+        if service:
+            url = url.replace(service, "")
+        url = url.replace("https", "").replace("http", "")
+        url = url.replace("---", "").replace(".com", "")
+        url = url.replace("-(", "(").replace("- ", " ")
+        url = url.replace(":", "").replace("/", "")
+        return url
 
     def getPostContent(self, html_content):
         """

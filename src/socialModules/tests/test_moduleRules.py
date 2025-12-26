@@ -267,18 +267,42 @@ def test_executeRules_handles_exceptions(mock_get_api, mock_get_module, tmp_path
 @patch('socialModules.configMod.getModule', return_value=mock_api_instance)
 @patch('socialModules.configMod.getApi', return_value=mock_api_instance)
 def test_executeRules_with_checkBlog(mock_get_api, mock_get_module, tmp_path, mock_rules_args):
-    rules = make_basic_rules(tmp_path, mock_rules_args)
-    mock_rules_args.checkBlog = "src1"
-    called = []
+    rules = moduleRules(args=mock_rules_args)
+    config_content = """
+    [blog1]
+    url = http://example.com/rss
+    service = rss
+    rss = src_nick
+    posts = posts
+    direct = telegram
+    telegram = dst_account_1
 
+    [blog2]
+    url = http://another.com/rss
+    service = mastodon
+    mastodon = user2
+    posts = posts
+    direct = slack
+    """
+    config_file = make_config_file(tmp_path, config_content)
+    rules.checkRules(configFile=config_file)
+    rules.args = mock_rules_args
+    rules.args.checkBlog = "blog1" # Filter for blog1
+    rules.args.simmulate = False
+    rules.args.noWait = True
+    rules.args.timeSlots = 1
+
+    called = []
     def fake_single_action(scheduled_action):
         called.append(scheduled_action)
         return "ok"
 
     with patch('socialModules.moduleRules.moduleRules._execute_single_action', side_effect=fake_single_action):
         rules.executeRules()
-    # Only actions from src1
-    assert all(a["rule_key"] == "src1" for a in called)
+
+    # Only actions from blog1 should be called
+    assert len(called) == 1
+    assert all(action['rule_metadata']['section_name'] == 'blog1' for action in called)
 
 @patch('socialModules.moduleRules.getApi', return_value=None)
 def test_readConfigSrc_fail(mock_get_api, mock_rules_args):

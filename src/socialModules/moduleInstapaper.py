@@ -2,7 +2,9 @@
 
 import configparser
 import os
+import sys
 
+import instapaper
 from instapaper import Instapaper as ipaper
 
 from socialModules.configMod import *
@@ -13,28 +15,43 @@ class moduleInstapaper(Content):
     def getKeys(self, config):
         instapaper_key = config.get(self.user, "instapaper_key")
         instapaper_secret = config.get(self.user, "instapaper_secret")
+        oauth_consumer_id = config.get(self.user, "oauth_consumer_id")
+        oauth_consumer_secret = config.get(self.user, "oauth_consumer_secret")
         email = config.get(self.user, "email")
         password = config.get(self.user, "password")
 
-        return (instapaper_key, instapaper_secret, email, password)
+        return (instapaper_key, instapaper_secret, email, password, oauth_consumer_id, oauth_consumer_secret)
 
     def authorize(self):
         logging.info("Starting authorize process")
         # Add Instapaper authorization logic here
 
     def initApi(self, keys):
-        msgLog = f"{self.indent} Service {self.service} Start initApi {self.user}"
+        msgLog = (
+                f"{self.indent} Service {self.service} Start initApi " 
+                f"{self.user}"
+                )
         logMsg(msgLog, 2, False)
         self.postaction = "archive"
 
-        instapaper_key, instapaper_secret, email, password = keys
-        # client = Instapaper(consumer_key=consumer_key, access_token=access_token)
+        instapaper_key, instapaper_secret, email, password, oauth_consumer_id, oauth_consumer_secret = keys
+        # client = Instapaper(consumer_key=oauth_consumer_id, access_token=access_secret)
         # client = None # Replace with actual Instapaper client initialization
-        client = ipaper(instapaper_key, instapaper_secret)
+        client = ipaper(oauth_consumer_id, oauth_consumer_secret)
         client.login(email, password)
         msgLog = f"{self.indent} service {self.service} End initApi"
         logMsg(msgLog, 2, False)
         return client
+
+    def get_user_info(self, client):
+        me = client.get_user()
+        return f"{me.get('username', 'Unknown')}"
+
+    def get_post_id_from_result(self, result):
+        return result
+
+    def register_specific_tests(self, tester):
+        pass
 
     def setApiPosts(self):
         posts = []
@@ -58,8 +75,31 @@ class moduleInstapaper(Content):
         return res
 
     def publishApiPost(self, *args, **kwargs):
-        # Add Instapaper API call to publish a post here
-        return "Not implemented"
+        title = ""
+        if args and len(args) == 3:
+            # logging.info(f"Tittt: args: {args}")
+            title, link, comment = args
+        comment = ""
+        if kwargs:
+            # logging.info(f"Tittt: kwargs: {kwargs}")
+            more = kwargs
+            post = more.get("post", "")
+            api = more.get("api", "")
+            title = api.getPostTitle(post)
+            link = api.getPostLink(post)
+
+        post = self.addComment(title, comment)
+        res = "Fail!"
+        try:
+            b = instapaper.Bookmark( 
+                                self.getClient(), {"url": link}
+                                )
+            res = b.save()
+        except:
+            res = self.report(self.getService(), kwargs, "", sys.exc_info())
+            res = f"Fail! {res}"
+        logging.info(f"Res: {res}")
+        return res
 
     def archiveId(self, idPost):
         # Add Instapaper API call to archive a post here
@@ -95,7 +135,10 @@ class moduleInstapaper(Content):
 
     def getPostId(self, post):
         idPost = ""
-        # Extract ID from Instapaper post object
+        if isinstance(post, str):
+            idPost = post
+        else:
+            idPost = self.getAttribute(post, "bookmark_id")
         return idPost
 
     def getApiPostLink(self, post):
@@ -112,24 +155,13 @@ def main():
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
 
-    import socialModules.moduleRules
-
-    rules = socialModules.moduleRules.moduleRules()
-    rules.checkRules()
-
-    # Example of how to use the module
-    # for key in rules.rules.keys():
-    #     if ((key[0] == 'instapaper')
-    #             and (key[2] == 'YourUser')):
-    #         apiSrc = rules.readConfigSrc("", key, rules.more[key])
-    #
-    #         try:
-    #             apiSrc.setPosts()
-    #         except:
-    #             apiSrc.authorize()
-    #         for post in apiSrc.getPosts():
-    #                 print(f"Title: {apiSrc.getPostTitle(post)}")
+    from socialModules.moduleTester import ModuleTester
+    
+    instapaper_module = moduleInstapaper()
+    tester = ModuleTester(instapaper_module)
+    tester.run()
 
 
 if __name__ == "__main__":
     main()
+

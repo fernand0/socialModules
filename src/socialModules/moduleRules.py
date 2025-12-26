@@ -135,6 +135,8 @@ class moduleRules:
         msgLog = f"{self.indent} Url: {url}"
         logMsg(msgLog, 1, self.args.verbose)
         section_metadata = dict(config.items(section))
+        # Save the section name in section_metadata for traceability
+        section_metadata['section_name'] = section
         toAppend, theService, api = self._process_sources(section, config, services, url, section_metadata, sources, sources_available, more)
         fromSrv = toAppend
         msgLog = f"{self.indent} We will append: {toAppend}"
@@ -160,15 +162,13 @@ class moduleRules:
             logMsg(msgLog, 1, False)
             self._process_destinations(section, config, service, services, fromSrv, section_metadata, api, destinations, temp_rules, rule_metadata, implicit_rules)
         self._process_rule_keys(section_metadata, services, fromSrv, rulesNew, rule_metadata)
-        # Save the section name in section_metadata for traceability
-        section_metadata['section_name'] = section
         self.indentLess()
 
     def _process_sources(self, section, config, services, url, section_metadata, sources, sources_available, more):
         source_tuple = None
         theService = None
         api = None
-        
+
         # Determine the service name for this section
         section_service_name = config[section].get("service")
         if not section_service_name:
@@ -186,7 +186,7 @@ class moduleRules:
                 api.setNick(config[section][theService])
             else:
                 api.setNick()
-            
+
             self.indentPlus()
             methods = self.hasSetMethods(theService)
             desired_posts_type = section_metadata.get("posts")
@@ -205,7 +205,7 @@ class moduleRules:
                 else: #if method_target == "post": # If no 'posts' specified, default to 'post' method
                     source_tuple = (theService, method_action, api.getNick(), method_target)
                     break
-            
+
             if source_tuple:
                 if source_tuple not in sources:
                     sources.add(source_tuple)
@@ -217,7 +217,7 @@ class moduleRules:
                        2, self.args.verbose)
                 # Add None to sources_available, to reflect that a source could not be formed
                 # This might need further refinement depending on desired behavior for missing sources
-                sources_available.add(None) 
+                sources_available.add(None)
 
             self.indentLess()
             msgLog = f"{self.indent} Service: {theService}"
@@ -559,7 +559,7 @@ class moduleRules:
             if is_success:
                 result_dict["error"] = None
                 result_dict["successful"] = 1
-                result_dict["response_links"] = [ publication_res, ]
+                result_dict["response_links"] = {'item': publication_res, }
             resUpdate = apiDst.updateLastLink(apiSrc, link)
 
             # Use the unified publishing method
@@ -571,6 +571,7 @@ class moduleRules:
             # )
             print(f"Res: {resUpdate}")
             summary = result_dict #self.get_publication_summary(results)
+            summary['failed'] = 0
             print(f"Summary: {summary}")
             print("\n--- Publication Summary ---")
             print(f"Total attempts: {summary['total']}")
@@ -783,15 +784,15 @@ class moduleRules:
 
         return iniK, nKey
 
-    def cleanUrlRule(self, url, service=""):
-        # FIXME: does it belong here?
-        if service:
-            url = url.replace(service, "")
-        url = url.replace("https", "").replace("http", "")
-        url = url.replace("---", "").replace(".com", "")
-        url = url.replace("-(", "(").replace("- ", " ")
-        url = url.replace(":", "").replace("/", "")
-        return url
+    # def cleanUrlRule(self, url, service=""):
+    #     # FIXME: does it belong here?
+    #     if service:
+    #         url = url.replace(service, "")
+    #     url = url.replace("https", "").replace("http", "")
+    #     url = url.replace("---", "").replace(".com", "")
+    #     url = url.replace("-(", "(").replace("- ", " ")
+    #     url = url.replace(":", "").replace("/", "")
+    #     return url
 
     def getNickSrc(self, src):
         if isinstance(src[2], tuple):
@@ -1009,7 +1010,9 @@ class moduleRules:
         logMsg(msgLog, 1, self.args.verbose)
         postaction = apiSrc.getPostAction()
         if postaction:
-            msgLog = f"{indent}Post Action {postaction} " f"(nextPost = {nextPost})"
+            msgLog = (f"{indent}Post Action {postaction} "
+                      f"(nextPost = {nextPost})"
+                      )
             logMsg(msgLog, 1, self.args.verbose)
 
             if "OK. Published!" in res:
@@ -1086,6 +1089,9 @@ class moduleRules:
         else:
             post = apiSrc.getPost(pos)
 
+        # logging.info(f"{indent}Post: {post}")
+        # logging.info(f"{indent}Post type: {type(post)}")
+
         if not post:
             msgLog = f"{indent}No post to schedule in {msgAction}"
             logMsg(msgLog, 1, self.args.verbose)
@@ -1109,7 +1115,8 @@ class moduleRules:
                 msgLog = f"{indent}Would schedule in {msgAction} {msgLog}"
                 logMsg(msgLog, 1, self.args.verbose)
                 result_dict["success"] = True
-                result_dict["publication_result"] = "No posting (simmulation)"
+                result_dict["publication_result"] = (f"No posting (simmulation)."
+                                                     f"{msgLog}")
                 result_dict["error"] = "Simulation"
             else:
                 publication_res = apiDst.publishPost(api=apiSrc, post=post)
@@ -1166,8 +1173,9 @@ class moduleRules:
         pos=-1,
         delete=False,
     ):
-        # indent = f"{name}"
         indent = f""
+        if name:
+            indent = f"{name}"
         res = {"success": False, "error": "No execution"}
         textEnd = ""
 
@@ -1239,8 +1247,8 @@ class moduleRules:
 
             theAction = self.getTypeAction(action)
             logMsg(f"{msgLog} for {theAction} from {self.getNickRule(src)} in "
-                   f"{self.getNickAction(action)}@{self.getProfileAction(action)}", 
-                   1, 
+                   f"{self.getNickAction(action)}@{self.getProfileAction(action)}",
+                   1,
                    self.args.verbose)
 
             # Wait BEFORE instantiation
@@ -1250,8 +1258,8 @@ class moduleRules:
                 logMsg(f"{indent} End Waiting {theAction} from "
                        f"{self.getNickRule(src)} in "
                        f"{self.getNickAction(action)}"
-                       f"@{self.getProfileAction(action)}", 
-                       1, 
+                       f"@{self.getProfileAction(action)}",
+                       1,
                        self.args.verbose)
 
             # Instantiate APIs ONCE, after the wait
@@ -1283,7 +1291,7 @@ class moduleRules:
             numAct = num
 
             msgLog = (
-                f"{indent}I'll publish {numAct} {theAction} "
+                f"{indent}I'll publish {numAct} in {theAction} "
                 f"from {apiSrc.getUrl()} "
                 f"in {self.getNickAction(action)}@"
                 f"{self.getProfileAction(action)}"
@@ -1522,9 +1530,9 @@ class moduleRules:
             for action_index, rule_action in enumerate(rule_actions):
                 # Rule selection if --checkBlog is used
                 nameA =  f"{name_action} Action {action_index}:"
-                nameRule = f"{self.getNameRule(rule_key).lower()}{i}"
+                section_name = rule_metadata.get("section_name", "") if rule_metadata else ""
 
-                if select and (select.lower() != nameRule):
+                if select and (select.lower() != section_name.lower()):
                     continue
 
                 timeSlots, noWait = self._get_action_properties(
@@ -1635,7 +1643,7 @@ class moduleRules:
                 noWait,
                 timeSlots,
                 simmulate,
-                nameA,
+                "", #Previously nameA
                 action_index,
             )
         finally:
@@ -1659,7 +1667,8 @@ class moduleRules:
                     logMsg(
                             f" Actions: [OK] (Held) {summary_msg}",
                         1,
-                        self.args.verbose,
+                        #self.args.verbose,
+                        True,
                     )
                 finally:
                     thread_local.nameA = None
@@ -1676,9 +1685,9 @@ class moduleRules:
                 try:
                     thread_local.nameA = name_action
                     logMsg(
-                            f" Actions: [WARN] (Skipped) {summary_msg}", 
-                            2, 
-                            1,
+                            f" Actions: [WARN] (Skipped). {summary_msg}",
+                            2,
+                            True,
                     )
                 finally:
                     thread_local.nameA = None
@@ -1695,16 +1704,16 @@ class moduleRules:
                 try:
                     thread_local.nameA = name_action
                     logMsg(
-                        f"[OK] {summary_msg}",
+                        f" [OK] {summary_msg}",
                         1,
-                        1,
+                        True,
                     )
                 finally:
                     thread_local.nameA = None
             elif isinstance(res_dict, dict) and res_dict.get("success"):
                 pub_res = res_dict.get("publication_result", "N/A")
                 post_act = res_dict.get("post_action_result")
-                summary_msg = f"Success. Pub: '{pub_res}'"
+                summary_msg = f"Success. {pub_res}"
                 if post_act:
                     summary_msg += f". Post-Action: '{post_act}'"
                 summary_msg += "."
@@ -1713,7 +1722,7 @@ class moduleRules:
                     logMsg(
                         f"[OK] {summary_msg}",
                         1,
-                        1,
+                        True,
                     )
                 finally:
                     thread_local.nameA = None
@@ -1724,7 +1733,7 @@ class moduleRules:
                     logMsg(
                         f"[ERROR] {error_msg}",
                         3,
-                        1,
+                        True,
                     )
                 finally:
                     thread_local.nameA = None
@@ -1735,7 +1744,7 @@ class moduleRules:
                     logMsg(
                         f"[WARN] Action produced an invalid result: {res_dict}",
                         2,
-                        1,
+                        True,
                     )
                 finally:
                     thread_local.nameA = None
@@ -1752,7 +1761,7 @@ class moduleRules:
                 logMsg(
                     f"[ERROR] {exc}",
                     3,
-                    1,
+                    True,
                 )
             finally:
                 thread_local.nameA = None
@@ -2206,7 +2215,7 @@ class moduleRules:
         parser.add_argument(
             "--verbose",
             "-v",
-            default=True,
+            default=False,
             action="store_true",
             help="Enable verbose output (print to console)",
         )

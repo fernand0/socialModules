@@ -55,7 +55,7 @@ def demo_basic_usage():
     stats = cache.get_stats()
     for service, data in stats.items():
         print(
-            f"   {site}: {data['total']} publications "
+            f"   {service}: {data['total']} publications "
             f"({data['with_response_link']} with response link)"
         )
     print()
@@ -153,7 +153,7 @@ def demo_integration_with_existing_system():
     print("3. Updated statistics:")
     stats = publisher.get_cache_stats()
     for service, data in stats.items():
-        print(f"   {site}: {data['total']} publications")
+        print(f"   {service}: {data['total']} publications")
     print()
 
 
@@ -184,7 +184,7 @@ def demo_search_and_management():
         ),
     ]
 
-    for title, link, site in articles:
+    for title, link, service in articles:
         cache.add_publication(title, link, service)
 
     print("1. Search by term:")
