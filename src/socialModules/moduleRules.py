@@ -168,7 +168,7 @@ class moduleRules:
         source_tuple = None
         theService = None
         api = None
-        
+
         # Determine the service name for this section
         section_service_name = config[section].get("service")
         if not section_service_name:
@@ -186,7 +186,7 @@ class moduleRules:
                 api.setNick(config[section][theService])
             else:
                 api.setNick()
-            
+
             self.indentPlus()
             methods = self.hasSetMethods(theService)
             desired_posts_type = section_metadata.get("posts")
@@ -205,7 +205,7 @@ class moduleRules:
                 else: #if method_target == "post": # If no 'posts' specified, default to 'post' method
                     source_tuple = (theService, method_action, api.getNick(), method_target)
                     break
-            
+
             if source_tuple:
                 if source_tuple not in sources:
                     sources.add(source_tuple)
@@ -217,7 +217,7 @@ class moduleRules:
                        2, self.args.verbose)
                 # Add None to sources_available, to reflect that a source could not be formed
                 # This might need further refinement depending on desired behavior for missing sources
-                sources_available.add(None) 
+                sources_available.add(None)
 
             self.indentLess()
             msgLog = f"{self.indent} Service: {theService}"
@@ -784,15 +784,15 @@ class moduleRules:
 
         return iniK, nKey
 
-    def cleanUrlRule(self, url, service=""):
-        # FIXME: does it belong here?
-        if service:
-            url = url.replace(service, "")
-        url = url.replace("https", "").replace("http", "")
-        url = url.replace("---", "").replace(".com", "")
-        url = url.replace("-(", "(").replace("- ", " ")
-        url = url.replace(":", "").replace("/", "")
-        return url
+    # def cleanUrlRule(self, url, service=""):
+    #     # FIXME: does it belong here?
+    #     if service:
+    #         url = url.replace(service, "")
+    #     url = url.replace("https", "").replace("http", "")
+    #     url = url.replace("---", "").replace(".com", "")
+    #     url = url.replace("-(", "(").replace("- ", " ")
+    #     url = url.replace(":", "").replace("/", "")
+    #     return url
 
     def getNickSrc(self, src):
         if isinstance(src[2], tuple):
@@ -1010,7 +1010,7 @@ class moduleRules:
         logMsg(msgLog, 1, self.args.verbose)
         postaction = apiSrc.getPostAction()
         if postaction:
-            msgLog = (f"{indent}Post Action {postaction} " 
+            msgLog = (f"{indent}Post Action {postaction} "
                       f"(nextPost = {nextPost})"
                       )
             logMsg(msgLog, 1, self.args.verbose)
@@ -1247,8 +1247,8 @@ class moduleRules:
 
             theAction = self.getTypeAction(action)
             logMsg(f"{msgLog} for {theAction} from {self.getNickRule(src)} in "
-                   f"{self.getNickAction(action)}@{self.getProfileAction(action)}", 
-                   1, 
+                   f"{self.getNickAction(action)}@{self.getProfileAction(action)}",
+                   1,
                    self.args.verbose)
 
             # Wait BEFORE instantiation
@@ -1258,8 +1258,8 @@ class moduleRules:
                 logMsg(f"{indent} End Waiting {theAction} from "
                        f"{self.getNickRule(src)} in "
                        f"{self.getNickAction(action)}"
-                       f"@{self.getProfileAction(action)}", 
-                       1, 
+                       f"@{self.getProfileAction(action)}",
+                       1,
                        self.args.verbose)
 
             # Instantiate APIs ONCE, after the wait
@@ -1530,9 +1530,9 @@ class moduleRules:
             for action_index, rule_action in enumerate(rule_actions):
                 # Rule selection if --checkBlog is used
                 nameA =  f"{name_action} Action {action_index}:"
-                nameRule = f"{self.getNameRule(rule_key).lower()}{i}"
+                section_name = rule_metadata.get("section_name", "") if rule_metadata else ""
 
-                if select and (select.lower() != nameRule):
+                if select and (select.lower() != section_name.lower()):
                     continue
 
                 timeSlots, noWait = self._get_action_properties(
@@ -1685,8 +1685,8 @@ class moduleRules:
                 try:
                     thread_local.nameA = name_action
                     logMsg(
-                            f" Actions: [WARN] (Skipped). {summary_msg}", 
-                            2, 
+                            f" Actions: [WARN] (Skipped). {summary_msg}",
+                            2,
                             True,
                     )
                 finally:
