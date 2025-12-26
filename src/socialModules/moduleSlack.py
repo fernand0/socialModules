@@ -158,16 +158,25 @@ class moduleSlack(Content):  # , Queue):
         return res
 
     def publishApiPost(self, *args, **kwargs):
-        logging.debug(f"Args: {args} kwargs: {kwargs}")
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
+
         if args and len(args) == 3:
             title, link, comment = args
-        if kwargs:
+        elif kwargs:
             more = kwargs
             post = more.get("post", "")
             api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
             comment = api.getPostComment(title)
+        else:
+            res_dict["error_message"] = "Not enough arguments for publication."
+            return res_dict
 
         chan = self.getChannel()
         if not chan:
@@ -175,11 +184,26 @@ class moduleSlack(Content):  # , Queue):
             chan = self.getChannel()
         msgLog = f"{self.indent} Service {self.service} Channel: {chan}"
         logMsg(msgLog, 2, False)
-        self.getClient().token = self.user_slack_token
-        data = {"channel": chan, "text": f"{title} {link}"}
-        result = self.getClient().api_call("chat.postMessage", data=data)  # ,
-        self.getClient().token = self.slack_token
-        return result
+
+        try:
+            self.getClient().token = self.user_slack_token
+            data = {"channel": chan, "text": f"{title} {link}"}
+            result = self.getClient().api_call("chat.postMessage", data=data)
+            self.getClient().token = self.slack_token
+
+            res_dict["raw_response"] = result
+            if result["ok"]:
+                res_dict["success"] = True
+                # Construct post_url if possible
+                if "channel" in result and "ts" in result:
+                    res_dict["post_url"] = self.getApiPostUrl(result)
+            else:
+                res_dict["error_message"] = f"Slack API error: {result.get('error', 'Unknown error')}"
+        except Exception as e:
+            res_dict["error_message"] = f"Exception during Slack API call: {e}"
+            res_dict["raw_response"] = sys.exc_info()
+
+        return res_dict
 
     def editApiPost(self, post, newContent):
         theChan = self.getChannel()

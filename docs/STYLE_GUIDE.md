@@ -20,7 +20,16 @@ These methods are essential for the basic functionality of a module.
 - `initApi(self, keys)`: Initializes the API client with the given keys.
 - `setApiPosts(self)`: Fetches a list of posts from the service.
 - `setApiFavs(self)`: Fetches a list of favorite/liked posts.
-- `publishApiPost(self, *args, **kwargs)`: Publishes a post.
+- `publishApiPost(self, *args, **kwargs)`: Publishes content to the service.
+    This method should return a dictionary with the following structure:
+    ```python
+    {
+        "success": bool,          # True if the publication was successful, False otherwise.
+        "post_url": str,          # The URL of the newly created post, if available. Empty string if not.
+        "error_message": str,     # A descriptive error message if the publication failed. Empty string if successful.
+        "raw_response": Any       # The raw response object from the API, for debugging.
+    }
+    ```
 - `deleteApiPosts(self, idPost)`: Deletes a post.
 - `getPostId(self, post)`: Returns the unique ID of a post.
 - `getPostTitle(self, post)`: Returns the title of a post.

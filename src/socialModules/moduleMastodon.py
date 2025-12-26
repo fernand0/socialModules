@@ -94,23 +94,30 @@ class moduleMastodon(Content):  # , Queue):
 
         post = self.addComment(title, comment)
 
-        res = "Fail!"
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
+
         try:
             res = self.getClient().toot(post + " " + link)
-        except mastodon.errors.MastodonServiceUnavailableError:
-            res = self.report(
+            res_dict["success"] = True
+            res_dict["post_url"] = self.getAttribute(res, "uri")
+            res_dict["raw_response"] = res
+        except mastodon.errors.MastodonServiceUnavailableError as e:
+            error_report = self.report(
                 self.getService(), kwargs, "Not available", sys.exc_info()
             )
-            res = f"Fail! {res}"
-        except:
-            res = self.report(self.getService(), kwargs, "", sys.exc_info())
-            res = f"Fail! {res}"
-        # else:
-        #     res = self.getClient().status_post(post+" "+link,
-        #             visibility='private')
-        #     # 'direct' 'private' 'unlisted' 'public'
+            res_dict["error_message"] = f"Service unavailable: {error_report}"
+            res_dict["raw_response"] = e
+        except Exception as e:
+            error_report = self.report(self.getService(), kwargs, "", sys.exc_info())
+            res_dict["error_message"] = f"Publication failed: {error_report}"
+            res_dict["raw_response"] = e
 
-        return res
+        return res_dict
 
     def deleteApiPosts(self, idPost):
         logging.info("Deleting: {}".format(str(idPost)))

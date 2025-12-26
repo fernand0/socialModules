@@ -95,10 +95,19 @@ class moduleSkeleton(Content):
         """
         pass
 
-    def publishApiPost(self, *args, **kwargs):
+    def publishApiPost(self, *args, **kwargs) -> dict:
         """
-        Publishes a text-based post.
-        It takes the post content as an argument.
+        Publishes content to the service.
+
+        This method should return a dictionary with the following structure:
+        ```python
+        {
+            "success": bool,          # True if the publication was successful, False otherwise.
+            "post_url": str,          # The URL of the newly created post, if available. Empty string if not.
+            "error_message": str,     # A descriptive error message if the publication failed. Empty string if successful.
+            "raw_response": Any       # The raw response object from the API, for debugging.
+        }
+        ```
         """
         pass
 

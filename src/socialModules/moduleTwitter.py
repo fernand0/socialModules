@@ -230,56 +230,78 @@ class moduleTwitter(Content):  # , Queue):
             link = self.getPostLink(tweet)
             idPost = self.getPostId(tweet)
 
-        logging.debug("     Retweeting: %s id: {id_post}" % post)
-        res = "Fail!"
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
+        res = None
         if "twitter" in link:
-            # res = self.apiCall(self.getClient().statuses.retweet._id,
-            res = self.apiCall(self.getClient().retweet, tweet_id=idPost)
+            try:
+                res = self.apiCall(self.getClient().retweet, tweet_id=idPost)
+                if hasattr(res, "data") and isinstance(res.data, dict):
+                    res_dict["success"] = True
+                    res_dict["post_url"] = f"https://twitter.com/{self.user}/status/{res.data.get('id')}"
+                else:
+                    res_dict["error_message"] = f"Retweet API call failed: {res}"
+            except Exception as e:
+                res_dict["error_message"] = f"Error retweeting: {e}"
         else:
-            res = "Fail! Link {link} is not a tweet"
-
-        return res
+            res_dict["error_message"] = f"Fail! Link {link} is not a tweet"
+        res_dict["raw_response"] = res
+        return res_dict
 
     def publishApiPost(self, *args, **kwargs):
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
+
         if args and len(args) == 3 and args[0]:
-            # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
-        if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
+        elif kwargs:
             more = kwargs
-            # FIXME: We need to do something here
             post = more.get("post", "")
             api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
             comment = api.getPostComment(title)
+        else:
+            res_dict["error_message"] = "Not enough arguments for publication."
+            return res_dict
 
         title = self.addComment(title, comment)
 
-        # logging.info(f"Tittt: {title} {link} {comment}")
-        # logging.info(f"Tittt: {link and ('twitter' in link)}")
-        res = "Fail!"
-        # post = post[:(240 - (len(link) + 1))]
+        # If the link is a tweet, we will retweet.
         if link and ("twitter.com" in link) and ("status" in link):
             logging.debug("     Retweeting: %s" % title)
-            # If the link is a tweet, we will retweet.
-            res = self.publishApiRT(title, link, comment)
+            res_dict = self.publishApiRT(title, link, comment)
         else:
             if link:
+                # Twitter shortens URLs to 23 characters
                 title = title[: (240 - (23 + 1))]
                 title = title + " " + link
 
-            # https://help.twitter.com/en/using-twitter/how-to-tweet-a-link
-            # A URL of any length will be altered to 23 characters, even if the
-            # link itself is less than 23 characters long. Your character count
-            # will reflect this.
-
             msgLog = f"{self.indent}Publishing {title} "
             logMsg(msgLog, 2, False)
-            res = self.apiCall(self.getClient().create_tweet, text=title)
-            msgLog = f"{self.indent}Res: {res} "
+
+            try:
+                res = self.apiCall(self.getClient().create_tweet, text=title)
+                res_dict["raw_response"] = res
+                if hasattr(res, "data") and isinstance(res.data, dict):
+                    res_dict["success"] = True
+                    res_dict["post_url"] = f"https://twitter.com/{self.user}/status/{res.data.get('id')}"
+                else:
+                    res_dict["error_message"] = f"Tweet API call failed: {res}"
+            except Exception as e:
+                res_dict["error_message"] = f"Error creating tweet: {e}"
+
+            msgLog = f"{self.indent}Res: {res_dict['raw_response']} "
             logMsg(msgLog, 2, False)
-        return res
+        return res_dict
 
     def deleteApiPosts(self, idPost):
         logging.info("Deleting: {}".format(str(idPost)))
