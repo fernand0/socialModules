@@ -204,15 +204,15 @@ class moduleTumblr(Content):  # , Queue):
         try:
             res = None
             if api.getPostsType() == "posts":
-                logging.info(f"Creating link post: Title: {title} Link: {link} Comment: {comment}")
+                logMsg(f"Creating link post: Title: {title} Link: {link} Comment: {comment}", 1, 0)
                 res = self.getClient().create_link(
                     self.getUser(), state="queue", title=title, url=link, description=comment, type='link'
                 )
             elif api.getPostsType() == "queue" and idPost:
-                logging.info(f"Publishing from queue: {idPost}")
+                logMsg(f"Publishing from queue: {idPost}", 1, 0 )
                 res = self.editApiStateId(idPost, "published")
             elif title and link:
-                logging.info(f"Creating default link post: Title: {title} Link: {link} Comment: {comment}")
+                logMsg(f"Creating default link post: Title: {title} Link: {link} Comment: {comment}", 1, 0)
                 res = self.getClient().create_link(
                     self.getUser(), state="queue", title=title, url=link, description=comment
                 )
