@@ -517,12 +517,7 @@ class moduleHtml(Content): #, Queue):
         )
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = {
-            "success": False,
-            "post_url": "",
-            "error_message": "",
-            "raw_response": None,
-        }
+        res_dict = self.get_empty_res_dict()
         title, link, comment = args
         more = kwargs
         if link:

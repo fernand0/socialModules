@@ -55,6 +55,18 @@ class Content:
         self.auto_cache = True
         self.fileName = ""
 
+    def get_empty_res_dict(self):
+        """
+        Returns a dictionary to standardise the response from publishApi* methods
+        """
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
+        return res_dict
+
     def setAutoCache(self, enabled=True):
         """
         Enable or disable automatic publication caching

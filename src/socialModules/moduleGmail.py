@@ -717,12 +717,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return update
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = {
-            "success": False,
-            "post_url": "",
-            "error_message": "",
-            "raw_response": None,
-        }
+        res_dict = self.get_empty_res_dict()
 
         idPost = None
         if kwargs:
@@ -987,12 +982,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         pass
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = {
-            "success": False,
-            "post_url": "",
-            "error_message": "This method appears to be a duplicate and is not fully implemented for Gmail. Use the other publishApiPost for sending drafts.",
-            "raw_response": None,
-        }
+        res_dict = self.get_empty_res_dict()
+        res_dict["error_message"] = "This method appears to be a duplicate and is not fully implemented for Gmail. Use the other publishApiPost for sending drafts."
         
         logging.warning("Attempted to use a duplicate or misplaced publishApiPost method in moduleGmail.")
         

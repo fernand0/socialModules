@@ -204,12 +204,7 @@ class moduleGitter(Content):  # ,Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = {
-            "success": False,
-            "post_url": "",
-            "error_message": "",
-            "raw_response": None,
-        }
+        res_dict = self.get_empty_res_dict()
 
         if args and len(args) == 3:
             title, link, comment = args

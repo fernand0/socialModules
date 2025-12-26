@@ -208,10 +208,10 @@ def test_basic_post(apiSrc, get_post_id_callback):
     if not title:
         title = default_title
 
-    link = input("Enter URL for the post (e.g., https://example.com/test): ").strip()
+    default_link = "https://github.com/fernand0/socialModules"
+    link = input(f"Enter URL for the post (e.g., {default_link}): ").strip()
     if not link:
-        print("No URL provided. Skipping basic post test.")
-        return
+        link = default_link
 
     print(f"Posting to {apiSrc.getService()}:")
     print(f"  Title: {title}")

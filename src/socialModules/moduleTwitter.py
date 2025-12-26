@@ -230,12 +230,7 @@ class moduleTwitter(Content):  # , Queue):
             link = self.getPostLink(tweet)
             idPost = self.getPostId(tweet)
 
-        res_dict = {
-            "success": False,
-            "post_url": "",
-            "error_message": "",
-            "raw_response": None,
-        }
+        res_dict = self.get_empty_res_dict()
         res = None
         if "twitter" in link:
             try:
@@ -253,12 +248,7 @@ class moduleTwitter(Content):  # , Queue):
         return res_dict
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = {
-            "success": False,
-            "post_url": "",
-            "error_message": "",
-            "raw_response": None,
-        }
+        res_dict = self.get_empty_res_dict()
 
         if args and len(args) == 3 and args[0]:
             title, link, comment = args

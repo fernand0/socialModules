@@ -1452,12 +1452,9 @@ class moduleImap(Content):  # , Queue):
             self.moveMails(M, messageId, "Trash")
 
     def moveMails(self, M, msgs, folder):
-        res_dict = {
-            "success": True,  # Assume success until a failure occurs
-            "post_url": "",
-            "error_message": "",
-            "raw_response": [], # Store individual chunk results if needed
-        }
+        res_dict = self.get_empty_res_dict()
+        res_dict["success"] = True  # Assume success until a failure occurs
+        res_dict["raw_response"] = []  # Store individual chunk results if needed
         all_messages_moved_and_deleted = True
 
         if hasattr(self, "channel"):
