@@ -16,7 +16,6 @@ from plotly import express as px
 
 import socialModules
 import socialModules.moduleRules
-from socialModules.configMod import getApi
 
 API_BASE = "https://apidatos.ree.es/"
 API_URL = "https://api.esios.ree.es/archives/70/download_json"
@@ -365,7 +364,7 @@ def generar_resumen_diario(now, destinations, rules, message):
     generate_plotly_graph(prices, next_day)
     table = generate_table(prices, min_day, max_day)
     js_code = generate_chart_js(prices, min_day, max_day, str(next_day).split(" ")[0])
-    with open(f"/tmp/kk.js", "w") as f:
+    with open("/tmp/kk.js", "w") as f:
         f.write(js_code)
 
     date_post = str(now).split(" ")[0]

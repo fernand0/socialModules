@@ -71,7 +71,6 @@ def should_cache_publication(service, title, link):
     Returns:
         bool: True if should be cached
     """
-    import logging
 
     if not PublicationCacheConfig.AUTO_CACHE_ENABLED:
         return False

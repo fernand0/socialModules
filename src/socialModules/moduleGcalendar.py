@@ -4,10 +4,8 @@
 # This module tries to replicate moduleCache and moduleBuffer but with mails
 # stored as Drafts in a Gmail account
 
-import configparser
 import datetime
 import logging
-import os
 import sys
 
 # from dateutil.parser import parse

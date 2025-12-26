@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import configparser
 import sys
 
 import praw
@@ -159,7 +158,7 @@ class moduleReddit(Content):  # , Queue):
             posIni = link.find("/r") + 3
             posFin = link.find("/", posIni)
             group = link[posIni:posFin]
-            if not group in groups:
+            if group not in groups:
                 groups.append(group)
         self.groups = groups
         logging.info(f"{self.indent} Groups: {self.groups}")

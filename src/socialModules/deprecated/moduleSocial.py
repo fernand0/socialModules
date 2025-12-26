@@ -337,8 +337,6 @@ def cleanTags(soup):
 
 
 if __name__ == "__main__":
-    import socialModules.moduleRss
-    import socialModules.moduleSocial
 
     blog = moduleRss.moduleRss()
     url = "http://fernand0.tumblr.com/"

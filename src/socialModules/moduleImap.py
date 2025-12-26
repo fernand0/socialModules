@@ -10,35 +10,20 @@ import email.policy
 import getpass
 import hashlib
 import imaplib
-import io
 import os
 import pickle
 import re
-import smtplib
 import ssl
 import sys
 import time
-from email import encoders
-from email.header import Header, decode_header
-from email.mime.application import MIMEApplication
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.parser import BytesParser
+from email.header import decode_header
 
-import chardet
 import click
-import dateutil
 import distance
 import keyring
-from apiclient.http import MediaIoBaseUpload
 from bs4 import BeautifulSoup
 from dateutil.parser import parse
-from googleapiclient.discovery import build
-from httplib2 import Http
-from oauth2client import client, file, tools
 
-import socialModules.moduleGmail
-import socialModules.moduleSieve
 from socialModules.configMod import *
 from socialModules.moduleContent import *
 
@@ -168,7 +153,7 @@ class moduleImap(Content):  # , Queue):
         # IMAP accounts get disconnected when time passes.
         # Maybe we should check if this is needed
 
-        logging.info(f"setApiPosts")
+        logging.info("setApiPosts")
         # logging.info(f"getChannel: {self.user}@{self.server}")
         self.checkConnected()
         channel = self.getChannel()
@@ -230,7 +215,7 @@ class moduleImap(Content):  # , Queue):
         return header
 
     def headerToString(self, header):
-        if not (header is None):
+        if header is not None:
             headRes = ""
             for headDec, enc in decode_header(header):
                 # It is a list of coded and not coded strings
@@ -1246,7 +1231,6 @@ class moduleImap(Content):  # , Queue):
         )
         logMsg(msgLog, 2, False)
         # IMAP client connection
-        import ssl
 
         context = ssl.create_default_context()  # ssl.PROTOCOL_TLSv1)
         context.check_hostname = False
@@ -1372,7 +1356,7 @@ class moduleImap(Content):  # , Queue):
                 typ, data = M.fetch(msgId, "(FLAGS RFC822)")
                 flagsM = data[0][0]
                 print("flags", flagsM)
-                if not (b"Deleted" in flagsM):
+                if b"Deleted" not in flagsM:
                     M.store(msgId, "-FLAGS", "\\Seen")
 
                     if typ == "OK":
@@ -1407,7 +1391,7 @@ class moduleImap(Content):  # , Queue):
 
                 if typ == "OK":
                     print("flagsM %s" % flagsM)
-                    if not (b"Deleted" in flagsM):
+                    if b"Deleted" not in flagsM:
                         message = data[0][1]
                         msgLog = ("Message %s", message)
                         logMsg(msgLog, 2, False)
@@ -1659,7 +1643,7 @@ class moduleImap(Content):  # , Queue):
         links = []
         for element in res:
             link = element["href"]
-            if not link in links:
+            if link not in links:
                 links.append(link)
         return links
 

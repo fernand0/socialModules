@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
-import configparser
 import getpass
 import logging
-import os
 import sys
 import urllib.parse
 
@@ -116,7 +114,6 @@ def main():
     url = "https://avecesunafoto.wordpress.com/2017/07/19/maria-fernandez-guajardo-consejos-practicos-de-una-feminista-zaragozana-en-el-silicon-valley/"
     # lin rel='next'
     # soup.findAll('link', {'rel': 'next'})
-    import requests
 
     req = requests.get(url)
     if req.status_code == 200:

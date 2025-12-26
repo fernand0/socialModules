@@ -4,13 +4,9 @@ import configparser
 import logging
 import sys
 import time
-import urllib
 
-import click
-from bs4 import BeautifulSoup
 from slack_sdk import WebClient
 
-from socialModules.configMod import nameModule
 from socialModules.moduleContent import *
 
 # from socialModules.moduleQueue import *

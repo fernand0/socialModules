@@ -20,7 +20,7 @@ class modulePocket(Content):  # ,Queue):
         try:
             access_token = config.get(self.user, "access_token")
         except:
-            msgLog = f"Needs authorization"
+            msgLog = "Needs authorization"
             logMsg(msgLog, 3, 0)
             self.authorize()
             access_token = config.get(self.user, "access_token")
@@ -78,7 +78,7 @@ class modulePocket(Content):  # ,Queue):
                 config.write(configfile)
 
         except:
-            print(f"Something failed")
+            print("Something failed")
 
     def initApi(self, keys):
         msgLog = f"{self.indent} Service {self.service} Start initApi {self.user}"

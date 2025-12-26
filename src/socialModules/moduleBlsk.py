@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
-import configparser
 import sys
 
-import dateparser
-import dateutil
 from atproto import Client, models
 
 from socialModules.configMod import *
@@ -141,21 +138,21 @@ class moduleBlsk(Content):  # , Queue):
         result = ""
         logging.debug(f"Record: {post.post.record}")
         if hasattr(post.post.record, "uri"):
-            logging.debug(f"Uri")
+            logging.debug("Uri")
             result = post.post.record.uri
         elif (
             hasattr(post.post.record, "facets")
             and post.post.record.facets
             and hasattr(post.post.record.facets[0].features[0], "uri")
         ):
-            logging.debug(f"Facets > Uri")
+            logging.debug("Facets > Uri")
             result = post.post.record.facets[0].features[0].uri
         elif (
             hasattr(post.post.record, "embed")
             and hasattr(post.post.record.embed, "external")
             and hasattr(post.post.record.embed.external, "uri")
         ):
-            logging.debug(f"Embed > Uri")
+            logging.debug("Embed > Uri")
             result = post.post.record.embed.external.uri
         if not result:
             result = self.getPostUrl(post)
@@ -189,7 +186,7 @@ class moduleBlsk(Content):  # , Queue):
                 except:
                     res = self.report(self.service, post, imageName, sys.exc_info())
             else:
-                logging.info(f"No image available")
+                logging.info("No image available")
                 res = "Fail! No image available"
         else:
             res = "Fail! Not published, not enough arguments"
@@ -315,7 +312,7 @@ class moduleBlsk(Content):  # , Queue):
 
         if hasattr(reply, "uri"):
             # Success: The reply object has a 'uri', which is the post identifier.
-            res = f"https://bsky.app/profile/fernand0.bsky.social/post/"
+            res = "https://bsky.app/profile/fernand0.bsky.social/post/"
             res = f"{res}{reply.uri.split('/')[-1]}"
         elif isinstance(reply, str) and "Fail" in reply:
             # Failure: The reply is an explicit failure string.

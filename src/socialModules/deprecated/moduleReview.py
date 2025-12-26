@@ -5,16 +5,11 @@
 import configparser
 import logging
 import os
-import pickle
-import time
 import urllib
 
 import feedparser
-import requests
 from bs4 import BeautifulSoup
-from pdfrw import PdfReader
 
-import socialModules.moduleCache
 from socialModules.configMod import *
 from socialModules.moduleContent import *
 from socialModules.moduleQueue import *
@@ -42,7 +37,7 @@ class moduleRss(Content, Queue):
             self.rssFeed = feed[1]  # +feed[1][1]
         else:
             self.rssFeed = feed
-        if (not "flickr" in feed) and (not "dev.to" in feed):
+        if ("flickr" not in feed) and ("dev.to" not in feed):
             self.user = urllib.parse.urlparse(feed).netloc
         else:
             self.user = feed

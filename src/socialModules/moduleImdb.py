@@ -9,7 +9,6 @@ import sys
 import time
 import urllib
 
-import requests
 import tmdbsimple as tmdb
 from bs4 import BeautifulSoup
 

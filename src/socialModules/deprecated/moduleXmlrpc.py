@@ -4,16 +4,13 @@
 import configparser
 import logging
 import os
-import pickle
 import time
 import urllib
-import xmlrpc.client
 
 import requests
 from bs4 import BeautifulSoup, Tag
 from pdfrw import PdfReader
 
-import socialModules.moduleCache
 from socialModules.configMod import *
 
 # https://github.com/fernand0/socialMeodules/blob/master/moduleCache.py
@@ -404,7 +401,6 @@ class moduleXmlrpc(Content):
 
 
 def main():
-    import socialModules.moduleXmlrpc
 
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + "/.rssBlogs")
@@ -467,7 +463,6 @@ def main():
             print(blog.selectPost())
 
     for blog in blogs:
-        import urllib
 
         linkLast = urlFile.read().rstrip()  # Last published
         blog.setPostsXmlrpc()

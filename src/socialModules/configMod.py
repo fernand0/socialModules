@@ -2,13 +2,11 @@
 import importlib
 import logging
 import os
-import pickle
 import sys
 import threading
 import urllib
 
 import click
-import requests
 
 thread_local = threading.local()
 
@@ -128,7 +126,7 @@ def checkFile(fileName, indent=""):
     logMsg(msgLog, 2, 0)
     dirName = os.path.dirname(fileName)
 
-    msgRes = f" File OK"
+    msgRes = " File OK"
     if not os.path.isdir(dirName):
         msgRes = f"Directory {dirName} does not exist."
     elif not os.path.isfile(fileName):
@@ -146,7 +144,7 @@ def getLastLink(fileName, indent=""):
     linkLast = ""
     timeLast = 0
     msgLog = checkFile(fileName, indent)
-    if not "OK" in msgLog:
+    if "OK" not in msgLog:
         msgLog = f"{indent} {msgLog}"
         logMsg(msgLog, 3, 0)
     else:
@@ -198,7 +196,7 @@ def updateLastLink(url, link, socialNetwork=(), indent=""):
     logMsg(msgLog, 2, 0)
     msgLog = checkFile(fileName, indent)
     logMsg(msgLog, 2, 0)
-    if not "OK" in msgLog:
+    if "OK" not in msgLog:
         msgLog = f"fileName: {fileName} does not exist, I'll create it"
         logMsg(msgLog, 2, 0)
     with open(fileName, "w") as f:
@@ -323,7 +321,7 @@ def select_from_list(
     if selector:
         names_sel = [opt for opt in names if selector in opt]  # + more_options
     if negation_selector:
-        names_sel = [opt for opt in names if not (negation_selector in opt)]
+        names_sel = [opt for opt in names if negation_selector not in opt]
     names_sel = names_sel + more_options
     options_sel = names_sel.copy()
     while options_sel and len(options_sel) > 1:
@@ -362,7 +360,7 @@ def select_from_list(
                 options_sel = names_sel.copy()
 
     if len(options_sel) == 1:
-        if not options_sel[0] in more_options:
+        if options_sel[0] not in more_options:
             sel = names.index(options_sel[0])
 
     logging.info(f"Sel: {sel}")
@@ -370,7 +368,7 @@ def select_from_list(
         logging.info(f"- {names[int(sel)]}")
         name = names[int(sel)]
     else:
-        logging.info(f"- is an extra option")
+        logging.info("- is an extra option")
         name = sel
 
     return sel, name

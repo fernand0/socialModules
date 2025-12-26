@@ -1,9 +1,8 @@
-import configparser
 import sys
 
 import pytumblr
 
-from socialModules.configMod import CONFIGDIR, logMsg
+from socialModules.configMod import logMsg
 from socialModules.moduleContent import Content
 
 # from socialModules.moduleQueue import *

@@ -58,7 +58,7 @@ def demo_rules_integration():
         print(f"'{rule_name}': {{")
         print(f"    'src': {config['src']},")
         print(f"    'dst': {config['dst']},")
-        print(f"    'more': {{")
+        print("    'more': {")
         for key, value in config["more"].items():
             if key == "auto_cache":
                 print(
@@ -66,8 +66,8 @@ def demo_rules_integration():
                 )
             else:
                 print(f"        '{key}': {value},")
-        print(f"    }}")
-        print(f"}},")
+        print("    }")
+        print("},")
     print("```")
     print()
 

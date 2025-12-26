@@ -1,6 +1,4 @@
-import configparser
 import logging
-import os
 
 from socialModules.configMod import *
 

@@ -114,7 +114,7 @@ class moduleHtml(Content):  # , Queue):
             )
             time.sleep(sleep_time)
 
-            logMsg(f"Making a third attempt with pycurl.", 2, False)
+            logMsg("Making a third attempt with pycurl.", 2, False)
             try:
                 buffer = BytesIO()
                 c = pycurl.Curl()
@@ -161,7 +161,7 @@ class moduleHtml(Content):  # , Queue):
         moreContent = ""
         pos = response.text.find("https://www.blogger.com/feeds/")
         if pos >= 0:
-            logMsg(f"Blogger", 1, False)
+            logMsg("Blogger", 1, False)
             pos2 = response.text.find('"', pos + 1)
             theUrl2 = response.text[pos:pos2]
             import moduleRss

@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 
-import configparser
 import sys
-from html.parser import HTMLParser
 
 import facebook
-from bs4 import BeautifulSoup, Tag
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *

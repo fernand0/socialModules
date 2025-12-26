@@ -6,13 +6,11 @@ import os
 import random
 import sys
 import time
-import urllib
 
 import socialModules
 from socialModules.configMod import (
     CONFIGDIR,
     DATADIR,
-    LOGDIR,
     extract_nick_from_url,
     getApi,
     getModule,
@@ -1366,7 +1364,7 @@ class moduleRules:
         pos=-1,
         delete=False,
     ):
-        indent = f""
+        indent = ""
         if name:
             indent = f"{name}"
         res = {"success": False, "error": "No execution"}
@@ -1831,7 +1829,6 @@ class moduleRules:
         Executes actions in parallel using ThreadPoolExecutor.
         Returns two lists: results and errors.
         """
-        import concurrent.futures
 
         action_results = []
         action_errors = []

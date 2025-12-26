@@ -1,17 +1,9 @@
 #!/usr/bin/env python
 
-import configparser
-import os
-import pickle
 import sys
-import time
-import urllib
 
-import click
 import gitterpy
 import gitterpy.client
-import requests
-from bs4 import BeautifulSoup
 
 from socialModules.moduleContent import *
 
@@ -67,7 +59,7 @@ class moduleGitter(Content):  # ,Queue):
     def setApiPosts(self):
         if not self.channel:
             # It will set the owner channel by default
-            msgLog = f"No channel defined, setting the first one (if any)"
+            msgLog = "No channel defined, setting the first one (if any)"
             logMsg(msgLog, 3, False)
             self.setChannel()
         posts = []

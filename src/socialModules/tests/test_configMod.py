@@ -1,6 +1,5 @@
 from unittest.mock import patch
 
-import pytest
 
 from socialModules.configMod import getApi, getModule
 

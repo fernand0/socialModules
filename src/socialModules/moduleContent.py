@@ -1836,7 +1836,7 @@ class Content:
         return ""
 
     def getPostUrl(self, post):
-        logging.info(f"getPostUrl")
+        logging.info("getPostUrl")
         url = ""
         try:
             url = self.getApiPostUrl(post)

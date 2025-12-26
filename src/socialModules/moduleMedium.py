@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import configparser
-import os
 import sys
 
 from medium import Client
@@ -209,7 +208,7 @@ class moduleMedium(Content):  # ,Queue):
                 except:
                     res = self.report("Medium", post, imageName, sys.exc_info())
             else:
-                logging.info(f"No image available")
+                logging.info("No image available")
                 res = "Fail! No image available"
         else:
             res = "Fail! Not published, not enough arguments"

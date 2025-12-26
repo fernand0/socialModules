@@ -8,19 +8,15 @@
 from __future__ import print_function
 
 import base64
-import configparser
-import datetime
 import email
 import io
 import logging
 import os
-import pickle
 import sys
 from email.parser import BytesParser
 
 from bs4 import BeautifulSoup
 
-import socialModules.moduleImap
 from socialModules.configMod import *
 from socialModules.moduleContent import *
 from socialModules.moduleGoogle import *
@@ -417,7 +413,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                     link = element["title"]
             text = element.text
             logging.debug(f"Linkk: {link} text: {text}")
-            if link and not (link in data):
+            if link and link not in data:
                 data[link] = (text, link, element)
             else:
                 data[link] = (f"{data[link][0]} {text}", data[link][1], data[link][2])
@@ -444,7 +440,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         links = []
         for element in res:
             link = element["href"]
-            if not (link in links):
+            if link not in links:
                 links.append(link)
         return links
 
@@ -692,7 +688,6 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
         import base64
         import email
-        from email.parser import BytesParser
 
         api = self.getClient()
 

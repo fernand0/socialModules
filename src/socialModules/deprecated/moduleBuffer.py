@@ -40,25 +40,20 @@
 import configparser
 import importlib
 import logging
-import os
 import sys
 import time
-import urllib
 
 importlib.reload(sys)
 # sys.setdefaultencoding("UTF-8")
 
 import buffpy
 from buffpy.managers.profiles import Profiles
-from buffpy.managers.updates import Updates
-from buffpy.models import Update
 
 # sudo pip install buffpy version does not work
 # Better use:
 # git clone https://github.com/vtemian/buffpy.git
 # cd buffpy
 # sudo python setup.py install
-from colorama import Fore
 from configMod import *
 from moduleContent import *
 

@@ -83,7 +83,7 @@ def demo_automatic_caching():
         result = mock_module.publishPost(title, link, comment)
 
         print(f"  Publication result: {result}")
-        print(f"  Cached automatically: ✓")
+        print("  Cached automatically: ✓")
         print()
 
     # Show cached publications

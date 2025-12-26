@@ -4,9 +4,7 @@ import configparser
 import json
 import sys
 import urllib.parse
-from html.parser import HTMLParser
 
-import oauth2 as oauth
 import requests
 from linkedin_api.clients.restli.client import RestliClient
 

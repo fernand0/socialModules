@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 
-import configparser
-import os
 import sys
 
-import dateparser
-import dateutil
 import tweepy
 
 from socialModules.configMod import *
@@ -213,7 +209,7 @@ class moduleTwitter(Content):  # , Queue):
                         logging.info(f"      Error code: " f"{error.get('code', None)}")
                     res = self.report("Twitter", post, imageName, sys.exc_info())
             else:
-                logging.info(f"No image available")
+                logging.info("No image available")
                 res = "Fail! No image available"
         else:
             res = "Fail! Not published, not enough arguments"

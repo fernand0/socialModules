@@ -1,4 +1,3 @@
-import os
 import time  # Import time for mocking getNextTime
 from unittest.mock import MagicMock, patch
 

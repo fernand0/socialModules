@@ -308,7 +308,7 @@ def test_cache_integration(apiSrc):
 
         if pubs:
             latest = pubs[-1]
-            print(f"Latest cached publication:")
+            print("Latest cached publication:")
             print(f"  Title: {latest['title']}")
             print(f"  Link: {latest['original_link']}")
             print(f"  Service: {latest['service']}")

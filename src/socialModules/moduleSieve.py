@@ -1,18 +1,14 @@
 #!/usr/bin/env python
 
-import configparser
-import getpass
 import io
 import os
 
 # GitPython
-import ssl
 import sys
 
 # import sievelib
 import time
 
-import keyring
 from git import Repo
 from sievelib.factory import FiltersSet
 from sievelib.managesieve import Client

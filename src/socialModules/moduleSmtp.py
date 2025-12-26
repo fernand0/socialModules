@@ -3,14 +3,10 @@
 import email
 import smtplib
 import sys
-import time
-from email import encoders
-from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
 
-import socialModules
 from socialModules.configMod import *
 from socialModules.moduleContent import *
 
@@ -223,7 +219,7 @@ class moduleSmtp(Content):  # , Queue):
         link = "https://example.com/test"
         comment = "This is a test email sent from the SMTP module."
 
-        print(f"Sending email:")
+        print("Sending email:")
         print(f"  Title: {title}")
         print(f"  Link: {link}")
         print(f"  Comment: {comment}")
@@ -253,7 +249,7 @@ class moduleSmtp(Content):  # , Queue):
         </html>
         """
 
-        print(f"Sending HTML email:")
+        print("Sending HTML email:")
         print(f"  Title: {title}")
         print(f"  Link: {link}")
         print(f"  HTML content length: {len(htmlContent)} chars")

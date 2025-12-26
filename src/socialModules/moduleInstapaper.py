@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
-import configparser
-import os
 import sys
 
-import instapaper
 from instapaper import Instapaper as ipaper
 
 from socialModules.configMod import *

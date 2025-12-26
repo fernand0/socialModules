@@ -50,7 +50,7 @@ class ModuleTester:
         seen_rules = set()
 
         for rule in rulesList:
-            if not name.lower() in rule and rule in rules.rules:
+            if name.lower() not in rule and rule in rules.rules:
                 for sub_rule in rules.rules[rule]:
                     if name.lower() in sub_rule and sub_rule not in seen_rules:
                         final_rules_with_type.append((sub_rule, "dst"))

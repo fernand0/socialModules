@@ -1,13 +1,9 @@
 #!/usr/bin/env python
 
-import configparser
 import logging
 import sys
 
-import dateparser
-import dateutil
 import flickrapi
-from atproto import Client, models
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
@@ -203,7 +199,7 @@ class moduleFlickr(Content):  # , Queue):
         logMsg(msgLog, 1, False)
         origReply = reply[0]
         if "stat" in origReply and origReply.get("stat") == "ok":
-            if not ("Fail!" in reply):
+            if "Fail!" not in reply:
                 idPost = self.getPostId(origReply)
                 res = f"https://flickr.com/photos/{self.user}/status/{idPost}"
         return res

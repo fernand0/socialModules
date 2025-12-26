@@ -1,4 +1,3 @@
-import configparser
 import sys
 import time
 
@@ -7,7 +6,6 @@ from imgurpython import ImgurClient
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.test_utils import testing_utils
 
 # from socialModules.moduleQueue import *
 

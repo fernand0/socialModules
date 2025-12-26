@@ -218,7 +218,7 @@ class moduleForum(Content):  # , Queue):
                         if linkF:
                             if hasattr(self, "selectorlink"):
                                 logging.info(f"Selectorrrr: {self.selectorlink}")
-                                if not self.selectorlink in linkF:
+                                if self.selectorlink not in linkF:
                                     linkF = None
                             if linkF:
                                 idPost = self.extractId(linkF)
@@ -226,7 +226,7 @@ class moduleForum(Content):  # , Queue):
                                 idPost = None
                             logging.info(f"idPost {idPost}")
                             if idPost and post.text:
-                                if not idPost in listId:
+                                if idPost not in listId:
                                     listId.append(idPost)
                                     logging.debug(f"Post: {post}")
                                     textF = post.text
@@ -247,8 +247,8 @@ class moduleForum(Content):  # , Queue):
                 idPost = self.extractId(apiAux.getPostLink(post))
                 textF = apiAux.getPostTitle(post)
                 linkF = apiAux.getPostLink(post)
-                if idPost and not "• Re: " in textF:
-                    if not idPost in listId:
+                if idPost and "• Re: " not in textF:
+                    if idPost not in listId:
                         listId.append(idPost)
                         logging.debug(f"Post: {post}")
                         logging.debug(f"textF: {textF}")

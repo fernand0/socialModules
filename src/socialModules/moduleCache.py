@@ -9,16 +9,13 @@
 # (https://github.com/fernand0/scripts/blob/master/moduleRss
 #  obtainPostData method.
 
-import configparser
 import importlib
-import os
 import pickle
 import sys
 
 importlib.reload(sys)
 from crontab import CronTab
 
-import socialModules
 from socialModules.configMod import *
 from socialModules.moduleContent import *
 
@@ -164,7 +161,7 @@ class moduleCache(Content):  # ,Queue):
                     try:
                         listP = pickle.load(f)
                     except:
-                        msgLog = f"Problem loading data"
+                        msgLog = "Problem loading data"
                         self.report(self.service, msgLog, "", "")
             else:
                 self.report(self.service, msgLog, "", "")
