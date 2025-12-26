@@ -102,7 +102,7 @@ def demo_automatic_caching():
     stats = cache.get_stats()
     print("Cache Statistics:")
     for service, data in stats.items():
-        print(f"  {site}: {data['total']} publications")
+        print(f"  {service}: {data['total']} publications")
     print()
 
 
@@ -133,7 +133,7 @@ def demo_publication_history():
             service=service,
             response_link=response_link,
         )
-        print(f"  ✓ Published on {site}")
+        print(f"  ✓ Published on {service}")
 
     print()
 
