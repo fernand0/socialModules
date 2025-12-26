@@ -167,8 +167,6 @@ class moduleLinkedin(Content):
         return res
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
-
         if args and len(args) == 3 and args[0]:
             title, link, comment = args
         elif kwargs:
@@ -179,19 +177,19 @@ class moduleLinkedin(Content):
             link = api.getPostLink(post)
             comment = api.getPostComment(title)
         else:
-            res_dict["error_message"] = "Not enough arguments for publication."
-            return res_dict
+            self.res_dict["error_message"] = "Not enough arguments for publication."
+            return self.res_dict
 
         msgLog = f"{self.indent} Publishing: {title} - {link} - {comment}"
         logMsg(msgLog, 1, False)
 
         try:
             me_response = self.getClient().get(resource_path="/me", access_token=self.TOKEN)
-            res_dict["raw_response"] = me_response
+            self.res_dict["raw_response"] = me_response
 
             if "id" not in me_response.entity:
-                res_dict["error_message"] = "Could not get user ID for publishing."
-                return res_dict
+                self.res_dict["error_message"] = "Could not get user ID for publishing."
+                return self.res_dict
 
             author_urn = f"urn:li:person:{me_response.entity['id']}"
             entity = {
@@ -215,24 +213,24 @@ class moduleLinkedin(Content):
                 version_string=self.API_VERSION,
                 access_token=self.TOKEN,
             )
-            res_dict["raw_response"] = res
+            self.res_dict["raw_response"] = res
 
             if res.status_code == 201:
-                res_dict["success"] = True
+                self.res_dict["success"] = True
                 # The post URN is in the x-restli-id header
                 post_urn = res.headers.get('x-restli-id')
                 if post_urn:
-                    res_dict["post_url"] = f"https://www.linkedin.com/feed/update/{post_urn}/"
+                    self.res_dict["post_url"] = f"https://www.linkedin.com/feed/update/{post_urn}/"
             else:
                 if "message" in res.entity:
-                    res_dict["error_message"] = res.entity['message']
+                    self.res_dict["error_message"] = res.entity['message']
                 else:
-                    res_dict["error_message"] = f"LinkedIn API error: {res.entity}"
+                    self.res_dict["error_message"] = f"LinkedIn API error: {res.entity}"
         except Exception as e:
-            res_dict["error_message"] = self.report("Linkedin", title, link, sys.exc_info())
-            res_dict["raw_response"] = e
+            self.res_dict["error_message"] = self.report("Linkedin", title, link, sys.exc_info())
+            self.res_dict["raw_response"] = e
 
-        return res_dict
+        return self.res_dict
 
     def deleteApiPosts(self, idPost):
         result = self.getClient().delete_post(idPost, urn=self.URN)

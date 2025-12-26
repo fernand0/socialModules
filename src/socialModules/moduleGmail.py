@@ -717,8 +717,6 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return update
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
-
         idPost = None
         if kwargs:
             more = kwargs
@@ -728,8 +726,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 idPost = post.get("list", {}).get("id")
 
         if not idPost:
-            res_dict["error_message"] = "Could not get post ID to send draft."
-            return res_dict
+            self.res_dict["error_message"] = "Could not get post ID to send draft."
+            return self.res_dict
 
         try:
             res = (
@@ -739,20 +737,20 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 .send(userId="me", body={"id": str(idPost)})
                 .execute()
             )
-            res_dict["raw_response"] = res
+            self.res_dict["raw_response"] = res
             if res and 'id' in res:
-                res_dict["success"] = True
+                self.res_dict["success"] = True
                 # The API response for sending a draft doesn't contain a direct web link.
                 # We can consider the message ID as a reference.
-                res_dict["post_url"] = f"gmail_message_id:{res['id']}"
+                self.res_dict["post_url"] = f"gmail_message_id:{res['id']}"
             else:
-                res_dict["error_message"] = "Failed to send draft."
+                self.res_dict["error_message"] = "Failed to send draft."
 
         except Exception as e:
-            res_dict["error_message"] = self.report("Gmail", idPost, "", sys.exc_info())
-            res_dict["raw_response"] = e
+            self.res_dict["error_message"] = self.report("Gmail", idPost, "", sys.exc_info())
+            self.res_dict["raw_response"] = e
 
-        return res_dict
+        return self.res_dict
 
     def trash(self, j, typePost="drafts"):
         msgLog = f"{self.indent} trash"
@@ -982,8 +980,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         pass
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
-        res_dict["error_message"] = "This method appears to be a duplicate and is not fully implemented for Gmail. Use the other publishApiPost for sending drafts."
+        self.res_dict["error_message"] = "This method appears to be a duplicate and is not fully implemented for Gmail. Use the other publishApiPost for sending drafts."
         
         logging.warning("Attempted to use a duplicate or misplaced publishApiPost method in moduleGmail.")
         
@@ -991,7 +988,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         # This is likely a copy-paste error. I will return a failure
         # and log a warning.
 
-        return res_dict
+        return self.res_dict
 
 
 def main():

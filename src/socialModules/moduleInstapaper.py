@@ -75,7 +75,6 @@ class moduleInstapaper(Content):
         return res
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
         title = ""
         link = ""
 
@@ -89,8 +88,8 @@ class moduleInstapaper(Content):
             link = api.getPostLink(post)
         
         if not link:
-            res_dict["error_message"] = "No link provided to save to Instapaper."
-            return res_dict
+            self.res_dict["error_message"] = "No link provided to save to Instapaper."
+            return self.res_dict
 
         try:
             # The instapaper library seems to handle the bookmark object internally.
@@ -98,22 +97,22 @@ class moduleInstapaper(Content):
             # The library does not seem to return a specific object with details on success.
             # We will assume success if no exception is raised.
             res = self.getClient().add_bookmark(link, title=title)
-            res_dict["raw_response"] = res
+            self.res_dict["raw_response"] = res
 
             # The `add_bookmark` method in the library doesn't return a direct URL to the saved item,
             # but we can consider the original link as the "post_url" in this context.
             if res:
-                res_dict["success"] = True
-                res_dict["post_url"] = link
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = link
             else:
-                res_dict["error_message"] = "Failed to save to Instapaper."
+                self.res_dict["error_message"] = "Failed to save to Instapaper."
 
         except Exception as e:
-            res_dict["error_message"] = self.report(self.getService(), kwargs, "", sys.exc_info())
-            res_dict["raw_response"] = e
+            self.res_dict["error_message"] = self.report(self.getService(), kwargs, "", sys.exc_info())
+            self.res_dict["raw_response"] = e
 
-        logging.info(f"Res: {res_dict}")
-        return res_dict
+        logging.info(f"Res: {self.res_dict}")
+        return self.res_dict
 
     def archiveId(self, idPost):
         # Add Instapaper API call to archive a post here

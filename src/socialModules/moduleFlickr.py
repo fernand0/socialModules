@@ -147,15 +147,13 @@ class moduleFlickr(Content):  # , Queue):
         return self.publishApiDraft(*args, **kwargs)
 
     def publishApiDraft(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
-
         logging.debug(f"Args: {args} Kwargs: {kwargs}")
         if kwargs:
             post = kwargs.get("post", "")
             api = kwargs.get("api", "")
         else:
-            res_dict["error_message"] = "Not enough arguments to publish."
-            return res_dict
+            self.res_dict["error_message"] = "Not enough arguments to publish."
+            return self.res_dict
 
         logging.debug(f"Post: {post} Api: {api}")
         
@@ -167,25 +165,25 @@ class moduleFlickr(Content):  # , Queue):
                 is_friend=1,
                 is_family=1,
             )
-            res_dict["raw_response"] = res
+            self.res_dict["raw_response"] = res
 
             if error:
-                res_dict["error_message"] = str(error)
+                self.res_dict["error_message"] = str(error)
             elif res and res.get("stat") == "ok":
-                res_dict["success"] = True
-                res_dict["post_url"] = f"{self.url}/{post['id']}"
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = f"{self.url}/{post['id']}"
             elif not res: # The original code considered a falsy response a success.
-                res_dict["success"] = True
-                res_dict["post_url"] = f"{self.url}/{post['id']}"
-                res_dict["raw_response"] = "OK. Published!"
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = f"{self.url}/{post['id']}"
+                self.res_dict["raw_response"] = "OK. Published!"
             else:
-                res_dict["error_message"] = f"Flickr API error: {res}"
+                self.res_dict["error_message"] = f"Flickr API error: {res}"
         except Exception as e:
-            res_dict["error_message"] = f"Exception during Flickr API call: {e}"
-            res_dict["raw_response"] = sys.exc_info()
+            self.res_dict["error_message"] = f"Exception during Flickr API call: {e}"
+            self.res_dict["raw_response"] = sys.exc_info()
 
-        logging.debug(f"Res: {res_dict}")
-        return res_dict
+        logging.debug(f"Res: {self.res_dict}")
+        return self.res_dict
 
     def deleteApiPosts(self, idPost):
         res = None

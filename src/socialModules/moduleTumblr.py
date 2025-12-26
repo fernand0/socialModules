@@ -180,7 +180,6 @@ class moduleTumblr(Content):  # , Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
         title, link, comment, idPost = "", "", "", None
 
         if args and len(args) == 3 and args[0]:
@@ -212,26 +211,26 @@ class moduleTumblr(Content):  # , Queue):
                     self.getUser(), state="queue", title=title, url=link, description=comment
                 )
             else:
-                res_dict["error_message"] = "Not enough information to publish."
-                return res_dict
+                self.res_dict["error_message"] = "Not enough information to publish."
+                return self.res_dict
 
-            res_dict["raw_response"] = res
+            self.res_dict["raw_response"] = res
             if res and ('id' in res or 'posts' in res):
-                res_dict["success"] = True
+                self.res_dict["success"] = True
                 # Tumblr API doesn't consistently return a direct post URL here
                 # The blog name and post ID are available to construct one if needed.
                 # For now, we'll leave post_url empty.
             else:
-                 res_dict["error_message"] = f"Tumblr API error: {res}"
+                 self.res_dict["error_message"] = f"Tumblr API error: {res}"
 
         except ConnectionError as e:
-            res_dict["error_message"] = self.report("Tumblr", post, link, sys.exc_info())
-            res_dict["raw_response"] = e
+            self.res_dict["error_message"] = self.report("Tumblr", post, link, sys.exc_info())
+            self.res_dict["raw_response"] = e
         except Exception as e:
-            res_dict["error_message"] = f"An unexpected error occurred: {e}"
-            res_dict["raw_response"] = e
+            self.res_dict["error_message"] = f"An unexpected error occurred: {e}"
+            self.res_dict["raw_response"] = e
 
-        return res_dict
+        return self.res_dict
 
     def publishh(self, j):
         # This is not publishing but changing state -> editing

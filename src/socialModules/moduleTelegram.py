@@ -108,7 +108,6 @@ class moduleTelegram(Content):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
         content = ""
         title = ""
         link = ""
@@ -130,8 +129,8 @@ class moduleTelegram(Content):
                 content = f"{theContent}\n{theSummaryLinks}"
 
         if not title and not link:
-            res_dict["error_message"] = "No title or link to publish."
-            return res_dict
+            self.res_dict["error_message"] = "No title or link to publish."
+            return self.res_dict
 
         bot = self.getClient()
         channel = self.user
@@ -146,17 +145,17 @@ class moduleTelegram(Content):
         try:
             # Telegram messages have a size limit of 4096 characters
             res = bot.sendMessage("@" + channel, text[:4096], parse_mode="HTML")
-            res_dict["raw_response"] = res
+            self.res_dict["raw_response"] = res
             if res and 'message_id' in res:
-                res_dict["success"] = True
-                res_dict["post_url"] = f"https://t.me/{channel}/{res['message_id']}"
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = f"https://t.me/{channel}/{res['message_id']}"
             else:
-                res_dict["error_message"] = f"Telegram API error: {res}"
+                self.res_dict["error_message"] = f"Telegram API error: {res}"
         except Exception as e:
-            res_dict["error_message"] = self.report("Telegram", text[:100], link, sys.exc_info())
-            res_dict["raw_response"] = e
+            self.res_dict["error_message"] = self.report("Telegram", text[:100], link, sys.exc_info())
+            self.res_dict["raw_response"] = e
         
-        return res_dict
+        return self.res_dict
 
     def processReply(self, reply):
         res = ""

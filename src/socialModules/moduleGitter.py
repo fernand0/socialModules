@@ -204,8 +204,6 @@ class moduleGitter(Content):  # ,Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
-
         if args and len(args) == 3:
             title, link, comment = args
         elif kwargs:
@@ -216,29 +214,29 @@ class moduleGitter(Content):  # ,Queue):
             link = api.getPostLink(post)
             comment = api.getPostComment(title)
         else:
-            res_dict["error_message"] = "Not enough arguments for publication."
-            return res_dict
+            self.res_dict["error_message"] = "Not enough arguments for publication."
+            return self.res_dict
 
         chan = self.getChannel()
         if not chan:
-            res_dict["error_message"] = "Gitter channel not set."
-            return res_dict
+            self.res_dict["error_message"] = "Gitter channel not set."
+            return self.res_dict
 
         try:
             result = self.getClient().messages.send(chan, f"{title} {link}")
-            res_dict["raw_response"] = result
+            self.res_dict["raw_response"] = result
             if result and 'id' in result:
-                res_dict["success"] = True
+                self.res_dict["success"] = True
                 # Gitter API doesn't provide a direct message URL in the response
                 # We can construct a link to the room.
-                res_dict["post_url"] = f"https://gitter.im/{chan}"
+                self.res_dict["post_url"] = f"https://gitter.im/{chan}"
             else:
-                res_dict["error_message"] = f"Gitter API error: {result}"
+                self.res_dict["error_message"] = f"Gitter API error: {result}"
         except Exception as e:
-            res_dict["error_message"] = f"Exception during Gitter API call: {e}"
-            res_dict["raw_response"] = sys.exc_info()
+            self.res_dict["error_message"] = f"Exception during Gitter API call: {e}"
+            self.res_dict["raw_response"] = sys.exc_info()
 
-        return res_dict
+        return self.res_dict
 
     def getBots(self, channel="tavern-of-the-bots"):
         # FIXME: this does not belong here

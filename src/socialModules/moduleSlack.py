@@ -158,8 +158,6 @@ class moduleSlack(Content):  # , Queue):
         return res
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
-
         if args and len(args) == 3:
             title, link, comment = args
         elif kwargs:
@@ -170,8 +168,8 @@ class moduleSlack(Content):  # , Queue):
             link = api.getPostLink(post)
             comment = api.getPostComment(title)
         else:
-            res_dict["error_message"] = "Not enough arguments for publication."
-            return res_dict
+            self.res_dict["error_message"] = "Not enough arguments for publication."
+            return self.res_dict
 
         chan = self.getChannel()
         if not chan:
@@ -186,19 +184,19 @@ class moduleSlack(Content):  # , Queue):
             result = self.getClient().api_call("chat.postMessage", data=data)
             self.getClient().token = self.slack_token
 
-            res_dict["raw_response"] = result
+            self.res_dict["raw_response"] = result
             if result["ok"]:
-                res_dict["success"] = True
+                self.res_dict["success"] = True
                 # Construct post_url if possible
                 if "channel" in result and "ts" in result:
-                    res_dict["post_url"] = self.getApiPostUrl(result)
+                    self.res_dict["post_url"] = self.getApiPostUrl(result)
             else:
-                res_dict["error_message"] = f"Slack API error: {result.get('error', 'Unknown error')}"
+                self.res_dict["error_message"] = f"Slack API error: {result.get('error', 'Unknown error')}"
         except Exception as e:
-            res_dict["error_message"] = f"Exception during Slack API call: {e}"
-            res_dict["raw_response"] = sys.exc_info()
+            self.res_dict["error_message"] = f"Exception during Slack API call: {e}"
+            self.res_dict["raw_response"] = sys.exc_info()
 
-        return res_dict
+        return self.res_dict
 
     def editApiPost(self, post, newContent):
         theChan = self.getChannel()

@@ -517,24 +517,23 @@ class moduleHtml(Content): #, Queue):
         )
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
         title, link, comment = args
         more = kwargs
         if link:
             try:
                 res = self.click(link)
-                res_dict["raw_response"] = res
+                self.res_dict["raw_response"] = res
                 if "OK" in res:
-                    res_dict["success"] = True
-                    res_dict["post_url"] = link
+                    self.res_dict["success"] = True
+                    self.res_dict["post_url"] = link
                 else:
-                    res_dict["error_message"] = res
+                    self.res_dict["error_message"] = res
             except Exception as e:
-                res_dict["error_message"] = f"An error occurred while 'clicking' the link: {e}"
+                self.res_dict["error_message"] = f"An error occurred while 'clicking' the link: {e}"
         else:
-            res_dict["error_message"] = "No link provided to click!"
+            self.res_dict["error_message"] = "No link provided to click!"
         
-        return res_dict
+        return self.res_dict
 
     def click(self, url):
         headers = {

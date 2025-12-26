@@ -85,7 +85,6 @@ class moduleSmtp(Content):  # , Queue):
         """
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
         comment = ""
         post = ""
         link = ""
@@ -104,8 +103,8 @@ class moduleSmtp(Content):  # , Queue):
                 link = api.getPostLink(thePost)
 
         if not post and not link:
-            res_dict["error_message"] = "No content or link to send."
-            return res_dict
+            self.res_dict["error_message"] = "No content or link to send."
+            return self.res_dict
         
         destaddr = self.to or self.user
         fromaddr = self.fromaddr or self.user
@@ -129,18 +128,18 @@ class moduleSmtp(Content):  # , Queue):
                 server.login(self.user, self.password)
             
             res = server.sendmail(fromaddr, destaddr, msg.as_string())
-            res_dict["raw_response"] = res
+            self.res_dict["raw_response"] = res
 
             if not res:  # sendmail returns an empty dict on success
-                res_dict["success"] = True
-                res_dict["post_url"] = f"mailto:{destaddr}"
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = f"mailto:{destaddr}"
             else:
-                res_dict["error_message"] = f"SMTP server returned errors: {res}"
+                self.res_dict["error_message"] = f"SMTP server returned errors: {res}"
         except Exception as e:
-            res_dict["error_message"] = self.report(self.service, f"{post} {link}", post, sys.exc_info())
-            res_dict["raw_response"] = e
+            self.res_dict["error_message"] = self.report(self.service, f"{post} {link}", post, sys.exc_info())
+            self.res_dict["raw_response"] = e
 
-        return res_dict
+        return self.res_dict
 
     def getApiPostTitle(self, post):
         """

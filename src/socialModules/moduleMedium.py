@@ -103,7 +103,6 @@ class moduleMedium(Content):  # ,Queue):
             self.posts.append(post)
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
         mode = ""
         tags = []
         notifyFollowers = False
@@ -153,17 +152,17 @@ class moduleMedium(Content):  # ,Queue):
                 tags=tags,
                 notifyFollowers=notifyFollowers,
             )
-            res_dict["raw_response"] = res
+            self.res_dict["raw_response"] = res
             if res and 'url' in res:
-                res_dict["success"] = True
-                res_dict["post_url"] = res['url']
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = res['url']
             else:
-                res_dict["error_message"] = f"Medium API error: {res}"
+                self.res_dict["error_message"] = f"Medium API error: {res}"
         except Exception as e:
-            res_dict["error_message"] = self.report("Medium", post, link, sys.exc_info())
-            res_dict["raw_response"] = e
+            self.res_dict["error_message"] = self.report("Medium", post, link, sys.exc_info())
+            self.res_dict["raw_response"] = e
 
-        return res_dict
+        return self.res_dict
 
     def publishApiImage(self, *postData, **kwargs):
         logging.debug(f"{self.service} postData: {postData} " f"Len: {len(postData)}")

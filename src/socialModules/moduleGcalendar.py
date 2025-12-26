@@ -177,8 +177,6 @@ class moduleGcalendar(Content, socialGoogle):
         )
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
-
         event = None
         idCal = None
 
@@ -198,23 +196,23 @@ class moduleGcalendar(Content, socialGoogle):
             idCal = more.get("idCal")
         
         if not event or not idCal:
-            res_dict["error_message"] = "Event data or calendar ID is missing."
-            return res_dict
+            self.res_dict["error_message"] = "Event data or calendar ID is missing."
+            return self.res_dict
 
         try:
             api = self.getClient()
             res = api.events().insert(calendarId=idCal, body=event).execute()
-            res_dict["raw_response"] = res
+            self.res_dict["raw_response"] = res
             if res and 'htmlLink' in res:
-                res_dict["success"] = True
-                res_dict["post_url"] = res['htmlLink']
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = res['htmlLink']
             else:
-                res_dict["error_message"] = "Event creation did not return the expected response."
+                self.res_dict["error_message"] = "Event creation did not return the expected response."
         except Exception as e:
-            res_dict["error_message"] = self.report("Gcalendar", idCal, "", sys.exc_info())
-            res_dict["raw_response"] = e
+            self.res_dict["error_message"] = self.report("Gcalendar", idCal, "", sys.exc_info())
+            self.res_dict["raw_response"] = e
 
-        return res_dict
+        return self.res_dict
 
 
 

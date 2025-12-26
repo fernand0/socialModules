@@ -237,7 +237,6 @@ class moduleImgur(Content):  # , Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
         idPost = None
 
         if kwargs:
@@ -248,8 +247,8 @@ class moduleImgur(Content):  # , Queue):
             idPost = api.getPostId(post)
         
         if not idPost:
-            res_dict["error_message"] = "No post ID provided to publish."
-            return res_dict
+            self.res_dict["error_message"] = "No post ID provided to publish."
+            return self.res_dict
 
         msgLog = f"{self.indent} Publishing in: {self.service}"
         logMsg(msgLog, 1, False)
@@ -259,26 +258,26 @@ class moduleImgur(Content):  # , Queue):
         
         try:
             res_api = api.share_on_imgur(idPost, title, terms=0)
-            res_dict["raw_response"] = res_api
+            self.res_dict["raw_response"] = res_api
             if res_api:
-                res_dict["success"] = True
-                res_dict["post_url"] = f"https://imgur.com/gallery/{idPost}"
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = f"https://imgur.com/gallery/{idPost}"
             else:
-                res_dict["error_message"] = "Imgur API returned a non-successful status."
+                self.res_dict["error_message"] = "Imgur API returned a non-successful status."
 
         except imgurpython.helpers.error.ImgurClientError as e:
             if 'Image already in gallery.' in str(e):
-                res_dict["error_message"] = "Image already in gallery."
+                self.res_dict["error_message"] = "Image already in gallery."
                 # This could be considered a "soft" failure, you might want to handle it differently
-                res_dict["success"] = False 
+                self.res_dict["success"] = False 
             else:
-                res_dict["error_message"] = self.report(self.getService(), kwargs, "Unexpected ImgurClientError", sys.exc_info())
-            res_dict["raw_response"] = e
+                self.res_dict["error_message"] = self.report(self.getService(), kwargs, "Unexpected ImgurClientError", sys.exc_info())
+            self.res_dict["raw_response"] = e
         except Exception as e:
-            res_dict["error_message"] = self.report("Imgur", post, idPost, sys.exc_info())
-            res_dict["raw_response"] = e
+            self.res_dict["error_message"] = self.report("Imgur", post, idPost, sys.exc_info())
+            self.res_dict["raw_response"] = e
 
-        return res_dict
+        return self.res_dict
 
     def delete(self, j):
         msgLog = f"{self.indent} Deleting {j}"

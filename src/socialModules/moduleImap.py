@@ -1452,9 +1452,8 @@ class moduleImap(Content):  # , Queue):
             self.moveMails(M, messageId, "Trash")
 
     def moveMails(self, M, msgs, folder):
-        res_dict = self.get_empty_res_dict()
-        res_dict["success"] = True  # Assume success until a failure occurs
-        res_dict["raw_response"] = []  # Store individual chunk results if needed
+        self.res_dict["success"] = True  # Assume success until a failure occurs
+        self.res_dict["raw_response"] = []  # Store individual chunk results if needed
         all_messages_moved_and_deleted = True
 
         if hasattr(self, "channel"):
@@ -1480,8 +1479,8 @@ class moduleImap(Content):  # , Queue):
                 status, resultMsg = M.copy(chunk_str, folder)
                 if status != "OK":
                     logging.warning(f"Failed to copy chunk: {resultMsg}")
-                    res_dict["success"] = False
-                    res_dict["error_message"] += f"Failed to copy chunk: {resultMsg}. "
+                    self.res_dict["success"] = False
+                    self.res_dict["error_message"] += f"Failed to copy chunk: {resultMsg}. "
                     all_messages_moved_and_deleted = False
                     continue
 
@@ -1489,8 +1488,8 @@ class moduleImap(Content):  # , Queue):
                 result = M.store(chunk_str, "+FLAGS", flag)
                 if result[0] != "OK":
                     print("Failed to delete chunk!")
-                    res_dict["success"] = False
-                    res_dict["error_message"] += f"Failed to delete chunk: {result}. "
+                    self.res_dict["success"] = False
+                    self.res_dict["error_message"] += f"Failed to delete chunk: {result}. "
                     all_messages_moved_and_deleted = False
                 else:
                     print(f"Chunk deleted: {result}")
@@ -1498,26 +1497,26 @@ class moduleImap(Content):  # , Queue):
             except imaplib.IMAP4.error as e:
                 self.report("", e, "", sys.exc_info())
                 logging.error(f"Error processing chunk: {e}")
-                res_dict["success"] = False
-                res_dict["error_message"] += f"IMAP error: {e}. "
-                res_dict["raw_response"].append(sys.exc_info())
+                self.res_dict["success"] = False
+                self.res_dict["error_message"] += f"IMAP error: {e}. "
+                self.res_dict["raw_response"].append(sys.exc_info())
                 all_messages_moved_and_deleted = False
             except Exception as e:
                 logging.error(f"Unexpected error during mail move: {e}")
-                res_dict["success"] = False
-                res_dict["error_message"] += f"Unexpected error: {e}. "
-                res_dict["raw_response"].append(sys.exc_info())
+                self.res_dict["success"] = False
+                self.res_dict["error_message"] += f"Unexpected error: {e}. "
+                self.res_dict["raw_response"].append(sys.exc_info())
                 all_messages_moved_and_deleted = False
 
         if all_messages_moved_and_deleted:
-            res_dict["post_url"] = f"imap://{self.user}@{self.server}/{folder}" # Indicate target folder
+            self.res_dict["post_url"] = f"imap://{self.user}@{self.server}/{folder}" # Indicate target folder
         
         # Ensure raw_response is populated even on success for completeness
-        if not res_dict["raw_response"]:
-             res_dict["raw_response"] = "All chunks processed."
+        if not self.res_dict["raw_response"]:
+             self.res_dict["raw_response"] = "All chunks processed."
 
 
-        return res_dict
+        return self.res_dict
 
     def printMessageHeaders(self, M, msgs):
         if msgs:

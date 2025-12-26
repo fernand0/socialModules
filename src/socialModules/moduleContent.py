@@ -47,6 +47,7 @@ class Content:
         self.service = self.__class__.__name__[6:]
         self.indent = indent
         self.postsType = "posts"
+        self.res_dict = self.get_empty_res_dict()
         # msgLog = (f"{self.indent} Service {self.service} initializing")
         # logMsg(msgLog, 1, False)
         # They start with module
@@ -1165,6 +1166,7 @@ class Content:
         return reply
 
     def publishPost(self, *args, **more):
+        self.res_dict = self.get_empty_res_dict()
         msgLog = f"{self.indent} Start publishPost"
         logMsg(msgLog, 2, False)
         # msgLog = f"{self.indent} Args: {args} More: {more}"

@@ -253,7 +253,6 @@ class moduleWordpress(Content):  # ,Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
         tags = []
         
         if args and len(args) >= 3:
@@ -269,8 +268,8 @@ class moduleWordpress(Content):  # ,Queue):
             tags = api.getImagesTags(pos) if hasattr(api, 'getImagesTags') else []
 
         if not title:
-            res_dict["error_message"] = "Title is required to publish to WordPress."
-            return res_dict
+            self.res_dict["error_message"] = "Title is required to publish to WordPress."
+            return self.res_dict
 
         idTags = self.checkTags(tags) if tags else ""
         if isinstance(idTags, list):
@@ -293,26 +292,26 @@ class moduleWordpress(Content):  # ,Queue):
                 headers=self.headers,
                 data=payload,
             )
-            res_dict["raw_response"] = res
+            self.res_dict["raw_response"] = res
             res.raise_for_status()  # Will raise an exception for 4xx/5xx errors
             
             res_json = res.json()
-            res_dict["raw_response"] = res_json
+            self.res_dict["raw_response"] = res_json
 
             if res.status_code in [200, 201] and res_json.get("link"):
-                res_dict["success"] = True
-                res_dict["post_url"] = res_json.get("link")
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = res_json.get("link")
             else:
-                res_dict["error_message"] = f"WordPress API error: {res_json.get('message', 'Unknown error')}"
+                self.res_dict["error_message"] = f"WordPress API error: {res_json.get('message', 'Unknown error')}"
 
         except requests.exceptions.RequestException as e:
-            res_dict["error_message"] = f"Network error: {e}"
+            self.res_dict["error_message"] = f"Network error: {e}"
             if e.response:
-                 res_dict["raw_response"] = e.response.text
+                 self.res_dict["raw_response"] = e.response.text
         except Exception as e:
-            res_dict["error_message"] = f"An unexpected error occurred: {e}"
+            self.res_dict["error_message"] = f"An unexpected error occurred: {e}"
 
-        return res_dict
+        return self.res_dict
 
     # def publishPostt(self, post, link='', comment='', tags=[]):
     #     logging.debug("     Publishing in Wordpress...")

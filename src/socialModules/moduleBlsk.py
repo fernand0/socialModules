@@ -212,8 +212,6 @@ class moduleBlsk(Content):  # , Queue):
         return res
 
     def publishApiPost(self, *args, **kwargs):
-        res_dict = self.get_empty_res_dict()
-
         if args and len(args) == 3 and args[0]:
             title, link, comment = args
         elif kwargs:
@@ -224,8 +222,8 @@ class moduleBlsk(Content):  # , Queue):
             link = api.getPostLink(post)
             comment = api.getPostComment(title)
         else:
-            res_dict["error_message"] = "Not enough arguments to publish."
-            return res_dict
+            self.res_dict["error_message"] = "Not enough arguments to publish."
+            return self.res_dict
 
         title = self.addComment(title, comment)
         embed_external = None
@@ -246,25 +244,25 @@ class moduleBlsk(Content):  # , Queue):
             res, error = self.apiCall(
                 "send_post", api=self.api, text=title, embed=embed_external
             )
-            res_dict["raw_response"] = res
+            self.res_dict["raw_response"] = res
             if error:
-                res_dict["error_message"] = str(error)
-                res_dict["raw_response"] = error
+                self.res_dict["error_message"] = str(error)
+                self.res_dict["raw_response"] = error
             elif res and hasattr(res, 'uri'):
-                res_dict["success"] = True
-                res_dict["post_url"] = f"{self.base_url}/profile/{self.me.handle}/post/{res.uri.split('/')[-1]}"
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = f"{self.base_url}/profile/{self.me.handle}/post/{res.uri.split('/')[-1]}"
             else:
-                res_dict["error_message"] = "Publication failed for an unknown reason."
+                self.res_dict["error_message"] = "Publication failed for an unknown reason."
         except atproto_client.exceptions.BadRequestError as e:
-            res_dict["error_message"] = self.report(self.service, f"Bad Request: {title} {link}", title, sys.exc_info())
-            res_dict["raw_response"] = e
+            self.res_dict["error_message"] = self.report(self.service, f"Bad Request: {title} {link}", title, sys.exc_info())
+            self.res_dict["raw_response"] = e
         except Exception as e:
-            res_dict["error_message"] = self.report(self.service, f"Other Exception: {title} {link}", title, sys.exc_info())
-            res_dict["raw_response"] = e
+            self.res_dict["error_message"] = self.report(self.service, f"Other Exception: {title} {link}", title, sys.exc_info())
+            self.res_dict["raw_response"] = e
 
-        msgLog = f"{self.indent}Res: {res_dict['raw_response']} "
+        msgLog = f"{self.indent}Res: {self.res_dict['raw_response']} "
         logMsg(msgLog, 2, False)
-        return res_dict
+        return self.res_dict
 
     def deleteApiPosts(self, idPost):
         res = None
