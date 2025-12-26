@@ -177,29 +177,49 @@ class moduleGcalendar(Content, socialGoogle):
         )
 
     def publishApiPost(self, *args, **kwargs):
-        if args and len(args) == 3:
-            # logging.info(f"Tittt: args: {args}")
-            title, link, comment = args
-        if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
-            more = kwargs
-            # FIXME: We need to do something here
-            # Example:
-            # calendar_result = api_dst.publishPost(post={'event':event,'idCal':selected_calendar}, api=api_dst)
-            event = more.get("post", "").get("event", "")
-            api = more.get("api", "")
-            idCal = more.get("post", "").get("idCal")
-        res = "Fail!"
-        try:
-            # credentials = self.authorize()
-            res = (
-                api.getClient().events().insert(calendarId=idCal, body=event).execute()
-            )
-            # logging.info("Res: %s" % res)
-        except:
-            res = self.report("Gmail", idCal, "", sys.exc_info())
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
 
-        return f"Res: {res}"
+        event = None
+        idCal = None
+
+        if args and len(args) == 3:
+            title, link, comment = args
+            # Basic event structure from args, might need more details depending on usage
+            event = {
+                'summary': title,
+                'description': comment or '',
+                'start': {'dateTime': (datetime.datetime.now()).isoformat(), 'timeZone': 'UTC'},
+                'end': {'dateTime': (datetime.datetime.now() + datetime.timedelta(hours=1)).isoformat(), 'timeZone': 'UTC'},
+            }
+            idCal = self.getActive() # Assume we're publishing to the active calendar
+        elif kwargs:
+            more = kwargs.get("post", {})
+            event = more.get("event")
+            idCal = more.get("idCal")
+        
+        if not event or not idCal:
+            res_dict["error_message"] = "Event data or calendar ID is missing."
+            return res_dict
+
+        try:
+            api = self.getClient()
+            res = api.events().insert(calendarId=idCal, body=event).execute()
+            res_dict["raw_response"] = res
+            if res and 'htmlLink' in res:
+                res_dict["success"] = True
+                res_dict["post_url"] = res['htmlLink']
+            else:
+                res_dict["error_message"] = "Event creation did not return the expected response."
+        except Exception as e:
+            res_dict["error_message"] = self.report("Gcalendar", idCal, "", sys.exc_info())
+            res_dict["raw_response"] = e
+
+        return res_dict
 
 
 

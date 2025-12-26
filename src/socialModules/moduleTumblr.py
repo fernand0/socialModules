@@ -180,17 +180,19 @@ class moduleTumblr(Content):  # , Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        import logging
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
+        title, link, comment, idPost = "", "", "", None
 
-        logging.debug(f"Args: {args} Kwargs: {kwargs}")
         if args and len(args) == 3 and args[0]:
-            # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
             api = self
-            # Will always work?
-            idPost = link.split("/")[-2]
-        if kwargs:
-            # logging.info(f"{self.indent} Tittt: kwargs: {kwargs}")
+            idPost = link.split("/")[-2] if link else None
+        elif kwargs:
             more = kwargs
             post = more.get("post", "")
             api = more.get("api", "")
@@ -200,35 +202,41 @@ class moduleTumblr(Content):  # , Queue):
             idPost = api.getPostId(post)
 
         try:
-            logging.info(f"api.getPostsType: {api.getPostsType()}")
-            logging.info(f"api.getUser: {api.getUser()}")
+            res = None
             if api.getPostsType() == "posts":
-                logging.info(f"Title: {title} Link: {link} Comment: {comment}")
+                logging.info(f"Creating link post: Title: {title} Link: {link} Comment: {comment}")
                 res = self.getClient().create_link(
-                    self.getUser(),
-                    state="queue",
-                    title=title,
-                    url=link,
-                    description=comment,
-                    type='link'
+                    self.getUser(), state="queue", title=title, url=link, description=comment, type='link'
                 )
-            elif api.getPostsType() == "queue":
-                # logging.debug(f"idPost {idPost}")
+            elif api.getPostsType() == "queue" and idPost:
+                logging.info(f"Publishing from queue: {idPost}")
                 res = self.editApiStateId(idPost, "published")
-            else:
+            elif title and link:
+                logging.info(f"Creating default link post: Title: {title} Link: {link} Comment: {comment}")
                 res = self.getClient().create_link(
-                    self.getUser(),
-                    state="queue",
-                    title=title,
-                    url=link,
-                    description=comment,
+                    self.getUser(), state="queue", title=title, url=link, description=comment
                 )
-        except ConnectionError:  # as connectionError:
-            msgLog = f"Connection error in {self.service}"
-            logMsg(msgLog, 3, False)
-            res = self.report("Tumblr", post, link, sys.exc_info())
+            else:
+                res_dict["error_message"] = "Not enough information to publish."
+                return res_dict
 
-        return f"{res}"
+            res_dict["raw_response"] = res
+            if res and ('id' in res or 'posts' in res):
+                res_dict["success"] = True
+                # Tumblr API doesn't consistently return a direct post URL here
+                # The blog name and post ID are available to construct one if needed.
+                # For now, we'll leave post_url empty.
+            else:
+                 res_dict["error_message"] = f"Tumblr API error: {res}"
+
+        except ConnectionError as e:
+            res_dict["error_message"] = self.report("Tumblr", post, link, sys.exc_info())
+            res_dict["raw_response"] = e
+        except Exception as e:
+            res_dict["error_message"] = f"An unexpected error occurred: {e}"
+            res_dict["raw_response"] = e
+
+        return res_dict
 
     def publishh(self, j):
         # This is not publishing but changing state -> editing

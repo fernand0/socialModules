@@ -103,12 +103,20 @@ class moduleMedium(Content):  # ,Queue):
             self.posts.append(post)
 
     def publishApiPost(self, *args, **kwargs):
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
         mode = ""
         tags = []
+        notifyFollowers = False
+        
         if args and len(args) == 3:
             post, link, comment = args
             notifyFollowers = True
-        if kwargs:
+        elif kwargs:
             more = kwargs
             comment = more.get("comment", "")
             post = more.get("title", "")
@@ -116,26 +124,22 @@ class moduleMedium(Content):  # ,Queue):
             mode = more.get("mode", "")
             tags = more.get("tags", [])
             notifyFollowers = more.get("notifyFollowers", False)
-            print(f"Notify: {notifyFollowers}")
+        
         if not mode:
             mode = "public"
+            
         logging.info(f"    Publishing in {self.service} ...")
         logging.info(f"    Tags {tags}")
+        
         client = self.client
         user = self.getUserRaw()
         logging.info(f"    User {user}")
 
         title = post
         content = comment
-        # print(content)
-        links = ""
-
-        # from html.parser import HTMLParser
-        # h = HTMLParser()
-        # title = h.unescape(title)
         from html import unescape
-
         title = unescape(title)
+        
         if link and title:
             textOrig = (
                 f'Publicado originalmente en <a href="{link}">' f"{title}</a><br />\n\n"
@@ -154,11 +158,17 @@ class moduleMedium(Content):  # ,Queue):
                 tags=tags,
                 notifyFollowers=notifyFollowers,
             )
-            # "public") #draft")
-            logging.debug("Res: %s" % res)
-            return res
-        except:
-            return self.report("Medium", post, link, sys.exc_info())
+            res_dict["raw_response"] = res
+            if res and 'url' in res:
+                res_dict["success"] = True
+                res_dict["post_url"] = res['url']
+            else:
+                res_dict["error_message"] = f"Medium API error: {res}"
+        except Exception as e:
+            res_dict["error_message"] = self.report("Medium", post, link, sys.exc_info())
+            res_dict["raw_response"] = e
+
+        return res_dict
 
     def publishApiImage(self, *postData, **kwargs):
         logging.debug(f"{self.service} postData: {postData} " f"Len: {len(postData)}")

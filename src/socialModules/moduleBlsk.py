@@ -212,30 +212,30 @@ class moduleBlsk(Content):  # , Queue):
         return res
 
     def publishApiPost(self, *args, **kwargs):
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
+
         if args and len(args) == 3 and args[0]:
-            # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
-        if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
+        elif kwargs:
             more = kwargs
-            # FIXME: We need to do something here
             post = more.get("post", "")
             api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
             comment = api.getPostComment(title)
+        else:
+            res_dict["error_message"] = "Not enough arguments to publish."
+            return res_dict
 
         title = self.addComment(title, comment)
-
-        # logging.info(f"Tittt: {title} {link} {comment}")
-        # logging.info(f"Tittt: {link and ('twitter' in link)}")
-        res = "Fail!"
-        # post = post[:(240 - (len(link) + 1))]
-
-        facets = []
+        embed_external = None
         if link:
-            title = title[:(300)]
-
+            title = title[:300]
             embed_external = models.AppBskyEmbedExternal.Main(
                 external=models.AppBskyEmbedExternal.External(
                     title=title,
@@ -243,34 +243,33 @@ class moduleBlsk(Content):  # , Queue):
                     uri=link,
                 )
             )
-            # facets.append(models.AppBskyRichtextFacet.Main(
-            #     features=[models.AppBskyRichtextFacet.Link(uri=link)],
-            #     index=models.AppBskyRichtextFacet.ByteSlice(
-            #         byte_start=len(title)+1,
-            #         byte_end=len(title)+len(link)+1),
-            #     )
-            # )
-
-            # title = title + " " + link
-            # embed_post = models.AppBskyEmbedRecord.Main(record=models.create_strong_ref(post_with_link_card))
-        else:
-            embed_external = None
 
         msgLog = f"{self.indent}Publishing {title} ({len(title)})"
         logMsg(msgLog, 2, False)
-        client = self.api
+        
         try:
             res, error = self.apiCall(
-                "send_post", api=client, text=title, embed=embed_external
+                "send_post", api=self.api, text=title, embed=embed_external
             )
-        except atproto_client.exceptions.BadRequestError:
-            res = self.report(self.service, f"Bad Request: {title} {link}", title, sys.exc_info())
-        except:
-            res = self.report(self.service, f"Other Exception: {title} {link}", title, sys.exc_info())
+            res_dict["raw_response"] = res
+            if error:
+                res_dict["error_message"] = str(error)
+                res_dict["raw_response"] = error
+            elif res and hasattr(res, 'uri'):
+                res_dict["success"] = True
+                res_dict["post_url"] = f"{self.base_url}/profile/{self.me.handle}/post/{res.uri.split('/')[-1]}"
+            else:
+                res_dict["error_message"] = "Publication failed for an unknown reason."
+        except atproto_client.exceptions.BadRequestError as e:
+            res_dict["error_message"] = self.report(self.service, f"Bad Request: {title} {link}", title, sys.exc_info())
+            res_dict["raw_response"] = e
+        except Exception as e:
+            res_dict["error_message"] = self.report(self.service, f"Other Exception: {title} {link}", title, sys.exc_info())
+            res_dict["raw_response"] = e
 
-        msgLog = f"{self.indent}Res: {res} "
+        msgLog = f"{self.indent}Res: {res_dict['raw_response']} "
         logMsg(msgLog, 2, False)
-        return res
+        return res_dict
 
     def deleteApiPosts(self, idPost):
         res = None

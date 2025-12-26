@@ -204,20 +204,46 @@ class moduleGitter(Content):  # ,Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
+
         if args and len(args) == 3:
             title, link, comment = args
-        if kwargs:
+        elif kwargs:
             more = kwargs
-
             post = more.get("post", "")
             api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
             comment = api.getPostComment(title)
+        else:
+            res_dict["error_message"] = "Not enough arguments for publication."
+            return res_dict
 
         chan = self.getChannel()
-        result = self.getClient().messages.send(chan, f"{title} {link}")
-        return result
+        if not chan:
+            res_dict["error_message"] = "Gitter channel not set."
+            return res_dict
+
+        try:
+            result = self.getClient().messages.send(chan, f"{title} {link}")
+            res_dict["raw_response"] = result
+            if result and 'id' in result:
+                res_dict["success"] = True
+                # Gitter API doesn't provide a direct message URL in the response
+                # We can construct a link to the room.
+                res_dict["post_url"] = f"https://gitter.im/{chan}"
+            else:
+                res_dict["error_message"] = f"Gitter API error: {result}"
+        except Exception as e:
+            res_dict["error_message"] = f"Exception during Gitter API call: {e}"
+            res_dict["raw_response"] = sys.exc_info()
+
+        return res_dict
 
     def getBots(self, channel="tavern-of-the-bots"):
         # FIXME: this does not belong here

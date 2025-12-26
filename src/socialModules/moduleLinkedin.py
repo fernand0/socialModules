@@ -167,114 +167,77 @@ class moduleLinkedin(Content):
         return res
 
     def publishApiPost(self, *args, **kwargs):
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
+
         if args and len(args) == 3 and args[0]:
             title, link, comment = args
-        if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
+        elif kwargs:
             more = kwargs
-            # FIXME: We need to do something here
             post = more.get("post", "")
             api = more.get("api", "")
             title = api.getPostTitle(post)[:250]
-            # Title/content/article must be of lenght 0...400
             link = api.getPostLink(post)
             comment = api.getPostComment(title)
+        else:
+            res_dict["error_message"] = "Not enough arguments for publication."
+            return res_dict
 
         msgLog = f"{self.indent} Publishing: {title} - {link} - {comment}"
         logMsg(msgLog, 1, False)
+
         try:
-            try:
-                # me_response = self.getClient().get(resource_path=ME_RESOURCE,
-                me_response = self.getClient().get(
-                    resource_path="/me", access_token=self.TOKEN
-                )
+            me_response = self.getClient().get(resource_path="/me", access_token=self.TOKEN)
+            res_dict["raw_response"] = me_response
 
-                msgLog = f"{self.indent} Response: {me_response}"
-                logMsg(msgLog, 2, False)
-                POSTS_RESOURCE = "/posts"
-                if link and "id" in me_response.entity:
-                    entity = {
-                        "author": f"urn:li:person:{me_response.entity['id']}",
-                        "commentary": f"{title}",
-                        "visibility": "PUBLIC",
-                        "distribution": {
-                            "feedDistribution": "MAIN_FEED",
-                            "targetEntities": [],
-                            "thirdPartyDistributionChannels": [],
-                        },
-                        "content": {
-                            "article": {"source": f"{link}", "title": f"{title}"}
-                        },
-                        "lifecycleState": "PUBLISHED",
-                    }
+            if "id" not in me_response.entity:
+                res_dict["error_message"] = "Could not get user ID for publishing."
+                return res_dict
 
-                    res = self.getClient().create(
-                        resource_path=POSTS_RESOURCE,
-                        entity=entity,
-                        version_string=self.API_VERSION,
-                        access_token=self.TOKEN,
-                    )
-                else:
-                    res = self.getClient().create(
-                        resource_path=POSTS_RESOURCE,
-                        entity={
-                            "author": f"urn:li:person:{me_response.entity['id']}",
-                            "visibility": "PUBLIC",
-                            "commentary": f"{title}",
-                            "distribution": {
-                                "feedDistribution": "MAIN_FEED",
-                                "targetEntities": [],
-                                "thirdPartyDistributionChannels": [],
-                            },
-                            "lifecycleState": "PUBLISHED",
-                        },
-                        version_string=self.API_VERSION,
-                        access_token=self.TOKEN,
-                    )
-            except:
-                logging.info(f"Linkedin. Not authorized.")
-                logging.info(f"Exception {sys.exc_info()}")
-                res = self.report("Linkedin", title, link, sys.exc_info())
-            # self.getClient().get_profile()
-            # try:
-            #     res = self.getClient().submit_share(comment=comment,
-            #                                         title=title,
-            #                                         description=None,
-            #                                         submitted_url=link,
-            #                                         submitted_image_url=None,
-            #                                         urn=self.URN,
-            #                                         visibility_code='PUBLIC')
-            # except:
-            #     logging.info(f"Linkedin. Not authorized.")
-            #     logging.info(f"Exception {sys.exc_info()}")
-            #     res = self.report('Linkedin', title, link, sys.exc_info())
-        except:
-            logging.info(f"Linkedin. Other problems.")
-            logging.info(f"Exception {sys.exc_info()}")
-            res = self.report("Linkedin", title, link, sys.exc_info())
+            author_urn = f"urn:li:person:{me_response.entity['id']}"
+            entity = {
+                "author": author_urn,
+                "commentary": f"{title}",
+                "visibility": "PUBLIC",
+                "distribution": {
+                    "feedDistribution": "MAIN_FEED",
+                    "targetEntities": [],
+                    "thirdPartyDistributionChannels": [],
+                },
+                "lifecycleState": "PUBLISHED",
+            }
 
-        # logging.debug(f"Code return: {res}")
-        # logging.debug(f"Code return: {res.__dir__()}")
-        # logging.debug(f"Code return: {res.status_code}")
-        # logging.debug(f"Code return: {res.response}")
-        # logging.debug(f"Code return entity: {res.entity}")
-        # logging.debug(f"Code return: {res.entity_id}")
-        # logging.debug(f"Code return headers: {res.headers}")
-        # logging.debug(f"Code return headers: {res.url}")
-        # logging.debug(f"Code return type: {type(res)}")
-        if isinstance(res, bytes) and ("201".encode() not in res):
-            # FIXME: Logic? Conditional management?
-            res = f"Fail!\n{res}"
-        else:
-            code = res.status_code
-            # msgLog = f"{self.indent} return code: {code}"
-            # logMsg(msgLog, 1, 0)
-            if code and (code != 201):
+            if link:
+                entity["content"] = {"article": {"source": link, "title": title}}
+
+            res = self.getClient().create(
+                resource_path=self.POSTS_RESOURCE,
+                entity=entity,
+                version_string=self.API_VERSION,
+                access_token=self.TOKEN,
+            )
+            res_dict["raw_response"] = res
+
+            if res.status_code == 201:
+                res_dict["success"] = True
+                # The post URN is in the x-restli-id header
+                post_urn = res.headers.get('x-restli-id')
+                if post_urn:
+                    res_dict["post_url"] = f"https://www.linkedin.com/feed/update/{post_urn}/"
+            else:
                 if "message" in res.entity:
-                    res = f"Fail! {res.entity['message']}"
+                    res_dict["error_message"] = res.entity['message']
                 else:
-                    res = f"Fail! {res.entity}"
-        return res
+                    res_dict["error_message"] = f"LinkedIn API error: {res.entity}"
+        except Exception as e:
+            res_dict["error_message"] = self.report("Linkedin", title, link, sys.exc_info())
+            res_dict["raw_response"] = e
+
+        return res_dict
 
     def deleteApiPosts(self, idPost):
         result = self.getClient().delete_post(idPost, urn=self.URN)

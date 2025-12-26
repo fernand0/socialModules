@@ -108,13 +108,21 @@ class moduleTelegram(Content):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        rep = "Fail!"
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
         content = ""
+        title = ""
+        link = ""
+        
         if args and len(args) == 3:
             title, link, comment = args
             if comment:
                 content = comment
-        if kwargs:
+        elif kwargs:
             more = kwargs
             post = more.get("post", "")
             api = more.get("api", "")
@@ -126,39 +134,34 @@ class moduleTelegram(Content):
                 (theContent, theSummaryLinks) = api.extractLinks(soup, "")
                 content = f"{theContent}\n{theSummaryLinks}"
 
+        if not title and not link:
+            res_dict["error_message"] = "No title or link to publish."
+            return res_dict
+
         bot = self.getClient()
-
-        links = ""
         channel = self.user
-
-        logging.info(f"{self.service}: Title: {title} Link: {link}")
-        text = '<a href="' + link + '">' + title + "</a>\n"
-        logging.debug(f"{self.service}: Text: {text}")
-        # FIXME: This code needs improvement
-        textToPublish = text
-        textToPublish2 = ""
+        text = f'<a href="{link}">{title}</a>\n'
+        
         from html import unescape
-
         title = unescape(title)
         if content:
             content = content.replace("<", "&lt;")
-            text = text + content + "\n\n" + links
-
-        textToPublish = text
-        while textToPublish:
-            try:
-                res = bot.sendMessage(
-                    "@" + channel, textToPublish[:4080], parse_mode="HTML"
-                )
-                textToPublish = textToPublish[4080:]
-            except:
-                return self.report("Telegram", textToPublish, link, sys.exc_info())
-
-            if links:
-                bot.sendMessage("@" + channel, links, parse_mode="HTML")
-            rep = res
-
-        return rep
+            text += content
+        
+        try:
+            # Telegram messages have a size limit of 4096 characters
+            res = bot.sendMessage("@" + channel, text[:4096], parse_mode="HTML")
+            res_dict["raw_response"] = res
+            if res and 'message_id' in res:
+                res_dict["success"] = True
+                res_dict["post_url"] = f"https://t.me/{channel}/{res['message_id']}"
+            else:
+                res_dict["error_message"] = f"Telegram API error: {res}"
+        except Exception as e:
+            res_dict["error_message"] = self.report("Telegram", text[:100], link, sys.exc_info())
+            res_dict["raw_response"] = e
+        
+        return res_dict
 
     def processReply(self, reply):
         res = ""

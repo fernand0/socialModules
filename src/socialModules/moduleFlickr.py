@@ -147,23 +147,50 @@ class moduleFlickr(Content):  # , Queue):
         return self.publishApiDraft(*args, **kwargs)
 
     def publishApiDraft(self, *args, **kwargs):
-        res = ""
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
+
         logging.debug(f"Args: {args} Kwargs: {kwargs}")
         if kwargs:
             post = kwargs.get("post", "")
             api = kwargs.get("api", "")
+        else:
+            res_dict["error_message"] = "Not enough arguments to publish."
+            return res_dict
+
         logging.debug(f"Post: {post} Api: {api}")
-        res = self.apiCall(
-            "photos.setPerms",
-            photo_id=post["id"],
-            is_public=1,
-            is_friend=1,
-            is_family=1,
-        )
-        logging.debug(f"Res: {res}")
-        if not res:
-            res = "OK. Published!"
-        return res
+        
+        try:
+            res, error = self.apiCall(
+                "photos.setPerms",
+                photo_id=post["id"],
+                is_public=1,
+                is_friend=1,
+                is_family=1,
+            )
+            res_dict["raw_response"] = res
+
+            if error:
+                res_dict["error_message"] = str(error)
+            elif res and res.get("stat") == "ok":
+                res_dict["success"] = True
+                res_dict["post_url"] = f"{self.url}/{post['id']}"
+            elif not res: # The original code considered a falsy response a success.
+                res_dict["success"] = True
+                res_dict["post_url"] = f"{self.url}/{post['id']}"
+                res_dict["raw_response"] = "OK. Published!"
+            else:
+                res_dict["error_message"] = f"Flickr API error: {res}"
+        except Exception as e:
+            res_dict["error_message"] = f"Exception during Flickr API call: {e}"
+            res_dict["raw_response"] = sys.exc_info()
+
+        logging.debug(f"Res: {res_dict}")
+        return res_dict
 
     def deleteApiPosts(self, idPost):
         res = None

@@ -253,51 +253,71 @@ class moduleWordpress(Content):  # ,Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        # print(f"Args: {args} kwargs: {kwargs}")
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
         tags = []
-        # if args and len(args)>3:
-        #     tags = postData[3]
+        
         if args and len(args) >= 3:
-            try:
-                title, link, comment, more = args
-            except:
-                title, link, comment = args
-        if kwargs:
+            title, link, comment = args[:3]
+        elif kwargs:
             more = kwargs
             post = more.get("post", "")
             api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
             pos = api.getLinkPosition(link)
-            comment = api.getImagesCode(pos)
-            tags = api.getImagesTags(pos)
-            # print(f"Comment: {comment}")
+            comment = api.getImagesCode(pos) if hasattr(api, 'getImagesCode') else ''
+            tags = api.getImagesTags(pos) if hasattr(api, 'getImagesTags') else []
 
-        if tags:
-            idTags = self.checkTags(tags)
-            logging.info("     Tags: {idTags}")
+        if not title:
+            res_dict["error_message"] = "Title is required to publish to WordPress."
+            return res_dict
+
+        idTags = self.checkTags(tags) if tags else ""
+        if isinstance(idTags, list):
             idTags = ",".join(str(v) for v in idTags)
-        else:
-            idTags = ""
-        # print(f"title: {title}")
-        # print(f"link: {link}")
-        # print(f"content: {comment}")
-        # print(f"tags: {tags}")
 
         payload = {
             "title": title,
             "content": comment,
             "status": "publish",
-            # One of: publish, future, draft, pending, private
             "tags": idTags,
         }
-        res = requests.post(
-            self.api_base2 + self.api_posts.format(self.my_site),
-            headers=self.headers,
-            data=payload,
-        )
-        #print(f"Resss: {res}")
-        return res
+        
+        if link:
+             payload["meta"] = {"original_link": link}
+
+
+        try:
+            res = requests.post(
+                self.api_base2 + self.api_posts.format(self.my_site),
+                headers=self.headers,
+                data=payload,
+            )
+            res_dict["raw_response"] = res
+            res.raise_for_status()  # Will raise an exception for 4xx/5xx errors
+            
+            res_json = res.json()
+            res_dict["raw_response"] = res_json
+
+            if res.status_code in [200, 201] and res_json.get("link"):
+                res_dict["success"] = True
+                res_dict["post_url"] = res_json.get("link")
+            else:
+                res_dict["error_message"] = f"WordPress API error: {res_json.get('message', 'Unknown error')}"
+
+        except requests.exceptions.RequestException as e:
+            res_dict["error_message"] = f"Network error: {e}"
+            if e.response:
+                 res_dict["raw_response"] = e.response.text
+        except Exception as e:
+            res_dict["error_message"] = f"An unexpected error occurred: {e}"
+
+        return res_dict
 
     # def publishPostt(self, post, link='', comment='', tags=[]):
     #     logging.debug("     Publishing in Wordpress...")

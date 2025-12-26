@@ -717,24 +717,26 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return update
 
     def publishApiPost(self, *args, **kwargs):
-        if args and len(args) == 3:
-            # logging.info(f"Tittt: args: {args}")
-            title, link, comment = args
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
+
+        idPost = None
         if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
-            # FIXME: We need to do something here
             post = more.get("post", "")
             api = more.get("api", "")
-            # logging.info(f"Post: {post}")
-            idPost = api.getPostId(post)
-            # logging.info(f"Postt: {post['meta']}")
-            # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]
-            idPost = post["list"]["id"]  # [1:-1]
-            # logging.info(f"Post id: {idPost}")
-        res = "Fail!"
+            if post:
+                idPost = post.get("list", {}).get("id")
+
+        if not idPost:
+            res_dict["error_message"] = "Could not get post ID to send draft."
+            return res_dict
+
         try:
-            # credentials = self.authorize()
             res = (
                 api.getClient()
                 .users()
@@ -742,11 +744,20 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 .send(userId="me", body={"id": str(idPost)})
                 .execute()
             )
-            # logging.info("Res: %s" % res)
-        except:
-            res = self.report("Gmail", idPost, "", sys.exc_info())
+            res_dict["raw_response"] = res
+            if res and 'id' in res:
+                res_dict["success"] = True
+                # The API response for sending a draft doesn't contain a direct web link.
+                # We can consider the message ID as a reference.
+                res_dict["post_url"] = f"gmail_message_id:{res['id']}"
+            else:
+                res_dict["error_message"] = "Failed to send draft."
 
-        return f"Res: {res}"
+        except Exception as e:
+            res_dict["error_message"] = self.report("Gmail", idPost, "", sys.exc_info())
+            res_dict["raw_response"] = e
+
+        return res_dict
 
     def trash(self, j, typePost="drafts"):
         msgLog = f"{self.indent} trash"
@@ -976,27 +987,20 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         pass
 
     def publishApiPost(self, *args, **kwargs):
-        if args and len(args) == 3:
-            # logging.info(f"Tittt: args: {args}")
-            title, link, comment = args
-        if kwargs:
-            logging.info(f"Tittt: kwargs: {kwargs}")
-            more = kwargs
-            # FIXME: We need to do something here
-            event = more.get("post", "")
-            api = more.get("api", "")
-            idCal = more.get("idCal", "")
-        res = "Fail!"
-        try:
-            # credentials = self.authorize()
-            res = (
-                api.getClient().events().insert(calendarId=idCal, body=event).execute()
-            )
-            # logging.info("Res: %s" % res)
-        except:
-            res = self.report("Gmail", idPost, "", sys.exc_info())
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "This method appears to be a duplicate and is not fully implemented for Gmail. Use the other publishApiPost for sending drafts.",
+            "raw_response": None,
+        }
+        
+        logging.warning("Attempted to use a duplicate or misplaced publishApiPost method in moduleGmail.")
+        
+        # The logic here seems to be for Google Calendar, not Gmail.
+        # This is likely a copy-paste error. I will return a failure
+        # and log a warning.
 
-        return f"Res: {res}"
+        return res_dict
 
 
 def main():

@@ -85,142 +85,67 @@ class moduleSmtp(Content):  # , Queue):
         """
 
     def publishApiPost(self, *args, **kwargs):
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
         comment = ""
+        post = ""
+        link = ""
+
         if args and len(args) == 3:
             post, link, comment = args
-        if kwargs:
+        elif kwargs:
             more = kwargs
-            # FIXME: We need to do something here
             thePost = more.get("post", "")
             api = more.get("api", "")
             msg = thePost
             if isinstance(thePost, tuple):
-                msg =thePost[1] 
+                msg = thePost[1]
             if not isinstance(msg, email.message.Message):
                 post = api.getPostTitle(thePost)
                 link = api.getPostLink(thePost)
-        res = "Fail!"
 
-        if self.to:
-            destaddr = self.to
-            toaddrs = self.to
-        else:
-            destaddr = self.user
-            toaddrs = self.user
-        if hasattr(self, "fromaddr") and self.fromaddr:
-            logging.info(f"{self.indent} 1")
-            fromaddr = self.fromaddr
-        else:
-            logging.info(f"{self.indent} 2")
-            fromaddr = self.user
-        theUrl = link
-        if post:
-            subject = post.split("\n")[0]
-        else:
-            if link:
-                subject = link
-            else:
-                subject = "No subject"
+        if not post and not link:
+            res_dict["error_message"] = "No content or link to send."
+            return res_dict
+        
+        destaddr = self.to or self.user
+        fromaddr = self.fromaddr or self.user
+        subject = post.split("\n")[0] if post else link or "No subject"
 
         msg = MIMEMultipart()
         msg["From"] = fromaddr
         msg["To"] = destaddr
-        msg["Date"] = time.asctime(time.localtime(time.time()))
-        msg["X-URL"] = theUrl
-        msg["X-print"] = theUrl
+        msg["Date"] = formatdate(localtime=True)
+        msg["X-URL"] = link
         msg["Subject"] = subject
 
-        # Construct the email body
-        body_content = ""
-        if comment:
-            body_content = comment
-        else:
-            body_content = post
-
+        body_content = comment or post
         htmlDoc = self._create_html_email(subject, link, body_content)
-
-        if comment:
-            msgLog = f"{self.indent} Doc: {htmlDoc}"
-            logMsg(msgLog, 2, False)
-
-        subtype = "html"
-        # if htmlDoc.startswith('<'):
-        #     subtype = 'html'
-        # else:
-        #     subtype = 'plain'
-
-        adj = MIMEText(htmlDoc, _subtype=subtype)
-        msg.attach(adj)
-
-        #     adj = MIMEApplication(htmlDoc)
-        #     encoders.encode_base64(adj)
-        #     name = 'content'
-        #     ext = '.html'
-
-        #     adj.add_header('Content-Disposition',
-        #                    f'attachment; filename="{name}{ext}"')
-        #     adj.add_header('Content-Type','application/octet-stream')
-
-        #     msg.attach(adj)
-
-        #     if htmlDoc.startswith('<'):
-        #         subtype = 'html'
-        #     else:
-        #         subtype = 'plain'
-
-        #     adj = MIMEText(htmlDoc, _subtype=subtype)
-        #     msg.attach(adj)
-        # else:
-        #     if htmlDoc.startswith('<'):
-        #         subtype = 'html'
-        #     else:
-        #         subtype = 'plain'
-
-        #     adj = MIMEText(htmlDoc, _subtype=subtype)
-        #     msg.attach(adj)
-        #    else: # msg IS already an email.message.Message
-        #        fromaddr = msg["From"]
-        #        toaddrs = msg["To"]
-        #        destaddr = toaddrs # If msg is an email, destaddr should be the same as toaddrs
-
-        if not self.client:
-                smtpsrv = "localhost"
-                server = smtplib.SMTP(smtpsrv)
-                server.connect(smtpsrv, 587)
-                server.starttls()
-        else:
-                server = self.client
-                respN = server.noop()
-                # logging.info(f"Noop: {respN}")
-                if isinstance(respN, tuple):
-                    respN = respN[0]
-                if not (respN == 250):
-                    logging.info(f"Noop: not")
-                    import ssl
-
-                    context = ssl.SSLContext(ssl.PROTOCOL_TLS)
-                    server = smtplib.SMTP_SSL(self.server, self.port)
-                    # server.starttls(context=context)
-                    server.login(self.user, self.password)
-
-            # msgLog = f"From: {fromaddr} To:{toaddrs}"
-            # logMsg(msgLog, 2, False)
-            # msgLog = f"Msg: {msg.as_string()[:250]}"
-            # logMsg(msgLog, 2, False)
-
+        msg.attach(MIMEText(htmlDoc, 'html'))
+        
         try:
-            res = server.sendmail(fromaddr, toaddrs, msg.as_string())
-        except:
-            res = self.report(self.service, f"{post} {link}", post, sys.exc_info())
+            server = self.client
+            if not server:
+                server = smtplib.SMTP_SSL(self.server, self.port)
+                server.login(self.user, self.password)
+            
+            res = server.sendmail(fromaddr, destaddr, msg.as_string())
+            res_dict["raw_response"] = res
 
-        if not res:
-            res = "OK"
-        # server.quit()
+            if not res:  # sendmail returns an empty dict on success
+                res_dict["success"] = True
+                res_dict["post_url"] = f"mailto:{destaddr}"
+            else:
+                res_dict["error_message"] = f"SMTP server returned errors: {res}"
+        except Exception as e:
+            res_dict["error_message"] = self.report(self.service, f"{post} {link}", post, sys.exc_info())
+            res_dict["raw_response"] = e
 
-        #else:
-        #    res = self.report(self.service, "", "", sys.exc_info())
-
-        return f"{res}"
+        return res_dict
 
     def getApiPostTitle(self, post):
         """

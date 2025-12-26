@@ -75,31 +75,50 @@ class moduleInstapaper(Content):
         return res
 
     def publishApiPost(self, *args, **kwargs):
+        res_dict = {
+            "success": False,
+            "post_url": "",
+            "error_message": "",
+            "raw_response": None,
+        }
         title = ""
+        link = ""
+
         if args and len(args) == 3:
-            # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
-        comment = ""
-        if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
+        elif kwargs:
             more = kwargs
             post = more.get("post", "")
             api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
+        
+        if not link:
+            res_dict["error_message"] = "No link provided to save to Instapaper."
+            return res_dict
 
-        post = self.addComment(title, comment)
-        res = "Fail!"
         try:
-            b = instapaper.Bookmark( 
-                                self.getClient(), {"url": link}
-                                )
-            res = b.save()
-        except:
-            res = self.report(self.getService(), kwargs, "", sys.exc_info())
-            res = f"Fail! {res}"
-        logging.info(f"Res: {res}")
-        return res
+            # The instapaper library seems to handle the bookmark object internally.
+            # We add a URL, and it gets saved.
+            # The library does not seem to return a specific object with details on success.
+            # We will assume success if no exception is raised.
+            res = self.getClient().add_bookmark(link, title=title)
+            res_dict["raw_response"] = res
+
+            # The `add_bookmark` method in the library doesn't return a direct URL to the saved item,
+            # but we can consider the original link as the "post_url" in this context.
+            if res:
+                res_dict["success"] = True
+                res_dict["post_url"] = link
+            else:
+                res_dict["error_message"] = "Failed to save to Instapaper."
+
+        except Exception as e:
+            res_dict["error_message"] = self.report(self.getService(), kwargs, "", sys.exc_info())
+            res_dict["raw_response"] = e
+
+        logging.info(f"Res: {res_dict}")
+        return res_dict
 
     def archiveId(self, idPost):
         # Add Instapaper API call to archive a post here
