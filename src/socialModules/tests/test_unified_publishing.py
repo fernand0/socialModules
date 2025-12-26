@@ -1,6 +1,9 @@
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from socialModules.moduleRules import moduleRules
+
 
 @pytest.fixture
 def rules_instance():

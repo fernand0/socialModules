@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import configparser
-import sys
 import os
+import sys
 
 import dateparser
 import dateutil
@@ -10,6 +10,7 @@ import tweepy
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+
 # from socialModules.moduleQueue import *
 
 # pip install twitter

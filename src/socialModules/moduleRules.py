@@ -9,9 +9,9 @@ import time
 import urllib
 
 import socialModules
-from socialModules.configMod import (CONFIGDIR, DATADIR, LOGDIR, getApi,
-                                     getModule, logMsg, select_from_list,
-                                     thread_local, extract_nick_from_url)
+from socialModules.configMod import (CONFIGDIR, DATADIR, LOGDIR,
+                                     extract_nick_from_url, getApi, getModule,
+                                     logMsg, select_from_list, thread_local)
 
 fileName = socialModules.__file__
 path = f"{os.path.dirname(fileName)}"

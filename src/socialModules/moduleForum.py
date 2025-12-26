@@ -2,12 +2,13 @@ import configparser
 import logging
 import time
 
-import requests
 import bs4
+import requests
 from bs4 import BeautifulSoup
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+
 # from socialModules.moduleQueue import *
 
 # This moule reads directly the HTML code

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import click
 import importlib
 import logging
 import os
@@ -8,6 +7,7 @@ import sys
 import threading
 import urllib
 
+import click
 import requests
 
 thread_local = threading.local()

@@ -5,13 +5,13 @@ import datetime
 import json
 import logging
 import os
-import requests
 import sys
 import time
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker
 import pandas as pd
+import requests
 from plotly import express as px
 
 import socialModules

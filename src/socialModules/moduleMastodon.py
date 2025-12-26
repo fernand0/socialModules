@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+
 # from socialModules.moduleQueue import *
 
 # pip install Mastodon.py

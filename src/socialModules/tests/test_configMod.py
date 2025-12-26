@@ -1,6 +1,9 @@
-import pytest
 from unittest.mock import patch
-from socialModules.configMod import getModule, getApi
+
+import pytest
+
+from socialModules.configMod import getApi, getModule
+
 
 def test_getModule_success():
     # Assuming 'Rss' is a valid module that can be loaded

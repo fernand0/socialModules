@@ -1,8 +1,10 @@
-import pytest
-from socialModules.moduleRules import moduleRules, ConfigError
 import os
-from unittest.mock import patch, MagicMock
-import time # Import time for mocking getNextTime
+import time  # Import time for mocking getNextTime
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from socialModules.moduleRules import ConfigError, moduleRules
 
 
 @pytest.fixture

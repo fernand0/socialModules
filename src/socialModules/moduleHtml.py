@@ -10,16 +10,16 @@ import urllib
 from io import BytesIO
 
 import pycurl
-
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 # import textract
 from bs4 import BeautifulSoup, Tag
 from pdfrw import PdfReader
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+
 
 class DownloadError(Exception):
     """Custom exception for download failures."""
@@ -84,7 +84,8 @@ class moduleHtml(Content): #, Queue):
                 http.mount("https://", adapter)
                 http.mount("http://", adapter)
 
-                from requests.packages.urllib3.exceptions import InsecureRequestWarning
+                from requests.packages.urllib3.exceptions import \
+                    InsecureRequestWarning
                 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
                 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
 
@@ -288,6 +289,7 @@ class moduleHtml(Content): #, Queue):
                 response, _ = self.downloadUrl(url)
                 if response and response.ok:
                     import chardet
+
                     # Sometimes the encoding seems to be declared wrongly
                     # https://www.unizar.es/actualidad/vernoticia_ng.php?id=92934
                     detected = chardet.detect(response.content)['encoding']

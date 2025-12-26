@@ -7,14 +7,14 @@ Shows how to integrate the new functionality with the existing system.
 """
 
 import logging
-import sys
 import os
+import sys
 
 # Add parent directory to path to import modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from socialModules.modulePublishingWithCache import PublisherWithCache
 from socialModules.modulePublicationCache import PublicationCache
+from socialModules.modulePublishingWithCache import PublisherWithCache
 
 
 def demo_basic_usage():

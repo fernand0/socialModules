@@ -8,7 +8,9 @@ using the data from the publication cache.
 
 import sys
 from datetime import datetime
+
 from socialModules.modulePublicationCache import PublicationCache
+
 
 def get_twitter_links_by_date(date_str):
     """

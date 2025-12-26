@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import logging
+
 logging.basicConfig(level=logging.DEBUG)
 from socialModules.test_utils import testing_utils
 
@@ -27,9 +28,10 @@ class ModuleTester:
     def setup(self):
         # Common setup logic, like initializing rules and selecting a rule
         logging.info("Start setup")
-        import socialModules.moduleRules
         import sys
         from io import StringIO
+
+        import socialModules.moduleRules
 
         # Redirect stdout
         old_stdout = sys.stdout

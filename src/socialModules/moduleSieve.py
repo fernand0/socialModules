@@ -4,11 +4,9 @@ import configparser
 import getpass
 import io
 import os
-
 # GitPython
 import ssl
 import sys
-
 # import sievelib
 import time
 

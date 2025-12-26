@@ -52,16 +52,15 @@ import buffpy
 from buffpy.managers.profiles import Profiles
 from buffpy.managers.updates import Updates
 from buffpy.models import Update
-
 # sudo pip install buffpy version does not work
 # Better use:
 # git clone https://github.com/vtemian/buffpy.git
 # cd buffpy
 # sudo python setup.py install
 from colorama import Fore
-
 from configMod import *
 from moduleContent import *
+
 # from moduleQueue import *
 
 # We can put as many items as the service with most items allow

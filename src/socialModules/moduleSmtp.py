@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
+import email
 import smtplib
 import sys
 import time
-
-import email
 from email import encoders
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
@@ -14,6 +13,7 @@ from email.utils import formatdate
 import socialModules
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+
 # from socialModules.moduleQueue import *
 
 # import getpass

@@ -1,25 +1,23 @@
 #!/usr/bin/env python
 
-import sys
-import os
-import time
-import re
+# pip install readability-lxml
+import argparse
 import logging
+import os
+import re
+import sys
+import time
 import urllib.parse
-import html2text
 
+import html2text
 # pip install pytidylib
 import requests
 
-# pip install readability-lxml
-import argparse
-
-
 import socialModules
-from socialModules.configMod import *
 import socialModules.moduleHtml
-import socialModules.moduleSlack
 import socialModules.moduleRules
+import socialModules.moduleSlack
+from socialModules.configMod import *
 
 API_URL_PREFIX = "https://www.instapaper.com/api/1"
 ADD_BOOKMARK = "/bookmarks/add"

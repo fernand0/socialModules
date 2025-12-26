@@ -5,11 +5,13 @@ import os
 import sys
 
 from medium import Client
-# local version, to add notifyFollower parameter
-# Medium has deprecated its API, so this module is discontinued
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+
+# local version, to add notifyFollower parameter
+# Medium has deprecated its API, so this module is discontinued
+
 # from socialModules.moduleQueue import *
 
 

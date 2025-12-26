@@ -15,7 +15,8 @@ from html.parser import HTMLParser
 
 from bs4 import BeautifulSoup, Tag
 
-from socialModules.configMod import logMsg, fileNamePath, checkFile, DATADIR, CONFIGDIR
+from socialModules.configMod import (CONFIGDIR, DATADIR, checkFile,
+                                     fileNamePath, logMsg)
 from socialModules.modulePublicationCache import PublicationCache
 
 
@@ -1284,9 +1285,8 @@ class Content:
 
                 # Check if we should cache this publication
                 try:
-                    from examples.publication_cache_config import (
-                        should_cache_publication,
-                    )
+                    from examples.publication_cache_config import \
+                        should_cache_publication
 
                     if not should_cache_publication(pub_service, pub_title, pub_link):
                         return
@@ -1296,7 +1296,8 @@ class Content:
                         return
 
                 # Import here to avoid circular imports
-                from socialModules.modulePublicationCache import PublicationCache
+                from socialModules.modulePublicationCache import \
+                    PublicationCache
 
                 # Initialize cache
                 cache = PublicationCache()
@@ -1342,7 +1343,8 @@ class Content:
         try:
             # Check for custom extractor first
             try:
-                from examples.publication_cache_config import get_custom_extractor
+                from examples.publication_cache_config import \
+                    get_custom_extractor
 
                 custom_extractor = get_custom_extractor(service)
                 if custom_extractor:

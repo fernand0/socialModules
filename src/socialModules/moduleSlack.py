@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 
 import configparser
+import logging
 import sys
 import time
 import urllib
-import logging
 
 import click
 from bs4 import BeautifulSoup
 from slack_sdk import WebClient
 
-from socialModules.moduleContent import *
 from socialModules.configMod import nameModule
+from socialModules.moduleContent import *
+
 # from socialModules.moduleQueue import *
 
 # from slack_sdk.errors import SlackApiError

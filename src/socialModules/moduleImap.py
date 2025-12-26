@@ -3,11 +3,7 @@
 # We will have here the set of functions related to imap mail management
 
 import binascii
-import chardet
-import click
 import configparser
-import dateutil
-import distance
 import email
 import email.message
 import email.policy
@@ -15,20 +11,25 @@ import getpass
 import hashlib
 import imaplib
 import io
-import keyring
 import os
 import pickle
 import re
+import smtplib
 import ssl
 import sys
 import time
 from email import encoders
 from email.header import Header, decode_header
-from email.parser import BytesParser
-from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.parser import BytesParser
 
+import chardet
+import click
+import dateutil
+import distance
+import keyring
 from apiclient.http import MediaIoBaseUpload
 from bs4 import BeautifulSoup
 from dateutil.parser import parse
@@ -36,13 +37,13 @@ from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import client, file, tools
 
-import smtplib
-# FIXME should we have another module?
-
 import socialModules.moduleGmail
 import socialModules.moduleSieve
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+
+# FIXME should we have another module?
+
 # from socialModules.moduleQueue import *
 
 msgHeaders = [

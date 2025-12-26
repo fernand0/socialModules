@@ -11,12 +11,14 @@ Module to manage a publication cache that stores:
 """
 
 import json
+import logging
 import os
 import shutil
 import sys
-import logging
 from datetime import datetime
+
 from filelock import FileLock, Timeout
+
 from socialModules.configMod import DATADIR
 
 

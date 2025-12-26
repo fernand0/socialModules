@@ -9,8 +9,8 @@ that appears in WebContentProcessor.py and botElectrico.py
 """
 
 import logging
-import sys
 import os
+import sys
 
 # Agregar el path de socialModules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import configparser
-import praw
 import sys
+
+import praw
 
 import socialModules.moduleRss
 from socialModules.configMod import *

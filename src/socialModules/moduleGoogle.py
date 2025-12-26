@@ -11,18 +11,15 @@ import os
 import pathlib
 import pickle
 
-from httplib2 import Http
-
 import google
-from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.oauth2.credentials import Credentials
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-
 import googleapiclient
 import googleapiclient.errors
-
+from google.auth.transport.requests import Request
+from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from httplib2 import Http
 
 from socialModules.configMod import *
 
