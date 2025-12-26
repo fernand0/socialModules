@@ -21,8 +21,8 @@ class moduleMastodon(Content):  # , Queue):
         #    self.user = self.user[1:]
 
         logMsg(f"User: {self.user}", 1, False)
-        access_token = config[self.user]['access_token']
-        return ((access_token, ))
+        access_token = config[self.user]["access_token"]
+        return (access_token,)
 
     def initApi(self, keys):
         pos = self.user.find("@", 1)  # The first character can be @
@@ -187,7 +187,7 @@ class moduleMastodon(Content):  # , Queue):
         return result
 
     def getApiPostUrl(self, post):
-        return self.getAttribute(post, 'url')
+        return self.getAttribute(post, "url")
 
     def getApiPostLink(self, post):
         content, link = self.extractPostLinks(post)

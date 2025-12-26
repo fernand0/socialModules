@@ -184,7 +184,9 @@ class moduleLinkedin(Content):
         logMsg(msgLog, 1, False)
 
         try:
-            me_response = self.getClient().get(resource_path="/me", access_token=self.TOKEN)
+            me_response = self.getClient().get(
+                resource_path="/me", access_token=self.TOKEN
+            )
             self.res_dict["raw_response"] = me_response
 
             if "id" not in me_response.entity:
@@ -218,16 +220,20 @@ class moduleLinkedin(Content):
             if res.status_code == 201:
                 self.res_dict["success"] = True
                 # The post URN is in the x-restli-id header
-                post_urn = res.headers.get('x-restli-id')
+                post_urn = res.headers.get("x-restli-id")
                 if post_urn:
-                    self.res_dict["post_url"] = f"https://www.linkedin.com/feed/update/{post_urn}/"
+                    self.res_dict["post_url"] = (
+                        f"https://www.linkedin.com/feed/update/{post_urn}/"
+                    )
             else:
                 if "message" in res.entity:
-                    self.res_dict["error_message"] = res.entity['message']
+                    self.res_dict["error_message"] = res.entity["message"]
                 else:
                     self.res_dict["error_message"] = f"LinkedIn API error: {res.entity}"
         except Exception as e:
-            self.res_dict["error_message"] = self.report("Linkedin", title, link, sys.exc_info())
+            self.res_dict["error_message"] = self.report(
+                "Linkedin", title, link, sys.exc_info()
+            )
             self.res_dict["raw_response"] = e
 
         return self.res_dict
@@ -238,24 +244,24 @@ class moduleLinkedin(Content):
         return result
 
     def getApiPostLink(self, post):
-        link = ''
-        if ('link' in post.data):
+        link = ""
+        if "link" in post.data:
             # whatever
-            link = post.data.get('link')
+            link = post.data.get("link")
         return post
 
     def getApiPostUrl(self, post):
-        link = ''
-        if ('link' in post.data):
+        link = ""
+        if "link" in post.data:
             # whatever
-            link = post.data.get('link')
+            link = post.data.get("link")
         return post
 
     def getApiPostTitle(self, post):
-        title = ''
-        if ('text' in post.data):
+        title = ""
+        if "text" in post.data:
             # whatever
-            title = post.data.get('text')
+            title = post.data.get("text")
         return post
 
     def register_specific_tests(self, tester):
@@ -263,16 +269,18 @@ class moduleLinkedin(Content):
 
     def get_user_info(self, client):
         # client is the module Linkedin instance
-        me_response = client.getClient().get(resource_path="/me", access_token=client.TOKEN)
+        me_response = client.getClient().get(
+            resource_path="/me", access_token=client.TOKEN
+        )
         if me_response.entity:
-            firstName = me_response.entity.get('localizedFirstName', '')
-            lastName = me_response.entity.get('localizedLastName', '')
+            firstName = me_response.entity.get("localizedFirstName", "")
+            lastName = me_response.entity.get("localizedLastName", "")
             return f"{firstName} {lastName}"
         return "Could not get user info"
 
     def get_post_id_from_result(self, result):
-        if isinstance(result, str) and 'linkedin.com' in result:
-            return result.split('/')[-2]
+        if isinstance(result, str) and "linkedin.com" in result:
+            return result.split("/")[-2]
         return None
 
 

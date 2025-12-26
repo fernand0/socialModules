@@ -107,10 +107,9 @@ class moduleTwitter(Content):  # , Queue):
         # API v1.1
         # posts = self.apiCall(self.getClient().get_favorites,
         # API v2
-        posts = self.apiCall(self.getClient().get_liked_tweets,
-                             id=self.user) #,
-                             # user_auth=True) #,
-                #tweet_mode='extended')
+        posts = self.apiCall(self.getClient().get_liked_tweets, id=self.user)  # ,
+        # user_auth=True) #,
+        # tweet_mode='extended')
         return posts
 
     def processReply(self, reply):
@@ -237,7 +236,9 @@ class moduleTwitter(Content):  # , Queue):
                 res = self.apiCall(self.getClient().retweet, tweet_id=idPost)
                 if hasattr(res, "data") and isinstance(res.data, dict):
                     self.res_dict["success"] = True
-                    self.res_dict["post_url"] = f"https://twitter.com/{self.user}/status/{res.data.get('id')}"
+                    self.res_dict["post_url"] = (
+                        f"https://twitter.com/{self.user}/status/{res.data.get('id')}"
+                    )
                 else:
                     self.res_dict["error_message"] = f"Retweet API call failed: {res}"
             except Exception as e:
@@ -281,7 +282,9 @@ class moduleTwitter(Content):  # , Queue):
                 self.res_dict["raw_response"] = res
                 if hasattr(res, "data") and isinstance(res.data, dict):
                     self.res_dict["success"] = True
-                    self.res_dict["post_url"] = f"https://twitter.com/{self.user}/status/{res.data.get('id')}"
+                    self.res_dict["post_url"] = (
+                        f"https://twitter.com/{self.user}/status/{res.data.get('id')}"
+                    )
                 else:
                     self.res_dict["error_message"] = f"Tweet API call failed: {res}"
             except Exception as e:
@@ -306,7 +309,7 @@ class moduleTwitter(Content):  # , Queue):
 
     def getPostId(self, post):
         logging.info(f"Postttt: {post}")
-        idPost = ''
+        idPost = ""
         if isinstance(post, str) or isinstance(post, int):
             # It is the tweet URL
             idPost = post
@@ -363,7 +366,7 @@ class moduleTwitter(Content):  # , Queue):
         if self.getPostsType() == "favs":
             content, link = self.extractPostLinks(post)
         else:
-            link = post.data.get('link')
+            link = post.data.get("link")
             # whatever
         return link
 
@@ -445,6 +448,7 @@ def main():
     twitter_module = moduleTwitter()
     tester = ModuleTester(twitter_module)
     tester.run()
+
 
 if __name__ == "__main__":
     main()

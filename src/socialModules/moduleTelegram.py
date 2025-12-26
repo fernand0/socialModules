@@ -111,7 +111,7 @@ class moduleTelegram(Content):
         content = ""
         title = ""
         link = ""
-        
+
         if args and len(args) == 3:
             title, link, comment = args
             if comment:
@@ -135,26 +135,31 @@ class moduleTelegram(Content):
         bot = self.getClient()
         channel = self.user
         text = f'<a href="{link}">{title}</a>\n'
-        
+
         from html import unescape
+
         title = unescape(title)
         if content:
             content = content.replace("<", "&lt;")
             text += content
-        
+
         try:
             # Telegram messages have a size limit of 4096 characters
             res = bot.sendMessage("@" + channel, text[:4096], parse_mode="HTML")
             self.res_dict["raw_response"] = res
-            if res and 'message_id' in res:
+            if res and "message_id" in res:
                 self.res_dict["success"] = True
-                self.res_dict["post_url"] = f"https://t.me/{channel}/{res['message_id']}"
+                self.res_dict["post_url"] = (
+                    f"https://t.me/{channel}/{res['message_id']}"
+                )
             else:
                 self.res_dict["error_message"] = f"Telegram API error: {res}"
         except Exception as e:
-            self.res_dict["error_message"] = self.report("Telegram", text[:100], link, sys.exc_info())
+            self.res_dict["error_message"] = self.report(
+                "Telegram", text[:100], link, sys.exc_info()
+            )
             self.res_dict["raw_response"] = e
-        
+
         return self.res_dict
 
     def processReply(self, reply):
@@ -188,6 +193,7 @@ class moduleTelegram(Content):
 
 def main():
     import logging
+
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )

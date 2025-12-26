@@ -408,15 +408,18 @@ class moduleImdb(Content):
     def get_post_id_from_result(self, result):
         return None
 
+
 def main():
     logging.basicConfig(
-    stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s")
+        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
+    )
 
     from socialModules.moduleTester import ModuleTester
-    
+
     imdb_module = moduleImdb()
     tester = ModuleTester(imdb_module)
     tester.run()
+
 
 if __name__ == "__main__":
     main()

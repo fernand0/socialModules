@@ -192,7 +192,9 @@ class moduleSlack(Content):  # , Queue):
                 if "channel" in result and "ts" in result:
                     self.res_dict["post_url"] = self.getApiPostUrl(result)
             else:
-                self.res_dict["error_message"] = f"Slack API error: {result.get('error', 'Unknown error')}"
+                self.res_dict["error_message"] = (
+                    f"Slack API error: {result.get('error', 'Unknown error')}"
+                )
         except Exception as e:
             self.res_dict["error_message"] = f"Exception during Slack API call: {e}"
             self.res_dict["raw_response"] = sys.exc_info()
@@ -396,7 +398,7 @@ class moduleSlack(Content):  # , Queue):
                 link = text[pos + 1 : -1]
             else:
                 pos = text.rfind("http")
-                link = text[pos : -1]
+                link = text[pos:-1]
         return link
 
     def getPostImage(self, post):

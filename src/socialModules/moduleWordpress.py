@@ -115,7 +115,7 @@ class moduleWordpress(Content):  # ,Queue):
             print(f"split: {splitUrl.fragment}")
             result = urllib.parse.parse_qsl(splitUrl.fragment)
             print(f"result: {result}")
-            token = urllib.parse.unquote(result[0][1]) #Wrong?
+            token = urllib.parse.unquote(result[0][1])  # Wrong?
             token = result[0][1]
             print(f"token: {token}")
             print(f"name: {name}")
@@ -254,7 +254,7 @@ class moduleWordpress(Content):  # ,Queue):
 
     def publishApiPost(self, *args, **kwargs):
         tags = []
-        
+
         if args and len(args) >= 3:
             title, link, comment = args[:3]
         elif kwargs:
@@ -264,11 +264,13 @@ class moduleWordpress(Content):  # ,Queue):
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
             pos = api.getLinkPosition(link)
-            comment = api.getImagesCode(pos) if hasattr(api, 'getImagesCode') else ''
-            tags = api.getImagesTags(pos) if hasattr(api, 'getImagesTags') else []
+            comment = api.getImagesCode(pos) if hasattr(api, "getImagesCode") else ""
+            tags = api.getImagesTags(pos) if hasattr(api, "getImagesTags") else []
 
         if not title:
-            self.res_dict["error_message"] = "Title is required to publish to WordPress."
+            self.res_dict["error_message"] = (
+                "Title is required to publish to WordPress."
+            )
             return self.res_dict
 
         idTags = self.checkTags(tags) if tags else ""
@@ -281,10 +283,9 @@ class moduleWordpress(Content):  # ,Queue):
             "status": "publish",
             "tags": idTags,
         }
-        
-        if link:
-             payload["meta"] = {"original_link": link}
 
+        if link:
+            payload["meta"] = {"original_link": link}
 
         try:
             res = requests.post(
@@ -294,7 +295,7 @@ class moduleWordpress(Content):  # ,Queue):
             )
             self.res_dict["raw_response"] = res
             res.raise_for_status()  # Will raise an exception for 4xx/5xx errors
-            
+
             res_json = res.json()
             self.res_dict["raw_response"] = res_json
 
@@ -302,12 +303,14 @@ class moduleWordpress(Content):  # ,Queue):
                 self.res_dict["success"] = True
                 self.res_dict["post_url"] = res_json.get("link")
             else:
-                self.res_dict["error_message"] = f"WordPress API error: {res_json.get('message', 'Unknown error')}"
+                self.res_dict["error_message"] = (
+                    f"WordPress API error: {res_json.get('message', 'Unknown error')}"
+                )
 
         except requests.exceptions.RequestException as e:
             self.res_dict["error_message"] = f"Network error: {e}"
             if e.response:
-                 self.res_dict["raw_response"] = e.response.text
+                self.res_dict["raw_response"] = e.response.text
         except Exception as e:
             self.res_dict["error_message"] = f"An unexpected error occurred: {e}"
 
@@ -468,12 +471,15 @@ class moduleWordpress(Content):  # ,Queue):
 def main():
     import logging
     import sys
+
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
 
     wordpress_module = moduleWordpress()
-    if len(sys.argv) > 1 and (sys.argv[1] == 'authenticate' or sys.argv[1] == 'authorize'):
+    if len(sys.argv) > 1 and (
+        sys.argv[1] == "authenticate" or sys.argv[1] == "authorize"
+    ):
         wordpress_module.authorize()
         sys.exit(0)
 

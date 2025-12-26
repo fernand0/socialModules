@@ -149,7 +149,7 @@ class moduleCache(Content):  # ,Queue):
         logMsg(msgLog, 2, False)
         # fileNameQ = f"{self.fileNameBase(self.apiDst)}.queue"
         #  #FIXME: This fileNameBase must be replaced
-        if hasattr(self, 'action') and self.action[0] == 'cache':
+        if hasattr(self, "action") and self.action[0] == "cache":
             fileNameQ = f"{DATADIR}/{self.dst_fileName}.queue"
         else:
             fileNameQ = f"{DATADIR}/{self.fileName}.queue"
@@ -293,7 +293,7 @@ class moduleCache(Content):  # ,Queue):
         return link
 
     def updatePosts(self, src):
-        if hasattr(self, 'action') and self.action[0] == 'cache':
+        if hasattr(self, "action") and self.action[0] == "cache":
             fileNameQ = f"{DATADIR}/{self.dst_fileName}.queue"
         else:
             fileNameQ = f"{DATADIR}/{self.fileName}.queue"
@@ -317,7 +317,7 @@ class moduleCache(Content):  # ,Queue):
         # fileNameQ = fileNamePath(self.url,
         #         (self.socialNetwork, self.nick)) + ".queue"
         # fileNameQ = f"{self.fileNameBase(None)}.queue"
-        if hasattr(self, 'action') and self.action[0] == 'cache':
+        if hasattr(self, "action") and self.action[0] == "cache":
             fileNameQ = f"{DATADIR}/{self.dst_fileName}.queue"
         else:
             fileNameQ = f"{DATADIR}/{self.fileName}.queue"
@@ -717,8 +717,7 @@ class moduleCache(Content):  # ,Queue):
         logMsg(msgLog, 1, False)
         return f"{self.getPostTitle(post)}"
 
-
-    #def processReply(self, reply):
+    # def processReply(self, reply):
 
     def register_specific_tests(self, tester):
         tester.add_test("Edit post title", self.test_edit_title)
@@ -817,6 +816,7 @@ class moduleCache(Content):  # ,Queue):
 
     def get_post_id_from_result(self, result):
         return result
+
 
 def main():
     logging.basicConfig(

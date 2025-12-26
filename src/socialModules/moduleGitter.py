@@ -116,10 +116,10 @@ class moduleGitter(Content):  # ,Queue):
         return title
 
     def getApiPostLink(self, post):
-        link = ''
-        text = post.get('text','')
-        pos = text.rfind('http')
-        if pos>=0:
+        link = ""
+        text = post.get("text", "")
+        pos = text.rfind("http")
+        if pos >= 0:
             link = text[pos:]
         return link
 
@@ -226,7 +226,7 @@ class moduleGitter(Content):  # ,Queue):
         try:
             result = self.getClient().messages.send(chan, f"{title} {link}")
             self.res_dict["raw_response"] = result
-            if result and 'id' in result:
+            if result and "id" in result:
                 self.res_dict["success"] = True
                 # Gitter API doesn't provide a direct message URL in the response
                 # We can construct a link to the room.
@@ -274,7 +274,6 @@ def main():
     gitter_module = moduleGitter()
     tester = ModuleTester(gitter_module)
     tester.run()
-
 
 
 if __name__ == "__main__":

@@ -52,6 +52,7 @@ import buffpy
 from buffpy.managers.profiles import Profiles
 from buffpy.managers.updates import Updates
 from buffpy.models import Update
+
 # sudo pip install buffpy version does not work
 # Better use:
 # git clone https://github.com/vtemian/buffpy.git

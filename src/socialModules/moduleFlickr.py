@@ -55,16 +55,16 @@ class moduleFlickr(Content):  # , Queue):
 
         if not authorized:
             # Get a request token
-            flickr.get_request_token(oauth_callback='oob')
+            flickr.get_request_token(oauth_callback="oob")
 
             # Open a browser at the authentication URL. Do this however
             # you want, as long as the user visits that URL.
-            authorize_url = flickr.auth_url(perms='write')
+            authorize_url = flickr.auth_url(perms="write")
             print(f"Visit {authorize_url} and copy the result")
 
             # Get the verifier code from the user. Do this however you
             # want, as long as the user gives the application the code.
-            verifier = str(input('Verifier code: '))
+            verifier = str(input("Verifier code: "))
 
             # Trade the request token for an access token
             flickr.get_access_token(verifier)
@@ -108,14 +108,14 @@ class moduleFlickr(Content):  # , Queue):
         return title
 
     def getApiPostUrl(self, post):
-        res = ''
+        res = ""
 
         return res
 
     def getApiPostLink(self, post):
         logging.debug(f"{self.indent} Post: {post}")
         link = f"{self.url}/{post['id']}"
-        #logging.debug(f"{self.indent} Post link: {link}")
+        # logging.debug(f"{self.indent} Post link: {link}")
         return link
 
     def extractPostLinks(self, post, linksToAvoid=""):
@@ -158,7 +158,7 @@ class moduleFlickr(Content):  # , Queue):
             return self.res_dict
 
         logging.debug(f"Post: {post} Api: {api}")
-        
+
         try:
             res, error = self.apiCall(
                 "photos.setPerms",
@@ -174,7 +174,7 @@ class moduleFlickr(Content):  # , Queue):
             elif res and res.get("stat") == "ok":
                 self.res_dict["success"] = True
                 self.res_dict["post_url"] = f"{self.url}/{post['id']}"
-            elif not res: # The original code considered a falsy response a success.
+            elif not res:  # The original code considered a falsy response a success.
                 self.res_dict["success"] = True
                 self.res_dict["post_url"] = f"{self.url}/{post['id']}"
                 self.res_dict["raw_response"] = "OK. Published!"
@@ -221,6 +221,7 @@ class moduleFlickr(Content):  # , Queue):
             idpost = ""
 
         return idPost
+
 
 def main():
     logging.basicConfig(

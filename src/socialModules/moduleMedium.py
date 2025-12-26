@@ -20,7 +20,7 @@ class moduleMedium(Content):  # ,Queue):
         return f"{self.user}"
 
     def get_post_id_from_result(self, result):
-        return result.get('id')
+        return result.get("id")
 
     # def authorize(self):
     #     config = configparser.ConfigParser()
@@ -108,7 +108,7 @@ class moduleMedium(Content):  # ,Queue):
         mode = ""
         tags = []
         notifyFollowers = False
-        
+
         if args and len(args) == 3:
             post, link, comment = args
             notifyFollowers = True
@@ -120,13 +120,13 @@ class moduleMedium(Content):  # ,Queue):
             mode = more.get("mode", "")
             tags = more.get("tags", [])
             notifyFollowers = more.get("notifyFollowers", False)
-        
+
         if not mode:
             mode = "public"
-            
+
         logging.info(f"    Publishing in {self.service} ...")
         logging.info(f"    Tags {tags}")
-        
+
         client = self.client
         user = self.getUserRaw()
         logging.info(f"    User {user}")
@@ -134,8 +134,9 @@ class moduleMedium(Content):  # ,Queue):
         title = post
         content = comment
         from html import unescape
+
         title = unescape(title)
-        
+
         if link and title:
             textOrig = (
                 f'Publicado originalmente en <a href="{link}">' f"{title}</a><br />\n\n"
@@ -155,13 +156,15 @@ class moduleMedium(Content):  # ,Queue):
                 notifyFollowers=notifyFollowers,
             )
             self.res_dict["raw_response"] = res
-            if res and 'url' in res:
+            if res and "url" in res:
                 self.res_dict["success"] = True
-                self.res_dict["post_url"] = res['url']
+                self.res_dict["post_url"] = res["url"]
             else:
                 self.res_dict["error_message"] = f"Medium API error: {res}"
         except Exception as e:
-            self.res_dict["error_message"] = self.report("Medium", post, link, sys.exc_info())
+            self.res_dict["error_message"] = self.report(
+                "Medium", post, link, sys.exc_info()
+            )
             self.res_dict["raw_response"] = e
 
         return self.res_dict
@@ -218,10 +221,12 @@ class moduleMedium(Content):  # ,Queue):
             return post["title"].replace("\n", " ")
 
     def getApiPostLink(self, post):
-        return(post['link'])
+        return post["link"]
+
 
 def main():
     import logging
+
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )

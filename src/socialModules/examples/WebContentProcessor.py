@@ -10,6 +10,7 @@ import time
 import urllib.parse
 
 import html2text
+
 # pip install pytidylib
 import requests
 
@@ -306,7 +307,9 @@ class WebContentProcessor:
             return 0
 
         myText, title, file_name, file_name_os, download_status = (
-            ContentFetcher().download_and_clean_content(cleaned_url, self.html_processor)
+            ContentFetcher().download_and_clean_content(
+                cleaned_url, self.html_processor
+            )
         )
 
         if download_status not in ["Success", "JS not available", "Skipped"]:

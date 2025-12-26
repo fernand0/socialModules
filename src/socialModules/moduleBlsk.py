@@ -64,8 +64,7 @@ class moduleBlsk(Content):  # , Queue):
     def setApiPosts(self):
         posts = []
 
-        posts, error = self.apiCall(commandName = "get_author_feed", 
-                                    actor = self.getUser())
+        posts, error = self.apiCall(commandName="get_author_feed", actor=self.getUser())
         print(f"Posts: {posts}")
         print(f"Error: {error}")
 
@@ -103,7 +102,7 @@ class moduleBlsk(Content):  # , Queue):
         return posts
 
     def getApiPostTitle(self, post):
-        title = ''
+        title = ""
         try:
             title = post.post.record.text
         except:
@@ -241,7 +240,7 @@ class moduleBlsk(Content):  # , Queue):
 
         msgLog = f"{self.indent}Publishing {title} ({len(title)})"
         logMsg(msgLog, 2, False)
-        
+
         try:
             res, error = self.apiCall(
                 "send_post", api=self.api, text=title, embed=embed_external
@@ -250,16 +249,24 @@ class moduleBlsk(Content):  # , Queue):
             if error:
                 self.res_dict["error_message"] = str(error)
                 self.res_dict["raw_response"] = error
-            elif res and hasattr(res, 'uri'):
+            elif res and hasattr(res, "uri"):
                 self.res_dict["success"] = True
-                self.res_dict["post_url"] = f"{self.base_url}/profile/{self.me.handle}/post/{res.uri.split('/')[-1]}"
+                self.res_dict["post_url"] = (
+                    f"{self.base_url}/profile/{self.me.handle}/post/{res.uri.split('/')[-1]}"
+                )
             else:
-                self.res_dict["error_message"] = "Publication failed for an unknown reason."
+                self.res_dict["error_message"] = (
+                    "Publication failed for an unknown reason."
+                )
         except atproto_client.exceptions.BadRequestError as e:
-            self.res_dict["error_message"] = self.report(self.service, f"Bad Request: {title} {link}", title, sys.exc_info())
+            self.res_dict["error_message"] = self.report(
+                self.service, f"Bad Request: {title} {link}", title, sys.exc_info()
+            )
             self.res_dict["raw_response"] = e
         except Exception as e:
-            self.res_dict["error_message"] = self.report(self.service, f"Other Exception: {title} {link}", title, sys.exc_info())
+            self.res_dict["error_message"] = self.report(
+                self.service, f"Other Exception: {title} {link}", title, sys.exc_info()
+            )
             self.res_dict["raw_response"] = e
 
         msgLog = f"{self.indent}Res: {self.res_dict['raw_response']} "
@@ -348,7 +355,6 @@ def main():
     blsk_module = moduleBlsk()
     tester = ModuleTester(blsk_module)
     tester.run()
-
 
 
 if __name__ == "__main__":

@@ -177,7 +177,7 @@ class moduleReddit(Content):  # , Queue):
         return title
 
     def getApiPostUrl(self, post):
-        link = ''
+        link = ""
         try:
             print(f"{post.__dir__()}")
             link = f"{urllib.parse.urljoin(self.getUrl(),post.permalink)}"
@@ -186,7 +186,7 @@ class moduleReddit(Content):  # , Queue):
         return link
 
     def getApiPostLink(self, post):
-        link = ''
+        link = ""
         try:
             link = post.url
         except:
@@ -272,6 +272,7 @@ class moduleReddit(Content):  # , Queue):
 
 def main():
     import logging
+
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )

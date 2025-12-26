@@ -226,12 +226,12 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def checkConnected(self):
         try:
-            self.getClient().users().getProfile(userId='me').execute()
+            self.getClient().users().getProfile(userId="me").execute()
         except Exception as e:
             logMsg(f"Gmail connection issue detected: {e}", 3, False)
             self.setClient(f"{self.user}")
             try:
-                self.getClient().users().getProfile(userId='me').execute()
+                self.getClient().users().getProfile(userId="me").execute()
                 logMsg("Gmail reconnection successful.", 1, False)
             except Exception as e:
                 log_msg = f"Gmail reconnection failed for user {self.user}."
@@ -645,7 +645,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 if isinstance(listFolders, dict):
                     nF = self.getChannelName(listFolders)
                 nF = nF.strip("\n")
-                nF = nF.split(') ')[1]
+                nF = nF.split(") ")[1]
                 logging.info("nameFolder", nF)
                 return nF
 
@@ -677,7 +677,6 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 listFolders = ""
             if not listFolders:
                 listFolders = listAllFolders
-
 
     def editl(self, j, newTitle):
         return "Not implemented!"
@@ -739,7 +738,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 .execute()
             )
             self.res_dict["raw_response"] = res
-            if res and 'id' in res:
+            if res and "id" in res:
                 self.res_dict["success"] = True
                 # The API response for sending a draft doesn't contain a direct web link.
                 # We can consider the message ID as a reference.
@@ -748,7 +747,9 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 self.res_dict["error_message"] = "Failed to send draft."
 
         except Exception as e:
-            self.res_dict["error_message"] = self.report("Gmail", idPost, "", sys.exc_info())
+            self.res_dict["error_message"] = self.report(
+                "Gmail", idPost, "", sys.exc_info()
+            )
             self.res_dict["raw_response"] = e
 
         return self.res_dict
@@ -829,8 +830,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def get_user_info(self, client):
         # For Gmail, we can return the user's email address
         try:
-            profile = client.users().getProfile(userId='me').execute()
-            return profile.get('emailAddress', 'Gmail User')
+            profile = client.users().getProfile(userId="me").execute()
+            return profile.get("emailAddress", "Gmail User")
         except Exception as e:
             return f"Gmail User (Error: {e})"
 
@@ -981,10 +982,14 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         pass
 
     def publishApiPost(self, *args, **kwargs):
-        self.res_dict["error_message"] = "This method appears to be a duplicate and is not fully implemented for Gmail. Use the other publishApiPost for sending drafts."
-        
-        logging.warning("Attempted to use a duplicate or misplaced publishApiPost method in moduleGmail.")
-        
+        self.res_dict["error_message"] = (
+            "This method appears to be a duplicate and is not fully implemented for Gmail. Use the other publishApiPost for sending drafts."
+        )
+
+        logging.warning(
+            "Attempted to use a duplicate or misplaced publishApiPost method in moduleGmail."
+        )
+
         # The logic here seems to be for Google Calendar, not Gmail.
         # This is likely a copy-paste error. I will return a failure
         # and log a warning.
@@ -1002,6 +1007,7 @@ def main():
     gmail_module = moduleGmail()
     tester = ModuleTester(gmail_module)
     tester.run()
+
 
 if __name__ == "__main__":
     main()

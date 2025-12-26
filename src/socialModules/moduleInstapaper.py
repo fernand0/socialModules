@@ -20,21 +20,32 @@ class moduleInstapaper(Content):
         email = config.get(self.user, "email")
         password = config.get(self.user, "password")
 
-        return (instapaper_key, instapaper_secret, email, password, oauth_consumer_id, oauth_consumer_secret)
+        return (
+            instapaper_key,
+            instapaper_secret,
+            email,
+            password,
+            oauth_consumer_id,
+            oauth_consumer_secret,
+        )
 
     def authorize(self):
         logging.info("Starting authorize process")
         # Add Instapaper authorization logic here
 
     def initApi(self, keys):
-        msgLog = (
-                f"{self.indent} Service {self.service} Start initApi " 
-                f"{self.user}"
-                )
+        msgLog = f"{self.indent} Service {self.service} Start initApi " f"{self.user}"
         logMsg(msgLog, 2, False)
         self.postaction = "archive"
 
-        instapaper_key, instapaper_secret, email, password, oauth_consumer_id, oauth_consumer_secret = keys
+        (
+            instapaper_key,
+            instapaper_secret,
+            email,
+            password,
+            oauth_consumer_id,
+            oauth_consumer_secret,
+        ) = keys
         # client = Instapaper(consumer_key=oauth_consumer_id, access_token=access_secret)
         # client = None # Replace with actual Instapaper client initialization
         client = ipaper(oauth_consumer_id, oauth_consumer_secret)
@@ -86,7 +97,7 @@ class moduleInstapaper(Content):
             api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
-        
+
         if not link:
             self.res_dict["error_message"] = "No link provided to save to Instapaper."
             return self.res_dict
@@ -108,7 +119,9 @@ class moduleInstapaper(Content):
                 self.res_dict["error_message"] = "Failed to save to Instapaper."
 
         except Exception as e:
-            self.res_dict["error_message"] = self.report(self.getService(), kwargs, "", sys.exc_info())
+            self.res_dict["error_message"] = self.report(
+                self.getService(), kwargs, "", sys.exc_info()
+            )
             self.res_dict["raw_response"] = e
 
         logging.info(f"Res: {self.res_dict}")
@@ -155,7 +168,7 @@ class moduleInstapaper(Content):
         return idPost
 
     def getApiPostLink(self, post):
-        link = ''
+        link = ""
         # Extract link from Instapaper post object
         return link
 
@@ -169,7 +182,7 @@ def main():
     )
 
     from socialModules.moduleTester import ModuleTester
-    
+
     instapaper_module = moduleInstapaper()
     tester = ModuleTester(instapaper_module)
     tester.run()
@@ -177,4 +190,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

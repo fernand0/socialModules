@@ -184,17 +184,25 @@ class moduleGcalendar(Content, socialGoogle):
             title, link, comment = args
             # Basic event structure from args, might need more details depending on usage
             event = {
-                'summary': title,
-                'description': comment or '',
-                'start': {'dateTime': (datetime.datetime.now()).isoformat(), 'timeZone': 'UTC'},
-                'end': {'dateTime': (datetime.datetime.now() + datetime.timedelta(hours=1)).isoformat(), 'timeZone': 'UTC'},
+                "summary": title,
+                "description": comment or "",
+                "start": {
+                    "dateTime": (datetime.datetime.now()).isoformat(),
+                    "timeZone": "UTC",
+                },
+                "end": {
+                    "dateTime": (
+                        datetime.datetime.now() + datetime.timedelta(hours=1)
+                    ).isoformat(),
+                    "timeZone": "UTC",
+                },
             }
-            idCal = self.getActive() # Assume we're publishing to the active calendar
+            idCal = self.getActive()  # Assume we're publishing to the active calendar
         elif kwargs:
             more = kwargs.get("post", {})
             event = more.get("event")
             idCal = more.get("idCal")
-        
+
         if not event or not idCal:
             self.res_dict["error_message"] = "Event data or calendar ID is missing."
             return self.res_dict
@@ -203,22 +211,24 @@ class moduleGcalendar(Content, socialGoogle):
             api = self.getClient()
             res = api.events().insert(calendarId=idCal, body=event).execute()
             self.res_dict["raw_response"] = res
-            if res and 'htmlLink' in res:
+            if res and "htmlLink" in res:
                 self.res_dict["success"] = True
-                self.res_dict["post_url"] = res['htmlLink']
+                self.res_dict["post_url"] = res["htmlLink"]
             else:
-                self.res_dict["error_message"] = "Event creation did not return the expected response."
+                self.res_dict["error_message"] = (
+                    "Event creation did not return the expected response."
+                )
         except Exception as e:
-            self.res_dict["error_message"] = self.report("Gcalendar", idCal, "", sys.exc_info())
+            self.res_dict["error_message"] = self.report(
+                "Gcalendar", idCal, "", sys.exc_info()
+            )
             self.res_dict["raw_response"] = e
 
         return self.res_dict
 
-
-
     def get_user_info(self, client):
         # For Gcalendar, we can return the active calendar's summary
-        if hasattr(self, 'active'):
+        if hasattr(self, "active"):
             return f"Active Calendar: {self.active}"
         return "Gcalendar User"
 

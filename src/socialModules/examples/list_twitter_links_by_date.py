@@ -25,33 +25,36 @@ def get_twitter_links_by_date(date_str):
     """
     try:
         # Validate the date format
-        selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        selected_date = datetime.strptime(date_str, "%Y-%m-%d").date()
     except ValueError:
         print("Error: Invalid date format. Please use 'YYYY-MM-DD'.")
         return []
 
     # Initialize the publication cache
     cache = PublicationCache()
-    
+
     # Get all publications from Twitter
-    twitter_publications = cache.get_publications_by_service('twitter')
+    twitter_publications = cache.get_publications_by_service("twitter")
 
     # Filter publications by the selected date
     links_for_date = []
     for pub in twitter_publications:
-        pub_date_str = pub.get('publication_date', '').split('T')[0]
+        pub_date_str = pub.get("publication_date", "").split("T")[0]
         try:
-            pub_date = datetime.strptime(pub_date_str, '%Y-%m-%d').date()
+            pub_date = datetime.strptime(pub_date_str, "%Y-%m-%d").date()
             if pub_date == selected_date:
-                links_for_date.append({
-                    'title': pub.get('title', 'No Title'),
-                    'original_link': pub.get('original_link', '#')
-                })
+                links_for_date.append(
+                    {
+                        "title": pub.get("title", "No Title"),
+                        "original_link": pub.get("original_link", "#"),
+                    }
+                )
         except (ValueError, TypeError):
             # Ignore publications with invalid date formats
             continue
-            
+
     return links_for_date
+
 
 def generate_markdown_list(links):
     """
@@ -69,8 +72,9 @@ def generate_markdown_list(links):
     markdown_list = ""
     for link in links:
         markdown_list += f"- [{link['title']}]({link['original_link']})\n"
-    
+
     return markdown_list
+
 
 def main():
     """
@@ -82,13 +86,14 @@ def main():
         sys.exit(1)
 
     date_str = sys.argv[1]
-    
+
     # Get the links for the specified date
     twitter_links = get_twitter_links_by_date(date_str)
-    
+
     # Generate and print the Markdown list
     markdown_output = generate_markdown_list(twitter_links)
     print(markdown_output)
+
 
 if __name__ == "__main__":
     main()

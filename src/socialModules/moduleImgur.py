@@ -45,7 +45,6 @@ class moduleImgur(Content):  # , Queue):
     def get_user_info(self, client):
         return f"{self.user}"
 
-
     def setApiPosts(self):
         posts = []
         client = self.getClient()
@@ -138,13 +137,12 @@ class moduleImgur(Content):  # , Queue):
             # When pos is < -1 there can be drafts and we just want
             # to post the first one
             pos = len(posts)
-            post = posts[pos-1]
+            post = posts[pos - 1]
 
         msgLog = f"{self.indent} End getPost"
         logMsg(msgLog, 2, False)
         self.indent = self.indent[:-1]
         return post
-
 
     def setPostTitle(self, post, newTitle):
         post.title = newTitle
@@ -174,7 +172,7 @@ class moduleImgur(Content):  # , Queue):
 
     def getApiPostLink(self, post):
         link = ""
-        if self.getPostsType() == 'cache':
+        if self.getPostsType() == "cache":
             return post[1]
         else:
             try:
@@ -206,7 +204,7 @@ class moduleImgur(Content):  # , Queue):
             res = reply
             if "Image already in gallery." in res:
                 res += " SAVELINK"
-        elif (isinstance(reply, str) and "OK" in reply):
+        elif isinstance(reply, str) and "OK" in reply:
             res = reply
         elif not reply:
             # Failure: The reply is None, False, or empty.
@@ -246,7 +244,7 @@ class moduleImgur(Content):  # , Queue):
             api = more.get("api", "")
             title = api.getPostTitle(post)
             idPost = api.getPostId(post)
-        
+
         if not idPost:
             self.res_dict["error_message"] = "No post ID provided to publish."
             return self.res_dict
@@ -256,7 +254,7 @@ class moduleImgur(Content):  # , Queue):
         msgLog = f"{self.indent}  Post ID: {idPost}"
         logMsg(msgLog, 1, False)
         api = self.getClient()
-        
+
         try:
             res_api = api.share_on_imgur(idPost, title, terms=0)
             self.res_dict["raw_response"] = res_api
@@ -264,18 +262,27 @@ class moduleImgur(Content):  # , Queue):
                 self.res_dict["success"] = True
                 self.res_dict["post_url"] = f"https://imgur.com/gallery/{idPost}"
             else:
-                self.res_dict["error_message"] = "Imgur API returned a non-successful status."
+                self.res_dict["error_message"] = (
+                    "Imgur API returned a non-successful status."
+                )
 
         except imgurpython.helpers.error.ImgurClientError as e:
-            if 'Image already in gallery.' in str(e):
+            if "Image already in gallery." in str(e):
                 self.res_dict["error_message"] = "Image already in gallery."
                 # This could be considered a "soft" failure, you might want to handle it differently
-                self.res_dict["success"] = False 
+                self.res_dict["success"] = False
             else:
-                self.res_dict["error_message"] = self.report(self.getService(), kwargs, "Unexpected ImgurClientError", sys.exc_info())
+                self.res_dict["error_message"] = self.report(
+                    self.getService(),
+                    kwargs,
+                    "Unexpected ImgurClientError",
+                    sys.exc_info(),
+                )
             self.res_dict["raw_response"] = e
         except Exception as e:
-            self.res_dict["error_message"] = self.report("Imgur", post, idPost, sys.exc_info())
+            self.res_dict["error_message"] = self.report(
+                "Imgur", post, idPost, sys.exc_info()
+            )
             self.res_dict["raw_response"] = e
 
         return self.res_dict
@@ -387,6 +394,7 @@ class moduleImgur(Content):  # , Queue):
 
 def main():
     import logging
+
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )

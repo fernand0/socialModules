@@ -15,8 +15,7 @@ from html.parser import HTMLParser
 
 from bs4 import BeautifulSoup, Tag
 
-from socialModules.configMod import (CONFIGDIR, DATADIR, checkFile,
-                                     fileNamePath, logMsg)
+from socialModules.configMod import CONFIGDIR, DATADIR, checkFile, fileNamePath, logMsg
 from socialModules.modulePublicationCache import PublicationCache
 
 
@@ -104,12 +103,11 @@ class Content:
 
     def setClient(self, account):
         profile = ""
-        if hasattr(self, 'profile'):
+        if hasattr(self, "profile"):
             profile = self.profile
         msgLog = (
-                f"{self.indent} Start setClient profile: "
-                f" {profile} account: {account}"
-                )
+            f"{self.indent} Start setClient profile: " f" {profile} account: {account}"
+        )
         logMsg(msgLog, 1, False)
         self.indent = f"{self.indent} "
 
@@ -132,7 +130,8 @@ class Content:
             config = configparser.RawConfigParser()
             config.read(configFile)
         except:
-            msgLog = (f"{self.indent}  "
+            msgLog = (
+                f"{self.indent}  "
                 f"Does file {configFile} exist?\n"
                 f"It is well formatted?\n"
                 f" Does it contain an entry for your account?"
@@ -179,7 +178,7 @@ class Content:
 
         # msgLog = f"{self.indent} clienttt {client}"  #: {src[1:]}"
         # logMsg(msgLog, 2, False)
-        if isinstance(client, str) and 'Error' in client:
+        if isinstance(client, str) and "Error" in client:
             client = None
         if client is None:
             msgLog = f"{self.indent} Error: Failed to initialize client for service '{self.service}'."
@@ -239,7 +238,7 @@ class Content:
         try:
             return post.get(selector, "")
         except:
-            #print(f"Attribute: {post}")
+            # print(f"Attribute: {post}")
             return ""
         # result = ""
         # try:
@@ -330,7 +329,7 @@ class Content:
         # typeposts = self.getPostsType()
         msgLog = f"{self.indent} Posts type {self.getPostsType()}"
         logMsg(msgLog, 2, False)
-        typePosts  = 'posts'
+        typePosts = "posts"
         if hasattr(self, "getPostsType") and self.getPostsType():
             if self.getPostsType() in [
                 "posts",
@@ -353,17 +352,25 @@ class Content:
         msgLog = f"{self.indent} Command: {cmd}"
         logMsg(msgLog, 2, False)
         posts = cmd()
-        if use_cache and not posts and typePosts in ['posts']:
+        if use_cache and not posts and typePosts in ["posts"]:
             msgLog = f"{self.indent} No posts found, checking PublicationCache"
             logMsg(msgLog, 2, False)
             try:
                 cache = PublicationCache()
                 publications = cache.get_publications_by_service(self.service.lower())
                 if publications:
-                    msgLog = f"{self.indent} Found {len(publications)} publications in cache"
+                    msgLog = (
+                        f"{self.indent} Found {len(publications)} publications in cache"
+                    )
                     logMsg(msgLog, 2, False)
-                    posts = [{'title': pub['title'], 'response_link': \
-                              pub['response_link'], 'link': pub['original_link']} for pub in publications]
+                    posts = [
+                        {
+                            "title": pub["title"],
+                            "response_link": pub["response_link"],
+                            "link": pub["original_link"],
+                        }
+                        for pub in publications
+                    ]
             except ImportError:
                 msgLog = f"{self.indent} PublicationCache module not found."
                 logMsg(msgLog, 3, False)
@@ -427,7 +434,7 @@ class Content:
                 # userD = dst.src[1][3]
                 # serviceD = dst.src[1][2]
                 # logging.info(f"Uuuuuu: {userD} - {serviceD}")
-                if hasattr(dst, 'apiDst'):
+                if hasattr(dst, "apiDst"):
                     userD = dst.apiDst.getUser()
                     serviceD = dst.apiDst.getService()
                 else:
@@ -468,17 +475,14 @@ class Content:
         msgLog = f"{self.indent} updating {msgupdate}"
         logMsg(msgLog, 1, False)
 
-        #self.fileName = ""
+        # self.fileName = ""
         # fileName = f"{src.fileNameBase(self)}.last"
         fileName = f"{DATADIR}/{self.fileName}.last"
         msgLog = f"{self.indent} fileName {fileName}"
         logMsg(msgLog, 2, False)
         msgLog = checkFile(fileName, self.indent)
         if "OK" not in msgLog:
-            msgLog = (
-                    f"file {fileName} does not exist. "
-                    f"I'm going to create it."
-                    )
+            msgLog = f"file {fileName} does not exist. " f"I'm going to create it."
             logMsg(msgLog, 3, False)
         with open(fileName, "w") as f:
             if link:
@@ -556,9 +560,13 @@ class Content:
 
         else:
             lastTime = 0
-            logMsg( f"[WARN] File: {fileName} does not exist", 2, 1,)
+            logMsg(
+                f"[WARN] File: {fileName} does not exist",
+                2,
+                1,
+            )
             # self.report(self.service, msgLog, "", "")
-        if len(linkLast) >0:
+        if len(linkLast) > 0:
             msgLog = f"{self.indent} linkLast: {linkLast[0]}"
             logMsg(msgLog, 2, False)
         # msgLog = f"{self.indent} lastTime: {lastTime}"
@@ -583,7 +591,7 @@ class Content:
             if os.path.isfile(fileName):
                 lastTime2 = os.path.getctime(fileName)
             myLastLink2 = self.getLastLinkNew(other)
-            #print(f"myLastLink2: {myLastLink2} {lastTime2}")
+            # print(f"myLastLink2: {myLastLink2} {lastTime2}")
             return myLastLink2, lastTime2
         try:
             # url = self.getUrl()
@@ -621,9 +629,6 @@ class Content:
                 pickle.dump((tnow, tSleep), f)
         else:
             print("not implemented!")
-
-
-
 
     def setNumPosts(self, numposts):
         self.numposts = numposts
@@ -743,7 +748,7 @@ class Content:
         posts = self.getPosts()
         if posts and (i >= 0) and (i < len(posts)):
             post = posts[i]
-        #elif posts:
+        # elif posts:
         #    # Sure? FIXME
         #    post = posts[-1]
 
@@ -1144,8 +1149,8 @@ class Content:
         try:
             post = self.getNextPost(apiDst)
             if post:
-                #msgLog = f"{self.indent} Deleting post {post}"
-                #logMsg(msgLog, 2, False)
+                # msgLog = f"{self.indent} Deleting post {post}"
+                # logMsg(msgLog, 2, False)
                 idPost = self.getPostId(post)
                 # msgLog = f"{self.indent} post Id post {idPost}"
                 # logMsg(msgLog, 2, False)
@@ -1285,8 +1290,9 @@ class Content:
 
                 # Check if we should cache this publication
                 try:
-                    from examples.publication_cache_config import \
-                        should_cache_publication
+                    from examples.publication_cache_config import (
+                        should_cache_publication,
+                    )
 
                     if not should_cache_publication(pub_service, pub_title, pub_link):
                         return
@@ -1296,8 +1302,7 @@ class Content:
                         return
 
                 # Import here to avoid circular imports
-                from socialModules.modulePublicationCache import \
-                    PublicationCache
+                from socialModules.modulePublicationCache import PublicationCache
 
                 # Initialize cache
                 cache = PublicationCache()
@@ -1343,8 +1348,7 @@ class Content:
         try:
             # Check for custom extractor first
             try:
-                from examples.publication_cache_config import \
-                    get_custom_extractor
+                from examples.publication_cache_config import get_custom_extractor
 
                 custom_extractor = get_custom_extractor(service)
                 if custom_extractor:
@@ -1746,8 +1750,7 @@ class Content:
     def report(self, profile, post, link, data):
         if post:
             msg = [
-                f"Report: failed! "
-                f"{datetime.datetime.now().isoformat()}",
+                f"Report: failed! " f"{datetime.datetime.now().isoformat()}",
                 f"Post: {post}",
             ]
         else:
@@ -1803,13 +1806,13 @@ class Content:
         return ""
 
     def getPostTitle(self, post):
-        title= ""
+        title = ""
         try:
             title = self.getApiPostTitle(post)
         except:
-            if not title and hasattr(post, 'get'):
-                title = post.get('title')
-        return title;
+            if not title and hasattr(post, "get"):
+                title = post.get("title")
+        return title
 
     def getPostDate(self, post):
         return ""
@@ -1821,12 +1824,12 @@ class Content:
         link = ""
         try:
             link = self.getApiPostLink(post)
-            if not link and hasattr(post, 'get'):
-                link = post.get('link', '')
+            if not link and hasattr(post, "get"):
+                link = post.get("link", "")
         except:
             print(f"post: {post}")
-            if not link and hasattr(post, 'get'):
-                link = post.get('link', '')
+            if not link and hasattr(post, "get"):
+                link = post.get("link", "")
         return link
 
     def getApiPostUrl(self, post):
@@ -1837,12 +1840,12 @@ class Content:
         url = ""
         try:
             url = self.getApiPostUrl(post)
-            if not url and hasattr(post, 'get'):
-                url = post.get('url', '')
+            if not url and hasattr(post, "get"):
+                url = post.get("url", "")
         except:
             logging.info(f"post: {post}")
-            if not url and hasattr(post, 'get'):
-                url = post.get('response_link', '')
+            if not url and hasattr(post, "get"):
+                url = post.get("response_link", "")
         return url
 
     def getPostId(self, post):

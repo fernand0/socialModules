@@ -28,14 +28,15 @@ FAIL = "Fail!"
 OK = "OK"
 
 
-
 class ContextFilter(logging.Filter):
     """
     This is a filter which injects the 'nameA' attribute into the log record.
     """
+
     def filter(self, record):
-        record.nameA = getattr(thread_local, 'nameA', '') or ''
+        record.nameA = getattr(thread_local, "nameA", "") or ""
         return True
+
 
 # Configure the root logger with both file and console handlers
 root_logger = logging.getLogger()
@@ -44,7 +45,7 @@ root_logger.setLevel(logging.DEBUG)
 # Create formatter
 formatter = logging.Formatter(
     fmt="%(asctime)s [%(filename).12s] %(nameA)s %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
 if not os.path.exists(LOGDIR):
@@ -74,7 +75,8 @@ console_handler.addFilter(ContextFilter())
 
 # Add handlers to root logger
 # root_logger.addHandler(file_handler)
-#root_logger.addHandler(console_handler)
+# root_logger.addHandler(console_handler)
+
 
 def logMsg(msgLog, log=1, print_to_console=True):
     # name_action = getattr(thread_local, 'nameA', None)
@@ -88,7 +90,7 @@ def logMsg(msgLog, log=1, print_to_console=True):
     elif log == 3:
         logging.warning(msgLog)
 
-    if hasattr(thread_local, 'nameA') and thread_local.nameA:
+    if hasattr(thread_local, "nameA") and thread_local.nameA:
         msgLog = f"{thread_local.nameA}{msgLog}"
 
     if print_to_console is True:
@@ -117,6 +119,7 @@ def fileNamePath(url, socialNetwork=()):
         myFile = f"{DATADIR}/{myNetloc}_" f"{socialNetwork[0]}_{socialNetwork[1]}"
         theName = os.path.expanduser(myFile)
     return theName
+
 
 def checkFile(fileName, indent=""):
     msgLog = f"{indent} Start checkFile"
@@ -232,6 +235,7 @@ def getModule(profile, indent=""):
 
     return api
 
+
 def getApi(profile, nick, indent="", channel=None):
     msgLog = f"{indent} Start getApi with channel {channel}"
     logMsg(msgLog, 2, 0)
@@ -241,8 +245,7 @@ def getApi(profile, nick, indent="", channel=None):
     result_api = None
 
     if api is None:
-        logMsg(f"{indent} Failed to get API module for profile: "
-               f"{profile}", 3, 1)
+        logMsg(f"{indent} Failed to get API module for profile: " f"{profile}", 3, 1)
     else:
         api.profile = profile
         api.nick = nick
@@ -257,6 +260,7 @@ def getApi(profile, nick, indent="", channel=None):
     msgLog = f"{indent} End getApi"
     logMsg(msgLog, 2, 0)
     return result_api
+
 
 def nameModule():
     import inspect
@@ -300,14 +304,16 @@ def select_from_list(
         or hasattr(options[0], "name")
     ):
         names = [
-            safe_get(
-                el,
-                [
-                    identifier,
-                ],
+            (
+                safe_get(
+                    el,
+                    [
+                        identifier,
+                    ],
+                )
+                if isinstance(el, dict)
+                else getattr(el, identifier)
             )
-            if isinstance(el, dict)
-            else getattr(el, identifier)
             for el in options
         ]
     else:
@@ -369,15 +375,17 @@ def select_from_list(
 
     return sel, name
 
+
 def extract_nick_from_url(url):
     result = url
     url_parsed = urllib.parse.urlparse(url)
-    #if url and (url.startswith("http")):
+    # if url and (url.startswith("http")):
     #    result = url.split("//", 1)[1]
-    if (((url_parsed.netloc.count('.')>1)
-         and (url_parsed.netloc.split('.')[0] in ['www']))
-        or (url_parsed.netloc.count('.') == 1)):
-            result = f"{url_parsed.netloc}{url_parsed.path}"
+    if (
+        (url_parsed.netloc.count(".") > 1)
+        and (url_parsed.netloc.split(".")[0] in ["www"])
+    ) or (url_parsed.netloc.count(".") == 1):
+        result = f"{url_parsed.netloc}{url_parsed.path}"
     else:
         result = f"{url_parsed.netloc}"
     if url_parsed.query:

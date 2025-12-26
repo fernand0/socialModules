@@ -105,7 +105,7 @@ class moduleSmtp(Content):  # , Queue):
         if not post and not link:
             self.res_dict["error_message"] = "No content or link to send."
             return self.res_dict
-        
+
         destaddr = self.to or self.user
         fromaddr = self.fromaddr or self.user
         subject = post.split("\n")[0] if post else link or "No subject"
@@ -119,14 +119,14 @@ class moduleSmtp(Content):  # , Queue):
 
         body_content = comment or post
         htmlDoc = self._create_html_email(subject, link, body_content)
-        msg.attach(MIMEText(htmlDoc, 'html'))
-        
+        msg.attach(MIMEText(htmlDoc, "html"))
+
         try:
             server = self.client
             if not server:
                 server = smtplib.SMTP_SSL(self.server, self.port)
                 server.login(self.user, self.password)
-            
+
             res = server.sendmail(fromaddr, destaddr, msg.as_string())
             self.res_dict["raw_response"] = res
 
@@ -136,7 +136,9 @@ class moduleSmtp(Content):  # , Queue):
             else:
                 self.res_dict["error_message"] = f"SMTP server returned errors: {res}"
         except Exception as e:
-            self.res_dict["error_message"] = self.report(self.service, f"{post} {link}", post, sys.exc_info())
+            self.res_dict["error_message"] = self.report(
+                self.service, f"{post} {link}", post, sys.exc_info()
+            )
             self.res_dict["raw_response"] = e
 
         return self.res_dict

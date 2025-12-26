@@ -197,9 +197,7 @@ def generate_message(
     range_msg = (
         f"(entre las {frame[0]} y las {frame[1]})"
         if frame_name != "valle"
-        else "(entre las 00:00 y las 8:00)"
-        if now.weekday() <= 4
-        else "(todo el día)"
+        else "(entre las 00:00 y las 8:00)" if now.weekday() <= 4 else "(todo el día)"
     )
     message = (
         f"{BUTTON_SYMBOLS[frame_name]} "

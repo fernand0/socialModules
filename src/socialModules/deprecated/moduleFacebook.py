@@ -218,9 +218,9 @@ class moduleFacebook(Content):  # ,Queue):
         # return f'https://twitter.com/{self.user}/status/{idPost}'
 
     def getApiPostLink(self, post):
-        result = self.getAttribute(post, 'url')
-        pos = result.find('=')
-        pos2 = result.find('&',pos)
+        result = self.getAttribute(post, "url")
+        pos = result.find("=")
+        pos2 = result.find("&", pos)
         import urllib.parse
 
         return urllib.parse.unquote(result[pos + 1 : pos2])

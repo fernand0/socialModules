@@ -177,7 +177,7 @@ class moduleImap(Content):  # , Queue):
             self.setChannel()
             channel = self.getChannel()
         postsN = self.listMessages(self.getClient(), channel)
-        posts = postsN #[element[1] for element in postsN]
+        posts = postsN  # [element[1] for element in postsN]
         # self.listMessages(self.getClient(), channel)
         return posts
 
@@ -191,7 +191,7 @@ class moduleImap(Content):  # , Queue):
         # Examples:
         # b'(\HasNoChildren \UnMarked) "/" INBOX/unizar/vrtic'
         # b'(\HasNoChildren \UnMarked) "." INBOX.unizar.vrtic'
-        name = str(channel).split(f'"{self.separator}"')[ -1][1:-1]
+        name = str(channel).split(f'"{self.separator}"')[-1][1:-1]
         return name
 
     def setPage(self, channel=""):
@@ -413,8 +413,7 @@ class moduleImap(Content):  # , Queue):
                         headSubjDec = headerToString(headSubject)
                         print(
                             fmt
-                            %
-                            (
+                            % (
                                 j,
                                 headFromDec[:20],  # [0][0][:20],
                                 headSubjDec[: col - 20 - 5],
@@ -529,16 +528,16 @@ class moduleImap(Content):  # , Queue):
         return msg_data[int(msg_number)]  # messages[-10+int(msg_number)-1]
 
     def get_headers_content(self, M, msg, header_name=""):
-        result = None # Initialize result variable
-        if header_name: # If header_name is provided
+        result = None  # Initialize result variable
+        if header_name:  # If header_name is provided
             textHeader = M.getHeader(msg, header_name)
             textHeader = email.header.decode_header(str(textHeader))
             textHeader = str(email.header.make_header(textHeader))
             if textHeader != "None":
-                result = textHeader # Assign to result
+                result = textHeader  # Assign to result
             else:
-                result = "" # Assign to result
-        else: # If header_name is empty, behave as before
+                result = ""  # Assign to result
+        else:  # If header_name is empty, behave as before
             textHeaders = []
             nameHeaders = []
             for header in msgHeaders:
@@ -548,8 +547,8 @@ class moduleImap(Content):  # , Queue):
                 if textHeader != "None":
                     textHeaders.append(f"{textHeader}")
                     nameHeaders.append(f"{header}")
-            result = textHeaders, nameHeaders # Assign tuple to result
-        return result # Single return statement
+            result = textHeaders, nameHeaders  # Assign tuple to result
+        return result  # Single return statement
 
     def selectHeaderAuto(self, M, msg):
         # i = 1 # Removed unused variable
@@ -573,7 +572,7 @@ class moduleImap(Content):  # , Queue):
             # textHeader = email.header.decode_header(str(textHeader))
             # textHeader = str(email.header.make_header(textHeader))
             logging.info(f"Filter: (header) {header} (text) {textHeader}")
-            if 'Subject' not in header:
+            if "Subject" not in header:
                 pos = textHeader.find("<")
                 if pos >= 0:
                     textHeader = textHeader[pos + 1 : textHeader.find(">", pos + 1)]
@@ -1083,21 +1082,27 @@ class moduleImap(Content):  # , Queue):
         try:
             # Trying to avoid re-authentication. Are there better ways?
             status, _ = self.getClient().noop()
-            if status == 'OK':
+            if status == "OK":
                 return
             else:
                 logMsg(f"IMAP NOOP command returned status '{status}'.", 3, False)
                 raise imaplib.IMAP4.error("NOOP failed")
         except (imaplib.IMAP4.abort, imaplib.IMAP4.error, AttributeError):
-            logMsg(f"IMAP connection issue detected. Attempting to reconnect for user {self.user}...", 1, False)
+            logMsg(
+                f"IMAP connection issue detected. Attempting to reconnect for user {self.user}...",
+                1,
+                False,
+            )
             self.setClient(f"{self.user}")
             try:
                 status, _ = self.getClient().noop()
-                if status == 'OK':
+                if status == "OK":
                     logMsg("IMAP reconnection successful.", 1, False)
                     return
                 else:
-                    raise imaplib.IMAP4.error(f"Reconnection check failed, NOOP status: {status}")
+                    raise imaplib.IMAP4.error(
+                        f"Reconnection check failed, NOOP status: {status}"
+                    )
             except (imaplib.IMAP4.abort, imaplib.IMAP4.error, AttributeError) as e:
                 log_msg = f"IMAP reconnection failed for user {self.user}."
                 logMsg(f"{log_msg} Error: {e}", 3, False)
@@ -1111,8 +1116,9 @@ class moduleImap(Content):  # , Queue):
         folders = [self.nameFolder(fol) for fol in data]
         folders_sel = []
         if folderM:
-            folders_sel = [self.nameFolder(fol) for fol in data
-                           if folderM in self.nameFolder(fol)]
+            folders_sel = [
+                self.nameFolder(fol) for fol in data if folderM in self.nameFolder(fol)
+            ]
         # Dirty trick? We add at the end (the last that will appear on the
         # terminal the selected folders, if any
         folders = folders + folders_sel
@@ -1420,7 +1426,7 @@ class moduleImap(Content):  # , Queue):
 
         # We are returning a different code from 'OK' because we do not want to
         # delete these messages.
-        if i == len(msgs.split(',')):
+        if i == len(msgs.split(",")):
             return "OKOK"
         else:
             return "OKNO"
@@ -1437,9 +1443,7 @@ class moduleImap(Content):  # , Queue):
             if isinstance(idPost, int):
                 idPost = str(idPost)
             print(f"IdPostttt: {idPost}")
-            res = self.moveMails(
-                self.getClient(), idPost, self.special["Trash"]
-            )
+            res = self.moveMails(self.getClient(), idPost, self.special["Trash"])
         except:
             logging.warning("Some error moving mails to Trash")
             res = "Fail!"
@@ -1463,25 +1467,27 @@ class moduleImap(Content):  # , Queue):
             channel = self.getPostsType()
             M.select(channel.capitalize())
         if isinstance(msgs, bytes):
-            msgs = msgs.decode('ascii')
+            msgs = msgs.decode("ascii")
 
         msgLog = f"Copying {len(msgs.split(','))} messages to {folder}"
         logMsg(msgLog, 1, False)
         print(f"Msgssss: {msgs} {type(msgs)}")
 
-        msgList = msgs.split(',')
+        msgList = msgs.split(",")
         chunk_size = 500
 
         for i in range(0, len(msgList), chunk_size):
-            chunk = msgList[i:i + chunk_size]
-            chunk_str = ','.join(chunk)
+            chunk = msgList[i : i + chunk_size]
+            chunk_str = ",".join(chunk)
 
             try:
                 status, resultMsg = M.copy(chunk_str, folder)
                 if status != "OK":
                     logging.warning(f"Failed to copy chunk: {resultMsg}")
                     self.res_dict["success"] = False
-                    self.res_dict["error_message"] += f"Failed to copy chunk: {resultMsg}. "
+                    self.res_dict[
+                        "error_message"
+                    ] += f"Failed to copy chunk: {resultMsg}. "
                     all_messages_moved_and_deleted = False
                     continue
 
@@ -1490,7 +1496,9 @@ class moduleImap(Content):  # , Queue):
                 if result[0] != "OK":
                     print("Failed to delete chunk!")
                     self.res_dict["success"] = False
-                    self.res_dict["error_message"] += f"Failed to delete chunk: {result}. "
+                    self.res_dict[
+                        "error_message"
+                    ] += f"Failed to delete chunk: {result}. "
                     all_messages_moved_and_deleted = False
                 else:
                     print(f"Chunk deleted: {result}")
@@ -1510,12 +1518,13 @@ class moduleImap(Content):  # , Queue):
                 all_messages_moved_and_deleted = False
 
         if all_messages_moved_and_deleted:
-            self.res_dict["post_url"] = f"imap://{self.user}@{self.server}/{folder}" # Indicate target folder
-        
+            self.res_dict["post_url"] = (
+                f"imap://{self.user}@{self.server}/{folder}"  # Indicate target folder
+            )
+
         # Ensure raw_response is populated even on success for completeness
         if not self.res_dict["raw_response"]:
-             self.res_dict["raw_response"] = "All chunks processed."
-
+            self.res_dict["raw_response"] = "All chunks processed."
 
         return self.res_dict
 
@@ -1587,7 +1596,7 @@ class moduleImap(Content):  # , Queue):
                 # Extract text from each part (plain or html)
                 txt = self._extract_text(part)
                 if not isinstance(txt, str):
-                    txt = txt.decode('utf-8')
+                    txt = txt.decode("utf-8")
                 mail_content += txt
         else:
             # If not multipart, extract text directly
@@ -1620,13 +1629,13 @@ class moduleImap(Content):  # , Queue):
             # FIXME: does this belong here?
             extracted_text = extracted_text.decode("utf-8")
 
-        cleaning_pattern = re.compile(r'[\u000A\u200C\u00A0\u2007\u00AD\u034F]+')
-        clean_text = cleaning_pattern.sub(' ', extracted_text)
-        pattern = r'[\r]'
-        replacement = r'\n'
+        cleaning_pattern = re.compile(r"[\u000A\u200C\u00A0\u2007\u00AD\u034F]+")
+        clean_text = cleaning_pattern.sub(" ", extracted_text)
+        pattern = r"[\r]"
+        replacement = r"\n"
         clean_text = re.sub(pattern, replacement, clean_text)
-        pattern = r'[\s\n]{3,}'
-        replacement = r'\n\n'
+        pattern = r"[\s\n]{3,}"
+        replacement = r"\n\n"
         clean_text = re.sub(pattern, replacement, clean_text)
         return clean_text
 
@@ -1737,10 +1746,10 @@ class moduleImap(Content):  # , Queue):
             post = msg[1]
         else:
             post = msg
-        postId = post.get('Message-ID','')
-        if postId.startswith('<'):
+        postId = post.get("Message-ID", "")
+        if postId.startswith("<"):
             postId = postId[1:]
-        if postId.startswith('>'):
+        if postId.startswith(">"):
             postId = postId[:-1]
         return postId
 
@@ -1760,7 +1769,7 @@ class moduleImap(Content):  # , Queue):
         msgLog = f"Folder: {folder}"
         logMsg(msgLog, 2, False)
         nameF = self.nameFolder(folder)
-        logMsg(f"Folder: {nameF}",2 , False)
+        logMsg(f"Folder: {nameF}", 2, False)
         self.channel = nameF
         logging.debug(f"Select: {M.select(nameF)}")
         # data = M.sort('ARRIVAL', 'UTF-8', 'ALL')
@@ -1835,7 +1844,7 @@ class moduleImap(Content):  # , Queue):
         apiSrc.publishPost("Mensaje", "https://www.unizar.es/", "")
 
     def test_drafts(self, apiSrc):
-        apiSrc.setPostsType('drafts')
+        apiSrc.setPostsType("drafts")
         apiSrc.setPosts()
         if apiSrc.getPosts():
             posts = [apiSrc.getPostSubject(post[1]) for post in apiSrc.getPosts()]
@@ -1854,13 +1863,17 @@ class moduleImap(Content):  # , Queue):
             print(f"{i}) Title: {apiSrc.getPostTitle(post)}")
 
         selPost = input("Select one: ")
-        if selPost and selPost.isdigit() and (int(selPost)<=i):
-            print(f"{i}) Title: "
-                  f"{apiSrc.getPostTitle(apiSrc.getPosts()[int(selPost)])}")
-            print(f"{i}) Content: "
-                  f"{apiSrc.getPostContent(apiSrc.getPosts()[int(selPost)])}")
-            #res = apiSrc.publishPost(api = apiSrc, post = apiSrc.getPosts()[int(selPost)])
-            #print(f"Res: {res}")
+        if selPost and selPost.isdigit() and (int(selPost) <= i):
+            print(
+                f"{i}) Title: "
+                f"{apiSrc.getPostTitle(apiSrc.getPosts()[int(selPost)])}"
+            )
+            print(
+                f"{i}) Content: "
+                f"{apiSrc.getPostContent(apiSrc.getPosts()[int(selPost)])}"
+            )
+            # res = apiSrc.publishPost(api = apiSrc, post = apiSrc.getPosts()[int(selPost)])
+            # print(f"Res: {res}")
 
     def test_attachments(self, apiSrc):
         folder = apiSrc.selectFolderN()
@@ -1880,9 +1893,9 @@ class moduleImap(Content):  # , Queue):
 
 
 def main():
-    logging.basicConfig(stream=sys.stdout,
-                        level=logging.INFO,
-                        format='%(asctime)s %(message)s')
+    logging.basicConfig(
+        stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(message)s"
+    )
 
     from socialModules.moduleTester import ModuleTester
 
@@ -1891,7 +1904,8 @@ def main():
     tester.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+
     def test_click(self, apiSrc):
         apiSrc.setPosts()
 
@@ -1931,6 +1945,7 @@ if __name__ == '__main__':
 
     def test_move_mail(self, apiSrc):
         import moduleRules
+
         rules = moduleRules.moduleRules()
         rules.checkRules()
         indent = ""
@@ -2000,6 +2015,5 @@ if __name__ == '__main__':
         nameF = apiDst.getChannelName(folderDst)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-

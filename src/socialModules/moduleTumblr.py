@@ -103,7 +103,7 @@ class moduleTumblr(Content):  # , Queue):
 
     def getApiPostLink(self, post):
         link = ""
-        if post and 'url' in post:
+        if post and "url" in post:
             link = self.getAttribute(post, "url")
 
         return link
@@ -153,8 +153,11 @@ class moduleTumblr(Content):  # , Queue):
                 logMsg(msgLog, 3, False)
         elif "errors" in reply:
             res = f"failed! {res.get('errors','')} {reply}"
-        elif ("meta" in reply and 'status' in reply['meta']
-              and 'Forbidden' in reply['meta']['msg']):
+        elif (
+            "meta" in reply
+            and "status" in reply["meta"]
+            and "Forbidden" in reply["meta"]["msg"]
+        ):
             res = f"Fail! {res.get('meta','')} {reply}"
 
         return res
@@ -199,33 +202,52 @@ class moduleTumblr(Content):  # , Queue):
         try:
             res = None
             if api.getPostsType() == "posts":
-                logMsg(f"Creating link post: Title: {title} Link: {link} Comment: {comment}", 1, 0)
+                logMsg(
+                    f"Creating link post: Title: {title} Link: {link} Comment: {comment}",
+                    1,
+                    0,
+                )
                 res = self.getClient().create_link(
-                    self.getUser(), state="queue", title=title, url=link, description=comment, type='link'
+                    self.getUser(),
+                    state="queue",
+                    title=title,
+                    url=link,
+                    description=comment,
+                    type="link",
                 )
             elif api.getPostsType() == "queue" and idPost:
-                logMsg(f"Publishing from queue: {idPost}", 1, 0 )
+                logMsg(f"Publishing from queue: {idPost}", 1, 0)
                 res = self.editApiStateId(idPost, "published")
             elif title and link:
-                logMsg(f"Creating default link post: Title: {title} Link: {link} Comment: {comment}", 1, 0)
+                logMsg(
+                    f"Creating default link post: Title: {title} Link: {link} Comment: {comment}",
+                    1,
+                    0,
+                )
                 res = self.getClient().create_link(
-                    self.getUser(), state="queue", title=title, url=link, description=comment
+                    self.getUser(),
+                    state="queue",
+                    title=title,
+                    url=link,
+                    description=comment,
                 )
             else:
                 self.res_dict["error_message"] = "Not enough information to publish."
                 return self.res_dict
 
             self.res_dict["raw_response"] = res
-            if res and ('id' in res or 'posts' in res):
+            if res and ("id" in res or "posts" in res):
                 self.res_dict["success"] = True
                 # Tumblr API doesn't consistently return a direct post URL here
                 # The blog name and post ID are available to construct one if needed.
                 # For now, we'll leave post_url empty.
             else:
-                 self.res_dict["error_message"] = f"Tumblr API error: {res}"
+                self.res_dict["error_message"] = f"Tumblr API error: {res}"
 
         except ConnectionError as e:
-            self.res_dict["error_message"] = self.report("Tumblr", post, link, sys.exc_info())
+            self.res_dict["error_message"] = self.report(
+                "Tumblr", post, link, sys.exc_info()
+            )
             self.res_dict["raw_response"] = e
         except Exception as e:
             self.res_dict["error_message"] = f"An unexpected error occurred: {e}"
@@ -294,19 +316,21 @@ class moduleTumblr(Content):  # , Queue):
         tester.add_test("View dashboard", self.test_view_dashboard)
 
     def get_user_info(self, client):
-        return client.info()['user']['name']
+        return client.info()["user"]["name"]
 
     def get_post_id_from_result(self, result):
-        return result['id']
+        return result["id"]
 
     def test_view_dashboard(self, apiSrc):
-        posts = apiSrc.getClient().dashboard()['posts']
+        posts = apiSrc.getClient().dashboard()["posts"]
         for i, post in enumerate(posts[:5]):
             print(f"\n{i+1}. {post['blog_name']} - {post.get('summary', 'No summary')}")
             print(f"   Link: {post['post_url']}")
 
+
 def main():
     import logging
+
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )

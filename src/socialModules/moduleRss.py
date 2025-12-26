@@ -173,7 +173,7 @@ class moduleRss(Content):  # , Queue):
         return title
 
     def getApiPostLink(self, post):
-        link = ''
+        link = ""
         if post:
             link = post.get("link", "")
         return link
@@ -233,6 +233,7 @@ class moduleRss(Content):  # , Queue):
 
 def main():
     import logging
+
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
