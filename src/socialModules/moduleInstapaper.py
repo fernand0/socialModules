@@ -77,9 +77,9 @@ class moduleInstapaper(Content):
         if reply:
             idPost = self.getPostId(reply)
             title = self.getPostTitle(reply)
-            # res = f"{title} https://getinstapaper.com/read/{idPost}" # Adjust URL if necessary
-        msgLog = f"     Res: {res}"
-        logMsg(msgLog, 2, False)
+            res = f"{title} https://getinstapaper.com/read/{idPost}" # Adjust URL if necessary
+            msgLog = f"     Res: {res}"
+            logMsg(msgLog, 2, False)
         return res
 
     def publishApiPost(self, *args, **kwargs):

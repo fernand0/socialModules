@@ -149,19 +149,20 @@ class moduleImdb(Content):
         posts = self.setInfoData()
         # print(f"Posts: {posts}")
 
-        hh = time.strftime("%H:00")
-        dd = time.strftime("%d")
-        firstPost = True
-        useCache = False
+        # hh = time.strftime("%H:00")
+        # dd = time.strftime("%d")
+        # firstPost = True
+        # useCache = False
         j = 0
         for i, post in enumerate(posts):
-            hhIni = self.getPostTimeIni(post)
+            # hhIni = self.getPostTimeIni(post)
             # hhIni, ddIni = hhIni.hour, hhIni.day
             # ddIni = ""
             # if ((dd == str(ddIni) and hh <= str(hhIni))
             #         and (post['g'] == self.gen)):
             #     try:
             res = self.setPostMoreDataNew(post)
+            logging.info(res)
             #    except:
             #        res = ""
             j = j + 1
@@ -286,7 +287,7 @@ class moduleImdb(Content):
             return ""
 
     def setPostMoreDataNew(self, post):
-        postMore = None
+        # postMore = None
         mySearch = self.getClient().Search()
         title = self.getPostTitle(post)
         logging.info(f"Post: {post}")

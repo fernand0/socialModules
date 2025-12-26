@@ -588,11 +588,9 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return folder
 
     def getLabelName(self, label):
-        api = self.getClient()
         return label["name"]
 
     def getLabelId(self, name):
-        api = self.getClient()
         results = self.getLabelList()
         msgLog = f"{self.indent} Labels: {results}"
         logMsg(msgLog, 2, False)
@@ -682,8 +680,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         logMsg(msgLog, 2, False)
         msgLog = f"{self.indent} New title: {newTitle}"
         logMsg(msgLog, 2, False)
-        thePost = self.obtainPostData(j)
-        oldTitle = thePost[0]
+        # thePost = self.obtainPostData(j)
+        # oldTitle = thePost[0]
         # logging.info("servicename %s" %self.service)
 
         import base64
@@ -765,6 +763,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
             update = api.users().drafts().trash(userId="me", id=idPost).execute()
         else:
             update = api.users().messages().trash(userId="me", id=idPost).execute()
+        logging.info(update)
 
         return "Trashed %s" % title
 
@@ -818,7 +817,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         else:
             # logging.info(f"id {idPost}")
             update = api.users().messages().trash(userId="me", id=idPost).execute()
-            # logging.info(f"id {update}")
+        logging.info(f"id {update}")
 
         return "Deleted %s" % title
 

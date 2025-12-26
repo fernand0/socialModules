@@ -87,7 +87,7 @@ def ejemplo_bot_electrico():
     print("\n=== Refactored BotElectrico Example ===")
 
     # Example data
-    title = "Updated electrical consumption"
+    # title = "Updated electrical consumption"
     message = "Today's electrical consumption has been 1.234 kWh"
     image_path = "/tmp/consumption_chart.png"
     alt_text = "Daily electrical consumption chart"

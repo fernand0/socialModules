@@ -61,7 +61,7 @@ class moduleGcalendar(Content, socialGoogle):
                 theDate = theDate.isoformat() + "Z"
 
         # 'Z' indicates UTC time
-        page_token = None
+        # page_token = None
         logging.info(f"{self.indent} Setting posts date {theDate}")
 
         self.posts = []

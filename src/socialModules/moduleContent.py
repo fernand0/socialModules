@@ -530,10 +530,10 @@ class Content:
         return lastLink
 
     def setLastLink(self, src=None):
-        if src:
-            indent = src.indent
-        else:
-            indent = f"{self.indent} "
+        # if src:
+        #     indent = src.indent
+        # else:
+        #     indent = f"{self.indent} "
         msgLog = f"{self.indent} Start setLastLink"
         logMsg(msgLog, 1, False)
         self.indent = f"{self.indent} "
@@ -617,7 +617,7 @@ class Content:
         fileNameNext = ""
         if dst:
             # fileNameNext = f"{self.fileNameBase(dst)}.timeavailable"
-            filaNameNext = f"{DATADIR}/{self.fileName}.timeavailable"
+            fileNameNext = f"{DATADIR}/{self.fileName}.timeavailable"
             msgLog = checkFile(fileNameNext, self.indent)
             if "OK" not in msgLog:
                 msgLog = (

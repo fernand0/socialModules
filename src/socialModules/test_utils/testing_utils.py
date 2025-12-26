@@ -475,8 +475,8 @@ def test_select_post_by_position(apiSrc):
         for i, post in enumerate(posts):
             title = apiSrc.getPostTitle(post)
             link = apiSrc.getPostLink(post)
-            text = apiSrc.getPostContent(post)
-            body = apiSrc.getPostBody(post)
+            # text = apiSrc.getPostContent(post)
+            # body = apiSrc.getPostBody(post)
             print(
                 f"{i+1}. Title: {title[:100]}{'...' if len(title) > 100 else ''} (Link: {link})"
             )

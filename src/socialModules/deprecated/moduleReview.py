@@ -296,7 +296,7 @@ def main():
             rssFeed = config.get(section, "rss")
             print(rssFeed)
             blog.setRssFeed(rssFeed)
-        optFields = ["linksToAvoid", "time", "buffer"]
+        #optFields = ["linksToAvoid", "time", "buffer"]
         if "linksToAvoid" in config.options(section):
             blog.setLinksToAvoid(config.get(section, "linksToAvoid"))
         if "time" in config.options(section):

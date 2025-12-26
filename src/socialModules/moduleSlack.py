@@ -163,7 +163,7 @@ class moduleSlack(Content):  # , Queue):
             api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
-            comment = api.getPostComment(title)
+            # comment = api.getPostComment(title)
         else:
             self.res_dict["error_message"] = "Not enough arguments for publication."
             return self.res_dict
@@ -223,9 +223,9 @@ class moduleSlack(Content):  # , Queue):
         return result
 
     def editApiLink(self, post, newLink):
-        oldLink = self.getPostLink(post)
-        idPost = self.getLinkPosition(oldLink)
-        oldTitle = self.getPostTitle(post)
+        # oldLink = self.getPostLink(post)
+        # idPost = self.getLinkPosition(oldLink)
+        # oldTitle = self.getPostTitle(post)
         self.setPostLink(post, newLink)
         self.updatePostsCache()
 

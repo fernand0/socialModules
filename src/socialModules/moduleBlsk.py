@@ -26,7 +26,7 @@ class moduleBlsk(Content):  # , Queue):
 
         client = Client()
         try:
-            profile = client.login(keys[0], keys[1])
+            # profile = client.login(keys[0], keys[1])
             self.me = client.get_profile(actor=keys[0])
         # except atproto_client.exceptions.NetworkError:
         #     self.report(
@@ -34,6 +34,7 @@ class moduleBlsk(Content):  # , Queue):
         #     )
         except:
             res = self.report(self.indent, "Error in initApi", "", sys.exc_info())
+            logging.info(res)
             client = None
         # if hasattr(client, 'app'):
         #     client = client.app.bsky.feed
@@ -197,12 +198,12 @@ class moduleBlsk(Content):  # , Queue):
     def publishApiRT(self, *args, **kwargs):
         if args and len(args) == 3:
             post, link, comment = args
-            idPost = link.split("/")[-1]
-        if kwargs:
-            more = kwargs
-            tweet = more["post"]
-            link = self.getPostLink(tweet)
-            idPost = self.getPostId(tweet)
+            # idPost = link.split("/")[-1]
+        # if kwargs:
+            # more = kwargs
+            # tweet = more["post"]
+            # link = self.getPostLink(tweet)
+            # idPost = self.getPostId(tweet)
 
         res = None
         # TODO

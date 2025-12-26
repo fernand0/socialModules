@@ -37,6 +37,7 @@ class moduleImgur(Content):  # , Queue):
         except:
             client = None
             reply = self.report(self.service, "", "", sys.exc_info())
+            logging.info(reply)
 
         return client
 

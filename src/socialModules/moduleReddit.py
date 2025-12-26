@@ -255,16 +255,15 @@ class moduleReddit(Content):  # , Queue):
 
         return res
 
-    def getPostHandle(self, post):
-        res = None
-
-        return handle
+    # def getPostHandle(self, post):
+    #     res = None
+    #     return handle
 
     def getPostId(self, post):
         try:
             idPost = post.get("photoid").get("_content")
         except:
-            idpost = ""
+            idPost = ""
 
         return idPost
 

@@ -70,7 +70,8 @@ class moduleLinkedin(Content):
             splitUrl = urllib.parse.urlsplit(resUrl)
             result = urllib.parse.parse_qsl(splitUrl.query)
             access_token = result[0][1]
-            token_response = auth_client.exchange_auth_code_for_access_token(auth_code)
+            # token_response = auth_client.exchange_auth_code_for_access_token(auth_code)
+            
             url = "https://www.linkedin.com/oauth/v2/accessToken"
             payload = {
                 "grant_type": "authorization_code",
@@ -87,7 +88,7 @@ class moduleLinkedin(Content):
             with open(configLinkedin, "w") as configfile:
                 config.write(configfile)
 
-            restli_client = RestliClient()
+            # restli_client = RestliClient()
             sys.exit()
         except:
             print("Some problem")
@@ -144,10 +145,10 @@ class moduleLinkedin(Content):
         res = ""
         if len(args) == 2:
             title, imageName = args
-            more = kwargs
+            # more = kwargs
             if imageName:
-                with open(imageName, "rb") as imagefile:
-                    imagedata = imagefile.read()
+                # with open(imageName, "rb") as imagefile:
+                #     imagedata = imagefile.read()
 
                 try:
                     res = self.getClient().submit_share(
@@ -246,21 +247,21 @@ class moduleLinkedin(Content):
         if "link" in post.data:
             # whatever
             link = post.data.get("link")
-        return post
+        return link
 
     def getApiPostUrl(self, post):
         link = ""
         if "link" in post.data:
             # whatever
             link = post.data.get("link")
-        return post
+        return link
 
     def getApiPostTitle(self, post):
         title = ""
         if "text" in post.data:
             # whatever
             title = post.data.get("text")
-        return post
+        return title
 
     def register_specific_tests(self, tester):
         pass

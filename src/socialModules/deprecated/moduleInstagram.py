@@ -70,6 +70,7 @@ class moduleInstagram(Content):
         # resizeImage provided by configMod.py
         try:
             res = self.client.uploadPhoto(comment, caption=post)
+            logging.info(res)
             self.setPosts()
             title = self.getPosts()[0]["caption"]["text"]
             print("Title %s" % title)
@@ -121,7 +122,7 @@ def main():
 
         soup = BeautifulSoup(req.text, "html.parser")
         imgUrl = soup.img["src"]
-        title = soup.findAll("h1")[1].text
+        #title = soup.findAll("h1")[1].text
         pos = imgUrl.find("?")
         if pos > 0:
             imgUrl = imgUrl[:pos]

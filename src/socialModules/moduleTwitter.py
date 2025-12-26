@@ -145,8 +145,8 @@ class moduleTwitter(Content):  # , Queue):
             post, imageName = args
             more = kwargs
             if imageName:
-                with open(imageName, "rb") as imagefile:
-                    imagedata = imagefile.read()
+                # with open(imageName, "rb") as imagefile:
+                #     imagedata = imagefile.read()
 
                 try:
                     # # FIXME

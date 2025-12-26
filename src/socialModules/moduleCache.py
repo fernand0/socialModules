@@ -133,7 +133,7 @@ class moduleCache(Content):  # ,Queue):
         return None
 
     def setApiDrafts(self):
-        msgLog = f"{self.indent} setApiDrafts"
+        #msgLog = f"{self.indent} setApiDrafts"
         # Every cache is the same, even the origin are drafts ??
         return self.setApiPosts()
 
@@ -480,9 +480,9 @@ class moduleCache(Content):  # ,Queue):
         return content
 
     def editApiLink(self, post, newLink=""):
-        oldLink = self.getPostLink(post)
-        idPost = self.getLinkPosition(oldLink)
-        oldTitle = self.getPostTitle(post)
+        # oldLink = self.getPostLink(post)
+        # idPost = self.getLinkPosition(oldLink)
+        # oldTitle = self.getPostTitle(post)
         self.setPostLink(post, newLink)
         self.updatePostsCache()
         # if hasattr(self, 'auxClass'):
@@ -498,8 +498,8 @@ class moduleCache(Content):  # ,Queue):
         #     post = post[:1] + ( newLink, ) + post[2:]
 
     def editApiTitle(self, post, newTitle=""):
-        oldLink = self.getPostLink(post)
-        idPost = self.getLinkPosition(oldLink)
+        # oldLink = self.getPostLink(post)
+        # idPost = self.getLinkPosition(oldLink)
         oldTitle = self.getPostTitle(post)
         if not newTitle:
             newTitle = self.reorderTitle(oldTitle)
@@ -542,7 +542,7 @@ class moduleCache(Content):  # ,Queue):
             title, link, comment = args
         if kwargs:
             more = kwargs
-            api = more["api"]
+            # api = more["api"]
             post = more["post"]
             title = self.getPostTitle(post)
             link = self.getPostLink(post)

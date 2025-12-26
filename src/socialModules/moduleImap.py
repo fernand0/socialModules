@@ -489,17 +489,17 @@ class moduleImap(Content):  # , Queue):
         folder = "INBOX"
         while not msg_number.isdigit():
             rows, columns = os.popen("stty size", "r").read().split()
-            numMsgs = 24
-            if rows:
-                numMsgs = int(rows) - 3
-            # print("folder",folder)
+            # numMsgs = 24
+            # if rows:
+            #     numMsgs = int(rows) - 3
+            # # print("folder",folder)
             try:
                 M.select(folder)
             except:
                 return ""
             data = M.sort("ARRIVAL", "UTF-8", "ALL")
             if data[0] == "OK":
-                j = 0
+                # j = 0
                 msg_data = []
                 msg_numbers = []
                 messages = data[1][0].decode("utf-8").split(" ")
@@ -682,7 +682,7 @@ class moduleImap(Content):  # , Queue):
         return msgs
 
     def selectAllMessages(self, folder, M):
-        msgs = ""
+        # msgs = ""
         # print("folder",folder)
         M.select(folder)
         try:
@@ -696,26 +696,26 @@ class moduleImap(Content):  # , Queue):
             return None
 
     def selectMessageSubject(self, folder, M, sbj, sens=0, partial=False):
-        msg_number = ""
+        # msg_number = ""
         rows, columns = os.popen("stty size", "r").read().split()
-        numMsgs = 24
+        # numMsgs = 24
         msgs = ""
         distMsgs = ""
-        if rows:
-            numMsgs = int(rows) - 3
+        # if rows:
+        #     numMsgs = int(rows) - 3
         try:
             M.select(folder)
-            folderM = folder.split("/")[-1]
+            # folderM = folder.split("/")[-1]
         except:
             return ("", "")
 
         data = M.sort("ARRIVAL", "UTF-8", "ALL")
         sbjDec = stripRe(headerToString(sbj))
         if data[0] == "OK":
-            j = 0
+            # j = 0
             msg_data = []
             messages = data[1][0].decode("utf-8").split(" ")
-            lenId = len(str(messages[-1]))
+            # lenId = len(str(messages[-1]))
             print("")
             for i in messages:  # [-40:]: #[-numMsgs:]:
                 typ, msg_data_fetch = M.fetch(
@@ -727,8 +727,8 @@ class moduleImap(Content):  # , Queue):
                         msg = email.message_from_bytes(response_part[1])
                         msg_data.append(msg)
                         # Variable length fmt
-                        fmt = "%2s) %-20s %-40s"
-                        headFrom = msg["From"]
+                        # fmt = "%2s) %-20s %-40s"
+                        # headFrom = msg["From"]
                         headSubject = msg["Subject"]
                         headSubjDec = stripRe(headerToString(headSubject))
                         minLen = min(len(headSubjDec), len(sbjDec))
@@ -828,7 +828,7 @@ class moduleImap(Content):  # , Queue):
                         moreMessages = input(
                             "String in the folder (" + moreMessages + ") "
                         )
-                        folderM = folder
+                        # folderM = folder
                     if listMsgs:
                         listMsgs = listMsgs + "," + msgs
                     else:
@@ -910,7 +910,7 @@ class moduleImap(Content):  # , Queue):
             count += 1
             if count > rows - len(headers) - 3:
                 break
-        wait = input("Any key to follow")
+        # wait = input("Any key to follow")
 
     def createFolder(self, M="", name="", folder="", search=True):
         exclude = ["Trash"]
@@ -1113,7 +1113,7 @@ class moduleImap(Content):  # , Queue):
             if not nfn:
                 nfn = folderM
             iFolder = self.createFolder(name=nfn, folder=moreMessages)
-            listFolders = iFolder
+            # listFolders = iFolder
             folder = iFolder
 
         return folder
@@ -1343,7 +1343,7 @@ class moduleImap(Content):  # , Queue):
                 folder = "INBOX"
                 MD.select("INBOX")
             else:
-                iFolder = createFolder(MD, folder, "", False)
+                # iFolder = createFolder(MD, folder, "", False)
                 MD.select(folder)
 
             i = 0
@@ -1366,7 +1366,7 @@ class moduleImap(Content):  # , Queue):
 
                         flags = ""
 
-                        msg = email.message_from_bytes(message)
+                        # msg = email.message_from_bytes(message)
                         res = MD.append(folder, flags, None, message)
 
                         if res[0] == "OK":

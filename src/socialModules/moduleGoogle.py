@@ -143,6 +143,7 @@ class socialGoogle:
                 res = self.report(
                     "moduleGoogle", "Wrong data in file", "", sys.exc_info()
                 )
+                logging.info(res)
                 creds.refresh(Request())
                 # creds = 'Fail!'
 

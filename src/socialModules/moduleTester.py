@@ -35,7 +35,7 @@ class ModuleTester:
 
         # Redirect stdout
         old_stdout = sys.stdout
-        sys.stdout = mystdout = StringIO()
+        # sys.stdout = mystdout = StringIO()
 
         rules = socialModules.moduleRules.moduleRules()
         rules.checkRules()

@@ -45,13 +45,13 @@ class moduleFacebook(Content):  # ,Queue):
         return self.page
 
     def setPage(self, facebookAC="me"):
-        perms = [
-            "publish_actions",
-            "manage_pages",
-            "publish_pages",
-            "pages_read_engagement",
-            "pages_manage_posts",
-        ]
+        # perms = [
+        #     "publish_actions",
+        #     "manage_pages",
+        #     "publish_pages",
+        #     "pages_read_engagement",
+        #     "pages_manage_posts",
+        # ]
         try:
             pages = self.getClient().get_connections("me", "accounts")
         except:

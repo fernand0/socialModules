@@ -811,7 +811,7 @@ class moduleRules:
             service = [
                 name,
             ]
-        selRules = []
+        # selRules = []
         for name_ser in service:
             logging.debug(f"Name: {name_ser}, Selectors: {selector2}, {selector3}")
             for src in self.rules.keys():
@@ -1419,13 +1419,13 @@ class moduleRules:
 
         if num > 0:
             tNow = time.time()
-            hours = float(time_val) * 60 * 60
-            lastTime = last_time_val
+            # hours = float(time_val) * 60 * 60
+            # lastTime = last_time_val
 
-            if lastTime:
-                diffTime = tNow - lastTime
-            else:
-                diffTime = hours + 1
+            # if lastTime:
+            #     diffTime = tNow - lastTime
+            # else:
+            #     diffTime = hours + 1
 
             tSleep = random.random() * float(timeSlots) * 60
 
@@ -1552,7 +1552,7 @@ class moduleRules:
         self.indent = ""
         args = self.args
         select = args.checkBlog
-        simmulate = args.simmulate
+        # simmulate = args.simmulate
         # Prepare actions to execute
         scheduled_actions, held_actions, skipped_actions = self._prepare_actions(
             args, select
@@ -1793,7 +1793,7 @@ class moduleRules:
                     )
                     continue
 
-                base_name = self._get_filename_base(rule_key, rule_action)
+                # base_name = self._get_filename_base(rule_key, rule_action)
 
                 scheduled_actions.append(
                     {
@@ -1856,7 +1856,7 @@ class moduleRules:
         rule_key = scheduled_action["rule_key"]
         rule_metadata = scheduled_action["rule_metadata"]
         rule_action = scheduled_action["rule_action"]
-        args = scheduled_action["args"]
+        # args = scheduled_action["args"]
         simmulate = scheduled_action["simmulate"]
         # apiSrc = scheduled_action["apiSrc"]
         timeSlots = scheduled_action["timeSlots"]
@@ -1898,8 +1898,8 @@ class moduleRules:
         """
         if held_actions:
             for held_action in held_actions:
-                rule_key = held_action["rule_key"]
-                rule_index = held_action.get("rule_index", "")
+                # rule_key = held_action["rule_key"]
+                # rule_index = held_action.get("rule_index", "")
                 name_action = held_action["name_action"]
                 # rule_summary = (
                 #     f"{name_action} Rule {rule_index}: {rule_key}" if rule_index != "" else str(rule_key)
@@ -1918,9 +1918,9 @@ class moduleRules:
 
         if skipped_actions:
             for skipped_action in skipped_actions:
-                rule_key = skipped_action["rule_key"]
-                rule_action = skipped_action["rule_action"]
-                rule_index = skipped_action.get("rule_index", "")
+                # rule_key = skipped_action["rule_key"]
+                # rule_action = skipped_action["rule_action"]
+                # rule_index = skipped_action.get("rule_index", "")
                 name_action = skipped_action["name_action"]
                 skip_reason = skipped_action["skip_reason"]
 
@@ -1935,14 +1935,14 @@ class moduleRules:
                 finally:
                     thread_local.nameA = None
         for scheduled_action, res_dict in action_results:
-            rule_key = scheduled_action["rule_key"]
-            rule_index = scheduled_action.get("rule_index", "")
+            # rule_key = scheduled_action["rule_key"]
+            # rule_index = scheduled_action.get("rule_index", "")
             name_action = scheduled_action["nameA"]
-            rule_summary = (
-                f"{name_action} Rule {rule_index}: {rule_key}"
-                if rule_index != ""
-                else str(rule_key)
-            )
+            # rule_summary = (
+            #     f"{name_action} Rule {rule_index}: {rule_key}"
+            #     if rule_index != ""
+            #     else str(rule_key)
+            # )
 
             if res_dict == "ok":
                 summary_msg = "Success. Action completed."
@@ -1995,14 +1995,14 @@ class moduleRules:
                     thread_local.nameA = None
 
         for scheduled_action, exc in action_errors:
-            rule_key = scheduled_action["rule_key"]
-            rule_index = scheduled_action.get("rule_index", "")
+            # rule_key = scheduled_action["rule_key"]
+            # rule_index = scheduled_action.get("rule_index", "")
             name_action = scheduled_action["nameA"]
-            rule_summary = (
-                f"{name_action} Rule {rule_index}: {rule_key}"
-                if rule_index != ""
-                else str(rule_key)
-            )
+            # rule_summary = (
+            #     f"{name_action} Rule {rule_index}: {rule_key}"
+            #     if rule_index != ""
+            #     else str(rule_key)
+            # )
             try:
                 thread_local.nameA = name_action
                 logMsg(

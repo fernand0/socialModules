@@ -47,6 +47,7 @@ class moduleFlickr(Content):  # , Queue):
             )
         except:
             res = self.report(self.indent, "Error in initApi", "", sys.exc_info())
+            logging.info(res)
             client = None
 
         if not authorized:
@@ -206,6 +207,7 @@ class moduleFlickr(Content):  # , Queue):
 
     def getPostHandle(self, post):
         res = None
+        logging.info(res)
         print(f"Post: {post}")
 
         return handle
@@ -214,7 +216,7 @@ class moduleFlickr(Content):  # , Queue):
         try:
             idPost = post.get("photoid").get("_content")
         except:
-            idpost = ""
+            idPost = ""
 
         return idPost
 

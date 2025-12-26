@@ -62,7 +62,7 @@ class moduleMastodon(Content):  # , Queue):
 
     def publishApiImage(self, *args, **kwargs):
         post, image = args
-        more = kwargs
+        # more = kwargs
 
         res = "Fail!"
         try:

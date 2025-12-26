@@ -34,7 +34,7 @@ class moduleTelegram(Content):
             bot = telepot.Bot(TOKEN)
             logging.info("     token: {TOKEN}")
 
-            meMySelf = bot.getMe()
+            # meMySelf = bot.getMe()
         except:
             logging.warning("Telegram authentication failed!")
             logging.warning("Unexpected error:", sys.exc_info()[0])
@@ -81,7 +81,7 @@ class moduleTelegram(Content):
         )
         logMsg(msgLog, 2, False)
         post, image = args
-        more = kwargs
+        # more = kwargs
 
         bot = self.getClient()
         channel = self.user

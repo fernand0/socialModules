@@ -66,7 +66,7 @@ class moduleHtml(Content):  # , Queue):
         logMsg(msgLog, 1, False)
 
         response = None
-        moreContent = ""
+        #moreContent = ""
 
         # First and second attempts with requests
         try:
@@ -395,7 +395,7 @@ class moduleHtml(Content):  # , Queue):
             mySoup = soup
         j = 0
         linksTxt = ""
-        links = soup.find_all(["a", "iframe"])
+        links = mySoup.find_all(["a", "iframe"])
         for link in links:
             theLink = ""
             if len(link.contents) > 0:
@@ -426,7 +426,7 @@ class moduleHtml(Content):  # , Queue):
             else:
                 theSummaryLinks = ""
 
-            return (soup.get_text().strip("\n"), theSummaryLinks)
+            return (mySoup.get_text().strip("\n"), theSummaryLinks)
 
     def getApiPostTitle(self, html_content):
         """
@@ -526,7 +526,7 @@ class moduleHtml(Content):  # , Queue):
 
     def publishApiPost(self, *args, **kwargs):
         title, link, comment = args
-        more = kwargs
+        # more = kwargs
         if link:
             try:
                 res = self.click(link)
