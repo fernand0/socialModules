@@ -461,6 +461,7 @@ class Content:
         return fileName
 
     def updateLastLink(self, src, link):
+        res = self.get_empty_res_dict()
         if link and isinstance(link, list):
             # fixme: this will be removed
             link = src.getPostLink(link[-1])
@@ -480,22 +481,25 @@ class Content:
         fileName = f"{DATADIR}/{self.fileName}.last"
         msgLog = f"{self.indent} fileName {fileName}"
         logMsg(msgLog, 2, False)
+        res['file'] = fileName
         msgLog = checkFile(fileName, self.indent)
         if "OK" not in msgLog:
             msgLog = f"file {fileName} does not exist. " f"I'm going to create it."
             logMsg(msgLog, 3, False)
         with open(fileName, "w") as f:
             if link:
+                res['post_url'] = link
                 if isinstance(link, bytes):
                     f.write(link.decode())
                 elif isinstance(link, str):
                     f.write(link)
                 else:
                     f.write(link[0])
+                res['success'] = True
 
         self.setLastLink(src)
 
-        return f"updated {msgupdate}"
+        return res
 
     def getLastLinkNew(self, dst):
         return self.lastLinkPublished
@@ -671,7 +675,8 @@ class Content:
         return self.getName()
 
     def getPostAction(self):
-        postaction = "delete"
+        # postaction = "delete"
+        postaction = None
         if hasattr(self, "postaction"):
             postaction = self.postaction
         return postaction

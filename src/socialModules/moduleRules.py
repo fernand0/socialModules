@@ -1194,52 +1194,57 @@ class moduleRules:
         simmulate,
         nextPost,
         pos,
-        res,
+        publication_res,
     ):
-        resPost = f"{res}"
+        resPost = apiSrc.get_empty_res_dict()
         resMsg = ""
         msgLog = f"{indent}Trying to execute Post Action"
         logMsg(msgLog, 1, self.args.verbose)
         postaction = apiSrc.getPostAction()
+        resPost['action'] = postaction
         if postaction:
             msgLog = f"{indent}Post Action {postaction} " f"(nextPost = {nextPost})"
             logMsg(msgLog, 1, self.args.verbose)
 
-            if "OK. Published!" in res:
-                msgLog = f"{indent} Res {res} is OK"
+            logMsg(f"Pub: {publication_res}", 1, 0)
+            if (('success' in publication_res and publication_res['success']) 
+                or ("OK. Published!" in publication_res)):
+                msgLog = f"{indent} Res {publication_res} is OK"
                 logMsg(msgLog, 1, False)
                 if nextPost:
                     msgLog = f"{indent}Post Action next post"
                     logMsg(msgLog, 2, False)
                     cmdPost = getattr(apiSrc, f"{postaction}NextPost")
-                    resPost = cmdPost()
+                    resCmd = cmdPost()
                 else:
                     msgLog = f"{indent}Post Action pos post"
                     logMsg(msgLog, 2, False)
                     cmdPost = getattr(apiSrc, f"{postaction}")
-                    resPost = cmdPost(pos)
+                    resCmd = cmdPost(pos)
                     # FIXME inconsistent
-            msgLog = f"{indent}End {postaction}, reply: {resPost} "
-            logMsg(msgLog, 1, self.args.verbose)
-            resMsg += f" Post Action: {resPost}"
-            if (
-                (res and ("failed!" not in res) and ("Fail!" not in res))
-                or (res and ("abusive!" in res))
+                resPost['cmd'] = cmdPost
+                resPost['raw_response'] = resCmd
+            # when the publishMethod does not return the adequate values: FIXME?
+            elif (
+                (publication_res and ("failed!" not in publication_res) and ("Fail!" not in publication_res))
+                or (publication_res and ("abusive!" in publication_res))
                 or (
-                    ((not res) and ("OK. Published!" not in res))
-                    or ("duplicate" in res)
+                    ((not publication_res) and ("OK. Published!" not in publication_res))
+                    or ("duplicate" in publication_res)
                 )
             ):
-                msgLog = f"{indent} Res {res} is not OK"
+                msgLog = f"{indent} Res {publication_res} is not OK"
                 # FIXME Some OK publishing follows this path (mastodon, linkedin, ...)
                 logMsg(msgLog, 1, False)
 
                 if nextPost:
                     cmdPost = getattr(apiSrc, f"{postaction}NextPost")
-                    resPost = cmdPost(apiDst)
+                    resCmd = cmdPost(apiDst)
                 else:
                     cmdPost = getattr(apiSrc, f"{postaction}")
-                    resPost = cmdPost(pos)
+                    resCmd = cmdPost(pos)
+                resPost['cmd'] = cmdPost
+                resPost['raw_response'] = resCmd
                 # FIXME inconsistent
                 msgLog = f"{indent}Post Action command {cmdPost}"
                 logMsg(msgLog, 1, self.args.verbose)
@@ -1249,11 +1254,17 @@ class moduleRules:
             else:
                 msgLog = f"{indent}Something went wrong"
                 logMsg(msgLog, 1, self.args.verbose)
+            msgLog = f"{indent}End {postaction}, reply: {resPost} "
+            logMsg(msgLog, 1, self.args.verbose)
+            resMsg += f" Post Action: {resPost}"
+
+            # when the publishMethod does not return the adequate values: FIXME?
         else:
+            resPost['success'] = True
             msgLog = f"{indent}No Post Action"
             logMsg(msgLog, 1, self.args.verbose)
 
-        return resMsg
+        return resPost
 
     def executePublishAction(
         self,
@@ -1312,7 +1323,7 @@ class moduleRules:
             else:
                 publication_res = apiDst.publishPost(api=apiSrc, post=post)
                 result_dict["publication_result"] = publication_res
-                msgLog = f"{indent}Reply: {publication_res}"
+                msgLog = f"{indent}Reply: {result_dict}"
                 logMsg(msgLog, 1, self.args.verbose)
 
                 is_success = "Fail!" not in str(
@@ -1320,12 +1331,18 @@ class moduleRules:
                 ) and "failed!" not in str(publication_res)
                 result_dict["success"] = is_success
 
+                if is_success != result_dict["publication_result"]['success']:
+                    logging.info(f"Noooooooo")
+
                 if is_success:
                     result_dict["error"] = None
+                    result_dict["link_updated"] = None
                     if nextPost:
                         resUpdate = apiDst.updateLastLink(apiSrc, link)
-                        result_dict["link_updated"] = "Error" not in resUpdate
+                        result_dict["link_updated"] = resUpdate
 
+                    msgLog = f"{indent}Reply Update: {result_dict}"
+                    logMsg(msgLog, 1, self.args.verbose)
                     post_action_res = self.executePostAction(
                         indent,
                         msgAction,
@@ -1340,6 +1357,8 @@ class moduleRules:
                 else:
                     result_dict["error"] = f"Publication failed: {publication_res}"
 
+            msgLog = f"{indent}Reply Post: {result_dict}"
+            logMsg(msgLog, 1, self.args.verbose)
             if postaction == "delete":
                 msgLog = f"{indent}Available {len(apiSrc.getPosts())-1}"
             else:
@@ -1764,12 +1783,17 @@ class moduleRules:
             for action_index, rule_action in enumerate(rule_actions):
                 # Rule selection if --checkBlog is used
                 nameA = f"{name_action} Action {action_index}:"
-                section_name = (
-                    rule_metadata.get("section_name", "") if rule_metadata else ""
-                )
+                nameRule = f"{self.getNameRule(rule_key).lower()}{i}"
 
-                if select and (select.lower() != section_name.lower()):
+                if select and (select.lower() != nameRule):
                     continue
+
+                # section_name = (
+                #     rule_metadata.get("section_name", "") if rule_metadata else ""
+                # )
+
+                #if select and (select.lower() != section_name.lower()):
+                #    continue
 
                 timeSlots, noWait = self._get_action_properties(
                     rule_action, rule_metadata, args
@@ -1958,7 +1982,10 @@ class moduleRules:
             elif isinstance(res_dict, dict) and res_dict.get("success"):
                 pub_res = res_dict.get("publication_result", "N/A")
                 post_act = res_dict.get("post_action_result")
-                summary_msg = f"Success. {pub_res}"
+                if 'post_url' in pub_res:
+                    summary_msg = f"Success. {pub_res['post_url']}"
+                else:
+                    summary_msg = f"Success. {pub_res}"
                 if post_act:
                     summary_msg += f". Post-Action: '{post_act}'"
                 summary_msg += "."
