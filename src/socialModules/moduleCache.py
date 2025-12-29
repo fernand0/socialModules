@@ -126,6 +126,12 @@ class moduleCache(Content):  # ,Queue):
 
         # We are instatiating (but not configuring) the aux api
         self.fileName = ""
+        self.res_dict = {
+            "success": False,
+            "post_url": "",
+            "raw_response": None,
+            "error_message": "",
+        }
 
         return self
 
@@ -538,23 +544,54 @@ class moduleCache(Content):  # ,Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
+        # Reset res_dict for this publication attempt
+        self.res_dict = {
+            "success": False,
+            "post_url": "",
+            "raw_response": None,
+            "error_message": "",
+        }
+
+        title = ""
+        link = ""
+        post_to_cache = None
+        api_src = None
+
         if args and len(args) == 3:
             title, link, comment = args
         if kwargs:
             more = kwargs
-            # api = more["api"]
-            post = more["post"]
-            title = self.getPostTitle(post)
-            link = self.getPostLink(post)
-        # logging.debug(f"more: {more}")
-        self.setPosts()
-        # FIXME. Do we need this?
-        posts = self.getPosts()
-        # logging.debug(f"pppposts: {posts}")
-        posts.append(more["post"])
-        self.assignPosts(posts)
-        self.updatePosts(more["api"])
-        return f"OK. Published! Title: {title} Link: {link}"
+            api_src = more.get("api")
+            post_to_cache = more.get("post")
+            if post_to_cache and api_src:
+                title = self.getPostTitle(post_to_cache)
+                link = self.getPostLink(post_to_cache)
+            elif post_to_cache:
+                # Fallback if api_src is not provided but post is
+                title = post_to_cache[0] if isinstance(post_to_cache, tuple) and len(post_to_cache) > 0 else ""
+                link = post_to_cache[1] if isinstance(post_to_cache, tuple) and len(post_to_cache) > 1 else ""
+
+        if not post_to_cache:
+            self.res_dict["error_message"] = "No post provided to cache."
+            return self.res_dict
+
+        try:
+            self.setPosts()
+            posts = self.getPosts()
+            posts.append(post_to_cache)
+            self.assignPosts(posts)
+            
+            update_result = self.updatePosts(api_src) # api_src can be None here
+
+            self.res_dict["success"] = True
+            self.res_dict["post_url"] = link # The "post_url" for cache can be the link of the item
+            self.res_dict["raw_response"] = update_result
+        except Exception as e:
+            error_report = self.report(self.service, kwargs, "", sys.exc_info())
+            self.res_dict["error_message"] = f"Error caching post: {error_report} - {e}"
+            self.res_dict["raw_response"] = sys.exc_info()
+
+        return self.res_dict
 
     def getPostId(self, post):
         idPost = ""

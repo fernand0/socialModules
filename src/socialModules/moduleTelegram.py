@@ -179,6 +179,8 @@ class moduleTelegram(Content):
             if "message_id" in rep:
                 idPost = rep["message_id"]
                 res = f"{res} https://t.me/{self.user}/{idPost}"
+            if not res:
+                res = reply
         return res
 
     def getApiPostTitle(self, post):

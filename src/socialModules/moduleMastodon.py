@@ -58,6 +58,8 @@ class moduleMastodon(Content):  # , Queue):
         res = ""
         if reply:
             res = f"{self.getAttribute(reply, 'uri')}"
+        if not res:
+            res = reply
         return res
 
     def publishApiImage(self, *args, **kwargs):

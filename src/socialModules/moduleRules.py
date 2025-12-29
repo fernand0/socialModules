@@ -1326,13 +1326,13 @@ class moduleRules:
                 msgLog = f"{indent}Reply: {result_dict}"
                 logMsg(msgLog, 1, self.args.verbose)
 
-                is_success = "Fail!" not in str(
-                    publication_res
-                ) and "failed!" not in str(publication_res)
+                if isinstance(publication_res, dict) and "success" in publication_res:
+                    is_success = publication_res["success"]
+                else:
+                    is_success = "Fail!" not in str(
+                        publication_res
+                    ) and "failed!" not in str(publication_res)
                 result_dict["success"] = is_success
-
-                if is_success != result_dict["publication_result"]['success']:
-                    logging.info(f"Noooooooo")
 
                 if is_success:
                     result_dict["error"] = None
