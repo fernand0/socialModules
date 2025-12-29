@@ -152,7 +152,10 @@ class moduleInstapaper(Content):
         return "Not implemented"
 
     def getApiPostTitle(self, post):
-        title = ""
+        try:
+            title = post.title
+        except:
+            title = ""
         # Extract title from Instapaper post object
         return title
 
@@ -161,11 +164,14 @@ class moduleInstapaper(Content):
         if isinstance(post, str):
             idPost = post
         else:
-            idPost = self.getAttribute(post, "bookmark_id")
+            idPost = self.getAttribute(post, 'bookmark_id')
         return idPost
 
     def getApiPostLink(self, post):
-        link = ""
+        try:
+            link = post.url
+        except:
+            link = ""
         # Extract link from Instapaper post object
         return link
 
