@@ -320,7 +320,7 @@ def test_executeRules_with_checkBlog(
     config_file = make_config_file(tmp_path, config_content)
     rules.checkRules(configFile=config_file)
     rules.args = mock_rules_args
-    rules.args.checkBlog = "blog1"  # Filter for blog1
+    rules.args.checkBlog = "rss0"  # Filter for rss0 (corresponding to blog1)
     rules.args.simmulate = False
     rules.args.noWait = True
     rules.args.timeSlots = 1
