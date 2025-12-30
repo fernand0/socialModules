@@ -100,15 +100,9 @@ class moduleInstapaper(Content):
             return self.res_dict
 
         try:
-            # The instapaper library seems to handle the bookmark object internally.
-            # We add a URL, and it gets saved.
-            # The library does not seem to return a specific object with details on success.
-            # We will assume success if no exception is raised.
-            res = self.getClient().add_bookmark(link, title=title)
+            b = instapaper.Bookmark(self.getClient(), {"url": link}) 
+            res = b.save()
             self.res_dict["raw_response"] = res
-
-            # The `add_bookmark` method in the library doesn't return a direct URL to the saved item,
-            # but we can consider the original link as the "post_url" in this context.
             if res:
                 self.res_dict["success"] = True
                 self.res_dict["post_url"] = link
