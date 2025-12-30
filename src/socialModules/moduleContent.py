@@ -943,7 +943,7 @@ class Content:
         return text
 
     def getPosNextPost(self, apiDst=None):
-        msgLog = f"{self.indent} Start getPosNextPost."
+        msgLog = f"{self.indent} Start getPosNextPost. {apiDst}"
         logMsg(msgLog, 2, False)
         posts = self.getPosts()
         posLast = -1
@@ -1046,6 +1046,19 @@ class Content:
 
         return listPosts
 
+    def getLastPost(self, apiDst=None):
+        msgLog = f"{self.indent} Start getLastPost."
+        logMsg(msgLog, 2, False)
+        self.indent = f"{self.indent} "
+
+        posLast = self.getPosNextPost(apiDst)
+        post = self.getPost(posLast)
+
+        self.indent = self.indent[:-1]
+        msgLog = f"{self.indent} End getLastPost."
+        logMsg(msgLog, 2, False)
+        return post
+
     def getNextPost(self, apiDst=None):
         msgLog = f"{self.indent} Start getNextPost."
         logMsg(msgLog, 2, False)
@@ -1146,6 +1159,33 @@ class Content:
 
     def deleteApiNextPost(self):
         pass
+
+    def archiveNextPost(self, apiDst=None):
+        reply = ""
+        msgLog = f"{self.indent} Archiving next post"
+        logMsg(msgLog, 2, False)
+        try:
+            post = self.getLastPost(apiDst)
+            if post:
+                # msgLog = f"{self.indent} Deleting post {post}"
+                # logMsg(msgLog, 2, False)
+                # idPost = self.getPostId(post)
+                # msgLog = f"{self.indent} post Id post {idPost}"
+                # logMsg(msgLog, 2, False)
+                if (
+                    hasattr(self, "getPostsType")
+                    and (self.getPostsType())
+                    and (hasattr(self, f"archiveApi{self.getPostsType().capitalize()}"))
+                ):
+                    nameMethod = self.getPostsType().capitalize()
+                    method = getattr(self, f"archiveApi{nameMethod}")
+                    reply = method(post)
+                    msgLog = f"{self.indent}Res: {reply}"
+            else:
+                reply = "No posts available"
+        except:
+            reply = self.report(self.service, post, idPost, sys.exc_info())
+        return reply
 
     def deleteNextPost(self, apiDst=None):
         reply = ""

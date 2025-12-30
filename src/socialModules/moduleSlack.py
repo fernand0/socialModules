@@ -150,8 +150,8 @@ class moduleSlack(Content):  # , Queue):
     def processReply(self, reply):
         # FIXME: Being careful with publishPost, publishPosPost, publishNextPost, publishApiPost
         res = reply
-        if isinstance(reply, dict):
-            res = reply.get("ok", "Fail!")
+        # if isinstance(reply, dict):
+        #     res = reply.get("ok", "Fail!")
         return res
 
     def publishApiPost(self, *args, **kwargs):
@@ -179,11 +179,13 @@ class moduleSlack(Content):  # , Queue):
             self.getClient().token = self.user_slack_token
             data = {"channel": chan, "text": f"{title} {link}"}
             result = self.getClient().api_call("chat.postMessage", data=data)
+            logMsg(f"Result api: {result}")
             self.getClient().token = self.slack_token
 
             self.res_dict["raw_response"] = result
             if result["ok"]:
                 self.res_dict["success"] = True
+                self.res_dict["post_url"] = self.getAttribute(result, 'post_url')
                 # Construct post_url if possible
                 if "channel" in result and "ts" in result:
                     self.res_dict["post_url"] = self.getApiPostUrl(result)

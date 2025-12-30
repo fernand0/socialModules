@@ -147,6 +147,15 @@ class moduleInstapaper(Content):
             self.posts = self.posts[:j] + self.posts[j + 1 :]
         return rep
 
+    def archiveApiPosts(self, post):
+        logging.info(f"Archiving: {post}")
+        try:
+            result = post.archive()
+        except:
+            result = self.report(self.service, "", "", sys.exc_info())
+        logging.info(f"Res: {result}")
+        return result
+
     def delete(self, j):
         # Add Instapaper API call to delete a post here
         return "Not implemented"

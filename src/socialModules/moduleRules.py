@@ -1206,8 +1206,8 @@ class moduleRules:
             msgLog = f"{indent}Post Action {postaction} " f"(nextPost = {nextPost})"
             logMsg(msgLog, 1, self.args.verbose)
 
-            logMsg(f"Pub: {publication_res}", 1, 0)
-            if (('success' in publication_res and publication_res['success']) 
+            logMsg(f"Pub result was: {publication_res}", 1, 0)
+            if (('success' in publication_res and publication_res['success'])
                 or ("OK. Published!" in publication_res)):
                 msgLog = f"{indent} Res {publication_res} is OK"
                 logMsg(msgLog, 1, False)
@@ -1215,7 +1215,7 @@ class moduleRules:
                     msgLog = f"{indent}Post Action next post"
                     logMsg(msgLog, 2, False)
                     cmdPost = getattr(apiSrc, f"{postaction}NextPost")
-                    resCmd = cmdPost()
+                    resCmd = cmdPost(apiDst)
                 else:
                     msgLog = f"{indent}Post Action pos post"
                     logMsg(msgLog, 2, False)
