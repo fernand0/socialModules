@@ -1243,6 +1243,10 @@ class moduleRules:
                 else:
                     cmdPost = getattr(apiSrc, f"{postaction}")
                     resCmd = cmdPost(pos)
+                if 'success' in resCmd:
+                    resPost['success'] = resCmd['success']
+                else:
+                    resPost['success'] = resCmd
                 resPost['cmd'] = cmdPost
                 resPost['raw_response'] = resCmd
                 # FIXME inconsistent

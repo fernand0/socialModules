@@ -1209,6 +1209,7 @@ class Content:
                     method = getattr(self, f"deleteApi{nameMethod}")
                     res = method(idPost)
                     msgLog = f"{self.indent}Res: {res}"
+                    logMsg(msgLog, 1, False)
                     reply = self.processReply(res)
             else:
                 reply = "No posts available"
@@ -1457,6 +1458,7 @@ class Content:
         return None
 
     def deletePostId(self, idPost):
+        self.res_dict = self.get_empty_res_dict()
         # msgLog = (f"{self.indent} Service {self.service} deleting post "
         #           f"id {idPost}")
         # logMsg(msgLog, 2, False)
@@ -1472,6 +1474,7 @@ class Content:
         return self.processReply(reply)
 
     def deletePost(self, post):
+        self.res_dict = self.get_empty_res_dict()
         # msgLog = (f"{self.indent} Service {self.service} deleting post "
         #           f" {post}")
         # logMsg(msgLog, 2, False)

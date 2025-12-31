@@ -2,7 +2,7 @@
 
 import sys
 
-from atproto import Client, models
+from atproto import Client, models, IdResolver
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
@@ -26,7 +26,7 @@ class moduleBlsk(Content):  # , Queue):
 
         client = Client()
         try:
-            # profile = client.login(keys[0], keys[1])
+            profile = client.login(keys[0], keys[1])
             self.me = client.get_profile(actor=keys[0])
         # except atproto_client.exceptions.NetworkError:
         #     self.report(
@@ -62,7 +62,8 @@ class moduleBlsk(Content):  # , Queue):
     def setApiPosts(self):
         posts = []
 
-        posts, error = self.apiCall(commandName="get_author_feed", actor=self.getUser())
+        posts, error = self.apiCall(commandName="get_author_feed",
+                                    actor=self.me.did)
         print(f"Posts: {posts}")
         print(f"Error: {error}")
 
@@ -283,8 +284,7 @@ class moduleBlsk(Content):  # , Queue):
     def deleteApiFavs(self, idPost):
         res = None
         logging.info(f"Deleting: {idPost}")
-        res = self.api.delete_like(idPost)
-        # res, error = self.apiCall('delete_like', self.api,  like_uri=idPost)
+        res, error = self.apiCall('delete_like', self.api,  like_uri=idPost)
         msgLog = f"{self.indent} res: {res}"  # error: {error}"
         logMsg(msgLog, 1, False)
         return res
@@ -315,6 +315,8 @@ class moduleBlsk(Content):  # , Queue):
             # Success: The reply object has a 'uri', which is the post identifier.
             res = "https://bsky.app/profile/fernand0.bsky.social/post/"
             res = f"{res}{reply.uri.split('/')[-1]}"
+        elif isinstance(reply, bool):
+            res = reply
         elif isinstance(reply, str) and "Fail" in reply:
             # Failure: The reply is an explicit failure string.
             res = reply

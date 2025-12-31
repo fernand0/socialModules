@@ -3,6 +3,7 @@
 import sys
 
 from instapaper import Instapaper as ipaper
+from instapaper import Bookmark
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
@@ -100,7 +101,7 @@ class moduleInstapaper(Content):
             return self.res_dict
 
         try:
-            b = instapaper.Bookmark(self.getClient(), {"url": link}) 
+            b = Bookmark(self.getClient(), {"url": link})
             res = b.save()
             self.res_dict["raw_response"] = res
             if res:

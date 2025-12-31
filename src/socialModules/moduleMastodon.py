@@ -125,12 +125,16 @@ class moduleMastodon(Content):  # , Queue):
 
     def deleteApiFavs(self, idPost):
         logging.info("Deleting: {}".format(str(idPost)))
+        self.res_dict["success"] = False
         try:
             result = self.client.status_unfavourite(idPost)
-        except:
+            self.res_dict["success"] = True
+            self.res_dict["raw_response"] = result
+        except Exception as e:
             result = self.report(self.service, "", "", sys.exc_info())
+            self.res_dict["raw_response"] = e
         logging.info(f"Res: {result}")
-        return result
+        return self.res_dict
 
     def getPostTime(self, post):
         time = None
