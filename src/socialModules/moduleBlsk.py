@@ -329,7 +329,7 @@ class moduleBlsk(Content):  # , Queue):
             # Success: The reply object has a 'uri', which is the post identifier.
             res = "https://bsky.app/profile/fernand0.bsky.social/post/"
             res = f"{res}{reply.uri.split('/')[-1]}"
-        elif hasattr(reply, "post_url"):
+        elif "post_url" in reply:
             res = reply["post_url"]
         elif isinstance(reply, bool):
             res = reply
