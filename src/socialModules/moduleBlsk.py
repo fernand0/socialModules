@@ -273,21 +273,35 @@ class moduleBlsk(Content):  # , Queue):
         return self.res_dict
 
     def deleteApiPosts(self, idPost):
-        res = None
-
+        self.res_dict = self.get_empty_res_dict()
         msgLog = f"{self.indent} deleteApiPosts deleting: {idPost}"
         logMsg(msgLog, 1, False)
         res, error = self.apiCall("delete_post", self.api, post_uri=idPost)
+        if error:
+            self.res_dict["success"] = False
+            self.res_dict["error_message"] = error
+            self.res_dict["raw_response"] = res
+        else:
+            self.res_dict["success"] = True
+            self.res_dict["raw_response"] = res
 
-        return res
+        return self.res_dict
 
     def deleteApiFavs(self, idPost):
-        res = None
+        self.res_dict = self.get_empty_res_dict()
         logging.info(f"Deleting: {idPost}")
-        res, error = self.apiCall('delete_like', self.api,  like_uri=idPost)
-        msgLog = f"{self.indent} res: {res}"  # error: {error}"
+        res, error = self.apiCall("delete_like", self.api, like_uri=idPost)
+        if error:
+            self.res_dict["success"] = False
+            self.res_dict["error_message"] = error
+            self.res_dict["raw_response"] = res
+        else:
+            self.res_dict["success"] = True
+            self.res_dict["raw_response"] = res
+
+        msgLog = f"{self.indent} res: {self.res_dict}"
         logMsg(msgLog, 1, False)
-        return res
+        return self.res_dict
 
     def getPostHandle(self, post):
         handle = post.post.author.handle
@@ -315,6 +329,8 @@ class moduleBlsk(Content):  # , Queue):
             # Success: The reply object has a 'uri', which is the post identifier.
             res = "https://bsky.app/profile/fernand0.bsky.social/post/"
             res = f"{res}{reply.uri.split('/')[-1]}"
+        elif hasattr(reply, "post_url"):
+            res = reply["post_url"]
         elif isinstance(reply, bool):
             res = reply
         elif isinstance(reply, str) and "Fail" in reply:

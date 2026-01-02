@@ -115,23 +115,31 @@ class moduleMastodon(Content):  # , Queue):
         return self.res_dict
 
     def deleteApiPosts(self, idPost):
-        logging.info("Deleting: {}".format(str(idPost)))
+        self.res_dict = self.get_empty_res_dict()
+        logging.info(f"Deleting: {idPost}")
         try:
             result = self.getClient().status_delete(idPost)
-        except:
-            result = self.report(self.service, "", "", sys.exc_info())
-        logging.info(f"Res: {result}")
-        return result
-
-    def deleteApiFavs(self, idPost):
-        logging.info("Deleting: {}".format(str(idPost)))
-        self.res_dict["success"] = False
-        try:
-            result = self.client.status_unfavourite(idPost)
             self.res_dict["success"] = True
             self.res_dict["raw_response"] = result
         except Exception as e:
             result = self.report(self.service, "", "", sys.exc_info())
+            self.res_dict["success"] = False
+            self.res_dict["error_message"] = result
+            self.res_dict["raw_response"] = e
+        logging.info(f"Res: {result}")
+        return self.res_dict
+
+    def deleteApiFavs(self, idPost):
+        self.res_dict = self.get_empty_res_dict()
+        logging.info(f"Deleting: {idPost}")
+        try:
+            result = self.getClient().status_unfavourite(idPost)
+            self.res_dict["success"] = True
+            self.res_dict["raw_response"] = result
+        except Exception as e:
+            result = self.report(self.service, "", "", sys.exc_info())
+            self.res_dict["success"] = False
+            self.res_dict["error_message"] = result
             self.res_dict["raw_response"] = e
         logging.info(f"Res: {result}")
         return self.res_dict
