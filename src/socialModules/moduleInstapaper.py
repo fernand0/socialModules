@@ -76,10 +76,10 @@ class moduleInstapaper(Content):
 
     def publishApiPost(self, *args, **kwargs):
         title = ""
+        comment = ""
         if args and len(args) == 3:
             # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
-        comment = ""
         if kwargs:
             # logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs

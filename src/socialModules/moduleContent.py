@@ -1203,7 +1203,9 @@ class Content:
             ):
                 nameMethod = self.getPostsType().capitalize()
             else:
-                msgLog = f"{self.indent} No api for " f"{self.getPostsType()}"
+                msgLog =  (f"{self.indent} No api for " 
+                           f"{self.getPostsType()}"
+                           )
                 logMsg(msgLog, 2, False)
 
             method = getattr(self, f"publishApi{nameMethod}")
@@ -1221,7 +1223,8 @@ class Content:
                     reply = method(api=api, post=post)
                 else:
                     msgLog = (
-                        f"{self.indent} Calling method " f"with title, link, comment"
+                        f"{self.indent} Calling method {method} " 
+                        f"with title, link, comment"
                     )
                     logMsg(msgLog, 2, False)
                     reply = method(title, link, comment)
