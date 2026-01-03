@@ -393,7 +393,10 @@ class moduleSlack(Content):  # , Queue):
             elif text.find("<h") >= 0:
                 # Some people include URLs in the title of the page
                 pos = text.rfind("<")
-                link = text[pos + 1 : -1]
+                link = text[pos + 1 :]
+                pos = link.find(">")
+                link = link[:pos-1]
+
             else:
                 pos = text.rfind("http")
                 link = text[pos:-1]
