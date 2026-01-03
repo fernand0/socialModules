@@ -1708,8 +1708,8 @@ class Content:
                 if isinstance(link, bytes):
                     linkS = linkS.decode()
                 url = self.getPostLink(entry)
-                # msgLog = (f"{self.indent} Url: {url} Link: {linkS}")
-                # logMsg(msgLog, 1, False)
+                msgLog = (f"{self.indent} Url: {url} Link: {linkS}")
+                logMsg(msgLog, 1, False)
                 # lenCmp = min(len(url), len(linkS))
                 if url == linkS:
                     # When there are duplicates (there shouldn't be) it returns

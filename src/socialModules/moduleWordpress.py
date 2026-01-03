@@ -50,7 +50,6 @@ class moduleWordpress(Content):  # ,Queue):
         self.access_token = None
 
         self.access_token = keys[0]
-        logging.info(f"Access: {self.access_token}")
 
         self.headers = {"Authorization": "Bearer " + self.access_token}
         self.my_site = "{}.wordpress.com".format(self.user)
@@ -284,8 +283,9 @@ class moduleWordpress(Content):  # ,Queue):
             "tags": idTags,
         }
 
-        if link:
-            payload["meta"] = {"original_link": link}
+        logging.info(f"Payload: {payload}",1, 0)
+        # if link:
+        #     payload["meta"] = {"original_link": link}
 
         try:
             res = requests.post(
