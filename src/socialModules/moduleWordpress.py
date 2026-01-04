@@ -9,7 +9,7 @@ import urllib.parse
 import requests
 from bs4 import BeautifulSoup
 
-from socialModules.configMod import CONFIGDIR
+from socialModules.configMod import CONFIGDIR, logMsg
 from socialModules.moduleContent import Content
 
 
@@ -220,7 +220,7 @@ class moduleWordpress(Content):  # ,Queue):
     def processReply(self, reply):
         res = reply
         logging.info("Res: %s" % res)
-        if res.ok:
+        if hasattr(res, 'ok') and res.ok:
             resJ = json.loads(res.text)
             logging.debug("Res text: %s" % resJ)
             logging.debug("Res slug: %s" % resJ["generated_slug"])
@@ -228,6 +228,8 @@ class moduleWordpress(Content):  # ,Queue):
             res = "{} - \n https://{}/{}".format(
                 title, self.my_site, resJ["generated_slug"]
             )
+        elif 'success' in res and res['success']:
+            res = reply
         else:
             res = self.report(
                 self.service, self, "", f"Res: {res} Fail! Failed authentication."
@@ -283,7 +285,7 @@ class moduleWordpress(Content):  # ,Queue):
             "tags": idTags,
         }
 
-        logging.info(f"Payload: {payload}",1, 0)
+        logMsg(f"Payload: {payload}",1, 0)
         # if link:
         #     payload["meta"] = {"original_link": link}
 

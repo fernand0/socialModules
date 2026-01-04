@@ -210,7 +210,7 @@ class moduleImgur(Content):  # , Queue):
             res = "Fail! No reply from API."
         else:
             # Failure: The reply is in an unexpected format.
-            res = f"Fail! Unexpected reply type: {type(reply)}"
+            res = reply
 
         return res
 
@@ -268,7 +268,9 @@ class moduleImgur(Content):  # , Queue):
         except imgurpython.helpers.error.ImgurClientError as e:
             if "Image already in gallery." in str(e):
                 self.res_dict["error_message"] = "Image already in gallery."
-                # This could be considered a "soft" failure, you might want to handle it differently
+                # This could be considered a "soft" failure, you might want to
+                # handle it differently
+                # FIXME Postaction: delete?
                 self.res_dict["success"] = False
             else:
                 self.res_dict["error_message"] = self.report(

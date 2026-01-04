@@ -728,7 +728,7 @@ class moduleRules:
             }
             post = {"title": title, "link": link, "content": content}
             publication_res = apiDst.publishPost(api=apiSrc, post=post)
-            print(f"Pub Res: {publication_res}")
+            logging.info(f"Pub Res: {publication_res}")
             is_success = "Fail!" not in str(publication_res) and "failed!" not in str(
                 publication_res
             )
@@ -1222,6 +1222,8 @@ class moduleRules:
                     cmdPost = getattr(apiSrc, f"{postaction}")
                     resCmd = cmdPost(pos)
                     # FIXME inconsistent
+                if 'OK' in resCmd:
+                    resPost['success'] = True
                 resPost['cmd'] = cmdPost
                 resPost['raw_response'] = resCmd
             # when the publishMethod does not return the adequate values: FIXME?
@@ -1245,6 +1247,8 @@ class moduleRules:
                     resCmd = cmdPost(pos)
                 if 'success' in resCmd:
                     resPost['success'] = resCmd['success']
+                elif 'OK' in resCmd:
+                    resPost['success'] = True
                 else:
                     resPost['success'] = resCmd
                 resPost['cmd'] = cmdPost
