@@ -1071,6 +1071,18 @@ class moduleRules:
             res = self.getRuleComponent(rule, 2)
         return res
 
+    def getOrigString(self, obj):
+        """Generate the orig string for a rule object.
+
+        Args:
+            obj: The rule object to extract information from
+        """
+        # Use consistent rule-based methods (fixing original inconsistency)
+        return (
+                f"{self.getNickRule(obj)}@{self.getNameRule(obj)}"
+                f" ({self.getTypeRule(obj)})"
+                )
+
     def clientErrorMsg(self, indent, api, typeC, rule, action):
         return f"{indent} {typeC} Error. " f"No client for {rule} ({action}). End."
 
@@ -1398,10 +1410,7 @@ class moduleRules:
         textEnd = ""
 
         # Destination
-        orig = (
-            f"{self.getNickRule(src)}@{self.getNameAction(src)} "
-            f"({self.getTypeRule(src)})"
-        )
+        orig = self.getOrigString(src)
         dest = (
             f"{self.getNickAction(action)}@{self.getNameAction(action)} "
             f"({self.getTypeAction(action)})"
@@ -1754,11 +1763,10 @@ class moduleRules:
                 i = i + 1
             name_action = f"[{self.getNameAction(rule_key)}{i}]"
             name_action = f"{name_action:->12}>"
+            rule_name = self.getOrigString(rule_key)
             msgLog = (
                 f"Preparing actions for rule: "
-                f"{self.getNickSrc(rule_key)}@"
-                f"{self.getNameRule(rule_key)} "
-                f"({self.getNickAction(rule_key)})"
+                f"{rule_name}"
             )
             try:
                 thread_local.nameA = name_action
@@ -1768,8 +1776,7 @@ class moduleRules:
             previous = self.getNameAction(rule_key)
             if rule_metadata and rule_metadata.get("hold") == "yes":
                 msgHold = (
-                    f"[HOLD] {self.getNickSrc(rule_key)} "
-                    f"({self.getNickAction(rule_key)})"
+                    f"[HOLD] {rule_name} "
                 )
                 try:
                     thread_local.nameA = name_action
