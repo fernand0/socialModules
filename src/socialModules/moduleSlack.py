@@ -382,24 +382,86 @@ class moduleSlack(Content):  # , Queue):
         return text
 
     def getApiPostLink(self, post):
-        link = ""
-        if "attachments" in post:
-            link = post["attachments"][0]["original_url"]
-        else:
-            text = post["text"]
-            if text.startswith("<") and text.count("<") == 1:
-                # The link is the only text
-                link = post["text"][1:-1]
-            elif text.find("<h") >= 0:
-                # Some people include URLs in the title of the page
-                pos = text.rfind("<")
-                link = text[pos + 1 :]
-                pos = link.find(">")
-                link = link[:pos]
+        """
+        Improved method to extract the primary link from a Slack post.
+        Prioritizes structured data over text parsing for more reliability.
+        """
+        # 1. First, check for URLs in attachments (most reliable)
+        link = self._get_link_from_attachments(post)
 
-            else:
-                pos = text.rfind("http")
-                link = text[pos:-1]
+        # 2. If no link found in attachments, check for URLs in blocks/elements (rich text format)
+        if not link:
+            link = self._get_link_from_blocks(post)
+
+        # 3. If still no link found, fallback to text-based extraction (original method)
+        if not link:
+            link = self._get_link_from_text(post)
+
+        return link
+
+    def _get_link_from_attachments(self, post):
+        """Extract link from post attachments."""
+        link = ""
+        if "attachments" in post and len(post["attachments"]) > 0:
+            attachment = post["attachments"][0]
+            # Prioritize original_url as it's usually the main link
+            if "original_url" in attachment:
+                link = attachment["original_url"]
+            # Fallback to title_link if available
+            elif "title_link" in attachment:
+                link = attachment["title_link"]
+            # Fallback to from_url if available
+            elif "from_url" in attachment:
+                link = attachment["from_url"]
+        return link
+
+    def _get_link_from_blocks(self, post):
+        """Extract link from post blocks/elements."""
+        link = ""
+        if "blocks" not in post:
+            return link
+
+        # Process blocks until we find a link or run out of blocks
+        block_idx = 0
+        while block_idx < len(post["blocks"]) and not link:
+            block = post["blocks"][block_idx]
+            if isinstance(block, dict) and "elements" in block:
+                # Process elements in this block
+                element_idx = 0
+                while element_idx < len(block["elements"]) and not link:
+                    element = block["elements"][element_idx]
+                    if isinstance(element, dict) and "elements" in element:
+                        # Process inner elements
+                        inner_element_idx = 0
+                        while inner_element_idx < len(element["elements"]) and not link:
+                            inner_element = element["elements"][inner_element_idx]
+                            if isinstance(inner_element, dict) and "url" in inner_element:
+                                link = inner_element["url"]
+                            inner_element_idx += 1
+                    element_idx += 1
+            block_idx += 1
+        return link
+
+    def _get_link_from_text(self, post):
+        """Extract link from post text using original method logic."""
+        link = ""
+        if "text" not in post:
+            return link
+
+        text = post["text"]
+        if text.startswith("<") and text.count("<") == 1:
+            # The link is the only text
+            link = text[1:-1]
+        elif text.find("<h") >= 0:
+            # Some people include URLs in the title of the page
+            pos = text.rfind("<")
+            temp_link = text[pos + 1 :]
+            pos = temp_link.find(">")
+            link = temp_link[:pos]
+        else:
+            pos = text.rfind("http")
+            if pos >= 0:
+                link = text[pos:-1]  # Remove last character as in original
         return link
 
     def getPostImage(self, post):
