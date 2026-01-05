@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 
 import configparser
+import logging
 import sys
 import time
-import urllib
-import logging
 
-import click
-from bs4 import BeautifulSoup
 from slack_sdk import WebClient
 
 from socialModules.moduleContent import *
-from socialModules.configMod import nameModule
+
 # from socialModules.moduleQueue import *
 
 # from slack_sdk.errors import SlackApiError
@@ -153,21 +150,23 @@ class moduleSlack(Content):  # , Queue):
     def processReply(self, reply):
         # FIXME: Being careful with publishPost, publishPosPost, publishNextPost, publishApiPost
         res = reply
-        if isinstance(reply, dict):
-            res = reply.get("ok", "Fail!")
+        # if isinstance(reply, dict):
+        #     res = reply.get("ok", "Fail!")
         return res
 
     def publishApiPost(self, *args, **kwargs):
-        logging.debug(f"Args: {args} kwargs: {kwargs}")
         if args and len(args) == 3:
             title, link, comment = args
-        if kwargs:
+        elif kwargs:
             more = kwargs
             post = more.get("post", "")
             api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
-            comment = api.getPostComment(title)
+            # comment = api.getPostComment(title)
+        else:
+            self.res_dict["error_message"] = "Not enough arguments for publication."
+            return self.res_dict
 
         chan = self.getChannel()
         if not chan:
@@ -175,11 +174,30 @@ class moduleSlack(Content):  # , Queue):
             chan = self.getChannel()
         msgLog = f"{self.indent} Service {self.service} Channel: {chan}"
         logMsg(msgLog, 2, False)
-        self.getClient().token = self.user_slack_token
-        data = {"channel": chan, "text": f"{title} {link}"}
-        result = self.getClient().api_call("chat.postMessage", data=data)  # ,
-        self.getClient().token = self.slack_token
-        return result
+
+        try:
+            self.getClient().token = self.user_slack_token
+            data = {"channel": chan, "text": f"{title} {link}"}
+            result = self.getClient().api_call("chat.postMessage", data=data)
+            logMsg(f"Result api: {result}")
+            self.getClient().token = self.slack_token
+
+            self.res_dict["raw_response"] = result
+            if result["ok"]:
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = self.getAttribute(result, 'post_url')
+                # Construct post_url if possible
+                if "channel" in result and "ts" in result:
+                    self.res_dict["post_url"] = self.getApiPostUrl(result)
+            else:
+                self.res_dict["error_message"] = (
+                    f"Slack API error: {result.get('error', 'Unknown error')}"
+                )
+        except Exception as e:
+            self.res_dict["error_message"] = f"Exception during Slack API call: {e}"
+            self.res_dict["raw_response"] = sys.exc_info()
+
+        return self.res_dict
 
     def editApiPost(self, post, newContent):
         theChan = self.getChannel()
@@ -207,9 +225,9 @@ class moduleSlack(Content):  # , Queue):
         return result
 
     def editApiLink(self, post, newLink):
-        oldLink = self.getPostLink(post)
-        idPost = self.getLinkPosition(oldLink)
-        oldTitle = self.getPostTitle(post)
+        # oldLink = self.getPostLink(post)
+        # idPost = self.getLinkPosition(oldLink)
+        # oldTitle = self.getPostTitle(post)
         self.setPostLink(post, newLink)
         self.updatePostsCache()
 
@@ -375,10 +393,13 @@ class moduleSlack(Content):  # , Queue):
             elif text.find("<h") >= 0:
                 # Some people include URLs in the title of the page
                 pos = text.rfind("<")
-                link = text[pos + 1 : -1]
+                link = text[pos + 1 :]
+                pos = link.find(">")
+                link = link[:pos-1]
+
             else:
                 pos = text.rfind("http")
-                link = text[pos : -1]
+                link = text[pos:-1]
         return link
 
     def getPostImage(self, post):

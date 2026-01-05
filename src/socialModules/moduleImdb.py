@@ -9,7 +9,6 @@ import sys
 import time
 import urllib
 
-import requests
 import tmdbsimple as tmdb
 from bs4 import BeautifulSoup
 
@@ -150,19 +149,20 @@ class moduleImdb(Content):
         posts = self.setInfoData()
         # print(f"Posts: {posts}")
 
-        hh = time.strftime("%H:00")
-        dd = time.strftime("%d")
-        firstPost = True
-        useCache = False
+        # hh = time.strftime("%H:00")
+        # dd = time.strftime("%d")
+        # firstPost = True
+        # useCache = False
         j = 0
         for i, post in enumerate(posts):
-            hhIni = self.getPostTimeIni(post)
+            # hhIni = self.getPostTimeIni(post)
             # hhIni, ddIni = hhIni.hour, hhIni.day
             # ddIni = ""
             # if ((dd == str(ddIni) and hh <= str(hhIni))
             #         and (post['g'] == self.gen)):
             #     try:
             res = self.setPostMoreDataNew(post)
+            logging.info(res)
             #    except:
             #        res = ""
             j = j + 1
@@ -287,7 +287,7 @@ class moduleImdb(Content):
             return ""
 
     def setPostMoreDataNew(self, post):
-        postMore = None
+        # postMore = None
         mySearch = self.getClient().Search()
         title = self.getPostTitle(post)
         logging.info(f"Post: {post}")
@@ -408,15 +408,18 @@ class moduleImdb(Content):
     def get_post_id_from_result(self, result):
         return None
 
+
 def main():
     logging.basicConfig(
-    stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s")
+        stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
+    )
 
     from socialModules.moduleTester import ModuleTester
-    
+
     imdb_module = moduleImdb()
     tester = ModuleTester(imdb_module)
     tester.run()
+
 
 if __name__ == "__main__":
     main()

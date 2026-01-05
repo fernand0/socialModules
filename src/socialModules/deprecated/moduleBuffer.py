@@ -40,28 +40,23 @@
 import configparser
 import importlib
 import logging
-import os
 import sys
 import time
-import urllib
 
 importlib.reload(sys)
 # sys.setdefaultencoding("UTF-8")
 
 import buffpy
 from buffpy.managers.profiles import Profiles
-from buffpy.managers.updates import Updates
-from buffpy.models import Update
 
 # sudo pip install buffpy version does not work
 # Better use:
 # git clone https://github.com/vtemian/buffpy.git
 # cd buffpy
 # sudo python setup.py install
-from colorama import Fore
-
 from configMod import *
 from moduleContent import *
+
 # from moduleQueue import *
 
 # We can put as many items as the service with most items allow
@@ -93,7 +88,7 @@ class moduleBuffer(Content, Queue):
 
         clientId = config.get("appKeys", "client_id")
         clientSecret = config.get("appKeys", "client_secret")
-        redirectUrl = config.get("appKeys", "redirect_uri")
+        #redirectUrl = config.get("appKeys", "redirect_uri")
         accessToken = config.get("appKeys", "access_token")
 
         # instantiate the api object
@@ -338,12 +333,12 @@ class moduleBuffer(Content, Queue):
     def editl(self, j, newLink=""):
         logging.info("New link %s", newLink)
         thePost = self.obtainPostData(j)
-        oldLink = thePost[1]
+        #oldLink = thePost[1]
         profile = self.getProfile()
         logging.info("servicename %s" % self.service)
         from buffpy.models.update import Update
 
-        i = 0
+        #i = 0
         update = Update(api=self.client, id=profile.updates.pending[j]["id"])
         title = thePost[0]
         # media = {'original': newLink }
@@ -374,7 +369,7 @@ class moduleBuffer(Content, Queue):
         logging.info("servicename %s" % self.service)
         from buffpy.models.update import Update
 
-        i = 0
+        #i = 0
         update = Update(api=self.client, id=profile.updates.pending[j]["id"])
         print(update)
         import urllib.parse

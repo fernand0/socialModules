@@ -1,14 +1,12 @@
 #!/usr/bin/env python
-import click
 import importlib
 import logging
 import os
-import pickle
 import sys
 import threading
 import urllib
 
-import requests
+import click
 
 thread_local = threading.local()
 
@@ -28,14 +26,15 @@ FAIL = "Fail!"
 OK = "OK"
 
 
-
 class ContextFilter(logging.Filter):
     """
     This is a filter which injects the 'nameA' attribute into the log record.
     """
+
     def filter(self, record):
-        record.nameA = getattr(thread_local, 'nameA', '') or ''
+        record.nameA = getattr(thread_local, "nameA", "") or ""
         return True
+
 
 # Configure the root logger with both file and console handlers
 root_logger = logging.getLogger()
@@ -44,7 +43,7 @@ root_logger.setLevel(logging.DEBUG)
 # Create formatter
 formatter = logging.Formatter(
     fmt="%(asctime)s [%(filename).12s] %(nameA)s %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
 if not os.path.exists(LOGDIR):
@@ -74,7 +73,8 @@ console_handler.addFilter(ContextFilter())
 
 # Add handlers to root logger
 # root_logger.addHandler(file_handler)
-#root_logger.addHandler(console_handler)
+# root_logger.addHandler(console_handler)
+
 
 def logMsg(msgLog, log=1, print_to_console=True):
     # name_action = getattr(thread_local, 'nameA', None)
@@ -88,7 +88,7 @@ def logMsg(msgLog, log=1, print_to_console=True):
     elif log == 3:
         logging.warning(msgLog)
 
-    if hasattr(thread_local, 'nameA') and thread_local.nameA:
+    if hasattr(thread_local, "nameA") and thread_local.nameA:
         msgLog = f"{thread_local.nameA}{msgLog}"
 
     if print_to_console is True:
@@ -118,6 +118,7 @@ def fileNamePath(url, socialNetwork=()):
         theName = os.path.expanduser(myFile)
     return theName
 
+
 def checkFile(fileName, indent=""):
     msgLog = f"{indent} Start checkFile"
     logMsg(msgLog, 2, 0)
@@ -125,7 +126,7 @@ def checkFile(fileName, indent=""):
     logMsg(msgLog, 2, 0)
     dirName = os.path.dirname(fileName)
 
-    msgRes = f" File OK"
+    msgRes = " File OK"
     if not os.path.isdir(dirName):
         msgRes = f"Directory {dirName} does not exist."
     elif not os.path.isfile(fileName):
@@ -143,7 +144,7 @@ def getLastLink(fileName, indent=""):
     linkLast = ""
     timeLast = 0
     msgLog = checkFile(fileName, indent)
-    if not "OK" in msgLog:
+    if "OK" not in msgLog:
         msgLog = f"{indent} {msgLog}"
         logMsg(msgLog, 3, 0)
     else:
@@ -195,7 +196,7 @@ def updateLastLink(url, link, socialNetwork=(), indent=""):
     logMsg(msgLog, 2, 0)
     msgLog = checkFile(fileName, indent)
     logMsg(msgLog, 2, 0)
-    if not "OK" in msgLog:
+    if "OK" not in msgLog:
         msgLog = f"fileName: {fileName} does not exist, I'll create it"
         logMsg(msgLog, 2, 0)
     with open(fileName, "w") as f:
@@ -232,6 +233,7 @@ def getModule(profile, indent=""):
 
     return api
 
+
 def getApi(profile, nick, indent="", channel=None):
     msgLog = f"{indent} Start getApi with channel {channel}"
     logMsg(msgLog, 2, 0)
@@ -241,8 +243,7 @@ def getApi(profile, nick, indent="", channel=None):
     result_api = None
 
     if api is None:
-        logMsg(f"{indent} Failed to get API module for profile: "
-               f"{profile}", 3, 1)
+        logMsg(f"{indent} Failed to get API module for profile: " f"{profile}", 3, 1)
     else:
         api.profile = profile
         api.nick = nick
@@ -257,6 +258,7 @@ def getApi(profile, nick, indent="", channel=None):
     msgLog = f"{indent} End getApi"
     logMsg(msgLog, 2, 0)
     return result_api
+
 
 def nameModule():
     import inspect
@@ -300,14 +302,16 @@ def select_from_list(
         or hasattr(options[0], "name")
     ):
         names = [
-            safe_get(
-                el,
-                [
-                    identifier,
-                ],
+            (
+                safe_get(
+                    el,
+                    [
+                        identifier,
+                    ],
+                )
+                if isinstance(el, dict)
+                else getattr(el, identifier)
             )
-            if isinstance(el, dict)
-            else getattr(el, identifier)
             for el in options
         ]
     else:
@@ -317,7 +321,7 @@ def select_from_list(
     if selector:
         names_sel = [opt for opt in names if selector in opt]  # + more_options
     if negation_selector:
-        names_sel = [opt for opt in names if not (negation_selector in opt)]
+        names_sel = [opt for opt in names if negation_selector not in opt]
     names_sel = names_sel + more_options
     options_sel = names_sel.copy()
     while options_sel and len(options_sel) > 1:
@@ -356,7 +360,7 @@ def select_from_list(
                 options_sel = names_sel.copy()
 
     if len(options_sel) == 1:
-        if not options_sel[0] in more_options:
+        if options_sel[0] not in more_options:
             sel = names.index(options_sel[0])
 
     logging.info(f"Sel: {sel}")
@@ -364,20 +368,22 @@ def select_from_list(
         logging.info(f"- {names[int(sel)]}")
         name = names[int(sel)]
     else:
-        logging.info(f"- is an extra option")
+        logging.info("- is an extra option")
         name = sel
 
     return sel, name
 
+
 def extract_nick_from_url(url):
     result = url
     url_parsed = urllib.parse.urlparse(url)
-    #if url and (url.startswith("http")):
+    # if url and (url.startswith("http")):
     #    result = url.split("//", 1)[1]
-    if (((url_parsed.netloc.count('.')>1)
-         and (url_parsed.netloc.split('.')[0] in ['www']))
-        or (url_parsed.netloc.count('.') == 1)):
-            result = f"{url_parsed.netloc}{url_parsed.path}"
+    if (
+        (url_parsed.netloc.count(".") > 1)
+        and (url_parsed.netloc.split(".")[0] in ["www"])
+    ) or (url_parsed.netloc.count(".") == 1):
+        result = f"{url_parsed.netloc}{url_parsed.path}"
     else:
         result = f"{url_parsed.netloc}"
     if url_parsed.query:

@@ -4,9 +4,7 @@ import configparser
 import json
 import sys
 import urllib.parse
-from html.parser import HTMLParser
 
-import oauth2 as oauth
 import requests
 from linkedin_api.clients.restli.client import RestliClient
 
@@ -72,7 +70,8 @@ class moduleLinkedin(Content):
             splitUrl = urllib.parse.urlsplit(resUrl)
             result = urllib.parse.parse_qsl(splitUrl.query)
             access_token = result[0][1]
-            token_response = auth_client.exchange_auth_code_for_access_token(auth_code)
+            # token_response = auth_client.exchange_auth_code_for_access_token(auth_code)
+            
             url = "https://www.linkedin.com/oauth/v2/accessToken"
             payload = {
                 "grant_type": "authorization_code",
@@ -89,7 +88,7 @@ class moduleLinkedin(Content):
             with open(configLinkedin, "w") as configfile:
                 config.write(configfile)
 
-            restli_client = RestliClient()
+            # restli_client = RestliClient()
             sys.exit()
         except:
             print("Some problem")
@@ -146,10 +145,10 @@ class moduleLinkedin(Content):
         res = ""
         if len(args) == 2:
             title, imageName = args
-            more = kwargs
+            # more = kwargs
             if imageName:
-                with open(imageName, "rb") as imagefile:
-                    imagedata = imagefile.read()
+                # with open(imageName, "rb") as imagefile:
+                #     imagedata = imagefile.read()
 
                 try:
                     res = self.getClient().submit_share(
@@ -169,112 +168,74 @@ class moduleLinkedin(Content):
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3 and args[0]:
             title, link, comment = args
-        if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
+        elif kwargs:
             more = kwargs
-            # FIXME: We need to do something here
             post = more.get("post", "")
             api = more.get("api", "")
             title = api.getPostTitle(post)[:250]
-            # Title/content/article must be of lenght 0...400
             link = api.getPostLink(post)
             comment = api.getPostComment(title)
+        else:
+            self.res_dict["error_message"] = "Not enough arguments for publication."
+            return self.res_dict
 
         msgLog = f"{self.indent} Publishing: {title} - {link} - {comment}"
         logMsg(msgLog, 1, False)
+
         try:
-            try:
-                # me_response = self.getClient().get(resource_path=ME_RESOURCE,
-                me_response = self.getClient().get(
-                    resource_path="/me", access_token=self.TOKEN
-                )
+            me_response = self.getClient().get(
+                resource_path="/me", access_token=self.TOKEN
+            )
+            self.res_dict["raw_response"] = me_response
 
-                msgLog = f"{self.indent} Response: {me_response}"
-                logMsg(msgLog, 2, False)
-                POSTS_RESOURCE = "/posts"
-                if link and "id" in me_response.entity:
-                    entity = {
-                        "author": f"urn:li:person:{me_response.entity['id']}",
-                        "commentary": f"{title}",
-                        "visibility": "PUBLIC",
-                        "distribution": {
-                            "feedDistribution": "MAIN_FEED",
-                            "targetEntities": [],
-                            "thirdPartyDistributionChannels": [],
-                        },
-                        "content": {
-                            "article": {"source": f"{link}", "title": f"{title}"}
-                        },
-                        "lifecycleState": "PUBLISHED",
-                    }
+            if "id" not in me_response.entity:
+                self.res_dict["error_message"] = "Could not get user ID for publishing."
+                return self.res_dict
 
-                    res = self.getClient().create(
-                        resource_path=POSTS_RESOURCE,
-                        entity=entity,
-                        version_string=self.API_VERSION,
-                        access_token=self.TOKEN,
+            author_urn = f"urn:li:person:{me_response.entity['id']}"
+            entity = {
+                "author": author_urn,
+                "commentary": f"{title}",
+                "visibility": "PUBLIC",
+                "distribution": {
+                    "feedDistribution": "MAIN_FEED",
+                    "targetEntities": [],
+                    "thirdPartyDistributionChannels": [],
+                },
+                "lifecycleState": "PUBLISHED",
+            }
+
+            if link:
+                entity["content"] = {"article": {"source": link, "title": title}}
+
+            res = self.getClient().create(
+                resource_path=self.POSTS_RESOURCE,
+                entity=entity,
+                version_string=self.API_VERSION,
+                access_token=self.TOKEN,
+            )
+            self.res_dict["raw_response"] = res
+
+            if res.status_code == 201:
+                self.res_dict["success"] = True
+                # The post URN is in the x-restli-id header
+                post_urn = res.headers.get("x-restli-id")
+                if post_urn:
+                    self.res_dict["post_url"] = (
+                        f"https://www.linkedin.com/feed/update/{post_urn}/"
                     )
-                else:
-                    res = self.getClient().create(
-                        resource_path=POSTS_RESOURCE,
-                        entity={
-                            "author": f"urn:li:person:{me_response.entity['id']}",
-                            "visibility": "PUBLIC",
-                            "commentary": f"{title}",
-                            "distribution": {
-                                "feedDistribution": "MAIN_FEED",
-                                "targetEntities": [],
-                                "thirdPartyDistributionChannels": [],
-                            },
-                            "lifecycleState": "PUBLISHED",
-                        },
-                        version_string=self.API_VERSION,
-                        access_token=self.TOKEN,
-                    )
-            except:
-                logging.info(f"Linkedin. Not authorized.")
-                logging.info(f"Exception {sys.exc_info()}")
-                res = self.report("Linkedin", title, link, sys.exc_info())
-            # self.getClient().get_profile()
-            # try:
-            #     res = self.getClient().submit_share(comment=comment,
-            #                                         title=title,
-            #                                         description=None,
-            #                                         submitted_url=link,
-            #                                         submitted_image_url=None,
-            #                                         urn=self.URN,
-            #                                         visibility_code='PUBLIC')
-            # except:
-            #     logging.info(f"Linkedin. Not authorized.")
-            #     logging.info(f"Exception {sys.exc_info()}")
-            #     res = self.report('Linkedin', title, link, sys.exc_info())
-        except:
-            logging.info(f"Linkedin. Other problems.")
-            logging.info(f"Exception {sys.exc_info()}")
-            res = self.report("Linkedin", title, link, sys.exc_info())
-
-        # logging.debug(f"Code return: {res}")
-        # logging.debug(f"Code return: {res.__dir__()}")
-        # logging.debug(f"Code return: {res.status_code}")
-        # logging.debug(f"Code return: {res.response}")
-        # logging.debug(f"Code return entity: {res.entity}")
-        # logging.debug(f"Code return: {res.entity_id}")
-        # logging.debug(f"Code return headers: {res.headers}")
-        # logging.debug(f"Code return headers: {res.url}")
-        # logging.debug(f"Code return type: {type(res)}")
-        if isinstance(res, bytes) and ("201".encode() not in res):
-            # FIXME: Logic? Conditional management?
-            res = f"Fail!\n{res}"
-        else:
-            code = res.status_code
-            # msgLog = f"{self.indent} return code: {code}"
-            # logMsg(msgLog, 1, 0)
-            if code and (code != 201):
+            else:
                 if "message" in res.entity:
-                    res = f"Fail! {res.entity['message']}"
+                    self.res_dict["error_message"] = res.entity["message"]
                 else:
-                    res = f"Fail! {res.entity}"
-        return res
+                    self.res_dict["error_message"] = f"LinkedIn API error: {res.entity}"
+        except Exception as e:
+            self.res_dict["error_message"] = self.report(
+                "Linkedin", title, link, sys.exc_info()
+            )
+            self.res_dict["raw_response"] = e
+
+        return self.res_dict
 
     def deleteApiPosts(self, idPost):
         result = self.getClient().delete_post(idPost, urn=self.URN)
@@ -282,41 +243,43 @@ class moduleLinkedin(Content):
         return result
 
     def getApiPostLink(self, post):
-        link = ''
-        if ('link' in post.data):
+        link = ""
+        if "link" in post.data:
             # whatever
-            link = post.data.get('link')
-        return post
+            link = post.data.get("link")
+        return link
 
     def getApiPostUrl(self, post):
-        link = ''
-        if ('link' in post.data):
+        link = ""
+        if "link" in post.data:
             # whatever
-            link = post.data.get('link')
-        return post
+            link = post.data.get("link")
+        return link
 
     def getApiPostTitle(self, post):
-        title = ''
-        if ('text' in post.data):
+        title = ""
+        if "text" in post.data:
             # whatever
-            title = post.data.get('text')
-        return post
+            title = post.data.get("text")
+        return title
 
     def register_specific_tests(self, tester):
         pass
 
     def get_user_info(self, client):
         # client is the module Linkedin instance
-        me_response = client.getClient().get(resource_path="/me", access_token=client.TOKEN)
+        me_response = client.getClient().get(
+            resource_path="/me", access_token=client.TOKEN
+        )
         if me_response.entity:
-            firstName = me_response.entity.get('localizedFirstName', '')
-            lastName = me_response.entity.get('localizedLastName', '')
+            firstName = me_response.entity.get("localizedFirstName", "")
+            lastName = me_response.entity.get("localizedLastName", "")
             return f"{firstName} {lastName}"
         return "Could not get user info"
 
     def get_post_id_from_result(self, result):
-        if isinstance(result, str) and 'linkedin.com' in result:
-            return result.split('/')[-2]
+        if isinstance(result, str) and "linkedin.com" in result:
+            return result.split("/")[-2]
         return None
 
 

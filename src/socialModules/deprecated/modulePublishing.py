@@ -1,6 +1,4 @@
-import configparser
 import logging
-import os
 
 from socialModules.configMod import *
 
@@ -46,7 +44,7 @@ class Publisher:
         # return(self.interpretAndExecute(args,'publish'))
         logging.info("To publish %s" % args)
 
-        udpate = None
+        # udpate = None
         if self.isForMe(args):
             j = int(args[-1])
             service = self.content.socialNetwork[0]
@@ -105,7 +103,7 @@ class Publisher:
         # return(self.interpretAndExecute(args,'delete'))
         logging.info("To Delete %s" % args)
 
-        udpate = ""
+        update = ""
         if self.isForMe(args):
             j = int(args[-1])
             serviceName = (
@@ -144,7 +142,7 @@ class Publisher:
         logging.info("To edit %s" % args)
         logging.info("New title %s", newTitle)
 
-        udpate = None
+        update = None
         if self.isForMe(args):
             j = int(args[-1])
             serviceName = (
@@ -206,11 +204,11 @@ class Publisher:
                 logging.info("socialNetwork %s", profile["socialNetwork"])
 
                 serviceName = profile["socialNetwork"][0].capitalize()
-                nick = profile["socialNetwork"][1]
+                # nick = profile["socialNetwork"][1]
                 if (serviceName[0] in profMov) or toMove[0] == "*":
                     logging.info("to Move %s to %s" % (toMove, toWhere))
                     j = int(toMove[-1])
-                    k = int(toWhere[-1])
+                    #k = int(toWhere[-1])
                     postI = posts[serviceName]["pending"][i]
                     postJ = posts[serviceName]["pending"][j]
                     posts[serviceName]["pending"][i] = postJ

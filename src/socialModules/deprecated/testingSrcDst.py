@@ -1,11 +1,7 @@
-import configparser
-import inspect
 import logging
 import os
-import random
 import sys
 import time
-import urllib.parse
 
 path = f"{os.path.expanduser('~')}/usr/src/socialModules"
 sys.path.append(path)
@@ -24,7 +20,7 @@ class srcDst:
             "--timeSlots",
             "-t",
             default=50,  # 50 minutes
-            help=("How many time slots we will have for publishing " f"(in minutes)"),
+            help=("How many time slots we will have for publishing " "(in minutes)"),
         )
         parser.add_argument(
             "checkBlog",
@@ -130,7 +126,7 @@ def main():
     # rules.printList(impRuls, "Implicit Rules")
     available = {}
     for src in srcs:
-        if not (src[0] in available):
+        if src[0] not in available:
             available[src[0]] = [src[1:]]
         else:
             available[src[0]].append(src[1:])

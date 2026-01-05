@@ -14,8 +14,8 @@ from datetime import datetime
 # Add parent directory to path to import modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from socialModules.configMod import APPDIR, DATADIR, HOME
 from socialModules.modulePublicationCache import PublicationCache
-from socialModules.configMod import DATADIR, APPDIR, HOME
 
 
 def show_storage_locations():
@@ -28,7 +28,7 @@ def show_storage_locations():
     print(f"├── .mySocial/ (APPDIR): {APPDIR}")
     print(f"    ├── config/ (CONFIGDIR): {APPDIR}/config")
     print(f"    └── data/ (DATADIR): {DATADIR}")
-    print(f"        └── publication_cache.json ← Cache file")
+    print("        └── publication_cache.json ← Cache file")
     print()
 
     # Check if directories exist
@@ -62,7 +62,7 @@ def show_storage_locations():
                 data = json.load(f)
             print(f"  Publications: {len(data)}")
         except:
-            print(f"  Publications: Unable to read")
+            print("  Publications: Unable to read")
 
     print()
 

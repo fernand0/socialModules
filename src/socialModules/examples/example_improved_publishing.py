@@ -9,8 +9,8 @@ of the refactored publication methods.
 """
 
 import logging
-import sys
 import os
+import sys
 
 # Add socialModules path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -86,7 +86,7 @@ def example_publication_summary():
         status = "✓" if result.get("success") else "✗"
         print(f"  {status} {service}: {result.get('result') or result.get('error')}")
 
-    print(f"\nSummary:")
+    print("\nSummary:")
     print(f"  Total destinations: {summary['total']}")
     print(f"  Successful: {summary['successful']}")
     print(f"  Failed: {summary['failed']}")

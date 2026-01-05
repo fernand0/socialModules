@@ -4,16 +4,13 @@
 import configparser
 import logging
 import os
-import pickle
 import time
 import urllib
-import xmlrpc.client
 
 import requests
 from bs4 import BeautifulSoup, Tag
 from pdfrw import PdfReader
 
-import socialModules.moduleCache
 from socialModules.configMod import *
 
 # https://github.com/fernand0/socialMeodules/blob/master/moduleCache.py
@@ -203,7 +200,7 @@ class moduleXmlrpc(Content):
     def extractLinks(self, soup, linksToAvoid=""):
         j = 0
         linksTxt = ""
-        links = soup.find_all(["a", "iframe"])
+        #links = soup.find_all(["a", "iframe"])
         for link in soup.find_all(["a", "iframe"]):
             theLink = ""
             if len(link.contents) > 0:
@@ -283,7 +280,7 @@ class moduleXmlrpc(Content):
                         theTitle = url
                         theSummary = url
                         content = url
-                        theDescription = url
+                        # theDescription = url
                     else:
                         if url.lower().endswith("pdf"):
                             nameFile = "/tmp/kkkkk.pdf"
@@ -294,10 +291,10 @@ class moduleXmlrpc(Content):
                                 theTitle = theTitle[1:-1]
                             else:
                                 theTitle = url
-                            theUrl = url
+                            # theUrl = url
                             theSummary = ""
                             content = theSummary
-                            theDescription = theSummary
+                            # theDescription = theSummary
                         else:
                             soup = BeautifulSoup(req.text, "lxml")
                             # print("soup", soup)
@@ -315,16 +312,16 @@ class moduleXmlrpc(Content):
                                 )
                             theSummary = str(soup.body)
                             content = theSummary
-                            theDescription = theSummary
+                            # theDescription = theSummary
                 else:
                     theSummary = post["text"]
                     content = post["text"]
-                    theDescription = post["text"]
+                    # theDescription = post["text"]
                     theTitle = post["text"]
             else:
                 theSummary = post["title"]
                 content = post["title"]
-                theDescription = post["title"]
+                # theDescription = post["title"]
 
             if "original_url" in post:
                 theLink = post["original_url"]
@@ -404,7 +401,6 @@ class moduleXmlrpc(Content):
 
 
 def main():
-    import socialModules.moduleXmlrpc
 
     config = configparser.ConfigParser()
     config.read(CONFIGDIR + "/.rssBlogs")
@@ -417,7 +413,7 @@ def main():
         blog = moduleXmlrpc.moduleXmlrpc()
         url = config.get(b, "url")
         blog.setUrl(url)
-        xmlrpc = config.get(b, "xmlrpc")
+        # xmlrpc = config.get(b, "xmlrpc")
         blog.setXmlRpc()
         blog.setPostsXmlRpc()
         print(blog.getPostsXmlRpc()[9])
@@ -430,7 +426,7 @@ def main():
         blog = moduleXmlrpc.moduleXmlrpc()
         url = config.get(section, "url")
         blog.setUrl(url)
-        optFields = ["linksToAvoid", "time", "buffer"]
+        # optFields = ["linksToAvoid", "time", "buffer"]
         if "linksToAvoid" in config.options(section):
             blog.setLinksToAvoid(config.get(section, "linksToAvoid"))
         if "time" in config.options(section):
@@ -467,9 +463,8 @@ def main():
             print(blog.selectPost())
 
     for blog in blogs:
-        import urllib
 
-        linkLast = urlFile.read().rstrip()  # Last published
+        # linkLast = urlFile.read().rstrip()  # Last published
         blog.setPostsXmlrpc()
         posts = blog.getPostsXmlrpc()
         for post in posts:

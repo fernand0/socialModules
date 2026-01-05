@@ -1,4 +1,3 @@
-import configparser
 import sys
 import time
 
@@ -7,7 +6,7 @@ from imgurpython import ImgurClient
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
-from socialModules.test_utils import testing_utils
+
 # from socialModules.moduleQueue import *
 
 
@@ -38,12 +37,12 @@ class moduleImgur(Content):  # , Queue):
         except:
             client = None
             reply = self.report(self.service, "", "", sys.exc_info())
+            logging.info(reply)
 
         return client
 
     def get_user_info(self, client):
         return f"{self.user}"
-
 
     def setApiPosts(self):
         posts = []
@@ -137,13 +136,12 @@ class moduleImgur(Content):  # , Queue):
             # When pos is < -1 there can be drafts and we just want
             # to post the first one
             pos = len(posts)
-            post = posts[pos-1]
+            post = posts[pos - 1]
 
         msgLog = f"{self.indent} End getPost"
         logMsg(msgLog, 2, False)
         self.indent = self.indent[:-1]
         return post
-
 
     def setPostTitle(self, post, newTitle):
         post.title = newTitle
@@ -173,7 +171,7 @@ class moduleImgur(Content):  # , Queue):
 
     def getApiPostLink(self, post):
         link = ""
-        if self.getPostsType() == 'cache':
+        if self.getPostsType() == "cache":
             return post[1]
         else:
             try:
@@ -205,14 +203,14 @@ class moduleImgur(Content):  # , Queue):
             res = reply
             if "Image already in gallery." in res:
                 res += " SAVELINK"
-        elif (isinstance(reply, str) and "OK" in reply):
+        elif isinstance(reply, str) and "OK" in reply:
             res = reply
         elif not reply:
             # Failure: The reply is None, False, or empty.
             res = "Fail! No reply from API."
         else:
             # Failure: The reply is in an unexpected format.
-            res = f"Fail! Unexpected reply type: {type(reply)}"
+            res = reply
 
         return res
 
@@ -237,42 +235,58 @@ class moduleImgur(Content):  # , Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        # if args and len(args) == 3:
-        #     title, idPost, comment = args
+        idPost = None
+
         if kwargs:
             more = kwargs
             post = more.get("post", "")
             api = more.get("api", "")
             title = api.getPostTitle(post)
             idPost = api.getPostId(post)
-        # print(f"post: {post}")
-        # print(f"api: {api}")
-        # print(f"api: {api.auxClass}")
-        # print(f"tit: {title} id: {idPost}")
-        # # This method publishes (as public post) some gallery that is in draft
-        # mode
+
+        if not idPost:
+            self.res_dict["error_message"] = "No post ID provided to publish."
+            return self.res_dict
+
         msgLog = f"{self.indent} Publishing in: {self.service}"
         logMsg(msgLog, 1, False)
-        msgLog = f"{self.indent}  Post: {post}"
+        msgLog = f"{self.indent}  Post ID: {idPost}"
         logMsg(msgLog, 1, False)
         api = self.getClient()
-        # idPost = self.getPostId(post)
-        res = FAIL
+
         try:
             res_api = api.share_on_imgur(idPost, title, terms=0)
-            msgLog = f"{self.indent} Res: {res_api}"
-            logMsg(msgLog, 2, False)
+            self.res_dict["raw_response"] = res_api
             if res_api:
-                res = OK
-        except imgurpython.helpers.error.ImgurClientError as e:
-            if 'Image already in gallery.' in str(e):
-                res = "Fail! Image already in gallery."
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = f"https://imgur.com/gallery/{idPost}"
             else:
-                res = self.report(self.getService(), kwargs, "Unexpected", sys.exc_info())
-        except:
-            res = self.report("Imgur", post, idPost, sys.exc_info())
+                self.res_dict["error_message"] = (
+                    "Imgur API returned a non-successful status."
+                )
 
-        return res
+        except imgurpython.helpers.error.ImgurClientError as e:
+            if "Image already in gallery." in str(e):
+                self.res_dict["error_message"] = "Image already in gallery."
+                # This could be considered a "soft" failure, you might want to
+                # handle it differently
+                # FIXME Postaction: delete?
+                self.res_dict["success"] = False
+            else:
+                self.res_dict["error_message"] = self.report(
+                    self.getService(),
+                    kwargs,
+                    "Unexpected ImgurClientError",
+                    sys.exc_info(),
+                )
+            self.res_dict["raw_response"] = e
+        except Exception as e:
+            self.res_dict["error_message"] = self.report(
+                "Imgur", post, idPost, sys.exc_info()
+            )
+            self.res_dict["raw_response"] = e
+
+        return self.res_dict
 
     def delete(self, j):
         msgLog = f"{self.indent} Deleting {j}"
@@ -381,6 +395,7 @@ class moduleImgur(Content):  # , Queue):
 
 def main():
     import logging
+
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )

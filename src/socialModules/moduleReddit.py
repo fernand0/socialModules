@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-import configparser
-import praw
 import sys
+
+import praw
 
 import socialModules.moduleRss
 from socialModules.configMod import *
@@ -158,7 +158,7 @@ class moduleReddit(Content):  # , Queue):
             posIni = link.find("/r") + 3
             posFin = link.find("/", posIni)
             group = link[posIni:posFin]
-            if not group in groups:
+            if group not in groups:
                 groups.append(group)
         self.groups = groups
         logging.info(f"{self.indent} Groups: {self.groups}")
@@ -176,7 +176,7 @@ class moduleReddit(Content):  # , Queue):
         return title
 
     def getApiPostUrl(self, post):
-        link = ''
+        link = ""
         try:
             print(f"{post.__dir__()}")
             link = f"{urllib.parse.urljoin(self.getUrl(),post.permalink)}"
@@ -185,7 +185,7 @@ class moduleReddit(Content):  # , Queue):
         return link
 
     def getApiPostLink(self, post):
-        link = ''
+        link = ""
         try:
             link = post.url
         except:
@@ -255,22 +255,22 @@ class moduleReddit(Content):  # , Queue):
 
         return res
 
-    def getPostHandle(self, post):
-        res = None
-
-        return handle
+    # def getPostHandle(self, post):
+    #     res = None
+    #     return handle
 
     def getPostId(self, post):
         try:
             idPost = post.get("photoid").get("_content")
         except:
-            idpost = ""
+            idPost = ""
 
         return idPost
 
 
 def main():
     import logging
+
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )

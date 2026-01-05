@@ -4,10 +4,8 @@
 # This module tries to replicate moduleCache and moduleBuffer but with mails
 # stored as Drafts in a Gmail account
 
-import configparser
 import datetime
 import logging
-import os
 import sys
 
 # from dateutil.parser import parse
@@ -63,7 +61,7 @@ class moduleGcalendar(Content, socialGoogle):
                 theDate = theDate.isoformat() + "Z"
 
         # 'Z' indicates UTC time
-        page_token = None
+        # page_token = None
         logging.info(f"{self.indent} Setting posts date {theDate}")
 
         self.posts = []
@@ -177,35 +175,58 @@ class moduleGcalendar(Content, socialGoogle):
         )
 
     def publishApiPost(self, *args, **kwargs):
+        event = None
+        idCal = None
+
         if args and len(args) == 3:
-            # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
-        if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
-            more = kwargs
-            # FIXME: We need to do something here
-            # Example:
-            # calendar_result = api_dst.publishPost(post={'event':event,'idCal':selected_calendar}, api=api_dst)
-            event = more.get("post", "").get("event", "")
-            api = more.get("api", "")
-            idCal = more.get("post", "").get("idCal")
-        res = "Fail!"
+            # Basic event structure from args, might need more details depending on usage
+            event = {
+                "summary": title,
+                "description": comment or "",
+                "start": {
+                    "dateTime": (datetime.datetime.now()).isoformat(),
+                    "timeZone": "UTC",
+                },
+                "end": {
+                    "dateTime": (
+                        datetime.datetime.now() + datetime.timedelta(hours=1)
+                    ).isoformat(),
+                    "timeZone": "UTC",
+                },
+            }
+            idCal = self.getActive()  # Assume we're publishing to the active calendar
+        elif kwargs:
+            more = kwargs.get("post", {})
+            event = more.get("event")
+            idCal = more.get("idCal")
+
+        if not event or not idCal:
+            self.res_dict["error_message"] = "Event data or calendar ID is missing."
+            return self.res_dict
+
         try:
-            # credentials = self.authorize()
-            res = (
-                api.getClient().events().insert(calendarId=idCal, body=event).execute()
+            api = self.getClient()
+            res = api.events().insert(calendarId=idCal, body=event).execute()
+            self.res_dict["raw_response"] = res
+            if res and "htmlLink" in res:
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = res["htmlLink"]
+            else:
+                self.res_dict["error_message"] = (
+                    "Event creation did not return the expected response."
+                )
+        except Exception as e:
+            self.res_dict["error_message"] = self.report(
+                "Gcalendar", idCal, "", sys.exc_info()
             )
-            # logging.info("Res: %s" % res)
-        except:
-            res = self.report("Gmail", idCal, "", sys.exc_info())
+            self.res_dict["raw_response"] = e
 
-        return f"Res: {res}"
-
-
+        return self.res_dict
 
     def get_user_info(self, client):
         # For Gcalendar, we can return the active calendar's summary
-        if hasattr(self, 'active'):
+        if hasattr(self, "active"):
             return f"Active Calendar: {self.active}"
         return "Gcalendar User"
 

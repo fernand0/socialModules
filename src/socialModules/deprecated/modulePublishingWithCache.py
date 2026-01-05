@@ -7,8 +7,9 @@ Allows automatic storage of information about publications made.
 """
 
 import logging
-from socialModules.modulePublishing import Publisher
+
 from socialModules.modulePublicationCache import PublicationCache
+from socialModules.modulePublishing import Publisher
 
 
 class PublisherWithCache(Publisher):

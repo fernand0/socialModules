@@ -8,22 +8,19 @@
 from __future__ import print_function
 
 import base64
-import configparser
-import datetime
 import email
 import io
 import logging
 import os
-import pickle
 import sys
 from email.parser import BytesParser
 
 from bs4 import BeautifulSoup
 
-import socialModules.moduleImap
 from socialModules.configMod import *
 from socialModules.moduleContent import *
 from socialModules.moduleGoogle import *
+
 
 class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def initApi(self, keys):
@@ -225,12 +222,12 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
     def checkConnected(self):
         try:
-            self.getClient().users().getProfile(userId='me').execute()
+            self.getClient().users().getProfile(userId="me").execute()
         except Exception as e:
             logMsg(f"Gmail connection issue detected: {e}", 3, False)
             self.setClient(f"{self.user}")
             try:
-                self.getClient().users().getProfile(userId='me').execute()
+                self.getClient().users().getProfile(userId="me").execute()
                 logMsg("Gmail reconnection successful.", 1, False)
             except Exception as e:
                 log_msg = f"Gmail reconnection failed for user {self.user}."
@@ -416,7 +413,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                     link = element["title"]
             text = element.text
             logging.debug(f"Linkk: {link} text: {text}")
-            if link and not (link in data):
+            if link and link not in data:
                 data[link] = (text, link, element)
             else:
                 data[link] = (f"{data[link][0]} {text}", data[link][1], data[link][2])
@@ -443,7 +440,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         links = []
         for element in res:
             link = element["href"]
-            if not (link in links):
+            if link not in links:
                 links.append(link)
         return links
 
@@ -569,6 +566,8 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
 
         if isinstance(text, bytes):
             extracted_text = text.decode("utf-8")
+        else:
+            extracted_text = text
 
         return extracted_text
 
@@ -589,11 +588,9 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return folder
 
     def getLabelName(self, label):
-        api = self.getClient()
         return label["name"]
 
     def getLabelId(self, name):
-        api = self.getClient()
         results = self.getLabelList()
         msgLog = f"{self.indent} Labels: {results}"
         logMsg(msgLog, 2, False)
@@ -642,7 +639,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 if isinstance(listFolders, dict):
                     nF = self.getChannelName(listFolders)
                 nF = nF.strip("\n")
-                nF = nF.split(') ')[1]
+                nF = nF.split(") ")[1]
                 logging.info("nameFolder", nF)
                 return nF
 
@@ -675,7 +672,6 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
             if not listFolders:
                 listFolders = listAllFolders
 
-
     def editl(self, j, newTitle):
         return "Not implemented!"
 
@@ -684,13 +680,12 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         logMsg(msgLog, 2, False)
         msgLog = f"{self.indent} New title: {newTitle}"
         logMsg(msgLog, 2, False)
-        thePost = self.obtainPostData(j)
-        oldTitle = thePost[0]
+        # thePost = self.obtainPostData(j)
+        # oldTitle = thePost[0]
         # logging.info("servicename %s" %self.service)
 
         import base64
         import email
-        from email.parser import BytesParser
 
         api = self.getClient()
 
@@ -715,24 +710,19 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         return update
 
     def publishApiPost(self, *args, **kwargs):
-        if args and len(args) == 3:
-            # logging.info(f"Tittt: args: {args}")
-            title, link, comment = args
+        idPost = None
         if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
             more = kwargs
-            # FIXME: We need to do something here
             post = more.get("post", "")
             api = more.get("api", "")
-            # logging.info(f"Post: {post}")
-            idPost = api.getPostId(post)
-            # logging.info(f"Postt: {post['meta']}")
-            # idPost = post['meta']['payload']['headers'][2]['value'] #[1:-1]
-            idPost = post["list"]["id"]  # [1:-1]
-            # logging.info(f"Post id: {idPost}")
-        res = "Fail!"
+            if post:
+                idPost = post.get("list", {}).get("id")
+
+        if not idPost:
+            self.res_dict["error_message"] = "Could not get post ID to send draft."
+            return self.res_dict
+
         try:
-            # credentials = self.authorize()
             res = (
                 api.getClient()
                 .users()
@@ -740,11 +730,22 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 .send(userId="me", body={"id": str(idPost)})
                 .execute()
             )
-            # logging.info("Res: %s" % res)
-        except:
-            res = self.report("Gmail", idPost, "", sys.exc_info())
+            self.res_dict["raw_response"] = res
+            if res and "id" in res:
+                self.res_dict["success"] = True
+                # The API response for sending a draft doesn't contain a direct web link.
+                # We can consider the message ID as a reference.
+                self.res_dict["post_url"] = f"gmail_message_id:{res['id']}"
+            else:
+                self.res_dict["error_message"] = "Failed to send draft."
 
-        return f"Res: {res}"
+        except Exception as e:
+            self.res_dict["error_message"] = self.report(
+                "Gmail", idPost, "", sys.exc_info()
+            )
+            self.res_dict["raw_response"] = e
+
+        return self.res_dict
 
     def trash(self, j, typePost="drafts"):
         msgLog = f"{self.indent} trash"
@@ -762,6 +763,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
             update = api.users().drafts().trash(userId="me", id=idPost).execute()
         else:
             update = api.users().messages().trash(userId="me", id=idPost).execute()
+        logging.info(update)
 
         return "Trashed %s" % title
 
@@ -815,15 +817,15 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         else:
             # logging.info(f"id {idPost}")
             update = api.users().messages().trash(userId="me", id=idPost).execute()
-            # logging.info(f"id {update}")
+        logging.info(f"id {update}")
 
         return "Deleted %s" % title
 
     def get_user_info(self, client):
         # For Gmail, we can return the user's email address
         try:
-            profile = client.users().getProfile(userId='me').execute()
-            return profile.get('emailAddress', 'Gmail User')
+            profile = client.users().getProfile(userId="me").execute()
+            return profile.get("emailAddress", "Gmail User")
         except Exception as e:
             return f"Gmail User (Error: {e})"
 
@@ -974,27 +976,19 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         pass
 
     def publishApiPost(self, *args, **kwargs):
-        if args and len(args) == 3:
-            # logging.info(f"Tittt: args: {args}")
-            title, link, comment = args
-        if kwargs:
-            logging.info(f"Tittt: kwargs: {kwargs}")
-            more = kwargs
-            # FIXME: We need to do something here
-            event = more.get("post", "")
-            api = more.get("api", "")
-            idCal = more.get("idCal", "")
-        res = "Fail!"
-        try:
-            # credentials = self.authorize()
-            res = (
-                api.getClient().events().insert(calendarId=idCal, body=event).execute()
-            )
-            # logging.info("Res: %s" % res)
-        except:
-            res = self.report("Gmail", idPost, "", sys.exc_info())
+        self.res_dict["error_message"] = (
+            "This method appears to be a duplicate and is not fully implemented for Gmail. Use the other publishApiPost for sending drafts."
+        )
 
-        return f"Res: {res}"
+        logging.warning(
+            "Attempted to use a duplicate or misplaced publishApiPost method in moduleGmail."
+        )
+
+        # The logic here seems to be for Google Calendar, not Gmail.
+        # This is likely a copy-paste error. I will return a failure
+        # and log a warning.
+
+        return self.res_dict
 
 
 def main():
@@ -1007,6 +1001,7 @@ def main():
     gmail_module = moduleGmail()
     tester = ModuleTester(gmail_module)
     tester.run()
+
 
 if __name__ == "__main__":
     main()

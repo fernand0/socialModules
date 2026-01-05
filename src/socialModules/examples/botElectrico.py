@@ -5,18 +5,17 @@ import datetime
 import json
 import logging
 import os
-import requests
 import sys
 import time
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker
 import pandas as pd
+import requests
 from plotly import express as px
 
 import socialModules
 import socialModules.moduleRules
-from socialModules.configMod import getApi
 
 API_BASE = "https://apidatos.ree.es/"
 API_URL = "https://api.esios.ree.es/archives/70/download_json"
@@ -197,9 +196,7 @@ def generate_message(
     range_msg = (
         f"(entre las {frame[0]} y las {frame[1]})"
         if frame_name != "valle"
-        else "(entre las 00:00 y las 8:00)"
-        if now.weekday() <= 4
-        else "(todo el día)"
+        else "(entre las 00:00 y las 8:00)" if now.weekday() <= 4 else "(todo el día)"
     )
     message = (
         f"{BUTTON_SYMBOLS[frame_name]} "
@@ -367,14 +364,14 @@ def generar_resumen_diario(now, destinations, rules, message):
     generate_plotly_graph(prices, next_day)
     table = generate_table(prices, min_day, max_day)
     js_code = generate_chart_js(prices, min_day, max_day, str(next_day).split(" ")[0])
-    with open(f"/tmp/kk.js", "w") as f:
+    with open("/tmp/kk.js", "w") as f:
         f.write(js_code)
 
     date_post = str(now).split(" ")[0]
     date_next_day = str(next_day).split(" ")[0]
     title = f"Evolución precio para el día {date_next_day}"
     alt_text = f"{title}. Mínimo a las {min_day[0]}:00 ({min_day[1]:.3f}). Máximo a las {max_day[0]}:00 ({max_day[1]:.3f})."
-    image = open(f"{png_path[:-4]}.svg", "r").read()
+    # image = open(f"{png_path[:-4]}.svg", "r").read()
     graph_html = open("/tmp/plotly_graph.html", "r").read()
     markdown_content = (
         f"---\n"
@@ -400,19 +397,19 @@ def generar_resumen_diario(now, destinations, rules, message):
             api = rules.readConfigDst(indent, key, None, None)
             try:
                 result = api.publishImage(title, png_path, alt=alt_text)
-                if (
-                    hasattr(api, "lastRes")
-                    and api.lastRes
-                    and "media_attachments" in api.lastRes
-                    and api.lastRes["media_attachments"]
-                    and "url" in api.lastRes["media_attachments"][0]
-                ):
-                    image_url = api.lastRes["media_attachments"][0]["url"]
-                else:
-                    image_url = None
+                # if (
+                #     hasattr(api, "lastRes")
+                #     and api.lastRes
+                #     and "media_attachments" in api.lastRes
+                #     and api.lastRes["media_attachments"]
+                #     and "url" in api.lastRes["media_attachments"][0]
+                # ):
+                #     image_url = api.lastRes["media_attachments"][0]["url"]
+                # else:
+                #     image_url = None
             except Exception as e:
                 logging.error(f"Failed to publish image to {destination}: {e}")
-                image_url = None
+                # image_url = None
 
             result = api.publishPost(message, "", "")
             logging.info(f"Published to {destination}: {result}")
@@ -431,7 +428,7 @@ def publicar_mensaje_horario(destinations, message, rules):
 
 
 def main():
-    mode = None
+    #mode = None
     now = None
     args = parse_arguments()
 

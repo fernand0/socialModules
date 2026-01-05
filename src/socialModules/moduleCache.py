@@ -9,18 +9,16 @@
 # (https://github.com/fernand0/scripts/blob/master/moduleRss
 #  obtainPostData method.
 
-import configparser
 import importlib
-import os
 import pickle
 import sys
 
 importlib.reload(sys)
 from crontab import CronTab
 
-import socialModules
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+
 # from socialModules.moduleQueue import *
 
 
@@ -128,6 +126,12 @@ class moduleCache(Content):  # ,Queue):
 
         # We are instatiating (but not configuring) the aux api
         self.fileName = ""
+        self.res_dict = {
+            "success": False,
+            "post_url": "",
+            "raw_response": None,
+            "error_message": "",
+        }
 
         return self
 
@@ -135,7 +139,7 @@ class moduleCache(Content):  # ,Queue):
         return None
 
     def setApiDrafts(self):
-        msgLog = f"{self.indent} setApiDrafts"
+        #msgLog = f"{self.indent} setApiDrafts"
         # Every cache is the same, even the origin are drafts ??
         return self.setApiPosts()
 
@@ -148,7 +152,7 @@ class moduleCache(Content):  # ,Queue):
         logMsg(msgLog, 2, False)
         # fileNameQ = f"{self.fileNameBase(self.apiDst)}.queue"
         #  #FIXME: This fileNameBase must be replaced
-        if hasattr(self, 'action') and self.action[0] == 'cache':
+        if hasattr(self, "action") and self.action[0] == "cache":
             fileNameQ = f"{DATADIR}/{self.dst_fileName}.queue"
         else:
             fileNameQ = f"{DATADIR}/{self.fileName}.queue"
@@ -163,7 +167,7 @@ class moduleCache(Content):  # ,Queue):
                     try:
                         listP = pickle.load(f)
                     except:
-                        msgLog = f"Problem loading data"
+                        msgLog = "Problem loading data"
                         self.report(self.service, msgLog, "", "")
             else:
                 self.report(self.service, msgLog, "", "")
@@ -292,7 +296,7 @@ class moduleCache(Content):  # ,Queue):
         return link
 
     def updatePosts(self, src):
-        if hasattr(self, 'action') and self.action[0] == 'cache':
+        if hasattr(self, "action") and self.action[0] == "cache":
             fileNameQ = f"{DATADIR}/{self.dst_fileName}.queue"
         else:
             fileNameQ = f"{DATADIR}/{self.fileName}.queue"
@@ -316,7 +320,7 @@ class moduleCache(Content):  # ,Queue):
         # fileNameQ = fileNamePath(self.url,
         #         (self.socialNetwork, self.nick)) + ".queue"
         # fileNameQ = f"{self.fileNameBase(None)}.queue"
-        if hasattr(self, 'action') and self.action[0] == 'cache':
+        if hasattr(self, "action") and self.action[0] == "cache":
             fileNameQ = f"{DATADIR}/{self.dst_fileName}.queue"
         else:
             fileNameQ = f"{DATADIR}/{self.fileName}.queue"
@@ -482,9 +486,9 @@ class moduleCache(Content):  # ,Queue):
         return content
 
     def editApiLink(self, post, newLink=""):
-        oldLink = self.getPostLink(post)
-        idPost = self.getLinkPosition(oldLink)
-        oldTitle = self.getPostTitle(post)
+        # oldLink = self.getPostLink(post)
+        # idPost = self.getLinkPosition(oldLink)
+        # oldTitle = self.getPostTitle(post)
         self.setPostLink(post, newLink)
         self.updatePostsCache()
         # if hasattr(self, 'auxClass'):
@@ -500,8 +504,8 @@ class moduleCache(Content):  # ,Queue):
         #     post = post[:1] + ( newLink, ) + post[2:]
 
     def editApiTitle(self, post, newTitle=""):
-        oldLink = self.getPostLink(post)
-        idPost = self.getLinkPosition(oldLink)
+        # oldLink = self.getPostLink(post)
+        # idPost = self.getLinkPosition(oldLink)
         oldTitle = self.getPostTitle(post)
         if not newTitle:
             newTitle = self.reorderTitle(oldTitle)
@@ -540,23 +544,54 @@ class moduleCache(Content):  # ,Queue):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
+        # Reset res_dict for this publication attempt
+        self.res_dict = {
+            "success": False,
+            "post_url": "",
+            "raw_response": None,
+            "error_message": "",
+        }
+
+        title = ""
+        link = ""
+        post_to_cache = None
+        api_src = None
+
         if args and len(args) == 3:
             title, link, comment = args
         if kwargs:
             more = kwargs
-            api = more["api"]
-            post = more["post"]
-            title = self.getPostTitle(post)
-            link = self.getPostLink(post)
-        # logging.debug(f"more: {more}")
-        self.setPosts()
-        # FIXME. Do we need this?
-        posts = self.getPosts()
-        # logging.debug(f"pppposts: {posts}")
-        posts.append(more["post"])
-        self.assignPosts(posts)
-        self.updatePosts(more["api"])
-        return f"OK. Published! Title: {title} Link: {link}"
+            api_src = more.get("api")
+            post_to_cache = more.get("post")
+            if post_to_cache and api_src:
+                title = self.getPostTitle(post_to_cache)
+                link = self.getPostLink(post_to_cache)
+            elif post_to_cache:
+                # Fallback if api_src is not provided but post is
+                title = post_to_cache[0] if isinstance(post_to_cache, tuple) and len(post_to_cache) > 0 else ""
+                link = post_to_cache[1] if isinstance(post_to_cache, tuple) and len(post_to_cache) > 1 else ""
+
+        if not post_to_cache:
+            self.res_dict["error_message"] = "No post provided to cache."
+            return self.res_dict
+
+        try:
+            self.setPosts()
+            posts = self.getPosts()
+            posts.append(post_to_cache)
+            self.assignPosts(posts)
+            
+            update_result = self.updatePosts(api_src) # api_src can be None here
+
+            self.res_dict["success"] = True
+            self.res_dict["post_url"] = link # The "post_url" for cache can be the link of the item
+            self.res_dict["raw_response"] = update_result
+        except Exception as e:
+            error_report = self.report(self.service, kwargs, "", sys.exc_info())
+            self.res_dict["error_message"] = f"Error caching post: {error_report} - {e}"
+            self.res_dict["raw_response"] = sys.exc_info()
+
+        return self.res_dict
 
     def getPostId(self, post):
         idPost = ""
@@ -716,8 +751,7 @@ class moduleCache(Content):  # ,Queue):
         logMsg(msgLog, 1, False)
         return f"{self.getPostTitle(post)}"
 
-
-    #def processReply(self, reply):
+    # def processReply(self, reply):
 
     def register_specific_tests(self, tester):
         tester.add_test("Edit post title", self.test_edit_title)
@@ -816,6 +850,7 @@ class moduleCache(Content):  # ,Queue):
 
     def get_post_id_from_result(self, result):
         return result
+
 
 def main():
     logging.basicConfig(

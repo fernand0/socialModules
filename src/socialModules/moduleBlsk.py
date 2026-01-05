@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-import configparser
 import sys
-import dateparser
-import dateutil
-from atproto import Client, models
+
+from atproto import Client, models, IdResolver
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+
 # from socialModules.moduleQueue import *
 
 
@@ -35,6 +34,7 @@ class moduleBlsk(Content):  # , Queue):
         #     )
         except:
             res = self.report(self.indent, "Error in initApi", "", sys.exc_info())
+            logging.info(res)
             client = None
         # if hasattr(client, 'app'):
         #     client = client.app.bsky.feed
@@ -62,8 +62,8 @@ class moduleBlsk(Content):  # , Queue):
     def setApiPosts(self):
         posts = []
 
-        posts, error = self.apiCall(commandName = "get_author_feed", 
-                                    actor = self.getUser())
+        posts, error = self.apiCall(commandName="get_author_feed",
+                                    actor=self.me.did)
         print(f"Posts: {posts}")
         print(f"Error: {error}")
 
@@ -101,7 +101,7 @@ class moduleBlsk(Content):  # , Queue):
         return posts
 
     def getApiPostTitle(self, post):
-        title = ''
+        title = ""
         try:
             title = post.post.record.text
         except:
@@ -140,21 +140,21 @@ class moduleBlsk(Content):  # , Queue):
         result = ""
         logging.debug(f"Record: {post.post.record}")
         if hasattr(post.post.record, "uri"):
-            logging.debug(f"Uri")
+            logging.debug("Uri")
             result = post.post.record.uri
         elif (
             hasattr(post.post.record, "facets")
             and post.post.record.facets
             and hasattr(post.post.record.facets[0].features[0], "uri")
         ):
-            logging.debug(f"Facets > Uri")
+            logging.debug("Facets > Uri")
             result = post.post.record.facets[0].features[0].uri
         elif (
             hasattr(post.post.record, "embed")
             and hasattr(post.post.record.embed, "external")
             and hasattr(post.post.record.embed.external, "uri")
         ):
-            logging.debug(f"Embed > Uri")
+            logging.debug("Embed > Uri")
             result = post.post.record.embed.external.uri
         if not result:
             result = self.getPostUrl(post)
@@ -188,7 +188,7 @@ class moduleBlsk(Content):  # , Queue):
                 except:
                     res = self.report(self.service, post, imageName, sys.exc_info())
             else:
-                logging.info(f"No image available")
+                logging.info("No image available")
                 res = "Fail! No image available"
         else:
             res = "Fail! Not published, not enough arguments"
@@ -199,12 +199,12 @@ class moduleBlsk(Content):  # , Queue):
     def publishApiRT(self, *args, **kwargs):
         if args and len(args) == 3:
             post, link, comment = args
-            idPost = link.split("/")[-1]
-        if kwargs:
-            more = kwargs
-            tweet = more["post"]
-            link = self.getPostLink(tweet)
-            idPost = self.getPostId(tweet)
+            # idPost = link.split("/")[-1]
+        # if kwargs:
+            # more = kwargs
+            # tweet = more["post"]
+            # link = self.getPostLink(tweet)
+            # idPost = self.getPostId(tweet)
 
         res = None
         # TODO
@@ -213,29 +213,22 @@ class moduleBlsk(Content):  # , Queue):
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3 and args[0]:
-            # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
-        if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
+        elif kwargs:
             more = kwargs
-            # FIXME: We need to do something here
             post = more.get("post", "")
             api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
             comment = api.getPostComment(title)
+        else:
+            self.res_dict["error_message"] = "Not enough arguments to publish."
+            return self.res_dict
 
         title = self.addComment(title, comment)
-
-        # logging.info(f"Tittt: {title} {link} {comment}")
-        # logging.info(f"Tittt: {link and ('twitter' in link)}")
-        res = "Fail!"
-        # post = post[:(240 - (len(link) + 1))]
-
-        facets = []
+        embed_external = None
         if link:
-            title = title[:(300)]
-
+            title = title[:300]
             embed_external = models.AppBskyEmbedExternal.Main(
                 external=models.AppBskyEmbedExternal.External(
                     title=title,
@@ -243,52 +236,72 @@ class moduleBlsk(Content):  # , Queue):
                     uri=link,
                 )
             )
-            # facets.append(models.AppBskyRichtextFacet.Main(
-            #     features=[models.AppBskyRichtextFacet.Link(uri=link)],
-            #     index=models.AppBskyRichtextFacet.ByteSlice(
-            #         byte_start=len(title)+1,
-            #         byte_end=len(title)+len(link)+1),
-            #     )
-            # )
-
-            # title = title + " " + link
-            # embed_post = models.AppBskyEmbedRecord.Main(record=models.create_strong_ref(post_with_link_card))
-        else:
-            embed_external = None
 
         msgLog = f"{self.indent}Publishing {title} ({len(title)})"
         logMsg(msgLog, 2, False)
-        client = self.api
+
         try:
             res, error = self.apiCall(
-                "send_post", api=client, text=title, embed=embed_external
+                "send_post", api=self.api, text=title, embed=embed_external
             )
-        except atproto_client.exceptions.BadRequestError:
-            res = self.report(self.service, f"Bad Request: {title} {link}", title, sys.exc_info())
-        except:
-            res = self.report(self.service, f"Other Exception: {title} {link}", title, sys.exc_info())
+            self.res_dict["raw_response"] = res
+            if error:
+                self.res_dict["error_message"] = str(error)
+                self.res_dict["raw_response"] = error
+            elif res and hasattr(res, "uri"):
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = (
+                    f"{self.base_url}/profile/{self.me.handle}/post/{res.uri.split('/')[-1]}"
+                )
+            else:
+                self.res_dict["error_message"] = (
+                    "Publication failed for an unknown reason."
+                )
+        except atproto_client.exceptions.BadRequestError as e:
+            self.res_dict["error_message"] = self.report(
+                self.service, f"Bad Request: {title} {link}", title, sys.exc_info()
+            )
+            self.res_dict["raw_response"] = e
+        except Exception as e:
+            self.res_dict["error_message"] = self.report(
+                self.service, f"Other Exception: {title} {link}", title, sys.exc_info()
+            )
+            self.res_dict["raw_response"] = e
 
-        msgLog = f"{self.indent}Res: {res} "
+        msgLog = f"{self.indent}Res: {self.res_dict['raw_response']} "
         logMsg(msgLog, 2, False)
-        return res
+        return self.res_dict
 
     def deleteApiPosts(self, idPost):
-        res = None
-
+        self.res_dict = self.get_empty_res_dict()
         msgLog = f"{self.indent} deleteApiPosts deleting: {idPost}"
         logMsg(msgLog, 1, False)
         res, error = self.apiCall("delete_post", self.api, post_uri=idPost)
+        if error:
+            self.res_dict["success"] = False
+            self.res_dict["error_message"] = error
+            self.res_dict["raw_response"] = res
+        else:
+            self.res_dict["success"] = True
+            self.res_dict["raw_response"] = res
 
-        return res
+        return self.res_dict
 
     def deleteApiFavs(self, idPost):
-        res = None
+        self.res_dict = self.get_empty_res_dict()
         logging.info(f"Deleting: {idPost}")
-        res = self.api.delete_like(idPost)
-        # res, error = self.apiCall('delete_like', self.api,  like_uri=idPost)
-        msgLog = f"{self.indent} res: {res}"  # error: {error}"
+        res, error = self.apiCall("delete_like", self.api, like_uri=idPost)
+        if error:
+            self.res_dict["success"] = False
+            self.res_dict["error_message"] = error
+            self.res_dict["raw_response"] = res
+        else:
+            self.res_dict["success"] = True
+            self.res_dict["raw_response"] = res
+
+        msgLog = f"{self.indent} res: {self.res_dict}"
         logMsg(msgLog, 1, False)
-        return res
+        return self.res_dict
 
     def getPostHandle(self, post):
         handle = post.post.author.handle
@@ -314,8 +327,12 @@ class moduleBlsk(Content):  # , Queue):
 
         if hasattr(reply, "uri"):
             # Success: The reply object has a 'uri', which is the post identifier.
-            res = f"https://bsky.app/profile/fernand0.bsky.social/post/"
+            res = "https://bsky.app/profile/fernand0.bsky.social/post/"
             res = f"{res}{reply.uri.split('/')[-1]}"
+        elif "post_url" in reply:
+            res = reply["post_url"]
+        elif isinstance(reply, bool):
+            res = reply
         elif isinstance(reply, str) and "Fail" in reply:
             # Failure: The reply is an explicit failure string.
             res = reply
@@ -354,7 +371,6 @@ def main():
     blsk_module = moduleBlsk()
     tester = ModuleTester(blsk_module)
     tester.run()
-
 
 
 if __name__ == "__main__":

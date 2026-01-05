@@ -1,25 +1,23 @@
 #!/usr/bin/env python
 
-import sys
-import os
-import time
-import re
+# pip install readability-lxml
+import argparse
 import logging
+import os
+import re
+import time
 import urllib.parse
+
 import html2text
 
 # pip install pytidylib
 import requests
 
-# pip install readability-lxml
-import argparse
-
-
 import socialModules
-from socialModules.configMod import *
 import socialModules.moduleHtml
-import socialModules.moduleSlack
 import socialModules.moduleRules
+import socialModules.moduleSlack
+from socialModules.configMod import *
 
 API_URL_PREFIX = "https://www.instapaper.com/api/1"
 ADD_BOOKMARK = "/bookmarks/add"
@@ -308,7 +306,9 @@ class WebContentProcessor:
             return 0
 
         myText, title, file_name, file_name_os, download_status = (
-            ContentFetcher().download_and_clean_content(cleaned_url, self.html_processor)
+            ContentFetcher().download_and_clean_content(
+                cleaned_url, self.html_processor
+            )
         )
 
         if download_status not in ["Success", "JS not available", "Skipped"]:

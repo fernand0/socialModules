@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import logging
+
 logging.basicConfig(level=logging.DEBUG)
 from socialModules.test_utils import testing_utils
 
@@ -27,13 +28,14 @@ class ModuleTester:
     def setup(self):
         # Common setup logic, like initializing rules and selecting a rule
         logging.info("Start setup")
-        import socialModules.moduleRules
         import sys
         from io import StringIO
 
+        import socialModules.moduleRules
+
         # Redirect stdout
         old_stdout = sys.stdout
-        sys.stdout = mystdout = StringIO()
+        # sys.stdout = mystdout = StringIO()
 
         rules = socialModules.moduleRules.moduleRules()
         rules.checkRules()
@@ -48,13 +50,13 @@ class ModuleTester:
         seen_rules = set()
 
         for rule in rulesList:
-            if not name.lower() in rule and rule in rules.rules:
+            if name.lower() not in rule and rule in rules.rules:
                 for sub_rule in rules.rules[rule]:
                     if name.lower() in sub_rule and sub_rule not in seen_rules:
-                        final_rules_with_type.append((sub_rule, 'dst'))
+                        final_rules_with_type.append((sub_rule, "dst"))
                         seen_rules.add(sub_rule)
             elif rule not in seen_rules:
-                final_rules_with_type.append((rule, 'src'))
+                final_rules_with_type.append((rule, "src"))
                 seen_rules.add(rule)
 
         for i, (rule_name, rule_type) in enumerate(final_rules_with_type):
@@ -79,12 +81,16 @@ class ModuleTester:
         print(f"Selected rule: {selected_rule} (Type: {rule_type})")
 
         try:
-            if rule_type == 'src':
+            if rule_type == "src":
                 print(f"Rule: {selected_rule}")
                 print(f"Actions: {rules.rules[selected_rule]}")
-                base_name = rules._get_filename_base(selected_rule, rules.rules[selected_rule][0])
-                self.api_src = rules.readConfigSrc("", selected_rule, rules.more[selected_rule], base_name)
-            elif rule_type == 'dst':
+                base_name = rules._get_filename_base(
+                    selected_rule, rules.rules[selected_rule][0]
+                )
+                self.api_src = rules.readConfigSrc(
+                    "", selected_rule, rules.more[selected_rule], base_name
+                )
+            elif rule_type == "dst":
                 self.api_src = rules.readConfigDst("", selected_rule, None, None)
 
             if self.api_src:
@@ -103,13 +109,13 @@ class ModuleTester:
     def register_common_tests(self):
         self.add_test("Connection test", self.test_connection)
         self.add_test("Posts retrieval test", self.test_posts_retrieval)
-        if 'setApiDrafts' in self.module.__class__.__dict__:
+        if "setApiDrafts" in self.module.__class__.__dict__:
             self.add_test("Drafts retrieval test", self.test_drafts_retrieval)
-        if 'setApiFavs' in self.module.__class__.__dict__:
+        if "setApiFavs" in self.module.__class__.__dict__:
             self.add_test("Favorites test", self.test_favorites)
-        if 'setApiQueue' in self.module.__class__.__dict__:
+        if "setApiQueue" in self.module.__class__.__dict__:
             self.add_test("Queue retrieval test", self.test_queue_retrieval)
-        if hasattr(self.module, 'authorize'):
+        if hasattr(self.module, "authorize"):
             self.add_test("Authorization test", self.test_authorization)
         self.add_test("Basic post test", self.test_basic_post)
         self.add_test("Image post test", self.test_image_post)
@@ -129,7 +135,7 @@ class ModuleTester:
             return
 
         self.register_common_tests()
-        if 'register_specific_tests' in self.module.__class__.__dict__:
+        if "register_specific_tests" in self.module.__class__.__dict__:
             self.module.register_specific_tests(self)
 
         while True:

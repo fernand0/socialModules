@@ -1,15 +1,12 @@
 #!/usr/bin/env python
 
-import configparser
 import sys
-import os
 
-import dateparser
-import dateutil
 import tweepy
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+
 # from socialModules.moduleQueue import *
 
 # pip install twitter
@@ -106,10 +103,9 @@ class moduleTwitter(Content):  # , Queue):
         # API v1.1
         # posts = self.apiCall(self.getClient().get_favorites,
         # API v2
-        posts = self.apiCall(self.getClient().get_liked_tweets,
-                             id=self.user) #,
-                             # user_auth=True) #,
-                #tweet_mode='extended')
+        posts = self.apiCall(self.getClient().get_liked_tweets, id=self.user)  # ,
+        # user_auth=True) #,
+        # tweet_mode='extended')
         return posts
 
     def processReply(self, reply):
@@ -149,8 +145,8 @@ class moduleTwitter(Content):  # , Queue):
             post, imageName = args
             more = kwargs
             if imageName:
-                with open(imageName, "rb") as imagefile:
-                    imagedata = imagefile.read()
+                # with open(imageName, "rb") as imagefile:
+                #     imagedata = imagefile.read()
 
                 try:
                     # # FIXME
@@ -213,7 +209,7 @@ class moduleTwitter(Content):  # , Queue):
                         logging.info(f"      Error code: " f"{error.get('code', None)}")
                     res = self.report("Twitter", post, imageName, sys.exc_info())
             else:
-                logging.info(f"No image available")
+                logging.info("No image available")
                 res = "Fail! No image available"
         else:
             res = "Fail! Not published, not enough arguments"
@@ -230,56 +226,69 @@ class moduleTwitter(Content):  # , Queue):
             link = self.getPostLink(tweet)
             idPost = self.getPostId(tweet)
 
-        logging.debug("     Retweeting: %s id: {id_post}" % post)
-        res = "Fail!"
+        res = None
         if "twitter" in link:
-            # res = self.apiCall(self.getClient().statuses.retweet._id,
-            res = self.apiCall(self.getClient().retweet, tweet_id=idPost)
+            try:
+                res = self.apiCall(self.getClient().retweet, tweet_id=idPost)
+                if hasattr(res, "data") and isinstance(res.data, dict):
+                    self.res_dict["success"] = True
+                    self.res_dict["post_url"] = (
+                        f"https://twitter.com/{self.user}/status/{res.data.get('id')}"
+                    )
+                else:
+                    self.res_dict["error_message"] = f"Retweet API call failed: {res}"
+            except Exception as e:
+                self.res_dict["error_message"] = f"Error retweeting: {e}"
         else:
-            res = "Fail! Link {link} is not a tweet"
-
-        return res
+            self.res_dict["error_message"] = f"Fail! Link {link} is not a tweet"
+        self.res_dict["raw_response"] = res
+        return self.res_dict
 
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3 and args[0]:
-            # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
-        if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
+        elif kwargs:
             more = kwargs
-            # FIXME: We need to do something here
             post = more.get("post", "")
             api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
             comment = api.getPostComment(title)
+        else:
+            self.res_dict["error_message"] = "Not enough arguments for publication."
+            return self.res_dict
 
         title = self.addComment(title, comment)
 
-        # logging.info(f"Tittt: {title} {link} {comment}")
-        # logging.info(f"Tittt: {link and ('twitter' in link)}")
-        res = "Fail!"
-        # post = post[:(240 - (len(link) + 1))]
+        # If the link is a tweet, we will retweet.
         if link and ("twitter.com" in link) and ("status" in link):
             logging.debug("     Retweeting: %s" % title)
-            # If the link is a tweet, we will retweet.
-            res = self.publishApiRT(title, link, comment)
+            return self.publishApiRT(title, link, comment)
         else:
             if link:
+                # Twitter shortens URLs to 23 characters
                 title = title[: (240 - (23 + 1))]
                 title = title + " " + link
 
-            # https://help.twitter.com/en/using-twitter/how-to-tweet-a-link
-            # A URL of any length will be altered to 23 characters, even if the
-            # link itself is less than 23 characters long. Your character count
-            # will reflect this.
-
             msgLog = f"{self.indent}Publishing {title} "
             logMsg(msgLog, 2, False)
-            res = self.apiCall(self.getClient().create_tweet, text=title)
-            msgLog = f"{self.indent}Res: {res} "
+
+            try:
+                res = self.apiCall(self.getClient().create_tweet, text=title)
+                self.res_dict["raw_response"] = res
+                if hasattr(res, "data") and isinstance(res.data, dict):
+                    self.res_dict["success"] = True
+                    self.res_dict["post_url"] = (
+                        f"https://twitter.com/{self.user}/status/{res.data.get('id')}"
+                    )
+                else:
+                    self.res_dict["error_message"] = f"Tweet API call failed: {res}"
+            except Exception as e:
+                self.res_dict["error_message"] = f"Error creating tweet: {e}"
+
+            msgLog = f"{self.indent}Res: {self.res_dict['raw_response']} "
             logMsg(msgLog, 2, False)
-        return res
+        return self.res_dict
 
     def deleteApiPosts(self, idPost):
         logging.info("Deleting: {}".format(str(idPost)))
@@ -296,7 +305,7 @@ class moduleTwitter(Content):  # , Queue):
 
     def getPostId(self, post):
         logging.info(f"Postttt: {post}")
-        idPost = ''
+        idPost = ""
         if isinstance(post, str) or isinstance(post, int):
             # It is the tweet URL
             idPost = post
@@ -353,7 +362,7 @@ class moduleTwitter(Content):  # , Queue):
         if self.getPostsType() == "favs":
             content, link = self.extractPostLinks(post)
         else:
-            link = post.data.get('link')
+            link = post.data.get("link")
             # whatever
         return link
 
@@ -435,6 +444,7 @@ def main():
     twitter_module = moduleTwitter()
     tester = ModuleTester(twitter_module)
     tester.run()
+
 
 if __name__ == "__main__":
     main()

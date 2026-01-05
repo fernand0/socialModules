@@ -13,7 +13,7 @@ class srcDst:
             "--timeSlots",
             "-t",
             default=50,  # 50 minutes
-            help=("How many time slots we will have for publishing " f"(in minutes)"),
+            help=("How many time slots we will have for publishing " "(in minutes)"),
         )
         parser.add_argument(
             "checkBlog",

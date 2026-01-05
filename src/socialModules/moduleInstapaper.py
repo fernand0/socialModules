@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
-import configparser
-import os
 import sys
 
-import instapaper
 from instapaper import Instapaper as ipaper
+from instapaper import Bookmark
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
@@ -20,21 +18,32 @@ class moduleInstapaper(Content):
         email = config.get(self.user, "email")
         password = config.get(self.user, "password")
 
-        return (instapaper_key, instapaper_secret, email, password, oauth_consumer_id, oauth_consumer_secret)
+        return (
+            instapaper_key,
+            instapaper_secret,
+            email,
+            password,
+            oauth_consumer_id,
+            oauth_consumer_secret,
+        )
 
     def authorize(self):
         logging.info("Starting authorize process")
         # Add Instapaper authorization logic here
 
     def initApi(self, keys):
-        msgLog = (
-                f"{self.indent} Service {self.service} Start initApi " 
-                f"{self.user}"
-                )
+        msgLog = f"{self.indent} Service {self.service} Start initApi " f"{self.user}"
         logMsg(msgLog, 2, False)
         self.postaction = "archive"
 
-        instapaper_key, instapaper_secret, email, password, oauth_consumer_id, oauth_consumer_secret = keys
+        (
+            instapaper_key,
+            instapaper_secret,
+            email,
+            password,
+            oauth_consumer_id,
+            oauth_consumer_secret,
+        ) = keys
         # client = Instapaper(consumer_key=oauth_consumer_id, access_token=access_secret)
         # client = None # Replace with actual Instapaper client initialization
         client = ipaper(oauth_consumer_id, oauth_consumer_secret)
@@ -69,37 +78,46 @@ class moduleInstapaper(Content):
         if reply:
             idPost = self.getPostId(reply)
             title = self.getPostTitle(reply)
-            # res = f"{title} https://getinstapaper.com/read/{idPost}" # Adjust URL if necessary
-        msgLog = f"     Res: {res}"
-        logMsg(msgLog, 2, False)
+            res = f"{title} https://getinstapaper.com/read/{idPost}" # Adjust URL if necessary
+            msgLog = f"     Res: {res}"
+            logMsg(msgLog, 2, False)
         return res
 
     def publishApiPost(self, *args, **kwargs):
         title = ""
-        comment = ""
+        link = ""
+
         if args and len(args) == 3:
-            # logging.info(f"Tittt: args: {args}")
             title, link, comment = args
-        if kwargs:
-            # logging.info(f"Tittt: kwargs: {kwargs}")
+        elif kwargs:
             more = kwargs
             post = more.get("post", "")
             api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
 
-        post = self.addComment(title, comment)
-        res = "Fail!"
+        if not link:
+            self.res_dict["error_message"] = "No link provided to save to Instapaper."
+            return self.res_dict
+
         try:
-            b = instapaper.Bookmark( 
-                                self.getClient(), {"url": link}
-                                )
+            b = Bookmark(self.getClient(), {"url": link})
             res = b.save()
-        except:
-            res = self.report(self.getService(), kwargs, "", sys.exc_info())
-            res = f"Fail! {res}"
-        logging.info(f"Res: {res}")
-        return res
+            self.res_dict["raw_response"] = res
+            if res:
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = link
+            else:
+                self.res_dict["error_message"] = "Failed to save to Instapaper."
+
+        except Exception as e:
+            self.res_dict["error_message"] = self.report(
+                self.getService(), kwargs, "", sys.exc_info()
+            )
+            self.res_dict["raw_response"] = e
+
+        logging.info(f"Res: {self.res_dict}")
+        return self.res_dict
 
     def archiveId(self, idPost):
         # Add Instapaper API call to archive a post here
@@ -124,12 +142,24 @@ class moduleInstapaper(Content):
             self.posts = self.posts[:j] + self.posts[j + 1 :]
         return rep
 
+    def archiveApiPosts(self, post):
+        logging.info(f"Archiving: {post}")
+        try:
+            result = post.archive()
+        except:
+            result = self.report(self.service, "", "", sys.exc_info())
+        logging.info(f"Res: {result}")
+        return result
+
     def delete(self, j):
         # Add Instapaper API call to delete a post here
         return "Not implemented"
 
     def getApiPostTitle(self, post):
-        title = ""
+        try:
+            title = post.title
+        except:
+            title = ""
         # Extract title from Instapaper post object
         return title
 
@@ -138,11 +168,14 @@ class moduleInstapaper(Content):
         if isinstance(post, str):
             idPost = post
         else:
-            idPost = self.getAttribute(post, "bookmark_id")
+            idPost = self.getAttribute(post, 'bookmark_id')
         return idPost
 
     def getApiPostLink(self, post):
-        link = ''
+        try:
+            link = post.url
+        except:
+            link = ""
         # Extract link from Instapaper post object
         return link
 
@@ -156,7 +189,7 @@ def main():
     )
 
     from socialModules.moduleTester import ModuleTester
-    
+
     instapaper_module = moduleInstapaper()
     tester = ModuleTester(instapaper_module)
     tester.run()
@@ -164,4 +197,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -4,12 +4,9 @@
 # https://matrix-nio.readthedocs.io/en/latest/#api-documentation
 
 import asyncio
-import configparser
-import sys
 import time
-from importlib import util
 
-from nio import AsyncClient, RoomMessageText, SyncResponse
+from nio import AsyncClient
 
 
 async def main():
