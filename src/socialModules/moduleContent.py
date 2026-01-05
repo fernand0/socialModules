@@ -1184,7 +1184,7 @@ class Content:
             else:
                 reply = "No posts available"
         except:
-            reply = self.report(self.service, post, idPost, sys.exc_info())
+            reply = self.report(self.service, post, post, sys.exc_info())
         return reply
 
     def deleteNextPost(self, apiDst=None):
@@ -1269,7 +1269,7 @@ class Content:
             ):
                 nameMethod = self.getPostsType().capitalize()
             else:
-                msgLog =  (f"{self.indent} No api for " 
+                msgLog =  (f"{self.indent} No api for "
                            f"{self.getPostsType()}"
                            )
                 logMsg(msgLog, 2, False)
@@ -1289,7 +1289,7 @@ class Content:
                     reply = method(api=api, post=post)
                 else:
                     msgLog = (
-                        f"{self.indent} Calling method {method} " 
+                        f"{self.indent} Calling method {method} "
                         f"with title, link, comment"
                     )
                     logMsg(msgLog, 2, False)
