@@ -395,8 +395,7 @@ class moduleSlack(Content):  # , Queue):
                 pos = text.rfind("<")
                 link = text[pos + 1 :]
                 pos = link.find(">")
-                link = link[:pos-1]
-
+                link = link[:pos]
             else:
                 pos = text.rfind("http")
                 link = text[pos:-1]
