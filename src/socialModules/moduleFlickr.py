@@ -46,22 +46,28 @@ class moduleFlickr(Content):  # , Queue):
                 token_cache_location=f"{CONFIGDIR}",
             )
 
-            # Get a request token
-            flickr.get_request_token(oauth_callback="oob")
+            if not hasattr(flickr, "token_valid") or not flickr.token_valid(
+                perms="write"
+            ):
 
-            # Open a browser at the authentication URL. Do this however
-            # you want, as long as the user visits that URL.
-            authorize_url = flickr.auth_url(perms="write")
-            print(f"Visit {authorize_url} and copy the result")
+                # Get a request token
+                flickr.get_request_token(oauth_callback="oob")
 
-            # Get the verifier code from the user. Do this however you
-            # want, as long as the user gives the application the code.
-            verifier = str(input("Verifier code: "))
+                # Open a browser at the authentication URL. Do this however
+                # you want, as long as the user visits that URL.
+                authorize_url = flickr.auth_url(perms="write")
+                print(f"Visit {authorize_url} and copy the result")
 
-            # Trade the request token for an access token
-            flickr.get_access_token(verifier)
+                # Get the verifier code from the user. Do this however you
+                # want, as long as the user gives the application the code.
+                verifier = str(input("Verifier code: "))
 
-            print("Authorization successful! Token has been saved.")
+                # Trade the request token for an access token
+                flickr.get_access_token(verifier)
+
+                print("Authorization successful! Token has been saved.")
+            else:
+                print("Authorization was ok!")
 
         except flickrapi.exceptions.FlickrError as e:
             print(f"Authorization failed: {e}")
