@@ -61,8 +61,8 @@ class moduleRules:
 
     def checkRules(self, configFile=None, select=None):
         """
-        Reads the configuration file, processes each section, and builds the publishing rules.
-        Includes exhaustive validation and error handling.
+        Reads the configuration file, processes each section, and builds the
+        publishing rules.  Includes exhaustive validation and error handling.
         Optimized for efficiency using sets and efficient access.
         Allows absolute path for the configuration file.
         """
@@ -1569,8 +1569,8 @@ class moduleRules:
         Refactored to delegate to helper functions.
         Allows configuring the number of threads (max_workers) by argument,
         environment variable SOCIALMODULES_MAX_WORKERS, or automatically
-        according to the number of actions to execute (one per action, minimum
-        1, maximum 100).
+        according to the number of actions to execute 
+        (one per action, minimum 1, maximum 100).
         """
         import os
 
