@@ -1754,11 +1754,14 @@ class moduleRules:
                 i = i + 1
             name_action = f"[{self.getNameAction(rule_key)}{i}]"
             name_action = f"{name_action:->12}>"
-            msgLog = (
-                f"Preparing actions for rule: "
+            rule_name = (
                 f"{self.getNickSrc(rule_key)}@"
                 f"{self.getNameRule(rule_key)} "
                 f"({self.getNickAction(rule_key)})"
+            )
+            msgLog = (
+                f"Preparing actions for rule: "
+                f"{rule_name}"
             )
             try:
                 thread_local.nameA = name_action
@@ -1768,7 +1771,7 @@ class moduleRules:
             previous = self.getNameAction(rule_key)
             if rule_metadata and rule_metadata.get("hold") == "yes":
                 msgHold = (
-                    f"[HOLD] {self.getNickSrc(rule_key)} "
+                    f"[HOLD] {rule_name} "
                     f"({self.getNickAction(rule_key)})"
                 )
                 try:
