@@ -1084,7 +1084,7 @@ class moduleRules:
                 )
 
     def clientErrorMsg(self, indent, api, typeC, rule, action):
-        return f"{indent} {typeC} Error. " f"No client for {rule} ({action}). End."
+        return f"{indent} {typeC} Error. " f"No client for {rule} in ({action}). End."
 
     def readConfigSrc(self, indent, src, more, fileName=None):
         if not fileName:
