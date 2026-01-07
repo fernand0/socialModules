@@ -1083,6 +1083,20 @@ class moduleRules:
                 f" ({self.getTypeRule(obj)})"
                 )
 
+    def getActionString(self, action):
+        """Generate the action string for an action object.
+
+        Args:
+            action: The action object to extract information from
+        """
+        # Use consistent action-based methods for uniform representation
+        return (
+                f"{self.getNameAction(action)} "
+                f"{self.getNickAction(action)}@"
+                f"{self.getProfileAction(action)} "
+                f"({self.getTypeAction(action)})"
+                )
+
     def clientErrorMsg(self, indent, api, typeC, rule, action):
         return f"{indent} {typeC} Error. " f"No client for {rule} in ({action}). End."
 
@@ -1539,6 +1553,7 @@ class moduleRules:
                 res = {
                     "success": True,
                     "publication_result": "Limit for publications reached",
+                    "link_updated": False,
                     "post_action_result": None,
                 }
 
@@ -1889,12 +1904,7 @@ class moduleRules:
         noWait = scheduled_action["noWait"]
 
         # Prepare arguments for executeAction
-        msgAction = (
-            f"{self.getNameAction(rule_action)} "
-            f"{self.getNickAction(rule_action)}@"
-            f"{self.getProfileAction(rule_action)} "
-            f"({self.getTypeAction(rule_action)})"
-        )
+        msgAction = self.getActionString(rule_action)
         rule_index = scheduled_action.get("rule_index", 0)
         action_index = scheduled_action.get("action_index", 0)
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
