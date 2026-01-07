@@ -1507,8 +1507,8 @@ class moduleRules:
                     indent,
                     apiDst,
                     "Destination",
-                    (f"{self.getNameRule(src)}@" f"{self.getProfileRule(src)}"),
-                    self.getNickAction(action),
+                    f"{orig}",
+                    f"{dest}",
                 )
                 logMsg(client_error_msg, 3, self.args.verbose)
                 sys.stderr.write(f"Error: {client_error_msg}\n")
