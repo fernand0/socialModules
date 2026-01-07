@@ -1504,11 +1504,7 @@ class moduleRules:
 
             if not apiDst.getClient():
                 client_error_msg = self.clientErrorMsg(
-                    indent,
-                    apiDst,
-                    "Destination",
-                    f"{orig}",
-                    f"{dest}",
+                    indent, apiDst, "Destination", f"{orig}", f"{dest}",
                 )
                 logMsg(client_error_msg, 3, self.args.verbose)
                 sys.stderr.write(f"Error: {client_error_msg}\n")
