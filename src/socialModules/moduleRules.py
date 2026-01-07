@@ -1491,11 +1491,12 @@ class moduleRules:
             # Instantiate APIs ONCE, after the wait
             apiSrc = self.readConfigSrc(indent, src, more, fileName=base_name)
             if not apiSrc:
-                logMsg(
-                    f"ERROR: Could not create apiSrc for rule {src}",
-                    3,
-                    self.args.verbose,
+                client_error_msg = self.clientErrorMsg(
+                    indent, apiSrc, "Source", f"{orig}", f"{dest}",
                 )
+                logMsg(client_error_msg, 3, self.args.verbose)
+                sys.stderr.write(f"Error: {client_error_msg}\n")
+                res = {"success": False, "error": f"End: {client_error_msg}"}
                 return res
 
             apiDst = self.readConfigDst(
