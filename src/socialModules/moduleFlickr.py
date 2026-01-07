@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import configparser
 import logging
 import sys
 
@@ -17,6 +18,65 @@ class moduleFlickr(Content):  # , Queue):
         SECRET = config.get(self.user, "secret")
 
         return (KEY, SECRET)
+
+    def authorize(self):
+        # Get the API keys - need to determine the user first
+        config = configparser.RawConfigParser()
+        config.read(CONFIGDIR + '/.rssFlickr')
+
+        # Get the first available user from the config file
+        if not hasattr(self, 'user') or self.user is None:
+            sections = config.sections()
+            if sections:
+                # Use the first section as the user
+                user = sections[0]
+                self.user = user
+            else:
+                print("No user found in config file.")
+                return None
+
+        keys = self.getKeys(config)
+
+        # Initialize the API to get the token
+        try:
+            flickr = flickrapi.FlickrAPI(
+                keys[0],
+                keys[1],
+                format="parsed-json",
+                token_cache_location=f"{CONFIGDIR}",
+            )
+
+            if not hasattr(flickr, "token_valid") or not flickr.token_valid(
+                perms="write"
+            ):
+
+                # Get a request token
+                flickr.get_request_token(oauth_callback="oob")
+
+                # Open a browser at the authentication URL. Do this however
+                # you want, as long as the user visits that URL.
+                authorize_url = flickr.auth_url(perms="write")
+                print(f"Visit {authorize_url} and copy the result")
+
+                # Get the verifier code from the user. Do this however you
+                # want, as long as the user gives the application the code.
+                verifier = str(input("Verifier code: "))
+
+                # Trade the request token for an access token
+                flickr.get_access_token(verifier)
+
+                print("Authorization successful! Token has been saved.")
+            else:
+                print("Authorization was ok!")
+
+        except flickrapi.exceptions.FlickrError as e:
+            print(f"Authorization failed: {e}")
+            return None
+        except Exception as e:
+            print(f"Authorization error: {e}")
+            return None
+
+        return flickr
 
     def initApi(self, keys):
         # FIXME: Do we call this method directly?
@@ -226,9 +286,15 @@ def main():
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )
 
+    flickr_module = moduleFlickr()
+    if len(sys.argv) > 1 and (
+        sys.argv[1] == "authenticate" or sys.argv[1] == "authorize"
+    ):
+        flickr_module.authorize()
+        sys.exit(0)
+
     from socialModules.moduleTester import ModuleTester
 
-    flickr_module = moduleFlickr()
     tester = ModuleTester(flickr_module)
     tester.run()
 
