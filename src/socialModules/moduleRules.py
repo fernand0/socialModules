@@ -1476,8 +1476,7 @@ class moduleRules:
 
             theAction = self.getTypeAction(action)
             logMsg(
-                f"{msgLog} for {theAction} from {orig} in " f"{dest}", 
-                1, self.args.verbose,
+                f"{msgLog} from {orig} in " f"{dest}", 1, self.args.verbose,
             )
 
             # Wait BEFORE instantiation
