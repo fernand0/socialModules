@@ -1476,10 +1476,8 @@ class moduleRules:
 
             theAction = self.getTypeAction(action)
             logMsg(
-                f"{msgLog} for {theAction} from {self.getNickRule(src)} in "
-                f"{self.getNickAction(action)}@{self.getProfileAction(action)}",
-                1,
-                self.args.verbose,
+                f"{msgLog} for {theAction} from {orig} in " f"{dest}", 
+                1, self.args.verbose,
             )
 
             # Wait BEFORE instantiation
@@ -1487,12 +1485,8 @@ class moduleRules:
                 time.sleep(tSleep)
             if "minutes" in msgLog:
                 logMsg(
-                    f"{indent} End Waiting {theAction} from "
-                    f"{self.getNickRule(src)} in "
-                    f"{self.getNickAction(action)}"
-                    f"@{self.getProfileAction(action)}",
-                    1,
-                    self.args.verbose,
+                    f"{indent} End Waiting from {orig} in " f"{dest}", 
+                    1, self.args.verbose,
                 )
 
             # Instantiate APIs ONCE, after the wait
@@ -1530,10 +1524,7 @@ class moduleRules:
             numAct = num
 
             msgLog = (
-                f"{indent}I'll publish {numAct} in {theAction} "
-                f"from {apiSrc.getUrl()} "
-                f"in {self.getNickAction(action)}@"
-                f"{self.getProfileAction(action)}"
+                f"{indent}I'll publish {numAct} from {orig} in {dest}"
             )
             logMsg(msgLog, 1, self.args.verbose)
 
