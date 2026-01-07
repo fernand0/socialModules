@@ -1097,6 +1097,18 @@ class moduleRules:
                 f"({self.getTypeAction(action)})"
                 )
 
+    def getActionDestString(self, action):
+        """Generate the destination string for an action object (compact format).
+
+        Args:
+            action: The action object to extract information from
+        """
+        # Use consistent action-based methods for compact destination representation
+        return (
+                f"{self.getNickAction(action)}@{self.getNameAction(action)} "
+                f"({self.getTypeAction(action)})"
+                )
+
     def clientErrorMsg(self, indent, api, typeC, rule, action):
         return f"{indent} {typeC} Error. " f"No client for {rule} in ({action}). End."
 
@@ -1425,10 +1437,7 @@ class moduleRules:
 
         # Destination
         orig = self.getOrigString(src)
-        dest = (
-            f"{self.getNickAction(action)}@{self.getNameAction(action)} "
-            f"({self.getTypeAction(action)})"
-        )
+        dest = self.getActionDestString(action)
         msgLog = f"{indent} Scheduling {orig} -> {dest}"
         logMsg(msgLog, 1, self.args.verbose)
         base_name = self._get_filename_base(src, action)
