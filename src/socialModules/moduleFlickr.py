@@ -258,7 +258,11 @@ class moduleFlickr(Content):  # , Queue):
         res = ""
         msgLog = f"{self.indent}Reply: {reply}"
         logMsg(msgLog, 1, False)
-        origReply = reply[0]
+        from collections.abc import Sequence
+        if isinstance(reply, Sequence):
+            origReply = reply[0]
+        else:
+            origReply = reply
         if "stat" in origReply and origReply.get("stat") == "ok":
             if "Fail!" not in reply:
                 idPost = self.getPostId(origReply)
