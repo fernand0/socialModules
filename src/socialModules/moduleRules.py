@@ -1492,6 +1492,7 @@ class moduleRules:
         pos=-1,
         delete=False,
     ):
+        logMsg(f"{indent} Start executeAction {textEnd}", 2, False)
         indent = ""
         if name:
             indent = f"{name}"
