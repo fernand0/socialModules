@@ -1169,8 +1169,6 @@ class moduleRules:
             apiSrc = getApi(profile, account, child_indent)
 
         if apiSrc is not None:
-            # msgLog = f"{child_indent} readConfigSrc clientttt {apiSrc.getClient()}"  #: {src[1:]}"
-            # logMsg(msgLog, 2, False)
             apiSrc.src = src
             apiSrc.setPostsType(src[-1])
             apiSrc.setMoreValues(more)
@@ -1178,9 +1176,8 @@ class moduleRules:
             if fileName:
                 apiSrc.fileName = fileName
         else:
-            logMsg(
-                f"{indent} Failed to get API for source: {src}", 3, self.args.verbose
-            )
+            msgLog = f"{indent} Failed to get API for source: {src}"
+            logMsg(msgLog, 3, self.args.verbose)
 
         msgLog = f"{indent} End readConfigSrc"  #: {src[1:]}"
         logMsg(msgLog, 2, self.args.verbose)
@@ -1210,10 +1207,6 @@ class moduleRules:
                 apiDst.fileName = fileName
             if isinstance(action[2], tuple):
                 apiDst.dst_fileName = self._get_filename_base(action, action[2])
-            # msgLog = f"{child_indent} apiDstt {apiDst}"  #: {src[1:]}"
-            # logMsg(msgLog, 2, False)
-            # msgLog = f"{child_indent} apiDstt {apiDst.client}"  #: {src[1:]}"
-            # logMsg(msgLog, 2, False)
             if apiSrc:
                 apiDst.setUrl(apiSrc.getUrl())
             else:
@@ -1541,18 +1534,14 @@ class moduleRules:
                 msgLog = f"{indent} No Waiting"
 
             theAction = self.getTypeAction(action)
-            logMsg(
-                f"{msgLog} from {orig} in " f"{dest}", 1, self.args.verbose,
-            )
+            # msgLog = f"{msgLog} for {orig} in " f"{dest}"            
+            logMsg(msgLog, 1, self.args.verbose)
 
             # Wait BEFORE instantiation
             if not simmulate:
                 time.sleep(tSleep)
-            if "minutes" in msgLog:
-                logMsg(
-                    f"{indent} End Waiting from {orig} in " f"{dest}",
-                    1, self.args.verbose,
-                )
+                if "minutes" in msgLog:
+                    logMsg(f"{indent} End Waiting", 1, self.args.verbose)
 
             # Instantiate APIs ONCE, after the wait
             apiSrc = self.readConfigSrc(indent, src, more, fileName=base_name)
@@ -1800,10 +1789,7 @@ class moduleRules:
             name_action = f"[{self.getNameAction(rule_key)}{i}]"
             name_action = f"{name_action:->12}>"
             rule_name = self.getOrigString(rule_key)
-            msgLog = (
-                f"Preparing actions for rule: "
-                f"{rule_name}"
-            )
+            msgLog = f"Preparing actions for rule: {rule_name}"
             try:
                 thread_local.nameA = name_action
                 logMsg(msgLog, 1, self.args.verbose)
