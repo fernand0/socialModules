@@ -1297,6 +1297,8 @@ class moduleRules:
 
             if (('success' in publication_res and publication_res['success'])
                 or ("OK. Published!" in publication_res)):
+                msgLog = f"{indent} Res {publication_res} is OK"
+                logMsg(msgLog, 1, False)
                 if nextPost:
                     msgLog = f"{indent}Post Action next post"
                     logMsg(msgLog, 2, False)
@@ -1321,6 +1323,10 @@ class moduleRules:
                     or ("duplicate" in publication_res)
                 )
             ):
+                msgLog = f"{indent} Res {publication_res} is not OK"
+                # FIXME Some OK publishing follows this path (mastodon, linkedin, ...)
+                logMsg(msgLog, 1, False)
+
                 if nextPost:
                     cmdPost = getattr(apiSrc, f"{postaction}NextPost")
                     resCmd = cmdPost(apiDst)
