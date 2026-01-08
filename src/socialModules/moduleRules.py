@@ -1295,11 +1295,8 @@ class moduleRules:
             msgLog = f"{indent}Post Action {postaction} " f"(nextPost = {nextPost})"
             logMsg(msgLog, 1, self.args.verbose)
 
-            logMsg(f"Pub result was: {publication_res}", 1, 0)
             if (('success' in publication_res and publication_res['success'])
                 or ("OK. Published!" in publication_res)):
-                msgLog = f"{indent} Res {publication_res} is OK"
-                logMsg(msgLog, 1, False)
                 if nextPost:
                     msgLog = f"{indent}Post Action next post"
                     logMsg(msgLog, 2, False)
@@ -1324,10 +1321,6 @@ class moduleRules:
                     or ("duplicate" in publication_res)
                 )
             ):
-                msgLog = f"{indent} Res {publication_res} is not OK"
-                # FIXME Some OK publishing follows this path (mastodon, linkedin, ...)
-                logMsg(msgLog, 1, False)
-
                 if nextPost:
                     cmdPost = getattr(apiSrc, f"{postaction}NextPost")
                     resCmd = cmdPost(apiDst)
@@ -1435,10 +1428,12 @@ class moduleRules:
                 if isinstance(publication_res, dict) and "success" in publication_res:
                     is_success = publication_res["success"]
                 else:
+                    #FIXME: this needs to be eliminated. It deals with string replies
                     is_success = "Fail!" not in str(publication_res) and "failed!" not in str(publication_res)
 
                 result_dict["success"] = is_success
                 result_dict["error"] = None if is_success else f"Publication failed: {publication_res}"
+                #FIXME: This can be improved. The whole reply will be available, anyway
 
                 if is_success:
                     # Update link if needed

@@ -330,7 +330,7 @@ class moduleBlsk(Content):  # , Queue):
             res = "https://bsky.app/profile/fernand0.bsky.social/post/"
             res = f"{res}{reply.uri.split('/')[-1]}"
         elif "post_url" in reply:
-            res = reply["post_url"]
+            res = reply
         elif isinstance(reply, bool):
             res = reply
         elif isinstance(reply, str) and "Fail" in reply:

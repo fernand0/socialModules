@@ -1221,6 +1221,7 @@ class Content:
         self.res_dict = self.get_empty_res_dict()
         msgLog = f"{self.indent} Start publishPost"
         logMsg(msgLog, 2, False)
+        self.indent = f"{self.indent} "
         # msgLog = f"{self.indent} Args: {args} More: {more}"
         # logMsg(msgLog, 2, False)
         api = ""
@@ -1244,7 +1245,7 @@ class Content:
         elif len(args) == 1:
             # apiSrc= args[0]
             listPosts = args  # [1]
-            msgLog = f"{self.indent} Publishing post {listPosts}" f" len(args) == 1"
+            msgLog = f"{self.indent} Publishing post {listPosts} len(args) == 1"
             logMsg(msgLog, 2, False)
             return
         if more:
@@ -1303,6 +1304,7 @@ class Content:
 
             # Integrate publication cache if successful and auto_cache is enabled
             if self.getAutoCache():
+                #FIXME: Adding caching result to reply?
                 self._cache_publication_if_successful(
                     reply, title, link, api, post, more
                 )
@@ -1310,6 +1312,9 @@ class Content:
         except:
             reply = self.report(self.service, title, link, sys.exc_info())
 
+        self.indent = f"{self.indent} "
+        msgLog = f"{self.indent} End publishPost"
+        logMsg(msgLog, 2, False)
         return reply
 
     def _cache_publication_if_successful(self, reply, title, link, api, post, more):
