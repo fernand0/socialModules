@@ -1148,7 +1148,7 @@ class moduleRules:
         """
         # Use consistent action-based methods for compact destination representation
         return (
-                f"{self.getNickAction(action)}@{self.getNameAction(action)} "
+                f"{self.getNickAction(action)}@{self.getServiceNameAction(action)} "
                 f"({self.getTypeAction(action)})"
                 )
 
