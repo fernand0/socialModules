@@ -718,14 +718,7 @@ class moduleRules:
             # destination_account = self.getDestAction(apiDst.action)
 
             apiDst = self.readConfigDst("", action, self.more[apiSrc.src], apiSrc)
-            result_dict = {
-                "success": False,
-                "publication_result": None,
-                "link_updated": False,
-                "post_action_result": None,
-                "error": "No post found",
-                "total": 0,
-            }
+            result_dict = self._initialize_result_dict(error_message="No post found", include_total=True)
             post = {"title": title, "link": link, "content": content}
             publication_res = apiDst.publishPost(api=apiSrc, post=post)
             logging.info(f"Pub Res: {publication_res}")
@@ -1226,6 +1219,28 @@ class moduleRules:
         logMsg(msgLog, 2, False)
         return apiDst
 
+    def _initialize_result_dict(self, error_message="No post found", include_total=False):
+        """
+        Initializes a standard result dictionary with default values.
+
+        Args:
+            error_message: The error message to set in the dictionary
+            include_total: Whether to include the 'total' field (for interactive publishing)
+
+        Returns:
+            Dictionary with default result values
+        """
+        result = {
+            "success": False,
+            "publication_result": None,
+            "link_updated": False,
+            "post_action_result": None,
+            "error": error_message
+        }
+        if include_total:
+            result["total"] = 0
+        return result
+
     def testDifferPosts(self, apiSrc, lastLink, listPosts):
         indent = ""
         i = 1
@@ -1377,13 +1392,7 @@ class moduleRules:
         apiSrc.setPosts()
 
         # Initialize result dictionary with default values
-        result_dict = {
-            "success": False,
-            "publication_result": None,
-            "link_updated": False,
-            "post_action_result": None,
-            "error": "No post found"
-        }
+        result_dict = self._initialize_result_dict()
 
         post = apiSrc.getNextPost(apiDst) if nextPost else apiSrc.getPost(pos)
         # Handle case when no post is available
