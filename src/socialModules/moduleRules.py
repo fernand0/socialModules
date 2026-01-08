@@ -1658,14 +1658,12 @@ class moduleRules:
                 2
             ]  # This is the actual destination rule tuple
             nameDst = "Cache"
-            typeDst = "posts"  # Always 'posts' for consistency
-            user_dst = self.getNickAction(rule_action)  # Now handles cache internally
             service_dst = self.getNameAction(inner_rule_action).capitalize()
         else:
             nameDst = self.getNameAction(rule_action).capitalize()
-            typeDst = "posts"  # Always 'posts' for consistency
-            user_dst = self.getNickAction(rule_action)
             service_dst = self.getNameAction(rule_action).capitalize()
+        typeDst = "posts"  # Always 'posts' for consistency
+        user_dst = self.getNickAction(rule_action)  # Handles cache internally
         if user_src.endswith("/"):
             user_src = user_src[:-1]
         if nameSrc == "Cache":
