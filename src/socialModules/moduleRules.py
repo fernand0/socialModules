@@ -993,11 +993,28 @@ class moduleRules:
         return destAction
 
     def getNickAction(self, action):
-        if isinstance(self.getActionComponent(action, 2), tuple):
-            nick = self.getActionComponent(self.getActionComponent(action, 2), 1)
+        # Check if this is a cache action and handle accordingly
+        if self.getNameAction(action) == "cache":
+            # For cache actions, extract the actual destination from the nested action
+            inner_action = action[2]  # This is the actual destination rule tuple
+            # Use getDestAction to get the raw destination and extract nickname
+            dest_raw = self.getDestAction(inner_action)
+            if dest_raw and (dest_raw.startswith("http://") or dest_raw.startswith("https://")):
+                # Extract hostname from URL if it's a URL
+                nick = dest_raw.split("//", 1)[1]
+            else:
+                # For non-URL destinations, use the original getNickAction logic on the inner action
+                if isinstance(self.getActionComponent(inner_action, 2), tuple):
+                    nick = self.getActionComponent(self.getActionComponent(inner_action, 2), 1)
+                else:
+                    nick = self.getActionComponent(inner_action, 3)
         else:
-            nick = self.getActionComponent(action, 3)
-            # FIXME: Problem with slack?
+            # Original logic for non-cache actions
+            if isinstance(self.getActionComponent(action, 2), tuple):
+                nick = self.getActionComponent(self.getActionComponent(action, 2), 1)
+            else:
+                nick = self.getActionComponent(action, 3)
+                # FIXME: Problem with slack?
         return nick
 
     def getNameAction(self, action):
@@ -1642,15 +1659,7 @@ class moduleRules:
             ]  # This is the actual destination rule tuple
             nameDst = "Cache"
             typeDst = "posts"  # Always 'posts' for consistency
-            user_dst_raw = self.getDestAction(inner_rule_action)
-            if user_dst_raw and (
-                user_dst_raw.startswith("http://")
-                or user_dst_raw.startswith("https://")
-            ):
-                user_dst = user_dst_raw.split("//", 1)[1]
-                # FIXME Is this needed?
-            else:
-                user_dst = user_dst_raw
+            user_dst = self.getNickAction(rule_action)  # Now handles cache internally
             service_dst = self.getNameAction(inner_rule_action).capitalize()
         else:
             nameDst = self.getNameAction(rule_action).capitalize()
