@@ -993,11 +993,28 @@ class moduleRules:
         return destAction
 
     def getNickAction(self, action):
-        if isinstance(self.getActionComponent(action, 2), tuple):
-            nick = self.getActionComponent(self.getActionComponent(action, 2), 1)
+        # Check if this is a cache action and handle accordingly
+        if self.getNameAction(action) == "cache":
+            # For cache actions, extract the actual destination from the nested action
+            inner_action = action[2]  # This is the actual destination rule tuple
+            # Use getDestAction to get the raw destination and extract nickname
+            dest_raw = self.getDestAction(inner_action)
+            if dest_raw and (dest_raw.startswith("http://") or dest_raw.startswith("https://")):
+                # Extract hostname from URL if it's a URL
+                nick = dest_raw.split("//", 1)[1]
+            else:
+                # For non-URL destinations, use the original getNickAction logic on the inner action
+                if isinstance(self.getActionComponent(inner_action, 2), tuple):
+                    nick = self.getActionComponent(self.getActionComponent(inner_action, 2), 1)
+                else:
+                    nick = self.getActionComponent(inner_action, 3)
         else:
-            nick = self.getActionComponent(action, 3)
-            # FIXME: Problem with slack?
+            # Original logic for non-cache actions
+            if isinstance(self.getActionComponent(action, 2), tuple):
+                nick = self.getActionComponent(self.getActionComponent(action, 2), 1)
+            else:
+                nick = self.getActionComponent(action, 3)
+                # FIXME: Problem with slack?
         return nick
 
     def getNameAction(self, action):
@@ -1005,6 +1022,32 @@ class moduleRules:
         if res == "direct":
             res = self.getActionComponent(action, 2)
         return res
+
+    def getServiceNameAction(self, action):
+        """Get the service name for an action, handling cache actions internally.
+
+        For cache actions, extracts the actual destination service name from the nested action.
+        For non-cache actions, returns the action's service name directly.
+
+        Args:
+            action: The action to extract service name from
+
+        Returns:
+            str: The service name for the action
+        """
+        # Check if this is a cache action and handle accordingly
+        if self.getNameAction(action) == "cache":
+            # For cache actions, extract the actual destination from the nested action
+            inner_action = action[2]  # This is the actual destination rule tuple
+            res = self.getActionComponent(inner_action, 0)
+            if res == "direct":
+                res = self.getActionComponent(inner_action, 2)
+        else:
+            # Original logic for non-cache actions
+            res = self.getActionComponent(action, 0)
+            if res == "direct":
+                res = self.getActionComponent(action, 2)
+        return res.capitalize()
 
     def getTypeAction(self, action):
         if isinstance(self.getActionComponent(action, 2), tuple):
@@ -1105,7 +1148,7 @@ class moduleRules:
         """
         # Use consistent action-based methods for compact destination representation
         return (
-                f"{self.getNickAction(action)}@{self.getNameAction(action)} "
+                f"{self.getNickAction(action)}@{self.getServiceNameAction(action)} "
                 f"({self.getTypeAction(action)})"
                 )
 
@@ -1507,7 +1550,7 @@ class moduleRules:
                 time.sleep(tSleep)
             if "minutes" in msgLog:
                 logMsg(
-                    f"{indent} End Waiting from {orig} in " f"{dest}", 
+                    f"{indent} End Waiting from {orig} in " f"{dest}",
                     1, self.args.verbose,
                 )
 
@@ -1589,7 +1632,7 @@ class moduleRules:
         Refactored to delegate to helper functions.
         Allows configuring the number of threads (max_workers) by argument,
         environment variable SOCIALMODULES_MAX_WORKERS, or automatically
-        according to the number of actions to execute 
+        according to the number of actions to execute
         (one per action, minimum 1, maximum 100).
         """
         import os
@@ -1635,28 +1678,10 @@ class moduleRules:
 
         service_src = self.getNameRule(rule_key).capitalize()
 
-        if self.getNameAction(rule_action) == "cache":
-            # Handle cache destination: extract details from the nested rule_action
-            inner_rule_action = rule_action[
-                2
-            ]  # This is the actual destination rule tuple
-            nameDst = "Cache"
-            typeDst = "posts"  # Always 'posts' for consistency
-            user_dst_raw = self.getDestAction(inner_rule_action)
-            if user_dst_raw and (
-                user_dst_raw.startswith("http://")
-                or user_dst_raw.startswith("https://")
-            ):
-                user_dst = user_dst_raw.split("//", 1)[1]
-                # FIXME Is this needed?
-            else:
-                user_dst = user_dst_raw
-            service_dst = self.getNameAction(inner_rule_action).capitalize()
-        else:
-            nameDst = self.getNameAction(rule_action).capitalize()
-            typeDst = "posts"  # Always 'posts' for consistency
-            user_dst = self.getNickAction(rule_action)
-            service_dst = self.getNameAction(rule_action).capitalize()
+        nameDst = self.getNameAction(rule_action).capitalize()
+        typeDst = "posts"  # Always 'posts' for consistency
+        user_dst = self.getNickAction(rule_action)  # Handles cache internally
+        service_dst = self.getServiceNameAction(rule_action)  # Handles cache internally
         if user_src.endswith("/"):
             user_src = user_src[:-1]
         if nameSrc == "Cache":
