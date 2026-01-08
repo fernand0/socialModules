@@ -1071,8 +1071,46 @@ class moduleRules:
             res = self.getRuleComponent(rule, 2)
         return res
 
+    def getOrigString(self, obj):
+        """Generate the orig string for a rule object.
+
+        Args:
+            obj: The rule object to extract information from
+        """
+        # Use consistent rule-based methods (fixing original inconsistency)
+        return (
+                f"{self.getNickRule(obj)}@{self.getNameRule(obj)}"
+                f" ({self.getTypeRule(obj)})"
+                )
+
+    def getActionString(self, action):
+        """Generate the action string for an action object.
+
+        Args:
+            action: The action object to extract information from
+        """
+        # Use consistent action-based methods for uniform representation
+        return (
+                f"{self.getNameAction(action)} "
+                f"{self.getNickAction(action)}@"
+                f"{self.getProfileAction(action)} "
+                f"({self.getTypeAction(action)})"
+                )
+
+    def getActionDestString(self, action):
+        """Generate the destination string for an action object (compact format).
+
+        Args:
+            action: The action object to extract information from
+        """
+        # Use consistent action-based methods for compact destination representation
+        return (
+                f"{self.getNickAction(action)}@{self.getNameAction(action)} "
+                f"({self.getTypeAction(action)})"
+                )
+
     def clientErrorMsg(self, indent, api, typeC, rule, action):
-        return f"{indent} {typeC} Error. " f"No client for {rule} ({action}). End."
+        return f"{indent} {typeC} Error. " f"No client for {rule} in ({action}). End."
 
     def readConfigSrc(self, indent, src, more, fileName=None):
         if not fileName:
@@ -1398,14 +1436,8 @@ class moduleRules:
         textEnd = ""
 
         # Destination
-        orig = (
-            f"{self.getNickRule(src)}@{self.getNameAction(src)} "
-            f"({self.getTypeRule(src)})"
-        )
-        dest = (
-            f"{self.getNickAction(action)}@{self.getNameAction(action)} "
-            f"({self.getTypeAction(action)})"
-        )
+        orig = self.getOrigString(src)
+        dest = self.getActionDestString(action)
         msgLog = f"{indent} Scheduling {orig} -> {dest}"
         logMsg(msgLog, 1, self.args.verbose)
         base_name = self._get_filename_base(src, action)
@@ -1467,10 +1499,7 @@ class moduleRules:
 
             theAction = self.getTypeAction(action)
             logMsg(
-                f"{msgLog} for {theAction} from {self.getNickRule(src)} in "
-                f"{self.getNickAction(action)}@{self.getProfileAction(action)}",
-                1,
-                self.args.verbose,
+                f"{msgLog} from {orig} in " f"{dest}", 1, self.args.verbose,
             )
 
             # Wait BEFORE instantiation
@@ -1478,22 +1507,19 @@ class moduleRules:
                 time.sleep(tSleep)
             if "minutes" in msgLog:
                 logMsg(
-                    f"{indent} End Waiting {theAction} from "
-                    f"{self.getNickRule(src)} in "
-                    f"{self.getNickAction(action)}"
-                    f"@{self.getProfileAction(action)}",
-                    1,
-                    self.args.verbose,
+                    f"{indent} End Waiting from {orig} in " f"{dest}", 
+                    1, self.args.verbose,
                 )
 
             # Instantiate APIs ONCE, after the wait
             apiSrc = self.readConfigSrc(indent, src, more, fileName=base_name)
             if not apiSrc:
-                logMsg(
-                    f"ERROR: Could not create apiSrc for rule {src}",
-                    3,
-                    self.args.verbose,
+                client_error_msg = self.clientErrorMsg(
+                    indent, apiSrc, "Source", f"{orig}", f"{dest}",
                 )
+                logMsg(client_error_msg, 3, self.args.verbose)
+                sys.stderr.write(f"Error: {client_error_msg}\n")
+                res = {"success": False, "error": f"End: {client_error_msg}"}
                 return res
 
             apiDst = self.readConfigDst(
@@ -1502,11 +1528,7 @@ class moduleRules:
 
             if not apiDst.getClient():
                 client_error_msg = self.clientErrorMsg(
-                    indent,
-                    apiDst,
-                    "Destination",
-                    (f"{self.getNameRule(src)}@" f"{self.getProfileRule(src)}"),
-                    self.getNickAction(action),
+                    indent, apiDst, "Destination", f"{orig}", f"{dest}",
                 )
                 logMsg(client_error_msg, 3, self.args.verbose)
                 sys.stderr.write(f"Error: {client_error_msg}\n")
@@ -1521,10 +1543,7 @@ class moduleRules:
             numAct = num
 
             msgLog = (
-                f"{indent}I'll publish {numAct} in {theAction} "
-                f"from {apiSrc.getUrl()} "
-                f"in {self.getNickAction(action)}@"
-                f"{self.getProfileAction(action)}"
+                f"{indent}I'll publish {numAct} from {orig} in {dest}"
             )
             logMsg(msgLog, 1, self.args.verbose)
 
@@ -1543,6 +1562,7 @@ class moduleRules:
                 res = {
                     "success": True,
                     "publication_result": "Limit for publications reached",
+                    "link_updated": False,
                     "post_action_result": None,
                 }
 
@@ -1754,11 +1774,7 @@ class moduleRules:
                 i = i + 1
             name_action = f"[{self.getNameAction(rule_key)}{i}]"
             name_action = f"{name_action:->12}>"
-            rule_name = (
-                f"{self.getNickSrc(rule_key)}@"
-                f"{self.getNameRule(rule_key)} "
-                f"({self.getNickAction(rule_key)})"
-            )
+            rule_name = self.getOrigString(rule_key)
             msgLog = (
                 f"Preparing actions for rule: "
                 f"{rule_name}"
@@ -1772,7 +1788,6 @@ class moduleRules:
             if rule_metadata and rule_metadata.get("hold") == "yes":
                 msgHold = (
                     f"[HOLD] {rule_name} "
-                    f"({self.getNickAction(rule_key)})"
                 )
                 try:
                     thread_local.nameA = name_action
@@ -1898,12 +1913,7 @@ class moduleRules:
         noWait = scheduled_action["noWait"]
 
         # Prepare arguments for executeAction
-        msgAction = (
-            f"{self.getNameAction(rule_action)} "
-            f"{self.getNickAction(rule_action)}@"
-            f"{self.getProfileAction(rule_action)} "
-            f"({self.getTypeAction(rule_action)})"
-        )
+        msgAction = self.getActionString(rule_action)
         rule_index = scheduled_action.get("rule_index", 0)
         action_index = scheduled_action.get("action_index", 0)
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"

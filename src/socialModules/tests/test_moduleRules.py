@@ -394,7 +394,7 @@ def test_execute_single_action_readConfigSrc_fail(
 
     assert result["success"] is False
     assert "error" in result
-    assert "apiSrc for rule" in result["error"] or "No execution" in result["error"]
+    assert "Source Error. No client for" in result["error"] or "No execution" in result["error"]
 
 
 @patch("socialModules.moduleRules.moduleRules.readConfigSrc", return_value=MagicMock())
