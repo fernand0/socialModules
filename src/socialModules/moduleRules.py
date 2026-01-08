@@ -1351,7 +1351,7 @@ class moduleRules:
     def executePublishAction(
         self,
         indent,
-        msgAction,
+        action,
         apiSrc,
         apiDst,
         simmulate,
@@ -1376,6 +1376,8 @@ class moduleRules:
         # logging.info(f"{indent}Post type: {type(post)}")
 
         if not post:
+            # Compute msgAction from the action parameter
+            msgAction = self.getActionString(action)
             msgLog = f"{indent}No post to schedule in {msgAction}"
             logMsg(msgLog, 1, self.args.verbose)
             result_dict["success"] = True
@@ -1394,6 +1396,8 @@ class moduleRules:
             # Log the title and link information
             logMsg(f"{indent}{msgLog}", 1, self.args.verbose)
 
+            # Compute msgAction from the action parameter
+            msgAction = self.getActionString(action)
             if simmulate:
                 msgLog = f"{indent}Would schedule in {msgAction} {msgLog}"
                 logMsg(msgLog, 1, self.args.verbose)
@@ -1427,7 +1431,7 @@ class moduleRules:
                     logMsg(msgLog, 1, self.args.verbose)
                     post_action_res = self.executePostAction(
                         indent,
-                        msgAction,
+                        action,  # Changed from msgAction to action
                         apiSrc,
                         apiDst,
                         simmulate,
@@ -1454,7 +1458,6 @@ class moduleRules:
         src,
         more,
         action,
-        msgAction,
         # apiSrc,
         noWait,
         timeSlots,
@@ -1583,7 +1586,7 @@ class moduleRules:
                 for i in range(numAct):
                     res = self.executePublishAction(
                         indent,
-                        msgAction,
+                        action,
                         apiSrc,
                         apiDst,
                         simmulate,
@@ -1924,7 +1927,6 @@ class moduleRules:
         noWait = scheduled_action["noWait"]
 
         # Prepare arguments for executeAction
-        msgAction = self.getActionString(rule_action)
         rule_index = scheduled_action.get("rule_index", 0)
         action_index = scheduled_action.get("action_index", 0)
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
@@ -1935,7 +1937,6 @@ class moduleRules:
                 rule_key,
                 rule_metadata,
                 rule_action,
-                msgAction,
                 # apiSrc,
                 noWait,
                 timeSlots,
