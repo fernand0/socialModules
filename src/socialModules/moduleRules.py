@@ -1358,25 +1358,36 @@ class moduleRules:
         nextPost=True,
         pos=-1,
     ):
+        """
+        Executes a publishing action for a single post.
+
+        Args:
+            indent: Indentation string for logging
+            action: The action to execute
+            apiSrc: Source API object
+            apiDst: Destination API object
+            simmulate: Whether to simulate the action
+            nextPost: Whether to get the next post or a specific one
+            pos: Position of the post to get if nextPost is False
+
+        Returns:
+            Dictionary with result information
+        """
+        postaction = ""
+        apiSrc.setPosts()
+
+        # Initialize result dictionary with default values
         result_dict = {
             "success": False,
             "publication_result": None,
             "link_updated": False,
             "post_action_result": None,
-            "error": "No post found",
+            "error": "No post found"
         }
-        postaction = ""
-        apiSrc.setPosts()
-        if nextPost:
-            post = apiSrc.getNextPost(apiDst)
-        else:
-            post = apiSrc.getPost(pos)
 
-        # logging.info(f"{indent}Post: {post}")
-        # logging.info(f"{indent}Post type: {type(post)}")
-
+        post = apiSrc.getNextPost(apiDst) if nextPost else apiSrc.getPost(pos)
+        # Handle case when no post is available
         if not post:
-            # Compute msgAction from the action parameter
             msgAction = self.getActionString(action)
             msgLog = f"{indent}No post to schedule in {msgAction}"
             logMsg(msgLog, 1, self.args.verbose)
@@ -1384,6 +1395,7 @@ class moduleRules:
             result_dict["publication_result"] = "No posts available"
             result_dict["error"] = None
         else:
+            # Process the post
             title = apiSrc.getPostTitle(post)
             link = apiSrc.getPostLink(post)
             msgLog = f"Title: {title}."
@@ -1393,35 +1405,34 @@ class moduleRules:
                     # f"in file {apiSrc.fileNameBase(apiDst)}.last"
                     f"in file {DATADIR}/{apiSrc.fileName}.last"
                 )
-            # Log the title and link information
             logMsg(f"{indent}{msgLog}", 1, self.args.verbose)
 
-            # Compute msgAction from the action parameter
-            msgAction = self.getActionString(action)
+            # Handle simulation mode
             if simmulate:
+                msgAction = self.getActionString(action)
                 msgLog = f"{indent}Would schedule in {msgAction} {msgLog}"
                 logMsg(msgLog, 1, self.args.verbose)
                 result_dict["success"] = True
-                result_dict["publication_result"] = (
-                    f"No posting (simmulation)." f"{msgLog}"
-                )
+                result_dict["publication_result"] = f"No posting (simmulation).{msgLog}"
                 result_dict["error"] = "Simulation"
             else:
+                # Perform actual publication
                 publication_res = apiDst.publishPost(api=apiSrc, post=post)
                 result_dict["publication_result"] = publication_res
-                msgLog = f"{indent}Reply: {result_dict}"
+                msgLog = f"{indent}Reply: {publication_res}"
                 logMsg(msgLog, 1, self.args.verbose)
 
+                # Determine success based on publication result
                 if isinstance(publication_res, dict) and "success" in publication_res:
                     is_success = publication_res["success"]
                 else:
-                    is_success = "Fail!" not in str(
-                        publication_res
-                    ) and "failed!" not in str(publication_res)
+                    is_success = "Fail!" not in str(publication_res) and "failed!" not in str(publication_res)
+
                 result_dict["success"] = is_success
+                result_dict["error"] = None if is_success else f"Publication failed: {publication_res}"
 
                 if is_success:
-                    result_dict["error"] = None
+                    # Update link if needed
                     result_dict["link_updated"] = None
                     if nextPost:
                         resUpdate = apiDst.updateLastLink(apiSrc, link)
@@ -1429,9 +1440,12 @@ class moduleRules:
 
                     msgLog = f"{indent}Reply Update: {result_dict}"
                     logMsg(msgLog, 1, self.args.verbose)
+
+                    # Execute post-action
+                    msgAction = self.getActionString(action)
                     post_action_res = self.executePostAction(
                         indent,
-                        action,  # Changed from msgAction to action
+                        action,
                         apiSrc,
                         apiDst,
                         simmulate,
@@ -1440,16 +1454,16 @@ class moduleRules:
                         publication_res,
                     )
                     result_dict["post_action_result"] = post_action_res
-                else:
-                    result_dict["error"] = f"Publication failed: {publication_res}"
 
-            msgLog = f"{indent}Reply Post: {result_dict}"
-            logMsg(msgLog, 1, self.args.verbose)
-            if postaction == "delete":
-                msgLog = f"{indent}Available {len(apiSrc.getPosts())-1}"
-            else:
-                msgLog = f"{indent}Available {len(apiSrc.getPosts())}"
-            logMsg(msgLog, 1, self.args.verbose)
+        # Log final result
+        msgLog = f"{indent}Reply Post: {result_dict}"
+        logMsg(msgLog, 1, self.args.verbose)
+
+        if postaction == "delete":
+            msgLog = f"{indent}Available {len(apiSrc.getPosts())-1}"
+        else:
+            msgLog = f"{indent}Available {len(apiSrc.getPosts())}"
+        logMsg(msgLog, 1, self.args.verbose)
 
         return result_dict
 
