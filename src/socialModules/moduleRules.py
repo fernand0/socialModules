@@ -1652,15 +1652,14 @@ class moduleRules:
 
         service_src = self.getNameRule(rule_key).capitalize()
 
+        nameDst = self.getNameAction(rule_action).capitalize()
         if self.getNameAction(rule_action) == "cache":
             # Handle cache destination: extract details from the nested rule_action
             inner_rule_action = rule_action[
                 2
             ]  # This is the actual destination rule tuple
-            nameDst = "Cache"
             service_dst = self.getNameAction(inner_rule_action).capitalize()
         else:
-            nameDst = self.getNameAction(rule_action).capitalize()
             service_dst = self.getNameAction(rule_action).capitalize()
         typeDst = "posts"  # Always 'posts' for consistency
         user_dst = self.getNickAction(rule_action)  # Handles cache internally
