@@ -2084,7 +2084,13 @@ class moduleRules:
 
                 # Add post-action if available
                 if post_act:
-                    summary_msg += f" Post-Action: {post_act}."
+                    # Extract the type of post-action if available in the result
+                    if isinstance(post_act, dict) and 'action' in post_act:
+                        action_type = post_act['action']
+                        action_result = post_act  # the entire result
+                        summary_msg += f" Post-Action: {action_type} ({action_result})."
+                    else:
+                        summary_msg += f" Post-Action: {post_act}."
                 try:
                     thread_local.nameA = name_action
                     logMsg(
@@ -2113,7 +2119,13 @@ class moduleRules:
                 if publication_result is not None:
                     additional_info.append(f"Publication: {publication_result}")
                 if post_action_result is not None:
-                    additional_info.append(f"Post-Action: {post_action_result}")
+                    # Extract the type of post-action if available in the result
+                    if isinstance(post_action_result, dict) and 'action' in post_action_result:
+                        action_type = post_action_result['action']
+                        action_result = post_action_result  # the entire result
+                        additional_info.append(f"Post-Action: {action_type} ({action_result})")
+                    else:
+                        additional_info.append(f"Post-Action: {post_action_result}")
                 if link_updated is not None:
                     # link_updated contains the result from updateLastLink operation
                     if isinstance(link_updated, dict):
