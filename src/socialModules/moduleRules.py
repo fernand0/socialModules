@@ -2084,7 +2084,7 @@ class moduleRules:
 
                 # Add post-action if available
                 if post_act:
-                    summary_msg += f" Post-Action: '{post_act}'."
+                    summary_msg += f" Post-Action: {post_act}."
                 try:
                     thread_local.nameA = name_action
                     logMsg(
@@ -2113,7 +2113,7 @@ class moduleRules:
                 if publication_result is not None:
                     additional_info.append(f"Publication: {publication_result}")
                 if post_action_result is not None:
-                    additional_info.append(f"Post-action: {post_action_result}")
+                    additional_info.append(f"Post-Action: {post_action_result}")
                 if link_updated is not None:
                     # link_updated contains the result from updateLastLink operation
                     if isinstance(link_updated, dict):
