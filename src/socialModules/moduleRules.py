@@ -2027,13 +2027,36 @@ class moduleRules:
             elif isinstance(res_dict, dict) and res_dict.get("success"):
                 pub_res = res_dict.get("publication_result", "N/A")
                 post_act = res_dict.get("post_action_result")
-                if 'post_url' in pub_res:
-                    summary_msg = f"Success. {pub_res['post_url']}"
+
+                # Build a more comprehensive summary message
+                parts = ["Success"]
+
+                # Add URL if available
+                if isinstance(pub_res, dict):
+                    if 'post_url' in pub_res:
+                        parts.append(f"URL: {pub_res['post_url']}")
+                    # Include other useful fields from the response
+                    if 'id' in pub_res:
+                        parts.append(f"ID: {pub_res['id']}")
+                    if 'service' in pub_res:
+                        parts.append(f"Service: {pub_res['service']}")
+                    if 'title' in pub_res:
+                        parts.append(f"Title: {pub_res['title']}")
+                    if 'result' in pub_res and pub_res['result'] != pub_res.get('post_url'):
+                        parts.append(f"Result: {pub_res['result']}")
+                    # Add raw response if no specific fields were found
+                    if len(parts) == 1:  # Only "Success" was added
+                        parts.append(str(pub_res))
                 else:
-                    summary_msg = f"Success. {pub_res}"
+                    # Handle non-dict publication results
+                    parts.append(str(pub_res))
+
+                # Combine the main parts
+                summary_msg = ". ".join(parts) + "."
+
+                # Add post-action if available
                 if post_act:
-                    summary_msg += f". Post-Action: '{post_act}'"
-                summary_msg += "."
+                    summary_msg += f" Post-Action: '{post_act}'."
                 try:
                     thread_local.nameA = name_action
                     logMsg(
@@ -2044,11 +2067,28 @@ class moduleRules:
                 finally:
                     thread_local.nameA = None
             elif isinstance(res_dict, dict):
+                # More detailed error reporting
                 error_msg = res_dict.get("error", "Unknown error")
+                additional_info = []
+
+                # Collect additional error details
+                if "error_message" in res_dict:
+                    additional_info.append(f"Message: {res_dict['error_message']}")
+                if "raw_response" in res_dict:
+                    additional_info.append(f"Raw: {res_dict['raw_response']}")
+                if "service" in res_dict:
+                    additional_info.append(f"Service: {res_dict['service']}")
+
+                # Combine error message with additional info
+                if additional_info:
+                    error_details = f"{error_msg} ({'; '.join(additional_info)})"
+                else:
+                    error_details = error_msg
+
                 try:
                     thread_local.nameA = name_action
                     logMsg(
-                        f"[ERROR] {error_msg}",
+                        f"[ERROR] {error_details}",
                         3,
                         True,
                     )
