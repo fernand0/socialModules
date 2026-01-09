@@ -2027,11 +2027,14 @@ class moduleRules:
             elif isinstance(res_dict, dict) and res_dict.get("success"):
                 pub_res = res_dict.get("publication_result", "N/A")
                 post_act = res_dict.get("post_action_result")
+                link_updated = res_dict.get("link_updated")
+                successful_count = res_dict.get("successful")
+                response_links = res_dict.get("response_links")
 
                 # Build a more comprehensive summary message
                 parts = ["Success"]
 
-                # Add URL if available
+                # Add publication result details
                 if isinstance(pub_res, dict):
                     if 'post_url' in pub_res:
                         parts.append(f"URL: {pub_res['post_url']}")
@@ -2051,6 +2054,20 @@ class moduleRules:
                     # Handle non-dict publication results
                     parts.append(str(pub_res))
 
+                # Add additional result information
+                if successful_count is not None:
+                    parts.append(f"Successful: {successful_count}")
+
+                if response_links:
+                    if isinstance(response_links, dict) and 'item' in response_links:
+                        parts.append(f"Response: {response_links['item']}")
+                    else:
+                        parts.append(f"Response links: {response_links}")
+
+                if link_updated is not None:
+                    status = "Updated" if link_updated else "Not updated"
+                    parts.append(f"Link: {status}")
+
                 # Combine the main parts
                 summary_msg = ". ".join(parts) + "."
 
@@ -2069,6 +2086,10 @@ class moduleRules:
             elif isinstance(res_dict, dict):
                 # More detailed error reporting
                 error_msg = res_dict.get("error", "Unknown error")
+                publication_result = res_dict.get("publication_result")
+                post_action_result = res_dict.get("post_action_result")
+                link_updated = res_dict.get("link_updated")
+
                 additional_info = []
 
                 # Collect additional error details
@@ -2078,6 +2099,12 @@ class moduleRules:
                     additional_info.append(f"Raw: {res_dict['raw_response']}")
                 if "service" in res_dict:
                     additional_info.append(f"Service: {res_dict['service']}")
+                if publication_result is not None:
+                    additional_info.append(f"Publication: {publication_result}")
+                if post_action_result is not None:
+                    additional_info.append(f"Post-action: {post_action_result}")
+                if link_updated is not None:
+                    additional_info.append(f"Link updated: {link_updated}")
 
                 # Combine error message with additional info
                 if additional_info:
