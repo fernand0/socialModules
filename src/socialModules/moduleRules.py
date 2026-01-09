@@ -2065,8 +2065,19 @@ class moduleRules:
                         parts.append(f"Response links: {response_links}")
 
                 if link_updated is not None:
-                    status = "Updated" if link_updated else "Not updated"
-                    parts.append(f"Link: {status}")
+                    # link_updated contains the result from updateLastLink operation
+                    if isinstance(link_updated, dict):
+                        # Show detailed information from the link update operation
+                        if link_updated.get('success'):
+                            parts.append(f"Link updated: {link_updated.get('post_url', 'URL not specified')}")
+                        else:
+                            parts.append(f"Link update failed: {link_updated.get('error_message', 'Unknown error')}")
+                    else:
+                        # Handle non-dict values
+                        if link_updated:
+                            parts.append("Link updated successfully")
+                        else:
+                            parts.append("Link not updated")
 
                 # Combine the main parts
                 summary_msg = ". ".join(parts) + "."
@@ -2104,7 +2115,19 @@ class moduleRules:
                 if post_action_result is not None:
                     additional_info.append(f"Post-action: {post_action_result}")
                 if link_updated is not None:
-                    additional_info.append(f"Link updated: {link_updated}")
+                    # link_updated contains the result from updateLastLink operation
+                    if isinstance(link_updated, dict):
+                        # Show detailed information from the link update operation
+                        if link_updated.get('success'):
+                            additional_info.append(f"Link updated: {link_updated.get('post_url', 'URL not specified')}")
+                        else:
+                            additional_info.append(f"Link update failed: {link_updated.get('error_message', 'Unknown error')}")
+                    else:
+                        # Handle non-dict values
+                        if link_updated:
+                            additional_info.append("Link updated successfully")
+                        else:
+                            additional_info.append("Link not updated")
 
                 # Combine error message with additional info
                 if additional_info:
