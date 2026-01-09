@@ -1119,27 +1119,14 @@ class moduleRules:
                 f" ({self.getTypeRule(obj)})"
                 )
 
+
     def getActionString(self, action):
-        """Generate the action string for an action object.
+        """Generate the action string for an action object (compact format).
 
         Args:
             action: The action object to extract information from
         """
-        # Use consistent action-based methods for uniform representation
-        return (
-                f"{self.getNameAction(action)} "
-                f"{self.getNickAction(action)}@"
-                f"{self.getProfileAction(action)} "
-                f"({self.getTypeAction(action)})"
-                )
-
-    def getActionDestString(self, action):
-        """Generate the destination string for an action object (compact format).
-
-        Args:
-            action: The action object to extract information from
-        """
-        # Use consistent action-based methods for compact destination representation
+        # Use consistent action-based methods for compact representation
         return (
                 f"{self.getNickAction(action)}@{self.getServiceNameAction(action)} "
                 f"({self.getTypeAction(action)})"
@@ -1452,7 +1439,7 @@ class moduleRules:
                     logMsg(msgLog, 1, self.args.verbose)
 
                     # Execute post-action
-                    msgAction = self.getActionString(action)
+                    # msgAction = self.getActionString(action)
                     post_action_res = self.executePostAction(
                         indent,
                         action,
@@ -1501,7 +1488,7 @@ class moduleRules:
 
         # Destination
         orig = self.getOrigString(src)
-        dest = self.getActionDestString(action)
+        dest = self.getActionString(action)
         msgLog = f"{indent} Scheduling {orig} -> {dest}"
         logMsg(msgLog, 1, self.args.verbose)
         base_name = self._get_filename_base(src, action)
