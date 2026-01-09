@@ -1492,12 +1492,12 @@ class moduleRules:
         pos=-1,
         delete=False,
     ):
-        logMsg(f"{indent} Start executeAction {textEnd}", 2, False)
         indent = ""
         if name:
             indent = f"{name}"
-        res = {"success": False, "error": "No execution"}
         textEnd = ""
+        logMsg(f"{indent} Start executeAction {textEnd}", 2, False)
+        res = {"success": False, "error": "No execution"}
 
         # Destination
         orig = self.getOrigString(src)
