@@ -82,7 +82,8 @@ class moduleRules:
                 config.read(configFile)
         except Exception as e:
             logMsg(
-                f"ERROR: Could not read configuration file: {e}", 3, self.args.verbose
+                f"ERROR: Could not read configuration file: {e}", 
+                3, self.args.verbose
             )
             raise ConfigError(f"Could not read configuration file: {e}")
 
