@@ -240,9 +240,6 @@ class moduleTumblr(Content):  # , Queue):
             if res and ("id" in res or "posts" in res):
                 self.res_dict["success"] = True
                 self.res_dict["post_url"] = f"https://{self.user}.tumblr.com/{res['id']}"
-                # Tumblr API doesn't consistently return a direct post URL here
-                # The blog name and post ID are available to construct one if
-                # needed.  For now, we'll leave post_url empty.
             else:
                 self.res_dict["error_message"] = f"Tumblr API error: {res}"
 
