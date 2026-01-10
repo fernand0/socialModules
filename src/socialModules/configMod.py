@@ -68,7 +68,7 @@ except Exception as e:
 
 # Create and configure console handler
 console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.DEBUG)
+console_handler.setLevel(logging.WARNING)
 console_handler.setFormatter(formatter)
 console_handler.addFilter(ContextFilter())
 
