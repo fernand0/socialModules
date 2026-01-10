@@ -77,9 +77,9 @@ console_handler.addFilter(ContextFilter())
 
 
 def logMsg(msgLog, log=1, print_to_console=True):
-    # name_action = getattr(thread_local, 'nameA', None)
-    # if name_action:
-    #     msgLog = f"{name_action} {msgLog}"
+    # Add thread name to the message before logging
+    if hasattr(thread_local, "nameA") and thread_local.nameA:
+        msgLog = f"{thread_local.nameA} {msgLog}"
 
     if log == 1:
         logging.info(msgLog)
@@ -87,9 +87,6 @@ def logMsg(msgLog, log=1, print_to_console=True):
         logging.debug(msgLog)
     elif log == 3:
         logging.warning(msgLog)
-
-    if hasattr(thread_local, "nameA") and thread_local.nameA:
-        msgLog = f"{thread_local.nameA}{msgLog}"
 
     if print_to_console is True:
         print(f"{msgLog}")
