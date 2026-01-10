@@ -2088,8 +2088,8 @@ class moduleRules:
                     # Extract the type of post-action if available in the result
                     if isinstance(post_act, dict) and 'action' in post_act:
                         action_type = post_act['action']
-                        action_result = post_act  # the entire result
-                        summary_msg += f" Post-Action: {action_type} ({action_result})."
+                        action_success = post_act.get('success', 'unknown')
+                        summary_msg += f" Post-Action: {'Success' if action_success else 'Failed' if action_success is False else 'Unknown'}. Action: {action_type}."
                     else:
                         summary_msg += f" Post-Action: {post_act}."
                 try:
@@ -2123,8 +2123,8 @@ class moduleRules:
                     # Extract the type of post-action if available in the result
                     if isinstance(post_action_result, dict) and 'action' in post_action_result:
                         action_type = post_action_result['action']
-                        action_result = post_action_result  # the entire result
-                        additional_info.append(f"Post-Action: {action_type} ({action_result})")
+                        action_success = post_action_result.get('success', 'unknown')
+                        additional_info.append(f"Post-Action: {'Success' if action_success else 'Failed' if action_success is False else 'Unknown'}. Action: {action_type}")
                     else:
                         additional_info.append(f"Post-Action: {post_action_result}")
                 if link_updated is not None:
