@@ -1255,7 +1255,8 @@ class Content:
             msgLog = f"{self.indent} Publishing post with more"
             logMsg(msgLog, 2, False)
             # if 'tags' in more:
-            #     print(f"    Publishing in {self.service}: {type(more['tags'])}")
+            #     print(f"    Publishing in {self.service}:
+            #     {type(more['tags'])}")
 
             post = more.get("post", "")
             api = more.get("api", "")

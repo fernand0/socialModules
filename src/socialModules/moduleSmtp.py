@@ -91,10 +91,10 @@ class moduleSmtp(Content):  # , Queue):
             more = kwargs
             thePost = more.get("post", "")
             api = more.get("api", "")
-            msg = thePost
-            if isinstance(thePost, tuple):
-                msg = thePost[1]
-            if not isinstance(msg, email.message.Message):
+            post = thePost
+            if isinstance(thePost, tuple): 
+                post = thePost[1]
+            if not isinstance(post, email.message.Message):
                 post = api.getPostTitle(thePost)
                 link = api.getPostLink(thePost)
 
