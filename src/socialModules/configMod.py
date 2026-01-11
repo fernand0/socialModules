@@ -38,7 +38,8 @@ class ContextFilter(logging.Filter):
 
 # Configure the root logger with both file and console handlers
 root_logger = logging.getLogger()
-root_logger.setLevel(logging.DEBUG)
+# Set to NOTSET to allow handlers to do the filtering
+root_logger.setLevel(logging.NOTSET)
 
 # Create formatter
 formatter = logging.Formatter(
@@ -67,17 +68,28 @@ except Exception as e:
 
 # Create and configure console handler
 console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.DEBUG)
+console_handler.setLevel(logging.WARNING)
 console_handler.setFormatter(formatter)
 console_handler.addFilter(ContextFilter())
 
 # Add handlers to root logger
-# root_logger.addHandler(file_handler)
-# root_logger.addHandler(console_handler)
+root_logger.addHandler(file_handler)
+root_logger.addHandler(console_handler)
 
 
 def logMsg(msgLog, log=1, print_to_console=True):
-    # Add thread name to the message before logging
+    """
+    Log a message with specified log level and optional console printing.
+
+    Args:
+        msgLog: Message to log
+        log: Logging level (1=info, 2=debug, 3=warning)
+        print_to_console: Controls console printing behavior
+                         True = print normally
+                         2 = print with special formatting (=== lines)
+                         False/other falsy = don't print
+    """
+    # Add thread name to the message before logging (from master branch)
     if hasattr(thread_local, "nameA") and thread_local.nameA:
         msgLog = f"{thread_local.nameA} {msgLog}"
 
@@ -88,12 +100,14 @@ def logMsg(msgLog, log=1, print_to_console=True):
     elif log == 3:
         logging.warning(msgLog)
 
+    # Handle different print_to_console values
     if print_to_console is True:
         print(f"{msgLog}")
     elif print_to_console == 2:
         print("====================================")
         print(f"{msgLog}")
         print("====================================")
+    # If print_to_console is False or any other falsy value, don't print
 
 
 def fileNamePath(url, socialNetwork=()):
