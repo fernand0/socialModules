@@ -1479,6 +1479,7 @@ class moduleRules:
         nextPost=True,
         pos=-1,
         delete=False,
+        tSleep=None,
     ):
         indent = ""
         if name:
@@ -1517,11 +1518,9 @@ class moduleRules:
 
         msgLog = ""
 
-        # Get scheduling data without full API instantiation
+        # Get max value from rule metadata
         rule_metadata = more
-        max_val, time_val, last_time_val = self._get_publication_check_data(
-            src, action, rule_metadata
-        )
+        max_val = rule_metadata.get("max", 1) if rule_metadata else 1
 
         if nextPost:
             num = max_val
@@ -1530,15 +1529,6 @@ class moduleRules:
 
         if num > 0:
             tNow = time.time()
-            # hours = float(time_val) * 60 * 60
-            # lastTime = last_time_val
-
-            # if lastTime:
-            #     diffTime = tNow - lastTime
-            # else:
-            #     diffTime = hours + 1
-
-            tSleep = random.random() * float(timeSlots) * 60
 
             # Reserve the time slot by setting the new time
             self.setNextTime(src, action, tNow, tSleep)
@@ -1872,6 +1862,9 @@ class moduleRules:
 
                 # base_name = self._get_filename_base(rule_key, rule_action)
 
+                # Compute tSleep delay in _prepare_actions
+                tSleep = random.random() * float(timeSlots) * 60
+
                 scheduled_actions.append(
                     {
                         "rule_key": rule_key,
@@ -1885,6 +1878,7 @@ class moduleRules:
                         "nameA": nameA,
                         "timeSlots": timeSlots,  # Add timeSlots to scheduled_actions
                         "noWait": noWait,  # Add noWait to scheduled_actions
+                        "tSleep": tSleep,  # Add precomputed tSleep
                     }
                 )
         return scheduled_actions, held_actions, skipped_actions
@@ -1942,8 +1936,9 @@ class moduleRules:
         # Prepare arguments for executeAction
         rule_index = scheduled_action.get("rule_index", 0)
         action_index = scheduled_action.get("action_index", 0)
+        tSleep = scheduled_action.get("tSleep", None)
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
-        nameA = f"{name_action:->12}> Action {action_index}:"
+        nameA = f"{name_action:->13}> Action {action_index}:"
         try:
             thread_local.nameA = nameA
             return self.executeAction(
@@ -1956,6 +1951,7 @@ class moduleRules:
                 simmulate,
                 "",  # Previously nameA
                 action_index,
+                tSleep=tSleep,  # Pass the precomputed tSleep
             )
         finally:
             thread_local.nameA = None
