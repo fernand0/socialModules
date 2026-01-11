@@ -1803,7 +1803,7 @@ class moduleRules:
             else:
                 i = i + 1
             name_action = f"[{self.getNameAction(rule_key)}{i}]"
-            name_action = f"{name_action:->12}>"
+            name_action = f"{name_action:->13}>"
             rule_name = self.getOrigString(rule_key)
             msgLog = f"Preparing actions for rule: {rule_name}"
             try:

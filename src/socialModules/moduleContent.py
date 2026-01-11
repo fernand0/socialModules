@@ -181,7 +181,10 @@ class Content:
         if isinstance(client, str) and "Error" in client:
             client = None
         if client is None:
-            msgLog = f"{self.indent} Error: Failed to initialize client for service '{self.service}'."
+            msgLog = (
+                    f"{self.indent} Error: Failed to initialize client "
+                    f"for service '{self.service}'."
+                    )
             logMsg(msgLog, 3, True)
             # Optionally, you can raise an exception here:
             # raise RuntimeError(msgLog)
