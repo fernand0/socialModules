@@ -1943,7 +1943,7 @@ class moduleRules:
         rule_index = scheduled_action.get("rule_index", 0)
         action_index = scheduled_action.get("action_index", 0)
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
-        nameA = f"{name_action:->12}> Action {action_index}:"
+        nameA = f"{name_action:->13}> Action {action_index}:"
         try:
             thread_local.nameA = nameA
             return self.executeAction(
