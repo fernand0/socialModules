@@ -87,7 +87,7 @@ class moduleSmtp(Content):  # , Queue):
 
         # Initialize fromaddr and destaddr with default values
         fromaddr = getattr(self, 'fromaddr', getattr(self, 'user', 'unknown@example.com'))
-        destaddr = getattr(self, 'to', getattr(self, 'user', 'unknown@example.com'))
+        destaddr = getattr(self, 'destaddr', getattr(self, 'user', 'unknown@example.com'))
 
         if args and len(args) == 3:
             post, link, comment = args
