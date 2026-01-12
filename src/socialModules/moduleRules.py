@@ -82,7 +82,8 @@ class moduleRules:
                 config.read(configFile)
         except Exception as e:
             logMsg(
-                f"ERROR: Could not read configuration file: {e}", 3, self.args.verbose
+                f"ERROR: Could not read configuration file: {e}", 
+                3, self.args.verbose
             )
             raise ConfigError(f"Could not read configuration file: {e}")
 
@@ -1119,27 +1120,14 @@ class moduleRules:
                 f" ({self.getTypeRule(obj)})"
                 )
 
+
     def getActionString(self, action):
-        """Generate the action string for an action object.
+        """Generate the action string for an action object (compact format).
 
         Args:
             action: The action object to extract information from
         """
-        # Use consistent action-based methods for uniform representation
-        return (
-                f"{self.getNameAction(action)} "
-                f"{self.getNickAction(action)}@"
-                f"{self.getProfileAction(action)} "
-                f"({self.getTypeAction(action)})"
-                )
-
-    def getActionDestString(self, action):
-        """Generate the destination string for an action object (compact format).
-
-        Args:
-            action: The action object to extract information from
-        """
-        # Use consistent action-based methods for compact destination representation
+        # Use consistent action-based methods for compact representation
         return (
                 f"{self.getNickAction(action)}@{self.getServiceNameAction(action)} "
                 f"({self.getTypeAction(action)})"
@@ -1452,7 +1440,7 @@ class moduleRules:
                     logMsg(msgLog, 1, self.args.verbose)
 
                     # Execute post-action
-                    msgAction = self.getActionString(action)
+                    # msgAction = self.getActionString(action)
                     post_action_res = self.executePostAction(
                         indent,
                         action,
@@ -1501,7 +1489,7 @@ class moduleRules:
 
         # Destination
         orig = self.getOrigString(src)
-        dest = self.getActionDestString(action)
+        dest = self.getActionString(action)
         msgLog = f"{indent} Scheduling {orig} -> {dest}"
         logMsg(msgLog, 1, self.args.verbose)
         base_name = self._get_filename_base(src, action)
@@ -1815,7 +1803,7 @@ class moduleRules:
             else:
                 i = i + 1
             name_action = f"[{self.getNameAction(rule_key)}{i}]"
-            name_action = f"{name_action:->12}>"
+            name_action = f"{name_action:->13}>"
             rule_name = self.getOrigString(rule_key)
             msgLog = f"Preparing actions for rule: {rule_name}"
             try:
@@ -1955,7 +1943,7 @@ class moduleRules:
         rule_index = scheduled_action.get("rule_index", 0)
         action_index = scheduled_action.get("action_index", 0)
         name_action = f"[{self.getNameAction(rule_key)}{rule_index}]"
-        nameA = f"{name_action:->12}> Action {action_index}:"
+        nameA = f"{name_action:->13}> Action {action_index}:"
         try:
             thread_local.nameA = nameA
             return self.executeAction(
@@ -2040,13 +2028,70 @@ class moduleRules:
             elif isinstance(res_dict, dict) and res_dict.get("success"):
                 pub_res = res_dict.get("publication_result", "N/A")
                 post_act = res_dict.get("post_action_result")
-                if 'post_url' in pub_res:
-                    summary_msg = f"Success. {pub_res['post_url']}"
+                link_updated = res_dict.get("link_updated")
+                successful_count = res_dict.get("successful")
+                response_links = res_dict.get("response_links")
+
+                # Build a more comprehensive summary message
+                parts = ["Success"]
+
+                # Add publication result details
+                if isinstance(pub_res, dict):
+                    if 'post_url' in pub_res:
+                        parts.append(f"URL: {pub_res['post_url']}")
+                    # Include other useful fields from the response
+                    if 'id' in pub_res:
+                        parts.append(f"ID: {pub_res['id']}")
+                    if 'service' in pub_res:
+                        parts.append(f"Service: {pub_res['service']}")
+                    if 'title' in pub_res:
+                        parts.append(f"Title: {pub_res['title']}")
+                    if 'result' in pub_res and pub_res['result'] != pub_res.get('post_url'):
+                        parts.append(f"Result: {pub_res['result']}")
+                    # Add raw response if no specific fields were found
+                    if len(parts) == 1:  # Only "Success" was added
+                        parts.append(str(pub_res))
                 else:
-                    summary_msg = f"Success. {pub_res}"
+                    # Handle non-dict publication results
+                    parts.append(str(pub_res))
+
+                # Add additional result information
+                if successful_count is not None:
+                    parts.append(f"Successful: {successful_count}")
+
+                if response_links:
+                    if isinstance(response_links, dict) and 'item' in response_links:
+                        parts.append(f"Response: {response_links['item']}")
+                    else:
+                        parts.append(f"Response links: {response_links}")
+
+                if link_updated is not None:
+                    # link_updated contains the result from updateLastLink operation
+                    if isinstance(link_updated, dict):
+                        # Show detailed information from the link update operation
+                        if link_updated.get('success'):
+                            parts.append(f"Link updated: {link_updated.get('post_url', 'URL not specified')}")
+                        else:
+                            parts.append(f"Link update failed: {link_updated.get('error_message', 'Unknown error')}")
+                    else:
+                        # Handle non-dict values
+                        if link_updated:
+                            parts.append("Link updated successfully")
+                        else:
+                            parts.append("Link not updated")
+
+                # Combine the main parts
+                summary_msg = ". ".join(parts) + "."
+
+                # Add post-action if available
                 if post_act:
-                    summary_msg += f". Post-Action: '{post_act}'"
-                summary_msg += "."
+                    # Extract the type of post-action if available in the result
+                    if isinstance(post_act, dict) and 'action' in post_act:
+                        action_type = post_act['action']
+                        action_success = post_act.get('success', 'unknown')
+                        summary_msg += f" Post-Action: {'Success' if action_success else 'Failed' if action_success is False else 'Unknown'}. Action: {action_type}."
+                    else:
+                        summary_msg += f" Post-Action: {post_act}."
                 try:
                     thread_local.nameA = name_action
                     logMsg(
@@ -2057,11 +2102,56 @@ class moduleRules:
                 finally:
                     thread_local.nameA = None
             elif isinstance(res_dict, dict):
+                # More detailed error reporting
                 error_msg = res_dict.get("error", "Unknown error")
+                publication_result = res_dict.get("publication_result")
+                post_action_result = res_dict.get("post_action_result")
+                link_updated = res_dict.get("link_updated")
+
+                additional_info = []
+
+                # Collect additional error details
+                if "error_message" in res_dict:
+                    additional_info.append(f"Message: {res_dict['error_message']}")
+                if "raw_response" in res_dict:
+                    additional_info.append(f"Raw: {res_dict['raw_response']}")
+                if "service" in res_dict:
+                    additional_info.append(f"Service: {res_dict['service']}")
+                if publication_result is not None:
+                    additional_info.append(f"Publication: {publication_result}")
+                if post_action_result is not None:
+                    # Extract the type of post-action if available in the result
+                    if isinstance(post_action_result, dict) and 'action' in post_action_result:
+                        action_type = post_action_result['action']
+                        action_success = post_action_result.get('success', 'unknown')
+                        additional_info.append(f"Post-Action: {'Success' if action_success else 'Failed' if action_success is False else 'Unknown'}. Action: {action_type}")
+                    else:
+                        additional_info.append(f"Post-Action: {post_action_result}")
+                if link_updated is not None:
+                    # link_updated contains the result from updateLastLink operation
+                    if isinstance(link_updated, dict):
+                        # Show detailed information from the link update operation
+                        if link_updated.get('success'):
+                            additional_info.append(f"Link updated: {link_updated.get('post_url', 'URL not specified')}")
+                        else:
+                            additional_info.append(f"Link update failed: {link_updated.get('error_message', 'Unknown error')}")
+                    else:
+                        # Handle non-dict values
+                        if link_updated:
+                            additional_info.append("Link updated successfully")
+                        else:
+                            additional_info.append("Link not updated")
+
+                # Combine error message with additional info
+                if additional_info:
+                    error_details = f"{error_msg} ({'; '.join(additional_info)})"
+                else:
+                    error_details = error_msg
+
                 try:
                     thread_local.nameA = name_action
                     logMsg(
-                        f"[ERROR] {error_msg}",
+                        f"[ERROR] {error_details}",
                         3,
                         True,
                     )

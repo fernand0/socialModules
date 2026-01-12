@@ -181,7 +181,10 @@ class Content:
         if isinstance(client, str) and "Error" in client:
             client = None
         if client is None:
-            msgLog = f"{self.indent} Error: Failed to initialize client for service '{self.service}'."
+            msgLog = (
+                    f"{self.indent} Error: Failed to initialize client "
+                    f"for service '{self.service}'."
+                    )
             logMsg(msgLog, 3, True)
             # Optionally, you can raise an exception here:
             # raise RuntimeError(msgLog)
@@ -1252,7 +1255,8 @@ class Content:
             msgLog = f"{self.indent} Publishing post with more"
             logMsg(msgLog, 2, False)
             # if 'tags' in more:
-            #     print(f"    Publishing in {self.service}: {type(more['tags'])}")
+            #     print(f"    Publishing in {self.service}:
+            #     {type(more['tags'])}")
 
             post = more.get("post", "")
             api = more.get("api", "")
@@ -1304,10 +1308,32 @@ class Content:
 
             # Integrate publication cache if successful and auto_cache is enabled
             if self.getAutoCache():
-                #FIXME: Adding caching result to reply?
-                self._cache_publication_if_successful(
+                cache_result = self._cache_publication_if_successful(
                     reply, title, link, api, post, more
                 )
+                # Incorporate cache result into the main reply for consistency with other processes
+                if isinstance(reply, dict) and isinstance(cache_result, dict):
+                    # Add cache-specific information to the reply
+                    if 'cache_info' not in reply:
+                        reply['cache_info'] = {}
+                    reply['cache_info'].update({
+                        'cached_successfully': cache_result.get('success', False),
+                        'cache_error_message': cache_result.get('error_message', ''),
+                        'cache_raw_response': cache_result.get('raw_response', {}),
+                        'publication_cached_at': datetime.datetime.now().isoformat()
+                    })
+                elif isinstance(reply, dict) and not isinstance(cache_result, dict):
+                    # If reply is dict but cache_result isn't, add basic info
+                    reply['cache_attempted'] = True
+                elif isinstance(reply, str) and isinstance(cache_result, dict):
+                    # If reply is string but cache_result is dict, we could enhance the reply
+                    # But we'll maintain the original reply format for backward compatibility
+                    pass  # Keep original reply format for strings
+                else:
+                    # Both are non-dict, just log any cache issues
+                    if hasattr(cache_result, 'get') and not cache_result.get('success', True):
+                        msgLog = f"{self.indent} Cache operation had issues: {cache_result.get('error_message', 'Unknown error')}"
+                        logMsg(msgLog, 2, False)
 
         except:
             reply = self.report(self.service, title, link, sys.exc_info())
@@ -1321,7 +1347,13 @@ class Content:
         """
         Cache publication information if the publication was successful.
         This method integrates with the publication cache system.
+
+        Returns:
+            dict: Standardized response dictionary with success status and details
         """
+        res_dict = self.get_empty_res_dict()
+        should_cache = False
+
         try:
             # Only cache if publication was successful
             if reply and not (isinstance(reply, str) and reply.startswith("Fail")):
@@ -1335,7 +1367,8 @@ class Content:
                             pub_link = api.getPostLink(post) or link
                     except:
                         # Fallback to original values
-                        pass
+                        pub_title = title
+                        pub_link = link
                 else:
                     pub_title = title
                     pub_link = link
@@ -1348,27 +1381,26 @@ class Content:
                         should_cache_publication,
                     )
 
-                    if not should_cache_publication(pub_service, pub_title, pub_link):
-                        return
+                    should_cache = should_cache_publication(pub_service, pub_title, pub_link)
                 except ImportError:
                     # Configuration not available, use default behavior
-                    if not pub_title or not pub_link:
-                        return
+                    should_cache = bool(pub_title and pub_link)
 
                 # Import here to avoid circular imports
                 from socialModules.modulePublicationCache import PublicationCache
-
-                # Initialize cache
-                cache = PublicationCache()
 
                 # Extract response link from reply
                 response_link = self._extract_response_link_from_reply(
                     reply, pub_service
                 )
 
-                # Cache the publication
-                user = self.getUser() or self.getNick()
-                if pub_title and pub_link:
+                # Cache the publication if conditions are met
+                if should_cache and pub_title and pub_link:
+                    # Initialize cache
+                    cache = PublicationCache()
+
+                    # Cache the publication
+                    user = self.getUser() or self.getNick()
                     source_service_name = api.getService().lower() if api else None
                     pub_id = cache.add_publication(
                         title=pub_title,
@@ -1383,14 +1415,32 @@ class Content:
                     if pub_id:
                         msgLog = f"{self.indent} Publication cached with ID: {pub_id}"
                         logMsg(msgLog, 2, False)
+                        res_dict['success'] = True
+                        res_dict['post_url'] = response_link or link
+                        res_dict['raw_response'] = {'publication_id': pub_id}
                     else:
                         msgLog = f"{self.indent} Failed to cache publication"
                         logMsg(msgLog, 3, False)
+                        res_dict['success'] = True  # Main operation still successful
+                        res_dict['error_message'] = "Failed to cache publication"
+                else:
+                    res_dict['success'] = True  # Main operation still successful
+                    if not should_cache:
+                        res_dict['error_message'] = "Publication caching skipped by configuration"
+                    elif not pub_title or not pub_link:
+                        res_dict['error_message'] = "Publication caching skipped - missing title or link"
+            else:
+                res_dict['success'] = True  # Main operation successful, just not cached
+                res_dict['error_message'] = "Publication caching skipped - original publication failed"
 
         except Exception as e:
             # Don't fail the publication if caching fails
             msgLog = f"{self.indent} Error caching publication: {e}"
             logMsg(msgLog, 3, False)
+            res_dict['success'] = True  # Main operation still successful
+            res_dict['error_message'] = f"Exception during publication caching: {str(e)}"
+
+        return res_dict
 
     def _extract_response_link_from_reply(self, reply, service):
         """

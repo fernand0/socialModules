@@ -46,9 +46,9 @@ class moduleSmtp(Content):  # , Queue):
             context = ssl._create_unverified_context()
             client = smtplib.SMTP_SSL(self.server, self.port, context=context)
             # client.starttls() #context=context)
-            logging.info("     User: self.user")
+            logging.info(f"{self.indent} User: self.user")
             client.login(self.user, self.password)
-            logging.info("     Logging OK")
+            logging.info(f"{self.indent} Logging OK")
         except:
             logging.warning("SMTP authentication failed!")
             logging.warning(f"Unexpected error: {sys.exc_info()[0]}")
@@ -105,7 +105,6 @@ class moduleSmtp(Content):  # , Queue):
                 if not isinstance(msg, email.message.Message):
                     post = api.getPostTitle(thePost)
                     link = api.getPostLink(thePost)
-
                 if not post and not link:
                     self.res_dict["error_message"] = "No content or link to send."
                     return self.res_dict
