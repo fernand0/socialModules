@@ -85,8 +85,25 @@ class moduleSmtp(Content):  # , Queue):
         post = ""
         link = ""
 
+        # Initialize fromaddr and destaddr with default values
+        fromaddr = getattr(self, 'fromaddr', getattr(self, 'user', 'unknown@example.com'))
+        destaddr = getattr(self, 'to', getattr(self, 'user', 'unknown@example.com'))
+
         if args and len(args) == 3:
             post, link, comment = args
+
+            # When using args, we need to create the email message
+            subject = post.split("\n")[0] if post else link or "No subject"
+            msg_to_send = MIMEMultipart()
+            msg_to_send["From"] = fromaddr
+            msg_to_send["To"] = destaddr
+            msg_to_send["Date"] = formatdate(localtime=True)
+            msg_to_send["X-URL"] = link
+            msg_to_send["Subject"] = subject
+
+            body_content = comment or post
+            htmlDoc = self._create_html_email(subject, link, body_content)
+            msg_to_send.attach(MIMEText(htmlDoc, "html"))
         elif kwargs:
             more = kwargs
             thePost = more.get("post", "")
