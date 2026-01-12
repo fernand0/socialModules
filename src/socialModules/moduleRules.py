@@ -1527,13 +1527,13 @@ class moduleRules:
         else:
             num = 1
 
-        if num > 0:
+        if num and int(num) > 0:
             tNow = time.time()
 
             # Reserve the time slot by setting the new time
             self.setNextTime(src, action, tNow, tSleep)
 
-            if tSleep > 0.0:
+            if tSleep and tSleep > 0.0:
                 msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
             else:
                 tSleep = 2.0
