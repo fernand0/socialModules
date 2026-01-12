@@ -46,9 +46,9 @@ class moduleSmtp(Content):  # , Queue):
             context = ssl._create_unverified_context()
             client = smtplib.SMTP_SSL(self.server, self.port, context=context)
             # client.starttls() #context=context)
-            logging.info("     User: self.user")
+            logging.info(f"{self.indent} User: self.user")
             client.login(self.user, self.password)
-            logging.info("     Logging OK")
+            logging.info(f"{self.indent} Logging OK")
         except:
             logging.warning("SMTP authentication failed!")
             logging.warning(f"Unexpected error: {sys.exc_info()[0]}")
@@ -94,28 +94,35 @@ class moduleSmtp(Content):  # , Queue):
             msg = thePost
             if isinstance(thePost, tuple):
                 msg = thePost[1]
-            if not isinstance(msg, email.message.Message):
-                post = api.getPostTitle(thePost)
-                link = api.getPostLink(thePost)
+            if isinstance(msg, email.message.Message):
+                # If the message is already an email.message.Message instance, send it as-is
+                msg_to_send = msg
+                # Extract fromaddr and destaddr from the existing message if possible
+                fromaddr = msg.get('From', self.fromaddr or self.user)
+                destaddr = msg.get('To', self.to or self.user)
+            else:
+                # Otherwise, construct a new email message
+                if not isinstance(msg, email.message.Message):
+                    post = api.getPostTitle(thePost)
+                    link = api.getPostLink(thePost)
+                if not post and not link:
+                    self.res_dict["error_message"] = "No content or link to send."
+                    return self.res_dict
 
-        if not post and not link:
-            self.res_dict["error_message"] = "No content or link to send."
-            return self.res_dict
+                destaddr = self.to or self.user
+                fromaddr = self.fromaddr or self.user
+                subject = post.split("\n")[0] if post else link or "No subject"
 
-        destaddr = self.to or self.user
-        fromaddr = self.fromaddr or self.user
-        subject = post.split("\n")[0] if post else link or "No subject"
+                msg_to_send = MIMEMultipart()
+                msg_to_send["From"] = fromaddr
+                msg_to_send["To"] = destaddr
+                msg_to_send["Date"] = formatdate(localtime=True)
+                msg_to_send["X-URL"] = link
+                msg_to_send["Subject"] = subject
 
-        msg = MIMEMultipart()
-        msg["From"] = fromaddr
-        msg["To"] = destaddr
-        msg["Date"] = formatdate(localtime=True)
-        msg["X-URL"] = link
-        msg["Subject"] = subject
-
-        body_content = comment or post
-        htmlDoc = self._create_html_email(subject, link, body_content)
-        msg.attach(MIMEText(htmlDoc, "html"))
+                body_content = comment or post
+                htmlDoc = self._create_html_email(subject, link, body_content)
+                msg_to_send.attach(MIMEText(htmlDoc, "html"))
 
         try:
             server = self.client
@@ -123,7 +130,7 @@ class moduleSmtp(Content):  # , Queue):
                 server = smtplib.SMTP_SSL(self.server, self.port)
                 server.login(self.user, self.password)
 
-            res = server.sendmail(fromaddr, destaddr, msg.as_string())
+            res = server.sendmail(fromaddr, destaddr, msg_to_send.as_string())
             self.res_dict["raw_response"] = res
 
             if not res:  # sendmail returns an empty dict on success

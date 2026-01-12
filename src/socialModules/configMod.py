@@ -43,7 +43,7 @@ root_logger.setLevel(logging.NOTSET)
 
 # Create formatter
 formatter = logging.Formatter(
-    fmt="%(asctime)s [%(filename).12s] %(nameA)s %(message)s",
+    fmt="%(asctime)s [%(filename)-10.10s] %(nameA)s %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
@@ -89,9 +89,9 @@ def logMsg(msgLog, log=1, print_to_console=True):
                          2 = print with special formatting (=== lines)
                          False/other falsy = don't print
     """
-    name_action = getattr(thread_local, 'nameA', None)
-    if name_action:
-        msgLog = f"{name_action} {msgLog}"
+    # Add thread name to the message before logging (from master branch)
+    if hasattr(thread_local, "nameA") and thread_local.nameA:
+        msgLog = f"{thread_local.nameA} {msgLog}"
 
     if log == 1:
         logging.info(msgLog)
