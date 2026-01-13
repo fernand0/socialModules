@@ -46,7 +46,7 @@ class moduleSmtp(Content):  # , Queue):
             context = ssl._create_unverified_context()
             client = smtplib.SMTP_SSL(self.server, self.port, context=context)
             # client.starttls() #context=context)
-            logging.info(f"{self.indent} User: self.user")
+            logging.info(f"{self.indent} User: {self.user}")
             client.login(self.user, self.password)
             logging.info(f"{self.indent} Logging OK")
         except:

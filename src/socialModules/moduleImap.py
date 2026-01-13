@@ -1755,7 +1755,7 @@ class moduleImap(Content):  # , Queue):
         nameF = self.nameFolder(folder)
         logMsg(f"Folder: {nameF}", 2, False)
         self.channel = nameF
-        logging.debug(f"Select: {M.select(nameF)}")
+        logging.debug(f"Select: {self.getClient().select(nameF)}")
         # data = M.sort('ARRIVAL', 'UTF-8', 'ALL')
         if self.getPostsType() == "new":
             try:
