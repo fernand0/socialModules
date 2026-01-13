@@ -1831,13 +1831,6 @@ class moduleRules:
                 if select and (select.lower() != nameRule):
                     continue
 
-                # section_name = (
-                #     rule_metadata.get("section_name", "") if rule_metadata else ""
-                # )
-
-                #if select and (select.lower() != section_name.lower()):
-                #    continue
-
                 timeSlots, noWait = self._get_action_properties(
                     rule_action, rule_metadata, args
                 )
