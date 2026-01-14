@@ -82,7 +82,7 @@ class moduleRules:
                 config.read(configFile)
         except Exception as e:
             logMsg(
-                f"ERROR: Could not read configuration file: {e}", 
+                f"ERROR: Could not read configuration file: {e}",
                 3, self.args.verbose
             )
             raise ConfigError(f"Could not read configuration file: {e}")
@@ -554,8 +554,8 @@ class moduleRules:
                     sources.add(src)
                     more.append({})
 
-        logging.info(f"Srcs: {list(sources)}")
-        logging.info(f"SrcsA: {list(sources_available)}")
+        logMsg(f"Srcs: {list(sources)}", 2, self.args.verbose)
+        logMsg(f"SrcsA: {list(sources_available)}", 2, self.args.verbose)
         self.indent = f"{self.indent} Destinations:"
         for dst in destinations:
             if not isinstance(dst, tuple) or len(dst) < 4:
@@ -1540,7 +1540,7 @@ class moduleRules:
                 msgLog = f"{indent} No Waiting"
 
             theAction = self.getTypeAction(action)
-            # msgLog = f"{msgLog} for {orig} in " f"{dest}"            
+            # msgLog = f"{msgLog} for {orig} in " f"{dest}"
             logMsg(msgLog, 1, self.args.verbose)
 
             # Wait BEFORE instantiation
