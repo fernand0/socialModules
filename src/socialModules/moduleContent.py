@@ -152,8 +152,8 @@ class Content:
                 if not config.sections():
                     # FIXME: Are you sure?
                     msgLog = (
-                        f"{self.indent} Do the adequate keys exist " f"in {configFile}?"
-                    )
+                        f"{self.indent} Do the adequate keys exist " 
+                        f"in {configFile}?")
                     logMsg(msgLog, 3, False)
 
         client = None

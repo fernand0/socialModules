@@ -30,7 +30,7 @@ class moduleLinkedin(Content):
     def initApi(self, keys):
         self.URN = keys[3]
         self.TOKEN = keys[2]
-        self.API_VERSION = "202501"
+        self.API_VERSION = "202601"
         client = RestliClient()
         return client
 

@@ -51,8 +51,6 @@ keyWords = {
 
 class moduleImap(Content):  # , Queue):
     def getKeys(self, config):
-        msgLog = f"{self.indent} Getting keys"
-        logMsg(msgLog, 2, False)
         self.server = config.get(self.user, "server")
         try:
             password = config.get(self.user, "token")
