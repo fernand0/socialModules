@@ -306,6 +306,8 @@ def select_from_list(
     we can select based on numbers or in substrings of the elements
     of the list.
     """
+    if not options:
+        return -1, ""
 
     if options and (
         isinstance(options[0], dict)
