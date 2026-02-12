@@ -7,6 +7,7 @@ from pocket import Pocket, PocketException
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+
 # from socialModules.moduleQueue import *
 
 
@@ -19,7 +20,7 @@ class modulePocket(Content):  # ,Queue):
         try:
             access_token = config.get(self.user, "access_token")
         except:
-            msgLog = f"Needs authorization"
+            msgLog = "Needs authorization"
             logMsg(msgLog, 3, 0)
             self.authorize()
             access_token = config.get(self.user, "access_token")
@@ -77,7 +78,7 @@ class modulePocket(Content):  # ,Queue):
                 config.write(configfile)
 
         except:
-            print(f"Something failed")
+            print("Something failed")
 
     def initApi(self, keys):
         msgLog = f"{self.indent} Service {self.service} Start initApi {self.user}"
@@ -102,7 +103,7 @@ class modulePocket(Content):  # ,Queue):
             logging.debug(f"Msggg: {msgLog}")
             self.authorize()
             logMsg(msgLog, 3, 0)
-            dictposts = []
+            #dictposts = []
 
         return posts[:100]
 
@@ -119,7 +120,7 @@ class modulePocket(Content):  # ,Queue):
     def publishApiPost(self, *args, **kwargs):
         comment = ""
         link = ""
-        title = ""
+        # title = ""
         if args and len(args) == 3:
             post, link, comment = args
             msgLog = f"args: {args} in {self}"
@@ -132,7 +133,7 @@ class modulePocket(Content):  # ,Queue):
             msgLog = f"postData: {more} in {self}"
             logMsg(msgLog, 2, 0)
             post = more["post"]
-            title = api.getPostTitle(post)
+            # title = api.getPostTitle(post)
             link = api.getPostLink(post)
             comment = ""
 
@@ -309,6 +310,7 @@ def main():
             if (key[0] == "pocket") and (key[2] == "fernand0"):
                 apiSrc = rules.readConfigSrc(key, rules.more[key])
                 res = apiSrc.setPosts()
+                logging.info(res)
                 apiSrc.publishPost(
                     "titulo", "https://github.com/danielbrendel/hortusfox-web", ""
                 )

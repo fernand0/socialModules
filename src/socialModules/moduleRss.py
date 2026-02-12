@@ -1,19 +1,15 @@
 # This module provides infrastructure for publishing and updating blog posts
 
 # using several generic APIs  (XML-RPC, blogger API, Metaweblog API, ...)
-import configparser
 import logging
-import os
-import pickle
-import time
 import urllib
 
 import feedparser
 from bs4 import BeautifulSoup
 
-import socialModules.moduleCache
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+
 # from socialModules.moduleQueue import *
 
 # https://github.com/fernand0/scripts/blob/master/moduleCache.py
@@ -43,7 +39,7 @@ class moduleRss(Content):  # , Queue):
     def setUser(self, nick=""):
         if not nick:
             feed = self.getRss()
-            if (not "flickr" in feed) and (not "dev.to" in feed):
+            if ("flickr" not in feed) and ("dev.to" not in feed):
                 self.user = urllib.parse.urlparse(feed).netloc
             elif "dev.to" in feed:
                 self.user = feed.replace("feed/", "")
@@ -84,7 +80,7 @@ class moduleRss(Content):  # , Queue):
             self.rssFeed = feed[1]  # +feed[1][1]
         else:
             self.rssFeed = feed
-        if (not "flickr" in feed) and (not "dev.to" in feed):
+        if ("flickr" not in feed) and ("dev.to" not in feed):
             self.user = urllib.parse.urlparse(feed).netloc
         elif "dev.to" in feed:
             self.user = feed.replace("feed/", "")
@@ -110,7 +106,7 @@ class moduleRss(Content):  # , Queue):
         if search:
             for post in posts:
                 if search.startswith("!"):
-                    if not (search[1:] in self.getPostLink(post)):
+                    if search[1:] not in self.getPostLink(post):
                         selPosts.append(post)
                 else:
                     if search in self.getPostLink(post):
@@ -172,7 +168,7 @@ class moduleRss(Content):  # , Queue):
         return title
 
     def getApiPostLink(self, post):
-        link = ''
+        link = ""
         if post:
             link = post.get("link", "")
         return link
@@ -231,7 +227,7 @@ class moduleRss(Content):  # , Queue):
 
 
 def main():
-    import logging
+
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )

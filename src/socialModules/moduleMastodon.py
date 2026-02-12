@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import logging
-import os
 import sys
 
 import mastodon
@@ -9,6 +8,7 @@ from bs4 import BeautifulSoup
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+
 # from socialModules.moduleQueue import *
 
 # pip install Mastodon.py
@@ -20,8 +20,8 @@ class moduleMastodon(Content):  # , Queue):
         #    self.user = self.user[1:]
 
         logMsg(f"User: {self.user}", 1, False)
-        access_token = config[self.user]['access_token']
-        return ((access_token, ))
+        access_token = config[self.user]["access_token"]
+        return (access_token,)
 
     def initApi(self, keys):
         pos = self.user.find("@", 1)  # The first character can be @
@@ -58,11 +58,13 @@ class moduleMastodon(Content):  # , Queue):
         res = ""
         if reply:
             res = f"{self.getAttribute(reply, 'uri')}"
+        if not res:
+            res = reply
         return res
 
     def publishApiImage(self, *args, **kwargs):
         post, image = args
-        more = kwargs
+        # more = kwargs
 
         res = "Fail!"
         try:
@@ -94,41 +96,53 @@ class moduleMastodon(Content):  # , Queue):
 
         post = self.addComment(title, comment)
 
-        res = "Fail!"
         try:
             res = self.getClient().toot(post + " " + link)
-        except mastodon.errors.MastodonServiceUnavailableError:
-            res = self.report(
+            self.res_dict["success"] = True
+            self.res_dict["post_url"] = self.getAttribute(res, "uri")
+            self.res_dict["raw_response"] = res
+        except mastodon.errors.MastodonServiceUnavailableError as e:
+            error_report = self.report(
                 self.getService(), kwargs, "Not available", sys.exc_info()
             )
-            res = f"Fail! {res}"
-        except:
-            res = self.report(self.getService(), kwargs, "", sys.exc_info())
-            res = f"Fail! {res}"
-        # else:
-        #     res = self.getClient().status_post(post+" "+link,
-        #             visibility='private')
-        #     # 'direct' 'private' 'unlisted' 'public'
+            self.res_dict["error_message"] = f"Service unavailable: {error_report}"
+            self.res_dict["raw_response"] = e
+        except Exception as e:
+            error_report = self.report(self.getService(), kwargs, "", sys.exc_info())
+            self.res_dict["error_message"] = f"Publication failed: {error_report}"
+            self.res_dict["raw_response"] = e
 
-        return res
+        return self.res_dict
 
     def deleteApiPosts(self, idPost):
-        logging.info("Deleting: {}".format(str(idPost)))
+        self.res_dict = self.get_empty_res_dict()
+        logging.info(f"Deleting: {idPost}")
         try:
             result = self.getClient().status_delete(idPost)
-        except:
+            self.res_dict["success"] = True
+            self.res_dict["raw_response"] = result
+        except Exception as e:
             result = self.report(self.service, "", "", sys.exc_info())
+            self.res_dict["success"] = False
+            self.res_dict["error_message"] = result
+            self.res_dict["raw_response"] = e
         logging.info(f"Res: {result}")
-        return result
+        return self.res_dict
 
     def deleteApiFavs(self, idPost):
-        logging.info("Deleting: {}".format(str(idPost)))
+        self.res_dict = self.get_empty_res_dict()
+        logging.info(f"Deleting: {idPost}")
         try:
-            result = self.client.status_unfavourite(idPost)
-        except:
+            result = self.getClient().status_unfavourite(idPost)
+            self.res_dict["success"] = True
+            self.res_dict["raw_response"] = result
+        except Exception as e:
             result = self.report(self.service, "", "", sys.exc_info())
+            self.res_dict["success"] = False
+            self.res_dict["error_message"] = result
+            self.res_dict["raw_response"] = e
         logging.info(f"Res: {result}")
-        return result
+        return self.res_dict
 
     def getPostTime(self, post):
         time = None
@@ -186,7 +200,7 @@ class moduleMastodon(Content):  # , Queue):
         return result
 
     def getApiPostUrl(self, post):
-        return self.getAttribute(post, 'url')
+        return self.getAttribute(post, "url")
 
     def getApiPostLink(self, post):
         content, link = self.extractPostLinks(post)

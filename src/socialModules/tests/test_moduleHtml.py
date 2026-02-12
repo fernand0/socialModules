@@ -1,5 +1,7 @@
 import unittest
+
 from socialModules.moduleHtml import moduleHtml
+
 
 class TestModuleHtml(unittest.TestCase):
 
@@ -22,9 +24,12 @@ class TestModuleHtml(unittest.TestCase):
         self.assertEqual(title, "")
 
     def test_getApiPostTitle_no_head(self):
-        html_content = "<html><body><h1>Hello</h1><title>Wrong Title</title></body></html>"
+        html_content = (
+            "<html><body><h1>Hello</h1><title>Wrong Title</title></body></html>"
+        )
         title = self.module_html.getApiPostTitle(html_content)
         self.assertEqual(title, "Wrong Title")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

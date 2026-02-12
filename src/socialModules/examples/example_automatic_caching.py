@@ -7,8 +7,8 @@ Shows how the modified publishPost method automatically caches publications.
 """
 
 import logging
-import sys
 import os
+import sys
 
 # Add parent directory to path to import modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -83,7 +83,7 @@ def demo_automatic_caching():
         result = mock_module.publishPost(title, link, comment)
 
         print(f"  Publication result: {result}")
-        print(f"  Cached automatically: ✓")
+        print("  Cached automatically: ✓")
         print()
 
     # Show cached publications
@@ -102,7 +102,7 @@ def demo_automatic_caching():
     stats = cache.get_stats()
     print("Cache Statistics:")
     for service, data in stats.items():
-        print(f"  {site}: {data['total']} publications")
+        print(f"  {service}: {data['total']} publications")
     print()
 
 
@@ -133,7 +133,7 @@ def demo_publication_history():
             service=service,
             response_link=response_link,
         )
-        print(f"  ✓ Published on {site}")
+        print(f"  ✓ Published on {service}")
 
     print()
 

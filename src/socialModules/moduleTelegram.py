@@ -34,7 +34,7 @@ class moduleTelegram(Content):
             bot = telepot.Bot(TOKEN)
             logging.info("     token: {TOKEN}")
 
-            meMySelf = bot.getMe()
+            # meMySelf = bot.getMe()
         except:
             logging.warning("Telegram authentication failed!")
             logging.warning("Unexpected error:", sys.exc_info()[0])
@@ -81,7 +81,7 @@ class moduleTelegram(Content):
         )
         logMsg(msgLog, 2, False)
         post, image = args
-        more = kwargs
+        # more = kwargs
 
         bot = self.getClient()
         channel = self.user
@@ -108,13 +108,15 @@ class moduleTelegram(Content):
         return reply
 
     def publishApiPost(self, *args, **kwargs):
-        rep = "Fail!"
         content = ""
+        title = ""
+        link = ""
+
         if args and len(args) == 3:
             title, link, comment = args
             if comment:
                 content = comment
-        if kwargs:
+        elif kwargs:
             more = kwargs
             post = more.get("post", "")
             api = more.get("api", "")
@@ -126,39 +128,39 @@ class moduleTelegram(Content):
                 (theContent, theSummaryLinks) = api.extractLinks(soup, "")
                 content = f"{theContent}\n{theSummaryLinks}"
 
+        if not title and not link:
+            self.res_dict["error_message"] = "No title or link to publish."
+            return self.res_dict
+
         bot = self.getClient()
-
-        links = ""
         channel = self.user
+        text = f'<a href="{link}">{title}</a>\n'
 
-        logging.info(f"{self.service}: Title: {title} Link: {link}")
-        text = '<a href="' + link + '">' + title + "</a>\n"
-        logging.debug(f"{self.service}: Text: {text}")
-        # FIXME: This code needs improvement
-        textToPublish = text
-        textToPublish2 = ""
         from html import unescape
 
         title = unescape(title)
         if content:
             content = content.replace("<", "&lt;")
-            text = text + content + "\n\n" + links
+            text += content
 
-        textToPublish = text
-        while textToPublish:
-            try:
-                res = bot.sendMessage(
-                    "@" + channel, textToPublish[:4080], parse_mode="HTML"
+        try:
+            # Telegram messages have a size limit of 4096 characters
+            res = bot.sendMessage("@" + channel, text[:4096], parse_mode="HTML")
+            self.res_dict["raw_response"] = res
+            if res and "message_id" in res:
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = (
+                    f"https://t.me/{channel}/{res['message_id']}"
                 )
-                textToPublish = textToPublish[4080:]
-            except:
-                return self.report("Telegram", textToPublish, link, sys.exc_info())
+            else:
+                self.res_dict["error_message"] = f"Telegram API error: {res}"
+        except Exception as e:
+            self.res_dict["error_message"] = self.report(
+                "Telegram", text[:100], link, sys.exc_info()
+            )
+            self.res_dict["raw_response"] = e
 
-            if links:
-                bot.sendMessage("@" + channel, links, parse_mode="HTML")
-            rep = res
-
-        return rep
+        return self.res_dict
 
     def processReply(self, reply):
         res = ""
@@ -177,6 +179,8 @@ class moduleTelegram(Content):
             if "message_id" in rep:
                 idPost = rep["message_id"]
                 res = f"{res} https://t.me/{self.user}/{idPost}"
+            if not res:
+                res = reply
         return res
 
     def getApiPostTitle(self, post):
@@ -191,6 +195,7 @@ class moduleTelegram(Content):
 
 def main():
     import logging
+
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )

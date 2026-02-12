@@ -7,8 +7,8 @@ This can be used if you want to enable caching for all publications
 without modifying individual rules.
 """
 
-import sys
 import os
+import sys
 
 # Add parent directory to path to import modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

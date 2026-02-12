@@ -1,18 +1,14 @@
 #!/usr/bin/env python
 
-import configparser
-import getpass
 import io
 import os
 
 # GitPython
-import ssl
 import sys
 
 # import sievelib
 import time
 
-import keyring
 from git import Repo
 from sievelib.factory import FiltersSet
 from sievelib.managesieve import Client
@@ -188,7 +184,7 @@ def constructActions(rules, more):
         # print("more",more)
         # print("rule",rule)
         # print("rule[rule]",rules[rule])
-        act = []
+        # act = []
         # if rule in more:
         #    action.append((rules[rule][0],
         #                  (rule, more[rule][0]), rules[rule][1]))
@@ -272,7 +268,7 @@ def constructFilterSet(actions):
             act.append(("stop",))
             # print("cfS cond ->", cond)
             # print("cfS act ->", act)
-            aList = [()]
+            # aList = [()]
             # for a in cond[0]:
             #    print("cfS ",a)
             #    aList[0] = aList[0] + (a.strip('"'),)
@@ -338,7 +334,7 @@ def selectAction(p, M):  # header="", textHeader=""):
 
         # print actions
 
-        match = p.result[int(option) - 1]["test"]
+        # match = p.result[int(option) - 1]["test"]
         # print "match ", match
     elif int(option) == len(p.result) + 1:
         folder = selectFolder(M)  # input("Name of the folder: ")

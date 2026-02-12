@@ -1,5 +1,5 @@
-import os
 import glob
+import os
 import pickle
 from datetime import datetime
 

@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 
 import configparser
-import os
 import sys
 
 from medium import Client
-# local version, to add notifyFollower parameter
-# Medium has deprecated its API, so this module is discontinued
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+
+# local version, to add notifyFollower parameter
+# Medium has deprecated its API, so this module is discontinued
+
 # from socialModules.moduleQueue import *
 
 
@@ -18,7 +19,7 @@ class moduleMedium(Content):  # ,Queue):
         return f"{self.user}"
 
     def get_post_id_from_result(self, result):
-        return result.get('id')
+        return result.get("id")
 
     # def authorize(self):
     #     config = configparser.ConfigParser()
@@ -105,10 +106,12 @@ class moduleMedium(Content):  # ,Queue):
     def publishApiPost(self, *args, **kwargs):
         mode = ""
         tags = []
+        notifyFollowers = False
+
         if args and len(args) == 3:
             post, link, comment = args
             notifyFollowers = True
-        if kwargs:
+        elif kwargs:
             more = kwargs
             comment = more.get("comment", "")
             post = more.get("title", "")
@@ -116,26 +119,23 @@ class moduleMedium(Content):  # ,Queue):
             mode = more.get("mode", "")
             tags = more.get("tags", [])
             notifyFollowers = more.get("notifyFollowers", False)
-            print(f"Notify: {notifyFollowers}")
+
         if not mode:
             mode = "public"
+
         logging.info(f"    Publishing in {self.service} ...")
         logging.info(f"    Tags {tags}")
+
         client = self.client
         user = self.getUserRaw()
         logging.info(f"    User {user}")
 
         title = post
         content = comment
-        # print(content)
-        links = ""
-
-        # from html.parser import HTMLParser
-        # h = HTMLParser()
-        # title = h.unescape(title)
         from html import unescape
 
         title = unescape(title)
+
         if link and title:
             textOrig = (
                 f'Publicado originalmente en <a href="{link}">' f"{title}</a><br />\n\n"
@@ -154,11 +154,19 @@ class moduleMedium(Content):  # ,Queue):
                 tags=tags,
                 notifyFollowers=notifyFollowers,
             )
-            # "public") #draft")
-            logging.debug("Res: %s" % res)
-            return res
-        except:
-            return self.report("Medium", post, link, sys.exc_info())
+            self.res_dict["raw_response"] = res
+            if res and "url" in res:
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = res["url"]
+            else:
+                self.res_dict["error_message"] = f"Medium API error: {res}"
+        except Exception as e:
+            self.res_dict["error_message"] = self.report(
+                "Medium", post, link, sys.exc_info()
+            )
+            self.res_dict["raw_response"] = e
+
+        return self.res_dict
 
     def publishApiImage(self, *postData, **kwargs):
         logging.debug(f"{self.service} postData: {postData} " f"Len: {len(postData)}")
@@ -200,7 +208,7 @@ class moduleMedium(Content):  # ,Queue):
                 except:
                     res = self.report("Medium", post, imageName, sys.exc_info())
             else:
-                logging.info(f"No image available")
+                logging.info("No image available")
                 res = "Fail! No image available"
         else:
             res = "Fail! Not published, not enough arguments"
@@ -212,10 +220,12 @@ class moduleMedium(Content):  # ,Queue):
             return post["title"].replace("\n", " ")
 
     def getApiPostLink(self, post):
-        return(post['link'])
+        return post["link"]
+
 
 def main():
     import logging
+
     logging.basicConfig(
         stream=sys.stdout, level=logging.DEBUG, format="%(asctime)s %(message)s"
     )

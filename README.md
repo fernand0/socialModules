@@ -229,6 +229,18 @@ The package requires Python 3.7+. See `pyproject.toml` for the complete dependen
 4.  Add tests if applicable
 5.  Submit a pull request
 
+### Code Style Guidelines
+
+When contributing to this project, please follow these coding conventions:
+
+- **Single Return Statement**: Functions should have a single return statement at the end when possible
+- **Avoid break/continue**: Use boolean flags or conditional logic instead of break/continue statements
+- Follow PEP 8 style guide
+- Write clear, descriptive names for variables and functions
+- Document complex logic with comments
+
+For detailed information, see the [Coding Conventions](docs/coding_conventions.md) document.
+
 ## License
 
 This project is licensed under the GNU General Public License. See `LICENSE.md` for details.

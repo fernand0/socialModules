@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 
 import configparser
+import logging
 import sys
 import time
-import urllib
-import logging
 
-import click
-from bs4 import BeautifulSoup
 from slack_sdk import WebClient
 
 from socialModules.moduleContent import *
-from socialModules.configMod import nameModule
+
 # from socialModules.moduleQueue import *
 
 # from slack_sdk.errors import SlackApiError
@@ -153,21 +150,23 @@ class moduleSlack(Content):  # , Queue):
     def processReply(self, reply):
         # FIXME: Being careful with publishPost, publishPosPost, publishNextPost, publishApiPost
         res = reply
-        if isinstance(reply, dict):
-            res = reply.get("ok", "Fail!")
+        # if isinstance(reply, dict):
+        #     res = reply.get("ok", "Fail!")
         return res
 
     def publishApiPost(self, *args, **kwargs):
-        logging.debug(f"Args: {args} kwargs: {kwargs}")
         if args and len(args) == 3:
             title, link, comment = args
-        if kwargs:
+        elif kwargs:
             more = kwargs
             post = more.get("post", "")
             api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
-            comment = api.getPostComment(title)
+            # comment = api.getPostComment(title)
+        else:
+            self.res_dict["error_message"] = "Not enough arguments for publication."
+            return self.res_dict
 
         chan = self.getChannel()
         if not chan:
@@ -175,11 +174,30 @@ class moduleSlack(Content):  # , Queue):
             chan = self.getChannel()
         msgLog = f"{self.indent} Service {self.service} Channel: {chan}"
         logMsg(msgLog, 2, False)
-        self.getClient().token = self.user_slack_token
-        data = {"channel": chan, "text": f"{title} {link}"}
-        result = self.getClient().api_call("chat.postMessage", data=data)  # ,
-        self.getClient().token = self.slack_token
-        return result
+
+        try:
+            self.getClient().token = self.user_slack_token
+            data = {"channel": chan, "text": f"{title} {link}"}
+            result = self.getClient().api_call("chat.postMessage", data=data)
+            logMsg(f"Result api: {result}")
+            self.getClient().token = self.slack_token
+
+            self.res_dict["raw_response"] = result
+            if result["ok"]:
+                self.res_dict["success"] = True
+                self.res_dict["post_url"] = self.getAttribute(result, 'post_url')
+                # Construct post_url if possible
+                if "channel" in result and "ts" in result:
+                    self.res_dict["post_url"] = self.getApiPostUrl(result)
+            else:
+                self.res_dict["error_message"] = (
+                    f"Slack API error: {result.get('error', 'Unknown error')}"
+                )
+        except Exception as e:
+            self.res_dict["error_message"] = f"Exception during Slack API call: {e}"
+            self.res_dict["raw_response"] = sys.exc_info()
+
+        return self.res_dict
 
     def editApiPost(self, post, newContent):
         theChan = self.getChannel()
@@ -207,9 +225,9 @@ class moduleSlack(Content):  # , Queue):
         return result
 
     def editApiLink(self, post, newLink):
-        oldLink = self.getPostLink(post)
-        idPost = self.getLinkPosition(oldLink)
-        oldTitle = self.getPostTitle(post)
+        # oldLink = self.getPostLink(post)
+        # idPost = self.getLinkPosition(oldLink)
+        # oldTitle = self.getPostTitle(post)
         self.setPostLink(post, newLink)
         self.updatePostsCache()
 
@@ -364,21 +382,86 @@ class moduleSlack(Content):  # , Queue):
         return text
 
     def getApiPostLink(self, post):
+        """
+        Improved method to extract the primary link from a Slack post.
+        Prioritizes structured data over text parsing for more reliability.
+        """
+        # 1. First, check for URLs in attachments (most reliable)
+        link = self._get_link_from_attachments(post)
+
+        # 2. If no link found in attachments, check for URLs in blocks/elements (rich text format)
+        if not link:
+            link = self._get_link_from_blocks(post)
+
+        # 3. If still no link found, fallback to text-based extraction (original method)
+        if not link:
+            link = self._get_link_from_text(post)
+
+        return link
+
+    def _get_link_from_attachments(self, post):
+        """Extract link from post attachments."""
         link = ""
-        if "attachments" in post:
-            link = post["attachments"][0]["original_url"]
+        if "attachments" in post and len(post["attachments"]) > 0:
+            attachment = post["attachments"][0]
+            # Prioritize original_url as it's usually the main link
+            if "original_url" in attachment:
+                link = attachment["original_url"]
+            # Fallback to title_link if available
+            elif "title_link" in attachment:
+                link = attachment["title_link"]
+            # Fallback to from_url if available
+            elif "from_url" in attachment:
+                link = attachment["from_url"]
+        return link
+
+    def _get_link_from_blocks(self, post):
+        """Extract link from post blocks/elements."""
+        link = ""
+        if "blocks" not in post:
+            return link
+
+        # Process blocks until we find a link or run out of blocks
+        block_idx = 0
+        while block_idx < len(post["blocks"]) and not link:
+            block = post["blocks"][block_idx]
+            if isinstance(block, dict) and "elements" in block:
+                # Process elements in this block
+                element_idx = 0
+                while element_idx < len(block["elements"]) and not link:
+                    element = block["elements"][element_idx]
+                    if isinstance(element, dict) and "elements" in element:
+                        # Process inner elements
+                        inner_element_idx = 0
+                        while inner_element_idx < len(element["elements"]) and not link:
+                            inner_element = element["elements"][inner_element_idx]
+                            if isinstance(inner_element, dict) and "url" in inner_element:
+                                link = inner_element["url"]
+                            inner_element_idx += 1
+                    element_idx += 1
+            block_idx += 1
+        return link
+
+    def _get_link_from_text(self, post):
+        """Extract link from post text using original method logic."""
+        link = ""
+        if "text" not in post:
+            return link
+
+        text = post["text"]
+        if text.startswith("<") and text.count("<") == 1:
+            # The link is the only text
+            link = text[1:-1]
+        elif text.find("<h") >= 0:
+            # Some people include URLs in the title of the page
+            pos = text.rfind("<")
+            temp_link = text[pos + 1 :]
+            pos = temp_link.find(">")
+            link = temp_link[:pos]
         else:
-            text = post["text"]
-            if text.startswith("<") and text.count("<") == 1:
-                # The link is the only text
-                link = post["text"][1:-1]
-            elif text.find("<h") >= 0:
-                # Some people include URLs in the title of the page
-                pos = text.rfind("<")
-                link = text[pos + 1 : -1]
-            else:
-                pos = text.rfind("http")
-                link = text[pos : -1]
+            pos = text.rfind("http")
+            if pos >= 0:
+                link = text[pos:-1]  # Remove last character as in original
         return link
 
     def getPostImage(self, post):

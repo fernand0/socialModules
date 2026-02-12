@@ -34,7 +34,7 @@ def test_authorization(apiSrc):
     """
     print("\n=== Testing Authorization ===")
     try:
-        if hasattr(apiSrc, 'authorize'):
+        if hasattr(apiSrc, "authorize"):
             print("Calling authorize()...")
             apiSrc.authorize()
             print("authorize() finished.")
@@ -53,7 +53,7 @@ def test_authorization(apiSrc):
     """
     print("\n=== Testing Authorization ===")
     try:
-        if hasattr(apiSrc, 'authorize'):
+        if hasattr(apiSrc, "authorize"):
             print("Calling authorize()...")
             apiSrc.authorize()
             print("authorize() finished.")
@@ -72,7 +72,7 @@ def test_posts_retrieval(apiSrc):
     """
     print("\n=== Testing Posts Retrieval ===")
     try:
-        apiSrc.setPostsType('posts')
+        apiSrc.setPostsType("posts")
         apiSrc.setPosts()
         posts = apiSrc.getPosts()
 
@@ -82,9 +82,9 @@ def test_posts_retrieval(apiSrc):
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
                 url = apiSrc.getPostUrl(post)
-                #post_id = apiSrc.getPostId(post)
+                # post_id = apiSrc.getPostId(post)
 
-                #print(f"\n{i+1}. Post ID: {post_id}")
+                # print(f"\n{i+1}. Post ID: {post_id}")
                 print(f"   Title: {title[:100]}{'...' if len(title) > 100 else ''}")
                 print(f"   Link: {link}")
                 print(f"   URL: {url}")
@@ -106,7 +106,7 @@ def test_drafts_retrieval(apiSrc):
     """
     print("\n=== Testing Drafts Retrieval ===")
     try:
-        apiSrc.setPostsType('drafts')
+        apiSrc.setPostsType("drafts")
         apiSrc.setPosts()
         posts = apiSrc.getPosts()
 
@@ -162,6 +162,7 @@ def test_favorites(apiSrc):
     except Exception as e:
         print(f"Error retrieving favorites: {e}")
 
+
 def test_queue_retrieval(apiSrc):
     """
     Tests retrieving queued posts from the social media platform.
@@ -171,7 +172,7 @@ def test_queue_retrieval(apiSrc):
     """
     print("\n=== Testing Queue Retrieval ===")
     try:
-        apiSrc.setPostsType('queue')
+        apiSrc.setPostsType("queue")
         apiSrc.setPosts()
         posts = apiSrc.getPosts()
 
@@ -193,7 +194,6 @@ def test_queue_retrieval(apiSrc):
         print(f"Error retrieving queued posts: {e}")
 
 
-
 def test_basic_post(apiSrc, get_post_id_callback):
     """
     Tests posting a basic post to the social media platform.
@@ -208,10 +208,10 @@ def test_basic_post(apiSrc, get_post_id_callback):
     if not title:
         title = default_title
 
-    link = input("Enter URL for the post (e.g., https://example.com/test): ").strip()
+    default_link = "https://github.com/fernand0/socialModules"
+    link = input(f"Enter URL for the post (e.g., {default_link}): ").strip()
     if not link:
-        print("No URL provided. Skipping basic post test.")
-        return
+        link = default_link
 
     print(f"Posting to {apiSrc.getService()}:")
     print(f"  Title: {title}")
@@ -308,7 +308,7 @@ def test_cache_integration(apiSrc):
 
         if pubs:
             latest = pubs[-1]
-            print(f"Latest cached publication:")
+            print("Latest cached publication:")
             print(f"  Title: {latest['title']}")
             print(f"  Link: {latest['original_link']}")
             print(f"  Service: {latest['service']}")
@@ -385,7 +385,9 @@ def test_edit_post(apiSrc):
             title = apiSrc.getPostTitle(post)
             print(f"{i}) {title[:100]}{'...' if len(title) > 100 else ''}")
 
-        choice = input(f"Enter the number of the post to edit (0-{len(posts[:10])-1}): ").strip()
+        choice = input(
+            f"Enter the number of the post to edit (0-{len(posts[:10])-1}): "
+        ).strip()
         if not choice.isdigit() or not (0 <= int(choice) < len(posts[:10])):
             print("Invalid selection. Skipping post edit test.")
             return
@@ -410,6 +412,7 @@ def test_edit_post(apiSrc):
 
     except Exception as e:
         print(f"Error editing post: {e}")
+
 
 def test_cache_content(apiSrc):
     """
@@ -460,7 +463,7 @@ def test_select_post_by_position(apiSrc):
     """
     print("\n=== Testing Select Post by Position ===")
     try:
-        apiSrc.setPostsType('posts')
+        apiSrc.setPostsType("posts")
         apiSrc.setPosts()
         posts = apiSrc.getPosts()
 
@@ -472,12 +475,16 @@ def test_select_post_by_position(apiSrc):
         for i, post in enumerate(posts):
             title = apiSrc.getPostTitle(post)
             link = apiSrc.getPostLink(post)
-            text = apiSrc.getPostContent(post)
-            body = apiSrc.getPostBody(post)
-            print(f"{i+1}. Title: {title[:100]}{'...' if len(title) > 100 else ''} (Link: {link})")
+            # text = apiSrc.getPostContent(post)
+            # body = apiSrc.getPostBody(post)
+            print(
+                f"{i+1}. Title: {title[:100]}{'...' if len(title) > 100 else ''} (Link: {link})"
+            )
 
         try:
-            choice = int(input(f"Enter the number of the post to view (1-{len(posts)}): "))
+            choice = int(
+                input(f"Enter the number of the post to view (1-{len(posts)}): ")
+            )
             if 1 <= choice <= len(posts):
                 selected_post = posts[choice - 1]
                 print(f"\n--- Details for Post {choice} ---")

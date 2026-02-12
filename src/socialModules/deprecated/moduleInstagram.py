@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
-import configparser
 import getpass
 import logging
-import os
 import sys
 import urllib.parse
 
@@ -72,6 +70,7 @@ class moduleInstagram(Content):
         # resizeImage provided by configMod.py
         try:
             res = self.client.uploadPhoto(comment, caption=post)
+            logging.info(res)
             self.setPosts()
             title = self.getPosts()[0]["caption"]["text"]
             print("Title %s" % title)
@@ -116,7 +115,6 @@ def main():
     url = "https://avecesunafoto.wordpress.com/2017/07/19/maria-fernandez-guajardo-consejos-practicos-de-una-feminista-zaragozana-en-el-silicon-valley/"
     # lin rel='next'
     # soup.findAll('link', {'rel': 'next'})
-    import requests
 
     req = requests.get(url)
     if req.status_code == 200:
@@ -124,7 +122,7 @@ def main():
 
         soup = BeautifulSoup(req.text, "html.parser")
         imgUrl = soup.img["src"]
-        title = soup.findAll("h1")[1].text
+        #title = soup.findAll("h1")[1].text
         pos = imgUrl.find("?")
         if pos > 0:
             imgUrl = imgUrl[:pos]

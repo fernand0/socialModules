@@ -6,23 +6,13 @@
 # From: https://github.com/gsuitedevs/python-samples/blob/master/gmail/quickstart/quickstart.py
 from __future__ import print_function
 
-import json
 import os
-import pathlib
 import pickle
-
-from httplib2 import Http
 
 import google
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
-from google.oauth2.credentials import Credentials
-from google.oauth2 import service_account
 from googleapiclient.discovery import build
-
-import googleapiclient
-import googleapiclient.errors
-
 
 from socialModules.configMod import *
 
@@ -133,7 +123,7 @@ class socialGoogle:
                     logMsg(msgLog, 2, False)
                 else:
                     print(
-                        f"This won't work on remote, you need a local browser to pass the oauth process"
+                        "This won't work on remote, you need a local browser to pass the oauth process"
                     )
                     flow = InstalledAppFlow.from_client_secrets_file(
                         fileCredStore, SCOPES, redirect_uri="http://localhost"
@@ -153,6 +143,7 @@ class socialGoogle:
                 res = self.report(
                     "moduleGoogle", "Wrong data in file", "", sys.exc_info()
                 )
+                logging.info(res)
                 creds.refresh(Request())
                 # creds = 'Fail!'
 

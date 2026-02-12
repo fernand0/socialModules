@@ -1,19 +1,12 @@
 #!/usr/bin/env python
 
-import configparser
-import os
-import pickle
 import sys
-import time
-import urllib
 
-import click
 import gitterpy
 import gitterpy.client
-import requests
-from bs4 import BeautifulSoup
 
 from socialModules.moduleContent import *
+
 # from socialModules.moduleQueue import *
 
 
@@ -66,7 +59,7 @@ class moduleGitter(Content):  # ,Queue):
     def setApiPosts(self):
         if not self.channel:
             # It will set the owner channel by default
-            msgLog = f"No channel defined, setting the first one (if any)"
+            msgLog = "No channel defined, setting the first one (if any)"
             logMsg(msgLog, 3, False)
             self.setChannel()
         posts = []
@@ -115,10 +108,10 @@ class moduleGitter(Content):  # ,Queue):
         return title
 
     def getApiPostLink(self, post):
-        link = ''
-        text = post.get('text','')
-        pos = text.rfind('http')
-        if pos>=0:
+        link = ""
+        text = post.get("text", "")
+        pos = text.rfind("http")
+        if pos >= 0:
             link = text[pos:]
         return link
 
@@ -206,18 +199,37 @@ class moduleGitter(Content):  # ,Queue):
     def publishApiPost(self, *args, **kwargs):
         if args and len(args) == 3:
             title, link, comment = args
-        if kwargs:
+        elif kwargs:
             more = kwargs
-
             post = more.get("post", "")
             api = more.get("api", "")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
-            comment = api.getPostComment(title)
+            # comment = api.getPostComment(title)
+        else:
+            self.res_dict["error_message"] = "Not enough arguments for publication."
+            return self.res_dict
 
         chan = self.getChannel()
-        result = self.getClient().messages.send(chan, f"{title} {link}")
-        return result
+        if not chan:
+            self.res_dict["error_message"] = "Gitter channel not set."
+            return self.res_dict
+
+        try:
+            result = self.getClient().messages.send(chan, f"{title} {link}")
+            self.res_dict["raw_response"] = result
+            if result and "id" in result:
+                self.res_dict["success"] = True
+                # Gitter API doesn't provide a direct message URL in the response
+                # We can construct a link to the room.
+                self.res_dict["post_url"] = f"https://gitter.im/{chan}"
+            else:
+                self.res_dict["error_message"] = f"Gitter API error: {result}"
+        except Exception as e:
+            self.res_dict["error_message"] = f"Exception during Gitter API call: {e}"
+            self.res_dict["raw_response"] = sys.exc_info()
+
+        return self.res_dict
 
     def getBots(self, channel="tavern-of-the-bots"):
         # FIXME: this does not belong here
@@ -254,7 +266,6 @@ def main():
     gitter_module = moduleGitter()
     tester = ModuleTester(gitter_module)
     tester.run()
-
 
 
 if __name__ == "__main__":

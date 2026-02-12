@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 
-import configparser
 import sys
-from html.parser import HTMLParser
 
 import facebook
-from bs4 import BeautifulSoup, Tag
 
 from socialModules.configMod import *
 from socialModules.moduleContent import *
+
 # from socialModules.moduleQueue import *
 
 # We are using facebook-sdk
@@ -47,13 +45,13 @@ class moduleFacebook(Content):  # ,Queue):
         return self.page
 
     def setPage(self, facebookAC="me"):
-        perms = [
-            "publish_actions",
-            "manage_pages",
-            "publish_pages",
-            "pages_read_engagement",
-            "pages_manage_posts",
-        ]
+        # perms = [
+        #     "publish_actions",
+        #     "manage_pages",
+        #     "publish_pages",
+        #     "pages_read_engagement",
+        #     "pages_manage_posts",
+        # ]
         try:
             pages = self.getClient().get_connections("me", "accounts")
         except:
@@ -217,9 +215,9 @@ class moduleFacebook(Content):  # ,Queue):
         # return f'https://twitter.com/{self.user}/status/{idPost}'
 
     def getApiPostLink(self, post):
-        result = self.getAttribute(post, 'url')
-        pos = result.find('=')
-        pos2 = result.find('&',pos)
+        result = self.getAttribute(post, "url")
+        pos = result.find("=")
+        pos2 = result.find("&", pos)
         import urllib.parse
 
         return urllib.parse.unquote(result[pos + 1 : pos2])
