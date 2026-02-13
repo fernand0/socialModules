@@ -146,8 +146,8 @@ class Content:
             msgLog = f"{self.indent} Getting keys"
             logMsg(msgLog, 2, False)
             try:
+                logging.debug(f"{self.indent} user {self.user}")
                 keys = self.getKeys(config)
-                # logging.debug(f"{self.indent} user {self.user}")
             except:
                 if not config.sections():
                     # FIXME: Are you sure?
