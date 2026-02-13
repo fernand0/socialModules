@@ -46,7 +46,7 @@ class moduleSmtp(Content):  # , Queue):
             context = ssl._create_unverified_context()
             client = smtplib.SMTP_SSL(self.server, self.port, context=context)
             # client.starttls() #context=context)
-            logging.info(f"{self.indent} User: self.user")
+            logging.info(f"{self.indent} User: {self.user}")
             client.login(self.user, self.password)
             logging.info(f"{self.indent} Logging OK")
         except:
@@ -87,7 +87,7 @@ class moduleSmtp(Content):  # , Queue):
 
         # Initialize fromaddr and destaddr with default values
         fromaddr = getattr(self, 'fromaddr', getattr(self, 'user', 'unknown@example.com'))
-        destaddr = getattr(self, 'to', getattr(self, 'user', 'unknown@example.com'))
+        destaddr = getattr(self, 'destaddr', getattr(self, 'user', 'unknown@example.com'))
 
         if args and len(args) == 3:
             post, link, comment = args

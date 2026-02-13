@@ -82,7 +82,7 @@ class moduleRules:
                 config.read(configFile)
         except Exception as e:
             logMsg(
-                f"ERROR: Could not read configuration file: {e}", 
+                f"ERROR: Could not read configuration file: {e}",
                 3, self.args.verbose
             )
             raise ConfigError(f"Could not read configuration file: {e}")
@@ -134,12 +134,12 @@ class moduleRules:
         self._finalize_rules(
             config, services, sources, sources_available, more, destinations, rulesNew
         )
-        msgLog = f"Rules: {rulesNew} after _finalize_rules"
-        logMsg(msgLog, 2, False)
+        # msgLog = f"Rules: {rulesNew} after _finalize_rules"
+        # logMsg(msgLog, 2, False)
         self.more = rule_metadata
         self._set_available_and_rules(rulesNew, more)
-        msgLog = f"Rules: {rulesNew} after _set_available_and_rules"
-        logMsg(msgLog, 2, False)
+        # msgLog = f"Rules: {rulesNew} after _set_available_and_rules"
+        # logMsg(msgLog, 2, False)
         self.indentLess()
         msgLog = "End Checking rules"
         logMsg(msgLog, 1, 2)
@@ -554,8 +554,8 @@ class moduleRules:
                     sources.add(src)
                     more.append({})
 
-        logging.info(f"Srcs: {list(sources)}")
-        logging.info(f"SrcsA: {list(sources_available)}")
+        logMsg(f"Srcs: {list(sources)}", 2, self.args.verbose)
+        logMsg(f"SrcsA: {list(sources_available)}", 2, self.args.verbose)
         self.indent = f"{self.indent} Destinations:"
         for dst in destinations:
             if not isinstance(dst, tuple) or len(dst) < 4:
@@ -1527,20 +1527,20 @@ class moduleRules:
         else:
             num = 1
 
-        if num > 0:
+        if num and int(num) > 0:
             tNow = time.time()
 
             # Reserve the time slot by setting the new time
             self.setNextTime(src, action, tNow, tSleep)
 
-            if tSleep > 0.0:
+            if tSleep and tSleep > 0.0:
                 msgLog = f"{indent} Waiting {tSleep/60:2.2f} minutes"
             else:
                 tSleep = 2.0
                 msgLog = f"{indent} No Waiting"
 
             theAction = self.getTypeAction(action)
-            # msgLog = f"{msgLog} for {orig} in " f"{dest}"            
+            # msgLog = f"{msgLog} for {orig} in " f"{dest}"
             logMsg(msgLog, 1, self.args.verbose)
 
             # Wait BEFORE instantiation
@@ -1779,6 +1779,8 @@ class moduleRules:
         necessary information.  Returns a list of dictionaries with data for
         each action.
         """
+        msgLog = " Start Preparing actions"
+        logMsg(msgLog, 1, 2)
         scheduled_actions = []
         held_actions = []
         skipped_actions = []
@@ -1795,7 +1797,7 @@ class moduleRules:
             name_action = f"[{self.getNameAction(rule_key)}{i}]"
             name_action = f"{name_action:->13}>"
             rule_name = self.getOrigString(rule_key)
-            msgLog = f"Preparing actions for rule: {rule_name}"
+            msgLog = f"Rule: {rule_name}"
             try:
                 thread_local.nameA = name_action
                 logMsg(msgLog, 1, self.args.verbose)
@@ -1830,13 +1832,6 @@ class moduleRules:
 
                 if select and (select.lower() != nameRule):
                     continue
-
-                # section_name = (
-                #     rule_metadata.get("section_name", "") if rule_metadata else ""
-                # )
-
-                #if select and (select.lower() != section_name.lower()):
-                #    continue
 
                 timeSlots, noWait = self._get_action_properties(
                     rule_action, rule_metadata, args
@@ -1881,6 +1876,8 @@ class moduleRules:
                         "tSleep": tSleep,  # Add precomputed tSleep
                     }
                 )
+        msgLog = " End Preparing actions"
+        logMsg(msgLog, 1, 2)
         return scheduled_actions, held_actions, skipped_actions
 
     def _get_action_properties(self, rule_action, rule_metadata, args):
@@ -1900,6 +1897,8 @@ class moduleRules:
         Executes actions in parallel using ThreadPoolExecutor.
         Returns two lists: results and errors.
         """
+        msgLog = " Start Running actions"
+        logMsg(msgLog, 1, 2)
 
         action_results = []
         action_errors = []
@@ -1918,6 +1917,8 @@ class moduleRules:
                     action_results.append((scheduled_action, res))
                 except Exception as exc:
                     action_errors.append((scheduled_action, exc))
+        msgLog = " End Running actions"
+        logMsg(msgLog, 1, 2)
         return action_results, action_errors
 
     def _execute_single_action(self, scheduled_action):

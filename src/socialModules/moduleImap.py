@@ -51,8 +51,6 @@ keyWords = {
 
 class moduleImap(Content):  # , Queue):
     def getKeys(self, config):
-        msgLog = f"{self.indent} Getting keys"
-        logMsg(msgLog, 2, False)
         self.server = config.get(self.user, "server")
         try:
             password = config.get(self.user, "token")
@@ -1755,7 +1753,7 @@ class moduleImap(Content):  # , Queue):
         nameF = self.nameFolder(folder)
         logMsg(f"Folder: {nameF}", 2, False)
         self.channel = nameF
-        logging.debug(f"Select: {M.select(nameF)}")
+        logging.debug(f"Select: {self.getClient().select(nameF)}")
         # data = M.sort('ARRIVAL', 'UTF-8', 'ALL')
         if self.getPostsType() == "new":
             try:

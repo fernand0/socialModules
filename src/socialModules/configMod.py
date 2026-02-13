@@ -90,8 +90,8 @@ def logMsg(msgLog, log=1, print_to_console=True):
                          False/other falsy = don't print
     """
     # Add thread name to the message before logging (from master branch)
-    if hasattr(thread_local, "nameA") and thread_local.nameA:
-        msgLog = f"{thread_local.nameA} {msgLog}"
+    # if hasattr(thread_local, "nameA") and thread_local.nameA:
+    #     msgLog = f"{thread_local.nameA} {msgLog}"
 
     if log == 1:
         logging.info(msgLog)
@@ -310,6 +310,8 @@ def select_from_list(
     we can select based on numbers or in substrings of the elements
     of the list.
     """
+    if not options:
+        return -1, ""
 
     if options and (
         isinstance(options[0], dict)

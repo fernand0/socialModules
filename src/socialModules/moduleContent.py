@@ -147,14 +147,14 @@ class Content:
             msgLog = f"{self.indent} Getting keys"
             logMsg(msgLog, 2, False)
             try:
+                logging.debug(f"{self.indent} user {self.user}")
                 keys = self.getKeys(config)
-                # logging.debug(f"{self.indent} user {self.user}")
             except:
                 if not config.sections():
                     # FIXME: Are you sure?
                     msgLog = (
-                        f"{self.indent} Do the adequate keys exist " f"in {configFile}?"
-                    )
+                        f"{self.indent} Do the adequate keys exist " 
+                        f"in {configFile}?")
                     logMsg(msgLog, 3, False)
 
         client = None
