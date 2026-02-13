@@ -183,6 +183,17 @@ class moduleTelegram(Content):
                 res = reply
         return res
 
+    def setApiPosts(self):
+        logging.info(f"setApiPosts {self.getClient()}") 
+        if self.getClient():
+            try:
+                posts = self.getClient().getUpdates()
+            except:
+                posts = []
+            logging.info(f"Postssss: {posts}")
+        return posts
+
+
     def getApiPostTitle(self, post):
         if "channel_post" in post:
             if "text" in post["channel_post"]:
