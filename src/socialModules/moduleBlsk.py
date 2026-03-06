@@ -21,8 +21,6 @@ class moduleBlsk(Content):  # , Queue):
         # FIXME: Do we call this method directly?
         self.base_url = "https://bsky.app"
         self.url = f"{self.base_url}/profile/{self.user}"
-        # self.authentication = OAuth(keys[2], keys[3], keys[0], keys[1])
-        # client = Twitter(auth=self.authentication)
 
         client = Client()
         try:

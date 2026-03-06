@@ -262,9 +262,13 @@ def getApi(profile, nick, indent="", channel=None):
         api.setClient(nick)
         if channel:
             api.setPage(channel)
-        api.indent = f"{indent[:-1]}"
+        if len(indent)>0:
+            api.indent = f"{indent[:-1]}"
+        else:
+            api.indent = ""
         api.setPostsType("posts")
         result_api = api
+
 
     msgLog = f"{indent} End getApi"
     logMsg(msgLog, 2, 0)

@@ -106,7 +106,8 @@ class Content:
         if hasattr(self, "profile"):
             profile = self.profile
         msgLog = (
-            f"{self.indent} Start setClient profile: " f" {profile} account: {account}"
+            f"{self.indent} Start setClient profile: " 
+            f" {profile} account: {account}"
         )
         logMsg(msgLog, 1, False)
         self.indent = f"{self.indent} "
