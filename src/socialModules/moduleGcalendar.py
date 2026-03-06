@@ -98,13 +98,35 @@ class moduleGcalendar(Content, socialGoogle):
         text = post.get("id")
         return text
 
-    def getPostAbstract(self, post):
+    def getPostDate(self, post):
+        date = None
+        # parsed_date = None
+
         if "start" in post:
             if "dateTime" in post["start"]:
-                dd = post["start"]["dateTime"]
-            else:
-                if "date" in post["start"]:
-                    dd = post["start"]["date"]
+                date = post["start"]["dateTime"]
+            elif "date" in post["start"]:
+                date = post["start"]["date"]
+
+        # if dd:
+        #     try:
+        #         parsed_date = dateparser.parse(dd)
+        #     except Exception as e:
+        #         logging.error(f"Error parsing date '{dd}': {e}")
+        #         parsed_date = None
+
+        # return parsed_date
+
+        return date
+
+    def getPostAbstract(self, post):
+        # if "start" in post:
+        #     if "dateTime" in post["start"]:
+        #         dd = post["start"]["dateTime"]
+        #     else:
+        #         if "date" in post["start"]:
+        #             dd = post["start"]["date"]
+        dd = self.getPostDate(post)
 
         description = post.get("description", "")
         if description:

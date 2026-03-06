@@ -82,12 +82,14 @@ def test_posts_retrieval(apiSrc):
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
                 url = apiSrc.getPostUrl(post)
+                date = apiSrc.getPostDate(post)
                 # post_id = apiSrc.getPostId(post)
 
                 # print(f"\n{i+1}. Post ID: {post_id}")
                 print(f"   Title: {title[:100]}{'...' if len(title) > 100 else ''}")
                 print(f"   Link: {link}")
                 print(f"   URL: {url}")
+                print(f"   Date: {date}")
 
             if len(posts) > 5:
                 print(f"\n... and {len(posts) - 5} more posts")
