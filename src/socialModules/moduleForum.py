@@ -26,8 +26,8 @@ from socialModules.moduleContent import Content
 
 
 class moduleForum(Content):  # , Queue):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, indent=""):
+        super().__init__(indent)
         self.selected: Optional[List[str]] = None
         self.selector: Optional[List[str]] = None
         self.idSeparator: Optional[str] = None
