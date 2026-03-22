@@ -224,7 +224,15 @@ def getModule(profile, indent=""):
     indent = f"{indent} "
     msgLog = f"{indent} Start getModule {profile}"
     logMsg(msgLog, 2, 0)
+    
+    # Convert profile to module/class name
+    # Handle camelCase: filtermanager -> FilterManager, gcalendar -> Gcalendar
     serviceName = profile.capitalize()
+    # If original has capital letters after first position, preserve them
+    if any(c.isupper() for c in profile[1:]):
+        # Already camelCase, use as-is with first letter capitalized
+        serviceName = profile[0].upper() + profile[1:]
+    
     module_name = f"socialModules.module{serviceName}"
     class_name = f"module{serviceName}"
 

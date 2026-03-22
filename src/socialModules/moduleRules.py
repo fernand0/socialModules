@@ -253,9 +253,23 @@ class moduleRules:
             )
             return None, None, None
 
+        # Find matching service (case-insensitive)
+        theService = None
+        for svc in services["regular"]:
+            if svc.lower() == section_service_name.lower():
+                theService = svc
+                break
+        
+        if not theService:
+            logMsg(
+                f"ERROR: Service '{section_service_name}' not found in regular services",
+                3,
+                self.args.verbose,
+            )
+            return None, None, None
+            
         # Process regular services
-        if section_service_name in services["regular"]:
-            theService = section_service_name
+        if theService:
             api = getModule(theService, self.indent)
             api.setUrl(url)
             if theService in config[section]:
@@ -913,8 +927,9 @@ class moduleRules:
         name = "module"
         for module in modulesFiles:
             if module.startswith(name):
-                moduleName = module[len(name) : -3].lower()
-                if moduleName not in modules["special"]:
+                # Preserve original case for camelCase modules like FilterManager
+                moduleName = module[len(name) : -3]
+                if moduleName.lower() not in [m.lower() for m in modules["special"]]:
                     # We drop the 'module' and the '.py' parts
                     modules["regular"].append(moduleName)
 

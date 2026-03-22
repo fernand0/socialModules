@@ -185,9 +185,10 @@ class moduleTelegram(Content):
 
     def setApiPosts(self):
         logging.info(f"setApiPosts {self.getClient()}") 
+        bot = self.getClient()
         if self.getClient():
             try:
-                posts = self.getClient().getUpdates()
+                posts = posts.getUpdates()
             except:
                 posts = []
             logging.info(f"Postssss: {posts}")
