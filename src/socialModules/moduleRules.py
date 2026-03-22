@@ -474,7 +474,7 @@ class moduleRules:
             else:
                 msgLog = f"{self.indent} Service {service} not orig"
                 logMsg(msgLog, 2, False)
-                if (key in services["special"]) or (key in services["regular"]):
+                if (key in services["special"]) or (key.capitalize() in services["regular"]):
                     if key == "cache":
                         dest = key
                     elif key == "direct":
