@@ -474,7 +474,7 @@ class moduleRules:
             else:
                 msgLog = f"{self.indent} Service {service} not orig"
                 logMsg(msgLog, 2, False)
-                if (key in services["special"]) or (key.capitalize() in services["regular"]):
+                if (key in services["special"]) or (key in services["regular"]):
                     if key == "cache":
                         dest = key
                     elif key == "direct":
@@ -931,6 +931,7 @@ class moduleRules:
                 moduleName = module[len(name) : -3]
                 if moduleName.lower() not in [m.lower() for m in modules["special"]]:
                     # We drop the 'module' and the '.py' parts
+                    moduleName = moduleName[0].lower()+moduleName[1:]
                     modules["regular"].append(moduleName)
 
         msgLog = f"{self.indent} End getServices"
