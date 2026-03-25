@@ -170,15 +170,10 @@ class moduleFilterManager(Content):
             # Attempt to get rules_file from config, specific to the user
             rules_file = config.get(self.user, "rules_file")
         except Exception:
-            # If not found in config, or an error occurs, use the default derived from self.fileName
-            self._log_msg(f"Rules file not found in config for user {self.user}. Using default.", 2)
-            rules_file = f"{self.DATADIR}/{self.fileName}.json"
-        
-        # Ensure that if rules_file from config is an empty string, we still fall back to the default
-        if not rules_file:
-            self._log_msg(f"Config rules_file for user {self.user} is empty. Using default.", 2)
-            rules_file = f"{self.DATADIR}/{self.fileName}.json"
-
+            # If not found in config, an exception will be raised,
+            # or it will return None if section/option not found.
+            # initApi will handle the default path if rules_file is None.
+            pass
         return rules_file
 
     def initApi(self, keys) -> "moduleFilterManager":
@@ -217,6 +212,9 @@ class moduleFilterManager(Content):
             If channel specified: List of rules from that channel.
             Otherwise: Dictionary of all rules by channel.
         """
+        if self.rules_file is None:
+            raise RuntimeError("rules_file is not initialized. Call initApi() or setClient() first.")
+
         self._log_msg(f"Loading rules from {self.rules_file}", 2)
 
         self.rules = {"always": [], "sometimes": []} # Initialize with empty rules
