@@ -115,6 +115,7 @@ class moduleFilterManager(Content):
         self.rules: Dict[str, List[EmailFilterRule]] = {"always": [], "sometimes": []}
         self.posts = self.rules  # Treat rules as posts for Content compatibility
         self.channel: Optional[str] = None  # Current channel (rule category)
+        self.fileName = "rulesFilter"
 
     def getChannels(self) -> List[str]:
         """Get the list of available channels (rule categories).
@@ -164,12 +165,21 @@ class moduleFilterManager(Content):
         Returns:
             Path to rules file or None
         """
+        rules_file = None
         try:
+            # Attempt to get rules_file from config, specific to the user
             rules_file = config.get(self.user, "rules_file")
-            return rules_file
         except Exception:
-            # Use default location
-            return None
+            # If not found in config, or an error occurs, use the default derived from self.fileName
+            self._log_msg(f"Rules file not found in config for user {self.user}. Using default.", 2)
+            rules_file = f"{self.DATADIR}/{self.fileName}.json"
+        
+        # Ensure that if rules_file from config is an empty string, we still fall back to the default
+        if not rules_file:
+            self._log_msg(f"Config rules_file for user {self.user} is empty. Using default.", 2)
+            rules_file = f"{self.DATADIR}/{self.fileName}.json"
+
+        return rules_file
 
     def initApi(self, keys) -> "moduleFilterManager":
         """Initialize the API with the rules file path.
@@ -211,20 +221,39 @@ class moduleFilterManager(Content):
 
         self.rules = {"always": [], "sometimes": []} # Initialize with empty rules
 
-        try:
-            loaded_rules = self._read_rules_from_file(self.rules_file)
-            self.rules = loaded_rules
-            self._log_msg("Loaded rules from JSON file", 1)
-        except FileNotFoundError:
+        if not os.path.exists(self.rules_file):
             self._log_msg(f"No rules file found at {self.rules_file}, starting with empty rules", 1)
-            # self.rules remains empty as initialized
-        except (json.JSONDecodeError, ValueError, Exception) as e: # Catch specific errors from _read_rules_from_file
-            self._log_msg(f"Failed to load rules: {e}", 3)
-            # Depending on desired behavior, could re-raise or continue with empty rules
-            # For now, we'll re-raise as per existing behavior in original setApiPosts on error
-            raise
+            # No rules file, so posts remain empty as initialized
+            self.posts = self.rules
+            if channel:
+                self.setChannel(channel)
+            return self.rules
 
-        self.posts = self.rules # Ensure posts are synced after loading
+        try:
+            with open(self.rules_file, "r", encoding="utf-8") as f:
+                content = f.read()
+                if not content.strip():
+                    # Empty file, start with default rules
+                    self._log_msg("Rules file is empty, starting with empty rules", 1)
+                    self.posts = self.rules
+                else:
+                    data = json.loads(content)
+                    if "version" not in data or data["version"] != self.RULES_VERSION:
+                        raise ValueError(
+                            f"Incompatible rules file version. Expected {self.RULES_VERSION}, "
+                            f"got {data.get('version', 'N/A')}"
+                        )
+                    self._parse_json_rules(data)
+                    self._log_msg("Loaded rules from JSON file", 1)
+                    self.posts = self.rules
+        except (json.JSONDecodeError, UnicodeDecodeError, KeyError) as e:
+            self._log_msg(f"Failed to load rules: {e}", 3)
+            raise
+        except ValueError: # Specifically for version mismatch
+            raise
+        except Exception as e:
+            self._log_msg(f"An unexpected error occurred while reading rules from {self.rules_file}: {e}", 3)
+            raise
 
         # Set channel if specified
         if channel:
@@ -255,81 +284,9 @@ class moduleFilterManager(Content):
                         rule = EmailFilterRule.from_tuple(tuple(rule_data))
                         self.rules[category].append(rule)
 
-    def _read_rules_from_file(self, file_path: str) -> Dict[str, List[EmailFilterRule]]:
-        """Reads and parses rules from a JSON file.
 
-        Args:
-            file_path: The path to the JSON file.
 
-        Returns:
-            A dictionary of rules, organized by category ('always', 'sometimes').
 
-        Raises:
-            FileNotFoundError: If the specified file does not exist.
-            json.JSONDecodeError: If the file content is not valid JSON.
-            ValueError: If the rules file version is incompatible.
-            Exception: For other file I/O errors.
-        """
-        if not os.path.exists(file_path):
-            self._log_msg(f"Rules file not found at {file_path}", 1)
-            raise FileNotFoundError(f"Rules file not found: {file_path}")
-
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
-                if not content.strip():
-                    self._log_msg("Rules file is empty, returning empty rules", 1)
-                    return {"always": [], "sometimes": []}
-
-                data = json.loads(content)
-
-                if "version" not in data or data["version"] != self.RULES_VERSION:
-                    raise ValueError(
-                        f"Incompatible rules file version. Expected {self.RULES_VERSION}, "
-                        f"got {data.get('version', 'N/A')}"
-                    )
-
-                # Create a temporary manager to parse the rules to avoid modifying self.rules
-                temp_manager = moduleFilterManager()
-                temp_manager._parse_json_rules(data)
-                return temp_manager.rules
-
-        except FileNotFoundError:
-            raise
-        except json.JSONDecodeError as e:
-            self._log_msg(f"Failed to decode JSON from {file_path}: {e}", 3)
-            raise
-        except ValueError: # Specifically for version mismatch
-            raise
-        except Exception as e:
-            self._log_msg(f"An unexpected error occurred while reading rules from {file_path}: {e}", 3)
-            raise
-
-    def _write_rules_to_file(self, file_path: str, rules_data: Dict[str, Any]) -> None:
-        """Writes rules data to a JSON file.
-
-        Args:
-            file_path: The path to the JSON file.
-            rules_data: A dictionary containing the rules data, including the version.
-
-        Raises:
-            IOError: If an error occurs during file writing.
-            json.JSONEncodeError: If the data cannot be serialized to JSON.
-            Exception: For other unexpected errors.
-        """
-        try:
-            with open(file_path, "w", encoding="utf-8") as f:
-                json.dump(rules_data, f, indent=2)
-            self._log_msg(f"Rules successfully written to {file_path}", 2)
-        except IOError as e:
-            self._log_msg(f"Failed to write rules to {file_path}: {e}", 3)
-            raise
-        except json.JSONEncodeError as e:
-            self._log_msg(f"Failed to encode rules to JSON for {file_path}: {e}", 3)
-            raise
-        except Exception as e:
-            self._log_msg(f"An unexpected error occurred while writing rules to {file_path}: {e}", 3)
-            raise
 
     def updatePosts(self) -> str:
         """Save rules to JSON file (equivalent to save_rules).
@@ -347,9 +304,13 @@ class moduleFilterManager(Content):
                 "always": [asdict(rule) for rule in self.rules.get("always", [])],
                 "sometimes": [asdict(rule) for rule in self.rules.get("sometimes", [])]
             }
-            self._write_rules_to_file(self.rules_file, data)
+            
+            with open(self.rules_file, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+
+            self._log_msg(f"Rules successfully written to {self.rules_file}", 2)
             return "Ok"
-        except (IOError, json.JSONEncodeError, Exception) as e:
+        except Exception as e:
             self._log_msg(f"Failed to save rules: {e}", 3)
             return f"Error: {e}"
 
