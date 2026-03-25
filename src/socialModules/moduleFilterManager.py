@@ -26,13 +26,13 @@ logger = logging.getLogger(__name__)
 @dataclass
 class EmailFilterRule:
     """Represents a single email filtering rule.
-    
+
     Attributes:
         keyword: The email header keyword to match (e.g., 'From', 'Subject')
         pattern: The pattern to search for in the header value
         folder: The destination folder for matching emails
     """
-    
+
     keyword: str
     pattern: str
     folder: str
@@ -40,10 +40,10 @@ class EmailFilterRule:
     @classmethod
     def from_tuple(cls, rule_tuple: tuple) -> "EmailFilterRule":
         """Create an EmailFilterRule from a tuple format.
-        
+
         Args:
             rule_tuple: A tuple of (keyword, pattern, folder)
-            
+
         Returns:
             An EmailFilterRule instance
         """
@@ -51,7 +51,7 @@ class EmailFilterRule:
 
     def to_tuple(self) -> tuple:
         """Convert to tuple format for compatibility.
-        
+
         Returns:
             A tuple of (keyword, pattern, folder)
         """
@@ -59,10 +59,10 @@ class EmailFilterRule:
 
     def matches(self, header_value: str) -> bool:
         """Check if this rule matches the given header value.
-        
+
         Args:
             header_value: The header value to check against
-            
+
         Returns:
             True if the pattern matches, False otherwise
         """
@@ -124,6 +124,9 @@ class moduleFilterManager(Content):
         """
         return list(self.rules.keys())
 
+    def setPage(self, channel: str) -> None:
+        self.setChannel(channel)
+
     def setChannel(self, channel: str) -> None:
         """Set the current channel (rule category) to work with.
 
@@ -137,10 +140,10 @@ class moduleFilterManager(Content):
         """
         if channel not in self.rules:
             raise ValueError(f"Invalid channel '{channel}'. Available channels: {self.getChannels()}")
-        
+
         self.channel = channel
         self._log_msg(f"Channel set to: {channel}", 1)
-        
+
         # Update posts to point to the selected channel's rules
         self.posts = self.rules[channel]
 
@@ -154,10 +157,10 @@ class moduleFilterManager(Content):
 
     def getKeys(self, config) -> Optional[str]:
         """Get the rules file path from configuration.
-        
+
         Args:
             config: Configuration object
-            
+
         Returns:
             Path to rules file or None
         """
@@ -170,10 +173,10 @@ class moduleFilterManager(Content):
 
     def initApi(self, keys) -> "moduleFilterManager":
         """Initialize the API with the rules file path.
-        
+
         Args:
             keys: Rules file path from getKeys()
-            
+
         Returns:
             Self for method chaining
         """
@@ -183,7 +186,7 @@ class moduleFilterManager(Content):
 
     def _log_msg(self, msg: str, level: int = 1, console: bool = False) -> None:
         """Log a message using socialModules logging convention.
-        
+
         Args:
             msg: Message to log
             level: Log level (1=info, 2=debug, 3=warning)
@@ -220,7 +223,7 @@ class moduleFilterManager(Content):
             # Depending on desired behavior, could re-raise or continue with empty rules
             # For now, we'll re-raise as per existing behavior in original setApiPosts on error
             raise
-        
+
         self.posts = self.rules # Ensure posts are synced after loading
 
         # Set channel if specified
@@ -231,7 +234,7 @@ class moduleFilterManager(Content):
 
     def _parse_json_rules(self, data: Dict[str, Any]) -> None:
         """Parse JSON format rules into EmailFilterRule objects.
-        
+
         Args:
             data: Dictionary containing rule data
         """
@@ -277,15 +280,15 @@ class moduleFilterManager(Content):
                 if not content.strip():
                     self._log_msg("Rules file is empty, returning empty rules", 1)
                     return {"always": [], "sometimes": []}
-                
+
                 data = json.loads(content)
-                
+
                 if "version" not in data or data["version"] != self.RULES_VERSION:
                     raise ValueError(
                         f"Incompatible rules file version. Expected {self.RULES_VERSION}, "
                         f"got {data.get('version', 'N/A')}"
                     )
-                
+
                 # Create a temporary manager to parse the rules to avoid modifying self.rules
                 temp_manager = moduleFilterManager()
                 temp_manager._parse_json_rules(data)
@@ -330,10 +333,10 @@ class moduleFilterManager(Content):
 
     def updatePosts(self) -> str:
         """Save rules to JSON file (equivalent to save_rules).
-        
+
         This method follows the socialModules pattern where updatePosts()
         is responsible for persisting data.
-        
+
         Returns:
             "Ok" if successful, error message otherwise
         """
@@ -419,10 +422,10 @@ class moduleFilterManager(Content):
 
     def get_rules(self, rule_type: Optional[str] = None) -> Dict[str, List[EmailFilterRule]] | List[EmailFilterRule]:
         """Get rules, optionally filtered by type.
-        
+
         Args:
             rule_type: Optional category type to filter by
-            
+
         Returns:
             All rules as dict, or filtered list if rule_type specified
         """
@@ -441,11 +444,11 @@ class moduleFilterManager(Content):
 
     def get_rule_by_index(self, category: str, index: int) -> Optional[EmailFilterRule]:
         """Get a rule by category and index.
-        
+
         Args:
             category: Category type ('always' or 'sometimes')
             index: Index of the rule in the category
-            
+
         Returns:
             EmailFilterRule if found, None otherwise
         """
@@ -456,12 +459,12 @@ class moduleFilterManager(Content):
 
     def move_rule(self, rule: EmailFilterRule, from_category: str, to_category: str) -> bool:
         """Move a rule from one category to another.
-        
+
         Args:
             rule: EmailFilterRule to move
             from_category: Source category
             to_category: Destination category
-            
+
         Returns:
             True if rule was moved, False otherwise
         """
@@ -472,7 +475,7 @@ class moduleFilterManager(Content):
 
     def clear_rules(self, rule_type: Optional[str] = None) -> None:
         """Clear all rules, or rules of a specific type.
-        
+
         Args:
             rule_type: Optional category type to clear. If None, clears all.
         """
@@ -518,7 +521,7 @@ class moduleFilterManager(Content):
 
     def register_specific_tests(self, tester):
         """Register specific tests for moduleFilterManager.
-        
+
         Args:
             tester: ModuleTester instance to register tests with
         """
@@ -530,10 +533,10 @@ class moduleFilterManager(Content):
     def _test_rule_creation(self, api_src=None):
         """Test creating and adding rules."""
         print("\n=== Testing Rule Creation ===")
-        
+
         # Clear existing rules
         self.clear_rules()
-        
+
         # Add a test rule
         test_rule = EmailFilterRule(
             keyword="From",
@@ -541,19 +544,19 @@ class moduleFilterManager(Content):
             folder="TestFolder"
         )
         self.add_rule(test_rule, "always")
-        
+
         # Verify rule was added
         rules = self.get_rules("always")
         assert len(rules) == 1, f"Expected 1 rule, got {len(rules)}"
         assert rules[0] == test_rule, "Rule doesn't match"
-        
+
         print("✓ Rule creation test passed")
         print(f"  Added rule: {test_rule.keyword}='{test_rule.pattern}' -> {test_rule.folder}")
 
     def _test_rule_loading(self, api_src=None):
         """Test loading rules from file."""
         print("\n=== Testing Rule Loading ===")
-        
+
         # setApiPosts is called during setup, rules should be loaded
         all_rules = self.get_rules()
         print(f"✓ Rule loading test passed")
@@ -563,7 +566,7 @@ class moduleFilterManager(Content):
     def _test_rule_saving(self, api_src=None):
         """Test saving rules to file."""
         print("\n=== Testing Rule Saving ===")
-        
+
         # Add a rule and save
         test_rule = EmailFilterRule(
             keyword="Subject",
@@ -571,44 +574,44 @@ class moduleFilterManager(Content):
             folder="TestFolder"
         )
         self.add_rule(test_rule, "sometimes")
-        
+
         result = self.updatePosts()
         assert result == "Ok", f"Save failed: {result}"
-        
+
         # Reload and verify
         self.setApiPosts()
         rules = self.get_rules("sometimes")
         assert any(r.pattern == "Test Subject" for r in rules), "Saved rule not found"
-        
+
         print("✓ Rule saving test passed")
         print(f"  Saved rules to: {self.rules_file}")
 
     def _test_rule_management(self, api_src=None):
         """Test rule management operations."""
         print("\n=== Testing Rule Management ===")
-        
+
         # Clear and add test rules
         self.clear_rules()
         rule1 = EmailFilterRule("From", "test1@example.com", "Folder1")
         rule2 = EmailFilterRule("From", "test2@example.com", "Folder2")
         self.add_rule(rule1, "always")
         self.add_rule(rule2, "sometimes")
-        
+
         # Test move_rule
         moved = self.move_rule(rule1, "always", "sometimes")
         assert moved, "Failed to move rule"
         assert len(self.get_rules("always")) == 0, "Rule not removed from source"
         assert len(self.get_rules("sometimes")) == 2, "Rule not added to destination"
-        
+
         # Test remove_rule
         removed = self.remove_rule(rule1, "sometimes")
         assert removed, "Failed to remove rule"
-        
+
         # Test clear_rules
         self.clear_rules()
         assert len(self.get_rules("always")) == 0, "Clear failed for always"
         assert len(self.get_rules("sometimes")) == 0, "Clear failed for sometimes"
-        
+
         print("✓ Rule management test passed")
         print("  Tested: add, move, remove, clear operations")
 
@@ -628,19 +631,19 @@ def main():
     )
 
     print("\n=== moduleFilterManager Standalone Test ===\n")
-    
+
     # Initialize filter manager
     filter_manager = moduleFilterManager()
-    
+
     # Try to load configuration from .rssBlogs first
     rules_file = None
     rssblogs_file = f"{CONFIGDIR}/.rssBlogs"
-    
+
     if os.path.exists(rssblogs_file):
         import configparser
         config = configparser.ConfigParser()
         config.read(rssblogs_file)
-        
+
         # Look for filterManager sections
         for section in config.sections():
             service = config.get(section, 'service', fallback='')
@@ -650,7 +653,7 @@ def main():
                 channel = config.get(section, 'channel', fallback='always')
                 print(f"  rules_file: {rules_file}")
                 print(f"  channel: {channel}")
-                
+
                 if rules_file:
                     filter_manager.rules_file = rules_file
                     try:
@@ -659,21 +662,21 @@ def main():
                         break
                     except Exception as e:
                         print(f"Error loading rules: {e}")
-    
+
     # If no .rssBlogs config, use default location
     if not filter_manager.rules_file:
         rules_file = f"{DATADIR}/rulesFilter.json"
         print(f"No .rssBlogs configuration found.")
         print(f"Using default rules file: {rules_file}")
         filter_manager.rules_file = rules_file
-        
+
         # Load existing rules or start fresh
         try:
             filter_manager.setApiPosts()
             print("Rules loaded successfully\n")
         except FileNotFoundError:
             print("No existing rules file found, starting with empty rules\n")
-    
+
     while True:
         print("\n--- Menu ---")
         print("1. Show all rules")
@@ -687,27 +690,27 @@ def main():
         print("9. Save rules")
         print("10. Reload rules")
         print("0. Exit")
-        
+
         choice = input("\nSelect option: ").strip()
-        
+
         try:
             if choice == "1":
                 filter_manager.display_rules()
-                
+
             elif choice == "2":
                 filter_manager.setChannel("always")
                 rules = filter_manager.getPosts()
                 print(f"\nALWAYS Rules ({len(rules)}):")
                 for i, rule in enumerate(rules):
                     print(f"  {i}: {rule.keyword}='{rule.pattern}' -> {rule.folder}")
-                    
+
             elif choice == "3":
                 filter_manager.setChannel("sometimes")
                 rules = filter_manager.getPosts()
                 print(f"\nSOMETIMES Rules ({len(rules)}):")
                 for i, rule in enumerate(rules):
                     print(f"  {i}: {rule.keyword}='{rule.pattern}' -> {rule.folder}")
-                    
+
             elif choice == "4":
                 keyword = input("Header keyword (e.g., From, Subject): ").strip() or "From"
                 pattern = input("Pattern to match: ").strip()
@@ -718,7 +721,7 @@ def main():
                     print(f"✓ Rule added to 'always': {keyword}='{pattern}' -> {folder}")
                 else:
                     print("Pattern and folder are required")
-                    
+
             elif choice == "5":
                 keyword = input("Header keyword (e.g., From, Subject): ").strip() or "From"
                 pattern = input("Pattern to match: ").strip()
@@ -729,7 +732,7 @@ def main():
                     print(f"✓ Rule added to 'sometimes': {keyword}='{pattern}' -> {folder}")
                 else:
                     print("Pattern and folder are required")
-                    
+
             elif choice == "6":
                 filter_manager.display_rules()
                 category = input("Category (always/sometimes): ").strip().lower()
@@ -746,7 +749,7 @@ def main():
                         print("Invalid number")
                 else:
                     print("Invalid category")
-                    
+
             elif choice == "7":
                 filter_manager.display_rules()
                 from_cat = input("From category (always/sometimes): ").strip().lower()
@@ -767,22 +770,22 @@ def main():
                         print("Invalid number")
                 else:
                     print("Invalid source category")
-                    
+
             elif choice == "8":
                 confirm = input("Clear ALL rules? (y/n): ").strip().lower()
                 if confirm == "y":
                     filter_manager.clear_rules()
                     print("✓ All rules cleared")
-                    
+
             elif choice == "9":
                 result = filter_manager.updatePosts()
                 print(f"Save result: {result}")
-                
+
             elif choice == "10":
                 filter_manager.setApiPosts()
                 print("✓ Rules reloaded")
                 filter_manager.display_rules()
-                
+
             elif choice == "0":
                 save = input("Save rules before exiting? (y/n): ").strip().lower()
                 if save == "y":
@@ -790,10 +793,10 @@ def main():
                     print(f"Save result: {result}")
                 print("Goodbye!")
                 break
-                
+
             else:
                 print("Invalid option")
-                
+
         except Exception as e:
             print(f"Error: {e}")
             logging.exception("Detailed error:")
