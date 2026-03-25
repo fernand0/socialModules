@@ -164,7 +164,7 @@ class moduleFilterManager(Content):
         Returns:
             Self for method chaining
         """
-        self.rules_file = f"{self.DATADIR}/rulesFilter.json"
+        self.rules_file = f"{DATADIR}/rulesFilter.json"
         self._log_msg(f"Initializing with rules file: {self.rules_file}", 2)
         return self
 
