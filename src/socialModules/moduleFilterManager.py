@@ -295,6 +295,15 @@ class moduleFilterManager(Content):
             self._log_msg(f"Failed to save rules: {e}", 3)
             return f"Error: {e}"
 
+    def getApiPostTitle(self, post):
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Start getPostTitle {post}.")
+        logMsg(msgLog, 2, False)
+        title = ""
+        if post:
+            title = post
+        return title
+
     def add_rule(self, rule: tuple | EmailFilterRule, rule_type: Optional[str] = None) -> None:
         """Add a new rule to the specified category.
 
