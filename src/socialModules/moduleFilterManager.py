@@ -16,7 +16,7 @@ import os
 from dataclasses import dataclass, asdict
 from typing import Dict, List, Optional, Any
 
-from socialModules.configMod import logMsg
+from socialModules.configMod import logMsg, DATADIR
 from socialModules.moduleContent import Content
 
 
