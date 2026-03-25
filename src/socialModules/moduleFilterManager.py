@@ -301,7 +301,7 @@ class moduleFilterManager(Content):
         logMsg(msgLog, 2, False)
         title = ""
         if post:
-            title = post
+            title = f"{post.keyword}={post.pattern}->{post.folder}"
         return title
 
     def add_rule(self, rule: tuple | EmailFilterRule, rule_type: Optional[str] = None) -> None:

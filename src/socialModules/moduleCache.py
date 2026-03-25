@@ -412,12 +412,31 @@ class moduleCache(Content):  # ,Queue):
             return post
 
     def getApiPostTitle(self, post):
-        self.indent = f"{self.indent} "
-        msgLog = (f"{self.indent} Start getPostTitle {post}")
-        logMsg(msgLog, 2, False)
+        # self.indent = f"{self.indent} "
+        # msgLog = (f"{self.indent} Start getPostTitle.")
+        # logMsg(msgLog, 2, False)
         title = ""
         if post:
-            title = post
+            title = self.apiSrc.getPostTitle(post)
+            # if hasattr(self, 'auxClass'):
+            #     # msgLog = (f"{self.indent} auxClass: {self.auxClass}")
+            #     # logMsg(msgLog, 2, False)
+            #     if isinstance(self.auxClass, str):
+            #         myModule = f"module{self.auxClass.capitalize()}"
+            #         import importlib
+            #         importlib.import_module(myModule)
+            #         mod = sys.modules.get(myModule)
+            #         cls = getattr(mod, myModule)
+            #         api = cls(self.indent)
+            #     else:
+            #         api = self.auxClass
+            #     logging.debug(f"  Api: {api}")
+            #     logging.debug(f"  Post: {post}")
+            #     apiCmd = getattr(api, 'getPostTitle')
+            #     title  = apiCmd(post)
+            # else:
+            #     # Old style
+            #     title = post[0]
         # msgLog = (f"{self.indent} End getPostTitle.")
         # logMsg(msgLog, 2, False)
         # self.indent = self.indent[:-1]
