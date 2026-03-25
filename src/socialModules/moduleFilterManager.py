@@ -157,24 +157,7 @@ class moduleFilterManager(Content):
         return self.channel
 
     def getKeys(self, config) -> Optional[str]:
-        """Get the rules file path from configuration.
-
-        Args:
-            config: Configuration object
-
-        Returns:
-            Path to rules file or None
-        """
-        rules_file = None
-        try:
-            # Attempt to get rules_file from config, specific to the user
-            rules_file = config.get(self.user, "rules_file")
-        except Exception:
-            # If not found in config, an exception will be raised,
-            # or it will return None if section/option not found.
-            # initApi will handle the default path if rules_file is None.
-            pass
-        return rules_file
+        return None
 
     def initApi(self, keys) -> "moduleFilterManager":
         """Initialize the API with the rules file path.
@@ -185,7 +168,7 @@ class moduleFilterManager(Content):
         Returns:
             Self for method chaining
         """
-        self.rules_file = keys or f"{self.DATADIR}/rulesFilter.json"
+        self.rules_file = f"{DATADIR}/rulesFilter.json"
         self._log_msg(f"Initializing with rules file: {self.rules_file}", 2)
         return self
 
