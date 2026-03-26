@@ -194,6 +194,60 @@ class moduleFilterManager(Content):
         """
         logMsg(f"{self.indent}{msg}", level, console)
 
+    def getPost(self, i):
+        self.indent = f"{self.indent} "
+        msgLog = f"{self.indent} Start getPost pos {i}."
+        logMsg(msgLog, 2, False)
+        post = None
+        posts = self.getPosts()
+        if posts and (i >= 0) and (i < len(posts)):
+            post = posts[i]
+        elif posts and (i < 0):
+            post = posts[len(posts) - 1]
+
+        # We have the rule
+
+        if isinstance(rule, EmailFilterRule):
+            keyword, text_header = rule.keyword, rule.pattern
+            folder = rule.folder
+        else:
+            keyword, text_header, folder = rule
+
+        search_criteria = f'(HEADER {keyword} "{text_header}")'
+        logger.info(
+            f"Applying rule: moving messages matching '{search_criteria}' to '{folder}'"
+        )
+
+        try:
+            self.api_src.setPosts()
+            _, msg_ids = self.api_src.getClient().search(None, search_criteria)
+        except Exception:
+            _, msg_ids = self.api_src.getClient().search(
+                "utf-8", search_criteria.encode("utf-8")
+            )
+
+        if not msg_ids or not msg_ids[0]:
+            self._print_status("No messages found matching this rule.")
+            return
+
+        msg_list_str = msg_ids[0].decode("utf-8").replace(" ", ",")
+        msg_count = len(msg_list_str.split(","))
+        self._print_status(f"Found {msg_count} messages matching the rule.")
+
+        if interactive and not self._confirm("Proceed with moving messages"):
+            self._print_status("Move operation cancelled.")
+            return
+
+        result = self.api_src.moveMails(self.api_src.getClient(), msg_list_str, folder)
+        self._print_status(f"Move result: {result}")
+
+
+
+        msgLog = f"{self.indent} End getPost"
+        logMsg(msgLog, 2, False)
+        self.indent = self.indent[:-1]
+        return post
+
     def setApiPosts(self, channel: Optional[str] = None) -> Dict[str, List[EmailFilterRule]] | List[EmailFilterRule]:
         """Load rules from JSON file (equivalent to _load_rules).
 
