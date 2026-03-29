@@ -156,7 +156,7 @@ class moduleFilterManager(Content):
         """
         return self.channel
 
-    def getKeys(self, config) -> Optional[Dict[str, Any]]:
+    def getKeys(self, config) -> Optional[Any]:
         return None
 
     def initApi(self, keys: Optional[Dict[str, Optional[str]]] = None) -> "moduleFilterManager":
