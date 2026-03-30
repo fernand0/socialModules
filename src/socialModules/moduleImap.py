@@ -1439,7 +1439,22 @@ class moduleImap(Content):  # , Queue):
             self.moveMails(M, messageId, "Trash")
 
     def publishApiPost(self, *args, **kwargs):
-        pass
+        # Reset res_dict for this publication attempt
+        self.res_dict = {
+            "success": False,
+            "post_url": "",
+            "raw_response": None,
+            "error_message": "",
+        }
+
+        if kwargs:
+            api_src = kwargs.get("api")
+            posts = kwargs.get("post")
+            action = kwargs.get("action")
+            logMsg(f"api: {api_src} posts: {posts} action:{action}"
+
+            #self.moveMails(self.api_src.getClient(), posts, )
+
 
     def moveMails(self, M, msgs, folder):
         self.res_dict["success"] = True  # Assume success until a failure occurs
