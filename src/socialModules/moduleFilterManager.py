@@ -247,8 +247,8 @@ class moduleFilterManager(Content):
             )
 
         if not msg_ids or not msg_ids[0]:
-            tester.api_src._print_status("No messages found matching this rule.")
-            return
+            msg = ("No messages found matching this rule.")
+            return msg
 
         msg_list_str = msg_ids[0].decode("utf-8").replace(" ", ",")
         msg_count = len(msg_list_str.split(","))
