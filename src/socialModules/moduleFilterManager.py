@@ -206,67 +206,73 @@ class moduleFilterManager(Content):
 
     def getPost(self, i):
         self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Start getPost pos {i}."
-        logMsg(msgLog, 2, False)
+        self._log_msg(f"{self.indent} Start getPost pos {i}.", 2)
         post = None
-        logMsg(f"Fileee: {self.rules_file}")
+        self._log_msg(f"Fileee: {self.rules_file}")
         self.setPosts()
         posts = self.getPosts()
-        logMsg(f"Posts: {posts}")
+        self._log_msg(f"Posts: {posts}")
 
         if posts and (i >= 0) and (i < len(posts)):
             post = posts[i]
         elif posts and (i < 0):
             post = posts[len(posts) - 1]
 
-        # We have the rule, now we need to get the posts
+        final_return_value = post # Default return value is the post itself
 
-        rule = post
-        if isinstance(rule, EmailFilterRule):
-            keyword, text_header = rule.keyword, rule.pattern
-            folder = rule.folder
+        if post: # Only proceed if a post (rule) was found
+            rule = post
+            if isinstance(rule, EmailFilterRule):
+                keyword, text_header = rule.keyword, rule.pattern
+                folder = rule.folder
+            else: # Fallback for old tuple format if it ever occurs
+                keyword, text_header, folder = rule
+
+            search_criteria = f'(HEADER {keyword} "{text_header}")'
+            self._log_msg(f"Applying rule: moving messages matching '{search_criteria}' to '{folder}'", 1) # Use _log_msg
+
+            from socialModules.moduleRules import moduleRules
+            rules = moduleRules()
+            rules.api_src = rules.readConfigSrc("", ('imap', 'set', self.imap, 'posts'), None, self.fileName)
+
+            msg_ids = None # Initialize msg_ids
+            try:
+                rules.api_src.setChannel('INBOX')
+                rules.api_src.setPosts()
+                res, msg_ids = rules.api_src.getClient().search(None, search_criteria)
+            except Exception as e:
+                self._log_msg(f"Error during IMAP search: {e}", 3)
+                try: # Attempt with utf-8 encoding as a fallback
+                    res, msg_ids = rules.api_src.getClient().search(
+                        "utf-8", search_criteria.encode("utf-8")
+                    )
+                except Exception as e_fallback:
+                    self._log_msg(f"Fallback IMAP search also failed: {e_fallback}", 3)
+                    msg_ids = None
+
+            if not msg_ids or not msg_ids[0]:
+                self._log_msg("No messages found matching this rule.", 1)
+                final_return_value = "No messages found matching this rule."
+            else:
+                msg_list_str = msg_ids[0].decode("utf-8").replace(" ", ",")
+                msg_count = len(msg_list_str.split(","))
+                self._log_msg(f"Found {msg_count} messages matching the rule.", 1)
+
+                proceed_input = input("Proceed with moving messages (y/N): ").strip().lower()
+                if proceed_input == 'y':
+                    result_move = rules.api_src.moveMails(rules.api_src.getClient(), msg_list_str, folder)
+                    self._log_msg(f"Move result: {result_move}", 1)
+                    # If move is successful, final_return_value remains 'post'.
+                else:
+                    self._log_msg("Move operation cancelled.", 1)
+                    final_return_value = "Move operation cancelled."
         else:
-            keyword, text_header, folder = rule
+            self._log_msg("No post found for the given index.", 1)
+            final_return_value = None # Explicitly set to None if no post
 
-        search_criteria = f'(HEADER {keyword} "{text_header}")'
-        logger.info(
-            f"Applying rule: moving messages matching '{search_criteria}' to '{folder}'"
-        )
-
-
-        from socialModules.moduleRules import moduleRules
-        rules = moduleRules()
-        rules.api_src = rules.readConfigSrc("", ('imap', 'set', self.imap, 'posts'), None, self.fileName)
-        try:
-            rules.api_src.setChannel('INBOX')
-            rules.api_src.setPosts()
-            res, msg_ids = rules.api_src.getClient().search(None, search_criteria)
-        except Exception:
-            res, msg_ids = rules.api_src.getClient().search(
-                "utf-8", search_criteria.encode("utf-8")
-            )
-
-        if not msg_ids or not msg_ids[0]:
-            msg = ("No messages found matching this rule.")
-            return msg
-
-        msg_list_str = msg_ids[0].decode("utf-8").replace(" ", ",")
-        msg_count = len(msg_list_str.split(","))
-        print(f"Found {msg_count} messages matching the rule.")
-
-        if not input("Proceed with moving messages"):
-            print("Move operation cancelled.")
-            return
-
-        result = rules.api_src.moveMails(rules.api_src.getClient(), msg_list_str, folder)
-        print(f"Move result: {result}")
-
-
-
-        msgLog = f"{self.indent} End getPost"
-        logMsg(msgLog, 2, False)
+        self._log_msg(f"{self.indent} End getPost", 2)
         self.indent = self.indent[:-1]
-        return post
+        return final_return_value
 
     def setApiPosts(self, channel: Optional[str] = None) -> Dict[str, List[EmailFilterRule]] | List[EmailFilterRule]:
         """Load rules from JSON file (equivalent to _load_rules).
