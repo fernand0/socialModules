@@ -106,7 +106,7 @@ class Content:
         if hasattr(self, "profile"):
             profile = self.profile
         msgLog = (
-            f"{self.indent} Start setClient profile: " 
+            f"{self.indent} Start setClient profile: "
             f" {profile} account: {account}"
         )
         logMsg(msgLog, 1, False)
@@ -153,7 +153,7 @@ class Content:
                 if not config.sections():
                     # FIXME: Are you sure?
                     msgLog = (
-                        f"{self.indent} Do the adequate keys exist " 
+                        f"{self.indent} Do the adequate keys exist "
                         f"in {configFile}?")
                     logMsg(msgLog, 3, False)
 

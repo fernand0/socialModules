@@ -1438,6 +1438,9 @@ class moduleImap(Content):  # , Queue):
         else:
             self.moveMails(M, messageId, "Trash")
 
+    def publishApiPost(self, *args, **kwargs):
+        pass
+
     def moveMails(self, M, msgs, folder):
         self.res_dict["success"] = True  # Assume success until a failure occurs
         self.res_dict["raw_response"] = []  # Store individual chunk results if needed

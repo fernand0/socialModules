@@ -259,7 +259,7 @@ class moduleRules:
             if svc.lower() == section_service_name.lower():
                 theService = svc
                 break
-        
+
         if not theService:
             logMsg(
                 f"ERROR: Service '{section_service_name}' not found in regular services",
@@ -267,7 +267,7 @@ class moduleRules:
                 self.args.verbose,
             )
             return None, None, None
-            
+
         # Process regular services
         if theService:
             api = getModule(theService, self.indent)
