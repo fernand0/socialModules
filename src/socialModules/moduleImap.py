@@ -1471,7 +1471,8 @@ class moduleImap(Content):  # , Queue):
 
         msgLog = f"Copying {len(msgs.split(','))} messages to {folder}"
         logMsg(msgLog, 1, False)
-        print(f"Msgssss: {msgs} {type(msgs)}")
+        msgLog(f"Msgssss: {msgs} {type(msgs)}")
+        logMsg(msgLog, 2, False)
 
         msgList = msgs.split(",")
         chunk_size = 500
@@ -1481,7 +1482,7 @@ class moduleImap(Content):  # , Queue):
             chunk_str = ",".join(chunk)
 
             try:
-                status, resultMsg = M.copy(chunk_str, folder)
+                status, resultMsg = self.getClient().copy(chunk_str, folder)
                 if status != "OK":
                     logging.warning(f"Failed to copy chunk: {resultMsg}")
                     self.res_dict["success"] = False
