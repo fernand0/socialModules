@@ -296,9 +296,9 @@ class moduleFilterManager(Content):
             return f"Error: {e}"
 
     def getApiPostTitle(self, post):
-        #self.indent = f"{self.indent} "
-        #msgLog = (f"{self.indent} Start getPostTitle {post}.")
-        #logMsg(msgLog, 2, False)
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Start getPostTitle {post}.")
+        logMsg(msgLog, 2, False)
         title = ""
         if post:
             title = f"{post.keyword}={post.pattern} -> {post.folder}"
