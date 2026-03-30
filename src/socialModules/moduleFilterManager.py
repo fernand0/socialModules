@@ -257,15 +257,16 @@ class moduleFilterManager(Content):
                 msg_list_str = msg_ids[0].decode("utf-8").replace(" ", ",")
                 msg_count = len(msg_list_str.split(","))
                 self._log_msg(f"Found {msg_count} messages matching the rule.", 1)
+                final_return_value = msg_list_str
 
-                proceed_input = input("Proceed with moving messages (y/N): ").strip().lower()
-                if proceed_input == 'y':
-                    result_move = rules.api_src.moveMails(rules.api_src.getClient(), msg_list_str, folder)
-                    self._log_msg(f"Move result: {result_move}", 1)
-                    # If move is successful, final_return_value remains 'post'.
-                else:
-                    self._log_msg("Move operation cancelled.", 1)
-                    final_return_value = "Move operation cancelled."
+                # proceed_input = input("Proceed with moving messages (y/N): ").strip().lower()
+                # if proceed_input == 'y':
+                #     result_move = rules.api_src.moveMails(rules.api_src.getClient(), msg_list_str, folder)
+                #     self._log_msg(f"Move result: {result_move}", 1)
+                #     # If move is successful, final_return_value remains 'post'.
+                # else:
+                #     self._log_msg("Move operation cancelled.", 1)
+                #     final_return_value = "Move operation cancelled."
         else:
             self._log_msg("No post found for the given index.", 1)
             final_return_value = None # Explicitly set to None if no post
