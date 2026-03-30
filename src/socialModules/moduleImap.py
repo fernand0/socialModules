@@ -1453,7 +1453,7 @@ class moduleImap(Content):  # , Queue):
             action = kwargs.get("action")
             logMsg(f"api: {api_src} posts: {posts}")
 
-            self.moveMails(self.api_src.getClient(), posts[1], posts[0])
+            self.moveMails(self.getClient(), posts[1], posts[0])
 
 
     def moveMails(self, M, msgs, folder):
