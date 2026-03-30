@@ -208,10 +208,8 @@ class moduleFilterManager(Content):
         self.indent = f"{self.indent} "
         self._log_msg(f"{self.indent} Start getPost pos {i}.", 2)
         post = None
-        self._log_msg(f"Fileee: {self.rules_file}")
         self.setPosts()
         posts = self.getPosts()
-        self._log_msg(f"Posts: {posts}")
 
         if posts and (i >= 0) and (i < len(posts)):
             post = posts[i]
@@ -257,7 +255,7 @@ class moduleFilterManager(Content):
                 msg_list_str = msg_ids[0].decode("utf-8").replace(" ", ",")
                 msg_count = len(msg_list_str.split(","))
                 self._log_msg(f"Found {msg_count} messages matching the rule.", 1)
-                final_return_value = msg_list_str
+                final_return_value = (folder, msg_list_str)
 
                 # proceed_input = input("Proceed with moving messages (y/N): ").strip().lower()
                 # if proceed_input == 'y':
