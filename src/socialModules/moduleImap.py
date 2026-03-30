@@ -1453,6 +1453,8 @@ class moduleImap(Content):  # , Queue):
             action = kwargs.get("action")
             logMsg(f"api: {api_src} posts: {posts}")
 
+            self.getClient().select("INBOX")
+
             self.moveMails(self.getClient(), posts[1], posts[0])
 
 
@@ -1482,7 +1484,7 @@ class moduleImap(Content):  # , Queue):
             chunk_str = ",".join(chunk)
 
             try:
-                status, resultMsg = self.getClient().copy(chunk_str, folder)
+                status, resultMsg = M.copy(chunk_str, folder)
                 if status != "OK":
                     logging.warning(f"Failed to copy chunk: {resultMsg}")
                     self.res_dict["success"] = False
