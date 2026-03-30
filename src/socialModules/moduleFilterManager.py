@@ -542,7 +542,7 @@ class moduleFilterManager(Content):
         Args:
             posts: Dictionary of rules by category
         """
-        self.rules = posts
+        # self.rules = posts
         # If a channel is set, update posts to point to that channel's rules
         if self.channel and self.channel in self.rules:
             self.posts = self.rules[self.channel]
