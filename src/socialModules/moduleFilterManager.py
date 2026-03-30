@@ -574,12 +574,14 @@ class moduleFilterManager(Content):
             If channel is specified or set: List of rules from that channel.
             Otherwise: Dictionary of all rules by channel.
         """
+        result = None
         if channel:
-            return self.rules.get(channel, [])
+            result = self.rules.get(channel, [])
         elif self.channel:
-            return self.posts if isinstance(self.posts, list) else self.rules.get(self.channel, [])
+            result = self.posts if isinstance(self.posts, list) else self.rules.get(self.channel, [])
         else:
-            return self.posts if self.posts else self.rules
+            result = self.posts if self.posts else self.rules
+        return result
 
     def assignPosts(self, posts: Dict[str, List[EmailFilterRule]]) -> None:
         """Set the rules (posts).
