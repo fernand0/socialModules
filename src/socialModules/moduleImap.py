@@ -1453,8 +1453,6 @@ class moduleImap(Content):  # , Queue):
             action = kwargs.get("action")
             logMsg(f"api: {api_src} posts: {posts}")
 
-            self.getClient().select("INBOX")
-
             self.moveMails(self.getClient(), posts[1], posts[0])
 
 
@@ -1464,14 +1462,15 @@ class moduleImap(Content):  # , Queue):
         all_messages_moved_and_deleted = True
 
         if hasattr(self, "channel"):
-            self.getClient().select(self.channel)
+            channel = self.channel
         else:
             channel = self.getPostsType()
-            M.select(channel.capitalize())
+        channel = "INBOX"
+        M.select(channel.capitalize())
         if isinstance(msgs, bytes):
             msgs = msgs.decode("ascii")
 
-        msgLog = f"Copying {len(msgs.split(','))} messages to {folder}"
+        msgLog = f"Copying {len(msgs.split(','))} from {self.channel} messages to {folder}"
         logMsg(msgLog, 1, False)
         msgLog(f"Msgssss: {msgs} {type(msgs)}")
         logMsg(msgLog, 2, False)
