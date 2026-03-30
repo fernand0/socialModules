@@ -1472,7 +1472,7 @@ class moduleImap(Content):  # , Queue):
 
         msgLog = f"Copying {len(msgs.split(','))} from {channel} messages to {folder}"
         logMsg(msgLog, 1, False)
-        msgLog(f"Msgssss: {msgs} {type(msgs)}")
+        logMsg(f"Msgssss: {msgs} {type(msgs)}")
         logMsg(msgLog, 2, False)
 
         msgList = msgs.split(",")
