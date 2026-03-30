@@ -110,12 +110,12 @@ class moduleFilterManager(Content):
             indent: Indentation string for logging
         """
         super().__init__(indent)
-        self.service = "FilterManager"
+        # self.service = "FilterManager"
         self.rules_file: Optional[str] = None
-        self.rules: Dict[str, List[EmailFilterRule]] = {"always": [], "sometimes": []}
-        self.posts = self.rules  # Treat rules as posts for Content compatibility
         self.channel: Optional[str] = None  # Current channel (rule category)
         self.imap: Optional[str] = None # Nick of the associated IMAP account
+        self.clear_rules()
+        self.fileName = "rulesFilter"
 
     def getChannels(self) -> List[str]:
         """Get the list of available channels (rule categories).
@@ -173,17 +173,13 @@ class moduleFilterManager(Content):
         Returns:
             Self (the initialized Filter Manager instance).
         """
-        # 'keys' parameter is now mostly for compatibility; 'setMoreValues'
-        # is the primary way configuration values are passed.
-
         # Ensure default rules_file if not set by setMoreValues
         if self.rules_file is None:
-            self.rules_file = f"{DATADIR}/rulesFilter.json"
+            self.rules_file = f"{DATADIR}/{self.fileName}.json"
 
         self._log_msg(f"Initializing filter manager with rules file: {self.rules_file}", 2)
-        if self.imap:
+        if hasattr(self, 'imap') and self.imap:
             self._log_msg(f"Associated with IMAP account: {self.imap}", 2)
-        self._log_msg("DEBUG: initApi returning self.", 2)
         return self
 
     def setRules_file(self, rules_file: str) -> None:
@@ -257,14 +253,6 @@ class moduleFilterManager(Content):
                 self._log_msg(f"Found {msg_count} messages matching the rule.", 1)
                 final_return_value = (folder, msg_list_str)
 
-                # proceed_input = input("Proceed with moving messages (y/N): ").strip().lower()
-                # if proceed_input == 'y':
-                #     result_move = rules.api_src.moveMails(rules.api_src.getClient(), msg_list_str, folder)
-                #     self._log_msg(f"Move result: {result_move}", 1)
-                #     # If move is successful, final_return_value remains 'post'.
-                # else:
-                #     self._log_msg("Move operation cancelled.", 1)
-                #     final_return_value = "Move operation cancelled."
         else:
             self._log_msg("No post found for the given index.", 1)
             final_return_value = None # Explicitly set to None if no post
@@ -273,43 +261,58 @@ class moduleFilterManager(Content):
         self.indent = self.indent[:-1]
         return final_return_value
 
-    def setApiPosts(self, channel: Optional[str] = None) -> Dict[str, List[EmailFilterRule]] | List[EmailFilterRule]:
-        """Load rules from JSON file (equivalent to _load_rules).
+    def setApiPosts(self, channel: Optional[str] = None) -> List[EmailFilterRule]:
+        """Load rules from JSON file.
 
         This method follows the socialModules pattern where setApiPosts()
-        is responsible for fetching/loading data.
+        is responsible for fetching/loading data into self.posts.
 
         Args:
             channel: Optional channel to set after loading rules.
 
         Returns:
-            If channel specified: List of rules from that channel.
-            Otherwise: Dictionary of all rules by channel.
+            List of rules from the current or specified channel.
         """
-        self._log_msg(f"Loading rules from {self.rules_file}", 2)
+        if self.rules_file is None:
+            raise RuntimeError("rules_file is not initialized. Call initApi() or setClient() first.")
 
-        #self.rules = {"always": [], "sometimes": []} # Initialize with empty rules
+        self._log_msg(f"Loading rules from {self.rules_file}", 2, console=False)
 
-        try:
-            loaded_rules = self._read_rules_from_file(self.rules_file)
-            self.rules = loaded_rules
-        except FileNotFoundError:
-            self._log_msg(f"No rules file found at {self.rules_file}, starting with empty rules", 1)
-            # self.rules remains empty as initialized
-        except (json.JSONDecodeError, ValueError, Exception) as e: # Catch specific errors from _read_rules_from_file
-            self._log_msg(f"Failed to load rules: {e}", 3)
-            # Depending on desired behavior, could re-raise or continue with empty rules
-            # For now, we'll re-raise as per existing behavior in original setApiPosts on error
-            raise
+        self.clear_rules() # Initialize with empty rules and sets self.posts = []
 
-        if self.user:
-            self.posts = self.rules[self.user] # Ensure posts are synced after loading
+        if os.path.exists(self.rules_file):
+            try:
+                with open(self.rules_file, "r", encoding="utf-8") as f:
+                    content = f.read()
+                    if not content.strip():
+                        # Empty file, start with default rules
+                        self._log_msg("Rules file is empty, starting with empty rules", 1)
+                    else:
+                        data = json.loads(content)
+                        if "version" not in data or data["version"] != self.RULES_VERSION:
+                            raise ValueError(
+                                f"Incompatible rules file version. Expected {self.RULES_VERSION}, "
+                                f"got {data.get('version', 'N/A')}"
+                            )
+                        self._parse_json_rules(data)
+                        self._log_msg("Loaded rules from JSON file", 1)
+            except (json.JSONDecodeError, UnicodeDecodeError, KeyError) as e:
+                self._log_msg(f"Failed to load rules: {e}", 3)
+                raise
+            except ValueError: # Specifically for version mismatch
+                raise
+            except Exception as e:
+                self._log_msg(f"An unexpected error occurred while reading rules from {self.rules_file}: {e}", 3)
+                raise
 
-        # # Set channel if specified
-        # if channel:
-        #     self.setChannel(channel)
+        # Sync posts with the current or requested channel
+        target_channel = channel or self.channel
+        if target_channel:
+            self.setChannel(target_channel)
+        else:
+            self.posts = [] # No channel active, so no posts to process
 
-        return self.posts #if self.channel else self.rules
+        return self.posts
 
     def _parse_json_rules(self, data: Dict[str, Any]) -> None:
         """Parse JSON format rules into EmailFilterRule objects.
@@ -317,8 +320,6 @@ class moduleFilterManager(Content):
         Args:
             data: Dictionary containing rule data
         """
-        self.rules = {"always": [], "sometimes": []}
-
         for category in ["always", "sometimes"]:
             if category in data:
                 for rule_data in data[category]:
@@ -333,56 +334,6 @@ class moduleFilterManager(Content):
                         # Handle tuple/list format for backward compatibility
                         rule = EmailFilterRule.from_tuple(tuple(rule_data))
                         self.rules[category].append(rule)
-
-    def _read_rules_from_file(self, file_path: str) -> Dict[str, List[EmailFilterRule]]:
-        """Reads and parses rules from a JSON file.
-
-        Args:
-            file_path: The path to the JSON file.
-
-        Returns:
-            A dictionary of rules, organized by category ('always', 'sometimes').
-
-        Raises:
-            FileNotFoundError: If the specified file does not exist.
-            json.JSONDecodeError: If the file content is not valid JSON.
-            ValueError: If the rules file version is incompatible.
-            Exception: For other file I/O errors.
-        """
-        if not os.path.exists(file_path):
-            self._log_msg(f"Rules file not found at {file_path}", 1)
-            raise FileNotFoundError(f"Rules file not found: {file_path}")
-
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
-                if not content.strip():
-                    self._log_msg("Rules file is empty, returning empty rules", 1)
-                    return {"always": [], "sometimes": []}
-
-                data = json.loads(content)
-
-                if "version" not in data or data["version"] != self.RULES_VERSION:
-                    raise ValueError(
-                        f"Incompatible rules file version. Expected {self.RULES_VERSION}, "
-                        f"got {data.get('version', 'N/A')}"
-                    )
-
-                # Create a temporary manager to parse the rules to avoid modifying self.rules
-                temp_manager = moduleFilterManager()
-                temp_manager._parse_json_rules(data)
-                return temp_manager.rules
-
-        except FileNotFoundError:
-            raise
-        except json.JSONDecodeError as e:
-            self._log_msg(f"Failed to decode JSON from {file_path}: {e}", 3)
-            raise
-        except ValueError: # Specifically for version mismatch
-            raise
-        except Exception as e:
-            self._log_msg(f"An unexpected error occurred while reading rules from {file_path}: {e}", 3)
-            raise
 
     def _write_rules_to_file(self, file_path: str, rules_data: Dict[str, Any]) -> None:
         """Writes rules data to a JSON file.
@@ -561,41 +512,25 @@ class moduleFilterManager(Content):
             return True
         return False
 
-    def clear_rules(self, rule_type: Optional[str] = None) -> None:
+    def clear_rules(self, rule_type: Optional[str] = None, console: bool = False) -> None:
         """Clear all rules, or rules of a specific type.
 
         Args:
             rule_type: Optional category type to clear. If None, clears all.
+            console: Whether to print to console
         """
         if rule_type:
             self.rules[rule_type] = []
-            self._log_msg(f"Cleared all '{rule_type}' rules", 1)
+            self._log_msg(f"Cleared all '{rule_type}' rules", 1, console=console)
         else:
             self.rules = {"always": [], "sometimes": []}
-            self._log_msg("Cleared all rules", 1)
-        self.posts = self.rules  # Keep posts in sync
-
-    def getPosts(self, channel: Optional[str] = None) -> Dict[str, List[EmailFilterRule]] | List[EmailFilterRule]:
-        """Get the current rules (posts).
-
-        If a channel is set (via setChannel), returns rules from that channel.
-        Otherwise, returns all rules organized by channel.
-
-        Args:
-            channel: Optional channel to get rules from. If None, uses current channel.
-
-        Returns:
-            If channel is specified or set: List of rules from that channel.
-            Otherwise: Dictionary of all rules by channel.
-        """
-        result = None
-        if channel:
-            result = self.rules.get(channel, [])
-        elif self.channel:
-            result = self.posts if isinstance(self.posts, list) else self.rules.get(self.channel, [])
+            self._log_msg("Cleared all rules", 1, console=console)
+        
+        # Keep posts in sync (subset of rules)
+        if hasattr(self, 'channel') and self.channel and self.channel in self.rules:
+            self.posts = self.rules[self.channel]
         else:
-            result = self.posts if self.posts else self.rules
-        return result
+            self.posts = []
 
     def assignPosts(self, posts: Dict[str, List[EmailFilterRule]]) -> None:
         """Set the rules (posts).
@@ -603,11 +538,12 @@ class moduleFilterManager(Content):
         Args:
             posts: Dictionary of rules by category
         """
-        self.posts = posts
         self.rules = posts
-        # If a channel is set, update posts to point to that channel
-        if self.channel and self.channel in posts:
-            self.posts = posts[self.channel]
+        # If a channel is set, update posts to point to that channel's rules
+        if self.channel and self.channel in self.rules:
+            self.posts = self.rules[self.channel]
+        else:
+            self.posts = []
 
     def register_specific_tests(self, tester):
         """Register specific tests for moduleFilterManager.

@@ -68,14 +68,19 @@ class TestModuleFilterManager(unittest.TestCase):
         self.assertEqual(data["always"][0]["pattern"], "Test")
 
     def test_getPosts(self):
-        """Test getPosts returns rules."""
+        """Test getPosts returns an empty list when no channel is set."""
         rule = EmailFilterRule("From", "test@example.com", "Inbox")
         self.filter_manager.add_rule(rule, "always")
 
         posts = self.filter_manager.getPosts()
-        self.assertIn("always", posts)
-        self.assertIn("sometimes", posts)
-        self.assertEqual(len(posts["always"]), 1)
+        self.assertIsInstance(posts, list)
+        self.assertEqual(len(posts), 0)
+
+        # When channel is set, it should return the list of rules
+        self.filter_manager.setChannel("always")
+        posts = self.filter_manager.getPosts()
+        self.assertIsInstance(posts, list)
+        self.assertEqual(len(posts), 1)
 
     def test_assignPosts(self):
         """Test assignPosts sets rules."""
@@ -85,7 +90,9 @@ class TestModuleFilterManager(unittest.TestCase):
         }
 
         self.filter_manager.assignPosts(new_rules)
-        self.assertEqual(self.filter_manager.posts, new_rules)
+        # posts should be an empty list because no channel is set
+        self.assertIsInstance(self.filter_manager.posts, list)
+        self.assertEqual(len(self.filter_manager.posts), 0)
         self.assertEqual(self.filter_manager.rules, new_rules)
 
     def test_register_specific_tests(self):
