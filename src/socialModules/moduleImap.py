@@ -1451,7 +1451,7 @@ class moduleImap(Content):  # , Queue):
             api_src = kwargs.get("api")
             posts = kwargs.get("post")
             action = kwargs.get("action")
-            logMsg(f"api: {api_src} posts: {posts} action:{api_src.more}"
+            logMsg(f"api: {api_src} posts: {posts} action:{api_src.more}")
 
             #self.moveMails(self.api_src.getClient(), posts, )
 
