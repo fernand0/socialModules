@@ -116,7 +116,6 @@ class moduleFilterManager(Content):
         self.posts = self.rules  # Treat rules as posts for Content compatibility
         self.channel: Optional[str] = None  # Current channel (rule category)
         self.fileName = "rulesFilter"
-        self.imap: Optional[str] = None # Nick of the associated IMAP account
 
     def getChannels(self) -> List[str]:
         """Get the list of available channels (rule categories).
@@ -157,43 +156,38 @@ class moduleFilterManager(Content):
         """
         return self.channel
 
-    def getKeys(self, config) -> Optional[Any]:
-        return None
-
-    def initApi(self, keys: Optional[Dict[str, Optional[str]]] = None) -> "moduleFilterManager":
-        """Initialize the API.
-
-        This method ensures that `rules_file` has a default value if not set
-        by `setMoreValues` and logs the initialization status.
+    def getKeys(self, config) -> Optional[str]:
+        """Get the rules file path from configuration.
 
         Args:
-            keys: Deprecated. This parameter is no longer actively used, as
-                  configuration is primarily handled by `setMoreValues`.
-                  It is retained for compatibility with the base `Content` class signature.
+            config: Configuration object
 
         Returns:
-            Self (the initialized Filter Manager instance).
+            Path to rules file or None
         """
-        # 'keys' parameter is now mostly for compatibility; 'setMoreValues'
-        # is the primary way configuration values are passed.
+        rules_file = None
+        try:
+            # Attempt to get rules_file from config, specific to the user
+            rules_file = config.get(self.user, "rules_file")
+        except Exception:
+            # If not found in config, an exception will be raised,
+            # or it will return None if section/option not found.
+            # initApi will handle the default path if rules_file is None.
+            pass
+        return rules_file
 
-        # Ensure default rules_file if not set by setMoreValues
-        if self.rules_file is None:
-            self.rules_file = f"{DATADIR}/rulesFilter.json"
+    def initApi(self, keys) -> "moduleFilterManager":
+        """Initialize the API with the rules file path.
 
-        self._log_msg(f"Initializing filter manager with rules file: {self.rules_file}", 2)
-        if self.imap:
-            self._log_msg(f"Associated with IMAP account: {self.imap}", 2)
-        self._log_msg("DEBUG: initApi returning self.", 2)
+        Args:
+            keys: Rules file path from getKeys()
+
+        Returns:
+            Self for method chaining
+        """
+        self.rules_file = keys or f"{self.DATADIR}/rulesFilter.json"
+        self._log_msg(f"Initializing with rules file: {self.rules_file}", 2)
         return self
-
-    def setRules_file(self, rules_file: str) -> None:
-        """Set the rules file path. Called by setMoreValues."""
-        self.rules_file = rules_file
-
-    def setImap(self, imap: str) -> None:
-        """Set the associated IMAP account nickname. Called by setMoreValues."""
-        self.imap = imap
 
     def _log_msg(self, msg: str, level: int = 1, console: bool = False) -> None:
         """Log a message using socialModules logging convention.
@@ -205,69 +199,7 @@ class moduleFilterManager(Content):
         """
         logMsg(f"{self.indent}{msg}", level, console)
 
-    def getPost(self, i):
-        self.indent = f"{self.indent} "
-        msgLog = f"{self.indent} Start getPost pos {i}."
-        logMsg(msgLog, 2, False)
-        post = None
-        logMsg(f"Fileee: {self.rules_file}")
-        self.setPosts()
-        posts = self.getPosts()
-        logMsg(f"Posts: {posts}")
 
-        if posts and (i >= 0) and (i < len(posts)):
-            post = posts[i]
-        elif posts and (i < 0):
-            post = posts[len(posts) - 1]
-
-        # We have the rule, now we need to get the posts
-
-        rule = post
-        if isinstance(rule, EmailFilterRule):
-            keyword, text_header = rule.keyword, rule.pattern
-            folder = rule.folder
-        else:
-            keyword, text_header, folder = rule
-
-        search_criteria = f'(HEADER {keyword} "{text_header}")'
-        logger.info(
-            f"Applying rule: moving messages matching '{search_criteria}' to '{folder}'"
-        )
-
-
-        from socialModules.moduleRules import moduleRules
-        rules = moduleRules()
-        rules.api_src = rules.readConfigSrc("", ('imap', 'set', self.imap, 'posts'), None, self.fileName)
-        try:
-            rules.api_src.setChannel('INBOX')
-            rules.api_src.setPosts()
-            res, msg_ids = rules.api_src.getClient().search(None, search_criteria)
-        except Exception:
-            res, msg_ids = rules.api_src.getClient().search(
-                "utf-8", search_criteria.encode("utf-8")
-            )
-
-        if not msg_ids or not msg_ids[0]:
-            tester.api_src._print_status("No messages found matching this rule.")
-            return
-
-        msg_list_str = msg_ids[0].decode("utf-8").replace(" ", ",")
-        msg_count = len(msg_list_str.split(","))
-        print(f"Found {msg_count} messages matching the rule.")
-
-        if not input("Proceed with moving messages"):
-            print("Move operation cancelled.")
-            return
-
-        result = rules.api_src.moveMails(rules.api_src.getClient(), msg_list_str, folder)
-        print(f"Move result: {result}")
-
-
-
-        msgLog = f"{self.indent} End getPost"
-        logMsg(msgLog, 2, False)
-        self.indent = self.indent[:-1]
-        return post
 
     def setApiPosts(self, channel: Optional[str] = None) -> Dict[str, List[EmailFilterRule]] | List[EmailFilterRule]:
         """Load rules from JSON file (equivalent to _load_rules).
@@ -282,14 +214,14 @@ class moduleFilterManager(Content):
             If channel specified: List of rules from that channel.
             Otherwise: Dictionary of all rules by channel.
         """
+        if self.rules_file is None:
+            raise RuntimeError("rules_file is not initialized. Call initApi() or setClient() first.")
+
         self._log_msg(f"Loading rules from {self.rules_file}", 2)
 
         #self.rules = {"always": [], "sometimes": []} # Initialize with empty rules
 
-        try:
-            loaded_rules = self._read_rules_from_file(self.rules_file)
-            self.rules = loaded_rules
-        except FileNotFoundError:
+        if not os.path.exists(self.rules_file):
             self._log_msg(f"No rules file found at {self.rules_file}, starting with empty rules", 1)
             # No rules file, so posts remain empty as initialized
             self.posts = self.rules
@@ -322,14 +254,11 @@ class moduleFilterManager(Content):
         except Exception as e:
             self._log_msg(f"An unexpected error occurred while reading rules from {self.rules_file}: {e}", 3)
             raise
+
         if self.user:
             self.posts = self.rules[self.user] # Ensure posts are synced after loading
 
-        # # Set channel if specified
-        # if channel:
-        #     self.setChannel(channel)
-
-        return self.posts #if self.channel else self.rules
+        return self.posts if self.channel else self.rules
 
     def _parse_json_rules(self, data: Dict[str, Any]) -> None:
         """Parse JSON format rules into EmailFilterRule objects.
@@ -354,55 +283,7 @@ class moduleFilterManager(Content):
                         rule = EmailFilterRule.from_tuple(tuple(rule_data))
                         self.rules[category].append(rule)
 
-    def _read_rules_from_file(self, file_path: str) -> Dict[str, List[EmailFilterRule]]:
-        """Reads and parses rules from a JSON file.
 
-        Args:
-            file_path: The path to the JSON file.
-
-        Returns:
-            A dictionary of rules, organized by category ('always', 'sometimes').
-
-        Raises:
-            FileNotFoundError: If the specified file does not exist.
-            json.JSONDecodeError: If the file content is not valid JSON.
-            ValueError: If the rules file version is incompatible.
-            Exception: For other file I/O errors.
-        """
-        if not os.path.exists(file_path):
-            self._log_msg(f"Rules file not found at {file_path}", 1)
-            raise FileNotFoundError(f"Rules file not found: {file_path}")
-
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
-                if not content.strip():
-                    self._log_msg("Rules file is empty, returning empty rules", 1)
-                    return {"always": [], "sometimes": []}
-
-                data = json.loads(content)
-
-                if "version" not in data or data["version"] != self.RULES_VERSION:
-                    raise ValueError(
-                        f"Incompatible rules file version. Expected {self.RULES_VERSION}, "
-                        f"got {data.get('version', 'N/A')}"
-                    )
-
-                # Create a temporary manager to parse the rules to avoid modifying self.rules
-                temp_manager = moduleFilterManager()
-                temp_manager._parse_json_rules(data)
-                return temp_manager.rules
-
-        except FileNotFoundError:
-            raise
-        except json.JSONDecodeError as e:
-            self._log_msg(f"Failed to decode JSON from {file_path}: {e}", 3)
-            raise
-        except ValueError: # Specifically for version mismatch
-            raise
-        except Exception as e:
-            self._log_msg(f"An unexpected error occurred while reading rules from {file_path}: {e}", 3)
-            raise
 
 
 
@@ -432,6 +313,15 @@ class moduleFilterManager(Content):
         except Exception as e:
             self._log_msg(f"Failed to save rules: {e}", 3)
             return f"Error: {e}"
+
+    def getApiPostTitle(self, post):
+        self.indent = f"{self.indent} "
+        msgLog = (f"{self.indent} Start getPostTitle {post}.")
+        logMsg(msgLog, 2, False)
+        title = ""
+        if post:
+            title = f"{post.keyword}={post.pattern} -> {post.folder}"
+        return title
 
     def add_rule(self, rule: tuple | EmailFilterRule, rule_type: Optional[str] = None) -> None:
         """Add a new rule to the specified category.
