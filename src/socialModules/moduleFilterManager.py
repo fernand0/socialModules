@@ -156,6 +156,9 @@ class moduleFilterManager(Content):
         """
         return self.channel
 
+    def setFilterManager(self, channel: str) -> None:
+        self.filterManager = channel
+
     def getKeys(self, config) -> Optional[Any]:
         return None
 
@@ -279,6 +282,7 @@ class moduleFilterManager(Content):
         self._log_msg(f"Loading rules from {self.rules_file}", 2, console=False)
 
         self.clear_rules() # Initialize with empty rules and sets self.posts = []
+        posts = []
 
         if os.path.exists(self.rules_file):
             try:
@@ -306,7 +310,7 @@ class moduleFilterManager(Content):
                 raise
 
         # Sync posts with the current or requested channel
-        target_channel = channel or self.channel
+        target_channel = channel or self.channel or self.filterManager
         if target_channel:
             self.setChannel(target_channel)
         else:
