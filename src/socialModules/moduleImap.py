@@ -1465,7 +1465,8 @@ class moduleImap(Content):  # , Queue):
             channel = self.channel
         else:
             channel = self.getPostsType()
-        channel = "INBOX"
+        if not channel:
+            channel = "INBOX"
         M.select(channel.capitalize())
         if isinstance(msgs, bytes):
             msgs = msgs.decode("ascii")

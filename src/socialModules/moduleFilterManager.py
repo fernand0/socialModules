@@ -676,6 +676,8 @@ def main():
 
     print(f"File: {filter_manager.rules_file} {tester.api_src.rules_file}")
     print(f"Post: {tester.api_src.getPost(0)}")
+    print(f"dir: {tester.api_src.filterManager}")
+    print(f"dir: {tester.api_src.__dir__()}")
     print("\n--- Starting Interactive Menu (with loaded configuration) ---\n")
 
 
