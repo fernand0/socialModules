@@ -310,7 +310,10 @@ class moduleFilterManager(Content):
                 raise
 
         # Sync posts with the current or requested channel
-        target_channel = channel or self.channel or self.filterManager
+        if hasattr(self, 'filterManager'):
+            target_channel = channel or self.channel or self.filterManager
+        else:
+            target_channel = channel or self.channel 
         if target_channel:
             self.setChannel(target_channel)
         else:
