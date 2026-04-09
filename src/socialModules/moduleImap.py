@@ -1021,9 +1021,10 @@ class moduleImap(Content):  # , Queue):
             except:
                 logging.info(f"Non ascii: {name}")
             # print(inNameFolder.isdigit(), (inNameFolder+") "), name.lower().find((inNameFolder+") ").encode('ascii').lower()))
+            search_prefix = (inNameFolder + ") ").encode("ascii") if isinstance(name, bytes) else (inNameFolder + ") ")
             if (
                 inNameFolder.isdigit()
-                and name.lower().find((inNameFolder + ") ").encode("ascii").lower())
+                and name.lower().find(search_prefix.lower())
                 == 0
             ):
                 # There can be a problem if the number is part of the name or
@@ -1037,7 +1038,7 @@ class moduleImap(Content):  # , Queue):
             if search.lower() in name.lower():
                 if listFolders:
                     listFolders = (
-                        listFolders + " " + "%d) %s" % (i, self.nameFolder(name))
+                        listFolders + "\n" + "%d) %s" % (i, self.nameFolder(name))
                     )
                 else:
                     listFolders = "%d) %s" % (i, self.nameFolder(name))
@@ -1122,19 +1123,19 @@ class moduleImap(Content):  # , Queue):
             M = self.getClient()
 
         data = self.listFolders()
-        # print(data)
+        # logging.info(f"Folders: {data}")
         listAllFolders = self.listFolderNames(data, moreMessages)
         if not listAllFolders:
             listAllFolders = self.listFolderNames(data, "")
         listFolders = listAllFolders
         while listFolders:
-            if listFolders.count(" ") == 0:
+            if listFolders.count("\n") == 0:
                 nF = self.nameFolder(listFolders)
-                nF = nF.strip(" ")
+                nF = nF.strip("\n")
                 print("nameFolder", nF)
                 return nF
             rows, columns = os.popen("stty size", "r").read().split()
-            if listFolders.count(" ") > int(rows) - 2:
+            if listFolders.count("\n") > int(rows) - 2:
                 click.echo_via_pager(listFolders)
             else:
                 print(listFolders)
@@ -1155,7 +1156,7 @@ class moduleImap(Content):  # , Queue):
                 iFolder = createFolder(M, nfn, moreMessages)
                 return iFolder
                 # listFolders = iFolder
-            listFolders = self.listFolderNames(listFolders.split(" "), inNameFolder)
+            listFolders = self.listFolderNames(listFolders.split("\n"), inNameFolder)
             if not inNameFolder:
                 print("Entra")
                 listAllFolders = self.listFolderNames(data, "")
