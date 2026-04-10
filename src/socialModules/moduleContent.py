@@ -261,6 +261,7 @@ class Content:
         msgLog = f"{self.indent}  More: {more}"
         logMsg(msgLog, 2, False)
         if more:
+            self.more = more
             # Setting values available in more
             for option in more:
                 if option == "service":

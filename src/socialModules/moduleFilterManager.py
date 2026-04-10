@@ -181,17 +181,17 @@ class moduleFilterManager(Content):
             self.rules_file = f"{DATADIR}/{self.fileName}.json"
 
         self._log_msg(f"Initializing filter manager with rules file: {self.rules_file}", 2)
-        if hasattr(self, 'imap') and self.imap:
-            self._log_msg(f"Associated with IMAP account: {self.imap}", 2)
+        if hasattr(self, 'imapacc') and self.imapacc:
+            self._log_msg(f"Associated with IMAP account: {self.imapacc}", 2)
         return self
 
     def setRules_file(self, rules_file: str) -> None:
         """Set the rules file path. Called by setMoreValues."""
         self.rules_file = rules_file
 
-    def setImap(self, imap: str) -> None:
+    def setImapacc(self, imap: str) -> None:
         """Set the associated IMAP account nickname. Called by setMoreValues."""
-        self.imap = imap
+        self.imapacc = imap
 
     def _log_msg(self, msg: str, level: int = 1, console: bool = False) -> None:
         """Log a message using socialModules logging convention.
@@ -230,7 +230,9 @@ class moduleFilterManager(Content):
 
             from socialModules.moduleRules import moduleRules
             rules = moduleRules()
-            rules.api_src = rules.readConfigSrc("", ('imap', 'set', self.imap, 'posts'), None, self.fileName)
+            logging.info(f"Imap: {self.imap} Imapacc: {self.imapacc}")
+            rules.api_src = rules.readConfigSrc("", ('imap', 'set', self.imapacc, 'posts'),
+                                                None, self.fileName)
 
             msg_ids = None # Initialize msg_ids
             try:
@@ -313,7 +315,7 @@ class moduleFilterManager(Content):
         if hasattr(self, 'filterManager'):
             target_channel = channel or self.channel or self.filterManager
         else:
-            target_channel = channel or self.channel 
+            target_channel = channel or self.channel
         if target_channel:
             self.setChannel(target_channel)
         else:
@@ -532,7 +534,7 @@ class moduleFilterManager(Content):
         else:
             self.rules = {"always": [], "sometimes": []}
             self._log_msg("Cleared all rules", 1, console=console)
-        
+
         # Keep posts in sync (subset of rules)
         if hasattr(self, 'channel') and self.channel and self.channel in self.rules:
             self.posts = self.rules[self.channel]
@@ -677,133 +679,133 @@ def main():
     print(f"File: {filter_manager.rules_file} {tester.api_src.rules_file}")
     print(f"Post: {tester.api_src.getPost(0)}")
     print(f"dir: {tester.api_src.filterManager}")
-    print(f"dir: {tester.api_src.__dir__()}")
+    print(f"dir: {tester.api_src.imapacc}")
     print("\n--- Starting Interactive Menu (with loaded configuration) ---\n")
 
 
-    while True:
-        print("\n--- Menu ---")
-        print("1. Show all rules")
-        print("2. Show 'always' rules")
-        print("3. Show 'sometimes' rules")
-        print("4. Add rule to 'always'")
-        print("5. Add rule to 'sometimes'")
-        print("6. Delete rule")
-        print("7. Move rule between categories")
-        print("8. Clear all rules")
-        print("9. Save rules")
-        print("10. Reload rules")
-        print("0. Exit")
+    # while True:
+    #     print("\n--- Menu ---")
+    #     print("1. Show all rules")
+    #     print("2. Show 'always' rules")
+    #     print("3. Show 'sometimes' rules")
+    #     print("4. Add rule to 'always'")
+    #     print("5. Add rule to 'sometimes'")
+    #     print("6. Delete rule")
+    #     print("7. Move rule between categories")
+    #     print("8. Clear all rules")
+    #     print("9. Save rules")
+    #     print("10. Reload rules")
+    #     print("0. Exit")
 
-        choice = input("\nSelect option: ").strip()
+    #     choice = input("\nSelect option: ").strip()
 
-        try:
-            if choice == "1":
-                filter_manager.display_rules()
+    #     try:
+    #         if choice == "1":
+    #             filter_manager.display_rules()
 
-            elif choice == "2":
-                filter_manager.setChannel("always")
-                rules = filter_manager.getPosts()
-                print(f"\nALWAYS Rules ({len(rules)}):")
-                for i, rule in enumerate(rules):
-                    print(f"  {i}: {rule.keyword}='{rule.pattern}' -> {rule.folder}")
+    #         elif choice == "2":
+    #             filter_manager.setChannel("always")
+    #             rules = filter_manager.getPosts()
+    #             print(f"\nALWAYS Rules ({len(rules)}):")
+    #             for i, rule in enumerate(rules):
+    #                 print(f"  {i}: {rule.keyword}='{rule.pattern}' -> {rule.folder}")
 
-            elif choice == "3":
-                filter_manager.setChannel("sometimes")
-                rules = filter_manager.getPosts()
-                print(f"\nSOMETIMES Rules ({len(rules)}):")
-                for i, rule in enumerate(rules):
-                    print(f"  {i}: {rule.keyword}='{rule.pattern}' -> {rule.folder}")
+    #         elif choice == "3":
+    #             filter_manager.setChannel("sometimes")
+    #             rules = filter_manager.getPosts()
+    #             print(f"\nSOMETIMES Rules ({len(rules)}):")
+    #             for i, rule in enumerate(rules):
+    #                 print(f"  {i}: {rule.keyword}='{rule.pattern}' -> {rule.folder}")
 
-            elif choice == "4":
-                keyword = input("Header keyword (e.g., From, Subject): ").strip() or "From"
-                pattern = input("Pattern to match: ").strip()
-                folder = input("Destination folder: ").strip()
-                if pattern and folder:
-                    filter_manager.setChannel("always")
-                    filter_manager.add_rule((keyword, pattern, folder))
-                    print(f"✓ Rule added to 'always': {keyword}='{pattern}' -> {folder}")
-                else:
-                    print("Pattern and folder are required")
+    #         elif choice == "4":
+    #             keyword = input("Header keyword (e.g., From, Subject): ").strip() or "From"
+    #             pattern = input("Pattern to match: ").strip()
+    #             folder = input("Destination folder: ").strip()
+    #             if pattern and folder:
+    #                 filter_manager.setChannel("always")
+    #                 filter_manager.add_rule((keyword, pattern, folder))
+    #                 print(f"✓ Rule added to 'always': {keyword}='{pattern}' -> {folder}")
+    #             else:
+    #                 print("Pattern and folder are required")
 
-            elif choice == "5":
-                keyword = input("Header keyword (e.g., From, Subject): ").strip() or "From"
-                pattern = input("Pattern to match: ").strip()
-                folder = input("Destination folder: ").strip()
-                if pattern and folder:
-                    filter_manager.setChannel("sometimes")
-                    filter_manager.add_rule((keyword, pattern, folder))
-                    print(f"✓ Rule added to 'sometimes': {keyword}='{pattern}' -> {folder}")
-                else:
-                    print("Pattern and folder are required")
+    #         elif choice == "5":
+    #             keyword = input("Header keyword (e.g., From, Subject): ").strip() or "From"
+    #             pattern = input("Pattern to match: ").strip()
+    #             folder = input("Destination folder: ").strip()
+    #             if pattern and folder:
+    #                 filter_manager.setChannel("sometimes")
+    #                 filter_manager.add_rule((keyword, pattern, folder))
+    #                 print(f"✓ Rule added to 'sometimes': {keyword}='{pattern}' -> {folder}")
+    #             else:
+    #                 print("Pattern and folder are required")
 
-            elif choice == "6":
-                filter_manager.display_rules()
-                category = input("Category (always/sometimes): ").strip().lower()
-                if category in ["always", "sometimes"]:
-                    try:
-                        idx = int(input("Rule number to delete: ").strip())
-                        rules = filter_manager.get_rules(category)
-                        if 0 <= idx < len(rules):
-                            filter_manager.remove_rule(rules[idx], category)
-                            print(f"✓ Rule deleted from '{category}'")
-                        else:
-                            print("Invalid rule number")
-                    except ValueError:
-                        print("Invalid number")
-                else:
-                    print("Invalid category")
+    #         elif choice == "6":
+    #             filter_manager.display_rules()
+    #             category = input("Category (always/sometimes): ").strip().lower()
+    #             if category in ["always", "sometimes"]:
+    #                 try:
+    #                     idx = int(input("Rule number to delete: ").strip())
+    #                     rules = filter_manager.get_rules(category)
+    #                     if 0 <= idx < len(rules):
+    #                         filter_manager.remove_rule(rules[idx], category)
+    #                         print(f"✓ Rule deleted from '{category}'")
+    #                     else:
+    #                         print("Invalid rule number")
+    #                 except ValueError:
+    #                     print("Invalid number")
+    #             else:
+    #                 print("Invalid category")
 
-            elif choice == "7":
-                filter_manager.display_rules()
-                from_cat = input("From category (always/sometimes): ").strip().lower()
-                if from_cat in ["always", "sometimes"]:
-                    try:
-                        idx = int(input("Rule number to move: ").strip())
-                        rules = filter_manager.get_rules(from_cat)
-                        if 0 <= idx < len(rules):
-                            to_cat = input("To category (always/sometimes): ").strip().lower()
-                            if to_cat in ["always", "sometimes"] and to_cat != from_cat:
-                                filter_manager.move_rule(rules[idx], from_cat, to_cat)
-                                print(f"✓ Rule moved from '{from_cat}' to '{to_cat}'")
-                            else:
-                                print("Invalid destination category")
-                        else:
-                            print("Invalid rule number")
-                    except ValueError:
-                        print("Invalid number")
-                else:
-                    print("Invalid source category")
+    #         elif choice == "7":
+    #             filter_manager.display_rules()
+    #             from_cat = input("From category (always/sometimes): ").strip().lower()
+    #             if from_cat in ["always", "sometimes"]:
+    #                 try:
+    #                     idx = int(input("Rule number to move: ").strip())
+    #                     rules = filter_manager.get_rules(from_cat)
+    #                     if 0 <= idx < len(rules):
+    #                         to_cat = input("To category (always/sometimes): ").strip().lower()
+    #                         if to_cat in ["always", "sometimes"] and to_cat != from_cat:
+    #                             filter_manager.move_rule(rules[idx], from_cat, to_cat)
+    #                             print(f"✓ Rule moved from '{from_cat}' to '{to_cat}'")
+    #                         else:
+    #                             print("Invalid destination category")
+    #                     else:
+    #                         print("Invalid rule number")
+    #                 except ValueError:
+    #                     print("Invalid number")
+    #             else:
+    #                 print("Invalid source category")
 
-            elif choice == "8":
-                confirm = input("Clear ALL rules? (y/n): ").strip().lower()
-                if confirm == "y":
-                    filter_manager.clear_rules()
-                    print("✓ All rules cleared")
+    #         elif choice == "8":
+    #             confirm = input("Clear ALL rules? (y/n): ").strip().lower()
+    #             if confirm == "y":
+    #                 filter_manager.clear_rules()
+    #                 print("✓ All rules cleared")
 
-            elif choice == "9":
-                result = filter_manager.updatePosts()
-                print(f"Save result: {result}")
+    #         elif choice == "9":
+    #             result = filter_manager.updatePosts()
+    #             print(f"Save result: {result}")
 
-            elif choice == "10":
-                filter_manager.setApiPosts()
-                print("✓ Rules reloaded")
-                filter_manager.display_rules()
+    #         elif choice == "10":
+    #             filter_manager.setApiPosts()
+    #             print("✓ Rules reloaded")
+    #             filter_manager.display_rules()
 
-            elif choice == "0":
-                save = input("Save rules before exiting? (y/n): ").strip().lower()
-                if save == "y":
-                    result = filter_manager.updatePosts()
-                    print(f"Save result: {result}")
-                print("Goodbye!")
-                break
+    #         elif choice == "0":
+    #             save = input("Save rules before exiting? (y/n): ").strip().lower()
+    #             if save == "y":
+    #                 result = filter_manager.updatePosts()
+    #                 print(f"Save result: {result}")
+    #             print("Goodbye!")
+    #             break
 
-            else:
-                print("Invalid option")
+    #         else:
+    #             print("Invalid option")
 
-        except Exception as e:
-            print(f"Error: {e}")
-            logging.exception("Detailed error:")
+    #     except Exception as e:
+    #         print(f"Error: {e}")
+    #         logging.exception("Detailed error:")
 
 
 if __name__ == "__main__":
