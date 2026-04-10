@@ -1495,7 +1495,9 @@ class moduleImap(Content):  # , Queue):
             channel = self.getPostsType()
         if not channel:
             channel = "INBOX"
-        M.select(channel.capitalize())
+        status, _ = M.select(channel)
+        if status != "OK":
+            logMsg(f"Failed to select folder '{channel}' (status: {status}). COPY may fail.", 3, False)
         if isinstance(msgs, bytes):
             msgs = msgs.decode("ascii")
 
