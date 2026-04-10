@@ -1057,10 +1057,37 @@ class moduleImap(Content):  # , Queue):
             self.setLabels()
         return list(filter(lambda x: sel in str(x), self.labels))
 
+    def has_noselect(self, folder):
+        """Check if a folder has the \\Noselect IMAP attribute.
+        
+        The \\Noselect attribute indicates that the folder cannot be selected
+        as a mailbox (it's typically a hierarchy delimiter or special folder).
+        
+        Args:
+            folder: Raw IMAP folder entry (bytes or string)
+            
+        Returns:
+            True if the folder has \\Noselect attribute, False otherwise
+        """
+        if isinstance(folder, bytes):
+            folder_str = folder.decode('utf-8', errors='replace')
+        else:
+            folder_str = folder
+        
+        # Check for \Noselect in the IMAP attributes (before the first ")")
+        # Format: b'(\\HasNoChildren \\Noselect) "/" "Folder"' or similar
+        if ') ' in folder_str:
+            attributes = folder_str.split(') ')[0]
+            return '\\Noselect' in attributes
+        return False
+
     def listFolders(self):
         # resp, data = self.getClient().list('""', '*')
         self.setLabels
-        return self.getLabels()
+        all_folders = self.getLabels()
+        # Filter out folders with \Noselect attribute
+        # These are special folders that cannot be selected
+        return [f for f in all_folders if not self.has_noselect(f)]
 
     def checkConnected(self):
         try:
