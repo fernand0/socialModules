@@ -537,7 +537,7 @@ class moduleImap(Content):  # , Queue):
         # i = 1 # Removed unused variable
         if "list-id" in msg:
             header = "list-id"
-            textHeader = msg["list-id"][msg["list-id"].find("<") + 1 : -1]
+            textHeader = msg["list-id"]
             filterCond = textHeader
         else:
             textHeaders, nameHeaders = self.get_headers_content(M, msg)
@@ -558,7 +558,7 @@ class moduleImap(Content):  # , Queue):
             if "Subject" not in header:
                 pos = textHeader.find("<")
                 if pos >= 0:
-                    textHeader = textHeader[pos + 1 : textHeader.find(">", pos + 1)]
+                    textHeader = textHeader[pos : textHeader.find(">") + 1]
                 else:
                     pos = textHeader.find("[")
                     if pos >= 0:
@@ -618,7 +618,7 @@ class moduleImap(Content):  # , Queue):
     #         # textHeader = str(email.header.make_header(textHeader))
     #         pos = textHeader.find("<")
     #         if pos >= 0:
-    #             textHeader = textHeader[pos + 1 : textHeader.find(">", pos + 1)]
+    #             textHeader = textHeader[pos : textHeader.find(">") + 1]
     #         else:
     #             pos = textHeader.find("[")
     #             if pos >= 0:
