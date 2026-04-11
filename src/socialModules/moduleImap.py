@@ -32,7 +32,7 @@ from socialModules.moduleContent import *
 # from socialModules.moduleQueue import *
 
 msgHeaders = [
-    "List-Id",
+    "list-id",
     "From",
     "Sender",
     "Subject",
@@ -45,7 +45,7 @@ msgHeaders = [
 headers = ["address", "header"]
 keyWords = {
     "address": ["From", "To"],
-    "header": ["subject", "Sender", "X-Original-To", "List-Id"],
+    "header": ["Subject", "Sender", "X-Original-To", "list-id"],
 }
 
 
@@ -535,9 +535,9 @@ class moduleImap(Content):  # , Queue):
 
     def selectHeaderAuto(self, M, msg):
         # i = 1 # Removed unused variable
-        if "List-Id" in msg:
-            header = "List-Id"
-            textHeader = msg["List-Id"][msg["List-Id"].find("<") + 1 : -1]
+        if "list-id" in msg:
+            header = "list-id"
+            textHeader = msg["list-id"][msg["list-id"].find("<") + 1 : -1]
             filterCond = textHeader
         else:
             textHeaders, nameHeaders = self.get_headers_content(M, msg)
@@ -578,8 +578,8 @@ class moduleImap(Content):  # , Queue):
     # def selectHeaderAuto(self, M, msg):
     #     i = 1
     #     print(f"Msg: {msg}")
-    #     if "List-Id" in msg:
-    #         return ("List-Id", msg["List-Id"].find("<") + 1 : -1])
+    #     if "list-id" in msg:
+    #         return ("list-id", msg["list-id"].find("<") + 1 : -1])
     #     else:
     #         # print(f"{msg} - {type(msg)}")
     #         # print(f"{msg[1].keys()}")
@@ -1743,7 +1743,7 @@ class moduleImap(Content):  # , Queue):
             post = msg[1]
         else:
             post = msg
-        return post.get("List-Id")
+        return post.get("list-id")
 
     def getApiPostTitle(self, msg):
         if isinstance(msg, tuple):
