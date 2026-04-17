@@ -1083,7 +1083,7 @@ class moduleImap(Content):  # , Queue):
 
     def listFolders(self):
         # resp, data = self.getClient().list('""', '*')
-        self.setLabels
+        self.setLabels()
         all_folders = self.getLabels()
         # Filter out folders with \Noselect attribute
         # These are special folders that cannot be selected
@@ -1127,9 +1127,8 @@ class moduleImap(Content):  # , Queue):
         folders = [self.nameFolder(fol) for fol in data]
         folders_sel = []
         if folderM:
-            folders_sel = [
-                self.nameFolder(fol) for fol in data if folderM.lower() in self.nameFolder(fol).lower()
-            ]
+            f_lower = folderM.lower()
+            folders_sel = [f for f in folders if f_lower in f.lower()]
         # Dirty trick? We add at the end (the last that will appear on the
         # terminal the selected folders, if any
         folders = folders + folders_sel
