@@ -1128,7 +1128,7 @@ class moduleImap(Content):  # , Queue):
         folders_sel = []
         if folderM:
             folders_sel = [
-                self.nameFolder(fol) for fol in data if folderM in self.nameFolder(fol)
+                self.nameFolder(fol) for fol in data if folderM.lower() in self.nameFolder(fol).lower()
             ]
         # Dirty trick? We add at the end (the last that will appear on the
         # terminal the selected folders, if any
