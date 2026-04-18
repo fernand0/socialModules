@@ -32,7 +32,7 @@ from socialModules.moduleContent import *
 # from socialModules.moduleQueue import *
 
 msgHeaders = [
-    "List-Id",
+    "list-id",
     "From",
     "Sender",
     "Subject",
@@ -45,7 +45,7 @@ msgHeaders = [
 headers = ["address", "header"]
 keyWords = {
     "address": ["From", "To"],
-    "header": ["subject", "Sender", "X-Original-To", "List-Id"],
+    "header": ["Subject", "Sender", "X-Original-To", "list-id"],
 }
 
 
@@ -535,9 +535,9 @@ class moduleImap(Content):  # , Queue):
 
     def selectHeaderAuto(self, M, msg):
         # i = 1 # Removed unused variable
-        if "List-Id" in msg:
-            header = "List-Id"
-            textHeader = msg["List-Id"][msg["List-Id"].find("<") + 1 : -1]
+        if "list-id" in msg:
+            header = "list-id"
+            textHeader = msg["list-id"]
             filterCond = textHeader
         else:
             textHeaders, nameHeaders = self.get_headers_content(M, msg)
@@ -558,7 +558,7 @@ class moduleImap(Content):  # , Queue):
             if "Subject" not in header:
                 pos = textHeader.find("<")
                 if pos >= 0:
-                    textHeader = textHeader[pos + 1 : textHeader.find(">", pos + 1)]
+                    textHeader = textHeader[pos : textHeader.find(">") + 1]
                 else:
                     pos = textHeader.find("[")
                     if pos >= 0:
@@ -578,8 +578,8 @@ class moduleImap(Content):  # , Queue):
     # def selectHeaderAuto(self, M, msg):
     #     i = 1
     #     print(f"Msg: {msg}")
-    #     if "List-Id" in msg:
-    #         return ("List-Id", msg["List-Id"].find("<") + 1 : -1])
+    #     if "list-id" in msg:
+    #         return ("list-id", msg["list-id"].find("<") + 1 : -1])
     #     else:
     #         # print(f"{msg} - {type(msg)}")
     #         # print(f"{msg[1].keys()}")
@@ -618,7 +618,7 @@ class moduleImap(Content):  # , Queue):
     #         # textHeader = str(email.header.make_header(textHeader))
     #         pos = textHeader.find("<")
     #         if pos >= 0:
-    #             textHeader = textHeader[pos + 1 : textHeader.find(">", pos + 1)]
+    #             textHeader = textHeader[pos : textHeader.find(">") + 1]
     #         else:
     #             pos = textHeader.find("[")
     #             if pos >= 0:
@@ -1083,7 +1083,7 @@ class moduleImap(Content):  # , Queue):
 
     def listFolders(self):
         # resp, data = self.getClient().list('""', '*')
-        self.setLabels
+        self.setLabels()
         all_folders = self.getLabels()
         # Filter out folders with \Noselect attribute
         # These are special folders that cannot be selected
@@ -1127,9 +1127,8 @@ class moduleImap(Content):  # , Queue):
         folders = [self.nameFolder(fol) for fol in data]
         folders_sel = []
         if folderM:
-            folders_sel = [
-                self.nameFolder(fol) for fol in data if folderM in self.nameFolder(fol)
-            ]
+            f_lower = folderM.lower()
+            folders_sel = [f for f in folders if f_lower in f.lower()]
         # Dirty trick? We add at the end (the last that will appear on the
         # terminal the selected folders, if any
         folders = folders + folders_sel
@@ -1743,7 +1742,7 @@ class moduleImap(Content):  # , Queue):
             post = msg[1]
         else:
             post = msg
-        return post.get("List-Id")
+        return post.get("list-id")
 
     def getApiPostTitle(self, msg):
         if isinstance(msg, tuple):
