@@ -347,7 +347,8 @@ def select_from_list(
         names_sel = [opt for opt in names if selector in opt]  # + more_options
     if negation_selector:
         names_sel = [opt for opt in names if negation_selector not in opt]
-    names_sel = names_sel + more_options
+    names_sel.extend(more_options)
+    names_sel = list(dict.fromkeys(names_sel)) # Remove duplicates while preserving order
     options_sel = names_sel.copy()
     while options_sel and len(options_sel) > 1:
         text_sel = ""
