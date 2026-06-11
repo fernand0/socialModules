@@ -86,7 +86,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
             self.setLabels()
         if isinstance(sel, dict):
             sel = sel["name"]
-        logging.info(f"Labels: {self.labels}")
+        logging.debug(f"Labels: {self.labels}")
         logging.info(f"Labels: {sel}")
         return list(filter(lambda x: sel in x["name"], self.labels))
 
