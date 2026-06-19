@@ -320,8 +320,10 @@ class moduleImap(Content):  # , Queue):
 
                     if status == "OK":
                         # If the list of messages is too long it won't work
-                        flag = r"\Deleted"
+                        flag = "\\Deleted"
                         result = M.store(msgs, "+FLAGS", flag)
+                        msgLog = "Result: {result}"
+                        logMsg(msgLog, 2, False)
                         if result[0] == "OK":
                             msgLog = "%s: %d messages have been deleted." % (msgTxt, i)
                             logMsg(msgLog, 2, False)
@@ -1514,6 +1516,8 @@ class moduleImap(Content):  # , Queue):
 
             try:
                 status, resultMsg = M.copy(chunk_str, folder)
+                msgLog = f"Result copy: ({status}), {resultMsg}"
+                logMsg(msgLog, 2, False)
                 if status != "OK":
                     logging.warning(f"Failed to copy chunk: {resultMsg}")
                     self.res_dict["success"] = False
@@ -1523,8 +1527,10 @@ class moduleImap(Content):  # , Queue):
                     all_messages_moved_and_deleted = False
                     continue
 
-                flag = r"\Deleted"
+                flag = "\\Deleted"
                 result = M.store(chunk_str, "+FLAGS", flag)
+                msgLog = "Result: {result}"
+                logMsg(msgLog, 2, False)
                 if result[0] != "OK":
                     print("Failed to delete chunk!")
                     self.res_dict["success"] = False
