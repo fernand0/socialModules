@@ -351,6 +351,8 @@ def select_from_list(
     options_sel = names_sel.copy()
     while options_sel and len(options_sel) > 1:
         text_sel = ""
+        if title: 
+            text_sel = f"Title: {title}"
         for i, elem in enumerate(options_sel):
             text_sel = f"{text_sel}\n{i}) {elem}"
         resPopen = os.popen("stty size", "r").read()

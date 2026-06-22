@@ -775,7 +775,7 @@ class moduleRules:
         except Exception as e:
             print(f"An error occurred during publication: {e}")
 
-    def selectRuleInteractive(self, service=None):
+    def selectRuleInteractive(self, service=None, title=""):
         if not service:
             nameModule = os.path.basename(inspect.stack()[1].filename)
             service = nameModule.split(".")[0][6:].casefold()
@@ -790,7 +790,7 @@ class moduleRules:
             selRules = selRules + self.selectRule(ser, "")
 
         logging.info(f"Rules: {selRules}")
-        iRul, src = select_from_list(selRules)
+        iRul, src = select_from_list(selRules, title=title)
 
         logging.info(f"Selected rule: {iRul}. Rule {src}\n")
         print(f"\nSelected rule: {iRul}. Rule {src}\n")
