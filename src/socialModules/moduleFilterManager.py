@@ -16,7 +16,7 @@ import os
 from dataclasses import dataclass, asdict
 from typing import Dict, List, Optional, Any
 
-from socialModules.configMod import logMsg
+from socialModules.configMod import logMsg, DATADIR
 from socialModules.moduleContent import Content
 
 
@@ -26,13 +26,13 @@ logger = logging.getLogger(__name__)
 @dataclass
 class EmailFilterRule:
     """Represents a single email filtering rule.
-    
+
     Attributes:
         keyword: The email header keyword to match (e.g., 'From', 'Subject')
         pattern: The pattern to search for in the header value
         folder: The destination folder for matching emails
     """
-    
+
     keyword: str
     pattern: str
     folder: str
@@ -40,10 +40,10 @@ class EmailFilterRule:
     @classmethod
     def from_tuple(cls, rule_tuple: tuple) -> "EmailFilterRule":
         """Create an EmailFilterRule from a tuple format.
-        
+
         Args:
             rule_tuple: A tuple of (keyword, pattern, folder)
-            
+
         Returns:
             An EmailFilterRule instance
         """
@@ -51,7 +51,7 @@ class EmailFilterRule:
 
     def to_tuple(self) -> tuple:
         """Convert to tuple format for compatibility.
-        
+
         Returns:
             A tuple of (keyword, pattern, folder)
         """
@@ -59,10 +59,10 @@ class EmailFilterRule:
 
     def matches(self, header_value: str) -> bool:
         """Check if this rule matches the given header value.
-        
+
         Args:
             header_value: The header value to check against
-            
+
         Returns:
             True if the pattern matches, False otherwise
         """
@@ -110,11 +110,12 @@ class moduleFilterManager(Content):
             indent: Indentation string for logging
         """
         super().__init__(indent)
-        self.service = "FilterManager"
+        # self.service = "FilterManager"
         self.rules_file: Optional[str] = None
-        self.rules: Dict[str, List[EmailFilterRule]] = {"always": [], "sometimes": []}
-        self.posts = self.rules  # Treat rules as posts for Content compatibility
         self.channel: Optional[str] = None  # Current channel (rule category)
+        self.imap: Optional[str] = None # Nick of the associated IMAP account
+        self.clear_rules()
+        self.fileName = "rulesFilter"
 
     def getChannels(self) -> List[str]:
         """Get the list of available channels (rule categories).
@@ -123,6 +124,9 @@ class moduleFilterManager(Content):
             List of available channel names
         """
         return list(self.rules.keys())
+
+    def setPage(self, channel: str) -> None:
+        self.setChannel(channel)
 
     def setChannel(self, channel: str) -> None:
         """Set the current channel (rule category) to work with.
@@ -137,10 +141,10 @@ class moduleFilterManager(Content):
         """
         if channel not in self.rules:
             raise ValueError(f"Invalid channel '{channel}'. Available channels: {self.getChannels()}")
-        
+
         self.channel = channel
         self._log_msg(f"Channel set to: {channel}", 1)
-        
+
         # Update posts to point to the selected channel's rules
         self.posts = self.rules[channel]
 
@@ -152,25 +156,46 @@ class moduleFilterManager(Content):
         """
         return self.channel
 
-    def getKeys(self, config) -> Optional[str]:
+    def setFilterManager(self, channel: str) -> None:
+        self.filterManager = channel
+
+    def getKeys(self, config) -> Optional[Any]:
         return None
 
-    def initApi(self, keys) -> "moduleFilterManager":
-        """Initialize the API with the rules file path.
-        
+    def initApi(self, keys: Optional[Dict[str, Optional[str]]] = None) -> "moduleFilterManager":
+        """Initialize the API.
+
+        This method ensures that `rules_file` has a default value if not set
+        by `setMoreValues` and logs the initialization status.
+
         Args:
-            keys: Rules file path from getKeys()
-            
+            keys: Deprecated. This parameter is no longer actively used, as
+                  configuration is primarily handled by `setMoreValues`.
+                  It is retained for compatibility with the base `Content` class signature.
+
         Returns:
-            Self for method chaining
+            Self (the initialized Filter Manager instance).
         """
-        self.rules_file = f"{DATADIR}/rulesFilter.json"
-        self._log_msg(f"Initializing with rules file: {self.rules_file}", 2)
+        # Ensure default rules_file if not set by setMoreValues
+        if self.rules_file is None:
+            self.rules_file = f"{DATADIR}/{self.fileName}.json"
+
+        self._log_msg(f"Initializing filter manager with rules file: {self.rules_file}", 2)
+        if hasattr(self, 'imapacc') and self.imapacc:
+            self._log_msg(f"Associated with IMAP account: {self.imapacc}", 2)
         return self
+
+    def setRules_file(self, rules_file: str) -> None:
+        """Set the rules file path. Called by setMoreValues."""
+        self.rules_file = rules_file
+
+    def setImapacc(self, imap: str) -> None:
+        """Set the associated IMAP account nickname. Called by setMoreValues."""
+        self.imapacc = imap
 
     def _log_msg(self, msg: str, level: int = 1, console: bool = False) -> None:
         """Log a message using socialModules logging convention.
-        
+
         Args:
             msg: Message to log
             level: Log level (1=info, 2=debug, 3=warning)
@@ -178,52 +203,132 @@ class moduleFilterManager(Content):
         """
         logMsg(f"{self.indent}{msg}", level, console)
 
-    def setApiPosts(self, channel: Optional[str] = None) -> Dict[str, List[EmailFilterRule]] | List[EmailFilterRule]:
-        """Load rules from JSON file (equivalent to _load_rules).
+    def getPost(self, i):
+        self.indent = f"{self.indent} "
+        self._log_msg(f"{self.indent} Start getPost pos {i}.", 2)
+        post = None
+        self.setPosts()
+        posts = self.getPosts()
+
+        if posts and (i >= 0) and (i < len(posts)):
+            post = posts[i]
+        elif posts and (i < 0):
+            post = posts[len(posts) - 1]
+
+        final_return_value = post # Default return value is the post itself
+
+        if post: # Only proceed if a post (rule) was found
+            rule = post
+            if isinstance(rule, EmailFilterRule):
+                keyword, text_header = rule.keyword, rule.pattern
+                folder = rule.folder
+            else: # Fallback for old tuple format if it ever occurs
+                keyword, text_header, folder = rule
+
+            search_criteria = f'(HEADER {keyword} "{text_header}")'
+            self._log_msg(f"Applying rule: moving messages matching '{search_criteria}' to '{folder}'", 1) # Use _log_msg
+
+            from socialModules.moduleRules import moduleRules
+            rules = moduleRules()
+            logging.info(f"Imap: {self.imap} Imapacc: {self.imapacc}")
+            rules.api_src = rules.readConfigSrc("", ('imap', 'set', self.imapacc, 'posts'),
+                                                None, self.fileName)
+
+            msg_ids = None # Initialize msg_ids
+            try:
+                rules.api_src.setChannel('INBOX')
+                rules.api_src.setPosts()
+                res, msg_ids = rules.api_src.getClient().search(None, search_criteria)
+            except Exception as e:
+                self._log_msg(f"Error during IMAP search: {e}", 3)
+                try: # Attempt with utf-8 encoding as a fallback
+                    res, msg_ids = rules.api_src.getClient().search(
+                        "utf-8", search_criteria.encode("utf-8")
+                    )
+                except Exception as e_fallback:
+                    self._log_msg(f"Fallback IMAP search also failed: {e_fallback}", 3)
+                    msg_ids = None
+
+            if not msg_ids or not msg_ids[0]:
+                self._log_msg("No messages found matching this rule.", 1)
+                final_return_value = "No messages found matching this rule."
+            else:
+                msg_list_str = msg_ids[0].decode("utf-8").replace(" ", ",")
+                msg_count = len(msg_list_str.split(","))
+                self._log_msg(f"Found {msg_count} messages matching the rule.", 1)
+                final_return_value = (folder, msg_list_str)
+
+        else:
+            self._log_msg("No post found for the given index.", 1)
+            final_return_value = None # Explicitly set to None if no post
+
+        self._log_msg(f"{self.indent} End getPost", 2)
+        self.indent = self.indent[:-1]
+        return final_return_value
+
+    def setApiPosts(self, channel: Optional[str] = None) -> List[EmailFilterRule]:
+        """Load rules from JSON file.
 
         This method follows the socialModules pattern where setApiPosts()
-        is responsible for fetching/loading data.
+        is responsible for fetching/loading data into self.posts.
 
         Args:
             channel: Optional channel to set after loading rules.
 
         Returns:
-            If channel specified: List of rules from that channel.
-            Otherwise: Dictionary of all rules by channel.
+            List of rules from the current or specified channel.
         """
-        self._log_msg(f"Loading rules from {self.rules_file}", 2)
+        if self.rules_file is None:
+            raise RuntimeError("rules_file is not initialized. Call initApi() or setClient() first.")
 
-        self.rules = {"always": [], "sometimes": []} # Initialize with empty rules
+        self._log_msg(f"Loading rules from {self.rules_file}", 2, console=False)
 
-        try:
-            loaded_rules = self._read_rules_from_file(self.rules_file)
-            self.rules = loaded_rules
-            self._log_msg("Loaded rules from JSON file", 1)
-        except FileNotFoundError:
-            self._log_msg(f"No rules file found at {self.rules_file}, starting with empty rules", 1)
-            # self.rules remains empty as initialized
-        except (json.JSONDecodeError, ValueError, Exception) as e: # Catch specific errors from _read_rules_from_file
-            self._log_msg(f"Failed to load rules: {e}", 3)
-            # Depending on desired behavior, could re-raise or continue with empty rules
-            # For now, we'll re-raise as per existing behavior in original setApiPosts on error
-            raise
-        
-        self.posts = self.rules # Ensure posts are synced after loading
+        self.clear_rules() # Initialize with empty rules and sets self.posts = []
+        posts = []
 
-        # Set channel if specified
-        if channel:
-            self.setChannel(channel)
+        if os.path.exists(self.rules_file):
+            try:
+                with open(self.rules_file, "r", encoding="utf-8") as f:
+                    content = f.read()
+                    if not content.strip():
+                        # Empty file, start with default rules
+                        self._log_msg("Rules file is empty, starting with empty rules", 1)
+                    else:
+                        data = json.loads(content)
+                        if "version" not in data or data["version"] != self.RULES_VERSION:
+                            raise ValueError(
+                                f"Incompatible rules file version. Expected {self.RULES_VERSION}, "
+                                f"got {data.get('version', 'N/A')}"
+                            )
+                        self._parse_json_rules(data)
+                        self._log_msg("Loaded rules from JSON file", 1)
+            except (json.JSONDecodeError, UnicodeDecodeError, KeyError) as e:
+                self._log_msg(f"Failed to load rules: {e}", 3)
+                raise
+            except ValueError: # Specifically for version mismatch
+                raise
+            except Exception as e:
+                self._log_msg(f"An unexpected error occurred while reading rules from {self.rules_file}: {e}", 3)
+                raise
 
-        return self.posts if self.channel else self.rules
+        # Sync posts with the current or requested channel
+        if hasattr(self, 'filterManager'):
+            target_channel = channel or self.channel or self.filterManager
+        else:
+            target_channel = channel or self.channel
+        if target_channel:
+            self.setChannel(target_channel)
+        else:
+            self.posts = [] # No channel active, so no posts to process
+
+        return self.posts
 
     def _parse_json_rules(self, data: Dict[str, Any]) -> None:
         """Parse JSON format rules into EmailFilterRule objects.
-        
+
         Args:
             data: Dictionary containing rule data
         """
-        self.rules = {"always": [], "sometimes": []}
-
         for category in ["always", "sometimes"]:
             if category in data:
                 for rule_data in data[category]:
@@ -238,56 +343,6 @@ class moduleFilterManager(Content):
                         # Handle tuple/list format for backward compatibility
                         rule = EmailFilterRule.from_tuple(tuple(rule_data))
                         self.rules[category].append(rule)
-
-    def _read_rules_from_file(self, file_path: str) -> Dict[str, List[EmailFilterRule]]:
-        """Reads and parses rules from a JSON file.
-
-        Args:
-            file_path: The path to the JSON file.
-
-        Returns:
-            A dictionary of rules, organized by category ('always', 'sometimes').
-
-        Raises:
-            FileNotFoundError: If the specified file does not exist.
-            json.JSONDecodeError: If the file content is not valid JSON.
-            ValueError: If the rules file version is incompatible.
-            Exception: For other file I/O errors.
-        """
-        if not os.path.exists(file_path):
-            self._log_msg(f"Rules file not found at {file_path}", 1)
-            raise FileNotFoundError(f"Rules file not found: {file_path}")
-
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
-                if not content.strip():
-                    self._log_msg("Rules file is empty, returning empty rules", 1)
-                    return {"always": [], "sometimes": []}
-                
-                data = json.loads(content)
-                
-                if "version" not in data or data["version"] != self.RULES_VERSION:
-                    raise ValueError(
-                        f"Incompatible rules file version. Expected {self.RULES_VERSION}, "
-                        f"got {data.get('version', 'N/A')}"
-                    )
-                
-                # Create a temporary manager to parse the rules to avoid modifying self.rules
-                temp_manager = moduleFilterManager()
-                temp_manager._parse_json_rules(data)
-                return temp_manager.rules
-
-        except FileNotFoundError:
-            raise
-        except json.JSONDecodeError as e:
-            self._log_msg(f"Failed to decode JSON from {file_path}: {e}", 3)
-            raise
-        except ValueError: # Specifically for version mismatch
-            raise
-        except Exception as e:
-            self._log_msg(f"An unexpected error occurred while reading rules from {file_path}: {e}", 3)
-            raise
 
     def _write_rules_to_file(self, file_path: str, rules_data: Dict[str, Any]) -> None:
         """Writes rules data to a JSON file.
@@ -317,10 +372,10 @@ class moduleFilterManager(Content):
 
     def updatePosts(self) -> str:
         """Save rules to JSON file (equivalent to save_rules).
-        
+
         This method follows the socialModules pattern where updatePosts()
         is responsible for persisting data.
-        
+
         Returns:
             "Ok" if successful, error message otherwise
         """
@@ -336,6 +391,15 @@ class moduleFilterManager(Content):
         except (IOError, json.JSONEncodeError, Exception) as e:
             self._log_msg(f"Failed to save rules: {e}", 3)
             return f"Error: {e}"
+
+    def getApiPostTitle(self, post):
+        #self.indent = f"{self.indent} "
+        #msgLog = (f"{self.indent} Start getPostTitle {post}.")
+        #logMsg(msgLog, 2, False)
+        title = ""
+        if post:
+            title = f"{post.keyword}={post.pattern} -> {post.folder}"
+        return title
 
     def add_rule(self, rule: tuple | EmailFilterRule, rule_type: Optional[str] = None) -> None:
         """Add a new rule to the specified category.
@@ -406,10 +470,10 @@ class moduleFilterManager(Content):
 
     def get_rules(self, rule_type: Optional[str] = None) -> Dict[str, List[EmailFilterRule]] | List[EmailFilterRule]:
         """Get rules, optionally filtered by type.
-        
+
         Args:
             rule_type: Optional category type to filter by
-            
+
         Returns:
             All rules as dict, or filtered list if rule_type specified
         """
@@ -428,11 +492,11 @@ class moduleFilterManager(Content):
 
     def get_rule_by_index(self, category: str, index: int) -> Optional[EmailFilterRule]:
         """Get a rule by category and index.
-        
+
         Args:
             category: Category type ('always' or 'sometimes')
             index: Index of the rule in the category
-            
+
         Returns:
             EmailFilterRule if found, None otherwise
         """
@@ -443,12 +507,12 @@ class moduleFilterManager(Content):
 
     def move_rule(self, rule: EmailFilterRule, from_category: str, to_category: str) -> bool:
         """Move a rule from one category to another.
-        
+
         Args:
             rule: EmailFilterRule to move
             from_category: Source category
             to_category: Destination category
-            
+
         Returns:
             True if rule was moved, False otherwise
         """
@@ -457,39 +521,25 @@ class moduleFilterManager(Content):
             return True
         return False
 
-    def clear_rules(self, rule_type: Optional[str] = None) -> None:
+    def clear_rules(self, rule_type: Optional[str] = None, console: bool = False) -> None:
         """Clear all rules, or rules of a specific type.
-        
+
         Args:
             rule_type: Optional category type to clear. If None, clears all.
+            console: Whether to print to console
         """
         if rule_type:
             self.rules[rule_type] = []
-            self._log_msg(f"Cleared all '{rule_type}' rules", 1)
+            self._log_msg(f"Cleared all '{rule_type}' rules", 1, console=console)
         else:
             self.rules = {"always": [], "sometimes": []}
-            self._log_msg("Cleared all rules", 1)
-        self.posts = self.rules  # Keep posts in sync
+            self._log_msg("Cleared all rules", 1, console=console)
 
-    def getPosts(self, channel: Optional[str] = None) -> Dict[str, List[EmailFilterRule]] | List[EmailFilterRule]:
-        """Get the current rules (posts).
-
-        If a channel is set (via setChannel), returns rules from that channel.
-        Otherwise, returns all rules organized by channel.
-
-        Args:
-            channel: Optional channel to get rules from. If None, uses current channel.
-
-        Returns:
-            If channel is specified or set: List of rules from that channel.
-            Otherwise: Dictionary of all rules by channel.
-        """
-        if channel:
-            return self.rules.get(channel, [])
-        elif self.channel:
-            return self.posts if isinstance(self.posts, list) else self.rules.get(self.channel, [])
+        # Keep posts in sync (subset of rules)
+        if hasattr(self, 'channel') and self.channel and self.channel in self.rules:
+            self.posts = self.rules[self.channel]
         else:
-            return self.posts if self.posts else self.rules
+            self.posts = []
 
     def assignPosts(self, posts: Dict[str, List[EmailFilterRule]]) -> None:
         """Set the rules (posts).
@@ -497,15 +547,16 @@ class moduleFilterManager(Content):
         Args:
             posts: Dictionary of rules by category
         """
-        self.posts = posts
-        self.rules = posts
-        # If a channel is set, update posts to point to that channel
-        if self.channel and self.channel in posts:
-            self.posts = posts[self.channel]
+        # self.rules = posts
+        # If a channel is set, update posts to point to that channel's rules
+        if self.channel and self.channel in self.rules:
+            self.posts = self.rules[self.channel]
+        else:
+            self.posts = []
 
     def register_specific_tests(self, tester):
         """Register specific tests for moduleFilterManager.
-        
+
         Args:
             tester: ModuleTester instance to register tests with
         """
@@ -517,10 +568,10 @@ class moduleFilterManager(Content):
     def _test_rule_creation(self, api_src=None):
         """Test creating and adding rules."""
         print("\n=== Testing Rule Creation ===")
-        
+
         # Clear existing rules
         self.clear_rules()
-        
+
         # Add a test rule
         test_rule = EmailFilterRule(
             keyword="From",
@@ -528,19 +579,19 @@ class moduleFilterManager(Content):
             folder="TestFolder"
         )
         self.add_rule(test_rule, "always")
-        
+
         # Verify rule was added
         rules = self.get_rules("always")
         assert len(rules) == 1, f"Expected 1 rule, got {len(rules)}"
         assert rules[0] == test_rule, "Rule doesn't match"
-        
+
         print("✓ Rule creation test passed")
         print(f"  Added rule: {test_rule.keyword}='{test_rule.pattern}' -> {test_rule.folder}")
 
     def _test_rule_loading(self, api_src=None):
         """Test loading rules from file."""
         print("\n=== Testing Rule Loading ===")
-        
+
         # setApiPosts is called during setup, rules should be loaded
         all_rules = self.get_rules()
         print(f"✓ Rule loading test passed")
@@ -550,7 +601,7 @@ class moduleFilterManager(Content):
     def _test_rule_saving(self, api_src=None):
         """Test saving rules to file."""
         print("\n=== Testing Rule Saving ===")
-        
+
         # Add a rule and save
         test_rule = EmailFilterRule(
             keyword="Subject",
@@ -558,44 +609,44 @@ class moduleFilterManager(Content):
             folder="TestFolder"
         )
         self.add_rule(test_rule, "sometimes")
-        
+
         result = self.updatePosts()
         assert result == "Ok", f"Save failed: {result}"
-        
+
         # Reload and verify
         self.setApiPosts()
         rules = self.get_rules("sometimes")
         assert any(r.pattern == "Test Subject" for r in rules), "Saved rule not found"
-        
+
         print("✓ Rule saving test passed")
         print(f"  Saved rules to: {self.rules_file}")
 
     def _test_rule_management(self, api_src=None):
         """Test rule management operations."""
         print("\n=== Testing Rule Management ===")
-        
+
         # Clear and add test rules
         self.clear_rules()
         rule1 = EmailFilterRule("From", "test1@example.com", "Folder1")
         rule2 = EmailFilterRule("From", "test2@example.com", "Folder2")
         self.add_rule(rule1, "always")
         self.add_rule(rule2, "sometimes")
-        
+
         # Test move_rule
         moved = self.move_rule(rule1, "always", "sometimes")
         assert moved, "Failed to move rule"
         assert len(self.get_rules("always")) == 0, "Rule not removed from source"
         assert len(self.get_rules("sometimes")) == 2, "Rule not added to destination"
-        
+
         # Test remove_rule
         removed = self.remove_rule(rule1, "sometimes")
         assert removed, "Failed to remove rule"
-        
+
         # Test clear_rules
         self.clear_rules()
         assert len(self.get_rules("always")) == 0, "Clear failed for always"
         assert len(self.get_rules("sometimes")) == 0, "Clear failed for sometimes"
-        
+
         print("✓ Rule management test passed")
         print("  Tested: add, move, remove, clear operations")
 
@@ -608,6 +659,8 @@ def main():
     import logging
     import os
     import sys
+    import tempfile
+    import configparser
     from socialModules.configMod import DATADIR, CONFIGDIR
 
     logging.basicConfig(
@@ -615,175 +668,144 @@ def main():
     )
 
     print("\n=== moduleFilterManager Standalone Test ===\n")
-    
+
+    from socialModules.moduleTester import ModuleTester
     # Initialize filter manager
     filter_manager = moduleFilterManager()
-    
-    # Try to load configuration from .rssBlogs first
-    rules_file = None
-    rssblogs_file = f"{CONFIGDIR}/.rssBlogs"
-    
-    if os.path.exists(rssblogs_file):
-        import configparser
-        config = configparser.ConfigParser()
-        config.read(rssblogs_file)
-        
-        # Look for filterManager sections
-        for section in config.sections():
-            service = config.get(section, 'service', fallback='')
-            if service.lower() == 'filtermanager':
-                print(f"Found filterManager config in section: [{section}]")
-                rules_file = config.get(section, 'rules_file', fallback=None)
-                channel = config.get(section, 'channel', fallback='always')
-                print(f"  rules_file: {rules_file}")
-                print(f"  channel: {channel}")
-                
-                if rules_file:
-                    filter_manager.rules_file = rules_file
-                    try:
-                        filter_manager.setApiPosts(channel=channel)
-                        print(f"\nRules loaded from .rssBlogs configuration\n")
-                        break
-                    except Exception as e:
-                        print(f"Error loading rules: {e}")
-    
-    # If no .rssBlogs config, use default location
-    if not filter_manager.rules_file:
-        rules_file = f"{DATADIR}/rulesFilter.json"
-        print(f"No .rssBlogs configuration found.")
-        print(f"Using default rules file: {rules_file}")
-        filter_manager.rules_file = rules_file
-        
-        # Load existing rules or start fresh
-        try:
-            filter_manager.setApiPosts()
-            print("Rules loaded successfully\n")
-        except FileNotFoundError:
-            print("No existing rules file found, starting with empty rules\n")
-    
-    while True:
-        print("\n--- Menu ---")
-        print("1. Show all rules")
-        print("2. Show 'always' rules")
-        print("3. Show 'sometimes' rules")
-        print("4. Add rule to 'always'")
-        print("5. Add rule to 'sometimes'")
-        print("6. Delete rule")
-        print("7. Move rule between categories")
-        print("8. Clear all rules")
-        print("9. Save rules")
-        print("10. Reload rules")
-        print("0. Exit")
-        
-        choice = input("\nSelect option: ").strip()
-        
-        try:
-            if choice == "1":
-                filter_manager.display_rules()
-                
-            elif choice == "2":
-                filter_manager.setChannel("always")
-                rules = filter_manager.getPosts()
-                print(f"\nALWAYS Rules ({len(rules)}):")
-                for i, rule in enumerate(rules):
-                    print(f"  {i}: {rule.keyword}='{rule.pattern}' -> {rule.folder}")
-                    
-            elif choice == "3":
-                filter_manager.setChannel("sometimes")
-                rules = filter_manager.getPosts()
-                print(f"\nSOMETIMES Rules ({len(rules)}):")
-                for i, rule in enumerate(rules):
-                    print(f"  {i}: {rule.keyword}='{rule.pattern}' -> {rule.folder}")
-                    
-            elif choice == "4":
-                keyword = input("Header keyword (e.g., From, Subject): ").strip() or "From"
-                pattern = input("Pattern to match: ").strip()
-                folder = input("Destination folder: ").strip()
-                if pattern and folder:
-                    filter_manager.setChannel("always")
-                    filter_manager.add_rule((keyword, pattern, folder))
-                    print(f"✓ Rule added to 'always': {keyword}='{pattern}' -> {folder}")
-                else:
-                    print("Pattern and folder are required")
-                    
-            elif choice == "5":
-                keyword = input("Header keyword (e.g., From, Subject): ").strip() or "From"
-                pattern = input("Pattern to match: ").strip()
-                folder = input("Destination folder: ").strip()
-                if pattern and folder:
-                    filter_manager.setChannel("sometimes")
-                    filter_manager.add_rule((keyword, pattern, folder))
-                    print(f"✓ Rule added to 'sometimes': {keyword}='{pattern}' -> {folder}")
-                else:
-                    print("Pattern and folder are required")
-                    
-            elif choice == "6":
-                filter_manager.display_rules()
-                category = input("Category (always/sometimes): ").strip().lower()
-                if category in ["always", "sometimes"]:
-                    try:
-                        idx = int(input("Rule number to delete: ").strip())
-                        rules = filter_manager.get_rules(category)
-                        if 0 <= idx < len(rules):
-                            filter_manager.remove_rule(rules[idx], category)
-                            print(f"✓ Rule deleted from '{category}'")
-                        else:
-                            print("Invalid rule number")
-                    except ValueError:
-                        print("Invalid number")
-                else:
-                    print("Invalid category")
-                    
-            elif choice == "7":
-                filter_manager.display_rules()
-                from_cat = input("From category (always/sometimes): ").strip().lower()
-                if from_cat in ["always", "sometimes"]:
-                    try:
-                        idx = int(input("Rule number to move: ").strip())
-                        rules = filter_manager.get_rules(from_cat)
-                        if 0 <= idx < len(rules):
-                            to_cat = input("To category (always/sometimes): ").strip().lower()
-                            if to_cat in ["always", "sometimes"] and to_cat != from_cat:
-                                filter_manager.move_rule(rules[idx], from_cat, to_cat)
-                                print(f"✓ Rule moved from '{from_cat}' to '{to_cat}'")
-                            else:
-                                print("Invalid destination category")
-                        else:
-                            print("Invalid rule number")
-                    except ValueError:
-                        print("Invalid number")
-                else:
-                    print("Invalid source category")
-                    
-            elif choice == "8":
-                confirm = input("Clear ALL rules? (y/n): ").strip().lower()
-                if confirm == "y":
-                    filter_manager.clear_rules()
-                    print("✓ All rules cleared")
-                    
-            elif choice == "9":
-                result = filter_manager.updatePosts()
-                print(f"Save result: {result}")
-                
-            elif choice == "10":
-                filter_manager.setApiPosts()
-                print("✓ Rules reloaded")
-                filter_manager.display_rules()
-                
-            elif choice == "0":
-                save = input("Save rules before exiting? (y/n): ").strip().lower()
-                if save == "y":
-                    result = filter_manager.updatePosts()
-                    print(f"Save result: {result}")
-                print("Goodbye!")
-                break
-                
-            else:
-                print("Invalid option")
-                
-        except Exception as e:
-            print(f"Error: {e}")
-            logging.exception("Detailed error:")
+
+    tester = ModuleTester(filter_manager)
+    tester.run()
+
+    print(f"File: {filter_manager.rules_file} {tester.api_src.rules_file}")
+    print(f"Post: {tester.api_src.getPost(0)}")
+    print(f"dir: {tester.api_src.filterManager}")
+    print(f"dir: {tester.api_src.imapacc}")
+    print("\n--- Starting Interactive Menu (with loaded configuration) ---\n")
+
+
+    # while True:
+    #     print("\n--- Menu ---")
+    #     print("1. Show all rules")
+    #     print("2. Show 'always' rules")
+    #     print("3. Show 'sometimes' rules")
+    #     print("4. Add rule to 'always'")
+    #     print("5. Add rule to 'sometimes'")
+    #     print("6. Delete rule")
+    #     print("7. Move rule between categories")
+    #     print("8. Clear all rules")
+    #     print("9. Save rules")
+    #     print("10. Reload rules")
+    #     print("0. Exit")
+
+    #     choice = input("\nSelect option: ").strip()
+
+    #     try:
+    #         if choice == "1":
+    #             filter_manager.display_rules()
+
+    #         elif choice == "2":
+    #             filter_manager.setChannel("always")
+    #             rules = filter_manager.getPosts()
+    #             print(f"\nALWAYS Rules ({len(rules)}):")
+    #             for i, rule in enumerate(rules):
+    #                 print(f"  {i}: {rule.keyword}='{rule.pattern}' -> {rule.folder}")
+
+    #         elif choice == "3":
+    #             filter_manager.setChannel("sometimes")
+    #             rules = filter_manager.getPosts()
+    #             print(f"\nSOMETIMES Rules ({len(rules)}):")
+    #             for i, rule in enumerate(rules):
+    #                 print(f"  {i}: {rule.keyword}='{rule.pattern}' -> {rule.folder}")
+
+    #         elif choice == "4":
+    #             keyword = input("Header keyword (e.g., From, Subject): ").strip() or "From"
+    #             pattern = input("Pattern to match: ").strip()
+    #             folder = input("Destination folder: ").strip()
+    #             if pattern and folder:
+    #                 filter_manager.setChannel("always")
+    #                 filter_manager.add_rule((keyword, pattern, folder))
+    #                 print(f"✓ Rule added to 'always': {keyword}='{pattern}' -> {folder}")
+    #             else:
+    #                 print("Pattern and folder are required")
+
+    #         elif choice == "5":
+    #             keyword = input("Header keyword (e.g., From, Subject): ").strip() or "From"
+    #             pattern = input("Pattern to match: ").strip()
+    #             folder = input("Destination folder: ").strip()
+    #             if pattern and folder:
+    #                 filter_manager.setChannel("sometimes")
+    #                 filter_manager.add_rule((keyword, pattern, folder))
+    #                 print(f"✓ Rule added to 'sometimes': {keyword}='{pattern}' -> {folder}")
+    #             else:
+    #                 print("Pattern and folder are required")
+
+    #         elif choice == "6":
+    #             filter_manager.display_rules()
+    #             category = input("Category (always/sometimes): ").strip().lower()
+    #             if category in ["always", "sometimes"]:
+    #                 try:
+    #                     idx = int(input("Rule number to delete: ").strip())
+    #                     rules = filter_manager.get_rules(category)
+    #                     if 0 <= idx < len(rules):
+    #                         filter_manager.remove_rule(rules[idx], category)
+    #                         print(f"✓ Rule deleted from '{category}'")
+    #                     else:
+    #                         print("Invalid rule number")
+    #                 except ValueError:
+    #                     print("Invalid number")
+    #             else:
+    #                 print("Invalid category")
+
+    #         elif choice == "7":
+    #             filter_manager.display_rules()
+    #             from_cat = input("From category (always/sometimes): ").strip().lower()
+    #             if from_cat in ["always", "sometimes"]:
+    #                 try:
+    #                     idx = int(input("Rule number to move: ").strip())
+    #                     rules = filter_manager.get_rules(from_cat)
+    #                     if 0 <= idx < len(rules):
+    #                         to_cat = input("To category (always/sometimes): ").strip().lower()
+    #                         if to_cat in ["always", "sometimes"] and to_cat != from_cat:
+    #                             filter_manager.move_rule(rules[idx], from_cat, to_cat)
+    #                             print(f"✓ Rule moved from '{from_cat}' to '{to_cat}'")
+    #                         else:
+    #                             print("Invalid destination category")
+    #                     else:
+    #                         print("Invalid rule number")
+    #                 except ValueError:
+    #                     print("Invalid number")
+    #             else:
+    #                 print("Invalid source category")
+
+    #         elif choice == "8":
+    #             confirm = input("Clear ALL rules? (y/n): ").strip().lower()
+    #             if confirm == "y":
+    #                 filter_manager.clear_rules()
+    #                 print("✓ All rules cleared")
+
+    #         elif choice == "9":
+    #             result = filter_manager.updatePosts()
+    #             print(f"Save result: {result}")
+
+    #         elif choice == "10":
+    #             filter_manager.setApiPosts()
+    #             print("✓ Rules reloaded")
+    #             filter_manager.display_rules()
+
+    #         elif choice == "0":
+    #             save = input("Save rules before exiting? (y/n): ").strip().lower()
+    #             if save == "y":
+    #                 result = filter_manager.updatePosts()
+    #                 print(f"Save result: {result}")
+    #             print("Goodbye!")
+    #             break
+
+    #         else:
+    #             print("Invalid option")
+
+    #     except Exception as e:
+    #         print(f"Error: {e}")
+    #         logging.exception("Detailed error:")
 
 
 if __name__ == "__main__":

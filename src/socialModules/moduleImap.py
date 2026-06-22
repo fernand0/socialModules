@@ -1021,9 +1021,10 @@ class moduleImap(Content):  # , Queue):
             except:
                 logging.info(f"Non ascii: {name}")
             # print(inNameFolder.isdigit(), (inNameFolder+") "), name.lower().find((inNameFolder+") ").encode('ascii').lower()))
+            search_prefix = (inNameFolder + ") ").encode("ascii") if isinstance(name, bytes) else (inNameFolder + ") ")
             if (
                 inNameFolder.isdigit()
-                and name.lower().find((inNameFolder + ") ").encode("ascii").lower())
+                and name.lower().find(search_prefix.lower())
                 == 0
             ):
                 # There can be a problem if the number is part of the name or
@@ -1037,7 +1038,7 @@ class moduleImap(Content):  # , Queue):
             if search.lower() in name.lower():
                 if listFolders:
                     listFolders = (
-                        listFolders + " " + "%d) %s" % (i, self.nameFolder(name))
+                        listFolders + "\n" + "%d) %s" % (i, self.nameFolder(name))
                     )
                 else:
                     listFolders = "%d) %s" % (i, self.nameFolder(name))
@@ -1056,10 +1057,37 @@ class moduleImap(Content):  # , Queue):
             self.setLabels()
         return list(filter(lambda x: sel in str(x), self.labels))
 
+    def has_noselect(self, folder):
+        """Check if a folder has the \\Noselect IMAP attribute.
+        
+        The \\Noselect attribute indicates that the folder cannot be selected
+        as a mailbox (it's typically a hierarchy delimiter or special folder).
+        
+        Args:
+            folder: Raw IMAP folder entry (bytes or string)
+            
+        Returns:
+            True if the folder has \\Noselect attribute, False otherwise
+        """
+        if isinstance(folder, bytes):
+            folder_str = folder.decode('utf-8', errors='replace')
+        else:
+            folder_str = folder
+        
+        # Check for \Noselect in the IMAP attributes (before the first ")")
+        # Format: b'(\\HasNoChildren \\Noselect) "/" "Folder"' or similar
+        if ') ' in folder_str:
+            attributes = folder_str.split(') ')[0]
+            return '\\Noselect' in attributes
+        return False
+
     def listFolders(self):
         # resp, data = self.getClient().list('""', '*')
         self.setLabels
-        return self.getLabels()
+        all_folders = self.getLabels()
+        # Filter out folders with \Noselect attribute
+        # These are special folders that cannot be selected
+        return [f for f in all_folders if not self.has_noselect(f)]
 
     def checkConnected(self):
         try:
@@ -1122,19 +1150,19 @@ class moduleImap(Content):  # , Queue):
             M = self.getClient()
 
         data = self.listFolders()
-        # print(data)
+        # logging.info(f"Folders: {data}")
         listAllFolders = self.listFolderNames(data, moreMessages)
         if not listAllFolders:
             listAllFolders = self.listFolderNames(data, "")
         listFolders = listAllFolders
         while listFolders:
-            if listFolders.count(" ") == 0:
+            if listFolders.count("\n") == 0:
                 nF = self.nameFolder(listFolders)
-                nF = nF.strip(" ")
+                nF = nF.strip("\n")
                 print("nameFolder", nF)
                 return nF
             rows, columns = os.popen("stty size", "r").read().split()
-            if listFolders.count(" ") > int(rows) - 2:
+            if listFolders.count("\n") > int(rows) - 2:
                 click.echo_via_pager(listFolders)
             else:
                 print(listFolders)
@@ -1155,7 +1183,7 @@ class moduleImap(Content):  # , Queue):
                 iFolder = createFolder(M, nfn, moreMessages)
                 return iFolder
                 # listFolders = iFolder
-            listFolders = self.listFolderNames(listFolders.split(" "), inNameFolder)
+            listFolders = self.listFolderNames(listFolders.split("\n"), inNameFolder)
             if not inNameFolder:
                 print("Entra")
                 listAllFolders = self.listFolderNames(data, "")
@@ -1438,22 +1466,45 @@ class moduleImap(Content):  # , Queue):
         else:
             self.moveMails(M, messageId, "Trash")
 
+    def publishApiPost(self, *args, **kwargs):
+        # Reset res_dict for this publication attempt
+        self.res_dict = {
+            "success": False,
+            "post_url": "",
+            "raw_response": None,
+            "error_message": "",
+        }
+
+        if kwargs:
+            api_src = kwargs.get("api")
+            posts = kwargs.get("post")
+            action = kwargs.get("action")
+            logMsg(f"api: {api_src} posts: {posts}")
+
+            self.moveMails(self.getClient(), posts[1], posts[0])
+
+
     def moveMails(self, M, msgs, folder):
         self.res_dict["success"] = True  # Assume success until a failure occurs
         self.res_dict["raw_response"] = []  # Store individual chunk results if needed
         all_messages_moved_and_deleted = True
 
         if hasattr(self, "channel"):
-            self.getClient().select(self.channel)
+            channel = self.channel
         else:
             channel = self.getPostsType()
-            M.select(channel.capitalize())
+        if not channel:
+            channel = "INBOX"
+        status, _ = M.select(channel)
+        if status != "OK":
+            logMsg(f"Failed to select folder '{channel}' (status: {status}). COPY may fail.", 3, False)
         if isinstance(msgs, bytes):
             msgs = msgs.decode("ascii")
 
-        msgLog = f"Copying {len(msgs.split(','))} messages to {folder}"
+        msgLog = f"Copying {len(msgs.split(','))} from {channel} messages to {folder}"
         logMsg(msgLog, 1, False)
-        print(f"Msgssss: {msgs} {type(msgs)}")
+        logMsg(f"Msgssss: {msgs} {type(msgs)}")
+        logMsg(msgLog, 2, False)
 
         msgList = msgs.split(",")
         chunk_size = 500

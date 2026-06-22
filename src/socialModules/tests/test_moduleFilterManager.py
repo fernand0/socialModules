@@ -283,13 +283,19 @@ class TestModuleFilterManager:
         assert manager.rules["always"][1].keyword == "Subject"
 
     def test_get_posts(self, filter_manager):
-        """Test getPosts method."""
+        """Test getPosts method returns empty list when no channel set."""
         filter_manager.add_rule(EmailFilterRule("From", "test@test.com", "Inbox"), "always")
         
+        # When no channel set, getPosts() returns empty list
         posts = filter_manager.getPosts()
-        assert "always" in posts
-        assert "sometimes" in posts
-        assert len(posts["always"]) == 1
+        assert isinstance(posts, list)
+        assert len(posts) == 0
+
+        # When channel is set, getPosts() returns the list of rules for that channel
+        filter_manager.setChannel("always")
+        posts = filter_manager.getPosts()
+        assert isinstance(posts, list)
+        assert len(posts) == 1
 
     def test_assign_posts(self, filter_manager):
         """Test assignPosts method."""
@@ -299,7 +305,9 @@ class TestModuleFilterManager:
         }
         
         filter_manager.assignPosts(new_rules)
-        assert filter_manager.posts == new_rules
+        # posts should be empty because no channel is set
+        assert isinstance(filter_manager.posts, list)
+        assert len(filter_manager.posts) == 0
         assert filter_manager.rules == new_rules
 
     def test_update_posts_returns_error(self, filter_manager):
@@ -343,16 +351,19 @@ class TestModuleFilterManager:
             filter_manager.setChannel("invalid_channel")
 
     def test_get_posts_with_channel(self, filter_manager):
-        """Test getPosts with channel parameter."""
+        """Test get_rules and getPosts for subsets."""
         filter_manager.add_rule(EmailFilterRule("From", "test@test.com", "Inbox"), "always")
         filter_manager.add_rule(EmailFilterRule("Subject", "Sale", "Promo"), "sometimes")
 
-        # Get all rules
-        all_rules = filter_manager.getPosts()
+        # Use get_rules() to get all rules as a dict
+        all_rules = filter_manager.get_rules()
         assert isinstance(all_rules, dict)
+        assert "always" in all_rules
+        assert "sometimes" in all_rules
 
-        # Get specific channel
-        always_rules = filter_manager.getPosts("always")
+        # Use setChannel + getPosts to get specific channel
+        filter_manager.setChannel("always")
+        always_rules = filter_manager.getPosts()
         assert isinstance(always_rules, list)
         assert len(always_rules) == 1
 
