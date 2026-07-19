@@ -68,86 +68,100 @@ class moduleHtml(Content):  # , Queue):
         response = None
         #moreContent = ""
 
-        # First and second attempts with requests
-        try:
-            if "medium" in url_to_download:
-                headers = {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
-                }
-                response = requests.get(url_to_download, headers=headers)
-            else:
-                retry_strategy = Retry(
-                    total=2,  # Two attempts
-                    backoff_factor=1,
-                    status_forcelist=[429, 500, 502, 503, 504],
-                    allowed_methods=["HEAD", "GET", "OPTIONS"],
-                )
-                adapter = HTTPAdapter(max_retries=retry_strategy)
-                http = requests.Session()
-                http.mount("https://", adapter)
-                http.mount("http://", adapter)
-
-                from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
-                requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-                headers = {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
-                }
-
-                response = http.get(
-                    url_to_download, verify=False, timeout=10, headers=headers
-                )
-                print(f"Enc: {response.encoding}")
-            response.raise_for_status()
-
-        except requests.exceptions.RequestException as e:
-            logMsg(f"Requests failed after 2 attempts: {e}", 2, False)
-            response = None  # Ensure response is None on failure
-
-        # Third attempt with pycurl if requests failed
-        if response is None or not response.ok:
-            sleep_time = random.uniform(0, 2)
-            logMsg(
-                f"Requests failed. Waiting for {sleep_time:.2f} seconds before trying with pycurl.",
-                1,
-                False,
-            )
-            time.sleep(sleep_time)
-
-            logMsg("Making a third attempt with pycurl.", 2, False)
+        try: 
+            from playwright.sync_api import sync_playwright, Playwright
+            firefox = playwright.firefox
+            browser = firefox.launch()
+            context = browser.new_context()
+            page = context.new_page()
+            response_play = page.goto(url_to_download)
+            response = {'ok': response_play.ok,
+                        'content': response_play.content(),
+                        'encoding': None,
+                        'text': response_play.text(),
+                        'status_code': response_play.status
+                        }
+        except:
+            # First and second attempts with requests
             try:
-                buffer = BytesIO()
-                c = pycurl.Curl()
-                c.setopt(c.URL, url_to_download)
-                c.setopt(c.WRITEDATA, buffer)
-                c.setopt(c.FOLLOWLOCATION, True)
-                c.setopt(c.TIMEOUT, 30)
-                c.setopt(
-                    c.USERAGENT,
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
-                )
-                c.perform()
-
-                status_code = c.getinfo(pycurl.HTTP_CODE)
-
-                if 200 <= status_code < 300:
-                    # Create a mock response object for consistency
-                    response = requests.Response()
-                    response.status_code = status_code
-                    response._content = buffer.getvalue()
-                    response.url = c.getinfo(pycurl.EFFECTIVE_URL)
+                if "medium" in url_to_download:
+                    headers = {
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+                    }
+                    response = requests.get(url_to_download, headers=headers)
                 else:
-                    logMsg(f"pycurl failed with status code {status_code}", 3, False)
+                    retry_strategy = Retry(
+                        total=2,  # Two attempts
+                        backoff_factor=1,
+                        status_forcelist=[429, 500, 502, 503, 504],
+                        allowed_methods=["HEAD", "GET", "OPTIONS"],
+                    )
+                    adapter = HTTPAdapter(max_retries=retry_strategy)
+                    http = requests.Session()
+                    http.mount("https://", adapter)
+                    http.mount("http://", adapter)
+
+                    from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+                    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+                    headers = {
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+                    }
+
+                    response = http.get(
+                        url_to_download, verify=False, timeout=10, headers=headers
+                    )
+                    print(f"Enc: {response.encoding}")
+                response.raise_for_status()
+
+            except requests.exceptions.RequestException as e:
+                logMsg(f"Requests failed after 2 attempts: {e}", 2, False)
+                response = None  # Ensure response is None on failure
+
+            # Third attempt with pycurl if requests failed
+            if response is None or not response.ok:
+                sleep_time = random.uniform(0, 2)
+                logMsg(
+                    f"Requests failed. Waiting for {sleep_time:.2f} seconds before trying with pycurl.",
+                    1,
+                    False,
+                )
+                time.sleep(sleep_time)
+
+                logMsg("Making a third attempt with pycurl.", 2, False)
+                try:
+                    buffer = BytesIO()
+                    c = pycurl.Curl()
+                    c.setopt(c.URL, url_to_download)
+                    c.setopt(c.WRITEDATA, buffer)
+                    c.setopt(c.FOLLOWLOCATION, True)
+                    c.setopt(c.TIMEOUT, 30)
+                    c.setopt(
+                        c.USERAGENT,
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+                    )
+                    c.perform()
+
+                    status_code = c.getinfo(pycurl.HTTP_CODE)
+
+                    if 200 <= status_code < 300:
+                        # Create a mock response object for consistency
+                        response = requests.Response()
+                        response.status_code = status_code
+                        response._content = buffer.getvalue()
+                        response.url = c.getinfo(pycurl.EFFECTIVE_URL)
+                    else:
+                        logMsg(f"pycurl failed with status code {status_code}", 3, False)
+                        response = None
+
+                    c.close()
+
+                except pycurl.error as e:
+                    logMsg(f"pycurl failed: {e}", 3, False)
                     response = None
-
-                c.close()
-
-            except pycurl.error as e:
-                logMsg(f"pycurl failed: {e}", 3, False)
-                response = None
-            except Exception as e:
-                logMsg(f"An unexpected error occurred with pycurl: {e}", 3, False)
-                response = None
+                except Exception as e:
+                    logMsg(f"An unexpected error occurred with pycurl: {e}", 3, False)
+                    response = None
 
         return response, None
 
