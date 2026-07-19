@@ -69,7 +69,7 @@ class moduleHtml(Content):  # , Queue):
         response = None
         #moreContent = ""
 
-        if True: 
+        try: 
             from playwright.sync_api import sync_playwright, Playwright
 
             def run(playwright: Playwright, url):
@@ -93,7 +93,7 @@ class moduleHtml(Content):  # , Queue):
 
             with sync_playwright() as playwright:
                 response_play, response = run(playwright, url_to_download)
-        else:
+        except:
             # First and second attempts with requests
             try:
                 if "medium" in url_to_download:
