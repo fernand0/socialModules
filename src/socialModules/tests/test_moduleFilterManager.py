@@ -357,6 +357,8 @@ class TestModuleFilterManager:
 
         # Use get_rules() to get all rules as a dict
         all_rules = filter_manager.get_rules()
+        print(all_rules)
+        print(type(all_rules))
         assert isinstance(all_rules, dict)
         assert "always" in all_rules
         assert "sometimes" in all_rules

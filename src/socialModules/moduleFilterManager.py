@@ -353,7 +353,7 @@ class moduleFilterManager(Content):
 
         Raises:
             IOError: If an error occurs during file writing.
-            json.JSONEncodeError: If the data cannot be serialized to JSON.
+            ValueError: If the data cannot be serialized to JSON.
             Exception: For other unexpected errors.
         """
         try:
@@ -363,7 +363,7 @@ class moduleFilterManager(Content):
         except IOError as e:
             self._log_msg(f"Failed to write rules to {file_path}: {e}", 3)
             raise
-        except json.JSONEncodeError as e:
+        except ValueError as e:
             self._log_msg(f"Failed to encode rules to JSON for {file_path}: {e}", 3)
             raise
         except Exception as e:
@@ -388,7 +388,7 @@ class moduleFilterManager(Content):
             }
             self._write_rules_to_file(self.rules_file, data)
             return "Ok"
-        except (IOError, json.JSONEncodeError, Exception) as e:
+        except (IOError, ValueError, Exception) as e:
             self._log_msg(f"Failed to save rules: {e}", 3)
             return f"Error: {e}"
 
@@ -547,7 +547,7 @@ class moduleFilterManager(Content):
         Args:
             posts: Dictionary of rules by category
         """
-        # self.rules = posts
+        self.rules = posts
         # If a channel is set, update posts to point to that channel's rules
         if self.channel and self.channel in self.rules:
             self.posts = self.rules[self.channel]
