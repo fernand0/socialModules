@@ -60,6 +60,7 @@ class moduleHtml(Content):  # , Queue):
 
     def setUrl(self, url):
         self.url = url
+    
 
     def downloadUrl(self, url_to_download):
         msgLog = f"Downloading: {url_to_download}"
@@ -68,20 +69,31 @@ class moduleHtml(Content):  # , Queue):
         response = None
         #moreContent = ""
 
-        try: 
+        if True: 
             from playwright.sync_api import sync_playwright, Playwright
-            firefox = playwright.firefox
-            browser = firefox.launch()
-            context = browser.new_context()
-            page = context.new_page()
-            response_play = page.goto(url_to_download)
-            response = {'ok': response_play.ok,
-                        'content': response_play.content(),
+
+            def run(playwright: Playwright, url):
+                firefox = playwright.firefox
+                browser = firefox.launch()
+                context = browser.new_context()
+                page = context.new_page()
+                reply = page.goto(url)
+                response = {'ok': reply.ok,
+                        'content': reply.body(),
                         'encoding': None,
-                        'text': response_play.text(),
-                        'status_code': response_play.status
+                        'text': reply.text(),
+                        'status_code': reply.status
                         }
-        except:
+                from types import SimpleNamespace
+
+                response = SimpleNamespace(**response)
+           
+                browser.close()
+                return reply, response
+
+            with sync_playwright() as playwright:
+                response_play, response = run(playwright, url_to_download)
+        else:
             # First and second attempts with requests
             try:
                 if "medium" in url_to_download:
