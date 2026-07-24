@@ -310,6 +310,7 @@ def select_from_list(
     selector="",
     negation_selector="",
     default="",
+    title="",
     more_options=[],
 ):
     """selects an option form an iterable element, based on some identifier
