@@ -351,7 +351,7 @@ def select_from_list(
     names_sel.extend(more_options)
     names_sel = list(reversed(list(dict.fromkeys(reversed(names_sel))))) # Keep last occurrence for duplicates, preserving order
     options_sel = names_sel.copy()
-    print(f"{title}")
+    click.echo(f"\n{title}")
     while options_sel and len(options_sel) > 1:
         text_sel = ""
         for i, elem in enumerate(options_sel):
@@ -391,12 +391,12 @@ def select_from_list(
         if options_sel[0] not in more_options:
             sel = names.index(options_sel[0])
 
-    logging.info(f"Sel: {sel}")
+    logging.debug(f"Sel: {sel}")
     if isinstance(sel, int) and int(sel) < len(names):
-        logging.info(f"- {names[int(sel)]}")
+        logging.debug(f"- {names[int(sel)]}")
         name = names[int(sel)]
     else:
-        logging.info("- is an extra option")
+        logging.debug("- is an extra option")
         name = sel
 
     return sel, name
