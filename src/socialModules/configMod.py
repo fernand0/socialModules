@@ -350,6 +350,7 @@ def select_from_list(
     names_sel.extend(more_options)
     names_sel = list(reversed(list(dict.fromkeys(reversed(names_sel))))) # Keep last occurrence for duplicates, preserving order
     options_sel = names_sel.copy()
+    print(f"{title}")
     while options_sel and len(options_sel) > 1:
         text_sel = ""
         for i, elem in enumerate(options_sel):
