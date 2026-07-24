@@ -1453,7 +1453,6 @@ class moduleImap(Content):  # , Queue):
         try:
             if isinstance(idPost, int):
                 idPost = str(idPost)
-            print(f"IdPostttt: {idPost}")
             res = self.moveMails(self.getClient(), idPost, self.special["Trash"])
         except:
             logging.warning("Some error moving mails to Trash")
@@ -1504,7 +1503,6 @@ class moduleImap(Content):  # , Queue):
 
         msgLog = f"Copying {len(msgs.split(','))} from {channel} messages to {folder}"
         logMsg(msgLog, 1, False)
-        logMsg(f"Msgssss: {msgs} {type(msgs)}")
         logMsg(msgLog, 2, False)
 
         msgList = msgs.split(",")
@@ -1539,7 +1537,7 @@ class moduleImap(Content):  # , Queue):
                     ] += f"Failed to delete chunk: {result}. "
                     all_messages_moved_and_deleted = False
                 else:
-                    print(f"Chunk deleted: {result}")
+                    print(f"Chunk deleted")
 
             except imaplib.IMAP4.error as e:
                 self.report("", e, "", sys.exc_info())
