@@ -20,7 +20,7 @@ class moduleImdb(Content):
         self.service = "Imdb"
         self.client = None
         # self.url = None
-        self.fileTV = "/tmp/tv.html"
+        self.fileTV = "/tmp/guide.xml"
         self.gen = "CN"
         self.cache = False
         self.channels = None
@@ -79,68 +79,105 @@ class moduleImdb(Content):
             request = urllib.request.urlopen(req)
             json_data = request.read().decode()
             f = open(self.fileTV, "w")
-            f.write(json_data)
+            f.write(self.fileTV)
             f.close()
 
-        soup = BeautifulSoup(json_data, features="lxml")
-        logging.info("Data read...")
-        links = []
-        for link in soup.find_all("div", {"class": "mc-image"}):
-            links.append(link)
-        titles = []
-        for title in soup.find_all("div", {"class": "mtitle"}):
-            titles.append(title)
-        channels = []
-        for link in soup.find_all("div", {"class": "canal-badge"}):
-            channels.append(link)
-        times = []
-        for time in soup.find_all("div", {"class": "triangle-badge"}):
-            times.append(time)
+        from lxml import etree
+        tree = etree.parse(self.fileTV)
+        root = tree.getroot()
 
-        for i, link in enumerate(links):
+        cine = root.xpath('//programme[category="cine"]')
+
+        posts = []
+
+        for peli in cine:
+            title_elem = peli.find('title')
+            title = title_elem.text if title_elem is not None else "N/A"
+            channel = peli.get('channel')
+            start = peli.get('start')
+            stop = peli.get('stop')
+            plot_elem = peli.find('desc')
+            plot = plot_elem.text if plot_elem is not None else "N/A"
+            #titles.append(title)
+            #channels.append(channel)
+            #times.append((start,stop))
+            #posts.append((start, stop, title, "-", channel, ""))
             e = {}
-            cadName = channels[i].contents[1]["title"]
-            genero = titles[i].contents[3].replace(" ", "")
-            title = titles[i].contents[0].contents[0]
-            theLink = link.contents[1]["href"]
-            cadYear = titles[i].contents[1]  # .contents
-            posY = cadYear.find("(")
-            year = cadYear[posY + 1 : posY + 5]
-            hini = times[i].contents[0].contents[0].contents[0]
-            hfin = ""
-            e["release_date"] = year
             e["t"] = title
-            e["URL"] = urllib.parse.urljoin(self.url, theLink)
-            e["CADENA"] = cadName
-            e["hi"] = hini
-            e["d"] = ""
-            e["GENERO"] = genero
-            e["g"] = genero
+            e["URL"] = ""
+            e["CADENA"] = channel
+            start_d = datetime.datetime.strptime(start, "%Y%m%d%H%M%S %z")
+            e["hi"] = start_d
+            stop_d = datetime.datetime.strptime(stop, "%Y%m%d%H%M%S %z")
+            e["hf"] = start_d
+            e["d"] = plot    
+            e["GENERO"] = ""
+            e["g"] = "" #print(etree.tostring(peli, encoding='unicode'))
             posts.append(e)
+            self.data.append((start, stop, title, "-", channel, ""))
 
-            self.data.append((hini, hfin, title, "-", cadName, genero))
+        #soup = BeautifulSoup(json_data, features="lxml")
+        logging.info("Data read...")
+        # links = []
+        # for link in soup.find_all("div", {"class": "mc-image"}):
+        #     links.append(link)
+        #titles = []
+        #for title in soup.find_all("div", {"class": "mtitle"}):
+        #    titles.append(title)
+        #channels = []
+        #for link in soup.find_all("div", {"class": "canal-badge"}):
+        #    channels.append(link)
+        #times = []
+        #for time in soup.find_all("div", {"class": "triangle-badge"}):
+        #    times.append(time)
 
-            # if cadName in self.channels:
-            #    for e in i['events']:
-            #    # for j in range(len(data['data'][i]['PROGRAMAS'])):
-            #        #print(j)
-            #        # genero = data['data'][i]['PROGRAMAS'][j]['GENERO']
-            #        genero = e['g']
-            #        if ('Cine' in e['t'] or genero == self.gen):
-            #            # title = data['data'][i]['PROGRAMAS'][j]['TITULO']
-            #            title = e['t']
-            #            if not genero:
-            #                e['g'] = self.gen
-            #                genero = self.gen
-            #            # horaIni = data['data'][i]['PROGRAMAS'][j]['HORA_INICIO']
-            #            # horaFin = data['data'][i]['PROGRAMAS'][j]['HORA_FIN']
-            #            hini = datetime.datetime.fromtimestamp(e['hi'])
-            #            hfin = datetime.datetime.fromtimestamp(e['hf'])
-            #            # self.data.append((horaIni,horaFin, title, '-', cadName, genero))
-            #            self.data.append((hini,hfin, title, '-', cadName, genero))
-            #            # FIXME: ¿Todos o sólo estos?
-            #            posts.append(e)
-            #            posts[-1]['CADENA'] = cadName
+        # for i, peli in enumerate(pelis):
+        #     # e = {}
+
+        #     # # cadName = channels[i].contents[1]["title"]
+        #     # # genero = titles[i].contents[3].replace(" ", "")
+        #     # # title = titles[i].contents[0].contents[0]
+        #     # # theLink = link.contents[1]["href"]
+        #     # # cadYear = titles[i].contents[1]  # .contents
+        #     # # posY = cadYear.find("(")
+        #     # # year = cadYear[posY + 1 : posY + 5]
+        #     # # hini = times[i].contents[0].contents[0].contents[0]
+        #     # # hfin = ""
+        #     # # e["release_date"] = year
+        #     # e["t"] = title
+        #     # # e["URL"] = urllib.parse.urljoin(self.url, theLink)
+        #     # # e["CADENA"] = cadName
+        #     # # e["hi"] = hini
+        #     # # e["d"] = ""
+        #     # # e["GENERO"] = genero
+        #     # # e["g"] = genero
+        #     # posts.append(e)
+
+
+        #     self.data.append((hini, hfin, title, "-", cadName, genero))
+
+        #     # if cadName in self.channels:
+        #     #    for e in i['events']:
+        #     #    # for j in range(len(data['data'][i]['PROGRAMAS'])):
+        #     #        #print(j)
+        #     #        # genero = data['data'][i]['PROGRAMAS'][j]['GENERO']
+        #     #        genero = e['g']
+        #     #        if ('Cine' in e['t'] or genero == self.gen):
+        #     #            # title = data['data'][i]['PROGRAMAS'][j]['TITULO']
+        #     #            title = e['t']
+        #     #            if not genero:
+        #     #                e['g'] = self.gen
+        #     #                genero = self.gen
+        #     #            # horaIni = data['data'][i]['PROGRAMAS'][j]['HORA_INICIO']
+        #     #            # horaFin = data['data'][i]['PROGRAMAS'][j]['HORA_FIN']
+        #     #            hini = datetime.datetime.fromtimestamp(e['hi'])
+        #     #            hfin = datetime.datetime.fromtimestamp(e['hf'])
+        #     #            # self.data.append((horaIni,horaFin, title, '-', cadName, genero))
+        #     #            self.data.append((hini,hfin, title, '-', cadName, genero))
+        #     #            # FIXME: ¿Todos o sólo estos?
+        #     #            posts.append(e)
+        #     #            posts[-1]['CADENA'] = cadName
+        print(posts)
         return posts
 
     def setPosts(self):
@@ -181,8 +218,8 @@ class moduleImdb(Content):
             return post.get("t", "")
 
     def getApiPostLink(self, post):
-        print(f"Post: {post}")
-        print(f"Url: {self.url}")
+        # print(f"Post: {post}")
+        # print(f"Url: {self.url}")
         if isinstance(post, dict):
             return urllib.parse.urljoin(self.url, post.get("URL", ""))
         return ""
@@ -194,6 +231,9 @@ class moduleImdb(Content):
             return post[4]
         else:
             return ""
+
+    def getPostBody(self, post):
+        return self.getPostPlot(post)
 
     def getPostContent(self, post):
         content = (
@@ -314,18 +354,21 @@ class moduleImdb(Content):
                 if data:
                     dataUpdate = json.loads(data)
         else:
-            response = mySearch.movie(query=title)
-            logging.info(f"ResSearch: {response}")
-            if len(mySearch.results) > 0:
-                movie = tmdb.Movies(mySearch.results[0]["id"])
-                movieData["info"] = movie.info()
-                movieData["credits"] = movie.credits()
-                dataUpdate.update({"RESULT": mySearch.results})
-                dataUpdate.update({"movie": movieData})
-                logging.info(f"Data: {dataUpdate}")
-                if os.path.exists(fileNamePath):
-                    with open(fileNameHash, "w") as fHash:
-                        fHash.write(json.dumps(dataUpdate))
+            try:
+                response = mySearch.movie(query=title)
+                logging.info(f"ResSearch: {response}")
+                if len(mySearch.results) > 0:
+                    movie = tmdb.Movies(mySearch.results[0]["id"])
+                    movieData["info"] = movie.info()
+                    movieData["credits"] = movie.credits()
+                    dataUpdate.update({"RESULT": mySearch.results})
+                    dataUpdate.update({"movie": movieData})
+                    logging.info(f"Data: {dataUpdate}")
+                    if os.path.exists(fileNamePath):
+                        with open(fileNameHash, "w") as fHash:
+                            fHash.write(json.dumps(dataUpdate))
+            except:
+                logging.info(f"No data obtained for {title}")
 
         post.update(dataUpdate)
 

@@ -79,6 +79,7 @@ def test_posts_retrieval(apiSrc):
         if posts:
             print(f"Retrieved {len(posts)} posts:")
             for i, post in enumerate(posts[:10]):  # Show first 5
+                print(post)
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
                 url = apiSrc.getPostUrl(post)
