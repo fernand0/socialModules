@@ -31,6 +31,30 @@ class moduleGcalendar(Content, socialGoogle):
 
         return service
 
+    def listFolders(self):
+        self.setCalendarList()
+        return self.getCalendarList()
+
+    def selectFolder(self, moreMessages="", newFolderName="", folderM=""):
+        calendars = self.listFolders()
+        selection, cal = select_from_list(calendars, "summary", "")
+        calendar_id = calendars[selection]["id"]
+        self.setChannel(calendar_id)
+        return calendar_id
+
+    def getChannel(self):
+        return self.channel
+
+    def setChannel(self, channel=""):
+        logging.info(f"Channel: {channel}")
+        if not channel:
+            folder = self.selectFolder()
+            logging.info(f"Folder: {folder}")
+            self.channel = folder
+        else:
+            self.channel = channel
+        self.active = self.channel
+
     def setActive(self, idCal):
         self.active = idCal
 
@@ -66,6 +90,7 @@ class moduleGcalendar(Content, socialGoogle):
 
         self.posts = []
         if hasattr(self, "active"):
+            print(f"Active: {self.active}")
             events_result = (
                 api.events()
                 .list(
@@ -136,6 +161,19 @@ class moduleGcalendar(Content, socialGoogle):
             text = f"{text} {description}"
         text = text.replace("\n", " ")
         return text
+
+    def getPostBody(self, message):
+        logging.debug(f"Message: {message}")
+        mess = safe_get(message,["description"])
+        mess_ext = safe_get(message,["extendedProperties","private"])
+        res = f"{mess}\n{mess_ext}"
+        logging.debug(f"Res: {res}")
+        return res
+
+    def getPostUrl(self, post):
+        url = safe_get(post, ["htmlLink"])
+        return url
+
 
     def extractDataMessage(self, i):
         logging.info("Service %s" % self.service)
@@ -255,6 +293,18 @@ class moduleGcalendar(Content, socialGoogle):
     def get_post_id_from_result(self, result):
         # Assuming result is the event object itself
         return self.getPostId(result)
+
+    #######################################################
+    # These need work. Copied from moduleGmail
+    #######################################################
+
+    def register_specific_tests(self, tester):
+        tester.add_test("Change Calendar", self.test_change_folder)
+
+    def test_change_folder(self, apiSrc):
+        print("\n--- Changing Calendar ---")
+        apiSrc.setChannel()
+        print(f"Folder set to '{apiSrc.getChannel()}'")
 
 
 def main():
