@@ -69,25 +69,26 @@ class moduleImdb(Content):
                 self.cache = True
 
         if not self.cache:
-            logging.info("Downloading data {}".format(self.url))
-            req = urllib.request.Request(
-                self.url,
-                headers={
-                    "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84"
-                },
-            )
-            request = urllib.request.urlopen(req)
-            json_data = request.read().decode()
-            f = open(self.fileTV, "w")
-            f.write(self.fileTV)
-            f.close()
+            logging.info("No data")
+            # logging.info("Downloading data {}".format(self.url))
+            # req = urllib.request.Request(
+            #     self.url,
+            #     headers={
+            #         "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84"
+            #     },
+            # )
+            # request = urllib.request.urlopen(req)
+            # json_data = request.read().decode()
+            # f = open(self.fileTV, "w")
+            # f.write(self.fileTV)
+            # f.close()
 
         from lxml import etree
         tree = etree.parse(self.fileTV)
         root = tree.getroot()
         print(root[0].tag)
 
-        cine = root.xpath('//programme') #[category="cine"]')
+        cine = root.xpath('//programme[category="cine"]')
 
         posts = []
 
@@ -115,7 +116,7 @@ class moduleImdb(Content):
             e["GENERO"] = ""
             e["g"] = "" #print(etree.tostring(peli, encoding='unicode'))
             today = datetime.datetime.now()
-            tomorrow = today + datetime.timedelta(days=2)
+            tomorrow = today + datetime.timedelta(days=1)
             today = today.strftime("%Y%m%d%H")
             tomorrow = tomorrow.strftime("%Y%m%d%H")
             if (start >=  today) and (start <= tomorrow):
