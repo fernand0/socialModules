@@ -20,7 +20,7 @@ class moduleImdb(Content):
         self.service = "Imdb"
         self.client = None
         # self.url = None
-        self.fileTV = "/tmp/guide.xml"
+        self.fileTV = f"{DATADIR}/guide.xml"
         self.gen = "CN"
         self.cache = False
         self.channels = None
@@ -345,7 +345,7 @@ class moduleImdb(Content):
         m.update(title.encode())
         titleHash = m.hexdigest()
         logging.debug(f"Hash: {titleHash}")
-        fileNamePath = "/tmp/movies"
+        fileNamePath = f"{DATADIR}/movies"
         fileNameHash = f"{fileNamePath}/{titleHash}"
         logging.info(f"fileName: {fileNameHash}")
         movieData = {}
