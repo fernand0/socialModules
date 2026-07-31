@@ -264,9 +264,9 @@ class moduleImdb(Content):
             # hini = f"{hini}"
             hfin = self.getPostTimeEnd(post)
             # hfin = f"{hfin.hour}:{hfin.minute}"
-            avg = self.getPostAvg(post)
+            avg = f"{self.getPostAvg(post):.1}"
             line = (
-                    f"> [{avg:.1f}] - "
+                    f"> [{avg}] - "
                 f"({self.getPostCode(post)}) "
                 f"{hini}-{hfin}: "
                 f"{self.getPostTitle(post)}"
