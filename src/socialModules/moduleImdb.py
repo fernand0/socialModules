@@ -184,7 +184,7 @@ class moduleImdb(Content):
         #     #            # FIXME: ¿Todos o sólo estos?
         #     #            posts.append(e)
         #     #            posts[-1]['CADENA'] = cadName
-        print(posts)
+        # print(posts)
         return posts
 
     def setPosts(self):
