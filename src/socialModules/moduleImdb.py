@@ -13,6 +13,7 @@ import tmdbsimple as tmdb
 from bs4 import BeautifulSoup
 
 from socialModules.moduleContent import *
+from socialModules.configMod import *
 
 
 class moduleImdb(Content):
@@ -228,7 +229,9 @@ class moduleImdb(Content):
         # print(f"Post: {post}")
         # print(f"Url: {self.url}")
         if isinstance(post, dict):
-            return urllib.parse.urljoin(self.url, post.get("URL", ""))
+            url = safe_get(post, "URL")
+            if url:
+                return urllib.parse.urljoin(self.url, post.get("URL", ""))
         return ""
 
     def getPostCode(self, post):
@@ -245,7 +248,7 @@ class moduleImdb(Content):
     def getPostContent(self, post):
         content = (
             f"({self.getPostDate(post)}) {self.getPostCode(post)} "
-            f"[{self.getPostAvg(post)}] "
+            f"[{self.getPostAvg(post):.1f}] "
             f"{self.getPostTimeIni(post)}-{self.getPostTimeEnd(post)} "
             f"\n{self.getPostPlot(post)}\n "
             f" {self.getPostStars(post)}"
@@ -384,7 +387,7 @@ class moduleImdb(Content):
         mySearch = self.getClient().Search()
         title = self.getPostTitle(post)
         response = mySearch.movie(query=title)
-        print(f"ResSearch: {response}")
+        #print(f"ResSearch: {response}")
         if len(mySearch.results) > 0:
             average = mySearch.results[0]["vote_average"]
             overview = mySearch.results[0]["overview"]
