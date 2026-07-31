@@ -86,7 +86,7 @@ class moduleImdb(Content):
         from lxml import etree
         tree = etree.parse(self.fileTV)
         root = tree.getroot()
-        print(root[0].tag)
+        #print(root[0].tag)
 
         cine = root.xpath('//programme[category="cine"]')
 
