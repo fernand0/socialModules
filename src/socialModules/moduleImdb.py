@@ -264,7 +264,8 @@ class moduleImdb(Content):
             # hini = f"{hini}"
             hfin = self.getPostTimeEnd(post)
             # hfin = f"{hfin.hour}:{hfin.minute}"
-            avg = round(float(self.getPostAvg(post)),1)
+            avg = self.getPostAvg(post)
+            avg = round(float(self.getPostAvg(post)),1) if avg else "0.0"
             line = (
                     f"> [{avg}] - "
                 f"({self.getPostCode(post)}) "
