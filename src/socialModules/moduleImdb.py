@@ -110,11 +110,16 @@ class moduleImdb(Content):
             e["hi"] = start_d
             stop_d = datetime.datetime.strptime(stop, "%Y%m%d%H%M%S %z")
             e["hf"] = start_d
-            e["d"] = plot    
+            e["d"] = plot
             e["GENERO"] = ""
             e["g"] = "" #print(etree.tostring(peli, encoding='unicode'))
-            posts.append(e)
-            self.data.append((start, stop, title, "-", channel, ""))
+            today = datetime.datetime.now()
+            tomorrow = today + datetime.timedelta(days=2)
+            today = today.strftime("%Y%m%d%H")
+            tomorrow = tomorrow.strftime("%Y%m%d%H")
+            if (start >=  today) and (start <= tomorrow):
+                posts.append(e)
+                self.data.append((start, stop, title, "-", channel, ""))
 
         #soup = BeautifulSoup(json_data, features="lxml")
         logging.info("Data read...")
