@@ -246,9 +246,10 @@ class moduleImdb(Content):
         return self.getPostPlot(post)
 
     def getPostContent(self, post):
+        avg = self.getPostAvg(post)
         content = (
             f"({self.getPostDate(post)}) {self.getPostCode(post)} "
-            f"[{self.getPostAvg(post):.1f}] "
+            f"[{avg:.1f}] "
             f"{self.getPostTimeIni(post)}-{self.getPostTimeEnd(post)} "
             f"\n{self.getPostPlot(post)}\n "
             f" {self.getPostStars(post)}"
@@ -263,8 +264,9 @@ class moduleImdb(Content):
             # hini = f"{hini}"
             hfin = self.getPostTimeEnd(post)
             # hfin = f"{hfin.hour}:{hfin.minute}"
+            avg = self.getPostAvg(post)
             line = (
-                    f"> [{self.getPostAvg(post):.1f}] - "
+                    f"> [{avg:.1f}] - "
                 f"({self.getPostCode(post)}) "
                 f"{hini}-{hfin}: "
                 f"{self.getPostTitle(post)}"
