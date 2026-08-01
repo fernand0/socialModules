@@ -116,11 +116,11 @@ class moduleImdb(Content):
             e["d"] = plot
             e["GENERO"] = ""
             e["g"] = "" #print(etree.tostring(peli, encoding='unicode'))
-            today = datetime.datetime.now()
-            tomorrow = today + datetime.timedelta(days=1)
-            today = today.strftime("%Y%m%d%H")
-            tomorrow = tomorrow.strftime("%Y%m%d%H")
-            if (start >=  today) and (start <= tomorrow):
+            now_today = datetime.datetime.now()
+            now_later = today + datetime.timedelta(hours=12)
+            now_today = now_today.strftime("%Y%m%d%H")
+            now_later = now_later.strftime("%Y%m%d%H")
+            if (start >=  now_today) and (start <= now_later):
                 posts.append(e)
                 self.data.append((start, stop, title, "-", channel, ""))
 
