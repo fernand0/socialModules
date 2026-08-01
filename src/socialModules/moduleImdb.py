@@ -117,7 +117,7 @@ class moduleImdb(Content):
             e["GENERO"] = ""
             e["g"] = "" #print(etree.tostring(peli, encoding='unicode'))
             now_today = datetime.datetime.now()
-            now_later = today + datetime.timedelta(hours=12)
+            now_later = now_today + datetime.timedelta(hours=12)
             now_today = now_today.strftime("%Y%m%d%H")
             now_later = now_later.strftime("%Y%m%d%H")
             if (start >=  now_today) and (start <= now_later):
