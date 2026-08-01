@@ -100,6 +100,8 @@ class moduleImdb(Content):
             start = peli.get('start')
             stop = peli.get('stop')
             plot_elem = peli.find('desc')
+            kind = peli.find('category')
+            kind = kind.text if kind is not None else "N/A"
             plot = plot_elem.text if plot_elem is not None else "N/A"
             #titles.append(title)
             #channels.append(channel)
@@ -114,13 +116,14 @@ class moduleImdb(Content):
             stop_d = datetime.datetime.strptime(stop, "%Y%m%d%H%M%S %z")
             e["hf"] = start_d
             e["d"] = plot
-            e["GENERO"] = ""
+            e["GENERO"] = kind
             e["g"] = "" #print(etree.tostring(peli, encoding='unicode'))
             now_today = datetime.datetime.now()
             now_later = now_today + datetime.timedelta(hours=12)
             now_today = now_today.strftime("%Y%m%d%H")
             now_later = now_later.strftime("%Y%m%d%H")
-            if (start >=  now_today) and (start <= now_later):
+            if ((start >=  now_today) and (start <= now_later)
+                and e["GENERO"] == 'cine'):
                 posts.append(e)
                 self.data.append((start, stop, title, "-", channel, ""))
 
