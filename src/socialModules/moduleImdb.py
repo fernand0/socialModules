@@ -268,7 +268,7 @@ class moduleImdb(Content):
             avg = round(float(self.getPostAvg(post)),1) if avg else "0.0"
             line = (
                     f"> [{avg}] - "
-                    f"({self.getPostCode(post):10}) "
+                    f"({self.getPostCode(post):6}) "
                 f"{hini}-{hfin}: "
                 f"{self.getPostTitle(post)}"
             )
