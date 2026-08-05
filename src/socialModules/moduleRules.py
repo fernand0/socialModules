@@ -1082,8 +1082,10 @@ class moduleRules:
 
     def getRuleComponent(self, rule, pos):
         res = ""
-        if isinstance(rule, tuple):
+        if isinstance(rule, tuple) and pos < len(rule):
             res = rule[pos]
+        else:
+            res = ""
         return res
 
     def getNameRule(self, rule):

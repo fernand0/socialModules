@@ -224,7 +224,7 @@ def getModule(profile, indent=""):
     indent = f"{indent} "
     msgLog = f"{indent} Start getModule {profile}"
     logMsg(msgLog, 2, 0)
-    
+
     # Convert profile to module/class name
     # Handle camelCase: filtermanager -> FilterManager, gcalendar -> Gcalendar
     serviceName = profile.capitalize()
@@ -232,7 +232,7 @@ def getModule(profile, indent=""):
     if any(c.isupper() for c in profile[1:]):
         # Already camelCase, use as-is with first letter capitalized
         serviceName = profile[0].upper() + profile[1:]
-    
+
     module_name = f"socialModules.module{serviceName}"
     class_name = f"module{serviceName}"
 
@@ -371,7 +371,10 @@ def select_from_list(
             options_sel = []
         elif not sel.isdigit():
             logging.debug(f"Opt: {sel}")
-            options_sel = [opt for opt in options_sel if sel.lower() in opt.lower()]
+            options_sel = [opt for opt in options_sel if sel.lower() in opt] #.lower()]
+            if not options_sel:
+                options_sel = names_sel.copy()
+                options_sel = [opt for opt in options_sel if sel[:4].lower() in opt] #.lower()]
             # if len(options_sel) == 1:
             #     if not options_sel[0] in more_options:
             #         sel = names.index(options_sel[0])
