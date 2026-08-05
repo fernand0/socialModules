@@ -36,6 +36,13 @@ class ConfigError(Exception):
 
 
 class moduleRules:
+    @classmethod
+    def from_config(cls, configFile=None):
+        """Create and initialize a moduleRules instance from config."""
+        rules = cls()
+        rules.checkRules(configFile=configFile)
+        return rules
+
     def __init__(self, args=None):
         class _DummyArgs:
             def __init__(self):
