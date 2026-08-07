@@ -338,10 +338,10 @@ def select_from_list(
                 if isinstance(el, dict)
                 else getattr(el, identifier)
             )
-            for el in options
+            for el in options + more_options
         ]
     else:
-        names = options
+        names = options + more_options
     sel = -1
     names_sel = names.copy()
     if selector:
