@@ -341,14 +341,16 @@ def select_from_list(
             for el in options + more_options
         ]
     else:
-        names = options + more_options
+        print(f"Namesss: {options} - {more_options}")
+        names = options + more_options if more_options else options
     sel = -1
     names_sel = names.copy()
     if selector:
         names_sel = [opt for opt in names if selector in opt]  # + more_options
     if negation_selector:
-        names_sel = [opt for opt in names if negation_selector not in opt]
-    names_sel.extend(more_options)
+        names_sel = [opt for opt in names if negation_selector not in opt] 
+    if more_options: 
+        names_sel.extend(more_options) 
     names_sel = list(reversed(list(dict.fromkeys(reversed(names_sel))))) # Keep last occurrence for duplicates, preserving order
     options_sel = names_sel.copy()
     click.echo(f"\n{title}")
