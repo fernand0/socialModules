@@ -189,6 +189,7 @@ class moduleImap(Content):  # , Queue):
         self.channel = channel
 
     def getChannel(self):
+        self.checkConnection()
         rep = ""
         if hasattr(self, "channel"):
             rep = self.channel
