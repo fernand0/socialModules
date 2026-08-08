@@ -373,10 +373,10 @@ def select_from_list(
             options_sel = []
         elif not sel.isdigit():
             logging.debug(f"Opt: {sel}")
-            options_sel = [opt for opt in options_sel if sel.lower() in opt] #.lower()]
+            options_sel = [opt for opt in options_sel if sel.lower() in opt.lower()]
             if not options_sel:
                 options_sel = names_sel.copy()
-                options_sel = [opt for opt in options_sel if sel[:4].lower() in opt] #.lower()]
+                options_sel = [opt for opt in options_sel if sel[:4].lower() in opt.lower()]
             # if len(options_sel) == 1:
             #     if not options_sel[0] in more_options:
             #         sel = names.index(options_sel[0])
