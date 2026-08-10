@@ -348,9 +348,9 @@ def select_from_list(
     if selector:
         names_sel = [opt for opt in names if selector in opt]  # + more_options
     if negation_selector:
-        names_sel = [opt for opt in names if negation_selector not in opt] 
-    if more_options: 
-        names_sel.extend(more_options) 
+        names_sel = [opt for opt in names if negation_selector not in opt]
+    if more_options:
+        names_sel.extend(more_options)
     names_sel = list(reversed(list(dict.fromkeys(reversed(names_sel))))) # Keep last occurrence for duplicates, preserving order
     options_sel = names_sel.copy()
     click.echo(f"\n{title}")
@@ -373,10 +373,10 @@ def select_from_list(
             options_sel = []
         elif not sel.isdigit():
             logging.debug(f"Opt: {sel}")
-            options_sel = [opt for opt in options_sel if sel.lower() in opt.lower()]
+            options_sel = [opt for opt in options_sel if sel.lower() in str(opt).lower()]
             if not options_sel:
                 options_sel = names_sel.copy()
-                options_sel = [opt for opt in options_sel if sel[:4].lower() in opt.lower()]
+                options_sel = [opt for opt in options_sel if sel[:4].lower() in str(opt).lower()]
             # if len(options_sel) == 1:
             #     if not options_sel[0] in more_options:
             #         sel = names.index(options_sel[0])

@@ -15,7 +15,7 @@ from html.parser import HTMLParser
 
 from bs4 import BeautifulSoup, Tag
 
-from socialModules.configMod import CONFIGDIR, DATADIR, checkFile, fileNamePath, logMsg
+from socialModules.configMod import CONFIGDIR, DATADIR, checkFile, fileNamePath, logMsg, safe_get
 from socialModules.modulePublicationCache import PublicationCache
 
 
@@ -1921,6 +1921,16 @@ class Content:
             if not title and hasattr(post, "get"):
                 title = post.get("title")
         return title
+
+    def getPostBody(self, post):
+        body = ""
+        try:
+            body = self.getApiPostBody(post)
+        except:
+            if not body and hasattr(post, "get"):
+                body = safe_get(post, 'body')
+        return body
+
 
     def getPostDate(self, post):
         return ""

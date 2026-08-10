@@ -931,13 +931,17 @@ class moduleRules:
         msgLog = f"{self.indent} Start getServices"
         logMsg(msgLog, 2, False)
         modulesFiles = os.listdir(path)
+        msgLog = f"{self.indent}  Path {path}"
+        logMsg(msgLog, 2, False)
         modules = {"special": ["cache", "direct"], "regular": [], "other": ["service"]}
         # Initialized with some special services
         name = "module"
         for module in modulesFiles:
+            print(module)
             if module.startswith(name):
                 # Preserve original case for camelCase modules like FilterManager
                 moduleName = module[len(name) : -3]
+                print(moduleName)
                 if moduleName.lower() not in [m.lower() for m in modules["special"]]:
                     # We drop the 'module' and the '.py' parts
                     moduleName = moduleName[0].lower()+moduleName[1:]
