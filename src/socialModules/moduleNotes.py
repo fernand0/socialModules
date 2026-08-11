@@ -303,9 +303,27 @@ class moduleNotes(Content):
         return str(pid) if pid is not None else ""
 
     def getPostContent(self, post: Any) -> str:
-        note = post.to_dict()
-        result = safe_get(note, 'content')
-        return result
+        """Return the content of a post. Accepts dicts or objects with to_dict()."""
+        try:
+            if post is None:
+                return ""
+            if isinstance(post, dict):
+                result = safe_get(post, 'content')
+                print(f"getPostContent (dict): {result}")
+                return result or ""
+            # objects
+            if hasattr(post, 'to_dict') and callable(getattr(post, 'to_dict')):
+                note = post.to_dict()
+            else:
+                note = {
+                    'content': getattr(post, 'content', None)
+                }
+            result = safe_get(note, 'content')
+            print(f"getPostContent (obj): {note}")
+            return result or ""
+        except Exception as e:
+            print(f"getPostContent error: {e}")
+            return ""
 
     def getPostTime(self, post: Any) -> Optional[Any]:
         note = post.to_dict()
