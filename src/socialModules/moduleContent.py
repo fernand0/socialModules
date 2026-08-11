@@ -1972,7 +1972,7 @@ class Content:
     def getPostContent(self, post):
         res = ""
         summary = self.getPostContentHtml(post) 
-        logging.info(f"Sum: {summary}")
+        logging.info(f"Sum: {summary} - {hasattr(self, 'getApiPostContent')}")
         if not summary and hasattr(self, 'getApiPostContent'):
             summary = self.getApiPostContent(post)
         logging.info(f"Sum2: {summary}")
