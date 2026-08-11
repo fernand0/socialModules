@@ -79,6 +79,7 @@ def test_posts_retrieval(apiSrc):
         if posts:
             print(f"Retrieved {len(posts)} posts:")
             for i, post in enumerate(posts[:10]):  # Show first 5
+                print(post)
                 title = apiSrc.getPostTitle(post)
                 link = apiSrc.getPostLink(post)
                 url = apiSrc.getPostUrl(post)
@@ -215,12 +216,18 @@ def test_basic_post(apiSrc, get_post_id_callback):
     if not link:
         link = default_link
 
+    default_content = "Prueba"
+    content = input(f"Enter content for the post (e.g., {default_content}): ").strip()
+    if not content:
+        content = default_content
+
     print(f"Posting to {apiSrc.getService()}:")
     print(f"  Title: {title}")
     print(f"  Link: {link}")
+    print(f"  Content: {content}")
 
     try:
-        result = apiSrc.publishPost(title, link, "")
+        result = apiSrc.publishPost(title, link, content)
         print(f"Post result: {result}")
 
         if result and not str(result).startswith("Fail"):
@@ -234,6 +241,7 @@ def test_basic_post(apiSrc, get_post_id_callback):
                     print(f"Delete result: {delete_result}")
     except Exception as e:
         print(f"Error posting: {e}")
+    print("Aquí")
 
 
 def test_image_post(apiSrc, get_post_id_callback):

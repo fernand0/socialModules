@@ -36,6 +36,13 @@ class ConfigError(Exception):
 
 
 class moduleRules:
+    @classmethod
+    def from_config(cls, configFile=None):
+        """Create and initialize a moduleRules instance from config."""
+        rules = cls()
+        rules.checkRules(configFile=configFile)
+        return rules
+
     def __init__(self, args=None):
         class _DummyArgs:
             def __init__(self):
@@ -775,7 +782,7 @@ class moduleRules:
         except Exception as e:
             print(f"An error occurred during publication: {e}")
 
-    def selectRuleInteractive(self, service=None):
+    def selectRuleInteractive(self, service=None, title="", more_options=None):
         if not service:
             nameModule = os.path.basename(inspect.stack()[1].filename)
             service = nameModule.split(".")[0][6:].casefold()
@@ -790,7 +797,7 @@ class moduleRules:
             selRules = selRules + self.selectRule(ser, "")
 
         logging.info(f"Rules: {selRules}")
-        iRul, src = select_from_list(selRules)
+        iRul, src = select_from_list(selRules, title=title, more_options=more_options)
 
         logging.info(f"Selected rule: {iRul}. Rule {src}\n")
         print(f"\nSelected rule: {iRul}. Rule {src}\n")
@@ -799,6 +806,8 @@ class moduleRules:
         if src in self.more:
             more = self.more[src]
         apiSrc = self.readConfigSrc("", src, more)
+        if not apiSrc:
+            apiSrc = src
 
         return apiSrc
 
@@ -922,6 +931,8 @@ class moduleRules:
         msgLog = f"{self.indent} Start getServices"
         logMsg(msgLog, 2, False)
         modulesFiles = os.listdir(path)
+        msgLog = f"{self.indent}  Path {path}"
+        logMsg(msgLog, 2, False)
         modules = {"special": ["cache", "direct"], "regular": [], "other": ["service"]}
         # Initialized with some special services
         name = "module"
@@ -1075,8 +1086,10 @@ class moduleRules:
 
     def getRuleComponent(self, rule, pos):
         res = ""
-        if isinstance(rule, tuple):
+        if isinstance(rule, tuple) and pos < len(rule):
             res = rule[pos]
+        else:
+            res = ""
         return res
 
     def getNameRule(self, rule):

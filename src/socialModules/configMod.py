@@ -224,7 +224,7 @@ def getModule(profile, indent=""):
     indent = f"{indent} "
     msgLog = f"{indent} Start getModule {profile}"
     logMsg(msgLog, 2, 0)
-    
+
     # Convert profile to module/class name
     # Handle camelCase: filtermanager -> FilterManager, gcalendar -> Gcalendar
     serviceName = profile.capitalize()
@@ -232,7 +232,7 @@ def getModule(profile, indent=""):
     if any(c.isupper() for c in profile[1:]):
         # Already camelCase, use as-is with first letter capitalized
         serviceName = profile[0].upper() + profile[1:]
-    
+
     module_name = f"socialModules.module{serviceName}"
     class_name = f"module{serviceName}"
 
@@ -310,6 +310,7 @@ def select_from_list(
     selector="",
     negation_selector="",
     default="",
+    title="",
     more_options=[],
 ):
     """selects an option form an iterable element, based on some identifier
@@ -337,26 +338,29 @@ def select_from_list(
                 if isinstance(el, dict)
                 else getattr(el, identifier)
             )
-            for el in options
+            for el in options + more_options
         ]
     else:
-        names = options
+        print(f"Namesss: {options} - {more_options}")
+        names = options + more_options if more_options else options
     sel = -1
     names_sel = names.copy()
     if selector:
         names_sel = [opt for opt in names if selector in opt]  # + more_options
     if negation_selector:
         names_sel = [opt for opt in names if negation_selector not in opt]
-    names_sel.extend(more_options)
+    if more_options:
+        names_sel.extend(more_options)
     names_sel = list(reversed(list(dict.fromkeys(reversed(names_sel))))) # Keep last occurrence for duplicates, preserving order
     options_sel = names_sel.copy()
+    click.echo(f"\n{title}")
     while options_sel and len(options_sel) > 1:
         text_sel = ""
         for i, elem in enumerate(options_sel):
             text_sel = f"{text_sel}\n{i}) {elem}"
         resPopen = os.popen("stty size", "r").read()
         rows, columns = resPopen.split()
-        logging.info(f"Rows: {rows} Columns: {columns}")
+        logging.debug(f"Rows: {rows} Columns: {columns}")
         if text_sel.count("\n") > int(rows) - 2:
             click.echo_via_pager(text_sel)
         else:
@@ -369,7 +373,10 @@ def select_from_list(
             options_sel = []
         elif not sel.isdigit():
             logging.debug(f"Opt: {sel}")
-            options_sel = [opt for opt in options_sel if sel.lower() in opt.lower()]
+            options_sel = [opt for opt in options_sel if sel.lower() in str(opt).lower()]
+            if not options_sel:
+                options_sel = names_sel.copy()
+                options_sel = [opt for opt in options_sel if sel[:4].lower() in str(opt).lower()]
             # if len(options_sel) == 1:
             #     if not options_sel[0] in more_options:
             #         sel = names.index(options_sel[0])
@@ -389,12 +396,12 @@ def select_from_list(
         if options_sel[0] not in more_options:
             sel = names.index(options_sel[0])
 
-    logging.info(f"Sel: {sel}")
+    logging.debug(f"Sel: {sel}")
     if isinstance(sel, int) and int(sel) < len(names):
-        logging.info(f"- {names[int(sel)]}")
+        logging.debug(f"- {names[int(sel)]}")
         name = names[int(sel)]
     else:
-        logging.info("- is an extra option")
+        logging.debug("- is an extra option")
         name = sel
 
     return sel, name
