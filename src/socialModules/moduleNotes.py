@@ -284,7 +284,6 @@ class moduleNotes(Content):
         result = safe_get(note, ["title"])
         return result
 
-
     def getApiPostContent(self, post: Any) -> str:
         """Robustly return a post's content for API-style callers.
 
@@ -324,29 +323,29 @@ class moduleNotes(Content):
         return self.getApiPostContent(post)
 
 
-    def getApiPostContent(self, post: Any) -> str:
-        """Return the content of a post. Accepts dicts or objects with to_dict()."""
-        try:
-            if post is None:
-                return ""
-            if isinstance(post, dict):
-                result = safe_get(post, 'content')
-                # print(f"getPostContent (dict): {result}")
-                return result or ""
-            # objects
-            if hasattr(post, 'to_dict') and callable(getattr(post, 'to_dict')):
-                note = post.to_dict()
-            else:
-                note = {
-                    'content': getattr(post, 'content', None)
-                }
-            result = safe_get(note, 'content')
-            print(f"Result: {result}")
-            # print(f"getPostContent (obj): {note}")
-            return result or ""
-        except Exception as e:
-            # print(f"getPostContent error: {e}")
-            return ""
+    # def getApiPostContent(self, post: Any) -> str:
+    #     """Return the content of a post. Accepts dicts or objects with to_dict()."""
+    #     try:
+    #         if post is None:
+    #             return ""
+    #         if isinstance(post, dict):
+    #             result = safe_get(post, 'content')
+    #             # print(f"getPostContent (dict): {result}")
+    #             return result or ""
+    #         # objects
+    #         if hasattr(post, 'to_dict') and callable(getattr(post, 'to_dict')):
+    #             note = post.to_dict()
+    #         else:
+    #             note = {
+    #                 'content': getattr(post, 'content', None)
+    #             }
+    #         result = safe_get(note, 'content')
+    #         print(f"Result: {result}")
+    #         # print(f"getPostContent (obj): {note}")
+    #         return result or ""
+    #     except Exception as e:
+    #         # print(f"getPostContent error: {e}")
+    #         return ""
 
     def getPostTime(self, post: Any) -> Optional[Any]:
         note = post.to_dict()
