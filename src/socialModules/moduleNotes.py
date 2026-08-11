@@ -175,7 +175,7 @@ class moduleNotes(Content):
             for note_title in notes:
                 #print(f"Note title: {note_title}")
                 note = self.getClient()['manager'].read_note(note_title)
-                print(f"Note: {note}")
+                logging.info(f"Note: {note}")
                 posts.append(note)
 
         except Exception as e:
@@ -298,7 +298,7 @@ class moduleNotes(Content):
                 note = post
             elif hasattr(post, 'to_dict') and callable(getattr(post, 'to_dict')):
                 note = post.to_dict()
-                print(f"Note: {note}")
+                logging.info(f"Note: {note}")
             else:
                 note = {'content': getattr(post, 'content', None)}
             # Prefer using safe_get to handle nested structures
