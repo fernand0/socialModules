@@ -1974,7 +1974,7 @@ class Content:
         summary = self.getPostContentHtml(post) 
         logging.info(f"Sum: {summary} - {hasattr(self, 'getApiPostContent')} - {not summary}")
         if not summary and hasattr(self, 'getApiPostContent'):
-            logging.info("Aquí")
+            logging.info(f"Aquí {self}")
             summary = self.getApiPostContent(post)
             logging.info("Aquí")
         logging.info(f"Sum2: {summary}")
