@@ -308,8 +308,7 @@ class moduleNotes(Content):
 
 
     def getApiPostBody(self, post: Any) -> str:
-        result = self.getPostContent(post)
-        return result
+        return  self.getApiPostContent(post)
 
 
     def getApiPostLink(self, post: Any) -> str:
@@ -317,14 +316,19 @@ class moduleNotes(Content):
         pid = self.getPostId(post)
         return str(pid) if pid is not None else ""
 
-    def getPostContent(self, post: Any) -> str:
+    def getApiPostBody(self, post: Any) -> str:
+        """Return the content of a post. Accepts dicts or objects with to_dict()."""
+        return self.getApiPostContent(post)
+
+
+    def getApiPostContent(self, post: Any) -> str:
         """Return the content of a post. Accepts dicts or objects with to_dict()."""
         try:
             if post is None:
                 return ""
             if isinstance(post, dict):
                 result = safe_get(post, 'content')
-                print(f"getPostContent (dict): {result}")
+                # print(f"getPostContent (dict): {result}")
                 return result or ""
             # objects
             if hasattr(post, 'to_dict') and callable(getattr(post, 'to_dict')):
@@ -334,10 +338,10 @@ class moduleNotes(Content):
                     'content': getattr(post, 'content', None)
                 }
             result = safe_get(note, 'content')
-            print(f"getPostContent (obj): {note}")
+            # print(f"getPostContent (obj): {note}")
             return result or ""
         except Exception as e:
-            print(f"getPostContent error: {e}")
+            # print(f"getPostContent error: {e}")
             return ""
 
     def getPostTime(self, post: Any) -> Optional[Any]:
