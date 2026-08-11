@@ -20,9 +20,6 @@ from typing import Any, Dict, List, Optional
 from socialModules.configMod import logMsg, safe_get
 from socialModules.moduleContent import Content
 
-from note_app.manager import NoteManager
-from note_app.manager import StorageManager
-from note_app.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +59,15 @@ class moduleNotes(Content):
         # Try to instantiate a sensible client object. Try common names.
         client = None
         try:
+            # Try to import manager/storage helper classes if the package exposes them.
+            try:
+                from note_app.manager import NoteManager, StorageManager
+                from note_app.config import Config
+            except Exception:
+                NoteManager = None
+                StorageManager = None
+                Config = None
+
             if hasattr(note_app, "NoteClient"):
                 client = note_app.NoteClient()
             elif hasattr(note_app, "Client"):
@@ -69,11 +75,13 @@ class moduleNotes(Content):
             elif hasattr(note_app, "create_client"):
                 client = note_app.create_client()
             else:
-                # If the top-level module acts as a client, use it
-                client = note_app
-                client = {'manager': NoteManager(storage_dir),
-                          'storage': StorageManager(storage_dir)
-                          }
+                # If the top-level module acts as a client, use it directly.
+                # If manager/storage classes are available, instantiate them.
+                if NoteManager and StorageManager:
+                    client = {'manager': NoteManager(storage_dir),
+                              'storage': StorageManager(storage_dir)}
+                else:
+                    client = note_app
 
         except Exception as e:
             msg = f"Error: Failed to instantiate note_app client: {e}"
@@ -277,6 +285,7 @@ class moduleNotes(Content):
 
 
     def getApiPostContent(self, post: Any) -> str:
+        print(f"Post: {post}")
         note = post.to_dict()
         print(f"Note: {note}")
         result = safe_get(note, ["content"])
