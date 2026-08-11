@@ -308,7 +308,8 @@ class moduleNotes(Content):
 
 
     def getApiPostBody(self, post: Any) -> str:
-        return  self.getApiPostContent(post)
+        result = self.getApiPostContent(post)
+        return result
 
 
     def getApiPostLink(self, post: Any) -> str:
@@ -338,6 +339,7 @@ class moduleNotes(Content):
                     'content': getattr(post, 'content', None)
                 }
             result = safe_get(note, 'content')
+            print(f"Result: {result}")
             # print(f"getPostContent (obj): {note}")
             return result or ""
         except Exception as e:
