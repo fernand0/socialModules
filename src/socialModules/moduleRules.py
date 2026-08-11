@@ -1296,7 +1296,9 @@ class moduleRules:
         postaction = apiSrc.getPostAction()
         resPost['action'] = postaction
         if postaction:
-            msgLog = f"{indent}Post Action {postaction} " f"(nextPost = {nextPost})"
+            msgLog = (f"{indent}Post Action {postaction} " 
+                      f"(nextPost = {nextPost})"
+                      )
             logMsg(msgLog, 1, self.args.verbose)
 
             if (('success' in publication_res and publication_res['success'])
