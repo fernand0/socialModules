@@ -285,11 +285,26 @@ class moduleNotes(Content):
 
 
     def getApiPostContent(self, post: Any) -> str:
-        print(f"Post: {post}")
-        note = post.to_dict()
-        print(f"Note: {note}")
-        result = safe_get(note, ["content"])
-        return result
+        """Robustly return a post's content for API-style callers.
+
+        Accept dicts or objects with to_dict(), and fall back to attributes.
+        """
+        try:
+            print(f"getApiPostContent called with: {post}")
+            if post is None:
+                return ""
+            if isinstance(post, dict):
+                note = post
+            elif hasattr(post, 'to_dict') and callable(getattr(post, 'to_dict')):
+                note = post.to_dict()
+            else:
+                note = {'content': getattr(post, 'content', None)}
+            print(f"Note: {note}")
+            # Prefer using safe_get to handle nested structures
+            return safe_get(note, ["content"]) or ""
+        except Exception as e:
+            print(f"getApiPostContent error: {e}")
+            return ""
 
 
     def getApiPostBody(self, post: Any) -> str:
