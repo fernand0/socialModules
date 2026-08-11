@@ -1973,7 +1973,7 @@ class Content:
         res = ""
         summary = self.getPostContentHtml(post) 
         if not summary and hasattr(self, 'getApiPostContent'):
-            self.getApiPostContent(post)
+            summary = self.getApiPostContent(post)
         if not summary.startswith("http"):
             soup = BeautifulSoup(summary, "lxml")
             res = soup.get_text()
