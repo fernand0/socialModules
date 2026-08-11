@@ -40,7 +40,8 @@ class moduleNotes(Content):
     def getKeys(self, config):
         # Notes clients typically do not require per-user API keys for a
         # local or simple note store. Keep method for interface compatibility.
-        return None
+        PATH = config.get("NoteApp", "notes_dir")
+        return (PATH, ) 
 
     def initApi(self, keys: Optional[Dict[str, str]] = None) -> Any:
         """Initialise the note client.
@@ -55,7 +56,7 @@ class moduleNotes(Content):
             logMsg(msg, 3, False)
             return msg
 
-        storage_dir = os.path.join(os.path.expanduser("~"), 'notes')
+        storage_dir = os.path.join(os.path.expanduser("~"), keys[0]) if keys else os.path.join(os.path.expanduser("~"), 'notes')
         # Try to instantiate a sensible client object. Try common names.
         client = None
         try:
