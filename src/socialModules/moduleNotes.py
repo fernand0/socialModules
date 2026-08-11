@@ -174,8 +174,8 @@ class moduleNotes(Content):
             #print(f"Client: {self.getClient()}")
             for note_title in notes:
                 #print(f"Note title: {note_title}")
-                note = self.getClient()['storage'].load_note(note_title)
-                #print(f"Note: {note}")
+                note = self.getClient()['manager'].read_note(note_title)
+                print(f"Note: {note}")
                 posts.append(note)
 
         except Exception as e:
