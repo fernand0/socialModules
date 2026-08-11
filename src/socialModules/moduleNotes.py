@@ -290,6 +290,7 @@ class moduleNotes(Content):
 
         Accept dicts or objects with to_dict(), and fall back to attributes.
         """
+        logging.info(f"getApiPostContent called with: {post}")
         try:
             logging.info(f"getApiPostContent called with: {post}")
             if post is None:
