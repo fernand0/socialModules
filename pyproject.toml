@@ -60,7 +60,8 @@ dependencies = [
 		'readability-lxml',
 		'readabilipy',
 		'pycurl',
-		'instapaper'
+		'instapaper',
+		'note_app @ git+https://github.com/fernand0/another-note-taking-app.git',
 
 ]
 

@@ -27,7 +27,7 @@ from note_app.config import Config
 logger = logging.getLogger(__name__)
 
 
-class moduleNoteApp(Content):
+class moduleNotes(Content):
     """Adapter for a note-taking application.
 
     It exposes methods that the rest of the socialModules framework expects:
@@ -197,10 +197,12 @@ class moduleNoteApp(Content):
             more = kwargs
             post = more.get("post", "")
             api = more.get("api", "")
+            logging.info(f"Post: {post}")
+            logging.info(f"Api: {api}")
             title = api.getPostTitle(post)
             link = api.getPostLink(post)
             if post:
-                content = self.getPostContent(post)
+                content = api.getPostContent(post)
 
         if not title and not link:
             self.res_dict["error_message"] = "No title or link to publish."
@@ -272,6 +274,14 @@ class moduleNoteApp(Content):
         note = post.to_dict()
         result = safe_get(note, ["title"])
         return result
+
+
+    def getApiPostContent(self, post: Any) -> str:
+        note = post.to_dict()
+        print(f"Note: {note}")
+        result = safe_get(note, ["content"])
+        return result
+
 
     def getApiPostBody(self, post: Any) -> str:
         result = self.getPostContent(post)
@@ -361,13 +371,13 @@ def main():
 
     from socialModules.moduleTester import ModuleTester
 
-    noteApp_module = moduleNoteApp()
-    tester = ModuleTester(noteApp_module)
+    note_module = moduleNotes()
+    tester = ModuleTester(note_module)
     tester.run()
 
 
 
-    m = moduleNoteApp()
+    m = moduleNotes()
     print("Initialising note client...")
     res = m.initApi()
     print("Client init result:", res)
