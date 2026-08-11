@@ -161,12 +161,12 @@ class moduleNoteApp(Content):
 
         try:
             notes = self.getClient()['manager'].list_notes()
-            print(f"Posts: {notes}")
-            print(f"Client: {self.getClient()}")
+            #print(f"Posts: {notes}")
+            #print(f"Client: {self.getClient()}")
             for note_title in notes:
-                print(f"Note title: {note_title}")
+                #print(f"Note title: {note_title}")
                 note = self.getClient()['storage'].load_note(note_title)
-                print(f"Note: {note}")
+                #print(f"Note: {note}")
                 posts.append(note)
 
         except Exception as e:
