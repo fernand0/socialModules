@@ -1972,15 +1972,12 @@ class Content:
     def getPostContent(self, post):
         res = ""
         summary = self.getPostContentHtml(post) 
-        logging.info(f"Sum: {summary} - {hasattr(self, 'getApiPostContent')} - {not summary}")
-        if not summary and hasattr(self, 'getApiPostContent'):
-            logging.info(f"Aquí {self}")
-            summary = self.getApiPostContent(post)
-            logging.info("Aquí")
-        logging.info(f"Sum2: {summary}")
-        if not summary.startswith("http"):
+        if summary and not summary.startswith("http"):
             soup = BeautifulSoup(summary, "lxml")
-            res = soup.get_text()
+            res = soup.get_text() 
+        elif not summary and hasattr(self, 'getApiPostContent'):
+            res = self.getApiPostContent(post)
+
         return res
 
     def extractImages(self, post):
