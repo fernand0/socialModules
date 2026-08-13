@@ -393,7 +393,8 @@ def select_from_list(
                 options_sel = names_sel.copy()
 
     if len(options_sel) == 1:
-        if options_sel[0] not in more_options:
+        if ((more_options and options_sel[0] not in more_options)
+            or not more_options):
             sel = names.index(options_sel[0])
 
     logging.debug(f"Sel: {sel}")
