@@ -297,6 +297,8 @@ def nameModule():
 def safe_get(data, keys, default=""):
     """Safely retrieves nested values from a dictionary."""
     try:
+        if isinstance(keys, str):
+            keys = [keys, ]
         for key in keys:
             data = data[key]
         return data

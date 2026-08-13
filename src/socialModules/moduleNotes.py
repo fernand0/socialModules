@@ -256,6 +256,7 @@ class moduleNotes(Content):
         client = self.getClient()
 
         try:
+            logging.info(f"Deleting: {idPost}")
             return client['manager'].delete_note(idPost)
         except Exception as e:
             msgLog = f"{self.indent} Delete candidate {name} failed: {e}"
@@ -275,9 +276,11 @@ class moduleNotes(Content):
 
     # Utility accessors to keep parity with other modules
     def getPostId(self, post: Any) -> Optional[Any]:
-        if isinstance(post, dict):
-            return post.get("id")
-        return getattr(post, "id", None)
+        note = post.to_dict()
+        res = None
+        if isinstance(note, dict):
+            res = safe_get(note, 'title')
+        return res
 
     def getApiPostTitle(self, post: Any) -> str:
         note = post.to_dict()
