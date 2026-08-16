@@ -72,7 +72,7 @@ class moduleGcalendar(Content, socialGoogle):
     def getCalendarList(self):
         return self.calendars
 
-    def setPosts(self, date=""):
+    def setPosts(self, date="", max_results=10, event_types=None, show_active=True):
         logging.info(f"{self.indent} Setting posts")
         logging.info(f"{self.indent} Setting posts date {date}")
         api = self.getClient()
@@ -90,18 +90,19 @@ class moduleGcalendar(Content, socialGoogle):
 
         self.posts = []
         if hasattr(self, "active"):
-            print(f"Active: {self.active}")
-            events_result = (
-                api.events()
-                .list(
-                    calendarId=self.active,
-                    timeMin=theDate,
-                    maxResults=10,
-                    singleEvents=True,
-                    orderBy="startTime",
-                )
-                .execute()
-            )
+            if show_active:
+                print(f"Active: {self.active}")
+            list_args = {
+                "calendarId": self.active,
+                "timeMin": theDate,
+                "singleEvents": True,
+                "orderBy": "startTime",
+            }
+            if max_results is not None:
+                list_args["maxResults"] = max_results
+            if event_types is not None:
+                list_args["eventTypes"] = event_types
+            events_result = api.events().list(**list_args).execute()
             self.posts = []
             for item in events_result.get("items", []):
                 if item["eventType"] == "workingLocation":
@@ -164,8 +165,8 @@ class moduleGcalendar(Content, socialGoogle):
 
     def getPostBody(self, message):
         logging.debug(f"Message: {message}")
-        mess = safe_get(message,["description"])
-        mess_ext = safe_get(message,["extendedProperties","private"])
+        mess = safe_get(message, ["description"])
+        mess_ext = safe_get(message, ["extendedProperties", "private"])
         res = f"{mess}\n{mess_ext}"
         logging.debug(f"Res: {res}")
         return res
@@ -173,7 +174,6 @@ class moduleGcalendar(Content, socialGoogle):
     def getPostUrl(self, post):
         url = safe_get(post, ["htmlLink"])
         return url
-
 
     def extractDataMessage(self, i):
         logging.info("Service %s" % self.service)
