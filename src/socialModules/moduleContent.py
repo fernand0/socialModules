@@ -12,11 +12,37 @@ import pickle
 import re
 import sys
 from html.parser import HTMLParser
+from typing import Any, Callable, Iterable, List, Optional
 
 from bs4 import BeautifulSoup, Tag
 
 from socialModules.configMod import CONFIGDIR, DATADIR, checkFile, fileNamePath, logMsg, safe_get
 from socialModules.modulePublicationCache import PublicationCache
+
+
+def display_posts(
+    api: Any,
+    posts: Optional[Iterable[Any]] = None,
+    format_post: Optional[Callable[[Any], str]] = None,
+    limit: Optional[int] = None,
+    separator: str = ") ",
+    title: Optional[str] = None,
+) -> List[Any]:
+    """Print an enumerated list of posts and return the displayed posts."""
+    displayed_posts = list(api.getPosts() if posts is None else posts)
+    if limit is not None:
+        displayed_posts = displayed_posts[-limit:]
+
+    if format_post is None:
+        format_post = api.getPostTitle
+
+    if title:
+        print(title)
+
+    for index, post in enumerate(displayed_posts):
+        print(f"{index}{separator}{format_post(post)}")
+
+    return displayed_posts
 
 
 class Content:
