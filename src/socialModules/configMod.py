@@ -415,10 +415,11 @@ def extract_nick_from_url(url):
     url_parsed = urllib.parse.urlparse(url)
     # if url and (url.startswith("http")):
     #    result = url.split("//", 1)[1]
+    url_netloc = str(url_parsed.netloc)
     if (
-        (url_parsed.netloc.count(".") > 1)
-        and (url_parsed.netloc.split(".")[0] in ["www"])
-    ) or (url_parsed.netloc.count(".") == 1):
+        (url_netloc.count(".") > 1)
+        and (url_netloc.split(".")[0] in ["www"])
+    ) or (url_netloc.count(".") == 1):
         result = f"{url_parsed.netloc}{url_parsed.path}"
     else:
         result = f"{url_parsed.netloc}"
