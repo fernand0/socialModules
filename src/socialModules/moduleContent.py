@@ -1463,9 +1463,15 @@ class Content:
                     elif not pub_title or not pub_link:
                         res_dict['error_message'] = "Publication caching skipped - missing title or link"
             else:
-                res_dict['success'] = True  # Main operation successful, just not cached
-                res_dict['error_message'] = "Publication caching skipped - original publication failed"
-
+                res_dict['success'] = False
+                if not reply: 
+                    res_dict['error_message'] = (
+                            "Publication caching skipped - no publication reply received"
+                            )
+                else:
+                    res_dict['error_message'] = (
+                            "Publication caching skipped - original publication failed"
+                            )
         except Exception as e:
             # Don't fail the publication if caching fails
             msgLog = f"{self.indent} Error caching publication: {e}"
