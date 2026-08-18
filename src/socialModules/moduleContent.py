@@ -1334,7 +1334,8 @@ class Content:
             msgLog = f"Reply: {reply}"
             logMsg(msgLog, 2, False)
 
-            # Integrate publication cache if successful and auto_cache is enabled
+            # Integrate publication cache if successful and auto_cache is
+            # enabled
             if self.getAutoCache():
                 cache_result = self._cache_publication_if_successful(
                     reply, title, link, api, post, more
@@ -1383,8 +1384,12 @@ class Content:
         should_cache = False
 
         try:
-            # Only cache if publication was successful
-            if reply and not (isinstance(reply, str) and reply.startswith("Fail")):
+            # Only cache if publication was successful 
+            if reply and not (
+                    (isinstance(reply,str) and reply.startswith("Fail"))
+                    or (isinstance(reply, dict) and not reply.get("success", False))
+                    ):
+            #if (reply and not (isinstance(reply, str) and reply.startswith("Fail")):
                 # Extract publication details
                 # If we have api and post, try to get better information
                 if api and post:
