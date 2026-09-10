@@ -124,7 +124,7 @@ class moduleGcalendar(Content, socialGoogle):
         self.assignPosts(posts)
         # logging.info(f"{self.indent} Results: {self.posts}")
 
-    def setApiPosts(self, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         logging.info(f"setApiPosts {self.getClient()}")
         logging.info(f"{self.indent} Setting posts")
         logging.info(f"{self.indent} Setting posts date {date}")
@@ -172,8 +172,9 @@ class moduleGcalendar(Content, socialGoogle):
         else:
             posts = None
         # logging.info(f"{self.indent} Results: {events_result}")
-        self.assignPosts(posts)
+        #self.assignPosts(posts)
         # logging.info(f"{self.indent} Results: {self.posts}")
+        return posts
 
     def getApiPostTitle(self, post):
         text = post.get("summary")

@@ -350,7 +350,9 @@ class Content:
     def setApiFavs(self):
         pass
 
-    def setPosts(self, use_cache=False, date="", max_results=20, event_types=None, show_active=True):
+    def setPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+        #args = locals()
+        args = {k: v for k, v in locals().items() if k != 'self'}
         msgLog = f"{self.indent} Start setPosts"
         logMsg(msgLog, 2, False)
         # nick = self.getNick()
@@ -382,7 +384,10 @@ class Content:
         self.indent = f"{self.indent} "
         msgLog = f"{self.indent} Command: {cmd}"
         logMsg(msgLog, 2, False)
-        posts = cmd()
+        # args = {k: v for k, v in locals().items() if k != 'self'}
+        # logging.info(f"Args: {args}")
+        logging.info(f"Args: {args}")
+        posts = cmd(**args)
         if use_cache and not posts and typePosts in ["posts"]:
             msgLog = f"{self.indent} No posts found, checking PublicationCache"
             logMsg(msgLog, 2, False)
