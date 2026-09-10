@@ -72,23 +72,27 @@ class moduleGcalendar(Content, socialGoogle):
     def getCalendarList(self):
         return self.calendars
 
-    def setPosts(self, date="", max_results=10, event_types=None, show_active=True):
+    def setPosts(self, date="", max_results=20, event_types=None, show_active=True):
         logging.info(f"{self.indent} Setting posts")
         logging.info(f"{self.indent} Setting posts date {date}")
         api = self.getClient()
         if not date:
+            date = ""
             theDate = datetime.datetime.now()
             theDate = theDate.isoformat(timespec="seconds") + "Z"
         else:
-            theDate = dateparser.parse(date)
+            if not isinstance(date, datetime.datetime):
+                theDate = dateparser.parse(date)
+            else:
+                theDate = date
             if theDate:
-                theDate = theDate.isoformat() + "Z"
+                theDate = (datetime.datetime(theDate.year, theDate.month, theDate.day, 00, 00)).isoformat() + 'Z'
+                #theDate = theDate.isoformat(timespec="seconds") + "Z"
 
         # 'Z' indicates UTC time
         # page_token = None
-        logging.info(f"{self.indent} Setting posts date {theDate}")
 
-        self.posts = []
+        posts = []
         if hasattr(self, "active"):
             if show_active:
                 print(f"Active: {self.active}")
@@ -102,19 +106,21 @@ class moduleGcalendar(Content, socialGoogle):
                 list_args["maxResults"] = max_results
             if event_types is not None:
                 list_args["eventTypes"] = event_types
-            events_result = api.events().list(**list_args).execute()
-            self.posts = []
+            try:
+                events_result = api.events().list(**list_args).execute()
+            except Exception as err_excep:
+                print(f"eeoooo {err_excep}")
+            posts = []
             for item in events_result.get("items", []):
                 if item["eventType"] == "workingLocation":
                     continue
                 else:
-                    self.posts.append(item)
+                    posts.append(item)
         else:
-            self.posts = None
+            posts = None
         # logging.info(f"{self.indent} Results: {events_result}")
+        self.assignPosts(posts)
         # logging.info(f"{self.indent} Results: {self.posts}")
-
-        return "orig. " + date + " Translated." + theDate
 
     def getApiPostTitle(self, post):
         text = post.get("summary")
