@@ -350,7 +350,7 @@ class Content:
     def setApiFavs(self):
         pass
 
-    def setPosts(self, use_cache=False):
+    def setPosts(self, use_cache=False, date="", max_results=20, event_types=None, show_active=True):
         msgLog = f"{self.indent} Start setPosts"
         logMsg(msgLog, 2, False)
         # nick = self.getNick()
@@ -1384,7 +1384,7 @@ class Content:
         should_cache = False
 
         try:
-            # Only cache if publication was successful 
+            # Only cache if publication was successful
             if reply and not (
                     (isinstance(reply,str) and reply.startswith("Fail"))
                     or (isinstance(reply, dict) and not reply.get("success", False))
@@ -1464,7 +1464,7 @@ class Content:
                         res_dict['error_message'] = "Publication caching skipped - missing title or link"
             else:
                 res_dict['success'] = False
-                if not reply: 
+                if not reply:
                     res_dict['error_message'] = (
                             "Publication caching skipped - no publication reply received"
                             )
@@ -2008,10 +2008,10 @@ class Content:
 
     def getPostContent(self, post):
         res = ""
-        summary = self.getPostContentHtml(post) 
+        summary = self.getPostContentHtml(post)
         if summary and not summary.startswith("http"):
             soup = BeautifulSoup(summary, "lxml")
-            res = soup.get_text() 
+            res = soup.get_text()
         elif not summary and hasattr(self, 'getApiPostContent'):
             res = self.getApiPostContent(post)
 
