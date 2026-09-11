@@ -72,7 +72,11 @@ class moduleGcalendar(Content, socialGoogle):
     def getCalendarList(self):
         return self.calendars
 
-    def setApiSearch(self, date="", max_results=20, event_types=None, show_active=True):
+    def setApiSearch(self, **kwargs):
+        date = kwargs.pop('date', '')
+        max_results = kwargs.pop('max_results', 20)
+        event_types = kwargs.pop('event_types', None)
+        show_active = kwargs.pop('show_active', True)
         logging.info(f"setApiSearch {self.getClient()}")
         logging.info(f"{self.indent} Setting posts")
         logging.info(f"{self.indent} Setting posts date {date}")
@@ -124,7 +128,11 @@ class moduleGcalendar(Content, socialGoogle):
         self.assignPosts(posts)
         # logging.info(f"{self.indent} Results: {self.posts}")
 
-    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiPosts(self, **kwargs):
+        date = kwargs.pop('date', '')
+        max_results = kwargs.pop('max_results', 1000)
+        event_types = kwargs.pop('event_types', None)
+        show_active = kwargs.pop('show_active', True)
         logging.info(f"setApiPosts {self.getClient()}")
         logging.info(f"{self.indent} Setting posts")
         logging.info(f"{self.indent} Setting posts date {date}")
