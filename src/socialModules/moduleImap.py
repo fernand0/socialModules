@@ -121,7 +121,7 @@ class moduleImap(Content):  # , Queue):
 
         return client
 
-    def setApiNew(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiNew(self, **kwargs):
         try:
             # Trying to avoid re-authentication. Are ther better ways?
             self.getClient().noop()
@@ -131,7 +131,7 @@ class moduleImap(Content):  # , Queue):
         posts = self.listMessages(self.getClient(), self.getChannel())
         return posts
 
-    def setApiDrafts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiDrafts(self, **kwargs):
         # IMAP accounts get disconnected when time passes.
         # Maybe we should check if this is needed
 
@@ -147,7 +147,7 @@ class moduleImap(Content):  # , Queue):
         posts = self.listMessages(self.getClient(), channel)
         return posts
 
-    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiPosts(self, **kwargs):
         # IMAP accounts get disconnected when time passes.
         # Maybe we should check if this is needed
 
