@@ -96,7 +96,7 @@ class moduleRss(Content):  # , Queue):
         msgLog = f"{self.indent} End setClient"
         logMsg(msgLog, 1, False)
 
-    def setApiSearch(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiSearch(self, **kwargs):
         msgLog = f"{self.indent} Setting posts (search)"
         logMsg(msgLog, 2, False)
 
@@ -114,7 +114,7 @@ class moduleRss(Content):  # , Queue):
 
         return selPosts
 
-    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiPosts(self, **kwargs):
         msgLog = f"{self.indent} Service {self.service} Start setApiPosts"
         logMsg(msgLog, 2, False)
 

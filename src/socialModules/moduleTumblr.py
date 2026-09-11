@@ -54,11 +54,11 @@ class moduleTumblr(Content):  # , Queue):
             nick = nick.split("/")[2].split(".")[0]
         self.nick = nick
 
-    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiPosts(self, **kwargs):
         posts = self.setApiPublished()
         return posts
 
-    def setApiPublished(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiPublished(self, **kwargs):
         posts = self.getClient().posts(self.getUrl().split("/")[2])
         if "posts" in posts:
             posts = posts["posts"]
@@ -67,7 +67,7 @@ class moduleTumblr(Content):  # , Queue):
 
         return posts
 
-    def setApiDrafts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiDrafts(self, **kwargs):
         drafts = self.getClient().drafts(self.getUrl().split("/")[2])
         if "posts" in drafts:
             posts = drafts["posts"]
@@ -75,7 +75,7 @@ class moduleTumblr(Content):  # , Queue):
             posts = []
         return posts
 
-    def setApiQueue(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiQueue(self, **kwargs):
         posts = []
         if self.getClient():
             queue = self.getClient().queue(self.getUrl().split("/")[2])

@@ -103,7 +103,7 @@ class moduleLinkedin(Content):
             profile = self.profile
         return profile
 
-    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiPosts(self, **kwargs):
         urn = self.URN
         author = f"urn:li:person:{urn}"
         author = urllib.parse.quote(author)

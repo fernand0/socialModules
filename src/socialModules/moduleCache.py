@@ -138,15 +138,15 @@ class moduleCache(Content):  # ,Queue):
     def getKeys(self, config):
         return None
 
-    def setApiDrafts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiDrafts(self, **kwargs):
         #msgLog = f"{self.indent} setApiDrafts"
         # Every cache is the same, even the origin are drafts ??
         return self.setApiPosts()
 
-    def setApiCache(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiCache(self, **kwargs):
         return self.setApiPosts()
 
-    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiPosts(self, **kwargs):
         self.indent = f"{self.indent} "
         msgLog = f"{self.indent} Start setApiPosts"
         logMsg(msgLog, 2, False)

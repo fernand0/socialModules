@@ -317,7 +317,7 @@ class moduleHtml(Content):  # , Queue):
     def setUrl(self, url):
         self.url = url
 
-    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiPosts(self, **kwargs):
         """
         Downloads the HTML content from the URL(s) stored in self.url.
         """

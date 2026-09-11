@@ -153,7 +153,7 @@ class moduleNotes(Content):
 
     #     return posts
 
-    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True) -> List[Dict[str, Any]]:
+    def setApiPosts(self, **kwargs) -> List[Dict[str, Any]]:
         """Load notes from the note client and expose them as posts.
 
         Returns the list of note dicts assigned to self.posts.

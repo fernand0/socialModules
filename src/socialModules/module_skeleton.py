@@ -34,7 +34,7 @@ class moduleSkeleton(Content):
         """
         pass
 
-    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
+    def setApiPosts(self, **kwargs):
         """
         Fetches the user's posts from the social media service.
         If the service has channels/folders, this should fetch posts from the current channel.
@@ -42,7 +42,7 @@ class moduleSkeleton(Content):
         """
         pass
 
-    def setApiFavs(self):
+    def setApiFavs(self, **kwargs):
         """
         Fetches the user's favorite/liked posts.
         It should return a list of post objects.

@@ -266,7 +266,7 @@ class moduleFilterManager(Content):
         self.indent = self.indent[:-1]
         return final_return_value
 
-    def setApiPosts(self, channel: Optional[str] = None) -> List[EmailFilterRule]:
+    def setApiPosts(self, channel: Optional[str] = None, **kwargs) -> List[EmailFilterRule]:
         """Load rules from JSON file.
 
         This method follows the socialModules pattern where setApiPosts()
