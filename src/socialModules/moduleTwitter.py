@@ -82,7 +82,7 @@ class moduleTwitter(Content):  # , Queue):
             api = self.api
         return api
 
-    def setApiPosts(self):
+    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         # Does not work with new API restrictions
         # posts = self.apiCall(self.getClient().statuses.user_timeline,
         posts = self.apiCall(
@@ -96,7 +96,7 @@ class moduleTwitter(Content):  # , Queue):
 
         return posts
 
-    def setApiFavs(self):
+    def setApiFavs(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         # Not tested, the free API level does not allow this call
         # posts = self.apiCall(self.getClient().favorites.list,
         logging.debug(f"Id: {self.user}")

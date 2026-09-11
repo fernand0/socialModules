@@ -138,12 +138,12 @@ class moduleCache(Content):  # ,Queue):
     def getKeys(self, config):
         return None
 
-    def setApiDrafts(self):
+    def setApiDrafts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         #msgLog = f"{self.indent} setApiDrafts"
         # Every cache is the same, even the origin are drafts ??
         return self.setApiPosts()
 
-    def setApiCache(self):
+    def setApiCache(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         return self.setApiPosts()
 
     def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
@@ -580,7 +580,7 @@ class moduleCache(Content):  # ,Queue):
             posts = self.getPosts()
             posts.append(post_to_cache)
             self.assignPosts(posts)
-            
+
             update_result = self.updatePosts(api_src) # api_src can be None here
 
             self.res_dict["success"] = True

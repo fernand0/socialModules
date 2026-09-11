@@ -121,7 +121,7 @@ class moduleImap(Content):  # , Queue):
 
         return client
 
-    def setApiNew(self):
+    def setApiNew(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         try:
             # Trying to avoid re-authentication. Are ther better ways?
             self.getClient().noop()
@@ -131,7 +131,7 @@ class moduleImap(Content):  # , Queue):
         posts = self.listMessages(self.getClient(), self.getChannel())
         return posts
 
-    def setApiDrafts(self):
+    def setApiDrafts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         # IMAP accounts get disconnected when time passes.
         # Maybe we should check if this is needed
 
@@ -147,7 +147,7 @@ class moduleImap(Content):  # , Queue):
         posts = self.listMessages(self.getClient(), channel)
         return posts
 
-    def setApiPosts(self):
+    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         # IMAP accounts get disconnected when time passes.
         # Maybe we should check if this is needed
 
@@ -1062,13 +1062,13 @@ class moduleImap(Content):  # , Queue):
 
     def has_noselect(self, folder):
         """Check if a folder has the \\Noselect IMAP attribute.
-        
+
         The \\Noselect attribute indicates that the folder cannot be selected
         as a mailbox (it's typically a hierarchy delimiter or special folder).
-        
+
         Args:
             folder: Raw IMAP folder entry (bytes or string)
-            
+
         Returns:
             True if the folder has \\Noselect attribute, False otherwise
         """
@@ -1076,7 +1076,7 @@ class moduleImap(Content):  # , Queue):
             folder_str = folder.decode('utf-8', errors='replace')
         else:
             folder_str = folder
-        
+
         # Check for \Noselect in the IMAP attributes (before the first ")")
         # Format: b'(\\HasNoChildren \\Noselect) "/" "Folder"' or similar
         if ') ' in folder_str:

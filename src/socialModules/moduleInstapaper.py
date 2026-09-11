@@ -62,7 +62,7 @@ class moduleInstapaper(Content):
     def register_specific_tests(self, tester):
         pass
 
-    def setApiPosts(self):
+    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         posts = []
         # Add Instapaper API call to retrieve posts here
         try:

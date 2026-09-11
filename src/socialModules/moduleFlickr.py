@@ -137,17 +137,17 @@ class moduleFlickr(Content):  # , Queue):
             api = self.api
         return api
 
-    def setApiPosts(self):
+    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         posts = []
 
         return posts
 
-    def setApiFavs(self):
+    def setApiFavs(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         posts = []
 
         return posts
 
-    def setApiDrafts(self):
+    def setApiDrafts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         posts = []
         posts = self.apiCall("people.getPhotos", user_id="fernand0")
         # logging.debug(f"Post: {posts[0]}")

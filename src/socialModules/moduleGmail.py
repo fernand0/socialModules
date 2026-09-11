@@ -177,7 +177,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
                 pPosts.insert(0, message)
         return pPosts
 
-    def setApiSearch(self, label=None, mode=""):
+    def setApiSearch(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True, label=None, mode=""):
         client = self.getClient()
         posts = []
         if client:
@@ -206,7 +206,7 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
         posts = self.processPosts(posts, label, mode)
         return posts
 
-    def setApiDrafts(self, label=None, mode=""):
+    def setApiDrafts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True, label=None, mode=""):
         posts = self.getClient().users().drafts().list(userId="me").execute()
         posts = self.processPosts(posts, label, mode)
         return posts
@@ -238,13 +238,13 @@ class moduleGmail(Content, socialGoogle):  # Queue,socialGoogle):
     def getChannel(self):
         return self.channel
 
-    def setApiPosts(self, label=None, mode=""):
+    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True, label=None, mode=""):
         label = ""
         if (not label) and hasattr(self, "channel"):
             label = self.getChannel()
         return self.setApiMessages(label, mode)
 
-    def setApiMessages(self, label=None, mode=""):
+    def setApiMessages(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True, label=None, mode=""):
         msgLog = f"{self.indent} Label: {label}"
         logMsg(msgLog, 2, False)
         if isinstance(label, str):

@@ -71,7 +71,7 @@ class moduleLinkedin(Content):
             result = urllib.parse.parse_qsl(splitUrl.query)
             access_token = result[0][1]
             # token_response = auth_client.exchange_auth_code_for_access_token(auth_code)
-            
+
             url = "https://www.linkedin.com/oauth/v2/accessToken"
             payload = {
                 "grant_type": "authorization_code",
@@ -103,7 +103,7 @@ class moduleLinkedin(Content):
             profile = self.profile
         return profile
 
-    def setApiPosts(self):
+    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         urn = self.URN
         author = f"urn:li:person:{urn}"
         author = urllib.parse.quote(author)

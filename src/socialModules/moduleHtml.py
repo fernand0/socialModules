@@ -60,7 +60,7 @@ class moduleHtml(Content):  # , Queue):
 
     def setUrl(self, url):
         self.url = url
-    
+
 
     def downloadUrl(self, url_to_download):
         msgLog = f"Downloading: {url_to_download}"
@@ -69,7 +69,7 @@ class moduleHtml(Content):  # , Queue):
         response = None
         #moreContent = ""
 
-        try: 
+        try:
             from playwright.sync_api import sync_playwright, Playwright
 
             def run(playwright: Playwright, url):
@@ -87,7 +87,7 @@ class moduleHtml(Content):  # , Queue):
                 from types import SimpleNamespace
 
                 response = SimpleNamespace(**response)
-           
+
                 browser.close()
                 return reply, response
 
@@ -317,7 +317,7 @@ class moduleHtml(Content):  # , Queue):
     def setUrl(self, url):
         self.url = url
 
-    def setApiPosts(self):
+    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         """
         Downloads the HTML content from the URL(s) stored in self.url.
         """
