@@ -146,7 +146,7 @@ class moduleCache(Content):  # ,Queue):
     def setApiCache(self):
         return self.setApiPosts()
 
-    def setApiPosts(self):
+    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         self.indent = f"{self.indent} "
         msgLog = f"{self.indent} Start setApiPosts"
         logMsg(msgLog, 2, False)

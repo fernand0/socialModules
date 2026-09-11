@@ -57,7 +57,7 @@ class moduleBlsk(Content):  # , Queue):
                 nick = nick.split("/")[-1].split(".")[0]
         self.nick = nick
 
-    def setApiPosts(self):
+    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         posts = []
 
         posts, error = self.apiCall(commandName="get_author_feed",
@@ -73,7 +73,7 @@ class moduleBlsk(Content):  # , Queue):
 
         return posts
 
-    def setApiFavs(self):
+    def setApiFavs(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         posts = []
 
         if hasattr(self, "me"):

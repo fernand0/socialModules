@@ -114,7 +114,7 @@ class moduleRss(Content):  # , Queue):
 
         return selPosts
 
-    def setApiPosts(self):
+    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         msgLog = f"{self.indent} Service {self.service} Start setApiPosts"
         logMsg(msgLog, 2, False)
 

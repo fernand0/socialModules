@@ -34,7 +34,7 @@ class moduleMastodon(Content):  # , Queue):
         client = mastodon.Mastodon(access_token=keys[0], api_base_url=self.base_url)
         return client
 
-    def setApiPosts(self):
+    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True) -> List[Dict[str, Any]]:
         logging.info(f"setApiPosts {self.getClient()}")
         posts = []
         if self.getClient():
@@ -45,7 +45,7 @@ class moduleMastodon(Content):  # , Queue):
                 posts = []
         return posts
 
-    def setApiFavs(self):
+    def setApiFavs(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True) -> List[Dict[str, Any]]:
         posts = []
         if self.getClient():
             try:
