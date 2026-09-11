@@ -2,6 +2,7 @@
 
 import logging
 import sys
+from typing import Any, Dict, List
 
 import mastodon
 from bs4 import BeautifulSoup
