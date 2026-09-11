@@ -44,7 +44,7 @@ class moduleImgur(Content):  # , Queue):
     def get_user_info(self, client):
         return f"{self.user}"
 
-    def setApiPosts(self):
+    def setApiPosts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         posts = []
         client = self.getClient()
         # msgLog = (f"{self.indent} Client: {client} {self.user} ")
@@ -79,7 +79,7 @@ class moduleImgur(Content):  # , Queue):
             logMsg(msgLog, 3, False)
         return posts
 
-    def setApiDrafts(self):
+    def setApiDrafts(self, use_cache=False, date="", max_results=1000, event_types=None, show_active=True):
         posts = []
         client = self.getClient()
         # msgLog = (f"{self.indent} Client: {client}")
