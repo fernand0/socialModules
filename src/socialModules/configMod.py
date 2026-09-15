@@ -343,7 +343,7 @@ def select_from_list(
             for el in options + more_options
         ]
     else:
-        print(f"Namesss: {options} - {more_options}")
+        #print(f"Namesss: {options} - {more_options}")
         names = options + more_options if more_options else options
     sel = -1
     names_sel = names.copy()
