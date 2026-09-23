@@ -782,9 +782,15 @@ class moduleRules:
         except Exception as e:
             print(f"An error occurred during publication: {e}")
 
-    def selectRuleInteractive(self, service=None, title="", more_options=None):
+    def get_rules_for_services(self, service=None, stacklevel=2):
+        """Return the list of configured rules matching the given service(s).
+
+        stacklevel controls which frame is inspected to infer the service name
+        when none is provided: 2 (default) means the direct caller of this
+        method; pass a higher value when this method is called from a wrapper.
+        """
         if not service:
-            nameModule = os.path.basename(inspect.stack()[1].filename)
+            nameModule = os.path.basename(inspect.stack()[stacklevel].filename)
             service = nameModule.split(".")[0][6:].casefold()
         if not isinstance(service, list):
             service = [
@@ -795,8 +801,11 @@ class moduleRules:
         for ser in service:
             logging.info(f"Service: {ser}")
             selRules = selRules + self.selectRule(ser, "")
-
         logging.info(f"Rules: {selRules}")
+        return selRules
+
+    def selectRuleInteractive(self, service=None, title="", more_options=None):
+        selRules = self.get_rules_for_services(service, stacklevel=3)
         iRul, src = select_from_list(selRules, title=title, more_options=more_options)
 
         logging.info(f"Selected rule: {iRul}. Rule {src}\n")
