@@ -311,6 +311,9 @@ class moduleHtml(Content):  # , Queue):
                         response.text
                     )  # content.decode('utf-8','ignore'))
                 else:
+                    # If we do not add the empty content we will have problems
+                    # when interpreting the results of the failed downloads
+                    self.posts.append("")
                     logging.warning(f"Failed to download content from {url}")
             except DownloadError as e:
                 logging.error(f"Download error for {url}: {e}")
