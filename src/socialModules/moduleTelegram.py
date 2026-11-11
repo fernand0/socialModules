@@ -194,7 +194,6 @@ class moduleTelegram(Content):
             logging.info(f"Postssss: {posts}")
         return posts
 
-
     def getApiPostTitle(self, post):
         if "channel_post" in post:
             if "text" in post["channel_post"]:

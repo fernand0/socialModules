@@ -12,7 +12,7 @@ class TestModuleSlack(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures before each test method."""
         self.slack_module = moduleSlack()
-        
+
         # Load sample posts from anonymized slackPosts.txt in test_data directory
         with open(os.path.join(os.path.dirname(__file__), 'test_data', 'slackPosts.txt'), 'r') as f:
             import ast
@@ -26,7 +26,7 @@ class TestModuleSlack(unittest.TestCase):
             if 'attachments' in post and len(post['attachments']) > 0:
                 post_with_attachments = post
                 break
-        
+
         if post_with_attachments:
             link = self.slack_module.getApiPostLink(post_with_attachments)
             # Should return the original_url from the first attachment
@@ -42,7 +42,7 @@ class TestModuleSlack(unittest.TestCase):
             'text': '<https://example.com>',
             'type': 'message'
         }
-        
+
         link = self.slack_module.getApiPostLink(simple_link_post)
         # Should extract the link between < and >
         expected_link = 'https://example.com'
@@ -97,17 +97,17 @@ class TestModuleSlack(unittest.TestCase):
                     link = self.slack_module.getApiPostLink(post)
                     # Verify that the link is a string
                     self.assertIsInstance(link, str)
-                    
+
                     # If the post has attachments, verify the link matches the original_url
                     if 'attachments' in post and len(post['attachments']) > 0:
                         expected_link = post['attachments'][0]['original_url']
                         self.assertEqual(link, expected_link)
-                    
+
                     count_tested += 1
                 except Exception as e:
                     # Some posts might not have the expected structure, which is fine
                     print(f"Post {i} caused exception (this might be expected): {e}")
-        
+
         self.assertGreater(count_tested, 0, "At least one post should have been tested")
 
     def test_getApiPostLink_edge_cases(self):

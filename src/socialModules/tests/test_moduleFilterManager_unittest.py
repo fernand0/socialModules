@@ -178,17 +178,17 @@ class TestModuleFilterManager(unittest.TestCase):
         """Test add_rule uses current channel when rule_type not specified."""
         self.filter_manager.setChannel("always")
         rule = EmailFilterRule("From", "test@test.com", "Inbox")
-        
+
         # Should use current channel
         self.filter_manager.add_rule(rule)
-        
+
         self.assertEqual(len(self.filter_manager.rules["always"]), 1)
         self.assertEqual(len(self.filter_manager.rules["sometimes"]), 0)
 
     def test_add_rule_no_channel_raises_error(self):
         """Test add_rule raises error when no channel set and no rule_type."""
         rule = EmailFilterRule("From", "test@test.com", "Inbox")
-        
+
         with self.assertRaises(ValueError):
             self.filter_manager.add_rule(rule)
 

@@ -73,26 +73,26 @@ Import this module to enable auto-cache for all Content-based modules.
 # Enable auto-cache globally by patching the Content class
 def enable_global_auto_cache():
     """Enable auto-cache for all Content-based modules"""
-    
+
     try:
         from socialModules.moduleContent import Content
-        
+
         # Store original __init__
         if not hasattr(Content, '_original_init'):
             Content._original_init = Content.__init__
-            
+
             def auto_cache_init(self, indent=""):
                 # Call original init
                 Content._original_init(self, indent)
                 # Enable auto_cache by default
                 self.auto_cache = True
-            
+
             # Replace __init__
             Content.__init__ = auto_cache_init
-            
+
         print("✓ Global auto-cache enabled")
         return True
-        
+
     except Exception as e:
         print(f"✗ Failed to enable global auto-cache: {e}")
         return False
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     print("2. Set environment: ENABLE_AUTO_CACHE=true")
     print("3. Run this script directly to patch the class")
     print()
-    
+
     enable_global_auto_cache()
 '''
 

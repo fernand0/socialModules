@@ -1484,7 +1484,6 @@ class moduleImap(Content):  # , Queue):
 
             self.moveMails(self.getClient(), posts[1], posts[0])
 
-
     def moveMails(self, M, msgs, folder):
         self.res_dict["success"] = True  # Assume success until a failure occurs
         self.res_dict["raw_response"] = []  # Store individual chunk results if needed

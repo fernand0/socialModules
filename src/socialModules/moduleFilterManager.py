@@ -682,7 +682,6 @@ def main():
     print(f"dir: {tester.api_src.imapacc}")
     print("\n--- Starting Interactive Menu (with loaded configuration) ---\n")
 
-
     # while True:
     #     print("\n--- Menu ---")
     #     print("1. Show all rules")

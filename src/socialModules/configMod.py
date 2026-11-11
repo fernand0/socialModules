@@ -270,13 +270,12 @@ def getApi(profile, nick, indent="", channel=None):
         api.setClient(nick)
         if channel:
             api.setPage(channel)
-        if len(indent)>0:
+        if len(indent) > 0:
             api.indent = f"{indent[:-1]}"
         else:
             api.indent = ""
         api.setPostsType("posts")
         result_api = api
-
 
     msgLog = f"{indent} End getApi"
     logMsg(msgLog, 2, 0)
@@ -358,7 +357,7 @@ def select_from_list(
     click.echo(f"\n{title}")
     while options_sel and len(options_sel) > 1:
         text_sel = ""
-        if title: 
+        if title:
             text_sel = f"Title: {title}"
         for i, elem in enumerate(options_sel):
             text_sel = f"{text_sel}\n{i}) {elem}"

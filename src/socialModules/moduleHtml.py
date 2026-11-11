@@ -61,7 +61,6 @@ class moduleHtml(Content):  # , Queue):
     def setUrl(self, url):
         self.url = url
 
-
     def downloadUrl(self, url_to_download):
         msgLog = f"Downloading: {url_to_download}"
         logMsg(msgLog, 1, False)

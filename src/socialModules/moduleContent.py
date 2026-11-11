@@ -1304,9 +1304,9 @@ class Content:
             ):
                 nameMethod = self.getPostsType().capitalize()
             else:
-                msgLog =  (f"{self.indent} No api for "
-                           f"{self.getPostsType()}"
-                           )
+                msgLog = (f"{self.indent} No api for "
+                          f"{self.getPostsType()}"
+                          )
                 logMsg(msgLog, 2, False)
 
             method = getattr(self, f"publishApi{nameMethod}")
@@ -1388,7 +1388,7 @@ class Content:
         try:
             # Only cache if publication was successful
             if reply and not (
-                    (isinstance(reply,str) and reply.startswith("Fail"))
+                    (isinstance(reply, str) and reply.startswith("Fail"))
                     or (isinstance(reply, dict) and not reply.get("success", False))
                     ):
             #if (reply and not (isinstance(reply, str) and reply.startswith("Fail")):
@@ -1969,7 +1969,6 @@ class Content:
             if not body and hasattr(post, "get"):
                 body = safe_get(post, 'body')
         return body
-
 
     def getPostDate(self, post):
         return ""

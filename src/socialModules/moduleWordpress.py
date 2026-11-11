@@ -127,6 +127,7 @@ class moduleWordpress(Content):  # ,Queue):
             logging.info("No config file or not adequate fields")
 
     def setApiPosts(self, **kwargs):
+        morePosts = kwargs.get("morePosts")
         posts = []
         numPosts = 100
         try:
@@ -149,9 +150,9 @@ class moduleWordpress(Content):  # ,Queue):
         except KeyError:
             logging.warning("KeyError probably API Key expired")
             logging.warning("Unexpected error:", sys.exc_info()[0])
-            return self.report(f"{self.service} API expired", "", "", sys.exc_info())
+            posts = self.report(f"{self.service} API expired", "", "", sys.exc_info())
         except:
-            return self.report(f"{self.service} API", "", "", sys.exc_info())
+            posts = self.report(f"{self.service} API", "", "", sys.exc_info())
         return posts
 
     # def setPosts(self, morePosts=None):
@@ -285,7 +286,7 @@ class moduleWordpress(Content):  # ,Queue):
             "tags": idTags,
         }
 
-        logMsg(f"Payload: {payload}",1, 0)
+        logMsg(f"Payload: {payload}", 1, 0)
         # if link:
         #     payload["meta"] = {"original_link": link}
 

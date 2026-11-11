@@ -41,7 +41,7 @@ class moduleNotes(Content):
         # Notes clients typically do not require per-user API keys for a
         # local or simple note store. Keep method for interface compatibility.
         PATH = config.get("NoteApp", "notes_dir")
-        return (PATH, ) 
+        return (PATH, )
 
     def initApi(self, keys: Optional[Dict[str, str]] = None) -> Any:
         """Initialise the note client.
@@ -242,37 +242,29 @@ class moduleNotes(Content):
 
         return self.res_dict
 
-
     def deleteApiPosts(self, idPost: Any) -> Any:
         """Delete a note with the given id.
 
         Returns the underlying client response when possible.
         """
+        res = None
         if not hasattr(self, "client") or self.client is None:
             init_res = self.initApi()
             if isinstance(init_res, str) and init_res.startswith("Error:"):
-                return init_res
+                res = init_res
 
-        client = self.getClient()
+        if res is None:
+            client = self.getClient()
 
-        try:
-            logging.info(f"Deleting: {idPost}")
-            return client['manager'].delete_note(idPost)
-        except Exception as e:
-            msgLog = f"{self.indent} Delete candidate {name} failed: {e}"
-            logMsg(msgLog, 2, False)
-            return msgLog
+            try:
+                logging.info(f"Deleting: {idPost}")
+                res = client['manager'].delete_note(idPost)
+            except Exception as e:
+                msgLog = f"{self.indent} Delete candidate {idPost} failed: {e}"
+                logMsg(msgLog, 2, False)
+                res = msgLog
 
-        # top-level fallback
-        try:
-            import note_app
-
-            if hasattr(note_app, "delete_note"):
-                return note_app.delete_note(idPost)
-        except Exception:
-            pass
-
-        return f"Error: no suitable delete method found for id {idPost}"
+        return res
 
     # Utility accessors to keep parity with other modules
     def getPostId(self, post: Any) -> Optional[Any]:
@@ -310,45 +302,14 @@ class moduleNotes(Content):
             print(f"getApiPostContent error: {e}")
             return ""
 
-
     def getApiPostBody(self, post: Any) -> str:
         result = self.getApiPostContent(post)
         return result
-
 
     def getApiPostLink(self, post: Any) -> str:
         # Notes typically do not have public URLs; return id as string when available
         pid = self.getPostId(post)
         return str(pid) if pid is not None else ""
-
-    def getApiPostBody(self, post: Any) -> str:
-        """Return the content of a post. Accepts dicts or objects with to_dict()."""
-        return self.getApiPostContent(post)
-
-
-    # def getApiPostContent(self, post: Any) -> str:
-    #     """Return the content of a post. Accepts dicts or objects with to_dict()."""
-    #     try:
-    #         if post is None:
-    #             return ""
-    #         if isinstance(post, dict):
-    #             result = safe_get(post, 'content')
-    #             # print(f"getPostContent (dict): {result}")
-    #             return result or ""
-    #         # objects
-    #         if hasattr(post, 'to_dict') and callable(getattr(post, 'to_dict')):
-    #             note = post.to_dict()
-    #         else:
-    #             note = {
-    #                 'content': getattr(post, 'content', None)
-    #             }
-    #         result = safe_get(note, 'content')
-    #         print(f"Result: {result}")
-    #         # print(f"getPostContent (obj): {note}")
-    #         return result or ""
-    #     except Exception as e:
-    #         # print(f"getPostContent error: {e}")
-    #         return ""
 
     def getPostTime(self, post: Any) -> Optional[Any]:
         note = post.to_dict()
@@ -426,8 +387,6 @@ def main():
     note_module = moduleNotes()
     tester = ModuleTester(note_module)
     tester.run()
-
-
 
     m = moduleNotes()
     print("Initialising note client...")

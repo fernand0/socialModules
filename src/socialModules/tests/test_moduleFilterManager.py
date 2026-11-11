@@ -61,10 +61,10 @@ class TestEmailFilterRule:
         """Test rule hash for use in sets."""
         rule1 = EmailFilterRule(keyword="From", pattern="test@test.com", folder="Inbox")
         rule2 = EmailFilterRule(keyword="From", pattern="test@test.com", folder="Inbox")
-        
+
         # Equal rules should have same hash
         assert hash(rule1) == hash(rule2)
-        
+
         # Should be usable in sets
         rule_set = {rule1, rule2}
         assert len(rule_set) == 1  # Duplicates removed
@@ -285,7 +285,7 @@ class TestModuleFilterManager:
     def test_get_posts(self, filter_manager):
         """Test getPosts method returns empty list when no channel set."""
         filter_manager.add_rule(EmailFilterRule("From", "test@test.com", "Inbox"), "always")
-        
+
         # When no channel set, getPosts() returns empty list
         posts = filter_manager.getPosts()
         assert isinstance(posts, list)
@@ -303,7 +303,7 @@ class TestModuleFilterManager:
             "always": [EmailFilterRule("Subject", "Test", "TestFolder")],
             "sometimes": []
         }
-        
+
         filter_manager.assignPosts(new_rules)
         # posts should be empty because no channel is set
         assert isinstance(filter_manager.posts, list)
@@ -314,7 +314,7 @@ class TestModuleFilterManager:
         """Test updatePosts returns error message on failure."""
         # Set invalid path
         filter_manager.rules_file = "/nonexistent/path/rules.json"
-        
+
         result = filter_manager.updatePosts()
         assert result.startswith("Error:")
 
@@ -373,17 +373,17 @@ class TestModuleFilterManager:
         """Test add_rule uses current channel when rule_type not specified."""
         filter_manager.setChannel("always")
         rule = EmailFilterRule("From", "test@test.com", "Inbox")
-        
+
         # Should use current channel
         filter_manager.add_rule(rule)
-        
+
         assert len(filter_manager.rules["always"]) == 1
         assert len(filter_manager.rules["sometimes"]) == 0
 
     def test_add_rule_no_channel_raises_error(self, filter_manager):
         """Test add_rule raises error when no channel set and no rule_type."""
         rule = EmailFilterRule("From", "test@test.com", "Inbox")
-        
+
         with pytest.raises(ValueError):
             filter_manager.add_rule(rule)
 
@@ -392,10 +392,10 @@ class TestModuleFilterManager:
         rule = EmailFilterRule("From", "test@test.com", "Inbox")
         filter_manager.add_rule(rule, "always")
         filter_manager.setChannel("always")
-        
+
         # Should use current channel
         result = filter_manager.remove_rule(rule)
-        
+
         assert result is True
         assert len(filter_manager.rules["always"]) == 0
 
@@ -416,10 +416,10 @@ class TestModuleFilterManager:
 
         manager = moduleFilterManager()
         manager.rules_file = temp_rules_file
-        
+
         # Load with channel
         rules = manager.setApiPosts(channel="always")
-        
+
         assert manager.getChannel() == "always"
         assert isinstance(rules, list)
         assert len(rules) == 1

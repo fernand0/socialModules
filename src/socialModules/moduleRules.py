@@ -1159,7 +1159,6 @@ class moduleRules:
                 f" ({self.getTypeRule(obj)})"
                 )
 
-
     def getActionString(self, action):
         """Generate the action string for an action object (compact format).
 

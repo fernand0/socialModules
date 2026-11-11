@@ -38,14 +38,14 @@ class TestModuleSmtp:
         title = "Test Title"
         link = "https://example.com"
         comment = "Test comment"
-        
+
         result = self.smtp_module.publishApiPost(title, link, comment)
 
         # Verify the SMTP client was called correctly
         mock_client.sendmail.assert_called_once()
         args, kwargs = mock_client.sendmail.call_args
         from_addr, to_addr, msg_string = args
-        
+
         # Verify the from and to addresses
         assert from_addr == "test@example.com"
         # When using positional args, destaddr is taken from self.destaddr or self.user
@@ -66,7 +66,7 @@ class TestModuleSmtp:
         """Test publishApiPost with keyword arguments."""
         import email
         from email.mime.text import MIMEText
-        
+
         # Mock the SMTP client
         mock_client = MagicMock()
         mock_smtp.return_value = mock_client
@@ -80,7 +80,7 @@ class TestModuleSmtp:
         mock_post = MagicMock()
         mock_api.getPostTitle.return_value = "Test Title from API"
         mock_api.getPostLink.return_value = "https://example.com/api"
-        
+
         # Call publishApiPost with kwargs
         result = self.smtp_module.publishApiPost(post=mock_post, api=mock_api)
 
@@ -88,16 +88,16 @@ class TestModuleSmtp:
         mock_client.sendmail.assert_called_once()
         args, kwargs = mock_client.sendmail.call_args
         from_addr, to_addr, msg_string = args
-        
+
         # Verify the from and to addresses
         assert from_addr == "test@example.com"
         assert to_addr == "recipient@example.com"
-        
+
         # Parse the message to check its content
         msg = email.message_from_string(msg_string)
         assert msg['Subject'] == "Test Title from API"
         assert msg['X-URL'] == "https://example.com/api"
-        
+
         # Verify the result
         assert result['success'] is True
         assert result['post_url'] == f"mailto:recipient@example.com"

@@ -37,8 +37,8 @@ class moduleSkeleton(Content):
     def setApiPosts(self, **kwargs):
         """
         Fetches the user's posts from the social media service.
-        If the service has channels/folders, this should fetch posts from the current channel.
-        It should return a list of post objects.
+        If the service has channels/folders, this should fetch posts from the
+        current channel.  It should return a list of post objects.
         """
         pass
 
@@ -102,10 +102,14 @@ class moduleSkeleton(Content):
         This method should return a dictionary with the following structure:
         ```python
         {
-            "success": bool,          # True if the publication was successful, False otherwise.
-            "post_url": str,          # The URL of the newly created post, if available. Empty string if not.
-            "error_message": str,     # A descriptive error message if the publication failed. Empty string if successful.
-            "raw_response": Any       # The raw response object from the API, for debugging.
+            # True if the publication was successful, False otherwise:
+            "success": bool,
+            # URL of the newly created post if available, else empty string:
+            "post_url": str,
+            # Error message if publication failed, else empty string:
+            "error_message": str,
+            # The raw response object from the API, for debugging:
+            "raw_response": Any,
         }
         ```
         """

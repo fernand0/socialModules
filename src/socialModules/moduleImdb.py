@@ -122,7 +122,7 @@ class moduleImdb(Content):
             now_later = now_today + datetime.timedelta(hours=12)
             now_today = now_today.strftime("%Y%m%d%H")
             now_later = now_later.strftime("%Y%m%d%H")
-            if ((start >=  now_today) and (start <= now_later)
+            if ((start >= now_today) and (start <= now_later)
                 and e["GENERO"] == 'cine'):
                 posts.append(e)
                 self.data.append((start, stop, title, "-", channel, ""))
@@ -163,7 +163,6 @@ class moduleImdb(Content):
         #     # # e["GENERO"] = genero
         #     # # e["g"] = genero
         #     # posts.append(e)
-
 
         #     self.data.append((hini, hfin, title, "-", cadName, genero))
 
@@ -268,7 +267,7 @@ class moduleImdb(Content):
             hfin = self.getPostTimeEnd(post)
             # hfin = f"{hfin.hour}:{hfin.minute}"
             avg = self.getPostAvg(post)
-            avg = round(float(self.getPostAvg(post)),1) if avg else "0.0"
+            avg = round(float(self.getPostAvg(post)), 1) if avg else "0.0"
             line = (
                     f"> [{avg}] - "
                     f"({self.getPostCode(post):6}) "
