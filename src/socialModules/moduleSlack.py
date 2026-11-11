@@ -139,7 +139,7 @@ class moduleSlack(Content):  # , Queue):
         history = self.getClient().api_call("conversations.history", data=data)
         try:
             posts = history["messages"]
-        except:
+        except Exception:
             posts = []
 
         msgLog = f"{self.indent} Service {self.service} End setApiPosts"
@@ -550,8 +550,9 @@ class moduleSlack(Content):  # , Queue):
         return theBots
 
     def search(self, channel, text):
-        msgLog = "{self.indent} Searching in Slack..."
+        msgLog = f"{self.indent} Searching in Slack..."
         logMsg(msgLog, 1, False)
+        res = None
         try:
             self.getClient().token = self.slack_token
             data = {"query": text}
@@ -561,9 +562,9 @@ class moduleSlack(Content):  # , Queue):
 
             if res:
                 self.report(self.service, "", "", sys.exc_info())
-                return res
-        except:
-            return self.report("Slack", text, sys.exc_info())
+        except Exception as e:
+            res = self.report(f"{self.service} API", "", "", f"{e}")
+        return res
 
     def register_specific_tests(self, tester):
         tester.add_test("Search test", self.test_search)

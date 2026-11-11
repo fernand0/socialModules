@@ -20,12 +20,6 @@ class moduleWordpress(Content):  # ,Queue):
     def get_post_id_from_result(self, result):
         return result.id
 
-    def get_user_info(self, client):
-        return f"{self.user}"
-
-    def get_post_id_from_result(self, result):
-        return result.id
-
     def getKeys(self, config):
         access_token = config[self.user]["access_token"]
         return (access_token,)
@@ -123,8 +117,8 @@ class moduleWordpress(Content):  # ,Queue):
             shutil.copyfile(configWordpress, "{}.bak".format(configWordpress))
             with open(configWordpress, "w") as configfile:
                 config.write(configfile)
-        except:
-            logging.info("No config file or not adequate fields")
+        except Exception as e:
+            logging.warning(f"Authorization failed: {e}")
 
     def setApiPosts(self, **kwargs):
         morePosts = kwargs.get("morePosts")
@@ -151,8 +145,8 @@ class moduleWordpress(Content):  # ,Queue):
             logging.warning("KeyError probably API Key expired")
             logging.warning("Unexpected error:", sys.exc_info()[0])
             posts = self.report(f"{self.service} API expired", "", "", sys.exc_info())
-        except:
-            posts = self.report(f"{self.service} API", "", "", sys.exc_info())
+        except Exception as e:
+            posts = self.report(f"{self.service} API", "", "", f"{e}")
         return posts
 
     # def setPosts(self, morePosts=None):
@@ -249,8 +243,8 @@ class moduleWordpress(Content):  # ,Queue):
                 reply = self.processReply(res)
             else:
                 reply = "Fail! No posts available"
-        except:
-            reply = self.report(self.service, apiSrc, "", sys.exc_info())
+        except Exception as e:
+            reply = self.report(self.service, apiSrc, "", f"{e}")
 
         return reply
 
@@ -357,7 +351,8 @@ class moduleWordpress(Content):  # ,Queue):
     #             return("Fail!")
     #     except KeyError:
     #         logging.info("Fail!")
-    #         logging.info(self.report('KeyError Wordpress', post, link, sys.exc_info()))
+    #         logging.info(self.report('KeyError Wordpress', post,
+    #                        link, sys.exc_info()))
     #         return(self.report('Wordpress', post, link, sys.exc_info()))
     #     except:
     #         logging.info("Fail!")
@@ -465,7 +460,8 @@ class moduleWordpress(Content):  # ,Queue):
     #         logging.debug("==============================================")
     #         logging.debug("")
 
-    #         return (theTitle, theLink, firstLink, theImage, theSummary, content, theSummaryLinks, theContent, theLinks, comment)
+    #         return (theTitle, theLink, firstLink, theImage, theSummary,
+    #                    content, theSummaryLinks, theContent, theLinks, comment)
     #     else:
     #         logging.info("No post")
     #         return (None, None, None, None, None, None, None, None, None, None)

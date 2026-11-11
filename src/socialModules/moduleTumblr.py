@@ -147,7 +147,7 @@ class moduleTumblr(Content):  # , Queue):
                 # msgLog = (f"{self.indent} Res: {reply['id']}")
                 # logMsg(msgLog, 2, False)
                 res = f"OK! https://{self.service}.com/{self.user}/{reply['id']}"
-            except:
+            except Exception:
                 msgLog = f"{self.indent} Temporal: error {reply}"
                 logMsg(msgLog, 3, False)
         elif "errors" in reply:
@@ -177,8 +177,8 @@ class moduleTumblr(Content):  # , Queue):
                 reply = self.publishApiPost(api=apiSrc, post=post)
             else:
                 reply = "No posts available"
-        except:
-            reply = self.report(self.service, post, apiSrc, sys.exc_info())
+        except Exception as e:
+            reply = self.report(f"{self.service} API", "", "", f"{e}")
 
         return reply
 

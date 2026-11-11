@@ -35,9 +35,9 @@ class moduleTelegram(Content):
             logging.info("     token: {TOKEN}")
 
             # meMySelf = bot.getMe()
-        except:
+        except Exception as e:
             logging.warning("Telegram authentication failed!")
-            logging.warning("Unexpected error:", sys.exc_info()[0])
+            logging.warning("Unexpected error:", f"Exc: {e}")
 
         # self.user = meMySelf
         # self.channel = channel
@@ -57,10 +57,10 @@ class moduleTelegram(Content):
                 TOKEN = config.get("Telegram", "TOKEN")
             try:
                 bot = telepot.Bot(TOKEN)
-            except:
+            except Exception:
                 logging.warning("Telegram authentication failed!")
                 # logging.warning("Unexpected error:", sys.exc_info())
-        except:
+        except Exception:
             logging.warning("Account not configured")
             bot = None
 
@@ -102,8 +102,8 @@ class moduleTelegram(Content):
                 reply = self.processReply(res)
             else:
                 reply = "No posts available"
-        except:
-            reply = self.report(self.service, apiSrc, sys.exc_info())
+        except Exception as e:
+            reply = self.report(f"{self.service} API", "", apiSrc, f"{e}")
 
         return reply
 
@@ -189,7 +189,7 @@ class moduleTelegram(Content):
         if self.getClient():
             try:
                 posts = posts.getUpdates()
-            except:
+            except Exception:
                 posts = []
             logging.info(f"Postssss: {posts}")
         return posts

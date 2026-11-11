@@ -63,7 +63,7 @@ class moduleTwitter(Content):  # , Queue):
             msgLog = f"{self.indent}Command {command} "
             logMsg(msgLog, 2, False)
             res = command(**kwargs)
-        except:
+        except Exception:
             res = self.report("", res, "", sys.exc_info())
 
         # except twitter.api.TwitterHTTPError as twittererror:
@@ -339,7 +339,7 @@ class moduleTwitter(Content):  # , Queue):
             title = post.data.get("text")
             if not title:
                 title = post.data.get("full_text")
-        except:
+        except Exception:
             title = ""
         # if 'http' in title:
         # title = title.split('http')[0]

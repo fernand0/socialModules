@@ -49,9 +49,9 @@ class moduleSmtp(Content):  # , Queue):
             logging.info(f"{self.indent} User: {self.user}")
             client.login(self.user, self.password)
             logging.info(f"{self.indent} Logging OK")
-        except:
+        except Exception as e:
             logging.warning("SMTP authentication failed!")
-            logging.warning(f"Unexpected error: {sys.exc_info()[0]}")
+            logging.warning(f"Unexpected error: {e}")
 
         return client
 
