@@ -200,12 +200,22 @@ class moduleSlack(Content):  # , Queue):
         return self.res_dict
 
     def editApiPost(self, post, newContent):
+        # Update a Slack message (text and optional attachments)
+        # Parameters:
+        #   post – the original Slack post dict (used for ts and to optionally include attachments)
+        #   newContent – the updated text payload
+        # Returns the raw API response from chat.update.
         theChan = self.getChannel()
         idPost = self.getPostId(post)
 
         result = None
         self.getClient().token = self.user_slack_token
+        # Build the payload for chat.update. Include attachments if present so that
+        # an updated title (stored in an attachment) is sent back to Slack.
         data = {"channel": theChan, "ts": idPost, "text": newContent}
+        if "attachments" in post:
+            # Slack expects a JSON‑serialisable list of attachment dicts.
+            data["attachments"] = post["attachments"]
         result = self.getClient().api_call("chat.update", data=data)
         self.getClient().token = self.slack_token
         return result
@@ -277,61 +287,93 @@ class moduleSlack(Content):  # , Queue):
     def getPostId(self, post):
         return post.get("ts", "")
 
-    def editApiTitle(self, post, newTitle):
-        # This method will reconstruct the post content with the new title
-        # and then call editApiPost.
-        original_text = post.get("text", "")
+    def editApiTitle(self, post: dict, newTitle: str) -> dict:
+        """Replace the title of a Slack post while keeping any embedded link.
+
+        Steps:
+        1. Use ``setPostTitle`` to obtain a post dict with the new title.
+        2. Ensure the original link (if any) is still present – ``setPostTitle`` already
+           preserves most links, but we perform a lightweight check to avoid duplicates.
+        3. Call ``editApiPost`` with the final text content.
+        """
+
+        # Preserve original link for fallback (may be ``None``)
         original_link = self.getPostLink(post)
-        print(f"Orig: {original_text}")
-        print(f"Orig l : {original_link}")
 
-        # Create a temporary post dictionary to get the new text with the updated title
-        temp_post = post.copy()
+        # Deep copy to avoid mutating the caller's dict unintentionally.
+        import copy
+        temp_post = copy.deepcopy(post)
+        # Apply title change (may affect attachment title or text)
         temp_post = self.setPostTitle(temp_post, newTitle)
-        new_text_with_title = temp_post.get("text", "")
-        print(f"New : {new_text_with_title}")
+        new_text = temp_post.get("text", "")
 
-        # If there was an original link, ensure it's still part of the new text
-        if original_link and original_link not in new_text_with_title:
-            # This is a simplified approach. A more robust solution might parse
-            # the original text to correctly insert the new title while preserving
-            # the link's position and formatting.
-            new_content = f"{new_text_with_title.strip()} {original_link}"
-        else:
-            new_content = new_text_with_title
-
-        return self.editApiPost(post, new_content)
-
-    def setPostTitle(self, post, newTitle):
-        if ("attachments" in post) and ("title" in post["attachments"][0]):
-            post["attachments"][0]["title"] = newTitle
-        elif "text" in post:
-            text = post["text"]
-            if text.startswith("<"):
-                if "|" in text:
-                    title = text.split("|")[1]
+        # If the text didn't change (e.g., title was only in an attachment), replace the leading phrase in the original text.
+        original_text = post.get("text", "")
+        if not new_text or new_text == original_text:
+            if original_text:
+                if "<" in original_text:
+                    # Replace everything before the first '<' (preserving links)
+                    pos = original_text.find("<")
+                    new_text = f"{newTitle} {original_text[pos:]}"
                 else:
-                    title = text
-                titleParts = title.split(">")
-                title = newTitle
-                if (len(titleParts) > 1) and (titleParts[1].find("<") >= 0):
-                    # There is a link
-                    title = title + " " + titleParts[1].split("<")[0]
-            else:
-                if text.find("<h") >= 0:
-                    pos = text.find("<h")
-                else:
-                    pos = text.rfind("http")
-                logMsg(f"text pos: {pos}", 2, False)
-                if pos >= 0:
-                    title = newTitle + " " + text[pos:]
-                else:
-                    title = newTitle
+                    new_text = newTitle
+                temp_post["text"] = new_text
 
-            post["text"] = title
-        else:
-            return "No title"
+        # If ``setPostTitle`` dropped the original link, re‑append it (avoid duplicates).
+        if original_link and original_link not in new_text:
+            # Ensure there is exactly one space before the link
+            new_text = f"{new_text.rstrip()} {original_link}".strip()
+            temp_post["text"] = new_text
 
+        # Use the project's logging instead of ``print``
+        logMsg(f"Edited title – new content: {new_text}", 2, False)
+
+        # Forward the *updated* post (including possible attachment title change) and the new content to the API.
+        return self.editApiPost(temp_post, new_text)
+
+    def setPostTitle(self, post: dict, newTitle: str) -> dict:
+        """Update the title of a Slack post.
+
+        Handles two common payload shapes:
+        1. ``attachments[0]["title"]`` – canonical Slack title field.
+        2. Plain ``text`` field which may contain an HTML‑style title link
+           (e.g. ``<url|old title>``) or a trailing URL.
+
+        The function always returns the (potentially) modified ``post`` dict.
+        """
+        # 1️⃣ Attachments path – safest first
+        attachments = post.get("attachments", [])
+        if isinstance(attachments, list) and len(attachments) > 0:
+            first = attachments[0]
+            if isinstance(first, dict) and "title" in first:
+                first["title"] = newTitle
+                return post
+
+        # 2️⃣ Text‑only path
+        text = post.get("text")
+        if not isinstance(text, str):
+            # Nothing we can modify; return unchanged dict for consistency
+            return post
+
+        # Helper to split a possible link from the main title
+        def split_link(s: str):
+            # Pattern: <url|title> or plain text ending with a URL
+            if s.startswith("<") and "|" in s:
+                # Slack "<url|title>" format
+                url, rest = s[1:].split("|", 1)
+                title_part = rest.split(">", 1)[0]
+                suffix = rest.split(">", 1)[1] if ">" in rest else ""
+                return title_part, f" <{url}>" + suffix
+            # Fallback: look for the last http/https URL
+            import re
+            match = re.search(r"(https?://\S+)$", s)
+            if match:
+                return s[: match.start()].strip(), f" {match.group(0)}"
+            return s, ""
+
+        base, link = split_link(text)
+        new_text = f"{newTitle}{link}" if link else newTitle
+        post["text"] = new_text
         return post
 
     def getPostTitle(self, post):

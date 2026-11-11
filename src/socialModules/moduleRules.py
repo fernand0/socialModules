@@ -129,6 +129,7 @@ class moduleRules:
                 logMsg(f"ERROR in section [{section}]: {ce}", 3, self.args.verbose)
                 raise  # Reraise the exception so tests can catch it
             except Exception as e:
+                logging.exception("UNEXPECTED ERROR IN section [%s]", section)
                 logMsg(
                     f"UNEXPECTED ERROR in section [{section}]: {e}",
                     3,
@@ -1318,7 +1319,7 @@ class moduleRules:
         postaction = apiSrc.getPostAction()
         resPost['action'] = postaction
         if postaction:
-            msgLog = (f"{indent}Post Action {postaction} " 
+            msgLog = (f"{indent}Post Action {postaction} "
                       f"(nextPost = {nextPost})"
                       )
             logMsg(msgLog, 1, self.args.verbose)
