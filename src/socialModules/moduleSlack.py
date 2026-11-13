@@ -155,6 +155,7 @@ class moduleSlack(Content):  # , Queue):
         return res
 
     def publishApiPost(self, *args, **kwargs):
+        comment = ""
         if args and len(args) == 3:
             title, link, comment = args
         elif kwargs:
@@ -168,7 +169,10 @@ class moduleSlack(Content):  # , Queue):
             self.res_dict["error_message"] = "Not enough arguments for publication."
             return self.res_dict
 
-        chan = self.getChannel()
+        if comment:
+            chan = comment
+        else:
+            chan = self.getChannel()
         if not chan:
             self.setChannel()
             chan = self.getChannel()
