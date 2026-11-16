@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import configparser
 import logging
 import sys
 import time
@@ -92,38 +91,6 @@ class moduleSlack(Content):  # , Queue):
 
     def getChannel(self):
         return self.channel
-
-    def setSlackClient(self, slackCredentials):
-        config = configparser.ConfigParser()
-        if not slackCredentials:
-            slackCredentials = CONFIGDIR + "/.rssSlack"
-        config.read(slackCredentials)
-
-        self.slack_token = config["Slack"].get("oauth-token")
-        self.user_slack_token = config["Slack"].get("user-oauth-token")
-
-        try:
-            self.sc = WebClient(self.slack_token)
-        except:
-            self.report("Slack", "", "", sys.exc_info())
-            self.sc = slack.WebClient(token=self.slack_token)
-
-        config = configparser.ConfigParser()
-        config.read(CONFIGDIR + "/.rssBlogs")
-        section = "Blog7"
-
-        url = config.get(section, "url")
-        self.setUrl(url)
-        self.oldsetSocialNetworks(config, section)
-        #    # if ('buffer' in config.options(section)):
-        #    #    self.setBufferapp(config.get(section, "buffer"))
-
-        if "cache" in config.options(section):
-            self.setProgram(config.get(section, "cache"))
-            # logging.info("getProgram {}".format(str(self.getProgram())))
-
-    def getSlackClient(self):
-        return self.sc
 
     def setApiPosts(self, **kwargs):
         msgLog = f"{self.indent} Service {self.service} Start setApiPosts"
