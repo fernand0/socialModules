@@ -169,10 +169,7 @@ class moduleSlack(Content):  # , Queue):
             self.res_dict["error_message"] = "Not enough arguments for publication."
             return self.res_dict
 
-        if comment:
-            chan = comment
-        else:
-            chan = self.getChannel()
+        chan = self.getChannel()
         if not chan:
             self.setChannel()
             chan = self.getChannel()
